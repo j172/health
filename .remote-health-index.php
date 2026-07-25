@@ -41,7 +41,7 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& test -s .env "
             . "&& test -s .pixabay.env "
             . "&& cp .env .env.before-pixabay "
-            . "&& grep -v '^PIXABAY_API_KEY=' .env > .env.pixabay-next "
+            . "&& grep -v -e '^PIXABAY_API_KEY=' -e '^MYSQL_PASSWORD=' .env > .env.pixabay-next "
             . "&& cat .pixabay.env >> .env.pixabay-next "
             . "&& chmod 600 .env.pixabay-next "
             . "&& mv .env.pixabay-next .env "
@@ -233,6 +233,85 @@ if (str_starts_with($path, '/__ops/')) {
             echo file_get_contents($prebuiltLogFile);
         } else {
             echo "No apply-prebuilt log yet.\n";
+        }
+        exit;
+    }
+
+    if ($path === '/__ops/db-fix') {
+        header('Content-Type: text/plain; charset=utf-8');
+        $envFile = $appDir . '/.env';
+        $envVars = [];
+        if (is_file($envFile)) {
+            foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                if (preg_match('/^([A-Z_]+)=(.*)$/', $line, $m)) {
+                    $envVars[$m[1]] = $m[2];
+                }
+            }
+        } else {
+            echo ".env not found at {$envFile}\n";
+            exit;
+        }
+
+        $user = $envVars['MYSQL_USER'] ?? '';
+        $pass = $envVars['MYSQL_PASSWORD'] ?? '';
+        $db = $envVars['MYSQL_DATABASE'] ?? '';
+
+        echo "==== .env values (password masked) ====\n";
+        echo "MYSQL_HOST=" . ($envVars['MYSQL_HOST'] ?? '') . "\n";
+        echo "MYSQL_USER={$user}\n";
+        echo "MYSQL_DATABASE={$db}\n";
+        echo "MYSQL_PASSWORD length=" . strlen($pass) . "\n";
+
+        echo "==== loaded db extensions ====\n";
+        echo "mysqli=" . (extension_loaded('mysqli') ? 'yes' : 'no') . "\n";
+        echo "pdo_mysql=" . (extension_loaded('pdo_mysql') ? 'yes' : 'no') . "\n";
+
+        $testConnect = static function (string $host) use ($user, $pass, $db): string {
+            if (extension_loaded('pdo_mysql') && class_exists('PDO') && in_array('mysql', PDO::getAvailableDrivers(), true)) {
+                try {
+                    new PDO("mysql:host={$host};dbname={$db}", $user, $pass, [PDO::ATTR_TIMEOUT => 5]);
+                    return "OK (pdo)\n";
+                } catch (\Throwable $e) {
+                    return "FAIL (pdo): " . $e->getMessage() . "\n";
+                }
+            }
+            return "SKIP: pdo_mysql not available (use mysql cli test below instead)\n";
+        };
+
+        if (($_GET['testconn'] ?? '') === '1') {
+            echo "==== db test host=localhost ====\n";
+            echo $testConnect('localhost');
+
+            echo "==== db test host=127.0.0.1 ====\n";
+            echo $testConnect('127.0.0.1');
+        } else {
+            echo "==== db test skipped (pass &testconn=1 to run; mysqli caused a crash on this host) ====\n";
+        }
+
+        echo "==== mysql cli test host=localhost ====\n";
+        $mysqlCliCmd = 'MYSQL_PWD=' . escapeshellarg($pass) . ' mysql -h localhost -u ' . escapeshellarg($user)
+            . ' ' . escapeshellarg($db) . ' -e ' . escapeshellarg('SELECT 1') . ' 2>&1';
+        echo shell_exec($mysqlCliCmd);
+
+        echo "==== uapi Mysql list_users ====\n";
+        echo shell_exec('uapi Mysql list_users 2>&1');
+
+        echo "==== uapi Mysql list_databases ====\n";
+        echo shell_exec('uapi Mysql list_databases 2>&1');
+
+        if (($_GET['setpass'] ?? '') === '1' && $user !== '' && $pass !== '') {
+            echo "==== uapi Mysql set_password (reset DB user password to match .env) ====\n";
+            $cmd = 'uapi Mysql set_password user=' . escapeshellarg($user) . ' password=' . escapeshellarg($pass) . ' 2>&1';
+            echo shell_exec($cmd);
+
+            echo "==== uapi Mysql set_privileges_on_database (grant ALL on {$db} to {$user}) ====\n";
+            $cmd2 = 'uapi Mysql set_privileges_on_database user=' . escapeshellarg($user)
+                . ' database=' . escapeshellarg($db)
+                . ' privileges=' . escapeshellarg('ALL PRIVILEGES') . ' 2>&1';
+            echo shell_exec($cmd2);
+
+            echo "==== db retest host=localhost after fix ====\n";
+            echo $testConnect('localhost');
         }
         exit;
     }

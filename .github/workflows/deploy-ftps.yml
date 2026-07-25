@@ -43,6 +43,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_USERNAME || 'j172@j172.tw' }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          MYSQL_PASSWORD_SECRET: ${{ secrets.MYSQL_PASSWORD }}
         run: |
           set -euo pipefail
           trap 'rm -f .pixabay.env' EXIT
@@ -50,6 +51,7 @@ jobs:
           FTP_SERVER_CLEAN="$(printf '%s' "$FTP_SERVER" | tr -d '\r\n' | xargs)"
           FTP_USERNAME_CLEAN="$(printf '%s' "$FTP_USERNAME" | tr -d '\r\n' | xargs)"
           FTP_PASSWORD_CLEAN="$(printf '%s' "$FTP_PASSWORD" | tr -d '\r\n')"
+          MYSQL_PASSWORD_CLEAN="$(printf '%s' "${MYSQL_PASSWORD_SECRET:-}" | tr -d '\r\n')"
 
           if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
             echo "Missing one of required deployment values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD / PIXABAY_API_KEY"
@@ -58,6 +60,9 @@ jobs:
 
           umask 077
           printf 'PIXABAY_API_KEY=%s\n' "$PIXABAY_API_KEY" > .pixabay.env
+          if [ -n "$MYSQL_PASSWORD_CLEAN" ]; then
+            printf 'MYSQL_PASSWORD=%s\n' "$MYSQL_PASSWORD_CLEAN" >> .pixabay.env
+          fi
 
           FTP_URL="ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-next3.tgz"
           echo "Uploading prebuilt bundle to FTP host ${FTP_SERVER_CLEAN} as ${FTP_USERNAME_CLEAN}"
