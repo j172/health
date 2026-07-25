@@ -18,6 +18,46 @@ if (str_starts_with($path, '/__ops/')) {
     $prebuiltLogFile = $appDir . '/.apply-prebuilt.log';
     $prebuiltLockFile = $appDir . '/.apply-prebuilt.lock';
 
+    $buildPrebuiltCommand = static function (bool $force) use ($appDir): string {
+        $startMarker = $force ? '[START-FORCE-V4]' : '[START-V4]';
+        $doneMarker = $force ? '[DONE-FORCE-V4]' : '[DONE-V4]';
+        $failMarker = $force ? '[FAIL-FORCE-V4]' : '[FAIL-V4]';
+        $script = "cd {$appDir} "
+            . "&& SWAPPED=0; "
+            . "{ "
+            . "echo '{$startMarker} '$(date) > .apply-prebuilt.log; "
+            . "echo '[PWD] '$(pwd) >> .apply-prebuilt.log; "
+            . "rm -rf .next3_stage .next3_failed >> .apply-prebuilt.log 2>&1 "
+            . "&& mkdir -p .next3_stage >> .apply-prebuilt.log 2>&1 "
+            . "&& tar --no-same-owner --no-same-permissions --delay-directory-restore --warning=no-unknown-keyword -xzf .prebuilt-next3.tgz -C .next3_stage >> .apply-prebuilt.log 2>&1 "
+            . "&& test -s .next3_stage/.next3/BUILD_ID "
+            . "&& test -d .next3_stage/.next3/server "
+            . "&& test -d .next3_stage/.next3/static/chunks "
+            . "&& test -s .next3_stage/.next3/routes-manifest.json "
+            . "&& find .next3_stage/.next3/static/chunks -type f -name '*.js' -print -quit | grep -q . "
+            . "&& chmod -R u+rwX .next3_stage/.next3 >> .apply-prebuilt.log 2>&1 "
+            . "&& rm -rf .next3_previous >> .apply-prebuilt.log 2>&1 "
+            . "&& { if [ -d .next3 ]; then mv .next3 .next3_previous; fi; } "
+            . "&& mv .next3_stage/.next3 .next3 >> .apply-prebuilt.log 2>&1 "
+            . "&& rmdir .next3_stage >> .apply-prebuilt.log 2>&1 "
+            . "&& SWAPPED=1 "
+            . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
+            . "&& /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .apply-prebuilt.log 2>&1 "
+            . "&& { PROBE_OK=0; for ATTEMPT in 1 2 3 4 5 6 7 8 9 10; do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
+            . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
+            . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
+            . "&& curl -fsS --max-time 10 \"http://127.0.0.1:3000/_next/static/\$STATIC_REL\" | head -c 1 | grep -vq '<' "
+            . "&& echo '{$doneMarker} '$(date) >> .apply-prebuilt.log; "
+            . "} || { "
+            . "echo '[ROLLBACK] apply or health probe failed' >> .apply-prebuilt.log; "
+            . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .apply-prebuilt.log 2>&1 || true; fi; "
+            . "echo '{$failMarker} '$(date) >> .apply-prebuilt.log; "
+            . "}; "
+            . "rm -f .apply-prebuilt.lock";
+
+        return "nohup /bin/sh -lc " . escapeshellarg($script) . " >/dev/null 2>&1 &";
+    };
+
     if ($path === '/__ops/rebuild') {
         if (is_file($buildLockFile) && (time() - (int) @filemtime($buildLockFile)) > 1800) {
             @unlink($buildLockFile);
@@ -96,28 +136,7 @@ if (str_starts_with($path, '/__ops/')) {
 
         @file_put_contents($prebuiltLockFile, (string) time(), LOCK_EX);
 
-        $cmd = "nohup /bin/sh -lc "
-            . escapeshellarg(
-                "cd {$appDir} "
-                . "&& { "
-                . "echo '[START] '$(date) > .apply-prebuilt.log; "
-                . "echo '[PWD] '$(pwd) >> .apply-prebuilt.log; "
-                . "ls -ld . .next3 >> .apply-prebuilt.log 2>&1 || true; "
-                . "chmod -R u+rwX .next3 >> .apply-prebuilt.log 2>&1 || true; "
-                . "find .next3 -type d -exec chmod u+rwx {} \\; >> .apply-prebuilt.log 2>&1 || true; "
-                . "rm -rf .next3 .next3_stage >> .apply-prebuilt.log 2>&1; "
-                . "mkdir -p .next3_stage >> .apply-prebuilt.log 2>&1; "
-                . "tar --no-same-owner --no-same-permissions --delay-directory-restore --warning=no-unknown-keyword -xzf .prebuilt-next3.tgz -C .next3_stage >> .apply-prebuilt.log 2>&1; "
-                . "test -d .next3_stage/.next3 >> .apply-prebuilt.log 2>&1; "
-                . "mv .next3_stage/.next3 .next3 >> .apply-prebuilt.log 2>&1; "
-                . "rmdir .next3_stage >> .apply-prebuilt.log 2>&1 || true; "
-                . "echo '[BUILD_ID] '$(cat .next3/BUILD_ID 2>/dev/null) >> .apply-prebuilt.log; "
-                . "/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .apply-prebuilt.log 2>&1; "
-                . "echo '[DONE] '$(date) >> .apply-prebuilt.log; "
-                . "} || { echo '[FAIL] '$(date) >> .apply-prebuilt.log; }; "
-                . "rm -f .apply-prebuilt.lock"
-            )
-            . " >/dev/null 2>&1 &";
+        $cmd = $buildPrebuiltCommand(false);
         @exec($cmd);
 
         header('Content-Type: text/plain; charset=utf-8');
@@ -137,32 +156,11 @@ if (str_starts_with($path, '/__ops/')) {
         @unlink($prebuiltLockFile);
         @unlink($prebuiltLogFile);
 
-        $cmd = "nohup /bin/sh -lc "
-            . escapeshellarg(
-                "cd {$appDir} "
-                . "&& { "
-                . "echo '[START-FORCE-V3] '$(date) > .apply-prebuilt.log; "
-                . "echo '[PWD] '$(pwd) >> .apply-prebuilt.log; "
-                . "ls -ld . .next3 >> .apply-prebuilt.log 2>&1 || true; "
-                . "chmod -R u+rwX .next3 >> .apply-prebuilt.log 2>&1 || true; "
-                . "find .next3 -type d -exec chmod u+rwx {} \\; >> .apply-prebuilt.log 2>&1 || true; "
-                . "rm -rf .next3 .next3_stage >> .apply-prebuilt.log 2>&1; "
-                . "mkdir -p .next3_stage >> .apply-prebuilt.log 2>&1; "
-                . "tar --no-same-owner --no-same-permissions --delay-directory-restore --warning=no-unknown-keyword -xzf .prebuilt-next3.tgz -C .next3_stage >> .apply-prebuilt.log 2>&1; "
-                . "test -d .next3_stage/.next3 >> .apply-prebuilt.log 2>&1; "
-                . "mv .next3_stage/.next3 .next3 >> .apply-prebuilt.log 2>&1; "
-                . "rmdir .next3_stage >> .apply-prebuilt.log 2>&1 || true; "
-                . "echo '[BUILD_ID] '$(cat .next3/BUILD_ID 2>/dev/null) >> .apply-prebuilt.log; "
-                . "/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .apply-prebuilt.log 2>&1; "
-                . "echo '[DONE-FORCE-V3] '$(date) >> .apply-prebuilt.log; "
-                . "} || { echo '[FAIL-FORCE-V3] '$(date) >> .apply-prebuilt.log; }; "
-                . "rm -f .apply-prebuilt.lock"
-            )
-            . " >/dev/null 2>&1 &";
+        $cmd = $buildPrebuiltCommand(true);
         @exec($cmd);
 
         header('Content-Type: text/plain; charset=utf-8');
-        echo "Apply prebuilt force-triggered-v3. Check /__ops/apply-prebuilt-status?key=...\n";
+        echo "Apply prebuilt force-triggered-v4. Check /__ops/apply-prebuilt-status?key=...\n";
         exit;
     }
 
@@ -189,6 +187,53 @@ if (str_starts_with($path, '/__ops/')) {
         }
         exit;
     }
+}
+
+if (str_starts_with($path, '/_next/static/')) {
+    $relative = rawurldecode(substr($path, strlen('/_next/static/')));
+    if ($relative === '' || str_contains($relative, "\0") || str_contains($relative, '..')) {
+        http_response_code(400);
+        exit;
+    }
+
+    $staticRoots = [
+        'current' => '/home/tw123457/health_app/.next3/static',
+        'previous' => '/home/tw123457/health_app/.next3_previous/static',
+    ];
+
+    foreach ($staticRoots as $build => $root) {
+        $rootReal = realpath($root);
+        $fileReal = realpath($root . '/' . $relative);
+        if ($rootReal === false || $fileReal === false || !is_file($fileReal) || !str_starts_with($fileReal, $rootReal . DIRECTORY_SEPARATOR)) {
+            continue;
+        }
+
+        $types = [
+            'css' => 'text/css; charset=utf-8',
+            'js' => 'application/javascript; charset=utf-8',
+            'json' => 'application/json; charset=utf-8',
+            'map' => 'application/json; charset=utf-8',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'wasm' => 'application/wasm',
+        ];
+        $extension = strtolower(pathinfo($fileReal, PATHINFO_EXTENSION));
+        header('Content-Type: ' . ($types[$extension] ?? 'application/octet-stream'));
+        header('Cache-Control: public, max-age=31536000, immutable');
+        header('Content-Length: ' . filesize($fileReal));
+        header('X-Next-Static-Build: ' . $build);
+        if ($method !== 'HEAD') {
+            readfile($fileReal);
+        }
+        exit;
+    }
+
+    http_response_code(404);
+    header('Content-Type: text/plain; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo 'Static asset not found';
+    exit;
 }
 
 $target = 'http://127.0.0.1:3000' . $uri;

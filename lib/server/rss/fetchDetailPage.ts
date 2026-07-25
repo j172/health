@@ -31,6 +31,7 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     },
     cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (!response.ok) {

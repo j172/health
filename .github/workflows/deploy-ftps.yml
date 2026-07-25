@@ -95,7 +95,7 @@ jobs:
 
             echo "$STATUS"
 
-            if printf '%s' "$STATUS" | grep -Fq '[DONE-FORCE-V3]'; then
+            if printf '%s' "$STATUS" | grep -Fq '[DONE-FORCE-V4]'; then
               exit 0
             fi
 
@@ -108,5 +108,34 @@ jobs:
             sleep 2
           done
 
-          echo "Timed out waiting for [DONE-FORCE-V3]"
+          echo "Timed out waiting for [DONE-FORCE-V4]"
           exit 1
+
+      - name: Verify public news pages and JavaScript chunks
+        run: |
+          set -euo pipefail
+
+          TMP_DIR="$(mktemp -d)"
+          trap 'rm -rf "$TMP_DIR"' EXIT
+
+          for PAGE in news news/60; do
+            curl --fail --show-error --silent --location \
+              "https://health.j172.tw/$PAGE?verify=$(date +%s%N)" \
+              --output "$TMP_DIR/${PAGE//\//-}.html"
+          done
+
+          grep -hoE 'src="/_next/static/chunks/[^"?]+\.js[^\"]*"' "$TMP_DIR"/*.html \
+            | sed -E 's/^src="([^"]+)"$/\1/' \
+            | sort -u > "$TMP_DIR/chunks.txt"
+
+          test -s "$TMP_DIR/chunks.txt"
+
+          while IFS= read -r CHUNK; do
+            curl --fail --show-error --silent --location \
+              --dump-header "$TMP_DIR/headers.txt" \
+              "https://health.j172.tw$CHUNK" \
+              --output "$TMP_DIR/chunk.js"
+
+            grep -Eiq '^content-type: (application|text)/(javascript|x-javascript)' "$TMP_DIR/headers.txt"
+            test "$(head -c 1 "$TMP_DIR/chunk.js")" != '<'
+          done < "$TMP_DIR/chunks.txt"
