@@ -41,15 +41,20 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
   const $ = load(html);
 
   $("script,style,noscript,iframe").remove();
+  // Removed before container selection so a body-level fallback (sites with no
+  // <article>/<main>/#maincontent, e.g. cdc.gov.tw) doesn't pull in site-chrome
+  // images like the header logo as if they were part of the article.
+  $("header,nav,footer").remove();
 
-  const detailContainer =
+  const scopedContainer =
     $("article").first().length > 0
       ? $("article").first()
       : $("main").first().length > 0
         ? $("main").first()
         : $("#maincontent").first().length > 0
           ? $("#maincontent").first()
-          : $("body");
+          : null;
+  const detailContainer = scopedContainer ?? $("body");
 
   const detailHtml = detailContainer.html()?.trim() || null;
   const detailText = detailContainer.text().replace(/\s+/g, " ").trim() || null;
@@ -71,17 +76,26 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
     });
   });
 
-  detailContainer.find("img[src]").each((_, el) => {
-    const src = $(el).attr("src");
-    if (!src) return;
-    idx += 1;
-    assets.push({
-      assetType: "image",
-      title: $(el).attr("alt")?.trim() || null,
-      url: toAbsoluteUrl(src, item.canonicalUrl),
-      sortOrder: idx,
+  // Only trust <img> tags when we found a genuine content container. A raw
+  // <body> fallback (sites with no <article>/<main>/#maincontent, e.g.
+  // cdc.gov.tw, fda.gov.tw, hpa.gov.tw, ltn.com.tw) has no reliable way to
+  // distinguish an article photo from breadcrumb/toolbar/portal-badge icons,
+  // so skip image extraction entirely there and let the Pixabay fallback
+  // assign a card image instead.
+  if (scopedContainer) {
+    scopedContainer.find("img[src]").each((_, el) => {
+      const src = $(el).attr("src");
+      if (!src) return;
+      if (/logo|favicon|icon/i.test(src)) return;
+      idx += 1;
+      assets.push({
+        assetType: "image",
+        title: $(el).attr("alt")?.trim() || null,
+        url: toAbsoluteUrl(src, item.canonicalUrl),
+        sortOrder: idx,
+      });
     });
-  });
+  }
 
   return {
     detailHtml,
