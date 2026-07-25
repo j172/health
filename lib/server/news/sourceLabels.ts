@@ -8,6 +8,7 @@ const SOURCE_LABELS: Record<string, string> = {
   hpa: "國民健康署",
   top1health: "華人健康網",
   mamaclub: "媽媽經",
+  twstreetcorner: "巷仔口社會學",
 };
 
 export interface SourceLabelInput {

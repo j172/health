@@ -106,4 +106,10 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://mamaclub.com/feed/",
     sourceName: "mamaclub",
   },
+  {
+    code: "twstreetcorner",
+    name: "巷仔口社會學",
+    url: "https://twstreetcorner.org/feed/",
+    sourceName: "twstreetcorner",
+  },
 ];

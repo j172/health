@@ -51,87 +51,76 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
 
       const existing = existingRows[0];
 
+      // INSERT .. ON DUPLICATE KEY UPDATE rather than a separate SELECT-then-
+      // branch, so a duplicate (source_name, feed_code, external_id) within
+      // the same batch — e.g. a feed that transiently lists the same article
+      // twice — safely upserts instead of throwing ER_DUP_ENTRY and failing
+      // the whole ingestion run. `id = LAST_INSERT_ID(id)` is the standard
+      // idiom for getting the existing row's id back out of insertId on the
+      // update path, same as a fresh insert.
+      const [upsertResult] = await conn.execute<ResultSetHeader>(
+        `
+        INSERT INTO news_items (
+          source_name, feed_code, feed_name, external_id, canonical_url, source_url,
+          title, description_html, description_text, detail_html, detail_text,
+          dept_name, category_raw, display_type, published_at_utc,
+          public_begin_at_taipei, public_end_at_taipei,
+          payload_hash, first_seen_at_utc, last_seen_at_utc, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          id = LAST_INSERT_ID(id),
+          feed_name = VALUES(feed_name),
+          canonical_url = VALUES(canonical_url),
+          source_url = VALUES(source_url),
+          title = VALUES(title),
+          description_html = VALUES(description_html),
+          description_text = VALUES(description_text),
+          detail_html = VALUES(detail_html),
+          detail_text = VALUES(detail_text),
+          dept_name = VALUES(dept_name),
+          category_raw = VALUES(category_raw),
+          display_type = VALUES(display_type),
+          published_at_utc = VALUES(published_at_utc),
+          public_begin_at_taipei = VALUES(public_begin_at_taipei),
+          public_end_at_taipei = VALUES(public_end_at_taipei),
+          payload_hash = VALUES(payload_hash),
+          last_seen_at_utc = VALUES(last_seen_at_utc),
+          updated_at = VALUES(updated_at)
+        `,
+        [
+          item.sourceName,
+          item.feedCode,
+          item.feedName,
+          item.externalId,
+          item.canonicalUrl,
+          item.sourceUrl,
+          item.title,
+          item.descriptionHtml,
+          item.descriptionText,
+          item.detailHtml,
+          item.detailText,
+          item.deptName,
+          item.categoryRaw,
+          item.displayType,
+          dateToSql(item.publishedAtUtc),
+          dateToSql(item.publicBeginAtTaipei),
+          dateToSql(item.publicEndAtTaipei),
+          item.payloadHash,
+          now,
+          now,
+          now,
+          now,
+        ],
+      );
+
+      await clearAndInsertAssets(upsertResult.insertId, item.assets, now, conn);
+
       if (!existing) {
-        const [insertResult] = await conn.execute<ResultSetHeader>(
-          `
-          INSERT INTO news_items (
-            source_name, feed_code, feed_name, external_id, canonical_url, source_url,
-            title, description_html, description_text, detail_html, detail_text,
-            dept_name, category_raw, display_type, published_at_utc,
-            public_begin_at_taipei, public_end_at_taipei,
-            payload_hash, first_seen_at_utc, last_seen_at_utc, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `,
-          [
-            item.sourceName,
-            item.feedCode,
-            item.feedName,
-            item.externalId,
-            item.canonicalUrl,
-            item.sourceUrl,
-            item.title,
-            item.descriptionHtml,
-            item.descriptionText,
-            item.detailHtml,
-            item.detailText,
-            item.deptName,
-            item.categoryRaw,
-            item.displayType,
-            dateToSql(item.publishedAtUtc),
-            dateToSql(item.publicBeginAtTaipei),
-            dateToSql(item.publicEndAtTaipei),
-            item.payloadHash,
-            now,
-            now,
-            now,
-            now,
-          ],
-        );
-
         inserted += 1;
-        await clearAndInsertAssets(insertResult.insertId, item.assets, now, conn);
+      } else if (existing.payload_hash !== item.payloadHash) {
+        updated += 1;
       } else {
-        const hasChange = existing.payload_hash !== item.payloadHash;
-
-        await conn.execute(
-          `
-          UPDATE news_items
-          SET feed_name = ?, canonical_url = ?, source_url = ?, title = ?,
-              description_html = ?, description_text = ?, detail_html = ?, detail_text = ?,
-              dept_name = ?, category_raw = ?, display_type = ?,
-              published_at_utc = ?, public_begin_at_taipei = ?, public_end_at_taipei = ?,
-              payload_hash = ?, last_seen_at_utc = ?, updated_at = ?
-          WHERE id = ?
-          `,
-          [
-            item.feedName,
-            item.canonicalUrl,
-            item.sourceUrl,
-            item.title,
-            item.descriptionHtml,
-            item.descriptionText,
-            item.detailHtml,
-            item.detailText,
-            item.deptName,
-            item.categoryRaw,
-            item.displayType,
-            dateToSql(item.publishedAtUtc),
-            dateToSql(item.publicBeginAtTaipei),
-            dateToSql(item.publicEndAtTaipei),
-            item.payloadHash,
-            now,
-            now,
-            existing.id,
-          ],
-        );
-
-        await clearAndInsertAssets(existing.id, item.assets, now, conn);
-
-        if (hasChange) {
-          updated += 1;
-        } else {
-          unchanged += 1;
-        }
+        unchanged += 1;
       }
     }
 
