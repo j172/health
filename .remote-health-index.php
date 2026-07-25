@@ -42,6 +42,11 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& chmod -R u+rwX .next3_stage/.next3 >> .apply-prebuilt.log 2>&1 "
             . "&& mkdir -p public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
             . "&& chmod u+rwx public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
+            // Best-effort: extracts INTO the existing public/ dir (no wipe first), so
+            // runtime-generated subdirs like images/news/pixabay and images/news/articles
+            // are left untouched — only files actually present in the uploaded tarball
+            // get added/overwritten. A missing or bad tarball shouldn't fail the deploy.
+            . "&& { if [ -s .prebuilt-public.tgz ]; then tar --no-same-owner --no-same-permissions -xzf .prebuilt-public.tgz -C public >> .apply-prebuilt.log 2>&1 && rm -f .prebuilt-public.tgz; fi; } "
             . "&& test -s .env "
             . "&& { if [ -s .pixabay.env ]; then "
             . "cp .env .env.before-pixabay "

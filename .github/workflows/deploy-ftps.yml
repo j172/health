@@ -37,6 +37,11 @@ jobs:
           test -d .next3
           tar -czf .prebuilt-next3.tgz .next3
 
+      - name: Package public assets
+        run: |
+          test -d public
+          tar -czf .prebuilt-public.tgz -C public .
+
       - name: Upload handler and prebuilt bundle to server (FTPS)
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER != '' && secrets.FTP_SERVER || '103.21.221.12' }}
@@ -71,6 +76,11 @@ jobs:
             --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
             --upload-file ".prebuilt-next3.tgz" \
             --url "$FTP_URL"
+
+          curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
+            --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
+            --upload-file ".prebuilt-public.tgz" \
+            --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-public.tgz"
 
           curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
             --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
@@ -150,6 +160,7 @@ jobs:
             exit 1
           fi
 
+          TOTAL_FAILED=0
           for ATTEMPT in $(seq 1 100); do
             RESPONSE="$(curl --fail --show-error --silent --insecure \
               --resolve "health.j172.tw:443:103.21.221.12" \
@@ -166,8 +177,15 @@ jobs:
             echo "Card image backfill $ATTEMPT: assigned=$ASSIGNED failed=$FAILED reason=$REASON"
 
             test "$OK" = "true"
-            test "$FAILED" = "0"
-            if [ "$ASSIGNED" = "0" ]; then
+            # A single item can fail validation (e.g. a bad Pixabay candidate) without
+            # anything actually being wrong; only abort if failures pile up, since that's
+            # the signal something systemic (not just one unlucky candidate) is going on.
+            TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
+            if [ "$TOTAL_FAILED" -ge 10 ]; then
+              echo "Too many card image failures ($TOTAL_FAILED) — stopping."
+              exit 1
+            fi
+            if [ "$ASSIGNED" = "0" ] && [ "$FAILED" = "0" ]; then
               exit 0
             fi
           done
