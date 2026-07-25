@@ -31,7 +31,7 @@ export interface NewsAssetItem {
   sort_order: number;
 }
 
-export const listLatestNews = async (limit = 50): Promise<NewsListItem[]> =>
+export const listLatestNews = async (limit = 50, offset = 0): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -58,12 +58,18 @@ export const listLatestNews = async (limit = 50): Promise<NewsListItem[]> =>
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
-      LIMIT ?
+      LIMIT ? OFFSET ?
       `,
-      [limit],
+      [limit, offset],
     );
 
     return rows as unknown as NewsListItem[];
+  });
+
+export const countNewsItems = async (): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items`);
+    return Number(rows[0]?.total ?? 0);
   });
 
 export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>

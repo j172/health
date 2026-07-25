@@ -123,7 +123,53 @@ export const StabloFooter = () => (
   </footer>
 );
 
-export default function StabloNewsLayout({ items, variant }: { items: NewsListItem[]; variant: Variant }) {
+interface Pagination {
+  currentPage: number;
+  totalPages: number;
+}
+
+const pageHref = (page: number): string => (page <= 1 ? "/news" : `/news?page=${page}`);
+
+const Pagination = ({ currentPage, totalPages }: Pagination) => {
+  if (totalPages <= 1) return null;
+
+  const prevDisabled = currentPage <= 1;
+  const nextDisabled = currentPage >= totalPages;
+
+  return (
+    <nav className="mt-12 flex items-center justify-center gap-4 text-sm font-medium text-neutral-600" aria-label="分頁">
+      {prevDisabled ? (
+        <span className="cursor-not-allowed text-neutral-300">← 上一頁</span>
+      ) : (
+        <Link href={pageHref(currentPage - 1)} className="transition-colors hover:text-neutral-900">
+          ← 上一頁
+        </Link>
+      )}
+
+      <span className="text-neutral-500">
+        第 {currentPage} / {totalPages} 頁
+      </span>
+
+      {nextDisabled ? (
+        <span className="cursor-not-allowed text-neutral-300">下一頁 →</span>
+      ) : (
+        <Link href={pageHref(currentPage + 1)} className="transition-colors hover:text-neutral-900">
+          下一頁 →
+        </Link>
+      )}
+    </nav>
+  );
+};
+
+export default function StabloNewsLayout({
+  items,
+  variant,
+  pagination,
+}: {
+  items: NewsListItem[];
+  variant: Variant;
+  pagination?: Pagination;
+}) {
   const featured = items[0];
   const side = items.slice(1, 3);
   const latest = items.slice(3);
@@ -189,6 +235,8 @@ export default function StabloNewsLayout({ items, variant }: { items: NewsListIt
                 <PostCard key={item.id} item={item} idx={idx} />
               ))}
             </section>
+
+            {pagination ? <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} /> : null}
           </>
         )}
       </main>
