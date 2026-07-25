@@ -1,5 +1,6 @@
 import "server-only";
 import { env } from "@/lib/server/config/env";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 const API_URL = "https://pixabay.com/api/";
 const REQUEST_TIMEOUT_MS = 12_000;
@@ -47,17 +48,16 @@ export const searchHealthImages = async (page: number, perPage = 200): Promise<P
     per_page: String(Math.min(200, Math.max(3, perPage))),
   });
 
-  const response = await fetch(`${API_URL}?${params.toString()}`, {
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  const response = await httpGetText(`${API_URL}?${params.toString()}`, {
+    timeoutMs: REQUEST_TIMEOUT_MS,
     headers: { Accept: "application/json" },
-    cache: "no-store",
   });
 
-  if (!response.ok) {
+  if (response.status < 200 || response.status >= 300) {
     throw new Error(`Pixabay API request failed with HTTP ${response.status}.`);
   }
 
-  const payload = (await response.json()) as Partial<PixabaySearchResponse>;
+  const payload = JSON.parse(response.text) as Partial<PixabaySearchResponse>;
   if (!Array.isArray(payload.hits)) {
     throw new Error("Pixabay API returned an invalid response.");
   }

@@ -1,5 +1,6 @@
 import { load } from "cheerio";
 import type { NewsAsset, NormalizedRssItem } from "@/types/rss";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 const toAbsoluteUrl = (url: string, base: string): string => {
   try {
@@ -24,21 +25,19 @@ const uniqueAssets = (assets: NewsAsset[]): NewsAsset[] => {
 };
 
 export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detailHtml: string | null; detailText: string | null; assets: NewsAsset[] }> => {
-  const response = await fetch(item.canonicalUrl, {
-    method: "GET",
+  const response = await httpGetText(item.canonicalUrl, {
     headers: {
       "User-Agent": "health.j172.tw-rss-ingestor/1.0",
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     },
-    cache: "no-store",
-    signal: AbortSignal.timeout(15_000),
+    timeoutMs: 15_000,
   });
 
-  if (!response.ok) {
+  if (response.status < 200 || response.status >= 300) {
     throw new Error(`Detail page HTTP ${response.status} for ${item.canonicalUrl}`);
   }
 
-  const html = await response.text();
+  const html = response.text;
   const $ = load(html);
 
   $("script,style,noscript,iframe").remove();

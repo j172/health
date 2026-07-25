@@ -368,6 +368,45 @@ if (str_starts_with($path, '/__ops/')) {
         }
         exit;
     }
+
+    if ($path === '/__ops/net-test') {
+        header('Content-Type: text/plain; charset=utf-8');
+        $testUrl = 'https://www.mohw.gov.tw/rss-16-1.html';
+
+        echo "==== PHP curl to {$testUrl} ====\n";
+        $ch = curl_init($testUrl);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_HEADER => false]);
+        $body = curl_exec($ch);
+        echo "http_code=" . curl_getinfo($ch, CURLINFO_HTTP_CODE) . " bytes=" . ($body === false ? "FAIL: " . curl_error($ch) : strlen($body)) . "\n";
+        curl_close($ch);
+
+        $node = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node';
+        echo "\n==== node --version ====\n";
+        echo shell_exec("{$node} --version 2>&1");
+
+        echo "\n==== ulimit -a (current shell) ====\n";
+        echo shell_exec('ulimit -a 2>&1');
+
+        $script = "fetch(" . json_encode($testUrl) . ").then(async r => { console.log('status', r.status); const t = await r.text(); console.log('bytes', t.length); }).catch(e => { console.log('ERR', e && e.message); console.log('CAUSE', e && e.cause); });";
+        $tmpFile = sys_get_temp_dir() . '/net-test-' . uniqid() . '.mjs';
+        file_put_contents($tmpFile, $script);
+
+        echo "\n==== raw node fetch() to {$testUrl} (default ulimit) ====\n";
+        echo shell_exec("{$node} " . escapeshellarg($tmpFile) . " 2>&1");
+
+        echo "\n==== ulimit -Hv (hard virtual memory limit) ====\n";
+        echo shell_exec('ulimit -Hv 2>&1');
+
+        echo "\n==== raw node fetch() with ulimit -v unlimited ====\n";
+        echo shell_exec("bash -c 'ulimit -v unlimited 2>&1; ulimit -v; {$node} " . escapeshellarg($tmpFile) . "' 2>&1");
+
+        echo "\n==== raw node fetch() with ulimit -v 4000000 ====\n";
+        echo shell_exec("bash -c 'ulimit -v 4000000 2>&1; ulimit -v; {$node} " . escapeshellarg($tmpFile) . "' 2>&1");
+
+        @unlink($tmpFile);
+
+        exit;
+    }
 }
 
 if (str_starts_with($path, '/images/news/pixabay/')) {

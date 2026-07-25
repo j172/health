@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { PixabayImage } from "@/lib/server/pixabay/client";
+import { httpRequest } from "@/lib/server/net/httpClient";
 
 const DOWNLOAD_TIMEOUT_MS = 15_000;
 const MAX_IMAGE_BYTES = 12 * 1024 * 1024;
@@ -35,28 +36,29 @@ export const removeDownloadedImage = async (absolutePath: string): Promise<void>
 
 export const downloadPixabayImage = async (image: PixabayImage): Promise<DownloadedPixabayImage> => {
   const imageUrl = image.largeImageURL || image.webformatURL;
-  const response = await fetch(imageUrl, {
-    signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MS),
+  const response = await httpRequest(imageUrl, {
+    timeoutMs: DOWNLOAD_TIMEOUT_MS,
     headers: { Accept: "image/avif,image/webp,image/png,image/jpeg" },
-    cache: "no-store",
   });
 
-  if (!response.ok) {
+  if (response.status < 200 || response.status >= 300) {
     throw new Error(`Pixabay image download failed with HTTP ${response.status}.`);
   }
 
-  const mime = response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() || "";
+  const contentType = response.headers["content-type"];
+  const mime = (Array.isArray(contentType) ? contentType[0] : contentType)?.split(";", 1)[0].trim().toLowerCase() || "";
   const extension = MIME_EXTENSIONS.get(mime);
   if (!extension) {
     throw new Error(`Pixabay image has unsupported content type: ${mime || "unknown"}.`);
   }
 
-  const declaredLength = Number(response.headers.get("content-length") || 0);
+  const contentLength = response.headers["content-length"];
+  const declaredLength = Number((Array.isArray(contentLength) ? contentLength[0] : contentLength) || 0);
   if (declaredLength > MAX_IMAGE_BYTES) {
     throw new Error("Pixabay image exceeds the download size limit.");
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
+  const buffer = response.buffer;
   if (buffer.length === 0 || buffer.length > MAX_IMAGE_BYTES || !hasExpectedSignature(buffer, mime)) {
     throw new Error("Pixabay image content failed validation.");
   }

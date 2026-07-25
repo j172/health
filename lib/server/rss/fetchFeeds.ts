@@ -1,4 +1,5 @@
 import type { FeedConfig } from "@/types/rss";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -6,30 +7,21 @@ export const fetchFeedXml = async (feed: FeedConfig): Promise<{ status: number; 
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
-
     try {
-      const response = await fetch(feed.url, {
-        method: "GET",
+      const response = await httpGetText(feed.url, {
         headers: {
           "User-Agent": "health.j172.tw-rss-ingestor/1.0",
           Accept: "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
         },
-        cache: "no-store",
-        signal: controller.signal,
+        timeoutMs: 10_000,
       });
 
-      const xml = await response.text();
-      clearTimeout(timeout);
-
-      if (!response.ok) {
+      if (response.status < 200 || response.status >= 300) {
         throw new Error(`Feed ${feed.code} HTTP ${response.status}`);
       }
 
-      return { status: response.status, xml };
+      return { status: response.status, xml: response.text };
     } catch (error) {
-      clearTimeout(timeout);
       lastError = error;
       if (attempt < 3) {
         await wait(400 * attempt);
