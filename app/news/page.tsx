@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { countNewsItems, listLatestNews } from "@/lib/server/news/queries";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 
 export const dynamic = "force-dynamic";
@@ -22,16 +23,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function NewsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  const { page: pageParam } = await searchParams;
+export default async function NewsPage({ searchParams }: { searchParams: Promise<{ page?: string; source?: string }> }) {
+  const { page: pageParam, source } = await searchParams;
   const requestedPage = Number(pageParam);
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+  const sourceName = source?.trim() || undefined;
 
   const [items, total] = await Promise.all([
-    listLatestNews(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE),
-    countNewsItems(),
+    listLatestNews(PAGE_SIZE, (currentPage - 1) * PAGE_SIZE, sourceName),
+    countNewsItems(sourceName),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const sourceLabel = sourceName ? resolveAuthorLabel({ dept_name: null, source_name: sourceName, feed_name: sourceName }) : null;
 
-  return <StabloNewsLayout items={items} variant="archive" pagination={{ currentPage, totalPages }} />;
+  return (
+    <StabloNewsLayout
+      items={items}
+      variant="archive"
+      pagination={{ currentPage, totalPages, sourceName }}
+      archiveTitle={sourceLabel ?? undefined}
+    />
+  );
 }

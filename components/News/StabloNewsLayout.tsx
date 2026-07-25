@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
+import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 
 type Variant = "home" | "archive";
 
@@ -88,10 +89,33 @@ const PostCard = ({ item, idx, titleClassName = "text-[18px]" }: { item: NewsLis
   </article>
 );
 
+const NavDropdown = ({ label, sources }: { label: string; sources: { sourceName: string; label: string }[] }) => (
+  <div className="group relative">
+    <button type="button" className="flex items-center gap-1 py-4 transition-colors hover:text-neutral-900">
+      {label}
+      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+      </svg>
+    </button>
+    <div className="invisible absolute left-0 top-full z-10 min-w-[10rem] -translate-y-1 rounded-none border border-neutral-200 bg-white opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+      {sources.map((source) => (
+        <Link
+          key={source.sourceName}
+          href={`/news?source=${encodeURIComponent(source.sourceName)}`}
+          className="block whitespace-nowrap px-4 py-2 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
+        >
+          {source.label}
+        </Link>
+      ))}
+    </div>
+  </div>
+);
+
 export const StabloHeader = () => (
   <header className="border-b border-neutral-200">
     <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
-      <Link href="/" className="text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900">
+      <Link href="/" className="flex items-center gap-2 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900">
+        <Image src="/images/logo/j172tw-health-logo.png" alt="j172tw Health" width={32} height={32} className="h-8 w-8" />
         j172tw Health
       </Link>
       <nav className="hidden items-center gap-6 text-sm font-medium text-neutral-500 md:flex">
@@ -101,6 +125,9 @@ export const StabloHeader = () => (
         <Link href="/news" className="transition-colors hover:text-neutral-900">
           News
         </Link>
+        {SOURCE_CATEGORIES.map((category) => (
+          <NavDropdown key={category.label} label={category.label} sources={category.sources} />
+        ))}
       </nav>
     </div>
   </header>
@@ -126,11 +153,18 @@ export const StabloFooter = () => (
 interface Pagination {
   currentPage: number;
   totalPages: number;
+  sourceName?: string;
 }
 
-const pageHref = (page: number): string => (page <= 1 ? "/news" : `/news?page=${page}`);
+const pageHref = (page: number, sourceName?: string): string => {
+  const params = new URLSearchParams();
+  if (page > 1) params.set("page", String(page));
+  if (sourceName) params.set("source", sourceName);
+  const query = params.toString();
+  return query ? `/news?${query}` : "/news";
+};
 
-const Pagination = ({ currentPage, totalPages }: Pagination) => {
+const Pagination = ({ currentPage, totalPages, sourceName }: Pagination) => {
   if (totalPages <= 1) return null;
 
   const prevDisabled = currentPage <= 1;
@@ -141,7 +175,7 @@ const Pagination = ({ currentPage, totalPages }: Pagination) => {
       {prevDisabled ? (
         <span className="cursor-not-allowed text-neutral-300">← 上一頁</span>
       ) : (
-        <Link href={pageHref(currentPage - 1)} className="transition-colors hover:text-neutral-900">
+        <Link href={pageHref(currentPage - 1, sourceName)} className="transition-colors hover:text-neutral-900">
           ← 上一頁
         </Link>
       )}
@@ -153,7 +187,7 @@ const Pagination = ({ currentPage, totalPages }: Pagination) => {
       {nextDisabled ? (
         <span className="cursor-not-allowed text-neutral-300">下一頁 →</span>
       ) : (
-        <Link href={pageHref(currentPage + 1)} className="transition-colors hover:text-neutral-900">
+        <Link href={pageHref(currentPage + 1, sourceName)} className="transition-colors hover:text-neutral-900">
           下一頁 →
         </Link>
       )}
@@ -165,10 +199,12 @@ export default function StabloNewsLayout({
   items,
   variant,
   pagination,
+  archiveTitle,
 }: {
   items: NewsListItem[];
   variant: Variant;
   pagination?: Pagination;
+  archiveTitle?: string;
 }) {
   const featured = items[0];
   const side = items.slice(1, 3);
@@ -226,17 +262,25 @@ export default function StabloNewsLayout({
         ) : (
           <>
             <section className="mb-10">
-              <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">News</h1>
-              <p className="mt-2 text-[16px] leading-6 text-neutral-800">See all posts we have ever written.</p>
+              <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">{archiveTitle ?? "News"}</h1>
+              <p className="mt-2 text-[16px] leading-6 text-neutral-800">
+                {archiveTitle ? `來自${archiveTitle}的新聞。` : "See all posts we have ever written."}
+              </p>
             </section>
 
-            <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {items.map((item, idx) => (
-                <PostCard key={item.id} item={item} idx={idx} />
-              ))}
-            </section>
+            {items.length === 0 ? (
+              <p className="py-16 text-center text-neutral-500">目前沒有符合的新聞。</p>
+            ) : (
+              <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                {items.map((item, idx) => (
+                  <PostCard key={item.id} item={item} idx={idx} />
+                ))}
+              </section>
+            )}
 
-            {pagination ? <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} /> : null}
+            {pagination ? (
+              <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} sourceName={pagination.sourceName} />
+            ) : null}
           </>
         )}
       </main>

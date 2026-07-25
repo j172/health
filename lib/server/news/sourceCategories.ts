@@ -1,0 +1,33 @@
+export interface SourceLink {
+  sourceName: string;
+  label: string;
+}
+
+export interface SourceCategory {
+  label: string;
+  sources: SourceLink[];
+}
+
+/** Groups source_name values for the nav dropdowns; labels match lib/server/news/sourceLabels.ts. */
+export const SOURCE_CATEGORIES: SourceCategory[] = [
+  {
+    label: "官方機構",
+    sources: [
+      { sourceName: "mohw", label: "衛生福利部" },
+      { sourceName: "hpa", label: "國民健康署" },
+      { sourceName: "cdc", label: "疾病管制署" },
+      { sourceName: "tfda", label: "食品藥物管理署" },
+      { sourceName: "nhi", label: "中央健康保險署" },
+    ],
+  },
+  {
+    label: "媒體／其他網站",
+    sources: [
+      { sourceName: "google_news", label: "Google 新聞" },
+      { sourceName: "ltn", label: "自由時報" },
+      { sourceName: "top1health", label: "華人健康網" },
+      { sourceName: "mamaclub", label: "媽媽經" },
+      { sourceName: "twstreetcorner", label: "巷仔口社會學" },
+    ],
+  },
+];

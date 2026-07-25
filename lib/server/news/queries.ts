@@ -31,7 +31,7 @@ export interface NewsAssetItem {
   sort_order: number;
 }
 
-export const listLatestNews = async (limit = 50, offset = 0): Promise<NewsListItem[]> =>
+export const listLatestNews = async (limit = 50, offset = 0, sourceName?: string): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -57,18 +57,22 @@ export const listLatestNews = async (limit = 50, offset = 0): Promise<NewsListIt
              c.contributor_name AS card_image_contributor
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
+      ${sourceName ? "WHERE n.source_name = ?" : ""}
       ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
       LIMIT ? OFFSET ?
       `,
-      [limit, offset],
+      sourceName ? [sourceName, limit, offset] : [limit, offset],
     );
 
     return rows as unknown as NewsListItem[];
   });
 
-export const countNewsItems = async (): Promise<number> =>
+export const countNewsItems = async (sourceName?: string): Promise<number> =>
   withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items`);
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM news_items ${sourceName ? "WHERE source_name = ?" : ""}`,
+      sourceName ? [sourceName] : [],
+    );
     return Number(rows[0]?.total ?? 0);
   });
 
