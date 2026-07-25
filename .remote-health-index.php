@@ -215,15 +215,14 @@ if (str_starts_with($path, '/__ops/')) {
     if ($path === '/__ops/pm2-logs') {
         header('Content-Type: text/plain; charset=utf-8');
         $lines = max(1, min(500, (int) ($_GET['lines'] ?? 200)));
-        foreach (['error', 'out'] as $stream) {
-            $logPath = "/home/tw123457/.pm2/logs/health-web-{$stream}.log";
-            echo "==== {$stream} ({$logPath}) ====\n";
-            if (is_file($logPath)) {
-                $cmd = 'tail -n ' . $lines . ' ' . escapeshellarg($logPath);
-                echo shell_exec($cmd) . "\n";
-            } else {
-                echo "No log file found.\n\n";
-            }
+        $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
+        echo "==== pm2 logs health-web --lines {$lines} --nostream ====\n";
+        echo shell_exec($pm2 . ' logs health-web --lines ' . $lines . ' --nostream 2>&1') . "\n";
+        echo "==== raw log files under ~/.pm2/logs matching health-web* ====\n";
+        echo shell_exec('ls -la /home/tw123457/.pm2/logs/ 2>&1 | grep health-web') . "\n";
+        foreach (glob('/home/tw123457/.pm2/logs/health-web*') as $logPath) {
+            echo "---- {$logPath} ----\n";
+            echo shell_exec('tail -n ' . $lines . ' ' . escapeshellarg($logPath)) . "\n";
         }
         exit;
     }
