@@ -1,13 +1,16 @@
-export type FeedCode = "16" | "17" | "18" | "101";
+export type FeedCode = "16" | "17" | "18" | "101" | "gnews" | "ltn" | "nhi";
 
 export interface FeedConfig {
   code: FeedCode;
   name: string;
   url: string;
+  sourceName: string;
+  /** Skip fetching/parsing the linked article page (e.g. aggregator links that redirect through an interstitial page instead of the real article). */
+  skipDetailFetch?: boolean;
 }
 
 export interface NormalizedRssItem {
-  sourceName: "mohw";
+  sourceName: string;
   feedCode: FeedCode;
   feedName: string;
   externalId: string;

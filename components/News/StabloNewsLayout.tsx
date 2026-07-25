@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { NewsListItem } from "@/lib/server/news/queries";
+import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 
 type Variant = "home" | "archive";
 
@@ -60,7 +61,7 @@ const excerpt = (value: string | null | undefined, max = 120): string => {
 
 const PostMeta = ({ item }: { item: NewsListItem }) => (
   <div className="mt-2.5 flex items-center gap-1.5 text-[14px] text-neutral-500">
-    <span>{item.dept_name || "衛生福利部"}</span>
+    <span>{resolveAuthorLabel(item)}</span>
     <span>•</span>
     <time>{toTaipei(item.published_at_utc)}</time>
   </div>

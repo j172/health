@@ -53,7 +53,7 @@ export const normalizeItem = (feed: FeedConfig, rawItem: Record<string, unknown>
   );
 
   return {
-    sourceName: "mohw",
+    sourceName: feed.sourceName,
     feedCode: feed.code,
     feedName: feed.name,
     externalId,

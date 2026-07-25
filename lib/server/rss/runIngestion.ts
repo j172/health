@@ -10,7 +10,13 @@ import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 
 const LOCK_NAME = "rss_ingestion_lock";
 
+const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
+
 const enrichItem = async (item: NormalizedRssItem): Promise<EnrichedRssItem> => {
+  if (FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch) {
+    return { ...item, detailHtml: null, detailText: null, assets: [] };
+  }
+
   try {
     const detail = await fetchDetailPage(item);
     return {

@@ -1,11 +1,29 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getNewsById, listNewsAssetsByNewsId } from "@/lib/server/news/queries";
+import { buildArticleJsonLd, buildArticleMetadata } from "@/lib/server/news/seo";
+import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const numericId = Number(id);
+  if (!Number.isInteger(numericId) || numericId <= 0) {
+    return {};
+  }
+
+  const news = await getNewsById(numericId);
+  if (!news) {
+    return {};
+  }
+
+  return buildArticleMetadata(news);
+}
 
 const toTaipei = (value: Date | null): string => {
   if (!value) return "-";
@@ -37,19 +55,29 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
   const hero = assets.find((asset) => asset.asset_type === "image" && /^https?:\/\//i.test(asset.url));
   const attachments = assets.filter((asset) => asset.asset_type === "attachment" && /^https?:\/\//i.test(asset.url));
   const articleHtml = news.detail_html || news.description_html || "<p>此則新聞目前沒有可顯示的完整內容。</p>";
+  const jsonLd = buildArticleJsonLd(news);
+  const authorLabel = resolveAuthorLabel(news);
 
   return (
     <div className="min-h-screen bg-white text-neutral-800">
+      {jsonLd.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
       <StabloHeader />
 
       <main>
+        <article>
         <header className="mx-auto max-w-screen-lg px-6 pb-8 pt-12 text-center sm:px-8 sm:pt-16 lg:pb-12 lg:pt-20">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">{news.feed_name}</p>
           <h1 className="mx-auto mt-5 max-w-4xl text-[2.1rem] font-semibold leading-[1.12] tracking-[-0.035em] text-neutral-900 sm:text-[3rem] lg:text-[3.75rem]">
             {news.title}
           </h1>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-neutral-500">
-            <span className="font-medium text-neutral-700">{news.dept_name || "衛生福利部"}</span>
+            <span className="font-medium text-neutral-700">{authorLabel}</span>
             <span aria-hidden="true">•</span>
             <time>{toTaipei(news.published_at_utc)}</time>
             <span aria-hidden="true">•</span>
@@ -97,10 +125,11 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
 
           <aside className="mt-8 bg-neutral-50 px-6 py-7 sm:px-8" aria-label="新聞來源">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-neutral-500">新聞來源</p>
-            <h2 className="mt-2 text-xl font-semibold text-neutral-900">{news.dept_name || "衛生福利部"}</h2>
-            <p className="mt-3 text-[15px] leading-7 text-neutral-600">本頁彙整自衛生福利部公開資訊，內容與附件以原始來源公告為準。</p>
+            <h2 className="mt-2 text-xl font-semibold text-neutral-900">{authorLabel}</h2>
+            <p className="mt-3 text-[15px] leading-7 text-neutral-600">本頁彙整自政府機關及新聞媒體之公開資訊，內容與附件以原始來源公告為準。</p>
           </aside>
         </div>
+        </article>
       </main>
 
       <StabloFooter />

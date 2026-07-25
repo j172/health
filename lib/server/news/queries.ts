@@ -3,6 +3,7 @@ import { withConnection } from "@/lib/server/db/mysql";
 
 export interface NewsListItem {
   id: number;
+  source_name: string;
   feed_code: string;
   feed_name: string;
   title: string;
@@ -34,7 +35,7 @@ export const listLatestNews = async (limit = 50): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT n.id, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html,
              COALESCE(
                (SELECT a.url
@@ -69,7 +70,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT n.id, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html, n.detail_html, n.detail_text,
              COALESCE(
                (SELECT a.url
