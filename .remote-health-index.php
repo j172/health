@@ -175,6 +175,22 @@ if (str_starts_with($path, '/__ops/')) {
         exit;
     }
 
+    if ($path === '/__ops/pm2-logs') {
+        header('Content-Type: text/plain; charset=utf-8');
+        $lines = max(1, min(500, (int) ($_GET['lines'] ?? 200)));
+        foreach (['error', 'out'] as $stream) {
+            $logPath = "/home/tw123457/.pm2/logs/health-web-{$stream}.log";
+            echo "==== {$stream} ({$logPath}) ====\n";
+            if (is_file($logPath)) {
+                $cmd = 'tail -n ' . $lines . ' ' . escapeshellarg($logPath);
+                echo shell_exec($cmd) . "\n";
+            } else {
+                echo "No log file found.\n\n";
+            }
+        }
+        exit;
+    }
+
     if ($path === '/__ops/apply-prebuilt-log') {
         header('Content-Type: text/plain; charset=utf-8');
         if (is_file($prebuiltLogFile)) {
