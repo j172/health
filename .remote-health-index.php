@@ -53,7 +53,7 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& SWAPPED=1 "
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
             . "&& (/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 delete health-web >> .apply-prebuilt.log 2>&1 || true) "
-            . "&& /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
+            . "&& setsid /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
             . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 30); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
             . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
             . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
@@ -180,6 +180,8 @@ if (str_starts_with($path, '/__ops/')) {
         $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
         echo "==== pm2 list ====\n";
         echo shell_exec($pm2 . ' list 2>&1') . "\n";
+        echo "==== pm2 describe health-web ====\n";
+        echo shell_exec($pm2 . ' describe health-web 2>&1') . "\n";
         echo "==== curl -v http://127.0.0.1:3000/news ====\n";
         echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
         echo "==== ss -tlnp (port listeners) ====\n";
