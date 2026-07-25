@@ -159,3 +159,22 @@ If you like the template, please star this repository to inspire the team to cre
 ```
 
 建議再搭配失敗通知（如 Telegram / Email / UptimeRobot webhook）。
+
+### VPS 快速部署（Node + PM2 + Nginx）
+
+專案已附部署資產：
+
+- `ecosystem.config.cjs`：PM2 app 設定
+- `deploy/nginx-health.conf`：Nginx 反向代理範例
+- `deploy/deploy-vps.sh`：部署腳本（pull/install/build/reload）
+- `deploy/cron-example.txt`：每小時排程樣板
+
+最小流程：
+
+1. 在 VPS 安裝 Node.js 20+、PM2、Nginx。
+2. 將專案 clone 至 `/var/www/health`。
+3. 設定 `/var/www/health/.env`（正式 MySQL 與 secret）。
+4. 執行：`bash deploy/deploy-vps.sh`。
+5. 將 `deploy/nginx-health.conf` 放到 Nginx sites-enabled，重載 Nginx。
+6. 用 certbot 申請 `health.j172.tw` SSL。
+7. 設定 crontab 參考 `deploy/cron-example.txt`。

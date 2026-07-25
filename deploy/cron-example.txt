@@ -1,0 +1,1 @@
+0 * * * * curl -sS -H "x-rss-sync-secret: REPLACE_WITH_RSS_SYNC_SECRET" https://health.j172.tw/api/internal/rss-sync >> /var/log/health-rss-sync.log 2>&1
