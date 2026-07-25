@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/server/config/env";
-import { invalidatePayloadHashesForFeeds } from "@/lib/server/news/reprocessFeeds";
+import { clearDetailContentForFeeds, invalidatePayloadHashesForFeeds } from "@/lib/server/news/reprocessFeeds";
 
 export const runtime = "nodejs";
 
@@ -13,10 +13,15 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { feedCodes?: unknown };
+    const body = (await request.json().catch(() => ({}))) as { feedCodes?: unknown; mode?: unknown };
     const feedCodes = Array.isArray(body.feedCodes) ? body.feedCodes.filter((c): c is string => typeof c === "string") : [];
     if (feedCodes.length === 0) {
       return NextResponse.json({ ok: false, error: "feedCodes must be a non-empty string array" }, { status: 400 });
+    }
+
+    if (body.mode === "clear-detail") {
+      const result = await clearDetailContentForFeeds(feedCodes);
+      return NextResponse.json({ ok: true, ...result });
     }
 
     const invalidated = await invalidatePayloadHashesForFeeds(feedCodes);
