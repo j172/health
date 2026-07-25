@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { env } from "@/lib/server/config/env";
-import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
+import { assignMissingNewsCardImages, clearPixabayApiCache } from "@/lib/server/news/cardImages";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -14,7 +14,13 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { limit?: unknown };
+    const body = (await request.json().catch(() => ({}))) as { limit?: unknown; clearCache?: unknown };
+
+    if (body.clearCache === true) {
+      const cleared = await clearPixabayApiCache();
+      return NextResponse.json({ ok: true, cleared });
+    }
+
     const limit = typeof body.limit === "number" ? body.limit : 10;
     const summary = await assignMissingNewsCardImages(limit);
     return NextResponse.json({ ok: true, summary });

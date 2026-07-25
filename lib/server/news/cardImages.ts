@@ -23,6 +23,20 @@ interface CacheRow extends RowDataPacket {
   response_json: string;
 }
 
+/**
+ * Deletes cached Pixabay search results. Cached candidate image URLs are
+ * signed/temporary and can expire well within the 24h cache TTL, at which
+ * point every download attempt fails "content failed validation" (the
+ * response is an expired-link page, not image bytes) even though Pixabay
+ * itself and our download code are both fine — evidenced by the same
+ * request succeeding immediately when re-fetched fresh.
+ */
+export const clearPixabayApiCache = async (): Promise<number> => {
+  const pool = getMysqlPool();
+  const [result] = await pool.query<ResultSetHeader>("DELETE FROM pixabay_api_cache");
+  return result.affectedRows;
+};
+
 export interface CardImageAssignmentSummary {
   assigned: number;
   skipped: number;

@@ -122,9 +122,6 @@ export const StabloHeader = () => (
         <Link href="/" className="transition-colors hover:text-neutral-900">
           Home
         </Link>
-        <Link href="/news" className="transition-colors hover:text-neutral-900">
-          News
-        </Link>
         {SOURCE_CATEGORIES.map((category) => (
           <NavDropdown key={category.label} label={category.label} sources={category.sources} />
         ))}
