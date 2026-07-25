@@ -1,4 +1,4 @@
-export type FeedCode = "16" | "17" | "18" | "101" | "2622" | "gnews" | "ltn" | "nhi" | "cdc" | "tfda";
+export type FeedCode = "16" | "17" | "18" | "101" | "2622" | "gnews" | "ltn" | "nhi" | "cdc" | "tfda" | "hpa";
 
 export interface FeedConfig {
   code: FeedCode;

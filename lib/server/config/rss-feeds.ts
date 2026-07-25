@@ -44,6 +44,12 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "tfda",
   },
   {
+    code: "hpa",
+    name: "國民健康署－本署新聞",
+    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=124",
+    sourceName: "hpa",
+  },
+  {
     code: "gnews",
     name: "Google 新聞－台灣健康專區",
     url: "https://news.google.com/rss/search?q=%E5%81%A5%E5%BA%B7+location:taiwan&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
