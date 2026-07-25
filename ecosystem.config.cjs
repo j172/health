@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: 'health-web',
-      cwd: '/var/www/health',
+      cwd: '/home/tw123457/health_app',
       script: 'npm',
       args: 'start',
       instances: 1,
