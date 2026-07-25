@@ -11,7 +11,18 @@ import { withConnection } from "@/lib/server/db/mysql";
  * no way to tell chrome images from content. Once removed, the affected
  * articles become eligible for a Pixabay-assigned card image again.
  */
-const CHROME_IMAGE_PATTERNS = ["%logo%", "%favicon%", "%icon%", "%egov%", "%/home.svg", "%/aa.png", "%/aa.gif"];
+const CHROME_IMAGE_PATTERNS = [
+  "%logo%",
+  "%favicon%",
+  "%icon%",
+  "%egov%",
+  "%/home.svg",
+  "%/aa.png",
+  "%/aa.gif",
+  "%/assets/images/x.png", // ltn.com.tw's "no photo" placeholder
+  "%/images/title/%", // fda.gov.tw's page-title banner image
+  "%/images/qr%", // hpa.gov.tw's QR-code widget
+];
 
 export const deleteChromeImageAssets = async (): Promise<number> =>
   withConnection(async (conn) => {
