@@ -77,6 +77,11 @@ jobs:
             --upload-file ".pixabay.env" \
             --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/.pixabay.env"
 
+          curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
+            --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
+            --upload-file "ecosystem.config.cjs" \
+            --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/ecosystem.config.cjs"
+
           for HANDLER_URL in \
             "ftp://${FTP_SERVER_CLEAN}:21/index.php" \
             "ftp://${FTP_SERVER_CLEAN}:21/health.j172.tw/index.php"

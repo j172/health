@@ -6,6 +6,7 @@ import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
 import { parseFeedXml } from "@/lib/server/rss/parseRss";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { persistItems } from "@/lib/server/rss/persistItems";
+import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 
 const LOCK_NAME = "rss_ingestion_lock";
@@ -108,14 +109,24 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       }
     }
 
+    const existingHashes = await getExistingPayloadHashes(normalizedItems);
+    let skippedUnchanged = 0;
+
     const enrichedItems: EnrichedRssItem[] = [];
     for (const item of normalizedItems) {
+      if (existingHashes.get(itemKey(item)) === item.payloadHash) {
+        // Already stored with an identical payload — skip the expensive detail-page
+        // fetch/parse entirely instead of redoing it on every run just to no-op.
+        skippedUnchanged += 1;
+        continue;
+      }
       // eslint-disable-next-line no-await-in-loop
       const enriched = await enrichItem(item);
       enrichedItems.push(enriched);
     }
 
     const persisted = await persistItems(enrichedItems);
+    persisted.unchanged += skippedUnchanged;
     try {
       await assignMissingNewsCardImages(3);
     } catch (error) {
