@@ -87,6 +87,10 @@ export const RSS_FEEDS: FeedConfig[] = [
     name: "自由時報－生活與健康新聞",
     url: "https://news.ltn.com.tw/rss/life.xml",
     sourceName: "ltn",
+    // Detail-page scraping kept pulling in ltn.com.tw's own <head>
+    // (title/base/meta) as if it were article content; use the RSS feed's
+    // own description instead of fetching/parsing the article page.
+    skipDetailFetch: true,
   },
   {
     code: "nhi",
@@ -99,6 +103,8 @@ export const RSS_FEEDS: FeedConfig[] = [
     name: "華人健康網",
     url: "https://www.top1health.com/Rss",
     sourceName: "top1health",
+    // Same detail-page scraping issue as ltn.com.tw; use the RSS description instead.
+    skipDetailFetch: true,
   },
   {
     code: "mamaclub",
