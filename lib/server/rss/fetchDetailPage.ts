@@ -46,6 +46,11 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
   // <article>/<main>/#maincontent, e.g. cdc.gov.tw) doesn't pull in site-chrome
   // images like the header logo as if they were part of the article.
   $("header,nav,footer").remove();
+  // Some sources (e.g. ltn.com.tw) have a stray <base>/<title> literally inside
+  // <body>. Rendered later via dangerouslySetInnerHTML, the browser hoists
+  // <title> into our page's real <head> (clobbering our own title) and a
+  // <base> tag silently rewrites every relative URL on the whole page.
+  $("title,base,head,meta").remove();
 
   const scopedContainer =
     $("article").first().length > 0
