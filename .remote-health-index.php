@@ -53,7 +53,7 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& SWAPPED=1 "
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
             . "&& (/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .apply-prebuilt.log 2>&1 || /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1) "
-            . "&& { PROBE_OK=0; for ATTEMPT in 1 2 3 4 5 6 7 8 9 10; do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
+            . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 30); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
             . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
             . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
             . "&& curl -fsS --max-time 10 \"http://127.0.0.1:3000/_next/static/\$STATIC_REL\" | head -c 1 | grep -vq '<' "
