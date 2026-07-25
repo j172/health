@@ -6,6 +6,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: FTP_SERVER
     env:
       MYSQL_HOST: ${{ secrets.MYSQL_HOST != '' && secrets.MYSQL_HOST || '127.0.0.1' }}
       MYSQL_PORT: ${{ secrets.MYSQL_PORT != '' && secrets.MYSQL_PORT || '3306' }}
