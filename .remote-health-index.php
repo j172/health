@@ -182,6 +182,10 @@ if (str_starts_with($path, '/__ops/')) {
         echo shell_exec($pm2 . ' list 2>&1') . "\n";
         echo "==== curl -v http://127.0.0.1:3000/news ====\n";
         echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
+        echo "==== ss -tlnp (port listeners) ====\n";
+        echo shell_exec('ss -tlnp 2>&1 || netstat -tlnp 2>&1') . "\n";
+        echo "==== node/next processes ====\n";
+        echo shell_exec("ps -eo pid,ppid,etime,cmd 2>&1 | grep -i 'next\\|node' | grep -v grep") . "\n";
         exit;
     }
 
