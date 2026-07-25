@@ -57,6 +57,10 @@ export interface EnrichedRssItem extends NormalizedRssItem {
   detailHtml: string | null;
   detailText: string | null;
   assets: NewsAsset[];
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string;
+  geoSummary: string;
 }
 
 export interface FeedFetchResult {

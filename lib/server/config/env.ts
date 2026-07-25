@@ -23,4 +23,8 @@ export const env = {
   rssSyncSecret: mustGet("RSS_SYNC_SECRET"),
   rssSyncAdminSecret: mustGet("RSS_SYNC_ADMIN_SECRET"),
   pixabayApiKey: process.env.PIXABAY_API_KEY?.trim() || null,
+  cloudflare: {
+    accountId: process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || null,
+    apiToken: process.env.CLOUDFLARE_API_TOKEN?.trim() || null,
+  },
 };

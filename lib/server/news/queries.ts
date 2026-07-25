@@ -21,6 +21,10 @@ export interface NewsDetailItem extends NewsListItem {
   description_html: string | null;
   detail_html: string | null;
   detail_text: string | null;
+  meta_title: string | null;
+  meta_description: string | null;
+  keywords: string | null;
+  geo_summary: string | null;
 }
 
 export interface NewsAssetItem {
@@ -82,6 +86,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html, n.detail_html, n.detail_text,
+             n.meta_title, n.meta_description, n.keywords, n.geo_summary,
              COALESCE(
                (SELECT a.url
                 FROM news_assets a

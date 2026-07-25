@@ -19,6 +19,7 @@ const toAbsoluteUrl = (url: string | null, baseUrl: string): string | undefined 
 };
 
 export const buildArticleDescription = (news: NewsDetailItem, maxLength = 155): string => {
+  if (news.meta_description?.trim()) return news.meta_description.trim();
   const source = news.detail_text?.trim() || stripHtml(news.description_html) || news.title;
   const normalized = source.replace(/\s+/g, " ").trim();
   if (normalized.length <= maxLength) return normalized;
@@ -31,13 +32,14 @@ export const buildArticleMetadata = (news: NewsDetailItem): Metadata => {
   const description = buildArticleDescription(news);
   const imageUrl = toAbsoluteUrl(news.card_image_url, baseUrl);
   const publishedTime = news.published_at_utc ? new Date(news.published_at_utc).toISOString() : undefined;
+  const keywords = news.keywords?.trim()
+    ? news.keywords.split(",").map((value) => value.trim()).filter(Boolean)
+    : [news.feed_name, news.dept_name ?? undefined, "健康新聞", "衛生福利部"].filter((value): value is string => Boolean(value));
 
   return {
-    title: `${news.title} | ${SITE_NAME}`,
+    title: news.meta_title?.trim() || `${news.title} | ${SITE_NAME}`,
     description,
-    keywords: [news.feed_name, news.dept_name ?? undefined, "健康新聞", "衛生福利部"].filter(
-      (value): value is string => Boolean(value),
-    ),
+    keywords,
     alternates: { canonical: url },
     robots: { index: true, follow: true },
     openGraph: {
@@ -74,6 +76,10 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
     "@type": "NewsArticle",
     headline: news.title,
     description,
+    // A self-contained, citable factual summary for AI search engines/LLMs
+    // (Generative Engine Optimization) — generated once at ingestion time,
+    // distinct from `description`'s job of enticing a human click.
+    abstract: news.geo_summary?.trim() || description,
     datePublished: publishedTime,
     dateModified: publishedTime,
     inLanguage: "zh-TW",

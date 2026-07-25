@@ -65,8 +65,9 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
           title, description_html, description_text, detail_html, detail_text,
           dept_name, category_raw, display_type, published_at_utc,
           public_begin_at_taipei, public_end_at_taipei,
+          meta_title, meta_description, keywords, geo_summary,
           payload_hash, first_seen_at_utc, last_seen_at_utc, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           id = LAST_INSERT_ID(id),
           feed_name = VALUES(feed_name),
@@ -83,6 +84,10 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
           published_at_utc = VALUES(published_at_utc),
           public_begin_at_taipei = VALUES(public_begin_at_taipei),
           public_end_at_taipei = VALUES(public_end_at_taipei),
+          meta_title = VALUES(meta_title),
+          meta_description = VALUES(meta_description),
+          keywords = VALUES(keywords),
+          geo_summary = VALUES(geo_summary),
           payload_hash = VALUES(payload_hash),
           last_seen_at_utc = VALUES(last_seen_at_utc),
           updated_at = VALUES(updated_at)
@@ -105,6 +110,10 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
           dateToSql(item.publishedAtUtc),
           dateToSql(item.publicBeginAtTaipei),
           dateToSql(item.publicEndAtTaipei),
+          item.metaTitle,
+          item.metaDescription,
+          item.keywords,
+          item.geoSummary,
           item.payloadHash,
           now,
           now,

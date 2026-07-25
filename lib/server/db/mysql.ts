@@ -38,6 +38,15 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.pixabayApiCache);
   await p.query(TABLE_DDL.ingestRuns);
   await p.query(TABLE_DDL.ingestErrors);
+  // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
+  // table, so newly-added columns need an explicit migration here.
+  await p.query(`
+    ALTER TABLE news_items
+      ADD COLUMN IF NOT EXISTS meta_title VARCHAR(255) NULL AFTER display_type,
+      ADD COLUMN IF NOT EXISTS meta_description VARCHAR(500) NULL AFTER meta_title,
+      ADD COLUMN IF NOT EXISTS keywords VARCHAR(500) NULL AFTER meta_description,
+      ADD COLUMN IF NOT EXISTS geo_summary TEXT NULL AFTER keywords
+  `);
   schemaReady = true;
 };
 

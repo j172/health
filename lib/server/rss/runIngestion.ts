@@ -8,32 +8,37 @@ import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
+import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 
 const LOCK_NAME = "rss_ingestion_lock";
 
 const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
 
 const enrichItem = async (item: NormalizedRssItem): Promise<EnrichedRssItem> => {
-  if (FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch) {
-    return { ...item, detailHtml: null, detailText: null, assets: [] };
-  }
+  const detail = FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch
+    ? { detailHtml: null, detailText: null, assets: [] }
+    : await fetchDetailPage(item).catch(() => ({ detailHtml: null, detailText: null, assets: [] }));
 
-  try {
-    const detail = await fetchDetailPage(item);
-    return {
-      ...item,
-      detailHtml: detail.detailHtml,
-      detailText: detail.detailText,
-      assets: detail.assets,
-    };
-  } catch {
-    return {
-      ...item,
-      detailHtml: null,
-      detailText: null,
-      assets: [],
-    };
-  }
+  const seo = await generateSeoMetadataWithAi({
+    title: item.title,
+    descriptionText: item.descriptionText,
+    detailText: detail.detailText,
+    feedName: item.feedName,
+    deptName: item.deptName,
+    sourceName: item.sourceName,
+    publishedAtUtc: item.publishedAtUtc,
+  });
+
+  return {
+    ...item,
+    detailHtml: detail.detailHtml,
+    detailText: detail.detailText,
+    assets: detail.assets,
+    metaTitle: seo.metaTitle,
+    metaDescription: seo.metaDescription,
+    keywords: seo.keywords,
+    geoSummary: seo.geoSummary,
+  };
 };
 
 export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual"): Promise<IngestionSummary> => {
