@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getNewsById, listNewsAssetsByNewsId } from "@/lib/server/news/queries";
+import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -29,37 +30,38 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
   const assets = await listNewsAssetsByNewsId(news.id);
 
   return (
-    <section className="pt-28 pb-16">
-      <div className="container mx-auto max-w-4xl px-4">
-        <Link href="/news" className="mb-6 inline-block text-sm text-primary hover:underline">
-          ← 回新聞列表
+    <div className="min-h-screen bg-white text-neutral-800">
+      <StabloHeader />
+
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+        <Link href="/news" className="inline-flex items-center text-sm font-normal text-neutral-500 transition-colors hover:text-neutral-800">
+          ← Back to Archive
         </Link>
 
-        <h1 className="mb-4 text-3xl font-bold text-white">{news.title}</h1>
+        <p className="mt-8 text-[14px] font-medium text-neutral-500">{news.feed_name}</p>
+        <h1 className="mb-3 mt-3 text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">{news.title}</h1>
 
-        <div className="mb-8 space-y-1 text-sm text-gray-300">
-          <p>類別：{news.feed_name}</p>
-          <p>單位：{news.dept_name || "-"}</p>
-          <p>發布時間：{toTaipei(news.published_at_utc)}</p>
-          <p>
-            原始連結：
-            <a href={news.canonical_url} target="_blank" rel="noreferrer noopener" className="text-primary hover:underline">
-              {news.canonical_url}
-            </a>
-          </p>
+        <div className="mt-5 flex flex-wrap items-center gap-2 text-[14px] text-neutral-500">
+          <span>{news.dept_name || "衛生福利部"}</span>
+          <span>•</span>
+          <time>{toTaipei(news.published_at_utc)}</time>
+          <span>•</span>
+          <a href={news.canonical_url} target="_blank" rel="noreferrer noopener" className="underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-700">
+            原始來源
+          </a>
         </div>
 
-        <article className="prose prose-invert max-w-none rounded-lg border border-white/10 bg-white/5 p-6">
+        <article className="prose prose-neutral mt-10 max-w-none prose-headings:tracking-tight prose-p:text-[16px] prose-p:leading-7 prose-a:text-neutral-800">
           <div dangerouslySetInnerHTML={{ __html: news.detail_html || news.description_html || "<p>無可用內容</p>" }} />
         </article>
 
         {assets.length > 0 ? (
-          <section className="mt-8 rounded-lg border border-white/10 bg-white/5 p-6">
-            <h2 className="mb-3 text-xl font-semibold text-white">附件 / 圖片</h2>
-            <ul className="space-y-2 text-sm">
+          <section className="mt-12 rounded-none border border-neutral-200 p-6">
+            <h2 className="mb-4 text-xl font-semibold">附件 / 圖片</h2>
+            <ul className="space-y-2 text-sm text-neutral-700">
               {assets.map((asset) => (
                 <li key={asset.id}>
-                  <a href={asset.url} target="_blank" rel="noreferrer noopener" className="text-primary hover:underline">
+                  <a href={asset.url} target="_blank" rel="noreferrer noopener" className="underline decoration-neutral-300 underline-offset-4 transition-colors hover:decoration-neutral-700">
                     [{asset.asset_type}] {asset.title || asset.url}
                   </a>
                 </li>
@@ -67,7 +69,9 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
             </ul>
           </section>
         ) : null}
-      </div>
-    </section>
+      </main>
+
+      <StabloFooter />
+    </div>
   );
 }

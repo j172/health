@@ -2,6 +2,7 @@
 
 const nextConfig = {
   reactStrictMode: true,
+  distDir: ".next3",
   images: {
     remotePatterns: [
       {

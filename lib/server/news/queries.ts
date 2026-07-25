@@ -9,6 +9,7 @@ export interface NewsListItem {
   dept_name: string | null;
   published_at_utc: Date | null;
   canonical_url: string;
+  description_html: string | null;
 }
 
 export interface NewsDetailItem extends NewsListItem {
@@ -29,7 +30,7 @@ export const listLatestNews = async (limit = 50): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT id, feed_code, feed_name, title, dept_name, published_at_utc, canonical_url
+      SELECT id, feed_code, feed_name, title, dept_name, published_at_utc, canonical_url, description_html
       FROM news_items
       ORDER BY COALESCE(published_at_utc, created_at) DESC
       LIMIT ?
