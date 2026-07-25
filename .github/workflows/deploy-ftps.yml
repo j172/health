@@ -10,8 +10,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify artifact exists
-        run: test -f .prebuilt-next3.tgz
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build
+
+      - name: Package prebuilt bundle
+        run: |
+          rm -rf .next3
+          cp -a .next .next3
+          tar -czf .prebuilt-next3.tgz .next3
 
       - name: Upload prebuilt bundle to server (FTPS)
         env:
