@@ -24,7 +24,16 @@ const CardImage = ({ item, fallbackIndex, sizes }: { item: NewsListItem; fallbac
     );
   }
 
-  return <Image src={source} alt={item.title} fill className={imageClassName} sizes={sizes} />;
+  return (
+    <Image
+      src={source}
+      alt={item.title}
+      fill
+      className={imageClassName}
+      sizes={sizes}
+      unoptimized={source.startsWith("/images/news/pixabay/")}
+    />
+  );
 };
 
 const toTaipei = (value: Date | null): string => {

@@ -190,13 +190,13 @@ jobs:
             | sed -E 's/^src="([^"]+)"$/\1/' \
             | sort -u > "$TMP_DIR/card-images.txt" || true
 
-          if [ -s "$TMP_DIR/card-images.txt" ]; then
-            while IFS= read -r IMAGE; do
-              curl --fail --show-error --silent --location \
-                --dump-header "$TMP_DIR/image-headers.txt" \
-                "https://health.j172.tw$IMAGE" \
-                --output "$TMP_DIR/card-image"
-              grep -Eiq '^content-type: image/(jpeg|png|webp)' "$TMP_DIR/image-headers.txt"
-              test -s "$TMP_DIR/card-image"
-            done < "$TMP_DIR/card-images.txt"
-          fi
+          test -s "$TMP_DIR/card-images.txt"
+
+          while IFS= read -r IMAGE; do
+            curl --fail --show-error --silent --location \
+              --dump-header "$TMP_DIR/image-headers.txt" \
+              "https://health.j172.tw$IMAGE" \
+              --output "$TMP_DIR/card-image"
+            grep -Eiq '^content-type: image/(jpeg|png|webp)' "$TMP_DIR/image-headers.txt"
+            test -s "$TMP_DIR/card-image"
+          done < "$TMP_DIR/card-images.txt"
