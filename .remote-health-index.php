@@ -183,9 +183,30 @@ if (str_starts_with($path, '/__ops/')) {
         echo "==== curl -v http://127.0.0.1:3000/news ====\n";
         echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
         echo "==== ss -tlnp (port listeners) ====\n";
-        echo shell_exec('ss -tlnp 2>&1 || netstat -tlnp 2>&1') . "\n";
-        echo "==== node/next processes ====\n";
-        echo shell_exec("ps -eo pid,ppid,etime,cmd 2>&1 | grep -i 'next\\|node' | grep -v grep") . "\n";
+        echo shell_exec('ss -tlnp 2>&1') . "\n";
+        echo shell_exec('netstat -tlnp 2>&1') . "\n";
+        echo "==== node/next processes (ps) ====\n";
+        echo shell_exec('ps aux 2>&1') . "\n";
+        echo "==== /proc/net/tcp LISTEN ports (local, decoded) ====\n";
+        $tcp = @file('/proc/net/tcp');
+        if ($tcp) {
+            foreach ($tcp as $i => $line) {
+                if ($i === 0) continue;
+                $cols = preg_split('/\s+/', trim($line));
+                $localAddr = $cols[1] ?? '';
+                $state = $cols[3] ?? '';
+                if ($state !== '0A') continue;
+                [$hexIp, $hexPort] = explode(':', $localAddr);
+                $port = hexdec($hexPort);
+                echo "port {$port} (state LISTEN)\n";
+            }
+        } else {
+            echo "Could not read /proc/net/tcp\n";
+        }
+        echo "==== fsockopen 127.0.0.1:3000 from PHP ====\n";
+        $fp = @fsockopen('127.0.0.1', 3000, $errno, $errstr, 3);
+        echo $fp ? "connected\n" : "failed: {$errno} {$errstr}\n";
+        if ($fp) fclose($fp);
         exit;
     }
 
