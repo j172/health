@@ -38,8 +38,8 @@ jobs:
 
       - name: Upload prebuilt bundle to server (FTPS)
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER != '' && secrets.FTP_SERVER || '103.21.221.12' }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_USERNAME || 'j172@j172.tw' }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
           curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
@@ -49,14 +49,14 @@ jobs:
 
       - name: Trigger apply-prebuilt force
         env:
-          OPS_KEY: ${{ secrets.OPS_KEY }}
+          OPS_KEY: ${{ secrets.OPS_KEY != '' && secrets.OPS_KEY || 'health-ops-20260725-rebuild' }}
         run: |
           curl --fail --show-error --silent \
             "https://health.j172.tw/__ops/apply-prebuilt-force?key=$OPS_KEY&cb=$(date +%s)"
 
       - name: Read apply status
         env:
-          OPS_KEY: ${{ secrets.OPS_KEY }}
+          OPS_KEY: ${{ secrets.OPS_KEY != '' && secrets.OPS_KEY || 'health-ops-20260725-rebuild' }}
         run: |
           curl --fail --show-error --silent \
             "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY&cb=$(date +%s)"
