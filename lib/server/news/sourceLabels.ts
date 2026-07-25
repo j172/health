@@ -6,6 +6,8 @@ const SOURCE_LABELS: Record<string, string> = {
   cdc: "疾病管制署",
   tfda: "食品藥物管理署",
   hpa: "國民健康署",
+  top1health: "華人健康網",
+  mamaclub: "媽媽經",
 };
 
 export interface SourceLabelInput {

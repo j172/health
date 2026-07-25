@@ -94,4 +94,16 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://www.nhi.gov.tw/ch/rss-3255-1.xml",
     sourceName: "nhi",
   },
+  {
+    code: "top1health",
+    name: "華人健康網",
+    url: "https://www.top1health.com/Rss",
+    sourceName: "top1health",
+  },
+  {
+    code: "mamaclub",
+    name: "媽媽經",
+    url: "https://mamaclub.com/feed/",
+    sourceName: "mamaclub",
+  },
 ];

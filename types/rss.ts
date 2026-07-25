@@ -13,7 +13,9 @@ export type FeedCode =
   | "hpa_announcement"
   | "hpa_activity"
   | "hpa_rumor"
-  | "hpa_clarify";
+  | "top1health"
+  | "hpa_clarify"
+  | "mamaclub";
 
 export interface FeedConfig {
   code: FeedCode;
