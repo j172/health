@@ -73,5 +73,14 @@ jobs:
         env:
           OPS_KEY: ${{ secrets.OPS_KEY != '' && secrets.OPS_KEY || 'health-ops-20260725-rebuild' }}
         run: |
-          curl --fail --show-error --silent \
-            "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY&cb=$(date +%s)"
+          set -euo pipefail
+
+          STATUS="$(curl --fail --show-error --silent \
+            "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY&cb=$(date +%s)")"
+
+          echo "$STATUS"
+
+          if printf '%s' "$STATUS" | grep -Eiq '\[FAIL|FAIL-FORCE|force-fail|apply-fail'; then
+            echo "apply-prebuilt status indicates failure"
+            exit 1
+          fi
