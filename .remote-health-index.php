@@ -3,6 +3,10 @@ $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
+if (str_starts_with($path, '/api/admin/') || str_starts_with($path, '/api/internal/')) {
+    @set_time_limit(290);
+}
+
 $opsKey = 'health-ops-20260725-rebuild';
 if (str_starts_with($path, '/__ops/')) {
     if (($_GET['key'] ?? '') !== $opsKey) {
@@ -544,6 +548,7 @@ $headers[] = 'X-Forwarded-Host: ' . ($_SERVER['HTTP_HOST'] ?? 'health.j172.tw');
 $headers[] = 'X-Forwarded-Proto: https';
 $headers[] = 'X-Forwarded-For: ' . ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
 $body = file_get_contents('php://input');
+$isLongRunningApi = str_starts_with($path, '/api/admin/') || str_starts_with($path, '/api/internal/');
 $ch = curl_init($target);
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
@@ -553,7 +558,7 @@ curl_setopt_array($ch, [
     CURLOPT_HTTPHEADER => $headers,
     CURLOPT_POSTFIELDS => in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']) ? $body : null,
     CURLOPT_ENCODING => '',
-    CURLOPT_TIMEOUT => 30,
+    CURLOPT_TIMEOUT => $isLongRunningApi ? 280 : 30,
 ]);
 $response = curl_exec($ch);
 if ($response === false) {
