@@ -3,8 +3,9 @@ module.exports = {
     {
       name: 'health-web',
       cwd: '/home/tw123457/health_app',
-      script: 'npm',
+      script: 'node_modules/next/dist/bin/next',
       args: 'start',
+      interpreter: '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node',
       instances: 1,
       exec_mode: 'fork',
       env: {
