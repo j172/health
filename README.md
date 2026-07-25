@@ -102,3 +102,60 @@ If you like the template, please star this repository to inspire the team to cre
 
 - Upgraded to Next.js 15
 - Update framer-motion to v12.0.6 for React 19 support.
+
+---
+
+## Health 專案擴充（MOHW RSS → MySQL）
+
+這個專案已新增後端匯入流程：
+
+- 每小時抓取 4 條 RSS
+    - `https://www.mohw.gov.tw/rss-16-1.html`
+    - `https://www.mohw.gov.tw/rss-17-1.html`
+    - `https://www.mohw.gov.tw/rss-18-1.html`
+    - `https://www.mohw.gov.tw/rss-101-1.html`
+- 解析 RSS 後，再抓每篇詳細頁全文與附件/圖片
+- 入庫 MySQL（自動建立 `news_items`、`news_assets`、`ingest_runs`、`ingest_errors`）
+
+### 需要的環境變數
+
+請設定根目錄 `.env`：
+
+- `MYSQL_HOST`
+- `MYSQL_PORT`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `MYSQL_DATABASE`
+- `MYSQL_SSL`
+- `RSS_SYNC_SECRET`（給排程端點）
+- `RSS_SYNC_ADMIN_SECRET`（給管理端手動觸發）
+- `APP_BASE_URL`
+
+### API 端點
+
+- `GET /api/internal/rss-sync`
+    - Header: `x-rss-sync-secret: <RSS_SYNC_SECRET>`
+    - 用途：每小時排程呼叫
+
+- `POST /api/admin/rss-sync`
+    - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
+    - 用途：手動重跑
+
+- `GET /api/admin/ingestion-runs`
+    - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
+    - 用途：查看最近 20 次匯入紀錄
+
+### 前台頁面
+
+- `GET /news`：新聞列表
+- `GET /news/[id]`：新聞詳情（含附件/圖片連結）
+
+### Linux Cron 範例（每小時）
+
+在 VPS 設定 crontab，例如：
+
+```bash
+0 * * * * curl -sS -H "x-rss-sync-secret: YOUR_SECRET" https://health.j172.tw/api/internal/rss-sync >/var/log/health-rss-sync.log 2>&1
+```
+
+建議再搭配失敗通知（如 Telegram / Email / UptimeRobot webhook）。
