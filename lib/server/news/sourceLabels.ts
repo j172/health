@@ -3,6 +3,8 @@ const SOURCE_LABELS: Record<string, string> = {
   google_news: "Google 新聞",
   ltn: "自由時報",
   nhi: "中央健康保險署",
+  cdc: "疾病管制署",
+  tfda: "食品藥物管理署",
 };
 
 export interface SourceLabelInput {

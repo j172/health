@@ -99,7 +99,7 @@ export const StabloHeader = () => (
           Home
         </Link>
         <Link href="/news" className="transition-colors hover:text-neutral-900">
-          Archive
+          News
         </Link>
       </nav>
     </div>
@@ -116,7 +116,7 @@ export const StabloFooter = () => (
         </Link>
         <span>·</span>
         <Link href="/news" className="transition-colors hover:text-neutral-800">
-          Archive
+          News
         </Link>
       </div>
     </div>
@@ -180,7 +180,7 @@ export default function StabloNewsLayout({ items, variant }: { items: NewsListIt
         ) : (
           <>
             <section className="mb-10">
-              <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">Archive</h1>
+              <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">News</h1>
               <p className="mt-2 text-[16px] leading-6 text-neutral-800">See all posts we have ever written.</p>
             </section>
 

@@ -26,6 +26,24 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "mohw",
   },
   {
+    code: "2622",
+    name: "最新消息",
+    url: "https://www.mohw.gov.tw/rss-2622-1.html",
+    sourceName: "mohw",
+  },
+  {
+    code: "cdc",
+    name: "疾病管制署－新聞稿",
+    url: "https://www.cdc.gov.tw/RSS/RssXml/Hh094B49-DRwe2RR4eFfrQ?type=1",
+    sourceName: "cdc",
+  },
+  {
+    code: "tfda",
+    name: "食品藥物管理署－本署公告",
+    url: "https://www.fda.gov.tw/tc/rssAnnouncement.ashx",
+    sourceName: "tfda",
+  },
+  {
     code: "gnews",
     name: "Google 新聞－台灣健康專區",
     url: "https://news.google.com/rss/search?q=%E5%81%A5%E5%BA%B7+location:taiwan&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
