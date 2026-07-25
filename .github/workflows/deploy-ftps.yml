@@ -33,8 +33,7 @@ jobs:
 
       - name: Package prebuilt bundle
         run: |
-          rm -rf .next3
-          cp -a .next .next3
+          test -d .next3
           tar -czf .prebuilt-next3.tgz .next3
 
       - name: Upload prebuilt bundle to server (FTPS)
