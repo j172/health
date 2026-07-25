@@ -175,6 +175,16 @@ if (str_starts_with($path, '/__ops/')) {
         exit;
     }
 
+    if ($path === '/__ops/pm2-status') {
+        header('Content-Type: text/plain; charset=utf-8');
+        $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
+        echo "==== pm2 list ====\n";
+        echo shell_exec($pm2 . ' list 2>&1') . "\n";
+        echo "==== curl -v http://127.0.0.1:3000/news ====\n";
+        echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
+        exit;
+    }
+
     if ($path === '/__ops/pm2-logs') {
         header('Content-Type: text/plain; charset=utf-8');
         $lines = max(1, min(500, (int) ($_GET['lines'] ?? 200)));
