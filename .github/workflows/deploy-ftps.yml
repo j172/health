@@ -1,0 +1,39 @@
+name: Deploy prebuilt via FTPS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify artifact exists
+        run: test -f .prebuilt-next3.tgz
+
+      - name: Upload prebuilt bundle to server (FTPS)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
+            --user "$FTP_USERNAME:$FTP_PASSWORD" \
+            --upload-file ".prebuilt-next3.tgz" \
+            "ftp://$FTP_SERVER:21/health_app/.prebuilt-next3.tgz"
+
+      - name: Trigger apply-prebuilt force
+        env:
+          OPS_KEY: ${{ secrets.OPS_KEY }}
+        run: |
+          curl --fail --show-error --silent \
+            "https://health.j172.tw/__ops/apply-prebuilt-force?key=$OPS_KEY&cb=$(date +%s)"
+
+      - name: Read apply status
+        env:
+          OPS_KEY: ${{ secrets.OPS_KEY }}
+        run: |
+          curl --fail --show-error --silent \
+            "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY&cb=$(date +%s)"
