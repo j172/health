@@ -39,13 +39,16 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& mkdir -p public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
             . "&& chmod u+rwx public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
             . "&& test -s .env "
-            . "&& test -s .pixabay.env "
-            . "&& cp .env .env.before-pixabay "
-            . "&& grep -v -e '^PIXABAY_API_KEY=' -e '^MYSQL_PASSWORD=' .env > .env.pixabay-next "
+            . "&& { if [ -s .pixabay.env ]; then "
+            . "cp .env .env.before-pixabay "
+            . "&& awk -F= '{print \"^\" \$1 \"=\"}' .pixabay.env > .pixabay.env.keys "
+            . "&& grep -vf .pixabay.env.keys .env > .env.pixabay-next "
+            . "&& rm -f .pixabay.env.keys "
             . "&& cat .pixabay.env >> .env.pixabay-next "
             . "&& chmod 600 .env.pixabay-next "
             . "&& mv .env.pixabay-next .env "
-            . "&& rm -f .pixabay.env "
+            . "&& rm -f .pixabay.env; "
+            . "fi; } "
             . "&& rm -rf .next3_previous >> .apply-prebuilt.log 2>&1 "
             . "&& { if [ -d .next3 ]; then mv .next3 .next3_previous; fi; } "
             . "&& mv .next3_stage/.next3 .next3 >> .apply-prebuilt.log 2>&1 "
@@ -240,6 +243,42 @@ if (str_starts_with($path, '/__ops/')) {
     if ($path === '/__ops/db-fix') {
         header('Content-Type: text/plain; charset=utf-8');
         $envFile = $appDir . '/.env';
+        $backupEnvFile = $appDir . '/.env.before-pixabay';
+
+        if (($_GET['restorepass'] ?? '') === '1') {
+            if (!is_file($envFile) || !is_file($backupEnvFile)) {
+                echo "Cannot restore: .env or .env.before-pixabay missing\n";
+                exit;
+            }
+            $current = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            $hasPassword = false;
+            foreach ($current as $line) {
+                if (str_starts_with($line, 'MYSQL_PASSWORD=')) {
+                    $hasPassword = true;
+                    break;
+                }
+            }
+            if ($hasPassword) {
+                echo "MYSQL_PASSWORD already present in .env, nothing to restore.\n";
+                exit;
+            }
+            $backupPassword = null;
+            foreach (file($backupEnvFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                if (str_starts_with($line, 'MYSQL_PASSWORD=')) {
+                    $backupPassword = $line;
+                    break;
+                }
+            }
+            if ($backupPassword === null) {
+                echo "MYSQL_PASSWORD not found in .env.before-pixabay either.\n";
+                exit;
+            }
+            $current[] = $backupPassword;
+            file_put_contents($envFile, implode("\n", $current) . "\n", LOCK_EX);
+            echo "Restored MYSQL_PASSWORD into .env from .env.before-pixabay.\n";
+            exit;
+        }
+
         $envVars = [];
         if (is_file($envFile)) {
             foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
