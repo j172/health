@@ -50,6 +50,30 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "hpa",
   },
   {
+    code: "hpa_clarify",
+    name: "國民健康署－真相說明",
+    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=126",
+    sourceName: "hpa",
+  },
+  {
+    code: "hpa_rumor",
+    name: "國民健康署－保健闢謠",
+    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=127",
+    sourceName: "hpa",
+  },
+  {
+    code: "hpa_activity",
+    name: "國民健康署－活動熱訊",
+    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=128",
+    sourceName: "hpa",
+  },
+  {
+    code: "hpa_announcement",
+    name: "國民健康署－本署公告",
+    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=129",
+    sourceName: "hpa",
+  },
+  {
     code: "gnews",
     name: "Google 新聞－台灣健康專區",
     url: "https://news.google.com/rss/search?q=%E5%81%A5%E5%BA%B7+location:taiwan&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
