@@ -7,14 +7,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
-      MYSQL_PORT: ${{ secrets.MYSQL_PORT }}
-      MYSQL_USER: ${{ secrets.MYSQL_USER }}
-      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-      MYSQL_SSL: ${{ secrets.MYSQL_SSL }}
-      RSS_SYNC_SECRET: ${{ secrets.RSS_SYNC_SECRET }}
-      RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+      MYSQL_HOST: ${{ secrets.MYSQL_HOST != '' && secrets.MYSQL_HOST || '127.0.0.1' }}
+      MYSQL_PORT: ${{ secrets.MYSQL_PORT != '' && secrets.MYSQL_PORT || '3306' }}
+      MYSQL_USER: ${{ secrets.MYSQL_USER != '' && secrets.MYSQL_USER || 'placeholder' }}
+      MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD != '' && secrets.MYSQL_PASSWORD || 'placeholder' }}
+      MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE != '' && secrets.MYSQL_DATABASE || 'placeholder' }}
+      MYSQL_SSL: ${{ secrets.MYSQL_SSL != '' && secrets.MYSQL_SSL || 'false' }}
+      RSS_SYNC_SECRET: ${{ secrets.RSS_SYNC_SECRET != '' && secrets.RSS_SYNC_SECRET || 'placeholder' }}
+      RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET != '' && secrets.RSS_SYNC_ADMIN_SECRET || 'placeholder' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
