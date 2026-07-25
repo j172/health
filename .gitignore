@@ -10,7 +10,10 @@
 
 # next.js
 /.next/
+/.next2/
+/.next3/
 /out/
+tsconfig.tsbuildinfo
 
 # contentlayer
 .contentlayer
@@ -37,3 +40,12 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# local deploy scratch/diagnostic files (server dumps, prebuilt bundles, logs)
+/.prebuilt-next*.tgz
+/.remote-prebuilt-next*.tgz
+/_remote_*.txt
+/_remote_*.php
+/health-web-*.log
+/remote_env.txt
+/root_htaccess.txt

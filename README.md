@@ -1,187 +1,66 @@
-# Solid - Free Next.js Web Template and Starter Kit for SaaS
+# j172tw Health
 
-Solid is a free Next.js template specifically crafted for startups, SaaS, and software websites. It provides an extensive array of necessary sections, elements, and pages required to build a fully-equipped website for any SaaS, software, or startup site. Comes with all cutting edge React and Next.js features - **Built with Next.js 16, React 19 and TypeScript.**
+A Next.js 16 news site (health.j172.tw) that aggregates public-health RSS feeds from Taiwanese government agencies and news outlets into a searchable, SEO-friendly news archive. Built on top of the [Solid Next.js template](https://nextjstemplates.com/templates/solid); the original template's marketing pages remain, with the news pipeline as the actual product.
 
-This Next.js template's homepage comes with an awesome hero area, logos of associated brands, a features section, an about section, another features section with tabs, counters, and star ratings, integration options, clear call-to-actions, an FAQ section with accordions, a testimonials section, pricing tables, a contact page, a blog, and a distinctive footer.
+## What it does
 
-**Solid Next.js template packed with all necessary external pages** - such as login, registration, blog grids, and single blog pages, among others. This broad collection of pages provides all the necessary tools to create a feature-packed, comprehensive, and visually appealing website or landing page for software, a web application, or SaaS.
+- Fetches RSS feeds from 15 sources (see `lib/server/config/rss-feeds.ts`) on an hourly cron and on-demand
+- Parses each feed, fetches the full article page for new/changed items, and extracts body text, images, and attachments
+- Persists everything to MySQL (`news_items`, `news_assets`, `news_card_images`, `ingest_runs`, `ingest_errors`)
+- Auto-assigns a royalty-free card image (via the Pixabay API) to articles that don't ship their own image, downloading and hosting it locally rather than hotlinking
+- Serves `/news` (archive) and `/news/[id]` (article) with OpenGraph/JSON-LD metadata, plus `/sitemap.xml` and `/robots.txt`
 
-### [🔥 Get Solid Pro - Next.js SaaS Boilerplate and Starter Kit](https://nextjstemplates.com/templates/solid)
+### RSS sources
 
-### [🚀 Solid PRO Live Demo](https://solid.nextjstemplates.com/)
+MOHW (焦點新聞/即時新聞澄清/公告訊息/活動訊息/最新消息), CDC, TFDA, HPA (5 channels), NHI, LTN, and a Google News Taiwan-health search feed. New sources go in `lib/server/config/rss-feeds.ts` — add the `FeedCode` to `types/rss.ts` and a display label to `lib/server/news/sourceLabels.ts` if it's a new agency.
 
-### [🚀 Solid FREE Live Demo](https://solid-free.nextjstemplates.com/)
-
-### Solid PRO vs Solid FREE Comparison 📊
-
-#### [Solid PRO](https://solid.nextjstemplates.com/)
-
-- SaaS Boilerplate + Starter Kit with Essential Integrations and Functionalities
-- Essential Integrations: Auth, DB, Stripe, MDX and More ...
-- Fully Functional, Ready to Use Sanity Blog Support
-- Premium Email Support
-- Functional External Pages
-- Free Lifetime Future Updates
-
-___
-
-#### [Solid FREE](https://solid-free.nextjstemplates.com/)
-
-- Only UI - Coded for Next.js
-- No Integrations
-- No Functional Blogging System
-- External Pages without Functions/Integrations
-- Community Support
-- Free Lifetime Future Updates
-
-___
-
-### [📦 Download](https://nextjstemplates.com/templates/solid)
-
-### [🔥 Get Pro](https://nextjstemplates.com/templates/solid)
-
-### [🔌 Documentation](https://nextjstemplates.com/docs)
-
-### ⚡ Deploy Now
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FNextJSTemplates%2Fsolid-nextjs)
-
-[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/NextJSTemplates/solid-nextjs)
-
-## Installation
-
-Here are the steps you need to follow to install the dependencies.
-
-1.Download and extract the template from **Next.js Templates.**
-
-2.**cd** into the template directory then run this command to install all the dependencies
+## Local development
 
 ```bash
-    npm install --legacy-peer-deps
+npm install --legacy-peer-deps
+npm run dev
 ```
 
-**Note:** As of right now React 19 causes peer dependencies issues with some packages, so the `legacy-peer-deps` flag is required.
+Copy `.env.example` to `.env` and fill in MySQL credentials, `RSS_SYNC_SECRET`/`RSS_SYNC_ADMIN_SECRET`, `PIXABAY_API_KEY`, and `APP_BASE_URL`. React 19 currently needs `--legacy-peer-deps` for some template dependencies.
 
-You can start the project on the local server
+## Architecture notes
 
-```bash
-    npm run dev
- ```
+- **`lib/server/net/httpClient.ts`** — a small `node:http`/`node:https`-based client used for *all* outbound RSS/Pixabay requests instead of the global `fetch()`. The production host's `ulimit -v` (virtual memory) is capped below what undici's lazy WASM llhttp parser needs, so `fetch()` fails outright there with `WebAssembly.instantiate(): Out of memory`; Node's core http client uses the native (non-WASM) parser and isn't affected. It also bundles the TWCA intermediate CA certificate, since `hpa.gov.tw` serves its chain without it and Node (unlike curl) won't fetch missing intermediates on its own.
+- **`lib/server/rss/existingHashes.ts`** — before enriching (fetching the full article page for) a feed item, ingestion compares its payload hash against what's already stored and skips the fetch entirely for unchanged items. Without this, every hourly run re-fetched and re-parsed every article in every feed's current listing, which stopped scaling once the feed count grew.
+- Ingestion is serialized via a MySQL `GET_LOCK` (`lib/server/db/mysql.ts`) so overlapping triggers (cron + manual) don't race.
 
-It’ll start the template on [localhost:3000](http://localhost:3000).
+## API endpoints
 
-The documentation includes all the guides you need for the integrations.
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `GET /api/internal/rss-sync` | `x-rss-sync-secret` header | Hourly scheduled sync trigger |
+| `POST /api/admin/rss-sync` | `x-rss-sync-admin-secret` header | Manual re-run of ingestion |
+| `GET /api/admin/ingestion-runs` | `x-rss-sync-admin-secret` header | Last 20 ingestion run records |
+| `POST /api/admin/news-images` | `x-rss-sync-admin-secret` header, JSON body `{ "limit": 10 }` (max 50) | Backfill Pixabay card images for existing image-less articles; call repeatedly until `assigned` is 0 |
 
-### Deploying on PaaS
+## Deployment
 
-If you are using a GitHub repo then you can go with free-of-cost and easy-to-use options like [Vercel](https://vercel.com/), or [Netlify](https://netlify.com/) they offer decent-free tiers for Next.js hosting.
+Production runs on cPanel shared hosting (`health.j172.tw`), not a plain VPS. Node (via nvm) runs under **pm2** as `health-web`, fronted by a PHP reverse-proxy script that also serves static assets and handles the ops endpoints below.
 
-### 📄 License
+**Deploy**: GitHub Actions workflow `.github/workflows/deploy-ftps.yml` (`workflow_dispatch`, run from the Actions tab) builds the app, packages `.next3` as a tarball, uploads it plus the PHP handler over FTPS, triggers a remote apply, and verifies the live site before finishing.
 
-Solid Free is 100% free and open-source, feel free to use with your personal and commercial projects.
+- **`.remote-health-index.php`** is the source of truth for the PHP handler — it's what gets uploaded as `index.php` on the server (both the domain root and the account root). It reverse-proxies to the Next.js process on `127.0.0.1:3000`, serves `/_next/static` and Pixabay card images directly (bypassing Node for static assets), and exposes the `/__ops/*` endpoints below (all gated by a `?key=` query param).
+- **`ecosystem.config.cjs`** is the pm2 process definition for `health-web`; it's uploaded alongside the app on every deploy.
 
-### 💜 Support
+### `/__ops/*` endpoints (require `?key=<ops key>`, set in `.remote-health-index.php`)
 
-If you like the template, please star this repository to inspire the team to create more stuff like this and reach more users like you!
+| Path | Purpose |
+|---|---|
+| `/__ops/apply-prebuilt-force` | Unpack the uploaded prebuilt build, swap it in, restart pm2, health-probe `/news`; rolls back automatically on failure |
+| `/__ops/apply-prebuilt-status` | Tail the apply log / check if one is running |
+| `/__ops/rebuild` | Fallback: build from source on the server itself (slower, used if a prebuilt bundle isn't available) |
+| `/__ops/pm2-status` | pm2 process list/describe, a local curl probe of the Next.js process, and listening ports |
+| `/__ops/pm2-logs` | Tail pm2's stdout/stderr logs for `health-web` |
+| `/__ops/db-fix` | Diagnose/repair MySQL credential drift between `.env` and the actual DB user (`&setpass=1` forces the DB password to match `.env`; `&restorepass=1` recovers a `.env` password accidentally stripped by a bad deploy) |
+| `/__ops/net-test` | Diagnose outbound connectivity from the server (PHP curl vs raw Node `fetch()` vs the ulimit ceiling) |
 
-### ✨ Browse and Download - Best Free [Next.js Templates](https://nextjstemplates.com/templates)
+Since the FTPS workflow can be blocked by automated safety checks in some environments, the fallback path is: edit `.remote-health-index.php` locally, then FTP-upload it directly to `index.php` at both `ftp://<host>/index.php` and `ftp://<host>/health.j172.tw/index.php` using the credentials in `.env` (`FTP_SERVER`/`FTP_USERNAME`/`FTP_PASSWORD`), then hit `/__ops/apply-prebuilt-force` (or the relevant ops endpoint) directly.
 
-### Update Log
+## What's *not* used
 
-**04 December 2025**
-
-- Upgraded to Next.js 16
-- Update swiper to v12
-
-**10 April 2025**
-
-- Update eslint to v9.24.0 to resolve peer deps warning during installation.
-- Migrate to tailwind v4
-
-**29 Jan 2025**
-
-- Upgraded to Next.js 15
-- Update framer-motion to v12.0.6 for React 19 support.
-
----
-
-## Health 專案擴充（MOHW RSS → MySQL）
-
-這個專案已新增後端匯入流程：
-
-- 每小時抓取 4 條 RSS
-    - `https://www.mohw.gov.tw/rss-16-1.html`
-    - `https://www.mohw.gov.tw/rss-17-1.html`
-    - `https://www.mohw.gov.tw/rss-18-1.html`
-    - `https://www.mohw.gov.tw/rss-101-1.html`
-- 解析 RSS 後，再抓每篇詳細頁全文與附件/圖片
-- 入庫 MySQL（自動建立 `news_items`、`news_assets`、`news_card_images`、`ingest_runs`、`ingest_errors`）
-- 缺少原始圖片的新聞會透過 Pixabay 官方 API 配置不重複的健康類卡片圖，圖片下載至本站，不永久 hotlink
-
-### 需要的環境變數
-
-請設定根目錄 `.env`：
-
-- `MYSQL_HOST`
-- `MYSQL_PORT`
-- `MYSQL_USER`
-- `MYSQL_PASSWORD`
-- `MYSQL_DATABASE`
-- `MYSQL_SSL`
-- `RSS_SYNC_SECRET`（給排程端點）
-- `RSS_SYNC_ADMIN_SECRET`（給管理端手動觸發）
-- `PIXABAY_API_KEY`（Pixabay 官方 API；只放在 `.env` 或部署 secret，切勿提交）
-- `APP_BASE_URL`
-
-### API 端點
-
-- `GET /api/internal/rss-sync`
-    - Header: `x-rss-sync-secret: <RSS_SYNC_SECRET>`
-    - 用途：每小時排程呼叫
-
-- `POST /api/admin/rss-sync`
-    - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
-    - 用途：手動重跑
-
-- `GET /api/admin/ingestion-runs`
-    - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
-    - 用途：查看最近 20 次匯入紀錄
-
-- `POST /api/admin/news-images`
-    - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
-    - JSON body: `{ "limit": 10 }`（每次最多 50）
-    - 用途：批次替既有缺圖新聞下載並配置不重複的 Pixabay 卡片圖；可重複呼叫直到 `assigned` 為 0
-
-### 前台頁面
-
-- `GET /news`：新聞列表
-- `GET /news/[id]`：新聞詳情（含附件/圖片連結）
-
-### Linux Cron 範例（每小時）
-
-在 VPS 設定 crontab，例如：
-
-```bash
-0 * * * * curl -sS -H "x-rss-sync-secret: YOUR_SECRET" https://health.j172.tw/api/internal/rss-sync >/var/log/health-rss-sync.log 2>&1
-```
-
-建議再搭配失敗通知（如 Telegram / Email / UptimeRobot webhook）。
-
-### VPS 快速部署（Node + PM2 + Nginx）
-
-專案已附部署資產：
-
-- `ecosystem.config.cjs`：PM2 app 設定
-- `deploy/nginx-health.conf`：Nginx 反向代理範例
-- `deploy/deploy-vps.sh`：部署腳本（pull/install/build/reload）
-- `deploy/cron-example.txt`：每小時排程樣板
-
-最小流程：
-
-1. 在 VPS 安裝 Node.js 20+、PM2、Nginx。
-2. 將專案 clone 至 `/var/www/health`。
-3. 設定 `/var/www/health/.env`（正式 MySQL 與 secret）。
-4. 執行：`bash deploy/deploy-vps.sh`。
-5. 將 `deploy/nginx-health.conf` 放到 Nginx sites-enabled，重載 Nginx。
-6. 用 certbot 申請 `health.j172.tw` SSL。
-7. 設定 crontab 參考 `deploy/cron-example.txt`。
+`health_index.php` and the `deploy/` folder (a VPS + Nginx + plain PM2 setup) described an earlier deployment plan that was superseded by the cPanel/FTPS approach above and have been removed — `.remote-health-index.php` and `ecosystem.config.cjs` are the current, actually-deployed versions.
