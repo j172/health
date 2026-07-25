@@ -1,6 +1,7 @@
 import { load } from "cheerio";
 import type { NewsAsset, NormalizedRssItem } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
+import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
 
 const toAbsoluteUrl = (url: string, base: string): string => {
   try {
@@ -83,18 +84,28 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
   // so skip image extraction entirely there and let the Pixabay fallback
   // assign a card image instead.
   if (scopedContainer) {
-    scopedContainer.find("img[src]").each((_, el) => {
+    const imageElements = scopedContainer.find("img[src]").toArray();
+    for (const el of imageElements) {
       const src = $(el).attr("src");
-      if (!src) return;
-      if (/logo|favicon|icon/i.test(src)) return;
+      if (!src) continue;
+      if (/logo|favicon|icon/i.test(src)) continue;
+
+      const absolute = toAbsoluteUrl(src, item.canonicalUrl);
+      // Downloaded and re-hosted locally rather than storing the source
+      // site's URL directly, so the front-end never hotlinks a third-party
+      // domain (which can rate-limit, go offline, or move the file).
+      // eslint-disable-next-line no-await-in-loop
+      const localPath = await downloadArticleImage(absolute);
+      if (!localPath) continue;
+
       idx += 1;
       assets.push({
         assetType: "image",
         title: $(el).attr("alt")?.trim() || null,
-        url: toAbsoluteUrl(src, item.canonicalUrl),
+        url: localPath,
         sortOrder: idx,
       });
-    });
+    }
   }
 
   return {

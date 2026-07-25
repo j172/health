@@ -32,7 +32,7 @@ const CardImage = ({ item, fallbackIndex, sizes }: { item: NewsListItem; fallbac
       fill
       className={imageClassName}
       sizes={sizes}
-      unoptimized={source.startsWith("/images/news/pixabay/")}
+      unoptimized={source.startsWith("/images/news/pixabay/") || source.startsWith("/images/news/articles/")}
     />
   );
 };
