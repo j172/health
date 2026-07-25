@@ -32,5 +32,8 @@ yarn-error.log*
 .env*.local
 .env
 
+# runtime-downloaded Pixabay card images
+/public/images/news/pixabay/
+
 # vercel
 .vercel

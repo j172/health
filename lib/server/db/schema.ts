@@ -49,6 +49,38 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  newsCardImages: `
+    CREATE TABLE IF NOT EXISTS news_card_images (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      news_item_id BIGINT NOT NULL,
+      pixabay_id BIGINT NOT NULL,
+      local_path VARCHAR(500) NOT NULL,
+      source_page_url VARCHAR(1000) NOT NULL,
+      contributor_name VARCHAR(255) NULL,
+      content_sha256 CHAR(64) NOT NULL,
+      width INT NOT NULL,
+      height INT NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_card_image_news (news_item_id),
+      UNIQUE KEY uq_card_image_pixabay (pixabay_id),
+      UNIQUE KEY uq_card_image_hash (content_sha256),
+      UNIQUE KEY uq_card_image_path (local_path),
+      CONSTRAINT fk_card_image_news_item FOREIGN KEY (news_item_id)
+        REFERENCES news_items(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  pixabayApiCache: `
+    CREATE TABLE IF NOT EXISTS pixabay_api_cache (
+      cache_key VARCHAR(100) NOT NULL,
+      response_json LONGTEXT NOT NULL,
+      fetched_at_utc DATETIME NOT NULL,
+      PRIMARY KEY (cache_key),
+      KEY idx_pixabay_cache_fetched (fetched_at_utc)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestRuns: `
     CREATE TABLE IF NOT EXISTS ingest_runs (
       id BIGINT NOT NULL AUTO_INCREMENT,

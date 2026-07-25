@@ -42,17 +42,22 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER != '' && secrets.FTP_SERVER || '103.21.221.12' }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_USERNAME || 'j172@j172.tw' }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
         run: |
           set -euo pipefail
+          trap 'rm -f .pixabay.env' EXIT
 
           FTP_SERVER_CLEAN="$(printf '%s' "$FTP_SERVER" | tr -d '\r\n' | xargs)"
           FTP_USERNAME_CLEAN="$(printf '%s' "$FTP_USERNAME" | tr -d '\r\n' | xargs)"
           FTP_PASSWORD_CLEAN="$(printf '%s' "$FTP_PASSWORD" | tr -d '\r\n')"
 
-          if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ]; then
-            echo "Missing one of required FTP values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD"
+          if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
+            echo "Missing one of required deployment values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD / PIXABAY_API_KEY"
             exit 1
           fi
+
+          umask 077
+          printf 'PIXABAY_API_KEY=%s\n' "$PIXABAY_API_KEY" > .pixabay.env
 
           FTP_URL="ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-next3.tgz"
           echo "Uploading prebuilt bundle to FTP host ${FTP_SERVER_CLEAN} as ${FTP_USERNAME_CLEAN}"
@@ -61,6 +66,11 @@ jobs:
             --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
             --upload-file ".prebuilt-next3.tgz" \
             --url "$FTP_URL"
+
+          curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
+            --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
+            --upload-file ".pixabay.env" \
+            --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/.pixabay.env"
 
           for HANDLER_URL in \
             "ftp://${FTP_SERVER_CLEAN}:21/index.php" \
@@ -111,6 +121,42 @@ jobs:
           echo "Timed out waiting for [DONE-FORCE-V4]"
           exit 1
 
+      - name: Backfill missing news card images
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+
+          for ATTEMPT in $(seq 1 100); do
+            RESPONSE="$(curl --fail --show-error --silent --insecure \
+              --resolve "health.j172.tw:443:103.21.221.12" \
+              --request POST \
+              --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
+              --header "content-type: application/json" \
+              --data '{"limit":1}' \
+              "https://health.j172.tw/api/admin/news-images")"
+
+            OK="$(printf '%s' "$RESPONSE" | jq -r '.ok')"
+            ASSIGNED="$(printf '%s' "$RESPONSE" | jq -r '.summary.assigned // 0')"
+            FAILED="$(printf '%s' "$RESPONSE" | jq -r '.summary.failed // 0')"
+            REASON="$(printf '%s' "$RESPONSE" | jq -r '.summary.reason // ""')"
+            echo "Card image backfill $ATTEMPT: assigned=$ASSIGNED failed=$FAILED reason=$REASON"
+
+            test "$OK" = "true"
+            test "$FAILED" = "0"
+            if [ "$ASSIGNED" = "0" ]; then
+              exit 0
+            fi
+          done
+
+          echo "Card image backfill exceeded 100 assignments; run the workflow again to continue safely."
+          exit 1
+
       - name: Verify public news pages and JavaScript chunks
         run: |
           set -euo pipefail
@@ -139,3 +185,18 @@ jobs:
             grep -Eiq '^content-type: (application|text)/(javascript|x-javascript)' "$TMP_DIR/headers.txt"
             test "$(head -c 1 "$TMP_DIR/chunk.js")" != '<'
           done < "$TMP_DIR/chunks.txt"
+
+          grep -hoE 'src="/images/news/pixabay/[^"?]+"' "$TMP_DIR"/*.html \
+            | sed -E 's/^src="([^"]+)"$/\1/' \
+            | sort -u > "$TMP_DIR/card-images.txt" || true
+
+          if [ -s "$TMP_DIR/card-images.txt" ]; then
+            while IFS= read -r IMAGE; do
+              curl --fail --show-error --silent --location \
+                --dump-header "$TMP_DIR/image-headers.txt" \
+                "https://health.j172.tw$IMAGE" \
+                --output "$TMP_DIR/card-image"
+              grep -Eiq '^content-type: image/(jpeg|png|webp)' "$TMP_DIR/image-headers.txt"
+              test -s "$TMP_DIR/card-image"
+            done < "$TMP_DIR/card-images.txt"
+          fi

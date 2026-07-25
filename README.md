@@ -115,7 +115,8 @@ If you like the template, please star this repository to inspire the team to cre
     - `https://www.mohw.gov.tw/rss-18-1.html`
     - `https://www.mohw.gov.tw/rss-101-1.html`
 - 解析 RSS 後，再抓每篇詳細頁全文與附件/圖片
-- 入庫 MySQL（自動建立 `news_items`、`news_assets`、`ingest_runs`、`ingest_errors`）
+- 入庫 MySQL（自動建立 `news_items`、`news_assets`、`news_card_images`、`ingest_runs`、`ingest_errors`）
+- 缺少原始圖片的新聞會透過 Pixabay 官方 API 配置不重複的健康類卡片圖，圖片下載至本站，不永久 hotlink
 
 ### 需要的環境變數
 
@@ -129,6 +130,7 @@ If you like the template, please star this repository to inspire the team to cre
 - `MYSQL_SSL`
 - `RSS_SYNC_SECRET`（給排程端點）
 - `RSS_SYNC_ADMIN_SECRET`（給管理端手動觸發）
+- `PIXABAY_API_KEY`（Pixabay 官方 API；只放在 `.env` 或部署 secret，切勿提交）
 - `APP_BASE_URL`
 
 ### API 端點
@@ -144,6 +146,11 @@ If you like the template, please star this repository to inspire the team to cre
 - `GET /api/admin/ingestion-runs`
     - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
     - 用途：查看最近 20 次匯入紀錄
+
+- `POST /api/admin/news-images`
+    - Header: `x-rss-sync-admin-secret: <RSS_SYNC_ADMIN_SECRET>`
+    - JSON body: `{ "limit": 10 }`（每次最多 50）
+    - 用途：批次替既有缺圖新聞下載並配置不重複的 Pixabay 卡片圖；可重複呼叫直到 `assigned` 為 0
 
 ### 前台頁面
 

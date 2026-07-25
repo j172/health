@@ -34,6 +34,8 @@ export const ensureSchema = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
   await p.query(TABLE_DDL.newsAssets);
+  await p.query(TABLE_DDL.newsCardImages);
+  await p.query(TABLE_DDL.pixabayApiCache);
   await p.query(TABLE_DDL.ingestRuns);
   await p.query(TABLE_DDL.ingestErrors);
   schemaReady = true;

@@ -12,6 +12,21 @@ const thumbs = [
   "/images/blog/blog-05.png",
 ];
 
+const CardImage = ({ item, fallbackIndex, sizes }: { item: NewsListItem; fallbackIndex: number; sizes: string }) => {
+  const source = item.card_image_url || thumbs[fallbackIndex % thumbs.length];
+  const imageClassName = "object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]";
+
+  if (/^https?:\/\//i.test(source)) {
+    return (
+      // External source images intentionally bypass Next Image because their hostnames vary by news source.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={source} alt={item.title} className={`h-full w-full ${imageClassName}`} loading="lazy" />
+    );
+  }
+
+  return <Image src={source} alt={item.title} fill className={imageClassName} sizes={sizes} />;
+};
+
 const toTaipei = (value: Date | null): string => {
   if (!value) return "-";
   return new Intl.DateTimeFormat("zh-TW", {
@@ -46,13 +61,7 @@ const PostCard = ({ item, idx, titleClassName = "text-[18px]" }: { item: NewsLis
   <article className="group cursor-pointer">
     <Link className="block overflow-hidden rounded-none bg-neutral-100" href={`/news/${item.id}`}>
       <div className="relative aspect-[16/10] overflow-hidden">
-        <Image
-          src={thumbs[idx % thumbs.length]}
-          alt={item.title}
-          fill
-          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
+        <CardImage item={item} fallbackIndex={idx} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
       </div>
     </Link>
 
@@ -120,13 +129,7 @@ export default function StabloNewsLayout({ items, variant }: { items: NewsListIt
               <article className="group lg:col-span-2">
                 <Link className="block overflow-hidden rounded-none bg-neutral-100" href={`/news/${featured.id}`}>
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <Image
-                      src={thumbs[0]}
-                      alt={featured.title}
-                      fill
-                      className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                      sizes="(max-width: 1024px) 100vw, 66vw"
-                    />
+                    <CardImage item={featured} fallbackIndex={0} sizes="(max-width: 1024px) 100vw, 66vw" />
                   </div>
                 </Link>
 

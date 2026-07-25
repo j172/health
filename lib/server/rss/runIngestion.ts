@@ -6,6 +6,7 @@ import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
 import { parseFeedXml } from "@/lib/server/rss/parseRss";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { persistItems } from "@/lib/server/rss/persistItems";
+import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 
 const LOCK_NAME = "rss_ingestion_lock";
 
@@ -109,6 +110,16 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
     }
 
     const persisted = await persistItems(enrichedItems);
+    try {
+      await assignMissingNewsCardImages(3);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown card image assignment error";
+      await writeIngestionError({
+        runId,
+        message: `News persisted, but automatic card image assignment failed: ${message}`,
+        detail: { stage: "pixabay-card-images" },
+      });
+    }
     const ended = new Date();
     const summary: IngestionSummary = {
       trigger,

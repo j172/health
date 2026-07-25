@@ -36,6 +36,16 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& test -s .next3_stage/.next3/routes-manifest.json "
             . "&& find .next3_stage/.next3/static/chunks -type f -name '*.js' -print -quit | grep -q . "
             . "&& chmod -R u+rwX .next3_stage/.next3 >> .apply-prebuilt.log 2>&1 "
+            . "&& mkdir -p public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
+            . "&& chmod u+rwx public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
+            . "&& test -s .env "
+            . "&& test -s .pixabay.env "
+            . "&& cp .env .env.before-pixabay "
+            . "&& grep -v '^PIXABAY_API_KEY=' .env > .env.pixabay-next "
+            . "&& cat .pixabay.env >> .env.pixabay-next "
+            . "&& chmod 600 .env.pixabay-next "
+            . "&& mv .env.pixabay-next .env "
+            . "&& rm -f .pixabay.env "
             . "&& rm -rf .next3_previous >> .apply-prebuilt.log 2>&1 "
             . "&& { if [ -d .next3 ]; then mv .next3 .next3_previous; fi; } "
             . "&& mv .next3_stage/.next3 .next3 >> .apply-prebuilt.log 2>&1 "
@@ -187,6 +197,41 @@ if (str_starts_with($path, '/__ops/')) {
         }
         exit;
     }
+}
+
+if (str_starts_with($path, '/images/news/pixabay/')) {
+    $relative = rawurldecode(substr($path, strlen('/images/news/pixabay/')));
+    $root = '/home/tw123457/health_app/public/images/news/pixabay';
+    $rootReal = realpath($root);
+    $fileReal = $relative === '' ? false : realpath($root . '/' . $relative);
+
+    if ($rootReal === false || $fileReal === false || !is_file($fileReal) || !str_starts_with($fileReal, $rootReal . DIRECTORY_SEPARATOR)) {
+        http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo 'Image not found';
+        exit;
+    }
+
+    $types = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+    ];
+    $extension = strtolower(pathinfo($fileReal, PATHINFO_EXTENSION));
+    if (!isset($types[$extension])) {
+        http_response_code(415);
+        exit;
+    }
+
+    header('Content-Type: ' . $types[$extension]);
+    header('Cache-Control: public, max-age=31536000, immutable');
+    header('Content-Length: ' . filesize($fileReal));
+    if ($method !== 'HEAD') {
+        readfile($fileReal);
+    }
+    exit;
 }
 
 if (str_starts_with($path, '/_next/static/')) {

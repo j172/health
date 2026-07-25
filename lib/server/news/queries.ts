@@ -10,6 +10,10 @@ export interface NewsListItem {
   published_at_utc: Date | null;
   canonical_url: string;
   description_html: string | null;
+  card_image_url: string | null;
+  card_image_source: "rss" | "pixabay" | null;
+  card_image_source_page_url: string | null;
+  card_image_contributor: string | null;
 }
 
 export interface NewsDetailItem extends NewsListItem {
@@ -30,9 +34,29 @@ export const listLatestNews = async (limit = 50): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT id, feed_code, feed_name, title, dept_name, published_at_utc, canonical_url, description_html
-      FROM news_items
-      ORDER BY COALESCE(published_at_utc, created_at) DESC
+      SELECT n.id, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+             n.canonical_url, n.description_html,
+             COALESCE(
+               (SELECT a.url
+                FROM news_assets a
+                WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+                ORDER BY a.sort_order ASC, a.id ASC
+                LIMIT 1),
+               c.local_path
+             ) AS card_image_url,
+             CASE
+               WHEN EXISTS (
+                 SELECT 1 FROM news_assets a
+                 WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+               ) THEN 'rss'
+               WHEN c.local_path IS NOT NULL THEN 'pixabay'
+               ELSE NULL
+             END AS card_image_source,
+             c.source_page_url AS card_image_source_page_url,
+             c.contributor_name AS card_image_contributor
+      FROM news_items n
+      LEFT JOIN news_card_images c ON c.news_item_id = n.id
+      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
       LIMIT ?
       `,
       [limit],
@@ -45,10 +69,29 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT id, feed_code, feed_name, title, dept_name, published_at_utc, canonical_url,
-             description_html, detail_html, detail_text
-      FROM news_items
-      WHERE id = ?
+      SELECT n.id, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+             n.canonical_url, n.description_html, n.detail_html, n.detail_text,
+             COALESCE(
+               (SELECT a.url
+                FROM news_assets a
+                WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+                ORDER BY a.sort_order ASC, a.id ASC
+                LIMIT 1),
+               c.local_path
+             ) AS card_image_url,
+             CASE
+               WHEN EXISTS (
+                 SELECT 1 FROM news_assets a
+                 WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+               ) THEN 'rss'
+               WHEN c.local_path IS NOT NULL THEN 'pixabay'
+               ELSE NULL
+             END AS card_image_source,
+             c.source_page_url AS card_image_source_page_url,
+             c.contributor_name AS card_image_contributor
+      FROM news_items n
+      LEFT JOIN news_card_images c ON c.news_item_id = n.id
+      WHERE n.id = ?
       LIMIT 1
       `,
       [id],
