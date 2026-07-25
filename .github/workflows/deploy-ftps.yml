@@ -37,7 +37,7 @@ jobs:
           test -d .next3
           tar -czf .prebuilt-next3.tgz .next3
 
-      - name: Upload prebuilt bundle to server (FTPS)
+      - name: Upload handler and prebuilt bundle to server (FTPS)
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER != '' && secrets.FTP_SERVER || '103.21.221.12' }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_USERNAME || 'j172@j172.tw' }}
@@ -62,25 +62,51 @@ jobs:
             --upload-file ".prebuilt-next3.tgz" \
             --url "$FTP_URL"
 
+          for HANDLER_URL in \
+            "ftp://${FTP_SERVER_CLEAN}:21/index.php" \
+            "ftp://${FTP_SERVER_CLEAN}:21/health.j172.tw/index.php"
+          do
+            curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
+              --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
+              --upload-file ".remote-health-index.php" \
+              --url "$HANDLER_URL"
+          done
+
       - name: Trigger apply-prebuilt force
         env:
           OPS_KEY: ${{ secrets.OPS_KEY != '' && secrets.OPS_KEY || 'health-ops-20260725-rebuild' }}
         run: |
+          OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
           curl --fail --show-error --silent \
-            "https://health.j172.tw/__ops/apply-prebuilt-force?key=$OPS_KEY&cb=$(date +%s)"
+            --resolve "health.j172.tw:443:103.21.221.12" \
+            "https://health.j172.tw/__ops/apply-prebuilt-force?key=$OPS_KEY_CLEAN&cb=$(date +%s)"
 
       - name: Read apply status
         env:
           OPS_KEY: ${{ secrets.OPS_KEY != '' && secrets.OPS_KEY || 'health-ops-20260725-rebuild' }}
         run: |
           set -euo pipefail
+          OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
 
-          STATUS="$(curl --fail --show-error --silent \
-            "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY&cb=$(date +%s)")"
+          for ATTEMPT in $(seq 1 30); do
+            STATUS="$(curl --fail --show-error --silent \
+              --resolve "health.j172.tw:443:103.21.221.12" \
+              "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY_CLEAN&cb=$(date +%s)")"
 
-          echo "$STATUS"
+            echo "$STATUS"
 
-          if printf '%s' "$STATUS" | grep -Eiq '\[FAIL|FAIL-FORCE|force-fail|apply-fail'; then
-            echo "apply-prebuilt status indicates failure"
-            exit 1
-          fi
+            if printf '%s' "$STATUS" | grep -Fq '[DONE-FORCE-V3]'; then
+              exit 0
+            fi
+
+            if printf '%s' "$STATUS" | grep -Eiq '\[FAIL|FAIL-FORCE|force-fail|apply-fail'; then
+              echo "apply-prebuilt status indicates failure"
+              exit 1
+            fi
+
+            echo "Waiting for apply-prebuilt completion ($ATTEMPT/30)..."
+            sleep 2
+          done
+
+          echo "Timed out waiting for [DONE-FORCE-V3]"
+          exit 1
