@@ -2,7 +2,7 @@ import "server-only";
 import { env } from "@/lib/server/config/env";
 import { httpRequest } from "@/lib/server/net/httpClient";
 
-const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const MODEL = "@cf/meta/llama-3.1-8b-instruct";
 const DEFAULT_TIMEOUT_MS = 20_000;
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 750;
@@ -11,6 +11,16 @@ export class CloudflareAiNotConfiguredError extends Error {
   constructor() {
     super("CLOUDFLARE_ACCOUNT_ID/CLOUDFLARE_API_TOKEN is not configured.");
     this.name = "CloudflareAiNotConfiguredError";
+  }
+}
+
+/** Cloudflare's Workers AI free-tier daily neuron allocation (error code
+ * 4006) has been exhausted — every call will fail identically until the
+ * quota resets, so retrying is pointless and just triples ingestion time. */
+export class CloudflareAiQuotaExceededError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CloudflareAiQuotaExceededError";
   }
 }
 
@@ -37,7 +47,11 @@ const runOnce = async (accountId: string, apiToken: string, prompt: string, time
   });
 
   if (response.status < 200 || response.status >= 300) {
-    throw new Error(`Cloudflare AI request failed with HTTP ${response.status}: ${response.buffer.toString("utf-8").slice(0, 300)}`);
+    const bodyText = response.buffer.toString("utf-8").slice(0, 300);
+    if (response.status === 429 && /daily free allocation/i.test(bodyText)) {
+      throw new CloudflareAiQuotaExceededError(`Cloudflare AI daily neuron quota exceeded: ${bodyText}`);
+    }
+    throw new Error(`Cloudflare AI request failed with HTTP ${response.status}: ${bodyText}`);
   }
 
   const json = JSON.parse(response.buffer.toString("utf-8")) as WorkersAiChatResponse;
@@ -58,9 +72,11 @@ const runOnce = async (accountId: string, apiToken: string, prompt: string, time
  * for why fetch() itself is unusable on this host).
  *
  * Workers AI intermittently returns success:true with an empty completion
- * under sustained sequential load (observed during bulk RSS ingestion, not
- * reproducible with isolated calls) — retry a couple of times before giving
- * up, since a fresh attempt against the same model reliably succeeds. */
+ * under sustained sequential load, most often while the account is close to
+ * (but not yet over) its daily neuron quota — retry a couple of times before
+ * giving up, since a fresh attempt against the same model often succeeds.
+ * Once the quota is actually exhausted (CloudflareAiQuotaExceededError),
+ * every subsequent call fails identically, so we don't retry those. */
 export const runCloudflareAiChat = async (prompt: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> => {
   const { accountId, apiToken } = env.cloudflare;
   if (!accountId || !apiToken) {
@@ -74,6 +90,7 @@ export const runCloudflareAiChat = async (prompt: string, timeoutMs = DEFAULT_TI
       return await runOnce(accountId, apiToken, prompt, timeoutMs);
     } catch (error) {
       lastError = error;
+      if (error instanceof CloudflareAiQuotaExceededError) break;
       if (attempt < MAX_ATTEMPTS) {
         // eslint-disable-next-line no-await-in-loop
         await sleep(RETRY_DELAY_MS * attempt);
