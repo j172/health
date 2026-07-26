@@ -109,7 +109,8 @@ export const generateSeoMetadataWithAi = async (item: SeoMetadataInput): Promise
     const geoSummary = typeof parsed.geoSummary === "string" && parsed.geoSummary.trim() ? truncate(parsed.geoSummary, 2000) : fallback.geoSummary;
 
     return { metaTitle: fallback.metaTitle, metaDescription, keywords, geoSummary };
-  } catch {
+  } catch (error) {
+    console.error("[generateSeoMetadataWithAi] falling back:", error instanceof Error ? error.message : error);
     return fallback;
   }
 };
