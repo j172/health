@@ -6,17 +6,28 @@ import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 
 type Variant = "home" | "archive";
 
-const thumbs = [
-  "/images/blog/blog-01.png",
-  "/images/blog/blog-02.png",
-  "/images/blog/blog-03.png",
-  "/images/blog/blog-04.png",
-  "/images/blog/blog-05.png",
-];
+// A brief-lived gap only: a newly ingested item shows this until the next
+// Pixabay backfill pass assigns it a real image (assignMissingNewsCardImages
+// runs after every RSS sync and on every deploy). Previously this fell back
+// to leftover "blog-01.png"-style demo photos from the starter template,
+// which silently masked items that never got a Pixabay image assigned.
+const CardImagePlaceholder = () => (
+  <div className="flex h-full w-full items-center justify-center bg-neutral-100">
+    <svg viewBox="0 0 24 24" className="h-10 w-10 text-neutral-300" fill="none" stroke="currentColor" strokeWidth={1.5}>
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="9.5" r="1.5" />
+      <path d="M21 15l-5-5-9 9" />
+    </svg>
+  </div>
+);
 
-const CardImage = ({ item, fallbackIndex, sizes }: { item: NewsListItem; fallbackIndex: number; sizes: string }) => {
-  const source = item.card_image_url || thumbs[fallbackIndex % thumbs.length];
+const CardImage = ({ item, sizes }: { item: NewsListItem; sizes: string }) => {
+  const source = item.card_image_url;
   const imageClassName = "object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]";
+
+  if (!source) {
+    return <CardImagePlaceholder />;
+  }
 
   if (/^https?:\/\//i.test(source)) {
     return (
@@ -68,11 +79,11 @@ const PostMeta = ({ item }: { item: NewsListItem }) => (
   </div>
 );
 
-const PostCard = ({ item, idx, titleClassName = "text-[18px]" }: { item: NewsListItem; idx: number; titleClassName?: string }) => (
+const PostCard = ({ item, titleClassName = "text-[18px]" }: { item: NewsListItem; titleClassName?: string }) => (
   <article className="group cursor-pointer">
     <Link className="block overflow-hidden rounded-none bg-neutral-100" href={`/news/${item.id}`}>
       <div className="relative aspect-[16/10] overflow-hidden">
-        <CardImage item={item} fallbackIndex={idx} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+        <CardImage item={item} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
       </div>
     </Link>
 
@@ -218,7 +229,7 @@ export default function StabloNewsLayout({
               <article className="group lg:col-span-2">
                 <Link className="block overflow-hidden rounded-none bg-neutral-100" href={`/news/${featured.id}`}>
                   <div className="relative aspect-[16/10] overflow-hidden">
-                    <CardImage item={featured} fallbackIndex={0} sizes="(max-width: 1024px) 100vw, 66vw" />
+                    <CardImage item={featured} sizes="(max-width: 1024px) 100vw, 66vw" />
                   </div>
                 </Link>
 
@@ -235,8 +246,8 @@ export default function StabloNewsLayout({
               </article>
 
               <div className="space-y-8">
-                {side.map((item, idx) => (
-                  <PostCard key={item.id} item={item} idx={idx + 1} titleClassName="text-[24px] leading-[1.2]" />
+                {side.map((item) => (
+                  <PostCard key={item.id} item={item} titleClassName="text-[24px] leading-[1.2]" />
                 ))}
               </div>
             </section>
@@ -250,8 +261,8 @@ export default function StabloNewsLayout({
               </div>
 
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {latest.map((item, idx) => (
-                  <PostCard key={item.id} item={item} idx={idx + 3} />
+                {latest.map((item) => (
+                  <PostCard key={item.id} item={item} />
                 ))}
               </div>
             </section>
@@ -269,8 +280,8 @@ export default function StabloNewsLayout({
               <p className="py-16 text-center text-neutral-500">目前沒有符合的新聞。</p>
             ) : (
               <section className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {items.map((item, idx) => (
-                  <PostCard key={item.id} item={item} idx={idx} />
+                {items.map((item) => (
+                  <PostCard key={item.id} item={item} />
                 ))}
               </section>
             )}
