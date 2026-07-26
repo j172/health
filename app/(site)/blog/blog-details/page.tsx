@@ -7,7 +7,8 @@ export const metadata: Metadata = {
   title: "Blog Details Page - Solid SaaS Boilerplate",
 
   // other metadata
-  description: "This is Blog details page for Solid Pro"
+  description: "This is Blog details page for Solid Pro",
+  robots: { index: false, follow: false },
 };
 
 const SingleBlogPage = async () => {

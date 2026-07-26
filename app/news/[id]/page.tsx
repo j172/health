@@ -70,6 +70,19 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
       <StabloHeader />
 
       <main>
+        <nav aria-label="Breadcrumb" className="mx-auto max-w-screen-lg px-6 pt-6 text-xs text-neutral-500 sm:px-8">
+          <ol className="flex flex-wrap items-center gap-x-2">
+            <li>
+              <Link href="/" className="hover:text-neutral-800">首頁</Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link href="/news" className="hover:text-neutral-800">健康新聞</Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li className="max-w-xs truncate text-neutral-700" aria-current="page">{news.title}</li>
+          </ol>
+        </nav>
         <article>
         <header className="mx-auto max-w-screen-lg px-6 pb-8 pt-12 text-center sm:px-8 sm:pt-16 lg:pb-12 lg:pt-20">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">{news.feed_name}</p>

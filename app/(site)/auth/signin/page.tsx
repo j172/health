@@ -5,7 +5,8 @@ export const metadata: Metadata = {
   title: "Login Page - Solid SaaS Boilerplate",
 
   // other metadata
-  description: "This is Login page for Startup Pro"
+  description: "This is Login page for Startup Pro",
+  robots: { index: false, follow: false },
 };
 
 const SigninPage = () => {

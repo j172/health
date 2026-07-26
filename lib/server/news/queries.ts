@@ -35,6 +35,33 @@ export interface NewsAssetItem {
   sort_order: number;
 }
 
+export interface NewsGeoSummaryItem {
+  id: number;
+  title: string;
+  source_name: string;
+  feed_name: string;
+  dept_name: string | null;
+  published_at_utc: Date | null;
+  geo_summary: string | null;
+  meta_description: string | null;
+}
+
+/** Recent items with their AI-generated GEO summaries, for llms.txt — a
+ * lighter projection than NewsDetailItem since it skips html/detail text. */
+export const listRecentNewsForLlms = async (limit = 100): Promise<NewsGeoSummaryItem[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT id, title, source_name, feed_name, dept_name, published_at_utc, geo_summary, meta_description
+      FROM news_items
+      ORDER BY COALESCE(published_at_utc, created_at) DESC
+      LIMIT ?
+      `,
+      [limit],
+    );
+    return rows as unknown as NewsGeoSummaryItem[];
+  });
+
 export const listLatestNews = async (limit = 50, offset = 0, sourceName?: string): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(

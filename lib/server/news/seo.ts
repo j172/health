@@ -1,9 +1,10 @@
 import { load } from "cheerio";
 import type { Metadata } from "next";
-import type { NewsDetailItem } from "./queries";
+import type { NewsListItem, NewsDetailItem } from "./queries";
 import { resolveAuthorLabel } from "./sourceLabels";
 
-const SITE_NAME = "j172tw Health";
+export const SITE_NAME = "j172tw Health";
+const SITE_DESCRIPTION = "彙整衛生福利部及各署即時公告、主要新聞媒體健康版面，提供繁體中文健康與醫療新聞總覽。";
 
 export const getBaseUrl = (): string => (process.env.APP_BASE_URL?.trim() || "https://health.j172.tw").replace(/\/$/, "");
 
@@ -110,4 +111,57 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
   };
 
   return [article, breadcrumbs];
+};
+
+/** Site-wide Organization schema — establishes publisher identity for both
+ * classic SEO (Google's publisher/knowledge-panel signals) and GEO (lets an
+ * AI search engine attribute a citation to a named, described entity rather
+ * than a bare domain). Emit once per HTML document (root layout). */
+export const buildOrganizationJsonLd = (): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE_NAME,
+    url: baseUrl,
+    logo: `${baseUrl}/images/favicon.ico`,
+    description: SITE_DESCRIPTION,
+  };
+};
+
+/** Site-wide WebSite schema with a SearchAction, so search engines can offer
+ * a sitelinks searchbox — emit alongside Organization in the root layout. */
+export const buildWebsiteJsonLd = (): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: SITE_NAME,
+    url: baseUrl,
+    description: SITE_DESCRIPTION,
+    inLanguage: "zh-TW",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${baseUrl}/news?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  };
+};
+
+/** ItemList schema for a news listing page (home or /news archive), so
+ * crawlers and AI agents can enumerate the current batch of articles as
+ * structured data rather than only inferring it from card markup. */
+export const buildNewsListJsonLd = (items: NewsListItem[], listName: string): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: listName,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${baseUrl}/news/${item.id}`,
+      name: item.title,
+    })),
+  };
 };

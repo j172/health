@@ -5,7 +5,8 @@ export const metadata: Metadata = {
   title: "Sign Up Page - Solid SaaS Boilerplate",
 
   // other metadata
-  description: "This is Sign Up page for Startup Pro"
+  description: "This is Sign Up page for Startup Pro",
+  robots: { index: false, follow: false },
 };
 
 export default function Register() {

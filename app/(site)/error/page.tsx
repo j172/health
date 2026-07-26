@@ -5,7 +5,8 @@ export const metadata: Metadata = {
   title: "Error Page - Solid SaaS Boilerplate",
 
   // other metadata
-  description: "This is Error page for Solid Pro"
+  description: "This is Error page for Solid Pro",
+  robots: { index: false, follow: false },
 };
 
 const ErroPage = () => {
