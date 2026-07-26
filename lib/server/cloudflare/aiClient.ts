@@ -2,7 +2,7 @@ import "server-only";
 import { env } from "@/lib/server/config/env";
 import { httpRequest } from "@/lib/server/net/httpClient";
 
-const MODEL = "@cf/meta/llama-3.1-8b-instruct";
+const MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
 const DEFAULT_TIMEOUT_MS = 20_000;
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 750;
