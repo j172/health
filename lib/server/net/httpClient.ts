@@ -97,6 +97,12 @@ const requestOnce = (url: string, options: HttpRequestOptions): Promise<HttpResp
         method: options.method ?? "GET",
         headers: {
           "Accept-Encoding": "gzip, deflate, br",
+          // Cloudflare-fronted origins (Pixabay's CDN, in particular) rate-limit
+          // or challenge requests with no User-Agent much more aggressively than
+          // ones that look like a normal browser — confirmed live: the exact
+          // same URL succeeded via curl (which sends a default UA) and failed
+          // with HTTP 429 "Rate limit exceeded" via plain Node https without one.
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
           ...options.headers,
         },
         timeout: options.timeoutMs ?? 15_000,
