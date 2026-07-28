@@ -74,7 +74,7 @@ export default function PharmaciesContent() {
     <div className="space-y-6">
       <div>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">🏪 藥局查詢</h1>
-        <p className="text-neutral-600">查詢全台一般藥局及健保特約藥局。資料來源：衛福部食藥署藥局管理系統。</p>
+        <p className="text-neutral-600">查詢全台一般藥局及健保特約藥局。資料來源：衛福部食藥署藥局管理系統、中央健康保險署。</p>
       </div>
 
       <form onSubmit={handleSearch} className="flex gap-2">
