@@ -187,6 +187,47 @@ if (str_starts_with($path, '/__ops/')) {
         exit;
     }
 
+    if ($path === '/__ops/pm2-ensure-running') {
+        header('Content-Type: text/plain; charset=utf-8');
+        $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
+        $jlist = shell_exec($pm2 . ' jlist 2>/dev/null');
+        $procs = json_decode($jlist ?: '[]', true);
+        if (!is_array($procs)) {
+            $procs = [];
+        }
+        $isOnline = false;
+        foreach ($procs as $proc) {
+            if (($proc['name'] ?? '') === 'health-web' && ($proc['pm2_env']['status'] ?? '') === 'online') {
+                $isOnline = true;
+                break;
+            }
+        }
+
+        $now = date('Y-m-d H:i:s');
+        $watchdogLog = $appDir . '/.pm2-watchdog.log';
+
+        if ($isOnline) {
+            echo "[{$now}] health-web is online. No action taken.\n";
+            exit;
+        }
+
+        @file_put_contents($watchdogLog, "[{$now}] health-web was not online (this host periodically kills long-running background processes) — restarting via apply-prebuilt.\n", FILE_APPEND);
+
+        // Reuse the same tested apply-prebuilt path (re-extracts the last
+        // deployed build, restarts pm2, health-probes, rolls back on
+        // failure) rather than a bespoke "just pm2 start" — this host has
+        // been silently killing the health-web process roughly once a day,
+        // and this endpoint is meant to be hit by an external cron job so
+        // it recovers without anyone noticing a 502 first.
+        @unlink($prebuiltLockFile);
+        @unlink($prebuiltLogFile);
+        $cmd = $buildPrebuiltCommand(true);
+        @exec($cmd);
+
+        echo "[{$now}] health-web was not online. Restart triggered — check /__ops/apply-prebuilt-status?key=...\n";
+        exit;
+    }
+
     if ($path === '/__ops/pm2-status') {
         header('Content-Type: text/plain; charset=utf-8');
         $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
