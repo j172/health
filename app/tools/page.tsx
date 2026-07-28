@@ -34,6 +34,7 @@ const TOOLS = [
   { href: "/tools/aqi", title: "AQI 空氣品質即時查詢", description: "即時顯示全台環境部監測站 AQI 空氣品質指標。", icon: "🌬️" },
   { href: "/tools/pharmacies", title: "藥局查詢", description: "查詢全台一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。", icon: "🏪" },
   { href: "/tools/health-checks", title: "健康檢查機構查詢", description: "查詢勞工健康檢查認可醫療機構，支援關鍵字搜尋與附近定位。", icon: "🩻" },
+  { href: "/tools/drugs", title: "藥品查詢", description: "查詢衛福部食藥署核准藥品的許可證字號、品名與外觀特徵。", icon: "💊" },
 ];
 
 export default function ToolsIndexPage() {

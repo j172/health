@@ -131,6 +131,31 @@ export const TABLE_DDL = {
       KEY idx_facility_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  drugs: `
+    CREATE TABLE IF NOT EXISTS drugs (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      source_key VARCHAR(40) NOT NULL,
+      license_no VARCHAR(50) NOT NULL,
+      name_zh VARCHAR(255) NOT NULL,
+      name_en VARCHAR(255) NULL,
+      shape VARCHAR(100) NULL,
+      dosage_form VARCHAR(100) NULL,
+      color VARCHAR(100) NULL,
+      odor VARCHAR(100) NULL,
+      score_mark VARCHAR(100) NULL,
+      size_mm VARCHAR(50) NULL,
+      imprint_1 VARCHAR(100) NULL,
+      imprint_2 VARCHAR(100) NULL,
+      image_url VARCHAR(500) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_drug_license (license_no),
+      KEY idx_drug_name_zh (name_zh(50)),
+      KEY idx_drug_name_en (name_en(50))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestErrors: `
     CREATE TABLE IF NOT EXISTS ingest_errors (
       id BIGINT NOT NULL AUTO_INCREMENT,
