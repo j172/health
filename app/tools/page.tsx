@@ -36,6 +36,7 @@ const TOOLS = [
   { href: "/tools/health-checks", title: "健康檢查機構查詢", description: "查詢勞工健康檢查認可醫療機構，支援關鍵字搜尋與附近定位。", icon: "🩻" },
   { href: "/tools/drugs", title: "藥品查詢", description: "查詢衛福部食藥署核准藥品的許可證字號、品名與外觀特徵。", icon: "💊" },
   { href: "/tools/long-term-care", title: "長照機構查詢", description: "查詢衛福部許可全台長期照顧服務機構。", icon: "🏡" },
+  { href: "/tools/clinics", title: "醫療院所查詢", description: "查詢全民健保特約醫療院所，支援關鍵字搜尋與附近定位。", icon: "🏥" },
 ];
 
 export default function ToolsIndexPage() {

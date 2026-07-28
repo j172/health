@@ -2,6 +2,7 @@ import { upsertFacilities, type FacilityRecord } from "@/lib/server/facilities/q
 import { fetchTfdaPharmacies } from "@/lib/server/facilities/sources/tfdaPharmacies";
 import { fetchMolHealthCheckFacilities } from "@/lib/server/facilities/sources/molHealthCheckFacility";
 import { fetchMolOccupationalInjuryHospitals } from "@/lib/server/facilities/sources/molOccupationalInjuryHospital";
+import { fetchNhiHospitals } from "@/lib/server/facilities/sources/nhiHospitals";
 
 export interface FacilitySyncResult {
   sourceKey: string;
@@ -17,6 +18,7 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "tfda_pharmacy", fetch: fetchTfdaPharmacies },
   { key: "mol_labor_checkup", fetch: fetchMolHealthCheckFacilities },
   { key: "mol_occupational_injury", fetch: fetchMolOccupationalInjuryHospitals },
+  { key: "nhi_hospital", fetch: fetchNhiHospitals },
 ];
 
 export async function runFacilitySync(): Promise<FacilitySyncResult[]> {
