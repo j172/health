@@ -32,6 +32,7 @@ const TOOLS = [
   { href: "/tools/lbm", title: "去脂體重 (LBM) 計算器", description: "以 Boer 公式估算去脂體重與體脂率，了解身體組成狀況。", icon: "💪" },
   { href: "/tools/vo2max", title: "VO2Max 估算器", description: "以 Uth 公式快速評估最大攝氧量，了解心肺耐力等級。", icon: "🫁" },
   { href: "/tools/aqi", title: "AQI 空氣品質即時查詢", description: "即時顯示全台環境部監測站 AQI 空氣品質指標。", icon: "🌬️" },
+  { href: "/tools/pharmacies", title: "藥局查詢", description: "查詢全台一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。", icon: "🏪" },
 ];
 
 export default function ToolsIndexPage() {

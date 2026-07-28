@@ -83,6 +83,29 @@ export const upsertFacilities = async (records: FacilityRecord[]): Promise<{ ins
     return { inserted, updated };
   });
 
+export interface FacilityMissingCoords {
+  id: number;
+  address: string;
+}
+
+/** Facilities of a given type/source that still need geocoding (address present, lat/lng missing). */
+export const findFacilitiesMissingCoords = async (facilityType: string, sourceKey: string, limit: number): Promise<FacilityMissingCoords[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT id, address FROM facilities
+       WHERE facility_type = ? AND source_key = ? AND lat IS NULL AND address IS NOT NULL AND address != ''
+       ORDER BY id ASC
+       LIMIT ?`,
+      [facilityType, sourceKey, limit],
+    );
+    return rows as unknown as FacilityMissingCoords[];
+  });
+
+export const updateFacilityCoords = async (id: number, lat: number, lng: number): Promise<void> =>
+  withConnection(async (conn) => {
+    await conn.query("UPDATE facilities SET lat = ?, lng = ?, updated_at = ? WHERE id = ?", [lat, lng, utcNowSql(), id]);
+  });
+
 export interface FacilitySearchParams {
   facilityType: string;
   keyword?: string;
@@ -105,8 +128,11 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
 
     let distanceSelect = "";
     let havingClause = "";
-    if (lat !== undefined && lng !== undefined) {
-      // Haversine formula (km), Earth radius 6371km.
+    const isGpsSearch = lat !== undefined && lng !== undefined;
+    if (isGpsSearch) {
+      // Haversine formula (km), Earth radius 6371km. GPS search only makes sense
+      // for facilities that have already been geocoded, unlike keyword/browse
+      // search which should still surface rows pending geocoding.
       distanceSelect = `,
         (6371 * acos(
           cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) +
@@ -114,13 +140,14 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
         )) AS distance_km`;
       params.unshift(lat, lng, lat);
       havingClause = "HAVING distance_km <= ?";
+      conditions.push("lat IS NOT NULL AND lng IS NOT NULL");
     }
 
     const query = `
       SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org
         ${distanceSelect}
       FROM facilities
-      WHERE ${conditions.join(" AND ")} AND lat IS NOT NULL AND lng IS NOT NULL
+      WHERE ${conditions.join(" AND ")}
       ${havingClause}
       ORDER BY ${lat !== undefined ? "distance_km ASC" : "name ASC"}
       LIMIT ?
