@@ -18,6 +18,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "cdc", label: "疾病管制署" },
       { sourceName: "tfda", label: "食品藥物管理署" },
       { sourceName: "nhi", label: "中央健康保險署" },
+      { sourceName: "cwa", label: "中央氣象署" },
     ],
   },
   {
@@ -29,6 +30,15 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "mamaclub", label: "媽媽經" },
       { sourceName: "twstreetcorner", label: "巷仔口社會學" },
       { sourceName: "cna", label: "中央社" },
+    ],
+  },
+  {
+    label: "ESG／永續",
+    sources: [
+      { sourceName: "csr_cw", label: "CSR@天下" },
+      { sourceName: "esg_gvm", label: "ESG遠見" },
+      { sourceName: "esg_businesstoday", label: "ESG今周刊" },
+      { sourceName: "ubrand_udn", label: "倡議家" },
     ],
   },
 ];

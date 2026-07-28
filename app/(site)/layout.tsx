@@ -2,11 +2,9 @@ import { Inter } from "next/font/google";
 import "../globals.css";
 import type { Metadata } from "next";
 import Proivder from "./Provider";
-import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
+import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 
 const inter = Inter({ subsets: ["latin"] });
-
-const SITE_DESCRIPTION = "彙整衛生福利部及各署即時公告、主要新聞媒體健康版面，提供繁體中文健康與醫療新聞總覽。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),

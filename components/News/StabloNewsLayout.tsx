@@ -149,6 +149,10 @@ export const StabloFooter = () => (
         <Link href="/news" className="transition-colors hover:text-neutral-800">
           News
         </Link>
+        <span>·</span>
+        <a href="https://www.j172.tw" target="_blank" rel="noreferrer noopener" className="transition-colors hover:text-neutral-800">
+          j172.tw
+        </a>
       </div>
     </div>
   </footer>

@@ -10,6 +10,11 @@ const SOURCE_LABELS: Record<string, string> = {
   mamaclub: "媽媽經",
   twstreetcorner: "巷仔口社會學",
   cna: "中央社",
+  cwa: "中央氣象署",
+  csr_cw: "CSR@天下",
+  esg_gvm: "ESG遠見",
+  esg_businesstoday: "ESG今周刊",
+  ubrand_udn: "倡議家",
 };
 
 export interface SourceLabelInput {

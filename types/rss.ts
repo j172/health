@@ -17,7 +17,12 @@ export type FeedCode =
   | "hpa_clarify"
   | "mamaclub"
   | "twstreetcorner"
-  | "cna_lifehealth";
+  | "cna_lifehealth"
+  | "cwa_warning"
+  | "csr_cw"
+  | "esg_gvm"
+  | "esg_businesstoday"
+  | "ubrand_udn";
 
 export interface FeedConfig {
   code: FeedCode;

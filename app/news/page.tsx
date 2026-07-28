@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { countNewsItems, listLatestNews } from "@/lib/server/news/queries";
-import { buildNewsListJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
+import { buildNewsListJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 
@@ -19,12 +19,12 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const sourceLabel = sourceName ? resolveAuthorLabel({ dept_name: null, source_name: sourceName, feed_name: sourceName }) : null;
 
-  const title = keyword ? `#${keyword} 相關新聞` : sourceLabel ? `${sourceLabel}健康新聞` : "最新健康新聞";
+  const title = keyword ? `#${keyword} 相關新聞` : sourceLabel ? `${sourceLabel}新聞` : "最新新聞";
   const description = keyword
-    ? `包含關鍵字「${keyword}」的健康新聞。`
+    ? `包含關鍵字「${keyword}」的新聞。`
     : sourceLabel
-      ? `彙整${sourceLabel}公告與報導的健康新聞，掌握最新動態。`
-      : "彙整衛生福利部及各署即時公告，掌握最新健康與醫療新聞。";
+      ? `彙整${sourceLabel}公告與報導，掌握最新動態。`
+      : SITE_DESCRIPTION;
   const baseUrl = getBaseUrl();
   const canonicalPath = keyword
     ? `/news?keyword=${encodeURIComponent(keyword)}`
@@ -71,7 +71,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const sourceLabel = sourceName ? resolveAuthorLabel({ dept_name: null, source_name: sourceName, feed_name: sourceName }) : null;
   const archiveTitle = keyword ? `#${keyword}` : (sourceLabel ?? undefined);
   const archiveDescription = keyword ? `包含關鍵字「${keyword}」的新聞。` : undefined;
-  const jsonLd = buildNewsListJsonLd(items, keyword ? `#${keyword} 相關新聞` : sourceLabel ? `${sourceLabel}健康新聞` : "最新健康新聞");
+  const jsonLd = buildNewsListJsonLd(items, keyword ? `#${keyword} 相關新聞` : sourceLabel ? `${sourceLabel}新聞` : "最新新聞");
 
   return (
     <>

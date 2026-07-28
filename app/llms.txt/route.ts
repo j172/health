@@ -1,6 +1,6 @@
 import { listRecentNewsForLlms } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
-import { getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
+import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export async function GET(): Promise<Response> {
   const lines: string[] = [
     `# ${SITE_NAME}`,
     "",
-    "> 彙整台灣衛生福利部及各署即時公告、主要新聞媒體健康版面的繁體中文健康與醫療新聞。",
+    `> ${SITE_DESCRIPTION}`,
     "",
     `- 最新新聞: ${baseUrl}/news`,
     `- Sitemap: ${baseUrl}/sitemap.xml`,

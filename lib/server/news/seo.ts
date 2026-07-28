@@ -4,7 +4,7 @@ import type { NewsListItem, NewsDetailItem } from "./queries";
 import { resolveAuthorLabel } from "./sourceLabels";
 
 export const SITE_NAME = "j172tw Health";
-const SITE_DESCRIPTION = "彙整衛生福利部及各署即時公告、主要新聞媒體健康版面，提供繁體中文健康與醫療新聞總覽。";
+export const SITE_DESCRIPTION = "彙整台灣官方機構健康新聞、ESG永續發展與企業社會責任報導，以及中央氣象署即時警報，提供繁體中文公共資訊總覽。";
 
 export const getBaseUrl = (): string => (process.env.APP_BASE_URL?.trim() || "https://health.j172.tw").replace(/\/$/, "");
 

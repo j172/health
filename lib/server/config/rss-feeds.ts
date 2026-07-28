@@ -124,4 +124,39 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://feeds.feedburner.com/rsscna/lifehealth",
     sourceName: "cna",
   },
+  {
+    code: "cwa_warning",
+    name: "中央氣象署－警報、特報",
+    url: "https://www.cwa.gov.tw/rss/Data/cwa_warning.xml",
+    sourceName: "cwa",
+  },
+  {
+    code: "csr_cw",
+    name: "CSR@天下",
+    url: "https://news.google.com/rss/search?q=site:csr.cw.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "csr_cw",
+    // Google News links redirect through an interstitial page instead of the real article.
+    skipDetailFetch: true,
+  },
+  {
+    code: "esg_gvm",
+    name: "ESG遠見",
+    url: "https://news.google.com/rss/search?q=site:esg.gvm.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "esg_gvm",
+    skipDetailFetch: true,
+  },
+  {
+    code: "esg_businesstoday",
+    name: "ESG今周刊",
+    url: "https://news.google.com/rss/search?q=site:esg.businesstoday.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "esg_businesstoday",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ubrand_udn",
+    name: "倡議家",
+    url: "https://news.google.com/rss/search?q=site:ubrand.udn.com&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "ubrand_udn",
+    skipDetailFetch: true,
+  },
 ];
