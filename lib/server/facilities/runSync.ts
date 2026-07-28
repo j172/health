@@ -1,5 +1,4 @@
 import { upsertFacilities, type FacilityRecord } from "@/lib/server/facilities/queries";
-import { fetchKcgLongTermCareHome } from "@/lib/server/facilities/sources/kcgLongTermCareHome";
 import { fetchTfdaPharmacies } from "@/lib/server/facilities/sources/tfdaPharmacies";
 import { fetchMolHealthCheckFacilities } from "@/lib/server/facilities/sources/molHealthCheckFacility";
 import { fetchMolOccupationalInjuryHospitals } from "@/lib/server/facilities/sources/molOccupationalInjuryHospital";
@@ -15,7 +14,6 @@ export interface FacilitySyncResult {
 // Registry of facility sources — add one entry per source as they're wired up
 // (drugs, health-checks, etc.), each behind its own fetch function.
 const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
-  { key: "kcg_home_care", fetch: fetchKcgLongTermCareHome },
   { key: "tfda_pharmacy", fetch: fetchTfdaPharmacies },
   { key: "mol_labor_checkup", fetch: fetchMolHealthCheckFacilities },
   { key: "mol_occupational_injury", fetch: fetchMolOccupationalInjuryHospitals },
