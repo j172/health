@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 export const runtime = "nodejs";
 
@@ -50,10 +51,12 @@ async function fetchAllSites(): Promise<AqiSite[]> {
   }
 
   const url = `${MOENV_AQI_URL}?format=json&limit=1000&api_key=${encodeURIComponent(apiKey)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`MOENV AQI request failed: HTTP ${res.status}`);
+  // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
+  // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
+  const { status, text } = await httpGetText(url);
+  if (status < 200 || status >= 300) throw new Error(`MOENV AQI request failed: HTTP ${status}`);
 
-  const data = await res.json();
+  const data = JSON.parse(text);
   const records: Record<string, unknown>[] = Array.isArray(data) ? data : (data.records ?? []);
 
   const sites: AqiSite[] = records

@@ -1,4 +1,5 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 // 高雄市政府社會局 — 居家式服務類長期照顧服務機構
 // https://openapi.kcg.gov.tw/Api/Service/Get/59ac925f-10dd-42f7-a540-ab6c4218b93d
@@ -26,10 +27,12 @@ const parseCoord = (v: string): number | null => {
 };
 
 export async function fetchKcgLongTermCareHome(): Promise<FacilityRecord[]> {
-  const res = await fetch(SOURCE_URL);
-  if (!res.ok) throw new Error(`KCG long-term care request failed: HTTP ${res.status}`);
+  // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
+  // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
+  const { status, text } = await httpGetText(SOURCE_URL);
+  if (status < 200 || status >= 300) throw new Error(`KCG long-term care request failed: HTTP ${status}`);
 
-  const json: KcgResponse = await res.json();
+  const json: KcgResponse = JSON.parse(text);
   const items = Array.isArray(json.data) ? json.data : [];
 
   return items
