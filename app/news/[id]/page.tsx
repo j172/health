@@ -63,6 +63,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
       ? { url: news.card_image_url, caption: null, isPixabay: true }
       : null;
   const attachments = assets.filter((asset) => asset.asset_type === "attachment" && /^https?:\/\//i.test(asset.url));
+  const keywords = Array.from(new Set((news.keywords ?? "").split(",").map((value) => value.trim()).filter(Boolean)));
   const articleHtml = news.detail_html || news.description_html || "<p>此則新聞目前沒有可顯示的完整內容。</p>";
   const jsonLd = buildArticleJsonLd(news);
   const authorLabel = resolveAuthorLabel(news);
@@ -134,6 +135,21 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
 
         <div className="mx-auto max-w-3xl px-6 pb-6 pt-10 sm:px-8 sm:pt-14">
           <NewsArticleBody html={articleHtml} title={news.title} sourceUrl={news.canonical_url} />
+
+          {keywords.length > 0 ? (
+            <ul className="mt-8 flex flex-wrap gap-2" aria-label="相關標籤">
+              {keywords.map((keyword) => (
+                <li key={keyword}>
+                  <Link
+                    href={`/news?keyword=${encodeURIComponent(keyword)}`}
+                    className="inline-block rounded-full bg-neutral-100 px-3 py-1 text-sm text-neutral-600 transition-colors hover:bg-neutral-200 hover:text-neutral-900"
+                  >
+                    #{keyword}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : null}
 
           {attachments.length > 0 ? (
             <section className="mt-14 border-y border-neutral-200 py-7" aria-labelledby="news-attachments-title">

@@ -62,8 +62,27 @@ export const listRecentNewsForLlms = async (limit = 100): Promise<NewsGeoSummary
     return rows as unknown as NewsGeoSummaryItem[];
   });
 
-export const listLatestNews = async (limit = 50, offset = 0, sourceName?: string): Promise<NewsListItem[]> =>
+// Matches a single comma-separated keyword tag exactly (via comma-bounded
+// substring), so filtering by "健康" doesn't also match "健康新聞" or similar.
+const KEYWORD_MATCH_SQL = "CONCAT(',', n.keywords, ',') LIKE CONCAT('%,', ?, ',%')";
+
+const buildNewsFilter = (sourceName?: string, keyword?: string): { whereClause: string; params: unknown[] } => {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+  if (sourceName) {
+    conditions.push("n.source_name = ?");
+    params.push(sourceName);
+  }
+  if (keyword) {
+    conditions.push(KEYWORD_MATCH_SQL);
+    params.push(keyword);
+  }
+  return { whereClause: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "", params };
+};
+
+export const listLatestNews = async (limit = 50, offset = 0, sourceName?: string, keyword?: string): Promise<NewsListItem[]> =>
   withConnection(async (conn) => {
+    const { whereClause, params } = buildNewsFilter(sourceName, keyword);
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
@@ -88,22 +107,20 @@ export const listLatestNews = async (limit = 50, offset = 0, sourceName?: string
              c.contributor_name AS card_image_contributor
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
-      ${sourceName ? "WHERE n.source_name = ?" : ""}
+      ${whereClause}
       ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
       LIMIT ? OFFSET ?
       `,
-      sourceName ? [sourceName, limit, offset] : [limit, offset],
+      [...params, limit, offset],
     );
 
     return rows as unknown as NewsListItem[];
   });
 
-export const countNewsItems = async (sourceName?: string): Promise<number> =>
+export const countNewsItems = async (sourceName?: string, keyword?: string): Promise<number> =>
   withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT COUNT(*) AS total FROM news_items ${sourceName ? "WHERE source_name = ?" : ""}`,
-      sourceName ? [sourceName] : [],
-    );
+    const { whereClause, params } = buildNewsFilter(sourceName, keyword);
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items n ${whereClause}`, params);
     return Number(rows[0]?.total ?? 0);
   });
 

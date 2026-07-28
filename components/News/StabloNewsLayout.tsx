@@ -158,17 +158,19 @@ interface Pagination {
   currentPage: number;
   totalPages: number;
   sourceName?: string;
+  keyword?: string;
 }
 
-const pageHref = (page: number, sourceName?: string): string => {
+const pageHref = (page: number, sourceName?: string, keyword?: string): string => {
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (sourceName) params.set("source", sourceName);
+  if (keyword) params.set("keyword", keyword);
   const query = params.toString();
   return query ? `/news?${query}` : "/news";
 };
 
-const Pagination = ({ currentPage, totalPages, sourceName }: Pagination) => {
+const Pagination = ({ currentPage, totalPages, sourceName, keyword }: Pagination) => {
   if (totalPages <= 1) return null;
 
   const prevDisabled = currentPage <= 1;
@@ -179,7 +181,7 @@ const Pagination = ({ currentPage, totalPages, sourceName }: Pagination) => {
       {prevDisabled ? (
         <span className="cursor-not-allowed text-neutral-300">← 上一頁</span>
       ) : (
-        <Link href={pageHref(currentPage - 1, sourceName)} className="transition-colors hover:text-neutral-900">
+        <Link href={pageHref(currentPage - 1, sourceName, keyword)} className="transition-colors hover:text-neutral-900">
           ← 上一頁
         </Link>
       )}
@@ -191,7 +193,7 @@ const Pagination = ({ currentPage, totalPages, sourceName }: Pagination) => {
       {nextDisabled ? (
         <span className="cursor-not-allowed text-neutral-300">下一頁 →</span>
       ) : (
-        <Link href={pageHref(currentPage + 1, sourceName)} className="transition-colors hover:text-neutral-900">
+        <Link href={pageHref(currentPage + 1, sourceName, keyword)} className="transition-colors hover:text-neutral-900">
           下一頁 →
         </Link>
       )}
@@ -204,11 +206,13 @@ export default function StabloNewsLayout({
   variant,
   pagination,
   archiveTitle,
+  archiveDescription,
 }: {
   items: NewsListItem[];
   variant: Variant;
   pagination?: Pagination;
   archiveTitle?: string;
+  archiveDescription?: string;
 }) {
   const featured = items[0];
   const side = items.slice(1, 3);
@@ -268,7 +272,7 @@ export default function StabloNewsLayout({
             <section className="mb-10">
               <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">{archiveTitle ?? "News"}</h1>
               <p className="mt-2 text-[16px] leading-6 text-neutral-800">
-                {archiveTitle ? `來自${archiveTitle}的新聞。` : "See all posts we have ever written."}
+                {archiveDescription ?? (archiveTitle ? `來自${archiveTitle}的新聞。` : "See all posts we have ever written.")}
               </p>
             </section>
 
@@ -283,7 +287,12 @@ export default function StabloNewsLayout({
             )}
 
             {pagination ? (
-              <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} sourceName={pagination.sourceName} />
+              <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                sourceName={pagination.sourceName}
+                keyword={pagination.keyword}
+              />
             ) : null}
           </>
         )}
