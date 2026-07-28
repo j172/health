@@ -494,6 +494,42 @@ if (str_starts_with($path, '/images/news/pixabay/')) {
     exit;
 }
 
+if (str_starts_with($path, '/images/news/articles/')) {
+    $relative = rawurldecode(substr($path, strlen('/images/news/articles/')));
+    $root = '/home/tw123457/health_app/public/images/news/articles';
+    $rootReal = realpath($root);
+    $fileReal = $relative === '' ? false : realpath($root . '/' . $relative);
+
+    if ($rootReal === false || $fileReal === false || !is_file($fileReal) || !str_starts_with($fileReal, $rootReal . DIRECTORY_SEPARATOR)) {
+        http_response_code(404);
+        header('Content-Type: text/plain; charset=utf-8');
+        header('Cache-Control: no-store');
+        echo 'Image not found';
+        exit;
+    }
+
+    $types = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'webp' => 'image/webp',
+        'gif' => 'image/gif',
+    ];
+    $extension = strtolower(pathinfo($fileReal, PATHINFO_EXTENSION));
+    if (!isset($types[$extension])) {
+        http_response_code(415);
+        exit;
+    }
+
+    header('Content-Type: ' . $types[$extension]);
+    header('Cache-Control: public, max-age=31536000, immutable');
+    header('Content-Length: ' . filesize($fileReal));
+    if ($method !== 'HEAD') {
+        readfile($fileReal);
+    }
+    exit;
+}
+
 if (str_starts_with($path, '/_next/static/')) {
     $relative = rawurldecode(substr($path, strlen('/_next/static/')));
     if ($relative === '' || str_contains($relative, "\0") || str_contains($relative, '..')) {
