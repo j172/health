@@ -132,6 +132,9 @@ export const StabloHeader = () => (
         {SOURCE_CATEGORIES.map((category) => (
           <NavDropdown key={category.label} label={category.label} sources={category.sources} />
         ))}
+        <a href="https://www.j172.tw" target="_blank" rel="noreferrer noopener" className="transition-colors hover:text-neutral-900">
+          j172.tw
+        </a>
       </nav>
     </div>
   </header>

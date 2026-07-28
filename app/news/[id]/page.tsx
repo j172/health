@@ -182,6 +182,16 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
             <h2 className="mt-2 text-xl font-semibold text-neutral-900">{authorLabel}</h2>
             <p className="mt-3 text-[15px] leading-7 text-neutral-600">本頁彙整自政府機關及新聞媒體之公開資訊，內容與附件以原始來源公告為準。</p>
           </aside>
+
+          <a
+            href="https://www.j172.tw"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="mt-6 flex items-center justify-between gap-4 border border-neutral-200 px-6 py-5 text-sm transition-colors hover:border-neutral-300 hover:bg-neutral-50 sm:px-8"
+          >
+            <span className="text-neutral-700">想了解更多？歡迎造訪 j172.tw</span>
+            <span className="font-medium text-neutral-900">前往 →</span>
+          </a>
         </div>
         </article>
       </main>
