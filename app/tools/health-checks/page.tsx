@@ -10,11 +10,11 @@ const canonical = `${getBaseUrl()}/tools/health-checks`;
 
 export const metadata: Metadata = {
   title: "健康檢查機構查詢",
-  description: "查詢勞工健康檢查認可醫療機構，支援關鍵字搜尋與附近定位。",
-  keywords: ["健康檢查機構", "勞工健檢", "健檢醫院"],
+  description: "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院，支援關鍵字搜尋與附近定位。",
+  keywords: ["健康檢查機構", "勞工健檢", "健檢醫院", "職業傷病防治網絡"],
   alternates: { canonical },
   robots: { index: false },
-  openGraph: { title: "健康檢查機構查詢", description: "查詢勞工健康檢查認可醫療機構。", url: canonical },
+  openGraph: { title: "健康檢查機構查詢", description: "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院。", url: canonical },
 };
 
 export default function HealthChecksPage() {

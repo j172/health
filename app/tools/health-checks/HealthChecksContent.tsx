@@ -72,7 +72,7 @@ export default function HealthChecksContent() {
     <div className="space-y-6">
       <div>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">🩻 健康檢查機構查詢</h1>
-        <p className="text-neutral-600">查詢勞工健康檢查認可醫療機構。資料來源：勞動部。</p>
+        <p className="text-neutral-600">查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院。資料來源：勞動部。</p>
         <p className="mt-1 text-xs text-neutral-500">⚠️ 老人免費健檢機構資料源目前無法連線，暫未收錄。</p>
       </div>
 
