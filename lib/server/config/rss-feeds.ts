@@ -118,4 +118,10 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://twstreetcorner.org/feed/",
     sourceName: "twstreetcorner",
   },
+  {
+    code: "cna_lifehealth",
+    name: "中央社－生活醫藥",
+    url: "https://feeds.feedburner.com/rsscna/lifehealth",
+    sourceName: "cna",
+  },
 ];

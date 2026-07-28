@@ -52,7 +52,16 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
   }
 
   const assets = await listNewsAssetsByNewsId(news.id);
-  const hero = assets.find((asset) => asset.asset_type === "image" && /^https?:\/\//i.test(asset.url));
+  const heroAsset = assets.find((asset) => asset.asset_type === "image" && /^https?:\/\//i.test(asset.url));
+  // Falls back to the Pixabay image already assigned for the /news card
+  // thumbnail — previously only shown in the list, leaving the detail page
+  // with no hero image at all for articles whose source had no photo of
+  // its own (e.g. news/3087).
+  const hero = heroAsset
+    ? { url: heroAsset.url, caption: heroAsset.title, isPixabay: false }
+    : news.card_image_url && news.card_image_source === "pixabay"
+      ? { url: news.card_image_url, caption: null, isPixabay: true }
+      : null;
   const attachments = assets.filter((asset) => asset.asset_type === "attachment" && /^https?:\/\//i.test(asset.url));
   const articleHtml = news.detail_html || news.description_html || "<p>此則新聞目前沒有可顯示的完整內容。</p>";
   const jsonLd = buildArticleJsonLd(news);
@@ -100,10 +109,26 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
 
         {hero ? (
           <figure className="mx-auto max-w-screen-lg px-4 sm:px-8">
-            {/* External MOHW images are rendered directly to avoid coupling article availability to Next image optimization. */}
+            {/* External/source images are rendered directly to avoid coupling article availability to Next image optimization. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={hero.url} alt={hero.title || news.title} className="max-h-[42rem] w-full bg-neutral-100 object-contain" />
-            {hero.title ? <figcaption className="mt-3 text-center text-xs text-neutral-500">{hero.title}</figcaption> : null}
+            <img src={hero.url} alt={hero.caption || news.title} className="max-h-[42rem] w-full bg-neutral-100 object-contain" />
+            {hero.caption ? (
+              <figcaption className="mt-3 text-center text-xs text-neutral-500">{hero.caption}</figcaption>
+            ) : hero.isPixabay ? (
+              <figcaption className="mt-3 text-center text-xs text-neutral-500">
+                示意圖：Pixabay
+                {news.card_image_contributor ? ` · ${news.card_image_contributor}` : ""}
+                {news.card_image_source_page_url ? (
+                  <>
+                    {" "}
+                    ·{" "}
+                    <a href={news.card_image_source_page_url} target="_blank" rel="noreferrer noopener" className="underline decoration-neutral-300 underline-offset-4 hover:text-neutral-800">
+                      來源
+                    </a>
+                  </>
+                ) : null}
+              </figcaption>
+            ) : null}
           </figure>
         ) : null}
 

@@ -28,6 +28,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "top1health", label: "華人健康網" },
       { sourceName: "mamaclub", label: "媽媽經" },
       { sourceName: "twstreetcorner", label: "巷仔口社會學" },
+      { sourceName: "cna", label: "中央社" },
     ],
   },
 ];
