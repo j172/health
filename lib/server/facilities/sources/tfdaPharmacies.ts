@@ -17,6 +17,10 @@ interface TfdaPharmacyRaw {
   是否為健保特約藥局: string;
 }
 
+// TFDA's address field uses fullwidth digits (０-９), which don't match \d in
+// regex and read oddly — normalize to ASCII once at ingestion time.
+const toHalfwidthDigits = (s: string): string => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
+
 export async function fetchTfdaPharmacies(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
   // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
@@ -28,7 +32,7 @@ export async function fetchTfdaPharmacies(): Promise<FacilityRecord[]> {
   return raw
     .filter((item) => item.機構狀態 === "開業" && item.機構名稱)
     .map((item, index) => {
-      const address = `${item.地址縣市別}${item.地址鄉鎮市區}${item.地址街道巷弄號}`;
+      const address = toHalfwidthDigits(`${item.地址縣市別}${item.地址鄉鎮市區}${item.地址街道巷弄號}`);
       return {
         facilityType: "pharmacy",
         sourceKey: "tfda_pharmacy",
