@@ -39,16 +39,17 @@ export const toHalfwidthDigits = (s: string): string => s.replace(/[０-９]/g, 
  *   - fullwidth digits → halfwidth
  *   - drop parenthetical annotations, e.g. "（代表）", "(1樓)", "（環境職業醫學部）"
  *   - keep only the first address when multiple full addresses are listed,
- *     separated by a full/half-width comma (e.g. "…路56號及58號，成功路182-2號" —
- *     genuinely two different streets). A 、 (Chinese enumeration comma) is
- *     left alone, since that far more often just lists multiple house
- *     numbers on the *same* street (e.g. "八德路2段424、426號") — splitting on
- *     it would chop the "號" unit off the first number.
+ *     separated by a full/half-width comma or "及" ("and" — e.g. "…路56號，
+ *     成功路182-2號" or "復興街5號、5之7號及文化一路15號" — genuinely different
+ *     streets). A 、 (Chinese enumeration comma) on its own is left alone,
+ *     since that far more often just lists multiple house numbers on the
+ *     *same* street (e.g. "八德路2段424、426號") — splitting on it would chop
+ *     the "號" unit off the first number.
  *   - collapse/trim whitespace
  */
 export function normalizeAddress(raw: string): string {
   const halfwidth = toHalfwidthDigits(raw);
-  const firstAddress = halfwidth.split(/[,，]/)[0];
+  const firstAddress = halfwidth.split(/[,，]|及/)[0];
   const withoutParens = firstAddress.replace(/[（(][^）)]*[）)]/g, "");
   return withoutParens.replace(/\s+/g, " ").trim();
 }
