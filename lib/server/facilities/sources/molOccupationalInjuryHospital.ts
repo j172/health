@@ -1,5 +1,6 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
+import { normalizeAddress, toHalfwidthDigits } from "@/lib/server/facilities/csv";
 
 // 勞動部職業傷病防治網絡醫院開放資料
 // https://apiservice.mol.gov.tw/OdService/download/A17000000J-030081-puW
@@ -14,8 +15,6 @@ interface MolOccupationalRaw {
   聯絡人: string;
   地址: string;
 }
-
-const toHalfwidthDigits = (s: string): string => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
 
 export async function fetchMolOccupationalInjuryHospitals(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
@@ -32,7 +31,7 @@ export async function fetchMolOccupationalInjuryHospitals(): Promise<FacilityRec
       sourceKey: "mol_occupational_injury",
       sourceId: r.序號 || r.醫療機構名稱,
       name: r.醫療機構名稱,
-      address: toHalfwidthDigits(r.地址 || ""),
+      address: normalizeAddress(r.地址 || ""),
       phone: r.市話 ? toHalfwidthDigits(r.市話) + (r.分機 ? ` 分機${toHalfwidthDigits(r.分機)}` : "") : null,
       lat: null,
       lng: null,

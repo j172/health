@@ -1,6 +1,6 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
-import { parseCsv, toHalfwidthDigits } from "@/lib/server/facilities/csv";
+import { parseCsv, normalizeAddress, toHalfwidthDigits } from "@/lib/server/facilities/csv";
 
 // 全民健康保險特約醫事機構名冊（依特約類別分檔）
 // https://info.nhi.gov.tw/api/iode0000s01/Dataset?rId=<dataset>
@@ -35,7 +35,7 @@ export async function fetchNhiHospitals(): Promise<FacilityRecord[]> {
         sourceKey: "nhi_hospital",
         sourceId: code,
         name,
-        address: toHalfwidthDigits(row["地址"] || ""),
+        address: normalizeAddress(row["地址"] || ""),
         phone: row["電話"] ? toHalfwidthDigits(row["電話"]) : null,
         lat: null,
         lng: null,

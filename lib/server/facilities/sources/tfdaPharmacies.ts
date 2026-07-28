@@ -1,5 +1,6 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
+import { normalizeAddress } from "@/lib/server/facilities/csv";
 
 // 衛福部食藥署藥局管理系統開放資料
 // https://data.fda.gov.tw/data/opendata/export/35/json
@@ -17,10 +18,6 @@ interface TfdaPharmacyRaw {
   是否為健保特約藥局: string;
 }
 
-// TFDA's address field uses fullwidth digits (０-９), which don't match \d in
-// regex and read oddly — normalize to ASCII once at ingestion time.
-const toHalfwidthDigits = (s: string): string => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
-
 export async function fetchTfdaPharmacies(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
   // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
@@ -32,15 +29,19 @@ export async function fetchTfdaPharmacies(): Promise<FacilityRecord[]> {
   return raw
     .filter((item) => item.機構狀態 === "開業" && item.機構名稱)
     .map((item, index) => {
-      const address = toHalfwidthDigits(`${item.地址縣市別}${item.地址鄉鎮市區}${item.地址街道巷弄號}`);
+      // sourceId is derived from the *raw* (un-normalized) address and must stay
+      // that way — normalizeAddress()'s output is free to change as the function
+      // improves, and if the ID were derived from its output, every such change
+      // would re-derive a new ID for every row and duplicate the whole table
+      // instead of updating it.
+      const rawAddress = `${item.地址縣市別}${item.地址鄉鎮市區}${item.地址街道巷弄號}`;
       return {
         facilityType: "pharmacy",
         sourceKey: "tfda_pharmacy",
-        // The dataset has no stable unique ID field, so derive one from name+address
-        // (kept short/deterministic so re-ingesting the same record upserts, not duplicates).
-        sourceId: `${item.機構名稱}|${address}`.slice(0, 100) || `row-${index}`,
+        // The dataset has no stable unique ID field, so derive one from name+address.
+        sourceId: `${item.機構名稱}|${rawAddress}`.slice(0, 100) || `row-${index}`,
         name: item.機構名稱,
-        address,
+        address: normalizeAddress(rawAddress),
         phone: item.電話 || null,
         lat: null,
         lng: null,

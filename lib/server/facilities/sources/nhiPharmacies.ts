@@ -1,6 +1,6 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
-import { parseCsv, toHalfwidthDigits } from "@/lib/server/facilities/csv";
+import { parseCsv, normalizeAddress, toHalfwidthDigits } from "@/lib/server/facilities/csv";
 
 // 全民健康保險特約藥局名冊（特約類別 5）
 // Same underlying dataset family as nhiHospitals.ts (tiers 1-4), kept as its
@@ -26,7 +26,7 @@ export async function fetchNhiPharmacies(): Promise<FacilityRecord[]> {
       sourceKey: "nhi_pharmacy",
       sourceId: row["醫事機構代碼"],
       name: row["醫事機構名稱"],
-      address: toHalfwidthDigits(row["地址"] || ""),
+      address: normalizeAddress(row["地址"] || ""),
       phone: row["電話"] ? toHalfwidthDigits(row["電話"]) : null,
       lat: null,
       lng: null,

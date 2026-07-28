@@ -1,5 +1,6 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
+import { normalizeAddress, toHalfwidthDigits } from "@/lib/server/facilities/csv";
 
 // 勞動部勞工體格及健康檢查認可醫療機構開放資料
 // https://apiservice.mol.gov.tw/OdService/rest/datastore/A17000000J-020057-Nvt
@@ -23,9 +24,6 @@ interface MolResponse {
   result: { records: MolRawRecord[] };
 }
 
-// This dataset also uses fullwidth digits (０-９) in addresses.
-const toHalfwidthDigits = (s: string): string => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
-
 export async function fetchMolHealthCheckFacilities(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
   // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
@@ -42,7 +40,7 @@ export async function fetchMolHealthCheckFacilities(): Promise<FacilityRecord[]>
       sourceKey: "mol_labor_checkup",
       sourceId: r.醫療機構代碼,
       name: r.醫療機構名稱,
-      address: toHalfwidthDigits(r.醫療機構地址 || ""),
+      address: normalizeAddress(r.醫療機構地址 || ""),
       phone: r.連絡電話 ? toHalfwidthDigits(r.連絡電話) + (r.分機號碼 && r.分機號碼 !== "0" ? ` 分機${toHalfwidthDigits(r.分機號碼)}` : "") : null,
       lat: null,
       lng: null,
