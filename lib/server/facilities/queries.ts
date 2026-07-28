@@ -47,8 +47,13 @@ export const upsertFacilities = async (records: FacilityRecord[]): Promise<{ ins
           name = VALUES(name),
           address = VALUES(address),
           phone = VALUES(phone),
-          lat = VALUES(lat),
-          lng = VALUES(lng),
+          -- Sources with no coordinates of their own (pharmacies, health-checks)
+          -- always re-sync lat/lng as NULL; don't let that clobber coordinates
+          -- a geocode backfill already filled in. Sources that do carry real
+          -- coordinates (e.g. Kaohsiung long-term-care) still update normally
+          -- since VALUES(lat) is non-null and wins.
+          lat = COALESCE(VALUES(lat), lat),
+          lng = COALESCE(VALUES(lng), lng),
           service_item = VALUES(service_item),
           service_time = VALUES(service_time),
           data_org = VALUES(data_org),
