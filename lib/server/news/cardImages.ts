@@ -11,6 +11,12 @@ const API_RESULTS_PER_PAGE = 100;
 const MAX_API_PAGES = 5;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
+// Each term gets its own up-to-500-hit Pixabay pool (see searchHealthImages),
+// so rotating through several keeps a much larger reservoir of still-unused
+// candidates than a single fixed query can offer once the site has assigned
+// a few hundred images.
+const SEARCH_TERMS = ["health", "medical", "hospital", "doctor", "medicine", "wellness", "nutrition", "fitness", "pharmacy", "clinic"];
+
 interface MissingNewsRow extends RowDataPacket {
   id: number;
 }
@@ -55,8 +61,8 @@ const shuffled = <T>(values: T[]): T[] => {
   return copy;
 };
 
-const getCachedSearchPage = async (conn: PoolConnection, page: number): Promise<PixabaySearchResponse> => {
-  const cacheKey = `health-horizontal-photo-safe-v1-per-${API_RESULTS_PER_PAGE}-page-${page}`;
+const getCachedSearchPage = async (conn: PoolConnection, term: string, page: number): Promise<PixabaySearchResponse> => {
+  const cacheKey = `health-horizontal-photo-safe-v2-${term}-per-${API_RESULTS_PER_PAGE}-page-${page}`;
   const [cachedRows] = await conn.execute<CacheRow[]>(
     `
     SELECT response_json
@@ -76,7 +82,7 @@ const getCachedSearchPage = async (conn: PoolConnection, page: number): Promise<
     }
   }
 
-  const response = await searchHealthImages(page, API_RESULTS_PER_PAGE);
+  const response = await searchHealthImages(term, page, API_RESULTS_PER_PAGE);
   await conn.execute(
     `
     INSERT INTO pixabay_api_cache (cache_key, response_json, fetched_at_utc)
@@ -91,10 +97,13 @@ const getCachedSearchPage = async (conn: PoolConnection, page: number): Promise<
 const loadCandidates = async (conn: PoolConnection, usedIds: Set<number>, needed: number): Promise<PixabayImage[]> => {
   const candidates: PixabayImage[] = [];
   const targetCandidateCount = Math.max(20, needed * 3);
-  for (let page = 1; page <= MAX_API_PAGES; page += 1) {
-    const result = await getCachedSearchPage(conn, page);
-    candidates.push(...result.hits.filter((hit) => !usedIds.has(hit.id)));
-    if (candidates.length >= targetCandidateCount || page * API_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
+  for (const term of SEARCH_TERMS) {
+    for (let page = 1; page <= MAX_API_PAGES; page += 1) {
+      const result = await getCachedSearchPage(conn, term, page);
+      candidates.push(...result.hits.filter((hit) => !usedIds.has(hit.id)));
+      if (candidates.length >= targetCandidateCount || page * API_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
+    }
+    if (candidates.length >= targetCandidateCount) break;
   }
   return shuffled(candidates);
 };

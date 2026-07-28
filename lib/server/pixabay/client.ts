@@ -30,13 +30,20 @@ export class PixabayConfigurationError extends Error {
   }
 }
 
-export const searchHealthImages = async (page: number, perPage = 200): Promise<PixabaySearchResponse> => {
+export const searchHealthImages = async (term: string, page: number, perPage = 200): Promise<PixabaySearchResponse> => {
   if (!env.pixabayApiKey) {
     throw new PixabayConfigurationError();
   }
 
+  // Pixabay caps any single query at 500 retrievable hits regardless of the
+  // reported `total` — a fixed category-only search exhausts its pool after
+  // a few hundred assignments (confirmed live: near-100% "content failed
+  // validation" once nearly every candidate from the old fixed query was
+  // already used). Adding a rotating free-text term alongside the category
+  // gives each term its own up-to-500-hit pool, multiplying total coverage.
   const params = new URLSearchParams({
     key: env.pixabayApiKey,
+    q: term,
     category: "health",
     image_type: "photo",
     orientation: "horizontal",
