@@ -8,6 +8,7 @@ const TIERS: { rId: string; tier: string }[] = [
   { rId: "A21030000I-D21001-003", tier: "醫學中心" },
   { rId: "A21030000I-D21002-005", tier: "區域醫院" },
   { rId: "A21030000I-D21003-003", tier: "地區醫院" },
+  { rId: "A21030000I-D21004-009", tier: "基層診所" },
 ];
 
 const BASE_URL = "https://info.nhi.gov.tw/api/iode0000s01/Dataset?rId=";

@@ -30,19 +30,40 @@ export interface FacilityListItem {
   data_org: string | null;
 }
 
-/** Upserts a batch of facility records for one source, keyed by (source_key, source_id). */
+const UPSERT_BATCH_SIZE = 500;
+
+/** Upserts a batch of facility records for one source, keyed by (source_key, source_id). Chunks into multi-row INSERTs — sources like NHI's clinic tier run to tens of thousands of rows, and one round-trip per row doesn't scale. */
 export const upsertFacilities = async (records: FacilityRecord[]): Promise<{ inserted: number; updated: number }> =>
   withConnection(async (conn) => {
     let inserted = 0;
     let updated = 0;
     const now = utcNowSql();
 
-    for (const r of records) {
+    for (let i = 0; i < records.length; i += UPSERT_BATCH_SIZE) {
+      const chunk = records.slice(i, i + UPSERT_BATCH_SIZE);
+      const values = chunk.map((r) => [
+        r.facilityType,
+        r.sourceKey,
+        r.sourceId,
+        r.name,
+        r.address,
+        r.phone,
+        r.lat,
+        r.lng,
+        r.serviceItem,
+        r.serviceTime,
+        r.dataOrg,
+        r.extra ? JSON.stringify(r.extra) : null,
+        now,
+        now,
+        now,
+      ]);
+
       const [result] = await conn.query(
         `
         INSERT INTO facilities
           (facility_type, source_key, source_id, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json, synced_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES ?
         ON DUPLICATE KEY UPDATE
           name = VALUES(name),
           address = VALUES(address),
@@ -61,28 +82,15 @@ export const upsertFacilities = async (records: FacilityRecord[]): Promise<{ ins
           synced_at = VALUES(synced_at),
           updated_at = VALUES(updated_at)
         `,
-        [
-          r.facilityType,
-          r.sourceKey,
-          r.sourceId,
-          r.name,
-          r.address,
-          r.phone,
-          r.lat,
-          r.lng,
-          r.serviceItem,
-          r.serviceTime,
-          r.dataOrg,
-          r.extra ? JSON.stringify(r.extra) : null,
-          now,
-          now,
-          now,
-        ],
+        [values],
       );
-      // affectedRows is 1 for a plain insert, 2 for an update (MySQL's upsert convention).
+
+      // MySQL's upsert convention: affectedRows = 1 per new row + 2 per updated row.
+      // So for a chunk of N rows, updated = affectedRows - N, inserted = N - updated.
       const affected = (result as { affectedRows: number }).affectedRows;
-      if (affected === 1) inserted++;
-      else updated++;
+      const chunkUpdated = affected - chunk.length;
+      updated += chunkUpdated;
+      inserted += chunk.length - chunkUpdated;
     }
 
     return { inserted, updated };
