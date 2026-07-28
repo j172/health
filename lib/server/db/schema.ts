@@ -107,6 +107,30 @@ export const TABLE_DDL = {
       KEY idx_ingest_status (status)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  facilities: `
+    CREATE TABLE IF NOT EXISTS facilities (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      facility_type VARCHAR(40) NOT NULL,
+      source_key VARCHAR(40) NOT NULL,
+      source_id VARCHAR(100) NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      address VARCHAR(500) NULL,
+      phone VARCHAR(100) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      service_item VARCHAR(255) NULL,
+      service_time VARCHAR(255) NULL,
+      data_org VARCHAR(255) NULL,
+      extra_json JSON NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_facility_source (source_key, source_id),
+      KEY idx_facility_type (facility_type),
+      KEY idx_facility_geo (lat, lng)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestErrors: `
     CREATE TABLE IF NOT EXISTS ingest_errors (
       id BIGINT NOT NULL AUTO_INCREMENT,

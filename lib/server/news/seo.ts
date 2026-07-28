@@ -148,6 +148,18 @@ export const buildWebsiteJsonLd = (): Record<string, unknown> => {
   };
 };
 
+/** Generic BreadcrumbList schema for non-article pages (e.g. /tools/*). */
+export const buildBreadcrumbJsonLd = (items: { name: string; url: string }[]): Record<string, unknown> => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: items.map((item, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    item: item.url,
+  })),
+});
+
 /** ItemList schema for a news listing page (home or /news archive), so
  * crawlers and AI agents can enumerate the current batch of articles as
  * structured data rather than only inferring it from card markup. */

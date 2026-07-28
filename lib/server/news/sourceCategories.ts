@@ -4,13 +4,16 @@ export interface SourceLink {
 }
 
 export interface SourceCategory {
+  /** URL-safe slug used by the /news?group= filter. */
+  key: string;
   label: string;
   sources: SourceLink[];
 }
 
-/** Groups source_name values for the nav dropdowns; labels match lib/server/news/sourceLabels.ts. */
+/** Groups source_name values for the nav dropdowns and the /news?group= archive filter; labels match lib/server/news/sourceLabels.ts. */
 export const SOURCE_CATEGORIES: SourceCategory[] = [
   {
+    key: "gov",
     label: "官方機構",
     sources: [
       { sourceName: "mohw", label: "衛生福利部" },
@@ -21,6 +24,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
     ],
   },
   {
+    key: "media",
     label: "媒體／其他網站",
     sources: [
       { sourceName: "google_news", label: "Google 新聞" },
@@ -32,6 +36,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
     ],
   },
   {
+    key: "esg",
     label: "ESG／永續",
     sources: [
       { sourceName: "csr_cw", label: "CSR@天下" },

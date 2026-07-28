@@ -154,6 +154,9 @@ export const StabloHeader = async () => (
         {SOURCE_CATEGORIES.map((category) => (
           <NavDropdown key={category.label} label={category.label} sources={category.sources} />
         ))}
+        <Link href="/tools" className="transition-colors hover:text-neutral-900">
+          健康工具
+        </Link>
         <a href="https://www.j172.tw" target="_blank" rel="noreferrer noopener" className="transition-colors hover:text-neutral-900">
           j172.tw
         </a>
@@ -188,18 +191,20 @@ interface Pagination {
   totalPages: number;
   sourceName?: string;
   keyword?: string;
+  group?: string;
 }
 
-const pageHref = (page: number, sourceName?: string, keyword?: string): string => {
+const pageHref = (page: number, sourceName?: string, keyword?: string, group?: string): string => {
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
   if (sourceName) params.set("source", sourceName);
   if (keyword) params.set("keyword", keyword);
+  if (group && !sourceName) params.set("group", group);
   const query = params.toString();
   return query ? `/news?${query}` : "/news";
 };
 
-const Pagination = ({ currentPage, totalPages, sourceName, keyword }: Pagination) => {
+const Pagination = ({ currentPage, totalPages, sourceName, keyword, group }: Pagination) => {
   if (totalPages <= 1) return null;
 
   const prevDisabled = currentPage <= 1;
@@ -210,7 +215,7 @@ const Pagination = ({ currentPage, totalPages, sourceName, keyword }: Pagination
       {prevDisabled ? (
         <span className="cursor-not-allowed text-neutral-300">← 上一頁</span>
       ) : (
-        <Link href={pageHref(currentPage - 1, sourceName, keyword)} className="transition-colors hover:text-neutral-900">
+        <Link href={pageHref(currentPage - 1, sourceName, keyword, group)} className="transition-colors hover:text-neutral-900">
           ← 上一頁
         </Link>
       )}
@@ -222,7 +227,7 @@ const Pagination = ({ currentPage, totalPages, sourceName, keyword }: Pagination
       {nextDisabled ? (
         <span className="cursor-not-allowed text-neutral-300">下一頁 →</span>
       ) : (
-        <Link href={pageHref(currentPage + 1, sourceName, keyword)} className="transition-colors hover:text-neutral-900">
+        <Link href={pageHref(currentPage + 1, sourceName, keyword, group)} className="transition-colors hover:text-neutral-900">
           下一頁 →
         </Link>
       )}
@@ -230,18 +235,44 @@ const Pagination = ({ currentPage, totalPages, sourceName, keyword }: Pagination
   );
 };
 
+/** Coarse group tabs for the archive view — lets readers browse "all official sources"
+ * etc. as one merged feed instead of picking a single outlet from the nav dropdown. */
+const GroupTabs = ({ activeGroupKey }: { activeGroupKey?: string }) => (
+  <nav className="mb-8 flex flex-wrap gap-x-6 gap-y-2 border-b border-neutral-200 pb-3 text-sm font-medium" aria-label="來源分類">
+    <Link
+      href="/news"
+      className={activeGroupKey ? "text-neutral-500 transition-colors hover:text-neutral-900" : "text-neutral-900"}
+    >
+      全部
+    </Link>
+    {SOURCE_CATEGORIES.map((category) => (
+      <Link
+        key={category.key}
+        href={`/news?group=${category.key}`}
+        className={
+          activeGroupKey === category.key ? "text-neutral-900" : "text-neutral-500 transition-colors hover:text-neutral-900"
+        }
+      >
+        {category.label}
+      </Link>
+    ))}
+  </nav>
+);
+
 export default function StabloNewsLayout({
   items,
   variant,
   pagination,
   archiveTitle,
   archiveDescription,
+  activeGroupKey,
 }: {
   items: NewsListItem[];
   variant: Variant;
   pagination?: Pagination;
   archiveTitle?: string;
   archiveDescription?: string;
+  activeGroupKey?: string;
 }) {
   const featured = items[0];
   const side = items.slice(1, 3);
@@ -298,6 +329,8 @@ export default function StabloNewsLayout({
           </>
         ) : (
           <>
+            <GroupTabs activeGroupKey={activeGroupKey} />
+
             <section className="mb-10">
               <h1 className="text-[30px] font-semibold leading-9 tracking-[-0.025em] text-neutral-800">{archiveTitle ?? "News"}</h1>
               <p className="mt-2 text-[16px] leading-6 text-neutral-800">
@@ -321,6 +354,7 @@ export default function StabloNewsLayout({
                 totalPages={pagination.totalPages}
                 sourceName={pagination.sourceName}
                 keyword={pagination.keyword}
+                group={pagination.group}
               />
             ) : null}
           </>
