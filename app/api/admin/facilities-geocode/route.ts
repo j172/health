@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/server/config/env";
-import { findFacilitiesMissingCoords, updateFacilityCoords } from "@/lib/server/facilities/queries";
+import { findFacilitiesMissingCoords, updateFacilityCoords, recordGeocodeFailure } from "@/lib/server/facilities/queries";
 import { geocodeAddress } from "@/lib/server/facilities/geocode";
 
 export const runtime = "nodejs";
@@ -39,6 +39,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         await updateFacilityCoords(facility.id, coords.lat, coords.lng);
         geocoded++;
       } else {
+        await recordGeocodeFailure(facility.id);
         failed++;
       }
     }

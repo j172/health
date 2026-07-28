@@ -102,14 +102,22 @@ export interface FacilityMissingCoords {
 }
 
 /** Facilities of a given type/source that still need geocoding (address present, lat/lng missing). */
+// Addresses that have already failed this many times are skipped — a
+// deterministic geocoder will keep failing the same bad/imprecise address
+// forever, and letting those rows stay at the head of the ORDER BY id queue
+// would waste most of every batch's capacity re-trying known failures
+// instead of reaching rows that haven't been attempted yet.
+const MAX_GEOCODE_ATTEMPTS = 3;
+
 export const findFacilitiesMissingCoords = async (facilityType: string, sourceKey: string, limit: number): Promise<FacilityMissingCoords[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, address FROM facilities
        WHERE facility_type = ? AND source_key = ? AND lat IS NULL AND address IS NOT NULL AND address != ''
+         AND geocode_attempts < ?
        ORDER BY id ASC
        LIMIT ?`,
-      [facilityType, sourceKey, limit],
+      [facilityType, sourceKey, MAX_GEOCODE_ATTEMPTS, limit],
     );
     return rows as unknown as FacilityMissingCoords[];
   });
@@ -117,6 +125,11 @@ export const findFacilitiesMissingCoords = async (facilityType: string, sourceKe
 export const updateFacilityCoords = async (id: number, lat: number, lng: number): Promise<void> =>
   withConnection(async (conn) => {
     await conn.query("UPDATE facilities SET lat = ?, lng = ?, updated_at = ? WHERE id = ?", [lat, lng, utcNowSql(), id]);
+  });
+
+export const recordGeocodeFailure = async (id: number): Promise<void> =>
+  withConnection(async (conn) => {
+    await conn.query("UPDATE facilities SET geocode_attempts = geocode_attempts + 1, updated_at = ? WHERE id = ?", [utcNowSql(), id]);
   });
 
 export interface FacilitySearchParams {

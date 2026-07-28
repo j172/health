@@ -49,6 +49,10 @@ export const ensureSchema = async (): Promise<void> => {
       ADD COLUMN IF NOT EXISTS keywords VARCHAR(500) NULL AFTER meta_description,
       ADD COLUMN IF NOT EXISTS geo_summary TEXT NULL AFTER keywords
   `);
+  await p.query(`
+    ALTER TABLE facilities
+      ADD COLUMN IF NOT EXISTS geocode_attempts INT NOT NULL DEFAULT 0 AFTER lng
+  `);
   schemaReady = true;
 };
 
