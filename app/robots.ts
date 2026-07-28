@@ -14,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/blog", "/docs", "/support", "/auth/signin", "/auth/signup", "/error"],
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: [`${baseUrl}/sitemap.xml`, `${baseUrl}/news-sitemap.xml`],
   };
 }

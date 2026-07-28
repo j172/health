@@ -62,6 +62,29 @@ export const listRecentNewsForLlms = async (limit = 100): Promise<NewsGeoSummary
     return rows as unknown as NewsGeoSummaryItem[];
   });
 
+export interface NewsSitemapItem {
+  id: number;
+  title: string;
+  published_at_utc: Date | null;
+}
+
+/** Articles published within the last `hours` — Google News Sitemap only
+ * accepts articles published in the last 48 hours (older ones should be
+ * dropped from the news sitemap entirely, not just deprioritized). */
+export const listRecentNewsForNewsSitemap = async (hours = 48): Promise<NewsSitemapItem[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT id, title, published_at_utc
+      FROM news_items
+      WHERE published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+      ORDER BY published_at_utc DESC
+      `,
+      [hours],
+    );
+    return rows as unknown as NewsSitemapItem[];
+  });
+
 // Matches a single comma-separated keyword tag exactly (via comma-bounded
 // substring), so filtering by "健康" doesn't also match "健康新聞" or similar.
 const KEYWORD_MATCH_SQL = "CONCAT(',', n.keywords, ',') LIKE CONCAT('%,', ?, ',%')";
