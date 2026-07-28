@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { NewsListItem } from "@/lib/server/news/queries";
+import { listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 
@@ -118,8 +118,30 @@ const NavDropdown = ({ label, sources }: { label: string; sources: { sourceName:
   </div>
 );
 
-export const StabloHeader = () => (
+const WeatherAlertBar = async () => {
+  const warnings = await listActiveWeatherWarnings(3);
+  if (warnings.length === 0) return null;
+
+  return (
+    <div className="border-b border-amber-200 bg-amber-50">
+      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-amber-900 sm:px-6 lg:px-8">
+        <span aria-hidden="true">⚠</span>
+        <span className="shrink-0">氣象警報：</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {warnings.map((warning) => (
+            <Link key={warning.id} href={`/news/${warning.id}`} className="whitespace-nowrap underline decoration-amber-300 underline-offset-2 hover:text-amber-950">
+              {warning.title}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const StabloHeader = async () => (
   <header className="border-b border-neutral-200">
+    <WeatherAlertBar />
     <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
       <Link href="/" className="flex items-center gap-2 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900">
         <Image src="/images/logo/j172tw-health-logo.png" alt="j172tw Health" width={32} height={32} className="h-8 w-8" />

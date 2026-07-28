@@ -62,6 +62,37 @@ export const listRecentNewsForLlms = async (limit = 100): Promise<NewsGeoSummary
     return rows as unknown as NewsGeoSummaryItem[];
   });
 
+export interface WeatherWarningItem {
+  id: number;
+  title: string;
+  published_at_utc: Date | null;
+}
+
+// CWA re-publishes an item while a warning stays in effect and stops once
+// it's lifted, but the feed carries no explicit expiry — treat anything
+// published in the last few hours as still current, everything older as
+// stale/likely superseded.
+const ACTIVE_WARNING_WINDOW_HOURS = 6;
+
+/** Recent items from the CWA warnings/advisories feed, for a navbar alert
+ * strip — deliberately not grouped into the source-archive nav dropdowns,
+ * since these are transient alerts rather than browsable news coverage. */
+export const listActiveWeatherWarnings = async (limit = 5): Promise<WeatherWarningItem[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT id, title, published_at_utc
+      FROM news_items
+      WHERE source_name = 'cwa'
+        AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+      ORDER BY published_at_utc DESC
+      LIMIT ?
+      `,
+      [ACTIVE_WARNING_WINDOW_HOURS, limit],
+    );
+    return rows as unknown as WeatherWarningItem[];
+  });
+
 export interface NewsSitemapItem {
   id: number;
   title: string;
