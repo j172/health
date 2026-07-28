@@ -33,6 +33,7 @@ const TOOLS = [
   { href: "/tools/vo2max", title: "VO2Max 估算器", description: "以 Uth 公式快速評估最大攝氧量，了解心肺耐力等級。", icon: "🫁" },
   { href: "/tools/aqi", title: "AQI 空氣品質即時查詢", description: "即時顯示全台環境部監測站 AQI 空氣品質指標。", icon: "🌬️" },
   { href: "/tools/pharmacies", title: "藥局查詢", description: "查詢全台一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。", icon: "🏪" },
+  { href: "/tools/health-checks", title: "健康檢查機構查詢", description: "查詢勞工健康檢查認可醫療機構，支援關鍵字搜尋與附近定位。", icon: "🩻" },
 ];
 
 export default function ToolsIndexPage() {

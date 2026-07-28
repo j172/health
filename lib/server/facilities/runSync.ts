@@ -1,6 +1,7 @@
 import { upsertFacilities, type FacilityRecord } from "@/lib/server/facilities/queries";
 import { fetchKcgLongTermCareHome } from "@/lib/server/facilities/sources/kcgLongTermCareHome";
 import { fetchTfdaPharmacies } from "@/lib/server/facilities/sources/tfdaPharmacies";
+import { fetchMolHealthCheckFacilities } from "@/lib/server/facilities/sources/molHealthCheckFacility";
 
 export interface FacilitySyncResult {
   sourceKey: string;
@@ -15,6 +16,7 @@ export interface FacilitySyncResult {
 const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "kcg_home_care", fetch: fetchKcgLongTermCareHome },
   { key: "tfda_pharmacy", fetch: fetchTfdaPharmacies },
+  { key: "mol_labor_checkup", fetch: fetchMolHealthCheckFacilities },
 ];
 
 export async function runFacilitySync(): Promise<FacilitySyncResult[]> {
