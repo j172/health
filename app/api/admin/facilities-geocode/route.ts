@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { env } from "@/lib/server/config/env";
 import { findFacilitiesMissingCoords, updateFacilityCoords } from "@/lib/server/facilities/queries";
-import { geocodeAddress } from "@/lib/server/facilities/geocodeNominatim";
+import { geocodeAddress } from "@/lib/server/facilities/geocode";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
