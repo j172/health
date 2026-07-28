@@ -13,11 +13,7 @@ type Variant = "home" | "archive";
 // which silently masked items that never got a Pixabay image assigned.
 const CardImagePlaceholder = () => (
   <div className="flex h-full w-full items-center justify-center bg-neutral-100">
-    <svg viewBox="0 0 24 24" className="h-10 w-10 text-neutral-300" fill="none" stroke="currentColor" strokeWidth={1.5}>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <circle cx="8.5" cy="9.5" r="1.5" />
-      <path d="M21 15l-5-5-9 9" />
-    </svg>
+    <Image src="/images/logo/j172tw-health-logo.png" alt="j172tw Health" width={48} height={48} className="h-12 w-12 opacity-30" />
   </div>
 );
 
