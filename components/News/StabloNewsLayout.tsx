@@ -3,6 +3,8 @@ import Link from "next/link";
 import { listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import SiteNav from "@/components/News/SiteNav";
 
 type Variant = "home" | "archive";
 
@@ -96,28 +98,6 @@ const PostCard = ({ item, titleClassName = "text-[18px]" }: { item: NewsListItem
   </article>
 );
 
-const NavDropdown = ({ label, sources }: { label: string; sources: { sourceName: string; label: string }[] }) => (
-  <div className="group relative">
-    <button type="button" className="flex items-center gap-1 py-4 transition-colors hover:text-neutral-900">
-      {label}
-      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-      </svg>
-    </button>
-    <div className="invisible absolute left-0 top-full z-10 min-w-[10rem] -translate-y-1 rounded-none border border-neutral-200 bg-white opacity-0 shadow-lg transition-all duration-150 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-      {sources.map((source) => (
-        <Link
-          key={source.sourceName}
-          href={`/news?source=${encodeURIComponent(source.sourceName)}`}
-          className="block whitespace-nowrap px-4 py-2 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-neutral-900"
-        >
-          {source.label}
-        </Link>
-      ))}
-    </div>
-  </div>
-);
-
 const WeatherAlertBar = async () => {
   const warnings = await listActiveWeatherWarnings(3);
   if (warnings.length === 0) return null;
@@ -142,48 +122,80 @@ const WeatherAlertBar = async () => {
 export const StabloHeader = async () => (
   <header className="border-b border-neutral-200">
     <WeatherAlertBar />
-    <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4 sm:px-6 lg:px-8">
-      <Link href="/" className="flex items-center gap-2 text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900">
-        <Image src="/images/logo/j172tw-health-logo.png" alt="j172tw Health" width={32} height={32} className="h-8 w-8" />
-        j172tw Health
-      </Link>
-      <nav className="hidden items-center gap-6 text-sm font-medium text-neutral-500 md:flex">
-        <Link href="/" className="transition-colors hover:text-neutral-900">
-          Home
-        </Link>
-        {SOURCE_CATEGORIES.map((category) => (
-          <NavDropdown key={category.label} label={category.label} sources={category.sources} />
-        ))}
-        <Link href="/tools" className="transition-colors hover:text-neutral-900">
-          健康工具
-        </Link>
-        <a href="https://www.j172.tw" target="_blank" rel="noreferrer noopener" className="transition-colors hover:text-neutral-900">
-          j172.tw
-        </a>
-      </nav>
-    </div>
+    <SiteNav />
   </header>
 );
 
-export const StabloFooter = () => (
-  <footer className="mt-20 border-t border-neutral-200">
-    <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-2 px-4 py-8 text-sm text-neutral-500 sm:px-6 lg:px-8 md:flex-row md:items-center">
-      <p>Copyright © {new Date().getFullYear()} j172tw Health. All rights reserved.</p>
-      <div className="flex items-center gap-2">
-        <Link href="/" className="transition-colors hover:text-neutral-800">
-          Home
-        </Link>
-        <span>·</span>
-        <Link href="/news" className="transition-colors hover:text-neutral-800">
-          News
-        </Link>
-        <span>·</span>
-        <a href="https://www.j172.tw" target="_blank" rel="noreferrer noopener" className="transition-colors hover:text-neutral-800">
-          j172.tw
-        </a>
+// Mirrors SiteNav's top-level groups (news source categories, 健康工具,
+// 醫療院所) so the footer and navbar always list the same sections — a
+// footer with a different/stale link set is a common WCAG 2.4.5 (multiple
+// ways) and general-usability trap.
+export const StabloFooter = () => {
+  const calculatorTools = TOOL_CATALOG.filter((tool) => tool.group === "calculator");
+  const facilityTools = TOOL_CATALOG.filter((tool) => tool.group === "facility");
+
+  return (
+    <footer className="mt-20 border-t border-neutral-200">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-8 text-sm sm:grid-cols-3 md:grid-cols-5">
+          <FooterColumn label="總覽">
+            <FooterLink href="/">首頁</FooterLink>
+            <FooterLink href="/news">健康新聞</FooterLink>
+          </FooterColumn>
+          {SOURCE_CATEGORIES.map((category) => (
+            <FooterColumn key={category.key} label={category.label}>
+              {category.sources.map((source) => (
+                <FooterLink key={source.sourceName} href={`/news?source=${encodeURIComponent(source.sourceName)}`}>
+                  {source.label}
+                </FooterLink>
+              ))}
+            </FooterColumn>
+          ))}
+          <FooterColumn label="健康工具">
+            {calculatorTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {tool.title}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+          <FooterColumn label="醫療院所">
+            {facilityTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {tool.title}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+        </div>
+
+        <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-neutral-200 pt-6 text-sm text-neutral-500 md:flex-row md:items-center">
+          <p>Copyright © {new Date().getFullYear()} j172tw Health. All rights reserved.</p>
+          <a
+            href="https://www.j172.tw"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="rounded-none transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            j172.tw ↗
+          </a>
+        </div>
       </div>
-    </div>
-  </footer>
+    </footer>
+  );
+};
+
+const FooterColumn = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div>
+    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">{label}</p>
+    <ul className="mt-3 space-y-2">{children}</ul>
+  </div>
+);
+
+const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  <li>
+    <Link href={href} className="rounded-none text-neutral-600 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+      {children}
+    </Link>
+  </li>
 );
 
 interface Pagination {

@@ -3,11 +3,15 @@ export interface ToolFaq {
   answer: string;
 }
 
+export type ToolGroup = "calculator" | "facility";
+
 export interface ToolCatalogEntry {
   slug: string;
   title: string;
   description: string;
   faqs: ToolFaq[];
+  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups). */
+  group: ToolGroup;
 }
 
 // Single source of truth for "what tools does this site have" — used by
@@ -18,6 +22,7 @@ export interface ToolCatalogEntry {
 export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "bmi",
+    group: "calculator",
     title: "BMI 計算器",
     description: "免費線上 BMI 身體質量指數計算器，輸入身高與體重即可立即計算您的 BMI 值，並對照台灣衛生福利部國民健康署標準，了解過輕、正常、過重或肥胖的健康風險。",
     faqs: [
@@ -28,6 +33,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "calories",
+    group: "calculator",
     title: "卡路里需求計算器",
     description: "根據年齡、性別、身高、體重與活動量，採用 Mifflin-St Jeor 公式計算每日所需熱量攝取 (BMR/TDEE)。",
     faqs: [
@@ -38,6 +44,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "nutrition",
+    group: "calculator",
     title: "每日營養素建議計算器",
     description: "依據個人體型、活動量與飲食目標，提供每日三大營養素（蛋白質、碳水化合物、脂肪）攝取建議。",
     faqs: [
@@ -47,6 +54,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "water",
+    group: "calculator",
     title: "飲水量計算器",
     description: "依體重與活動量計算每日建議飲水量，並提供分段補水時間表，幫助您養成良好的補水習慣。",
     faqs: [
@@ -56,6 +64,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "body-fat",
+    group: "calculator",
     title: "體脂率計算器",
     description: "採用美國海軍體脂計算法（Navy Method），計算體脂率、脂肪質量與肌肉量，對照 ACSM 標準分類。",
     faqs: [
@@ -65,6 +74,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "waist-hip",
+    group: "calculator",
     title: "腰臀比計算器",
     description: "計算腰臀比（WHR），依 WHO 標準評估腹部肥胖與心血管代謝風險。",
     faqs: [
@@ -74,6 +84,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "heart-rate",
+    group: "calculator",
     title: "目標心率計算器",
     description: "使用 Karvonen 公式計算 5 個運動強度心率區間，幫助您精準控制訓練強度。",
     faqs: [
@@ -83,6 +94,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "blood-pressure",
+    group: "calculator",
     title: "血壓分析器",
     description: "依 2023 ESH 高血壓指南分類血壓等級，支援多次記錄與平均值分析，提供個人化生活建議。",
     faqs: [
@@ -92,6 +104,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "sleep",
+    group: "calculator",
     title: "睡眠品質評估",
     description: "基於 PSQI 量表 7 個面向，評估您的睡眠狀況並提供科學化睡眠衛生改善建議。",
     faqs: [
@@ -101,6 +114,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "stress",
+    group: "calculator",
     title: "壓力評估測驗",
     description: "採用 PSS-10 知覺壓力量表，10 道題目量化壓力程度，提供個人化減壓策略。",
     faqs: [
@@ -109,6 +123,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "lbm",
+    group: "calculator",
     title: "去脂體重 (LBM) 計算器",
     description: "以 Boer 公式估算去脂體重與體脂率，全面了解您的身體組成狀況。",
     faqs: [
@@ -118,6 +133,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "vo2max",
+    group: "calculator",
     title: "VO2Max 估算器",
     description: "輸入年齡與安靜心率，以 Uth 公式快速評估最大攝氧量（VO2Max），對照 ACSM 標準了解您的心肺耐力等級。",
     faqs: [
@@ -127,6 +143,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aqi",
+    group: "calculator",
     title: "AQI 空氣品質即時查詢",
     description: "即時顯示全台環境部監測站 AQI 空氣品質指標，包含 PM2.5、PM10 等污染物濃度。",
     faqs: [
@@ -136,6 +153,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "clinics",
+    group: "facility",
     title: "醫療院所查詢",
     description: "查詢全民健保特約醫療院所，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -145,6 +163,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pharmacies",
+    group: "facility",
     title: "藥局查詢",
     description: "查詢全台一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -153,6 +172,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "drugs",
+    group: "facility",
     title: "藥品查詢",
     description: "查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵，協助辨識藥品。",
     faqs: [
@@ -162,6 +182,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "health-checks",
+    group: "facility",
     title: "健康檢查機構查詢",
     description: "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -170,6 +191,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "long-term-care",
+    group: "facility",
     title: "長照機構查詢",
     description: "查詢衛福部許可全台長期照顧服務機構，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -178,6 +200,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "home-healthcare",
+    group: "facility",
     title: "居家醫療查詢",
     description: "查詢提供居家醫療照護服務的全民健保特約機構，支援關鍵字搜尋與附近定位。",
     faqs: [
