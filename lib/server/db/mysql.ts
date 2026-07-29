@@ -70,6 +70,15 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE facilities
       ADD INDEX IF NOT EXISTS idx_facility_source_id (source_id)
   `);
+  await p.query(`
+    ALTER TABLE aqi_readings
+      ADD COLUMN IF NOT EXISTS lat DECIMAL(10,7) NULL AFTER county,
+      ADD COLUMN IF NOT EXISTS lng DECIMAL(10,7) NULL AFTER lat
+  `);
+  await p.query(`
+    ALTER TABLE aqi_readings
+      ADD INDEX IF NOT EXISTS idx_aqi_reading_geo (lat, lng)
+  `);
   schemaReady = true;
 };
 

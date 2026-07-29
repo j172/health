@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLatestAqiReadings } from "@/lib/server/aqi/queries";
+import { getAqiStatusAndColor } from "@/lib/server/aqi/status";
 
 export const runtime = "nodejs";
 
@@ -19,16 +20,6 @@ export interface AqiSite {
   recordedAt: string | null;
 }
 
-function getStatusAndColor(aqi: number | null): { status: string; color: string } {
-  if (aqi === null) return { status: "–", color: "#9ca3af" };
-  if (aqi <= 50) return { status: "良好", color: "#22c55e" };
-  if (aqi <= 100) return { status: "普通", color: "#eab308" };
-  if (aqi <= 150) return { status: "對敏感族群不健康", color: "#f97316" };
-  if (aqi <= 200) return { status: "對所有族群不健康", color: "#ef4444" };
-  if (aqi <= 300) return { status: "非常不健康", color: "#8b5cf6" };
-  return { status: "危害", color: "#7f1d1d" };
-}
-
 export async function GET(request: NextRequest) {
   const county = request.nextUrl.searchParams.get("county")?.trim();
 
@@ -38,7 +29,7 @@ export async function GET(request: NextRequest) {
     let latestRecordedAt: Date | null = null;
     const stations: AqiSite[] = rows.map((r): AqiSite => {
       if (!latestRecordedAt || r.recorded_at > latestRecordedAt) latestRecordedAt = r.recorded_at;
-      const { status, color } = getStatusAndColor(r.aqi_value);
+      const { status, color } = getAqiStatusAndColor(r.aqi_value);
       return {
         siteId: r.site_id,
         siteName: r.site_name,

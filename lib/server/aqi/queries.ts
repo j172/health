@@ -6,6 +6,8 @@ export interface AqiReadingRow {
   site_id: string;
   site_name: string;
   county: string;
+  lat: number | null;
+  lng: number | null;
   aqi_value: number | null;
   aqi_status: string | null;
   pm25: number | null;
@@ -27,6 +29,8 @@ export const upsertAqiReadings = async (sites: AqiSiteSnapshot[]): Promise<{ ins
       s.siteId,
       s.siteName,
       s.county,
+      s.lat,
+      s.lng,
       s.aqiValue,
       s.aqiStatus,
       s.pm25,
@@ -44,11 +48,13 @@ export const upsertAqiReadings = async (sites: AqiSiteSnapshot[]): Promise<{ ins
     const [result] = await conn.query(
       `
       INSERT INTO aqi_readings
-        (site_id, site_name, county, aqi_value, aqi_status, pm25, pm10, o3, no2, so2, co, recorded_at, synced_at, created_at, updated_at)
+        (site_id, site_name, county, lat, lng, aqi_value, aqi_status, pm25, pm10, o3, no2, so2, co, recorded_at, synced_at, created_at, updated_at)
       VALUES ?
       ON DUPLICATE KEY UPDATE
         site_name = VALUES(site_name),
         county = VALUES(county),
+        lat = VALUES(lat),
+        lng = VALUES(lng),
         aqi_value = VALUES(aqi_value),
         aqi_status = VALUES(aqi_status),
         pm25 = VALUES(pm25),
@@ -74,7 +80,7 @@ export const getLatestAqiReadings = async (county?: string): Promise<AqiReadingR
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT r.site_id, r.site_name, r.county, r.aqi_value, r.aqi_status, r.pm25, r.pm10, r.o3, r.no2, r.so2, r.co, r.recorded_at
+      SELECT r.site_id, r.site_name, r.county, r.lat, r.lng, r.aqi_value, r.aqi_status, r.pm25, r.pm10, r.o3, r.no2, r.so2, r.co, r.recorded_at
       FROM aqi_readings r
       INNER JOIN (
         SELECT site_id, MAX(recorded_at) AS max_recorded_at
@@ -87,4 +93,29 @@ export const getLatestAqiReadings = async (county?: string): Promise<AqiReadingR
       [county ?? "", county ?? ""],
     );
     return rows as unknown as AqiReadingRow[];
+  });
+
+/** Nearest station's latest reading to a given point (Haversine, km). Only considers geocoded stations. */
+export const getNearestAqiReading = async (lat: number, lng: number): Promise<(AqiReadingRow & { distance_km: number }) | null> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT r.site_id, r.site_name, r.county, r.lat, r.lng, r.aqi_value, r.aqi_status, r.pm25, r.pm10, r.o3, r.no2, r.so2, r.co, r.recorded_at,
+        (6371 * acos(
+          cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
+          sin(radians(?)) * sin(radians(r.lat))
+        )) AS distance_km
+      FROM aqi_readings r
+      INNER JOIN (
+        SELECT site_id, MAX(recorded_at) AS max_recorded_at
+        FROM aqi_readings
+        GROUP BY site_id
+      ) latest ON latest.site_id = r.site_id AND latest.max_recorded_at = r.recorded_at
+      WHERE r.lat IS NOT NULL AND r.lng IS NOT NULL
+      ORDER BY distance_km ASC
+      LIMIT 1
+      `,
+      [lat, lng, lat],
+    );
+    return (rows[0] as unknown as (AqiReadingRow & { distance_km: number })) ?? null;
   });

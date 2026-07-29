@@ -181,6 +181,8 @@ export const TABLE_DDL = {
       site_id VARCHAR(20) NOT NULL,
       site_name VARCHAR(100) NOT NULL,
       county VARCHAR(20) NOT NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
       aqi_value SMALLINT NULL,
       aqi_status VARCHAR(50) NULL,
       pm25 DECIMAL(6,1) NULL,
@@ -196,7 +198,8 @@ export const TABLE_DDL = {
       PRIMARY KEY (id),
       UNIQUE KEY uq_aqi_reading (site_id, recorded_at),
       KEY idx_aqi_reading_county (county),
-      KEY idx_aqi_reading_recorded (recorded_at)
+      KEY idx_aqi_reading_recorded (recorded_at),
+      KEY idx_aqi_reading_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // 中央氣象署 (CWA) open-data ingestion — opendata.cwa.gov.tw, hourly cron.

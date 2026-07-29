@@ -7,6 +7,8 @@ export interface AqiSiteSnapshot {
   siteId: string;
   siteName: string;
   county: string;
+  lat: number | null;
+  lng: number | null;
   aqiValue: number | null;
   aqiStatus: string | null;
   pm25: number | null;
@@ -57,6 +59,8 @@ export async function fetchAqiSites(): Promise<AqiSiteSnapshot[]> {
         siteId: String(rec.siteid ?? ""),
         siteName,
         county: String(rec.county ?? ""),
+        lat: parseNum(rec.latitude),
+        lng: parseNum(rec.longitude),
         aqiValue: parseNum(rec.aqi),
         aqiStatus: rec.status ? String(rec.status) : null,
         pm25: parseNum(rec["pm2.5"]),

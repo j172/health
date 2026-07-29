@@ -398,24 +398,26 @@ export interface LatestUvReading {
   uv_index: number;
 }
 
-/**
- * Highest UV readings for the most recent obs_date on record, joined against
- * cwa_station_weather for a human-readable name (cwa_uv_index's O-A0005-001
- * source ships station IDs only, no names — but those IDs are the same CWA
- * station codes O-A0001/O-A0003 already report names for).
- */
-export const getLatestUvReadings = async (limit = 5): Promise<LatestUvReading[]> =>
+/** Nearest station's UV reading (most recent obs_date) to a given point (Haversine, km). Joined against cwa_station_weather for coordinates and name. */
+export const getNearestUvReading = async (lat: number, lng: number): Promise<(LatestUvReading & { distance_km: number }) | null> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT u.station_id, s.station_name, s.county_name, u.uv_index
-       FROM cwa_uv_index u
-       LEFT JOIN cwa_station_weather s ON s.station_id = u.station_id
-       WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index)
-         AND u.uv_index IS NOT NULL
-       GROUP BY u.station_id, s.station_name, s.county_name, u.uv_index
-       ORDER BY u.uv_index DESC
-       LIMIT ?`,
-      [limit],
+      `
+      SELECT u.station_id, s.station_name, s.county_name, u.uv_index,
+        (6371 * acos(
+          cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
+          sin(radians(?)) * sin(radians(s.lat))
+        )) AS distance_km
+      FROM cwa_uv_index u
+      INNER JOIN cwa_station_weather s ON s.station_id = u.station_id
+      WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index)
+        AND u.uv_index IS NOT NULL
+        AND s.lat IS NOT NULL AND s.lng IS NOT NULL
+      GROUP BY u.station_id, s.station_name, s.county_name, u.uv_index, s.lat, s.lng
+      ORDER BY distance_km ASC
+      LIMIT 1
+      `,
+      [lat, lng, lat],
     );
-    return rows as unknown as LatestUvReading[];
+    return (rows[0] as unknown as (LatestUvReading & { distance_km: number })) ?? null;
   });
