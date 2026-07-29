@@ -86,10 +86,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "heart-rate",
     group: "calculator",
     title: "目標心率計算器",
-    description: "使用 Karvonen 公式計算 5 個運動強度心率區間，幫助您精準控制訓練強度。",
+    description: "使用 Karvonen 公式計算 5 個運動強度心率區間，幫助您精準控制訓練強度，支援手動輸入 Apple Watch、iPhone 健康 App 記錄的靜止心率。",
     faqs: [
       { question: "Karvonen 公式和一般的「220減年齡」有什麼不同？", answer: "Karvonen 公式額外納入安靜心率（儲備心率），比單純「220−年齡」的最大心率估算法更能反映個人心肺基礎狀態，計算出的目標心率區間也更準確。" },
       { question: "5 個心率區間分別對應什麼訓練效果？", answer: "由低到高依序約對應：恢復／熱身、燃脂、有氧耐力、無氧閾值、最大攝氧量訓練，可依訓練目的選擇對應區間維持運動強度。" },
+      { question: "可以用 Apple Watch 或 iPhone 健康 App 的心率資料嗎？", answer: "可以。網頁無法直接讀取 Apple Watch 或 iPhone 健康 App 的 HealthKit 資料，但您可以在 Apple Watch 或健康 App 上查看目前的靜止心率，手動輸入到本工具即可計算目標心率區間，不需自行把脈量測。" },
     ],
   },
   {
@@ -106,10 +107,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "sleep",
     group: "calculator",
     title: "睡眠品質評估",
-    description: "基於 PSQI 量表 7 個面向，評估您的睡眠狀況並提供科學化睡眠衛生改善建議。",
+    description: "基於 PSQI 量表 7 個面向，評估您的睡眠狀況並提供科學化睡眠衛生改善建議，可搭配 Apple Watch、iPhone 睡眠追蹤紀錄回答更準確。",
     faqs: [
       { question: "PSQI 量表評估哪些面向？", answer: "匹茲堡睡眠品質指數（PSQI）涵蓋主觀睡眠品質、入睡時間、睡眠時數、睡眠效率、睡眠困擾、使用助眠藥物、日間功能障礙共 7 個面向。" },
       { question: "PSQI 分數多少代表睡眠品質不佳？", answer: "PSQI 總分範圍為 0–21 分，一般以總分超過 5 分視為睡眠品質不佳的臨床切點。" },
+      { question: "可以用 Apple Watch 或 iPhone 睡眠追蹤的資料回答問卷嗎？", answer: "可以。若有使用 Apple Watch 或 iPhone「健康」App 的睡眠追蹤功能，可先查看其記錄的平均睡眠時數與入睡所需時間，作為回答對應題目的參考依據，讓評估結果更準確。" },
     ],
   },
   {
@@ -135,10 +137,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "vo2max",
     group: "calculator",
     title: "VO2Max 估算器",
-    description: "輸入年齡與安靜心率，以 Uth 公式快速評估最大攝氧量（VO2Max），對照 ACSM 標準了解您的心肺耐力等級。",
+    description: "輸入年齡與安靜心率，以 Uth 公式快速評估最大攝氧量（VO2Max），對照 ACSM 標準了解您的心肺耐力等級，安靜心率可直接參考 Apple Watch 或 iPhone 健康 App 的紀錄。",
     faqs: [
       { question: "VO2Max 代表什麼？", answer: "VO2Max（最大攝氧量）是身體在最大運動強度下每分鐘每公斤體重能利用的最大氧氣量，是評估心肺耐力與有氧運動能力的重要指標。" },
       { question: "不用實際運動測試也能估算 VO2Max 嗎？", answer: "Uth 公式只需安靜心率與最大心率（依年齡估算）即可快速推估 VO2Max，準確度不如實驗室測試，但適合作為日常心肺耐力的初步參考。" },
+      { question: "Apple Watch 本身就會估算 VO2Max，跟這個工具的結果一樣嗎？", answer: "不一定相同。Apple Watch 是用戶外健走或跑步時的心率與速度資料估算 VO2Max，本工具則是用安靜心率套用 Uth 公式粗估，兩者演算法不同，數字可能有落差；安靜心率本身則可直接參考 Apple Watch 或 iPhone 健康 App 的紀錄，手動輸入即可。" },
     ],
   },
   {
