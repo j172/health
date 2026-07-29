@@ -53,6 +53,14 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE facilities
       ADD COLUMN IF NOT EXISTS geocode_attempts INT NOT NULL DEFAULT 0 AFTER lng
   `);
+  // uq_facility_source is (source_key, source_id), so it can't serve lookups
+  // keyed by source_id alone (e.g. matching NHI's shared institution codes
+  // across the nhi_hospital/nhi_pharmacy sources in applyWeeklyHours()) —
+  // without this, that JOIN falls back to a full table scan.
+  await p.query(`
+    ALTER TABLE facilities
+      ADD INDEX IF NOT EXISTS idx_facility_source_id (source_id)
+  `);
   schemaReady = true;
 };
 
