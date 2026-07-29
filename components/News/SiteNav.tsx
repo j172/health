@@ -8,6 +8,7 @@ import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 
 const CALCULATOR_TOOLS = TOOL_CATALOG.filter((tool) => tool.group === "calculator").map((tool) => ({ href: `/tools/${tool.slug}`, label: tool.title }));
 const FACILITY_TOOLS = TOOL_CATALOG.filter((tool) => tool.group === "facility").map((tool) => ({ href: `/tools/${tool.slug}`, label: tool.title }));
+const LTC_TOOLS = TOOL_CATALOG.filter((tool) => tool.group === "ltc").map((tool) => ({ href: `/tools/${tool.slug}`, label: tool.title }));
 const FOOD_TOOLS = TOOL_CATALOG.filter((tool) => tool.group === "food").map((tool) => ({ href: `/tools/${tool.slug}`, label: tool.title }));
 
 interface NavLinkItem {
@@ -135,6 +136,7 @@ export default function SiteNav() {
           ))}
           <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
           <NavDropdown label="醫療院所" items={FACILITY_TOOLS} />
+          <NavDropdown label="長照機構" items={LTC_TOOLS} />
           <NavDropdown label="食品營養" items={FOOD_TOOLS} />
           <a
             href="https://www.j172.tw"
@@ -174,6 +176,7 @@ export default function SiteNav() {
           ))}
           <MobileGroup label="健康工具" items={CALCULATOR_TOOLS} onNavigate={closeMobile} />
           <MobileGroup label="醫療院所" items={FACILITY_TOOLS} onNavigate={closeMobile} />
+          <MobileGroup label="長照機構" items={LTC_TOOLS} onNavigate={closeMobile} />
           <MobileGroup label="食品營養" items={FOOD_TOOLS} onNavigate={closeMobile} />
           <div className="py-2">
             <a

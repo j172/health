@@ -3,14 +3,14 @@ export interface ToolFaq {
   answer: string;
 }
 
-export type ToolGroup = "calculator" | "facility" | "food";
+export type ToolGroup = "calculator" | "facility" | "food" | "ltc";
 
 export interface ToolCatalogEntry {
   slug: string;
   title: string;
   description: string;
   faqs: ToolFaq[];
-  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups); "food" → 食品營養 nav dropdown (TFDA food nutrition/operator lookups). */
+  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups); "food" → 食品營養 nav dropdown (TFDA food nutrition/operator lookups); "ltc" → 長照機構 nav dropdown (long-term-care/elder-care lookups). */
   group: ToolGroup;
 }
 
@@ -214,7 +214,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "long-term-care",
-    group: "facility",
+    group: "ltc",
     title: "長照機構查詢",
     description: "查詢衛福部許可全台長期照顧服務機構，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -241,7 +241,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "elder-welfare",
-    group: "facility",
+    group: "ltc",
     title: "老人福利機構查詢",
     description: "查詢衛福部全國老人福利機構名冊，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -250,11 +250,20 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "ltc-contracted",
-    group: "facility",
+    group: "ltc",
     title: "長照特約服務機構查詢",
     description: "查詢衛福部長照2.0特約服務機構，涵蓋居家服務、日間照顧、喘息服務等，支援關鍵字搜尋與附近定位。",
     faqs: [
       { question: "跟「長照機構查詢」有什麼不同？", answer: "「長照機構查詢」是長照服務單位的機構名冊；本頁收錄的是與衛福部簽有長照2.0特約的服務機構，資料更完整、涵蓋機構數更多，並標示每家機構實際承作的特約服務項目（如居家服務、日間照顧、喘息服務等）。" },
+    ],
+  },
+  {
+    slug: "hakka-community",
+    group: "ltc",
+    title: "客庄社區發展協會查詢",
+    description: "查詢客家委員會客庄社區發展協會名冊，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "客庄社區發展協會提供哪些服務？", answer: "客庄社區發展協會多承辦社區照顧關懷據點等在地服務，實際服務項目（如共餐、關懷訪視）依各協會而定，建議直接與協會聯繫確認。" },
     ],
   },
 ];

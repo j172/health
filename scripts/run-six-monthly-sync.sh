@@ -35,7 +35,7 @@ BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"
 
 log() { echo "[$(date -u +%FT%TZ)] $*"; }
 
-log "Triggering facilities-sync (nhi_hospital, nhi_pharmacy, tfda_pharmacy, mol_labor_checkup, mol_occupational_injury, nhi_home_healthcare)..."
+log "Triggering facilities-sync (nhi_hospital, nhi_pharmacy, tfda_pharmacy, mol_labor_checkup, mol_occupational_injury, nhi_home_healthcare, hakka_dtst20230600002)..."
 curl -fsS -X POST "$BASE_URL/api/admin/facilities-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 echo
 
@@ -71,6 +71,7 @@ COMBOS=(
   "long_term_care mohw_ltc_full"
   "disability_welfare mohw_disability_welfare"
   "elder_welfare mohw_elder_welfare"
+  "hakka_community hakka_dtst20230600002"
 )
 
 for combo in "${COMBOS[@]}"; do
