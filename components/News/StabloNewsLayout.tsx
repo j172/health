@@ -227,14 +227,22 @@ export const StabloFooter = () => {
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-neutral-200 pt-6 text-sm text-neutral-500 md:flex-row md:items-center">
           <p>Copyright © {new Date().getFullYear()} j172tw Health. All rights reserved.</p>
-          <a
-            href="https://www.j172.tw"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="rounded-none transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            j172.tw ↗
-          </a>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacy"
+              className="rounded-none transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              隱私權政策
+            </Link>
+            <a
+              href="https://www.j172.tw"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="rounded-none transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              j172.tw ↗
+            </a>
+          </div>
         </div>
       </div>
     </footer>

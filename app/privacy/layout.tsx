@@ -6,29 +6,29 @@ import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const TOOLS_DESCRIPTION = "免費健康計算機與查詢工具：BMI、卡路里、體脂率、血壓、睡眠評估，以及全台醫療院所、藥局、藥品、長照機構查詢。";
+const PRIVACY_DESCRIPTION = "j172tw Health 隱私權政策：說明本站蒐集哪些資料、如何使用，並符合 GDPR、CCPA/CPRA、APPI、CBPR 與台灣個人資料保護法之揭露與使用者權利規範。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
-  title: { default: `健康工具 | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
-  description: TOOLS_DESCRIPTION,
+  title: { default: `隱私權政策 | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
+  description: PRIVACY_DESCRIPTION,
   icons: { icon: "/images/favicon.ico" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: `健康工具 | ${SITE_NAME}`,
-    description: TOOLS_DESCRIPTION,
+    title: `隱私權政策 | ${SITE_NAME}`,
+    description: PRIVACY_DESCRIPTION,
     locale: "zh_TW",
   },
   twitter: {
     card: "summary_large_image",
-    title: `健康工具 | ${SITE_NAME}`,
-    description: TOOLS_DESCRIPTION,
+    title: `隱私權政策 | ${SITE_NAME}`,
+    description: PRIVACY_DESCRIPTION,
   },
 };
 
-export default function ToolsRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function PrivacyRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-Hant">
       <body className={inter.className}>
