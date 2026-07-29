@@ -1,16 +1,23 @@
 import { Inter } from "next/font/google";
 import "../globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Proivder from "./Provider";
 import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
+import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const viewport: Viewport = {
+  themeColor: "#006bff",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
-  icons: { icon: "/images/favicon.ico" },
+  icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
+  appleWebApp: { capable: true, title: "j172tw Health", statusBarStyle: "default" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -37,6 +44,8 @@ export default function RootLayout({
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
         <Proivder>{children}</Proivder>
+        <PrivacyConsentBanner />
+        <RegisterServiceWorker />
       </body>
     </html>
   );

@@ -1,18 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "../globals.css";
 import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
+import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const TOOLS_DESCRIPTION = "免費健康計算機與查詢工具：BMI、卡路里、體脂率、血壓、睡眠評估，以及全台醫療院所、藥局、藥品、長照機構查詢。";
 
+export const viewport: Viewport = {
+  themeColor: "#006bff",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
   title: { default: `健康工具 | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
   description: TOOLS_DESCRIPTION,
-  icons: { icon: "/images/favicon.ico" },
+  icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
+  appleWebApp: { capable: true, title: "j172tw Health", statusBarStyle: "default" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -36,6 +42,7 @@ export default function ToolsRootLayout({ children }: Readonly<{ children: React
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
         {children}
         <PrivacyConsentBanner />
+        <RegisterServiceWorker />
       </body>
     </html>
   );
