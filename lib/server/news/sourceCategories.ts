@@ -37,6 +37,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "healthforall", label: "大家健康雜誌" },
       { sourceName: "ttvc", label: "常春月刊" },
       { sourceName: "twhealth", label: "好健康" },
+      { sourceName: "heho", label: "Heho健康" },
     ],
   },
   {

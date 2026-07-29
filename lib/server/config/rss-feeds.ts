@@ -199,4 +199,12 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "twhealth",
     skipDetailFetch: true,
   },
+  {
+    code: "heho",
+    name: "Heho健康",
+    // Real WordPress RSS feed of its own (unlike the sources above) — no
+    // Google News fallback needed. Article pages fetch fine directly too.
+    url: "https://heho.com.tw/feed",
+    sourceName: "heho",
+  },
 ];

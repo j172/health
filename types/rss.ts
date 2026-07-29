@@ -26,7 +26,8 @@ export type FeedCode =
   | "commonhealth"
   | "healthforall"
   | "ttvc"
-  | "twhealth";
+  | "twhealth"
+  | "heho";
 
 export interface FeedConfig {
   code: FeedCode;
