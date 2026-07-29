@@ -14,7 +14,7 @@ const MATCH_MAGNITUDE_TOLERANCE = 0.6;
 
 interface ExistingMatch extends RowDataPacket {
   id: number;
-  sources_json: string | null;
+  sources_json: Record<string, unknown> | null;
   place_zh: string | null;
   tsunami_warning: number;
 }
@@ -53,7 +53,11 @@ export const upsertEarthquake = async (event: IncomingEarthquake): Promise<"inse
 
     if (matches.length > 0) {
       const existing = matches[0];
-      const sources = existing.sources_json ? JSON.parse(existing.sources_json) : {};
+      // mysql2 auto-deserializes JSON columns into objects already — this
+      // isn't a JSON *string* to parse, unlike most of this field's other
+      // uses (e.g. facilities.extra_json is written with JSON.stringify but
+      // never read back parsed like this elsewhere in the codebase).
+      const sources: Record<string, unknown> = existing.sources_json ?? {};
       sources[event.source] = { id: event.sourceEventId, mag: event.magnitude, url: event.url };
       const placeZh = existing.place_zh ?? event.placeZh;
       const tsunami = existing.tsunami_warning === 1 || event.tsunamiWarning ? 1 : 0;

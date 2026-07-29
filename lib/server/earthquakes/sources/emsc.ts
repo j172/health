@@ -29,13 +29,7 @@ export async function fetchEmscEarthquakes(): Promise<IncomingEarthquake[]> {
   const { status, text } = await httpGetText(SOURCE_URL);
   if (status < 200 || status >= 300) throw new Error(`EMSC earthquake feed request failed: HTTP ${status}`);
 
-  let data: EmscResponse;
-  try {
-    data = JSON.parse(text);
-  } catch (error) {
-    console.error(`EMSC parse failed: typeof=${typeof text}, length=${(text as unknown as string)?.length}, head=${JSON.stringify(text).slice(0, 300)}`);
-    throw error;
-  }
+  const data: EmscResponse = JSON.parse(text);
 
   return data.features.map((f): IncomingEarthquake => ({
     source: "emsc",
