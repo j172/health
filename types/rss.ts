@@ -23,7 +23,10 @@ export type FeedCode =
   | "esg_gvm"
   | "esg_businesstoday"
   | "ubrand_udn"
-  | "commonhealth";
+  | "commonhealth"
+  | "healthforall"
+  | "ttvc"
+  | "twhealth";
 
 export interface FeedConfig {
   code: FeedCode;

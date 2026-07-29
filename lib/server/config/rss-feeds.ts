@@ -172,4 +172,31 @@ export const RSS_FEEDS: FeedConfig[] = [
     // Google News links redirect through an interstitial page instead of the real article.
     skipDetailFetch: true,
   },
+  {
+    code: "healthforall",
+    name: "大家健康雜誌",
+    // healthforall.com.tw (董氏基金會) has no RSS feed of its own; Google
+    // News site-search fallback confirmed clean (no spam pollution, unlike edh.tw).
+    url: "https://news.google.com/rss/search?q=site:healthforall.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "healthforall",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ttvc",
+    name: "常春月刊",
+    // ttvc.com.tw has no RSS feed of its own; Google News site-search
+    // fallback confirmed clean.
+    url: "https://news.google.com/rss/search?q=site:ttvc.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "ttvc",
+    skipDetailFetch: true,
+  },
+  {
+    code: "twhealth",
+    name: "好健康（全民健康基金會）",
+    // twhealth.org.tw has no RSS feed of its own; Google News site-search
+    // fallback confirmed clean.
+    url: "https://news.google.com/rss/search?q=site:twhealth.org.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "twhealth",
+    skipDetailFetch: true,
+  },
 ];

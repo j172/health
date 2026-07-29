@@ -34,6 +34,9 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "twstreetcorner", label: "巷仔口社會學" },
       { sourceName: "cna", label: "中央社" },
       { sourceName: "commonhealth", label: "康健雜誌" },
+      { sourceName: "healthforall", label: "大家健康雜誌" },
+      { sourceName: "ttvc", label: "常春月刊" },
+      { sourceName: "twhealth", label: "好健康" },
     ],
   },
   {
