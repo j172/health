@@ -4,6 +4,7 @@ import { listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { getLatestUvReadings } from "@/lib/server/cwa/queries";
 import SiteNav from "@/components/News/SiteNav";
 
 type Variant = "home" | "archive";
@@ -119,9 +120,51 @@ const WeatherAlertBar = async () => {
   );
 };
 
+// Taiwan EPA UV index categories (低量級/中量級/高量級/過量級/危險量級).
+const uvCategory = (uv: number): { label: string; color: string } => {
+  if (uv >= 11) return { label: "危險", color: "#9333ea" };
+  if (uv >= 8) return { label: "過量", color: "#dc2626" };
+  if (uv >= 6) return { label: "高量", color: "#ea580c" };
+  if (uv >= 3) return { label: "中量", color: "#ca8a04" };
+  return { label: "低量", color: "#16a34a" };
+};
+
+const UvIndexBar = async () => {
+  const readings = await getLatestUvReadings(5);
+  // Only surface it when there's something worth a glance — low UV days add
+  // one more bar to scroll past for no reason, same threshold philosophy as
+  // WeatherAlertBar only showing active warnings instead of every reading.
+  const notable = readings.filter((r) => r.uv_index >= 6);
+  if (notable.length === 0) return null;
+
+  return (
+    <div className="border-b border-sky-200 bg-sky-50">
+      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-sky-900 sm:px-6 lg:px-8">
+        <span aria-hidden="true">☀️</span>
+        <span className="shrink-0">紫外線：</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {notable.map((r) => {
+            const { label, color } = uvCategory(r.uv_index);
+            return (
+              <span key={r.station_id} className="whitespace-nowrap">
+                {r.county_name ?? ""}
+                {r.station_name ?? r.station_id} UV {r.uv_index}
+                <span style={{ color }} className="ml-1 font-semibold">
+                  ({label})
+                </span>
+              </span>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const StabloHeader = async () => (
   <header className="border-b border-neutral-200">
     <WeatherAlertBar />
+    <UvIndexBar />
     <SiteNav />
   </header>
 );

@@ -1,3 +1,4 @@
+import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 
 const BATCH_SIZE = 500;
@@ -389,3 +390,32 @@ export const upsertCwaUvIndex = (records: CwaUvIndexRecord[]) =>
        updated_at = VALUES(updated_at)`,
     (r, now) => [r.stationId, r.obsDate, r.uvIndex, now, now, now],
   );
+
+export interface LatestUvReading {
+  station_id: string;
+  station_name: string | null;
+  county_name: string | null;
+  uv_index: number;
+}
+
+/**
+ * Highest UV readings for the most recent obs_date on record, joined against
+ * cwa_station_weather for a human-readable name (cwa_uv_index's O-A0005-001
+ * source ships station IDs only, no names — but those IDs are the same CWA
+ * station codes O-A0001/O-A0003 already report names for).
+ */
+export const getLatestUvReadings = async (limit = 5): Promise<LatestUvReading[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT u.station_id, s.station_name, s.county_name, u.uv_index
+       FROM cwa_uv_index u
+       LEFT JOIN cwa_station_weather s ON s.station_id = u.station_id
+       WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index)
+         AND u.uv_index IS NOT NULL
+       GROUP BY u.station_id, s.station_name, s.county_name, u.uv_index
+       ORDER BY u.uv_index DESC
+       LIMIT ?`,
+      [limit],
+    );
+    return rows as unknown as LatestUvReading[];
+  });
