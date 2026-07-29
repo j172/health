@@ -159,4 +159,17 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "ubrand_udn",
     skipDetailFetch: true,
   },
+  {
+    code: "commonhealth",
+    name: "康健雜誌",
+    // commonhealth.com.tw has no RSS feed of its own and its site sits behind
+    // a Cloudflare JS challenge that blocks direct scraping (confirmed via
+    // curl — even robots.txt returns a "Just a moment..." challenge page),
+    // so use the same Google News site-search fallback as csr_cw/esg_gvm/
+    // esg_businesstoday/ubrand_udn.
+    url: "https://news.google.com/rss/search?q=site:commonhealth.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "commonhealth",
+    // Google News links redirect through an interstitial page instead of the real article.
+    skipDetailFetch: true,
+  },
 ];

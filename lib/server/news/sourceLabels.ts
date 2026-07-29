@@ -15,6 +15,7 @@ const SOURCE_LABELS: Record<string, string> = {
   esg_gvm: "ESG遠見",
   esg_businesstoday: "ESG今周刊",
   ubrand_udn: "倡議家",
+  commonhealth: "康健雜誌",
 };
 
 export interface SourceLabelInput {

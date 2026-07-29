@@ -22,7 +22,8 @@ export type FeedCode =
   | "csr_cw"
   | "esg_gvm"
   | "esg_businesstoday"
-  | "ubrand_udn";
+  | "ubrand_udn"
+  | "commonhealth";
 
 export interface FeedConfig {
   code: FeedCode;

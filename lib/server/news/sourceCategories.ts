@@ -33,6 +33,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "mamaclub", label: "媽媽經" },
       { sourceName: "twstreetcorner", label: "巷仔口社會學" },
       { sourceName: "cna", label: "中央社" },
+      { sourceName: "commonhealth", label: "康健雜誌" },
     ],
   },
   {
