@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import type { MapMarker } from "@/components/Facilities/FacilityMap";
+import WeeklyHoursLine from "@/components/Facilities/WeeklyHours";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -15,6 +16,7 @@ interface FacilityItem {
   lat: number | null;
   lng: number | null;
   service_item: string | null;
+  extra_json: { weeklyHours?: Record<string, string[]> } | null;
 }
 
 export default function ClinicsContent() {
@@ -129,6 +131,7 @@ export default function ClinicsContent() {
                   </div>
                   {f.address && <p className="mt-1 text-sm text-neutral-600">{f.address}</p>}
                   {f.phone && <p className="mt-1 text-xs text-neutral-500">📞 {f.phone}</p>}
+                  <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} />
                 </div>
               ))}
             </div>

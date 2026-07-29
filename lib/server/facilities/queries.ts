@@ -28,6 +28,7 @@ export interface FacilityListItem {
   service_item: string | null;
   service_time: string | null;
   data_org: string | null;
+  extra_json: { weeklyHours?: Record<string, string[]> } | null;
 }
 
 const UPSERT_BATCH_SIZE = 500;
@@ -132,6 +133,52 @@ export const recordGeocodeFailure = async (id: number): Promise<void> =>
     await conn.query("UPDATE facilities SET geocode_attempts = geocode_attempts + 1, updated_at = ? WHERE id = ?", [utcNowSql(), id]);
   });
 
+export interface WeeklyHoursEntry {
+  sourceId: string;
+  weeklyHours: Record<string, string[]>;
+}
+
+const WEEKLY_HOURS_BATCH_SIZE = 500;
+
+/**
+ * Patches facilities.extra_json.weeklyHours for existing clinic/pharmacy rows,
+ * matched by source_id (NHI's 醫事機構代碼 is shared across the nhi_hospital
+ * and nhi_pharmacy sources). This is an enrichment pass over rows that
+ * already exist — it never inserts new facilities — so it goes through a
+ * temp table + JOIN UPDATE rather than upsertFacilities()'s per-source
+ * INSERT ... ON DUPLICATE KEY pattern.
+ */
+export const applyWeeklyHours = async (entries: WeeklyHoursEntry[]): Promise<{ matched: number }> =>
+  withConnection(async (conn) => {
+    if (entries.length === 0) return { matched: 0 };
+
+    await conn.query("DROP TEMPORARY TABLE IF EXISTS tmp_weekly_hours");
+    await conn.query("CREATE TEMPORARY TABLE tmp_weekly_hours (source_id VARCHAR(100) NOT NULL PRIMARY KEY, weekly_hours JSON NOT NULL)");
+
+    for (let i = 0; i < entries.length; i += WEEKLY_HOURS_BATCH_SIZE) {
+      const chunk = entries.slice(i, i + WEEKLY_HOURS_BATCH_SIZE);
+      const values = chunk.map((e) => [e.sourceId, JSON.stringify(e.weeklyHours)]);
+      await conn.query(
+        `INSERT INTO tmp_weekly_hours (source_id, weekly_hours) VALUES ?
+         ON DUPLICATE KEY UPDATE weekly_hours = VALUES(weekly_hours)`,
+        [values],
+      );
+    }
+
+    const [result] = await conn.query(
+      `UPDATE facilities f
+       JOIN tmp_weekly_hours t ON t.source_id = f.source_id
+       SET f.extra_json = JSON_MERGE_PATCH(COALESCE(f.extra_json, JSON_OBJECT()), JSON_OBJECT('weeklyHours', CAST(t.weekly_hours AS JSON))),
+           f.updated_at = ?
+       WHERE f.source_key IN ('nhi_hospital', 'nhi_pharmacy')`,
+      [utcNowSql()],
+    );
+
+    await conn.query("DROP TEMPORARY TABLE IF EXISTS tmp_weekly_hours");
+
+    return { matched: (result as { affectedRows: number }).affectedRows };
+  });
+
 export interface FacilitySearchParams {
   facilityType: string;
   keyword?: string;
@@ -170,7 +217,7 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
     }
 
     const query = `
-      SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org
+      SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json
         ${distanceSelect}
       FROM facilities
       WHERE ${conditions.join(" AND ")}
