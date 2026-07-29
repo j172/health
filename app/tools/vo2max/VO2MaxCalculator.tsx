@@ -223,6 +223,7 @@ export default function VO2MaxCalculator() {
           <li>以手指按壓頸部或手腕脈搏，計算 1 分鐘的跳動次數</li>
           <li>連續測量 3 天取平均值，結果更準確</li>
           <li>壓力大、睡眠不足、剛運動後的心率數值偏高，請避免此時測量</li>
+          <li>若有 Apple Watch 或 iPhone「健康」App，可直接複製其記錄的靜止心率數值填入，更省事也更準確</li>
         </ul>
       </div>
     </div>

@@ -172,6 +172,10 @@ export default function SleepAssessment() {
         </div>
       </div>
 
+      <div className="rounded-none bg-blue-50 p-4 text-sm text-neutral-600">
+        <p>💡 若有使用 Apple Watch 或 iPhone「健康」App 的睡眠追蹤功能，可先查看其記錄的平均睡眠時數與入睡時間，回答第 1、3 題時會更準確。</p>
+      </div>
+
       {!submitted &&
         questions.map((q, idx) => (
           <div key={q.id} className="space-y-2">

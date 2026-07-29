@@ -70,6 +70,7 @@ export default function HeartRateCalculator() {
       <div className="rounded-none bg-blue-50 p-4 text-sm text-neutral-600">
         <p className="mb-1 font-medium text-neutral-800">📋 如何量測靜止心率？</p>
         <p>早晨醒來尚未起床時，量測 60 秒脈搏次數（手腕橈動脈或頸動脈）的平均值最為準確。</p>
+        <p className="mt-1">若有使用 Apple Watch 或 iPhone「健康」App，可直接查看其記錄的靜止心率數值，手動輸入即可，無需自行量測。</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
