@@ -2,7 +2,7 @@ import "server-only";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { env } from "@/lib/server/config/env";
-import { downloadPixabayImage, removeDownloadedImage } from "@/lib/server/pixabay/download";
+import { downloadPixabayImage, removeDownloadedImage, PixabayRateLimitError } from "@/lib/server/pixabay/download";
 import { searchHealthImages, type PixabayImage, type PixabaySearchResponse } from "@/lib/server/pixabay/client";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
@@ -48,6 +48,7 @@ export interface CardImageAssignmentSummary {
   skipped: number;
   failed: number;
   locked: boolean;
+  rateLimited: boolean;
   reason: string | null;
   errors: string[];
 }
@@ -115,6 +116,7 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
     skipped: 0,
     failed: 0,
     locked: false,
+    rateLimited: false,
     reason: null,
     errors: [],
   };
@@ -164,7 +166,7 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
     const candidates = await loadCandidates(conn, usedIds, missingRows.length);
     let candidateIndex = 0;
 
-    for (const news of missingRows) {
+    newsLoop: for (const news of missingRows) {
       let assigned = false;
       let attempts = 0;
       while (!assigned && candidateIndex < candidates.length && attempts < MAX_CANDIDATE_ATTEMPTS_PER_NEWS) {
@@ -218,6 +220,16 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
           assigned = true;
         } catch (error) {
           if (downloaded) await removeDownloadedImage(downloaded.absolutePath);
+          // Pixabay's CDN rate-limits per-account, not per-image — retrying more
+          // candidates (for this item or the next one) would just burn through
+          // the rest of the batch hitting 429 immediately again. Stop the whole
+          // batch here instead of misreporting every remaining item as "failed"
+          // (they were never actually broken, just not attempted yet).
+          if (error instanceof PixabayRateLimitError) {
+            summary.rateLimited = true;
+            summary.reason = "Pixabay rate-limited this batch (HTTP 429) — stopping early; the rest will be picked up on the next run.";
+            break newsLoop;
+          }
           const message = error instanceof Error ? error.message : "Unknown image assignment error";
           if (summary.errors.length < 10) summary.errors.push(`news ${news.id}: ${message}`);
         }

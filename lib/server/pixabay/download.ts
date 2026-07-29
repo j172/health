@@ -30,6 +30,13 @@ export interface DownloadedPixabayImage {
   height: number;
 }
 
+export class PixabayRateLimitError extends Error {
+  constructor() {
+    super("Pixabay image download failed with HTTP 429.");
+    this.name = "PixabayRateLimitError";
+  }
+}
+
 export const removeDownloadedImage = async (absolutePath: string): Promise<void> => {
   await rm(absolutePath, { force: true });
 };
@@ -41,6 +48,9 @@ export const downloadPixabayImage = async (image: PixabayImage): Promise<Downloa
     headers: { Accept: "image/avif,image/webp,image/png,image/jpeg" },
   });
 
+  if (response.status === 429) {
+    throw new PixabayRateLimitError();
+  }
   if (response.status < 200 || response.status >= 300) {
     throw new Error(`Pixabay image download failed with HTTP ${response.status}.`);
   }
