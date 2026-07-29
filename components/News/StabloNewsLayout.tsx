@@ -177,12 +177,13 @@ export const StabloHeader = async () => (
 );
 
 // Mirrors SiteNav's top-level groups (news source categories, 健康工具,
-// 醫療院所) so the footer and navbar always list the same sections — a
-// footer with a different/stale link set is a common WCAG 2.4.5 (multiple
-// ways) and general-usability trap.
+// 醫療院所, 食品營養) so the footer and navbar always list the same
+// sections — a footer with a different/stale link set is a common WCAG
+// 2.4.5 (multiple ways) and general-usability trap.
 export const StabloFooter = () => {
   const calculatorTools = TOOL_CATALOG.filter((tool) => tool.group === "calculator");
   const facilityTools = TOOL_CATALOG.filter((tool) => tool.group === "facility");
+  const foodTools = TOOL_CATALOG.filter((tool) => tool.group === "food");
 
   return (
     <footer className="mt-20 border-t border-neutral-200">
@@ -210,6 +211,13 @@ export const StabloFooter = () => {
           </FooterColumn>
           <FooterColumn label="醫療院所">
             {facilityTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {tool.title}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+          <FooterColumn label="食品營養">
+            {foodTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
                 {tool.title}
               </FooterLink>

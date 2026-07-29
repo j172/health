@@ -3,14 +3,14 @@ export interface ToolFaq {
   answer: string;
 }
 
-export type ToolGroup = "calculator" | "facility";
+export type ToolGroup = "calculator" | "facility" | "food";
 
 export interface ToolCatalogEntry {
   slug: string;
   title: string;
   description: string;
   faqs: ToolFaq[];
-  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups). */
+  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups); "food" → 食品營養 nav dropdown (TFDA food nutrition/operator lookups). */
   group: ToolGroup;
 }
 
@@ -182,7 +182,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-nutrition",
-    group: "facility",
+    group: "food",
     title: "食品營養成分查詢",
     description: "查詢衛福部食藥署食品營養成分資料庫，依食品名稱搜尋熱量、蛋白質、脂肪、碳水化合物等營養成分含量。",
     faqs: [
@@ -192,7 +192,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-operators",
-    group: "facility",
+    group: "food",
     title: "食品業者登錄查詢",
     description: "查詢衛福部食藥署食品業者登錄資料，依公司名稱、統一編號或地址搜尋登錄項目（販售場所、製造場所、餐飲場所等）。",
     faqs: [
