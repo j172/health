@@ -5,8 +5,22 @@ import { useGeolocation } from "@/components/Facilities/useGeolocation";
 
 interface NearbyWeatherResponse {
   aqi: { siteName: string; county: string; aqiValue: number | null; status: string; color: string; distanceKm: number } | null;
+  pm25: { siteName: string; county: string; pm25: number | null; distanceKm: number } | null;
   uv: { stationName: string | null; county: string | null; uvIndex: number; label: string; color: string; distanceKm: number } | null;
+  forecast: { zone: string; forecastDate: string; aqiValue: number | null; majorPollutant: string | null; status: string; color: string } | null;
 }
+
+const formatForecastDate = (isoDate: string): string => {
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+  if (isoDate === todayStr) return "今日";
+  if (isoDate === tomorrowStr) return "明日";
+  const [, m, d] = isoDate.split("-");
+  return `${Number(m)}/${Number(d)}`;
+};
 
 /** Nearest AQI station + nearest UV reading to the reader's own location — replaces the earlier "top 5 nationwide" design, which didn't tell a reader anything about their own area. Client-side since geolocation only exists in the browser. */
 export default function NearbyWeatherBar() {
@@ -31,7 +45,7 @@ export default function NearbyWeatherBar() {
     };
   }, [location.loading, location.lat, location.lng]);
 
-  if (!data || (!data.aqi && !data.uv)) return null;
+  if (!data || (!data.aqi && !data.pm25 && !data.uv && !data.forecast)) return null;
 
   return (
     <div className="border-b border-sky-200 bg-sky-50">
@@ -48,12 +62,26 @@ export default function NearbyWeatherBar() {
               </span>
             </span>
           ) : null}
+          {data.pm25 ? (
+            <span className="whitespace-nowrap">
+              {data.pm25.county}
+              {data.pm25.siteName} PM2.5 {data.pm25.pm25 ?? "–"}
+            </span>
+          ) : null}
           {data.uv ? (
             <span className="whitespace-nowrap">
               {data.uv.county}
               {data.uv.stationName} UV {data.uv.uvIndex}
               <span style={{ color: data.uv.color }} className="ml-1 font-semibold">
                 ({data.uv.label})
+              </span>
+            </span>
+          ) : null}
+          {data.forecast ? (
+            <span className="whitespace-nowrap">
+              🔮{data.forecast.zone}空品區（{formatForecastDate(data.forecast.forecastDate)}）AQI {data.forecast.aqiValue ?? "–"}
+              <span style={{ color: data.forecast.color }} className="ml-1 font-semibold">
+                ({data.forecast.status})
               </span>
             </span>
           ) : null}

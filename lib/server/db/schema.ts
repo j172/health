@@ -228,6 +228,52 @@ export const TABLE_DDL = {
       KEY idx_aqi_reading_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 環境部細懸浮微粒(PM2.5)即時資料 — data.moenv.gov.tw AQX_P_02, same ~79-
+  // station network as aqi_readings but its own dataset/API key, 30-minute
+  // cron alongside aqi-sync. The source payload has no lat/lng of its own,
+  // so it's resolved by matching (site_name, county) against aqi_readings at
+  // upsert time and stored here directly for fast nearest-station lookups.
+  pm25Readings: `
+    CREATE TABLE IF NOT EXISTS pm25_readings (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      site_name VARCHAR(100) NOT NULL,
+      county VARCHAR(20) NOT NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      pm25 DECIMAL(6,1) NULL,
+      recorded_at DATETIME NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_pm25_reading (site_name, recorded_at),
+      KEY idx_pm25_reading_geo (lat, lng)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 環境部空氣品質預測 — data.moenv.gov.tw AQF_P_01, 30-minute cron. Keyed by
+  // (zone, forecast_date) — zone is one of MOENV's 10 空品區 groupings (北部/
+  // 竹苗/中部/雲嘉南/高屏/宜蘭/花東/澎湖/金門/馬祖), not an individual
+  // station, so nearest-user lookups resolve zone via the nearest AQI
+  // station's county (see lib/server/aqi/forecastQueries.ts's COUNTY_TO_ZONE
+  // map) rather than a lat/lng column on this table.
+  aqiForecasts: `
+    CREATE TABLE IF NOT EXISTS aqi_forecasts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      zone VARCHAR(20) NOT NULL,
+      forecast_date DATE NOT NULL,
+      publish_time DATETIME NOT NULL,
+      aqi_value SMALLINT NULL,
+      major_pollutant VARCHAR(50) NULL,
+      minor_pollutant VARCHAR(50) NULL,
+      minor_pollutant_aqi VARCHAR(20) NULL,
+      content TEXT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_aqi_forecast (zone, forecast_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   // 中央氣象署 (CWA) open-data ingestion — opendata.cwa.gov.tw, hourly cron.
   // See lib/server/cwa/runSync.ts for the source registry.
   cwaForecasts: `

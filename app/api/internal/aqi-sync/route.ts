@@ -10,9 +10,10 @@ export async function GET(request: Request): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const result = await runAqiSync();
-  if (result.error) {
-    return NextResponse.json({ ok: false, error: result.error }, { status: 500 });
+  const results = await runAqiSync();
+  const failed = results.find((r) => r.error);
+  if (failed) {
+    return NextResponse.json({ ok: false, error: failed.error, results }, { status: 500 });
   }
-  return NextResponse.json({ ok: true, result });
+  return NextResponse.json({ ok: true, results });
 }
