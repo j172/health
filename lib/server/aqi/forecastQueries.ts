@@ -93,7 +93,10 @@ export const zoneForCounty = (county: string): string | null => COUNTY_TO_ZONE[c
 export const getForecastForZone = async (zone: string): Promise<AqiForecastRow | null> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT zone, forecast_date, publish_time, aqi_value, major_pollutant
+      // DATE_FORMAT, not the raw column — mysql2 returns DATE columns as JS
+      // Date objects, which serializes to a full ISO datetime ("...T00:00:00.000Z")
+      // in the JSON API response, breaking the client's plain "YYYY-MM-DD" parsing.
+      `SELECT zone, DATE_FORMAT(forecast_date, '%Y-%m-%d') AS forecast_date, publish_time, aqi_value, major_pollutant
        FROM aqi_forecasts
        WHERE zone = ? AND forecast_date >= CURDATE()
        ORDER BY forecast_date ASC
