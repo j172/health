@@ -16,9 +16,18 @@ export async function fetchCwaDataset<T = unknown>(resourceId: string, params: R
   const { status, text } = await httpGetText(`${BASE_URL}/v1/rest/datastore/${resourceId}?${query.toString()}`);
   if (status < 200 || status >= 300) throw new Error(`CWA dataset ${resourceId} request failed: HTTP ${status}`);
 
-  const json = JSON.parse(text);
+  let json: { success?: unknown; result?: { records?: unknown } };
+  try {
+    json = JSON.parse(text);
+  } catch (error) {
+    console.error(`CWA dataset ${resourceId}: JSON.parse failed, length=${text.length}, head=${text.slice(0, 200)}`);
+    throw error;
+  }
   if (json.success !== "true" && json.success !== true) {
     throw new Error(`CWA dataset ${resourceId} returned an error: ${JSON.stringify(json).slice(0, 300)}`);
   }
-  return json.result.records as T;
+  if (json.result?.records === undefined) {
+    console.error(`CWA dataset ${resourceId}: no records field, length=${text.length}, keys=${Object.keys(json)}, resultKeys=${json.result ? Object.keys(json.result) : "no result"}, head=${text.slice(0, 300)}`);
+  }
+  return json.result?.records as T;
 }
