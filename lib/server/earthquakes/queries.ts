@@ -97,3 +97,27 @@ export const upsertEarthquake = async (event: IncomingEarthquake): Promise<"inse
     );
     return "inserted";
   });
+
+export interface SignificantEarthquake {
+  id: number;
+  event_time: Date;
+  magnitude: number;
+  place: string | null;
+  place_zh: string | null;
+  url: string | null;
+}
+
+/** Recent M6.0+ earthquakes worldwide, most recent first. */
+export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours = 24, limit = 5): Promise<SignificantEarthquake[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT id, event_time, magnitude, place, place_zh, url
+       FROM global_earthquakes
+       WHERE magnitude >= ?
+         AND event_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+       ORDER BY event_time DESC
+       LIMIT ?`,
+      [minMagnitude, hours, limit],
+    );
+    return rows as unknown as SignificantEarthquake[];
+  });

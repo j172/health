@@ -4,6 +4,7 @@ import { listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { getRecentSignificantEarthquakes } from "@/lib/server/earthquakes/queries";
 import SiteNav from "@/components/News/SiteNav";
 import NearbyWeatherBar from "@/components/News/NearbyWeatherBar";
 
@@ -120,10 +121,55 @@ const WeatherAlertBar = async () => {
   );
 };
 
+const toTaipeiDateTime = (value: Date): string =>
+  new Intl.DateTimeFormat("zh-TW", { dateStyle: "short", timeStyle: "short", timeZone: "Asia/Taipei" }).format(new Date(value));
+
+// Magnitude-severity color, roughly matching how earthquake-alert apps
+// typically bucket M6+ events (major/great).
+const magnitudeColor = (mag: number): string => {
+  if (mag >= 8) return "#7c3aed";
+  if (mag >= 7) return "#dc2626";
+  return "#ea580c";
+};
+
+const SignificantEarthquakesBar = async () => {
+  const quakes = await getRecentSignificantEarthquakes(6.0, 24, 5);
+  if (quakes.length === 0) return null;
+
+  return (
+    <div className="border-b border-orange-200 bg-orange-50">
+      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-orange-900 sm:px-6 lg:px-8">
+        <span aria-hidden="true">🌐</span>
+        <span className="shrink-0">全球地震：</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {quakes.map((q) => {
+            const content = (
+              <span className="whitespace-nowrap">
+                <span style={{ color: magnitudeColor(q.magnitude) }} className="font-semibold">
+                  M{q.magnitude.toFixed(1)}
+                </span>{" "}
+                {q.place_zh ?? q.place ?? "未知地點"} · {toTaipeiDateTime(q.event_time)}
+              </span>
+            );
+            return q.url ? (
+              <a key={q.id} href={q.url} target="_blank" rel="noreferrer noopener" className="hover:text-orange-950">
+                {content}
+              </a>
+            ) : (
+              <span key={q.id}>{content}</span>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const StabloHeader = async () => (
   <header className="border-b border-neutral-200">
     <WeatherAlertBar />
     <NearbyWeatherBar />
+    <SignificantEarthquakesBar />
     <SiteNav />
   </header>
 );
