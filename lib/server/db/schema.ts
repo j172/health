@@ -172,6 +172,33 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 環境部 (MOENV) 全台空氣品質即時測站資料 — data.moenv.gov.tw AQX_P_432, hourly
+  // cron. One row per (site, publishtime) so history accumulates over time;
+  // /api/aqi reads the latest row per site. See lib/server/aqi/runSync.ts.
+  aqiReadings: `
+    CREATE TABLE IF NOT EXISTS aqi_readings (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      site_id VARCHAR(20) NOT NULL,
+      site_name VARCHAR(100) NOT NULL,
+      county VARCHAR(20) NOT NULL,
+      aqi_value SMALLINT NULL,
+      aqi_status VARCHAR(50) NULL,
+      pm25 DECIMAL(6,1) NULL,
+      pm10 DECIMAL(6,1) NULL,
+      o3 DECIMAL(6,1) NULL,
+      no2 DECIMAL(6,1) NULL,
+      so2 DECIMAL(6,1) NULL,
+      co DECIMAL(6,2) NULL,
+      recorded_at DATETIME NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_aqi_reading (site_id, recorded_at),
+      KEY idx_aqi_reading_county (county),
+      KEY idx_aqi_reading_recorded (recorded_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   // 中央氣象署 (CWA) open-data ingestion — opendata.cwa.gov.tw, hourly cron.
   // See lib/server/cwa/runSync.ts for the source registry.
   cwaForecasts: `
