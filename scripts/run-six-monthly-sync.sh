@@ -16,6 +16,13 @@
 # - The MOHW LTC contracted-service registry (also ltcpap.mohw.gov.tw, same
 #   IP-range block) — run scripts/import-mohw-ltc-contracted.mjs by hand too.
 #   It already ships lat/lng, so no geocoding combo is needed for it here.
+# - The MOHW disability/elder welfare institution directories — these live on
+#   opendata.mohw.gov.tw, the same mohw.gov.tw apex domain as ltcpap above and
+#   confirmed unreachable from this host the same way, so run scripts/import-
+#   mohw-disability-welfare.mjs and scripts/import-mohw-elder-welfare.mjs by
+#   hand too. Unlike the LTC registry these have no coordinates, so their
+#   (facility_type, source_key) pairs ARE still in this script's geocoding
+#   COMBOS below.
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
@@ -28,7 +35,7 @@ BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"
 
 log() { echo "[$(date -u +%FT%TZ)] $*"; }
 
-log "Triggering facilities-sync (nhi_hospital, nhi_pharmacy, tfda_pharmacy, mol_labor_checkup, mol_occupational_injury, nhi_home_healthcare, mohw_disability_welfare, mohw_elder_welfare)..."
+log "Triggering facilities-sync (nhi_hospital, nhi_pharmacy, tfda_pharmacy, mol_labor_checkup, mol_occupational_injury, nhi_home_healthcare)..."
 curl -fsS -X POST "$BASE_URL/api/admin/facilities-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 echo
 
