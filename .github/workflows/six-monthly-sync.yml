@@ -1,0 +1,25 @@
+name: Six-monthly facility/drug data sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    # ~03:00 Taipei time on Jan 2 and Jul 2 (cron is UTC).
+    - cron: "0 19 1 1,7 *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    # Geocoding backfill dominates the runtime (Nominatim/OpenCage are each
+    # throttled to ~1 req/sec) — give it plenty of room under GitHub's
+    # 360-minute hard cap rather than getting cut off mid-run.
+    timeout-minutes: 340
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run six-monthly sync
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+        run: bash scripts/run-six-monthly-sync.sh
