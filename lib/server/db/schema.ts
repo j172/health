@@ -156,6 +156,32 @@ export const TABLE_DDL = {
       KEY idx_drug_name_en (name_en(50))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TFDA 藥品成分資料庫 (data.fda.gov.tw export/43) — one row per (license ×
+  // ingredient). No clean natural key: the same (license_no, ingredient_code)
+  // pair can legitimately repeat with a different content_description
+  // (confirmed live, e.g. a footnoted secondary concentration), so row_key is
+  // a SHA-256 hash of the full raw row — same "hash the raw fields" reasoning
+  // as cwa_alerts.alert_key.
+  tfdaDrugIngredients: `
+    CREATE TABLE IF NOT EXISTS tfda_drug_ingredients (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      row_key CHAR(64) NOT NULL,
+      license_no VARCHAR(50) NOT NULL,
+      prescription_label VARCHAR(255) NULL,
+      ingredient_name VARCHAR(255) NOT NULL,
+      ingredient_code VARCHAR(50) NULL,
+      content_description VARCHAR(100) NULL,
+      content_amount VARCHAR(50) NULL,
+      content_unit VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_drug_ingredient_row (row_key),
+      KEY idx_drug_ingredient_license (license_no),
+      KEY idx_drug_ingredient_name (ingredient_name(100))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestErrors: `
     CREATE TABLE IF NOT EXISTS ingest_errors (
       id BIGINT NOT NULL AUTO_INCREMENT,

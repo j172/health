@@ -47,9 +47,14 @@ log "Running drugs-sync (TFDA drug appearance database)..."
 curl -fsS -X POST "$BASE_URL/api/admin/drugs-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 echo
 
-# facilities-sync and facilities-hours-sync respond immediately (202) and
-# finish in the background — give the tens-of-thousands-of-rows upserts time
-# to land before geocoding starts looking for newly-missing coordinates.
+log "Triggering drugs-ingredients-sync (TFDA drug ingredients database, 125k+ rows)..."
+curl -fsS -X POST "$BASE_URL/api/admin/drugs-ingredients-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
+echo
+
+# facilities-sync, facilities-hours-sync, and drugs-ingredients-sync respond
+# immediately (202) and finish in the background — give the tens-of-
+# thousands-of-rows upserts time to land before geocoding starts looking for
+# newly-missing coordinates.
 log "Waiting 5 minutes for background facility upserts to finish..."
 sleep 300
 

@@ -51,6 +51,8 @@ jobs:
           MYSQL_PASSWORD_SECRET: ${{ secrets.MYSQL_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID_SECRET: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN_SECRET: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          MOENV_PM25_API_KEY_SECRET: ${{ secrets.MOENV_PM25_API_KEY }}
+          MOENV_AQI_FORECAST_API_KEY_SECRET: ${{ secrets.MOENV_AQI_FORECAST_API_KEY }}
         run: |
           set -euo pipefail
           trap 'rm -f .pixabay.env' EXIT
@@ -61,6 +63,8 @@ jobs:
           MYSQL_PASSWORD_CLEAN="$(printf '%s' "${MYSQL_PASSWORD_SECRET:-}" | tr -d '\r\n')"
           CLOUDFLARE_ACCOUNT_ID_CLEAN="$(printf '%s' "${CLOUDFLARE_ACCOUNT_ID_SECRET:-}" | tr -d '\r\n')"
           CLOUDFLARE_API_TOKEN_CLEAN="$(printf '%s' "${CLOUDFLARE_API_TOKEN_SECRET:-}" | tr -d '\r\n')"
+          MOENV_PM25_API_KEY_CLEAN="$(printf '%s' "${MOENV_PM25_API_KEY_SECRET:-}" | tr -d '\r\n')"
+          MOENV_AQI_FORECAST_API_KEY_CLEAN="$(printf '%s' "${MOENV_AQI_FORECAST_API_KEY_SECRET:-}" | tr -d '\r\n')"
 
           if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
             echo "Missing one of required deployment values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD / PIXABAY_API_KEY"
@@ -77,6 +81,12 @@ jobs:
           fi
           if [ -n "$CLOUDFLARE_API_TOKEN_CLEAN" ]; then
             printf 'CLOUDFLARE_API_TOKEN=%s\n' "$CLOUDFLARE_API_TOKEN_CLEAN" >> .pixabay.env
+          fi
+          if [ -n "$MOENV_PM25_API_KEY_CLEAN" ]; then
+            printf 'MOENV_PM25_API_KEY=%s\n' "$MOENV_PM25_API_KEY_CLEAN" >> .pixabay.env
+          fi
+          if [ -n "$MOENV_AQI_FORECAST_API_KEY_CLEAN" ]; then
+            printf 'MOENV_AQI_FORECAST_API_KEY=%s\n' "$MOENV_AQI_FORECAST_API_KEY_CLEAN" >> .pixabay.env
           fi
 
           FTP_URL="ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-next3.tgz"

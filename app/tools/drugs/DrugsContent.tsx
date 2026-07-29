@@ -18,12 +18,47 @@ interface DrugItem {
   image_url: string | null;
 }
 
+interface DrugIngredient {
+  prescription_label: string | null;
+  ingredient_name: string;
+  ingredient_code: string | null;
+  content_description: string | null;
+  content_amount: string | null;
+  content_unit: string | null;
+}
+
 export default function DrugsContent() {
   const [searchInput, setSearchInput] = useState("");
   const [drugs, setDrugs] = useState<DrugItem[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [searchedFor, setSearchedFor] = useState("");
+
+  const [expandedLicense, setExpandedLicense] = useState<string | null>(null);
+  const [ingredients, setIngredients] = useState<DrugIngredient[] | null>(null);
+  const [ingredientsLoading, setIngredientsLoading] = useState(false);
+
+  const toggleIngredients = async (licenseNo: string) => {
+    if (expandedLicense === licenseNo) {
+      setExpandedLicense(null);
+      setIngredients(null);
+      return;
+    }
+
+    setExpandedLicense(licenseNo);
+    setIngredients(null);
+    setIngredientsLoading(true);
+    try {
+      const res = await fetch(`/api/drugs?licenseNo=${encodeURIComponent(licenseNo)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setIngredients(data.ingredients);
+    } catch {
+      setIngredients([]);
+    } finally {
+      setIngredientsLoading(false);
+    }
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,26 +121,63 @@ export default function DrugsContent() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {drugs.map((d) => (
-                <div key={d.id} className="flex gap-4 rounded-none border border-neutral-200 p-4">
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-none bg-neutral-50">
-                    {d.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={d.image_url} alt={d.name_zh} className="h-full w-full object-contain" loading="lazy" />
-                    ) : (
-                      <span className="text-2xl">💊</span>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-neutral-800">{d.name_zh}</p>
-                    {d.name_en && <p className="text-xs text-neutral-500">{d.name_en}</p>}
-                    <p className="mt-1 text-xs text-neutral-500">許可證：{d.license_no}</p>
-                    <div className="mt-2 flex flex-wrap gap-1 text-xs text-neutral-600">
-                      {d.shape && <span className="rounded bg-neutral-100 px-1.5 py-0.5">形狀：{d.shape}</span>}
-                      {d.color && <span className="rounded bg-neutral-100 px-1.5 py-0.5">顏色：{d.color}</span>}
-                      {d.score_mark && d.score_mark !== "無" && <span className="rounded bg-neutral-100 px-1.5 py-0.5">刻痕：{d.score_mark}</span>}
-                      {(d.imprint_1 || d.imprint_2) && <span className="rounded bg-neutral-100 px-1.5 py-0.5">標註：{[d.imprint_1, d.imprint_2].filter(Boolean).join(" / ")}</span>}
+                <div key={d.id} className="rounded-none border border-neutral-200 p-4">
+                  <div className="flex gap-4">
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-none bg-neutral-50">
+                      {d.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={d.image_url} alt={d.name_zh} className="h-full w-full object-contain" loading="lazy" />
+                      ) : (
+                        <span className="text-2xl">💊</span>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-neutral-800">{d.name_zh}</p>
+                      {d.name_en && <p className="text-xs text-neutral-500">{d.name_en}</p>}
+                      <p className="mt-1 text-xs text-neutral-500">許可證：{d.license_no}</p>
+                      <div className="mt-2 flex flex-wrap gap-1 text-xs text-neutral-600">
+                        {d.shape && <span className="rounded bg-neutral-100 px-1.5 py-0.5">形狀：{d.shape}</span>}
+                        {d.color && <span className="rounded bg-neutral-100 px-1.5 py-0.5">顏色：{d.color}</span>}
+                        {d.score_mark && d.score_mark !== "無" && <span className="rounded bg-neutral-100 px-1.5 py-0.5">刻痕：{d.score_mark}</span>}
+                        {(d.imprint_1 || d.imprint_2) && <span className="rounded bg-neutral-100 px-1.5 py-0.5">標註：{[d.imprint_1, d.imprint_2].filter(Boolean).join(" / ")}</span>}
+                      </div>
                     </div>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleIngredients(d.license_no)}
+                    className="mt-3 text-xs font-medium text-primary hover:underline"
+                  >
+                    {expandedLicense === d.license_no ? "收合成分 ▲" : "查看成分 ▼"}
+                  </button>
+
+                  {expandedLicense === d.license_no && (
+                    <div className="mt-2 border-t border-neutral-100 pt-2">
+                      {ingredientsLoading && (
+                        <div className="flex justify-center py-2">
+                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                        </div>
+                      )}
+                      {!ingredientsLoading && ingredients && ingredients.length === 0 && <p className="text-xs text-neutral-500">無成分資料。</p>}
+                      {!ingredientsLoading && ingredients && ingredients.length > 0 && (
+                        <ul className="space-y-1 text-xs text-neutral-600">
+                          {ingredients.map((ing, i) => (
+                            <li key={i}>
+                              {ing.ingredient_name}
+                              {ing.content_description && ing.content_unit && (
+                                <span className="text-neutral-500">
+                                  {" "}
+                                  — {ing.content_description}
+                                  {ing.content_unit}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
