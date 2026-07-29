@@ -172,4 +172,188 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 中央氣象署 (CWA) open-data ingestion — opendata.cwa.gov.tw, hourly cron.
+  // See lib/server/cwa/runSync.ts for the source registry.
+  cwaForecasts: `
+    CREATE TABLE IF NOT EXISTS cwa_forecasts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      county_name VARCHAR(20) NOT NULL,
+      element_name VARCHAR(20) NOT NULL,
+      start_time DATETIME NOT NULL,
+      end_time DATETIME NOT NULL,
+      parameter_name VARCHAR(100) NULL,
+      parameter_value VARCHAR(100) NULL,
+      parameter_unit VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_forecast (county_name, element_name, start_time),
+      KEY idx_cwa_forecast_county (county_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  cwaEarthquakes: `
+    CREATE TABLE IF NOT EXISTS cwa_earthquakes (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      earthquake_no BIGINT NOT NULL,
+      report_type VARCHAR(50) NULL,
+      report_color VARCHAR(20) NULL,
+      origin_time DATETIME NULL,
+      location VARCHAR(255) NULL,
+      epicenter_lat DECIMAL(10,7) NULL,
+      epicenter_lng DECIMAL(10,7) NULL,
+      focal_depth DECIMAL(6,2) NULL,
+      magnitude_value DECIMAL(4,2) NULL,
+      magnitude_type VARCHAR(20) NULL,
+      max_intensity VARCHAR(20) NULL,
+      report_content TEXT NULL,
+      report_image_uri VARCHAR(500) NULL,
+      web VARCHAR(500) NULL,
+      area_intensity_json JSON NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_earthquake_no (earthquake_no)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  cwaTsunamis: `
+    CREATE TABLE IF NOT EXISTS cwa_tsunamis (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      report_no VARCHAR(20) NOT NULL,
+      report_type VARCHAR(50) NULL,
+      report_color VARCHAR(20) NULL,
+      issue_time DATETIME NULL,
+      end_time DATETIME NULL,
+      report_content TEXT NULL,
+      web VARCHAR(500) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_tsunami_report (report_no)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // CAP-format hazard alerts — shares one schema across the 4 CAP-based
+  // datasets (rain/cold/heat/typhoon); dataset_id disambiguates the source.
+  // CAP records carry no stable identifier field, so alert_key is a SHA-256
+  // hash of (dataset_id, event, areaDesc, effective) — the same "hash the raw
+  // fields, don't derive it from anything normalize()-like might change"
+  // reasoning as facilities' tfda_pharmacy sourceId.
+  cwaAlerts: `
+    CREATE TABLE IF NOT EXISTS cwa_alerts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      alert_key CHAR(64) NOT NULL,
+      dataset_id VARCHAR(20) NOT NULL,
+      event VARCHAR(100) NULL,
+      headline VARCHAR(255) NULL,
+      description TEXT NULL,
+      instruction TEXT NULL,
+      severity VARCHAR(50) NULL,
+      urgency VARCHAR(50) NULL,
+      certainty VARCHAR(50) NULL,
+      area_desc VARCHAR(500) NULL,
+      effective DATETIME NULL,
+      onset DATETIME NULL,
+      expires DATETIME NULL,
+      web VARCHAR(500) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_alert_key (alert_key),
+      KEY idx_cwa_alert_dataset (dataset_id),
+      KEY idx_cwa_alert_expires (expires)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  cwaTownshipHazards: `
+    CREATE TABLE IF NOT EXISTS cwa_township_hazards (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      location_name VARCHAR(20) NOT NULL,
+      geocode VARCHAR(20) NULL,
+      phenomena VARCHAR(50) NOT NULL,
+      significance VARCHAR(50) NULL,
+      start_time DATETIME NOT NULL,
+      end_time DATETIME NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_township_hazard (location_name, phenomena, start_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Station weather observations — shares one schema across O-A0001-001 and
+  // O-A0003-001 (same station-level fields; O-A0003 additionally reports
+  // visibility/sunshine), disambiguated by dataset_id.
+  cwaStationWeather: `
+    CREATE TABLE IF NOT EXISTS cwa_station_weather (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      dataset_id VARCHAR(20) NOT NULL,
+      station_id VARCHAR(20) NOT NULL,
+      station_name VARCHAR(100) NULL,
+      county_name VARCHAR(20) NULL,
+      town_name VARCHAR(20) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      altitude DECIMAL(8,2) NULL,
+      obs_time DATETIME NOT NULL,
+      weather VARCHAR(50) NULL,
+      precipitation VARCHAR(20) NULL,
+      wind_direction VARCHAR(20) NULL,
+      wind_speed VARCHAR(20) NULL,
+      air_temperature VARCHAR(20) NULL,
+      relative_humidity VARCHAR(20) NULL,
+      air_pressure VARCHAR(20) NULL,
+      uv_index VARCHAR(20) NULL,
+      peak_gust_speed VARCHAR(20) NULL,
+      visibility_description VARCHAR(100) NULL,
+      sunshine_duration VARCHAR(20) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_station_weather (dataset_id, station_id, obs_time),
+      KEY idx_cwa_station_weather_geo (lat, lng)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  cwaRainfall: `
+    CREATE TABLE IF NOT EXISTS cwa_rainfall (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(20) NOT NULL,
+      station_name VARCHAR(100) NULL,
+      county_name VARCHAR(20) NULL,
+      town_name VARCHAR(20) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      obs_time DATETIME NOT NULL,
+      precip_now VARCHAR(20) NULL,
+      precip_10min VARCHAR(20) NULL,
+      precip_1hr VARCHAR(20) NULL,
+      precip_3hr VARCHAR(20) NULL,
+      precip_6hr VARCHAR(20) NULL,
+      precip_12hr VARCHAR(20) NULL,
+      precip_24hr VARCHAR(20) NULL,
+      precip_2days VARCHAR(20) NULL,
+      precip_3days VARCHAR(20) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_rainfall (station_id, obs_time),
+      KEY idx_cwa_rainfall_geo (lat, lng)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  cwaUvIndex: `
+    CREATE TABLE IF NOT EXISTS cwa_uv_index (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(20) NOT NULL,
+      obs_date DATE NOT NULL,
+      uv_index DECIMAL(4,1) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_uv_index (station_id, obs_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
