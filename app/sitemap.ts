@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { listLatestNews } from "@/lib/server/news/queries";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,9 +33,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   );
 
+  const toolEntries: MetadataRoute.Sitemap = TOOL_CATALOG.map((tool) => ({
+    url: `${baseUrl}/tools/${tool.slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
   return [
     { url: baseUrl, changeFrequency: "daily", priority: 1 },
     { url: `${baseUrl}/news`, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${baseUrl}/tools`, changeFrequency: "monthly", priority: 0.8 },
+    ...toolEntries,
     ...sourceEntries,
     ...newsEntries,
   ];

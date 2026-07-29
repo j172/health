@@ -1,0 +1,187 @@
+export interface ToolFaq {
+  question: string;
+  answer: string;
+}
+
+export interface ToolCatalogEntry {
+  slug: string;
+  title: string;
+  description: string;
+  faqs: ToolFaq[];
+}
+
+// Single source of truth for "what tools does this site have" — used by
+// llms.txt (app/llms.txt/route.ts), sitemap.ts, and ToolPageShell (which
+// derives each page's WebApplication/FAQPage structured data from `faqs`
+// automatically by slug), so all four stay in sync without duplicating
+// title/description/FAQ text across files.
+export const TOOL_CATALOG: ToolCatalogEntry[] = [
+  {
+    slug: "bmi",
+    title: "BMI 計算器",
+    description: "免費線上 BMI 身體質量指數計算器，輸入身高與體重即可立即計算您的 BMI 值，並對照台灣衛生福利部國民健康署標準，了解過輕、正常、過重或肥胖的健康風險。",
+    faqs: [
+      { question: "BMI 是怎麼計算的？", answer: "BMI（身體質量指數）＝體重（公斤）÷ 身高（公尺）的平方。例如身高170公分、體重65公斤，BMI ＝ 65 ÷ (1.7 × 1.7) ≈ 22.5。" },
+      { question: "台灣的 BMI 標準範圍是多少？", answer: "依衛福部國健署標準：BMI < 18.5 為過輕，18.5–24 為正常範圍，24–27 為過重，27 以上為肥胖，與 WHO 的國際標準（正常上限 25）略有不同。" },
+      { question: "BMI 正常就代表健康嗎？", answer: "BMI 只反映體重與身高的比例，無法區分肌肉與脂肪比例，運動員或肌肉量高的人可能BMI偏高但體脂率正常。建議搭配體脂率、腰臀比等指標一起評估。" },
+    ],
+  },
+  {
+    slug: "calories",
+    title: "卡路里需求計算器",
+    description: "根據年齡、性別、身高、體重與活動量，採用 Mifflin-St Jeor 公式計算每日所需熱量攝取 (BMR/TDEE)。",
+    faqs: [
+      { question: "BMR 和 TDEE 有什麼差別？", answer: "BMR（基礎代謝率）是身體在完全靜止狀態下維持生命所需的最低熱量；TDEE（每日總消耗熱量）則是 BMR 再乘上活動量係數，反映實際生活中消耗的總熱量。" },
+      { question: "為什麼用 Mifflin-St Jeor 公式？", answer: "Mifflin-St Jeor 公式是目前研究上公認準確度較高的 BMR 估算公式之一，比舊式的 Harris-Benedict 公式更貼近現代人的身體組成。" },
+      { question: "想減重應該攝取多少熱量？", answer: "一般建議在 TDEE 基礎上減少 300–500 大卡，可達到每週約 0.25–0.5 公斤的溫和減重速度，避免熱量赤字過大影響代謝與肌肉量。" },
+    ],
+  },
+  {
+    slug: "nutrition",
+    title: "每日營養素建議計算器",
+    description: "依據個人體型、活動量與飲食目標，提供每日三大營養素（蛋白質、碳水化合物、脂肪）攝取建議。",
+    faqs: [
+      { question: "三大營養素的建議比例是多少？", answer: "依飲食目標而異，一般均衡飲食常見比例約為碳水化合物 45–65%、蛋白質 10–35%、脂肪 20–35%（以熱量佔比計算），本工具會依您的目標（增肌、減脂、維持）調整比例。" },
+      { question: "增肌需要吃多少蛋白質？", answer: "增肌階段建議每公斤體重攝取約 1.6–2.2 公克蛋白質，一般日常維持則約 0.8–1.2 公克/公斤即可。" },
+    ],
+  },
+  {
+    slug: "water",
+    title: "飲水量計算器",
+    description: "依體重與活動量計算每日建議飲水量，並提供分段補水時間表，幫助您養成良好的補水習慣。",
+    faqs: [
+      { question: "每天應該喝多少水？", answer: "常見估算方式為體重（公斤）乘以 30–35 毫升，再依運動量、氣溫等因素調整；例如 60 公斤的人約需 1800–2100 毫升。" },
+      { question: "喝咖啡或茶算在飲水量裡嗎？", answer: "含咖啡因飲品有輕微利尿作用，建議仍以白開水為主要補水來源，咖啡、茶等飲品可作為額外攝取，不宜完全取代飲水。" },
+    ],
+  },
+  {
+    slug: "body-fat",
+    title: "體脂率計算器",
+    description: "採用美國海軍體脂計算法（Navy Method），計算體脂率、脂肪質量與肌肉量，對照 ACSM 標準分類。",
+    faqs: [
+      { question: "Navy Method 怎麼測量體脂率？", answer: "美國海軍體脂公式利用頸圍、腰圍（女性另加臀圍）與身高，透過對數迴歸公式估算體脂率，不需要體脂計等器材，是一種便於居家自我評估的方式。" },
+      { question: "體脂率多少算正常？", answer: "依 ACSM 標準，成年男性健康體脂率約 10–20%，成年女性約 18–28%，實際標準會依年齡略有調整。" },
+    ],
+  },
+  {
+    slug: "waist-hip",
+    title: "腰臀比計算器",
+    description: "計算腰臀比（WHR），依 WHO 標準評估腹部肥胖與心血管代謝風險。",
+    faqs: [
+      { question: "腰臀比（WHR）如何計算？", answer: "WHR ＝ 腰圍 ÷ 臀圍（單位需一致，如皆為公分）。例如腰圍80公分、臀圍100公分，WHR ＝ 0.8。" },
+      { question: "腰臀比多少代表風險較高？", answer: "依 WHO 標準，男性 WHR 超過 0.90、女性超過 0.85，即屬於腹部肥胖，心血管與代謝疾病風險相對較高。" },
+    ],
+  },
+  {
+    slug: "heart-rate",
+    title: "目標心率計算器",
+    description: "使用 Karvonen 公式計算 5 個運動強度心率區間，幫助您精準控制訓練強度。",
+    faqs: [
+      { question: "Karvonen 公式和一般的「220減年齡」有什麼不同？", answer: "Karvonen 公式額外納入安靜心率（儲備心率），比單純「220−年齡」的最大心率估算法更能反映個人心肺基礎狀態，計算出的目標心率區間也更準確。" },
+      { question: "5 個心率區間分別對應什麼訓練效果？", answer: "由低到高依序約對應：恢復／熱身、燃脂、有氧耐力、無氧閾值、最大攝氧量訓練，可依訓練目的選擇對應區間維持運動強度。" },
+    ],
+  },
+  {
+    slug: "blood-pressure",
+    title: "血壓分析器",
+    description: "依 2023 ESH 高血壓指南分類血壓等級，支援多次記錄與平均值分析，提供個人化生活建議。",
+    faqs: [
+      { question: "血壓多少算高血壓？", answer: "依 2023 ESH（歐洲高血壓學會）指南，收縮壓 ≥140 mmHg 或舒張壓 ≥90 mmHg 即達高血壓標準；120–139/70–89 mmHg 屬於「正常偏高」，需留意生活型態調整。" },
+      { question: "為什麼要記錄多次血壓再平均？", answer: "單次血壓測量易受當下情緒、活動、白袍效應等因素影響，多次測量取平均值能更準確反映真實血壓狀況，這也是臨床診斷高血壓的建議做法。" },
+    ],
+  },
+  {
+    slug: "sleep",
+    title: "睡眠品質評估",
+    description: "基於 PSQI 量表 7 個面向，評估您的睡眠狀況並提供科學化睡眠衛生改善建議。",
+    faqs: [
+      { question: "PSQI 量表評估哪些面向？", answer: "匹茲堡睡眠品質指數（PSQI）涵蓋主觀睡眠品質、入睡時間、睡眠時數、睡眠效率、睡眠困擾、使用助眠藥物、日間功能障礙共 7 個面向。" },
+      { question: "PSQI 分數多少代表睡眠品質不佳？", answer: "PSQI 總分範圍為 0–21 分，一般以總分超過 5 分視為睡眠品質不佳的臨床切點。" },
+    ],
+  },
+  {
+    slug: "stress",
+    title: "壓力評估測驗",
+    description: "採用 PSS-10 知覺壓力量表，10 道題目量化壓力程度，提供個人化減壓策略。",
+    faqs: [
+      { question: "PSS-10 是什麼？", answer: "PSS-10（Perceived Stress Scale）是國際廣泛使用的知覺壓力量表，透過 10 道題目評估最近一個月內個人感受到的壓力程度，分數越高代表主觀壓力感越大。" },
+    ],
+  },
+  {
+    slug: "lbm",
+    title: "去脂體重 (LBM) 計算器",
+    description: "以 Boer 公式估算去脂體重與體脂率，全面了解您的身體組成狀況。",
+    faqs: [
+      { question: "去脂體重（LBM）是什麼？", answer: "去脂體重指扣除脂肪後的體重，包含肌肉、骨骼、器官與水分等，是評估身體組成、肌肉量變化的重要指標。" },
+      { question: "Boer 公式怎麼計算 LBM？", answer: "Boer 公式依性別、身高、體重推算去脂體重，男性與女性各有不同係數，是常用且相對簡便的人體組成估算方式之一。" },
+    ],
+  },
+  {
+    slug: "vo2max",
+    title: "VO2Max 估算器",
+    description: "輸入年齡與安靜心率，以 Uth 公式快速評估最大攝氧量（VO2Max），對照 ACSM 標準了解您的心肺耐力等級。",
+    faqs: [
+      { question: "VO2Max 代表什麼？", answer: "VO2Max（最大攝氧量）是身體在最大運動強度下每分鐘每公斤體重能利用的最大氧氣量，是評估心肺耐力與有氧運動能力的重要指標。" },
+      { question: "不用實際運動測試也能估算 VO2Max 嗎？", answer: "Uth 公式只需安靜心率與最大心率（依年齡估算）即可快速推估 VO2Max，準確度不如實驗室測試，但適合作為日常心肺耐力的初步參考。" },
+    ],
+  },
+  {
+    slug: "aqi",
+    title: "AQI 空氣品質即時查詢",
+    description: "即時顯示全台環境部監測站 AQI 空氣品質指標，包含 PM2.5、PM10 等污染物濃度。",
+    faqs: [
+      { question: "AQI 數值如何解讀？", answer: "AQI（空氣品質指標）數值 0–50 為良好、51–100 普通、101–150 對敏感族群不健康、151–200 對所有族群不健康，數值越高代表空氣污染越嚴重。" },
+      { question: "資料來源是哪裡？", answer: "資料來自環境部（環保署）全台各監測站的即時空氣品質觀測資料。" },
+    ],
+  },
+  {
+    slug: "clinics",
+    title: "醫療院所查詢",
+    description: "查詢全民健保特約醫療院所，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "可以查詢哪些層級的醫療院所？", answer: "目前收錄全民健保特約的醫學中心、區域醫院、地區醫院及基層診所。" },
+      { question: "資料多久更新一次？", answer: "資料來源為衛福部中央健康保險署公開資料，會定期同步更新。" },
+    ],
+  },
+  {
+    slug: "pharmacies",
+    title: "藥局查詢",
+    description: "查詢全台一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "一般藥局跟健保特約藥局有什麼不同？", answer: "健保特約藥局可受理健保處方箋、提供健保給付的調劑服務；一般藥局則不一定有特約資格，僅能提供成藥銷售等服務。本工具兩者皆有收錄並標示。" },
+    ],
+  },
+  {
+    slug: "drugs",
+    title: "藥品查詢",
+    description: "查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵，協助辨識藥品。",
+    faqs: [
+      { question: "可以查詢哪些藥品資訊？", answer: "可查詢藥品的許可證字號、中英文品名、劑型、外觀顏色、形狀等資訊，資料來源為衛福部食藥署核准藥品資料庫。" },
+      { question: "這個工具能取代藥師諮詢嗎？", answer: "不能。本工具僅提供公開資料查詢，實際用藥安全、交互作用等問題仍請諮詢醫師或藥師。" },
+    ],
+  },
+  {
+    slug: "health-checks",
+    title: "健康檢查機構查詢",
+    description: "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "收錄哪些類型的健檢機構？", answer: "收錄勞動部認可的勞工體格及健康檢查醫療機構，以及職業傷病防治網絡醫院兩類資料。" },
+    ],
+  },
+  {
+    slug: "long-term-care",
+    title: "長照機構查詢",
+    description: "查詢衛福部許可全台長期照顧服務機構，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "資料涵蓋哪些長照機構？", answer: "資料來源為衛福部許可的全台長期照顧服務機構名冊，涵蓋各縣市的長照服務單位。" },
+    ],
+  },
+  {
+    slug: "home-healthcare",
+    title: "居家醫療查詢",
+    description: "查詢提供居家醫療照護服務的全民健保特約機構，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "居家醫療服務包含哪些內容？", answer: "居家醫療是由健保特約醫事機構到宅提供的醫療照護服務，適用於行動不便、有醫療照護需求但難以親自就醫的民眾，實際服務項目依機構而定。" },
+    ],
+  },
+];

@@ -108,6 +108,15 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
           </div>
         </header>
 
+        {news.geo_summary?.trim() ? (
+          <div className="mx-auto max-w-3xl px-6 pb-8 sm:px-8">
+            <div id="geo-summary" className="border-l-4 border-primary bg-zumthor px-5 py-4 text-[15px] leading-7 text-neutral-700">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-primary">重點摘要</p>
+              {news.geo_summary.trim()}
+            </div>
+          </div>
+        ) : null}
+
         {hero ? (
           <figure className="mx-auto max-w-screen-lg px-4 sm:px-8">
             {/* External/source images are rendered directly to avoid coupling article availability to Next image optimization. */}

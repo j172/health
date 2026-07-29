@@ -94,7 +94,10 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
       logo: { "@type": "ImageObject", url: `${baseUrl}/images/favicon.ico` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    speakable: { "@type": "SpeakableSpecification", cssSelector: ["h1", "article"] },
+    // "#geo-summary" is the visible TL;DR box rendered on the article page
+    // (app/news/[id]/page.tsx) when geo_summary is present — falls back to
+    // the whole article for the (currently rare) item that has none.
+    speakable: { "@type": "SpeakableSpecification", cssSelector: news.geo_summary?.trim() ? ["h1", "#geo-summary"] : ["h1", "article"] },
   };
   if (imageUrl) {
     article.image = [imageUrl];

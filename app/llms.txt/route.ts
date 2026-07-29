@@ -1,6 +1,7 @@
 import { listRecentNewsForLlms } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,11 +30,21 @@ export async function GET(): Promise<Response> {
     `> ${SITE_DESCRIPTION}`,
     "",
     `- 最新新聞: ${baseUrl}/news`,
+    `- 健康工具: ${baseUrl}/tools`,
     `- Sitemap: ${baseUrl}/sitemap.xml`,
     "",
-    "## 最新文章",
+    "## 健康工具",
     "",
   ];
+
+  for (const tool of TOOL_CATALOG) {
+    lines.push(`### ${tool.title}`);
+    lines.push(`URL: ${baseUrl}/tools/${tool.slug}`);
+    lines.push(tool.description);
+    lines.push("");
+  }
+
+  lines.push("## 最新文章", "");
 
   for (const item of items) {
     const label = resolveAuthorLabel({ dept_name: item.dept_name, source_name: item.source_name, feed_name: item.feed_name });
