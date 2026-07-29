@@ -143,10 +143,12 @@ const SignificantEarthquakesBar = async () => {
         <span className="shrink-0">全球地震：</span>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {quakes.map((q) => {
+            // mysql2 returns DECIMAL columns as strings, not numbers.
+            const magnitude = Number(q.magnitude);
             const content = (
               <span className="whitespace-nowrap">
-                <span style={{ color: magnitudeColor(q.magnitude) }} className="font-semibold">
-                  M{q.magnitude.toFixed(1)}
+                <span style={{ color: magnitudeColor(magnitude) }} className="font-semibold">
+                  M{magnitude.toFixed(1)}
                 </span>{" "}
                 {q.place_zh ?? q.place ?? "未知地點"} · {toTaipeiDateTime(q.event_time)}
               </span>
