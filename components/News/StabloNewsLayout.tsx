@@ -272,17 +272,22 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
   </li>
 );
 
+export const NEWS_PAGE_SIZE_OPTIONS = [30, 50, 100, 150] as const;
+export const DEFAULT_NEWS_PAGE_SIZE = 50;
+
 interface Pagination {
   currentPage: number;
   totalPages: number;
+  pageSize: number;
   sourceName?: string;
   keyword?: string;
   group?: string;
 }
 
-const pageHref = (page: number, sourceName?: string, keyword?: string, group?: string): string => {
+const pageHref = (page: number, pageSize: number, sourceName?: string, keyword?: string, group?: string): string => {
   const params = new URLSearchParams();
   if (page > 1) params.set("page", String(page));
+  if (pageSize !== DEFAULT_NEWS_PAGE_SIZE) params.set("size", String(pageSize));
   if (sourceName) params.set("source", sourceName);
   if (keyword) params.set("keyword", keyword);
   if (group && !sourceName) params.set("group", group);
@@ -290,32 +295,45 @@ const pageHref = (page: number, sourceName?: string, keyword?: string, group?: s
   return query ? `/news?${query}` : "/news";
 };
 
-const Pagination = ({ currentPage, totalPages, sourceName, keyword, group }: Pagination) => {
-  if (totalPages <= 1) return null;
-
-  const prevDisabled = currentPage <= 1;
-  const nextDisabled = currentPage >= totalPages;
-
+const Pagination = ({ currentPage, totalPages, pageSize, sourceName, keyword, group }: Pagination) => {
   return (
-    <nav className="mt-12 flex items-center justify-center gap-4 text-sm font-medium text-neutral-600" aria-label="分頁">
-      {prevDisabled ? (
-        <span className="cursor-not-allowed text-neutral-300">← 上一頁</span>
-      ) : (
-        <Link href={pageHref(currentPage - 1, sourceName, keyword, group)} className="transition-colors hover:text-neutral-900">
-          ← 上一頁
-        </Link>
-      )}
+    <nav className="mt-12 flex flex-col items-center justify-center gap-4 text-sm font-medium text-neutral-600" aria-label="分頁">
+      <div className="flex items-center gap-2">
+        <span className="text-neutral-500">每頁顯示：</span>
+        {NEWS_PAGE_SIZE_OPTIONS.map((size) => (
+          <Link
+            key={size}
+            href={pageHref(1, size, sourceName, keyword, group)}
+            aria-current={size === pageSize ? "true" : undefined}
+            className={size === pageSize ? "font-semibold text-neutral-900 underline underline-offset-4" : "text-neutral-500 transition-colors hover:text-neutral-900"}
+          >
+            {size}
+          </Link>
+        ))}
+      </div>
 
-      <span className="text-neutral-500">
-        第 {currentPage} / {totalPages} 頁
-      </span>
+      {totalPages > 1 && (
+        <div className="flex items-center gap-4">
+          {currentPage <= 1 ? (
+            <span className="cursor-not-allowed text-neutral-300">← 上一頁</span>
+          ) : (
+            <Link href={pageHref(currentPage - 1, pageSize, sourceName, keyword, group)} className="transition-colors hover:text-neutral-900">
+              ← 上一頁
+            </Link>
+          )}
 
-      {nextDisabled ? (
-        <span className="cursor-not-allowed text-neutral-300">下一頁 →</span>
-      ) : (
-        <Link href={pageHref(currentPage + 1, sourceName, keyword, group)} className="transition-colors hover:text-neutral-900">
-          下一頁 →
-        </Link>
+          <span className="text-neutral-500">
+            第 {currentPage} / {totalPages} 頁
+          </span>
+
+          {currentPage >= totalPages ? (
+            <span className="cursor-not-allowed text-neutral-300">下一頁 →</span>
+          ) : (
+            <Link href={pageHref(currentPage + 1, pageSize, sourceName, keyword, group)} className="transition-colors hover:text-neutral-900">
+              下一頁 →
+            </Link>
+          )}
+        </div>
       )}
     </nav>
   );
@@ -438,6 +456,7 @@ export default function StabloNewsLayout({
               <Pagination
                 currentPage={pagination.currentPage}
                 totalPages={pagination.totalPages}
+                pageSize={pagination.pageSize}
                 sourceName={pagination.sourceName}
                 keyword={pagination.keyword}
                 group={pagination.group}
