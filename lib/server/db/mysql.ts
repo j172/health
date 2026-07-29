@@ -49,6 +49,7 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.cwaStationWeather);
   await p.query(TABLE_DDL.cwaRainfall);
   await p.query(TABLE_DDL.cwaUvIndex);
+  await p.query(TABLE_DDL.globalEarthquakes);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

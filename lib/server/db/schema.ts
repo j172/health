@@ -386,4 +386,33 @@ export const TABLE_DDL = {
       UNIQUE KEY uq_cwa_uv_index (station_id, obs_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 全球地震 — USGS + EMSC + HKO, 5-minute cron. See lib/server/earthquakes/.
+  // No single source's event ID is usable as a cross-source unique key (each
+  // agency assigns its own), so there's deliberately no UNIQUE KEY here for
+  // "same earthquake" — that's a fuzzy match (time/distance/magnitude
+  // tolerance) done in application code (queries.ts), not the database.
+  globalEarthquakes: `
+    CREATE TABLE IF NOT EXISTS global_earthquakes (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      event_time DATETIME NOT NULL,
+      magnitude DECIMAL(4,2) NULL,
+      magnitude_type VARCHAR(20) NULL,
+      depth_km DECIMAL(7,2) NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      place VARCHAR(255) NULL,
+      place_zh VARCHAR(255) NULL,
+      tsunami_warning TINYINT(1) NOT NULL DEFAULT 0,
+      primary_source VARCHAR(20) NOT NULL,
+      sources_json JSON NULL,
+      url VARCHAR(500) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_global_eq_time (event_time),
+      KEY idx_global_eq_geo (lat, lng),
+      KEY idx_global_eq_magnitude (magnitude)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
