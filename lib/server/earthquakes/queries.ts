@@ -108,7 +108,7 @@ export interface SignificantEarthquake {
 }
 
 /** Recent M6.0+ earthquakes worldwide, most recent first. */
-export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours = 24, limit = 5): Promise<SignificantEarthquake[]> =>
+export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours = 72, limit = 5): Promise<SignificantEarthquake[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, event_time, magnitude, place, place_zh, url

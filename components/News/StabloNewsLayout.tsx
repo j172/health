@@ -133,7 +133,7 @@ const magnitudeColor = (mag: number): string => {
 };
 
 const SignificantEarthquakesBar = async () => {
-  const quakes = await getRecentSignificantEarthquakes(6.0, 24, 5);
+  const quakes = await getRecentSignificantEarthquakes(6.0, 72, 5);
   if (quakes.length === 0) return null;
 
   return (
