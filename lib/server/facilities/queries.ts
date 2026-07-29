@@ -168,7 +168,7 @@ export const applyWeeklyHours = async (entries: WeeklyHoursEntry[]): Promise<{ m
     const [result] = await conn.query(
       `UPDATE facilities f
        JOIN tmp_weekly_hours t ON t.source_id = f.source_id
-       SET f.extra_json = JSON_MERGE_PATCH(COALESCE(f.extra_json, JSON_OBJECT()), JSON_OBJECT('weeklyHours', CAST(t.weekly_hours AS JSON))),
+       SET f.extra_json = JSON_MERGE_PATCH(COALESCE(f.extra_json, JSON_OBJECT()), JSON_OBJECT('weeklyHours', JSON_EXTRACT(t.weekly_hours, '$'))),
            f.updated_at = ?
        WHERE f.source_key IN ('nhi_hospital', 'nhi_pharmacy')`,
       [utcNowSql()],
