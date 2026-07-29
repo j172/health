@@ -13,6 +13,9 @@
 #   scripts/import-mohw-facilities.mjs from a regular residential/office
 #   network by hand. This script only backfills geocoding for whatever was
 #   last imported that way.
+# - The MOHW LTC contracted-service registry (also ltcpap.mohw.gov.tw, same
+#   IP-range block) — run scripts/import-mohw-ltc-contracted.mjs by hand too.
+#   It already ships lat/lng, so no geocoding combo is needed for it here.
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
@@ -25,7 +28,7 @@ BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"
 
 log() { echo "[$(date -u +%FT%TZ)] $*"; }
 
-log "Triggering facilities-sync (nhi_hospital, nhi_pharmacy, tfda_pharmacy, mol_labor_checkup, mol_occupational_injury, nhi_home_healthcare)..."
+log "Triggering facilities-sync (nhi_hospital, nhi_pharmacy, tfda_pharmacy, mol_labor_checkup, mol_occupational_injury, nhi_home_healthcare, mohw_disability_welfare, mohw_elder_welfare)..."
 curl -fsS -X POST "$BASE_URL/api/admin/facilities-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 echo
 
@@ -44,7 +47,8 @@ log "Waiting 5 minutes for background facility upserts to finish..."
 sleep 300
 
 # (facility_type, source_key) pairs that need geocoding. nhi_home_healthcare
-# ships its own lat/lng and is deliberately excluded.
+# and mohw_ltc_contracted (imported separately, see below) ship their own
+# lat/lng and are deliberately excluded.
 COMBOS=(
   "health_check mol_labor_checkup"
   "health_check mol_occupational_injury"
@@ -53,6 +57,8 @@ COMBOS=(
   "pharmacy nhi_pharmacy"
   "pharmacy tfda_pharmacy"
   "long_term_care mohw_ltc_full"
+  "disability_welfare mohw_disability_welfare"
+  "elder_welfare mohw_elder_welfare"
 )
 
 for combo in "${COMBOS[@]}"; do

@@ -1,33 +1,69 @@
-/** Minimal CSV parser — handles quoted fields (with embedded commas), no embedded newlines within fields. */
-function parseCsvLine(line: string): string[] {
-  const cells: string[] = [];
-  let current = "";
-  let inQuotes = false;
-  for (const char of line) {
-    if (char === '"') {
-      inQuotes = !inQuotes;
-      continue;
-    }
-    if (char === "," && !inQuotes) {
-      cells.push(current);
-      current = "";
-      continue;
-    }
-    current += char;
-  }
-  cells.push(current);
-  return cells;
-}
+import iconv from "iconv-lite";
 
+/** Decodes a Big5-encoded CSV buffer (common for older MOHW open-data exports) to a UTF-8 string. */
+export const decodeBig5 = (buffer: Buffer): string => iconv.decode(buffer, "big5");
+
+/**
+ * CSV parser operating on the whole text as one character stream, not
+ * line-split first — some MOHW exports (e.g. the elder-welfare-institution
+ * dataset's 收容對象 column) embed literal newlines inside quoted fields
+ * (e.g. `"安養\n養護"`), which a split-on-newline-first parser would corrupt
+ * by treating as two separate rows. Handles quoted fields (with embedded
+ * commas and newlines) and "" as an escaped quote.
+ */
 export function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.replace(/^﻿/, "").split(/\r?\n/).filter((l) => l.trim());
-  if (lines.length === 0) return [];
-  const headers = parseCsvLine(lines[0]).map((h) => h.trim());
-  return lines.slice(1).map((line) => {
-    const cells = parseCsvLine(line);
-    const row: Record<string, string> = {};
-    headers.forEach((h, i) => (row[h] = (cells[i] ?? "").trim()));
-    return row;
+  const cleaned = text.replace(/^﻿/, "");
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const char = cleaned[i];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (cleaned[i + 1] === '"') {
+          cell += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cell += char;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\r") {
+      // skip — \n (below) ends the row
+    } else if (char === "\n") {
+      row.push(cell);
+      rows.push(row);
+      row = [];
+      cell = "";
+    } else {
+      cell += char;
+    }
+  }
+  if (cell.length > 0 || row.length > 0) {
+    row.push(cell);
+    rows.push(row);
+  }
+
+  const nonEmptyRows = rows.filter((r) => r.length > 1 || (r[0] ?? "").trim() !== "");
+  if (nonEmptyRows.length === 0) return [];
+
+  const headers = nonEmptyRows[0].map((h) => h.trim());
+  return nonEmptyRows.slice(1).map((cells) => {
+    const record: Record<string, string> = {};
+    headers.forEach((h, i) => (record[h] = (cells[i] ?? "").trim()));
+    return record;
   });
 }
 

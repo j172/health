@@ -5,6 +5,8 @@ import { fetchMolOccupationalInjuryHospitals } from "@/lib/server/facilities/sou
 import { fetchNhiHospitals } from "@/lib/server/facilities/sources/nhiHospitals";
 import { fetchNhiPharmacies } from "@/lib/server/facilities/sources/nhiPharmacies";
 import { fetchNhiHomeHealthcare } from "@/lib/server/facilities/sources/nhiHomeHealthcare";
+import { fetchMohwDisabilityWelfare } from "@/lib/server/facilities/sources/mohwDisabilityWelfare";
+import { fetchMohwElderWelfare } from "@/lib/server/facilities/sources/mohwElderWelfare";
 
 export interface FacilitySyncResult {
   sourceKey: string;
@@ -23,6 +25,8 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "nhi_hospital", fetch: fetchNhiHospitals },
   { key: "nhi_pharmacy", fetch: fetchNhiPharmacies },
   { key: "nhi_home_healthcare", fetch: fetchNhiHomeHealthcare },
+  { key: "mohw_disability_welfare", fetch: fetchMohwDisabilityWelfare },
+  { key: "mohw_elder_welfare", fetch: fetchMohwElderWelfare },
 ];
 
 export async function runFacilitySync(): Promise<FacilitySyncResult[]> {
