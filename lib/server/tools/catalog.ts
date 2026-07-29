@@ -181,6 +181,26 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "food-nutrition",
+    group: "facility",
+    title: "食品營養成分查詢",
+    description: "查詢衛福部食藥署食品營養成分資料庫，依食品名稱搜尋熱量、蛋白質、脂肪、碳水化合物等營養成分含量。",
+    faqs: [
+      { question: "營養成分數值是以什麼為單位？", answer: "資料庫以每100克食品的含量為主，部分品項另提供每單位（如每份、每顆）的含量與對應重量，實際以查詢結果顯示為準。" },
+      { question: "資料來源是什麼？", answer: "資料來源為衛福部食藥署「食品營養成分資料庫」，收錄台灣常見食品的實測分析數據，每半年更新一次。" },
+    ],
+  },
+  {
+    slug: "food-operators",
+    group: "facility",
+    title: "食品業者登錄查詢",
+    description: "查詢衛福部食藥署食品業者登錄資料，依公司名稱、統一編號或地址搜尋登錄項目（販售場所、製造場所、餐飲場所等）。",
+    faqs: [
+      { question: "食品業者登錄字號代表什麼？", answer: "登錄字號是食品業者依食品安全衛生管理法完成「食品業者登錄平台」登錄後取得的唯一識別碼，用於追溯業者登錄狀態。" },
+      { question: "查不到某業者代表什麼？", answer: "可能是該業者尚未完成登錄，或登錄名稱與搜尋關鍵字不完全相符，建議嘗試以統一編號或地址關鍵字查詢。" },
+    ],
+  },
+  {
     slug: "health-checks",
     group: "facility",
     title: "健康檢查機構查詢",

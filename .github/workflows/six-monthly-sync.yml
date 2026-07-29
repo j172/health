@@ -18,8 +18,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install script dependencies
+        run: npm install adm-zip
+
       - name: Run six-monthly sync
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: https://health.j172.tw
         run: bash scripts/run-six-monthly-sync.sh
+
+      - name: Import TFDA food nutrition database (~227k rows, unzipped/parsed here)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+        run: node scripts/import-tfda-food-nutrition.mjs
+
+      - name: Import TFDA food operator registry (~825k rows, unzipped/parsed here)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+        run: node scripts/import-tfda-food-operators.mjs

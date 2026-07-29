@@ -6,12 +6,18 @@
 #
 #   ADMIN_SECRET=<x-rss-sync-admin-secret value> bash scripts/run-six-monthly-sync.sh
 #
-# What this does NOT cover: the MOHW long-term-care/health-check facility CSVs
-# (ltcpap.mohw.gov.tw) — that source is unreachable from both the production
-# host and GitHub Actions runners (IP-range block), so it can only be synced
-# by running scripts/import-mohw-facilities.mjs from a regular residential/
-# office network by hand. This script only backfills geocoding for whatever
-# was last imported that way.
+# What this does NOT cover:
+# - The MOHW long-term-care/health-check facility CSVs (ltcpap.mohw.gov.tw) —
+#   that source is unreachable from both the production host and GitHub
+#   Actions runners (IP-range block), so it can only be synced by running
+#   scripts/import-mohw-facilities.mjs from a regular residential/office
+#   network by hand. This script only backfills geocoding for whatever was
+#   last imported that way.
+# - The TFDA food nutrition/operator databases — those are large enough
+#   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
+#   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
+#   nutrition.mjs, scripts/import-tfda-food-operators.mjs), not through this
+#   script, since they need Node + adm-zip rather than just curl.
 set -euo pipefail
 
 BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"

@@ -415,4 +415,59 @@ export const TABLE_DDL = {
       KEY idx_global_eq_magnitude (magnitude)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TFDA 食品營養成分資料庫 (data.fda.gov.tw InfoId=20) — six-monthly sync.
+  // Long/narrow source format: one row per (food sample × analysis item), so
+  // 整合編號 alone isn't unique — the natural composite key is sample+category
+  // +item. Numeric-looking fields are VARCHAR because the source mixes real
+  // numbers with "-"/"Tr"(trace)/blank, same reasoning as cwa_station_weather's
+  // air_temperature etc. Fetched/parsed on GitHub Actions (226k+ rows, too
+  // large to unzip on this host) and batch-POSTed; see scripts/import-tfda-food-nutrition.mjs.
+  tfdaFoodNutrition: `
+    CREATE TABLE IF NOT EXISTS tfda_food_nutrition (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      sample_id VARCHAR(20) NOT NULL,
+      food_category VARCHAR(100) NULL,
+      data_category VARCHAR(50) NULL,
+      sample_name VARCHAR(255) NULL,
+      common_name VARCHAR(255) NULL,
+      sample_name_en VARCHAR(255) NULL,
+      content_description VARCHAR(500) NULL,
+      waste_rate VARCHAR(50) NULL,
+      nutrient_category VARCHAR(100) NOT NULL,
+      nutrient_item VARCHAR(100) NOT NULL,
+      unit VARCHAR(30) NULL,
+      value_per_100g VARCHAR(30) NULL,
+      sample_count VARCHAR(20) NULL,
+      std_dev VARCHAR(30) NULL,
+      value_per_unit VARCHAR(30) NULL,
+      unit_weight VARCHAR(30) NULL,
+      value_per_unit_weight VARCHAR(30) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_food_nutrition (sample_id, nutrient_category, nutrient_item),
+      KEY idx_food_nutrition_name (sample_name(100))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TFDA 食品業者登錄資料 (data.fda.gov.tw export/97) — six-monthly sync.
+  // Flat format, natural unique key on 食品業者登錄字號 (registration_no, e.g.
+  // "N-153633460-00337-4"). ~825k rows, also fetched/parsed on GitHub Actions.
+  tfdaFoodOperators: `
+    CREATE TABLE IF NOT EXISTS tfda_food_operators (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      registration_no VARCHAR(50) NOT NULL,
+      company_name VARCHAR(255) NULL,
+      unified_business_no VARCHAR(20) NULL,
+      address VARCHAR(500) NULL,
+      registration_type VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_food_operator_reg (registration_no),
+      KEY idx_food_operator_name (company_name(100)),
+      KEY idx_food_operator_unified_no (unified_business_no)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
