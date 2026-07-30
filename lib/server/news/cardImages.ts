@@ -233,26 +233,24 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
     newsLoop: for (const news of missingRows) {
       const primaryTerm = deriveSearchTerm(news.title, fallbackIndex);
-      const primaryIsFallback = (FALLBACK_TERMS as readonly string[]).includes(primaryTerm);
-      if (primaryIsFallback) fallbackIndex += 1;
+      if ((FALLBACK_TERMS as readonly string[]).includes(primaryTerm)) fallbackIndex += 1;
 
-      let outcome = await tryAssignWithTerm(news, primaryTerm);
+      // Always try every remaining generic fallback term after the primary,
+      // regardless of whether the primary itself WAS one of them — a single
+      // fallback attempt isn't enough: with the caller often requesting one
+      // item at a time (limit=1), an article whose only two attempted terms
+      // are both exhausted would otherwise stay "missing" and get re-picked
+      // as the top candidate on every subsequent call, same failure forever.
+      // (Earlier version of this fix only added the extra attempts when the
+      // primary was a keyword match, so a keyword-less article whose
+      // randomly-picked single fallback term was exhausted still got stuck —
+      // confirmed live.)
+      const termsToTry = [primaryTerm, ...FALLBACK_TERMS.filter((term) => term !== primaryTerm)];
 
-      // The title-derived term found nothing usable — work through every
-      // generic fallback term (not just one) before giving up on this
-      // article. A single fallback attempt isn't enough: with the caller
-      // often requesting one item at a time (limit=1), an article whose
-      // term (and its lone fallback) are both exhausted would otherwise
-      // stay "missing" and get re-picked as the top candidate on every
-      // subsequent call — same failure, forever — rather than a rare
-      // one-off. Iterating the whole small fallback set costs little and
-      // makes that stuck state effectively impossible.
-      if (outcome === "exhausted" && !primaryIsFallback) {
-        for (let i = 0; i < FALLBACK_TERMS.length && outcome === "exhausted"; i++) {
-          const fallbackTerm = FALLBACK_TERMS[fallbackIndex % FALLBACK_TERMS.length];
-          fallbackIndex += 1;
-          outcome = await tryAssignWithTerm(news, fallbackTerm);
-        }
+      let outcome: "assigned" | "rate_limited" | "exhausted" = "exhausted";
+      for (const term of termsToTry) {
+        outcome = await tryAssignWithTerm(news, term);
+        if (outcome !== "exhausted") break;
       }
 
       if (outcome === "rate_limited") {
