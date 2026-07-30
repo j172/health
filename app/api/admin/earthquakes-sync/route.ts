@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   // Fuzzy-matching every event against the table individually keeps this
   // fast enough (typically well under a hundred events per 5-minute window)

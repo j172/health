@@ -53,8 +53,10 @@ if (str_starts_with($path, '/__ops/')) {
     $buildLockFile = $appDir . '/.rebuild-homepage.lock';
     $prebuiltLogFile = $appDir . '/.apply-prebuilt.log';
     $prebuiltLockFile = $appDir . '/.apply-prebuilt.lock';
+    $nodeBin = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node';
+    $pm2Bin = $nodeBin . ' /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
 
-    $buildPrebuiltCommand = static function (bool $force) use ($appDir): string {
+    $buildPrebuiltCommand = static function (bool $force) use ($appDir, $nodeBin, $pm2Bin): string {
         $startMarker = $force ? '[START-FORCE-V4]' : '[START-V4]';
         $doneMarker = $force ? '[DONE-FORCE-V4]' : '[DONE-V4]';
         $failMarker = $force ? '[FAIL-FORCE-V4]' : '[FAIL-V4]';
@@ -96,8 +98,8 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& rmdir .next3_stage >> .apply-prebuilt.log 2>&1 "
             . "&& SWAPPED=1 "
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
-            . "&& (/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 delete health-web >> .apply-prebuilt.log 2>&1 || true) "
-            . "&& setsid /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
+            . "&& ({$pm2Bin} delete health-web >> .apply-prebuilt.log 2>&1 || true) "
+            . "&& setsid {$pm2Bin} start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
             . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 30); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
             . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
             . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
@@ -105,7 +107,7 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& echo '{$doneMarker} '$(date) >> .apply-prebuilt.log; "
             . "} || { "
             . "echo '[ROLLBACK] apply or health probe failed' >> .apply-prebuilt.log; "
-            . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .apply-prebuilt.log 2>&1 || true; fi; "
+            . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; {$pm2Bin} restart health-web >> .apply-prebuilt.log 2>&1 || true; fi; "
             . "echo '{$failMarker} '$(date) >> .apply-prebuilt.log; "
             . "}; "
             . "rm -f .apply-prebuilt.lock";
@@ -134,14 +136,14 @@ if (str_starts_with($path, '/__ops/')) {
             . escapeshellarg(
                 "cd {$appDir} "
                 . "&& echo '[START] '$(date) > .rebuild-homepage.log "
-                . "&& /home/tw123457/.nvm/versions/node/v20.20.2/bin/node -v >> .rebuild-homepage.log 2>&1 "
-                . "&& export PATH=/home/tw123457/.nvm/versions/node/v20.20.2/bin:\$PATH "
+                . "&& {$nodeBin} -v >> .rebuild-homepage.log 2>&1 "
+                . "&& export PATH=" . dirname($nodeBin) . ":\$PATH "
                 . "&& export NEXT_DISABLE_SWC_WASM=1 "
                 . "&& export NEXT_DISABLE_SWC_WORKER=1 "
                 . "&& export UV_THREADPOOL_SIZE=1 "
                 . "&& export BROWSERSLIST_IGNORE_OLD_DATA=1 "
-                . "&& /home/tw123457/.nvm/versions/node/v20.20.2/bin/node ./node_modules/next/dist/bin/next build --webpack >> .rebuild-homepage.log 2>&1 "
-                . "&& (/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart health-web >> .rebuild-homepage.log 2>&1 || /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 restart all >> .rebuild-homepage.log 2>&1) "
+                . "&& {$nodeBin} ./node_modules/next/dist/bin/next build --webpack >> .rebuild-homepage.log 2>&1 "
+                . "&& ({$pm2Bin} restart health-web >> .rebuild-homepage.log 2>&1 || {$pm2Bin} restart all >> .rebuild-homepage.log 2>&1) "
                 . "&& echo '[DONE] '$(date) >> .rebuild-homepage.log "
                 . "|| echo '[FAIL] '$(date) >> .rebuild-homepage.log "
                 . "; rm -f .rebuild-homepage.lock"
@@ -221,8 +223,7 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/pm2-ensure-running') {
         header('Content-Type: text/plain; charset=utf-8');
-        $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
-        $jlist = shell_exec($pm2 . ' jlist 2>/dev/null');
+        $jlist = shell_exec($pm2Bin . ' jlist 2>/dev/null');
         $procs = json_decode($jlist ?: '[]', true);
         if (!is_array($procs)) {
             $procs = [];
@@ -262,11 +263,10 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/pm2-status') {
         header('Content-Type: text/plain; charset=utf-8');
-        $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
         echo "==== pm2 list ====\n";
-        echo shell_exec($pm2 . ' list 2>&1') . "\n";
+        echo shell_exec($pm2Bin . ' list 2>&1') . "\n";
         echo "==== pm2 describe health-web ====\n";
-        echo shell_exec($pm2 . ' describe health-web 2>&1') . "\n";
+        echo shell_exec($pm2Bin . ' describe health-web 2>&1') . "\n";
         echo "==== curl -v http://127.0.0.1:3000/news ====\n";
         echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
         echo "==== ss -tlnp (port listeners) ====\n";
@@ -300,9 +300,8 @@ if (str_starts_with($path, '/__ops/')) {
     if ($path === '/__ops/pm2-logs') {
         header('Content-Type: text/plain; charset=utf-8');
         $lines = max(1, min(500, (int) ($_GET['lines'] ?? 200)));
-        $pm2 = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
         echo "==== pm2 logs health-web --lines {$lines} --nostream ====\n";
-        echo shell_exec($pm2 . ' logs health-web --lines ' . $lines . ' --nostream 2>&1') . "\n";
+        echo shell_exec($pm2Bin . ' logs health-web --lines ' . $lines . ' --nostream 2>&1') . "\n";
         echo "==== raw log files under ~/.pm2/logs matching health-web* ====\n";
         echo shell_exec('ls -la /home/tw123457/.pm2/logs/ 2>&1 | grep health-web') . "\n";
         foreach (glob('/home/tw123457/.pm2/logs/health-web*') as $logPath) {
@@ -462,9 +461,8 @@ if (str_starts_with($path, '/__ops/')) {
         echo "http_code=" . curl_getinfo($ch, CURLINFO_HTTP_CODE) . " bytes=" . ($body === false ? "FAIL: " . curl_error($ch) : strlen($body)) . "\n";
         curl_close($ch);
 
-        $node = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node';
         echo "\n==== node --version ====\n";
-        echo shell_exec("{$node} --version 2>&1");
+        echo shell_exec("{$nodeBin} --version 2>&1");
 
         echo "\n==== ulimit -a (current shell) ====\n";
         echo shell_exec('ulimit -a 2>&1');
@@ -474,16 +472,16 @@ if (str_starts_with($path, '/__ops/')) {
         file_put_contents($tmpFile, $script);
 
         echo "\n==== raw node fetch() to {$testUrl} (default ulimit) ====\n";
-        echo shell_exec("{$node} " . escapeshellarg($tmpFile) . " 2>&1");
+        echo shell_exec("{$nodeBin} " . escapeshellarg($tmpFile) . " 2>&1");
 
         echo "\n==== ulimit -Hv (hard virtual memory limit) ====\n";
         echo shell_exec('ulimit -Hv 2>&1');
 
         echo "\n==== raw node fetch() with ulimit -v unlimited ====\n";
-        echo shell_exec("bash -c 'ulimit -v unlimited 2>&1; ulimit -v; {$node} " . escapeshellarg($tmpFile) . "' 2>&1");
+        echo shell_exec("bash -c 'ulimit -v unlimited 2>&1; ulimit -v; {$nodeBin} " . escapeshellarg($tmpFile) . "' 2>&1");
 
         echo "\n==== raw node fetch() with ulimit -v 4000000 ====\n";
-        echo shell_exec("bash -c 'ulimit -v 4000000 2>&1; ulimit -v; {$node} " . escapeshellarg($tmpFile) . "' 2>&1");
+        echo shell_exec("bash -c 'ulimit -v 4000000 2>&1; ulimit -v; {$nodeBin} " . escapeshellarg($tmpFile) . "' 2>&1");
 
         @unlink($tmpFile);
 

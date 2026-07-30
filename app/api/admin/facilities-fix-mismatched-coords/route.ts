@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { RowDataPacket } from "mysql2/promise";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import { countyForAddress, isWithinCountyBounds } from "@/lib/server/facilities/countyBounds";
 
@@ -17,10 +17,8 @@ export const maxDuration = 60;
 // retries it (not guaranteed to land correctly next time, but at least the
 // map stops showing a confidently-wrong pin in the meantime).
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   const result = await withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(

@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { fetchTfdaDrugIngredients } from "@/lib/server/drugs/sources/tfdaDrugIngredients";
 import { upsertDrugIngredients } from "@/lib/server/drugs/ingredientsQueries";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   // 125k+ rows upserted in 500-row chunks comfortably exceeds Cloudflare's
   // edge-proxy connection cap (~100s) and the drugs-sync route's own 60s

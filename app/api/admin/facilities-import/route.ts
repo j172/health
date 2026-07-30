@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { upsertFacilities, type FacilityRecord } from "@/lib/server/facilities/queries";
 
 export const runtime = "nodejs";
@@ -10,10 +10,8 @@ export const maxDuration = 60;
 // but reachable from a regular residential/office network) — run the fetch
 // locally and POST the parsed records here instead.
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   const body = await request.json().catch(() => null);
   const records: FacilityRecord[] | undefined = body?.records;

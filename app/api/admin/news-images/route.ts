@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { assignMissingNewsCardImages, clearPixabayApiCache } from "@/lib/server/news/cardImages";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
-const unauthorized = (): NextResponse => NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return unauthorized();
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   try {
     const body = (await request.json().catch(() => ({}))) as { limit?: unknown; clearCache?: unknown };

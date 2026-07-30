@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { upsertFoodOperators, type FoodOperatorRecord } from "@/lib/server/food/operators";
 
 export const runtime = "nodejs";
@@ -10,10 +10,8 @@ export const maxDuration = 60;
 // this host's low ulimit -v. Fetch+unzip+parse runs on GitHub Actions instead
 // (scripts/import-tfda-food-operators.mjs), which POSTs batches here.
 export async function POST(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   const body = await request.json().catch(() => null);
   const records: FoodOperatorRecord[] | undefined = body?.records;

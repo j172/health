@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { findFacilitiesMissingCoords, updateFacilityCoords, recordGeocodeFailure } from "@/lib/server/facilities/queries";
 import { geocodeAddress } from "@/lib/server/facilities/geocode";
 
@@ -14,10 +14,8 @@ const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 30;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-admin-secret") || "";
-  if (secret !== env.rssSyncAdminSecret) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-  }
+  const unauthorized = requireAdminSecret(request);
+  if (unauthorized) return unauthorized;
 
   const body = await request.json().catch(() => ({}));
   const facilityType = String(body.facilityType || "");

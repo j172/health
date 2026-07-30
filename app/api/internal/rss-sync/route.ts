@@ -1,23 +1,12 @@
 import { NextResponse } from "next/server";
-import { env } from "@/lib/server/config/env";
+import { requireInternalSecret } from "@/lib/server/config/adminAuth";
 import { runRssIngestion } from "@/lib/server/rss/runIngestion";
 
 export const runtime = "nodejs";
 
-const unauthorized = (): NextResponse =>
-  NextResponse.json(
-    {
-      ok: false,
-      error: "Unauthorized",
-    },
-    { status: 401 },
-  );
-
 export async function GET(request: Request): Promise<NextResponse> {
-  const secret = request.headers.get("x-rss-sync-secret") || "";
-  if (secret !== env.rssSyncSecret) {
-    return unauthorized();
-  }
+  const unauthorized = requireInternalSecret(request);
+  if (unauthorized) return unauthorized;
 
   try {
     const summary = await runRssIngestion("internal-cron");
