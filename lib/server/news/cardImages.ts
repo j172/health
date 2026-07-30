@@ -4,6 +4,7 @@ import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { env } from "@/lib/server/config/env";
 import { downloadPixabayImage, removeDownloadedImage, PixabayRateLimitError } from "@/lib/server/pixabay/download";
 import { searchHealthImages, type PixabayImage, type PixabaySearchResponse } from "@/lib/server/pixabay/client";
+import { deriveSearchTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
 const CACHE_TTL_HOURS = 24;
@@ -11,14 +12,9 @@ const API_RESULTS_PER_PAGE = 100;
 const MAX_API_PAGES = 5;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
-// Each term gets its own up-to-500-hit Pixabay pool (see searchHealthImages),
-// so rotating through several keeps a much larger reservoir of still-unused
-// candidates than a single fixed query can offer once the site has assigned
-// a few hundred images.
-const SEARCH_TERMS = ["health", "medical", "hospital", "doctor", "medicine", "wellness", "nutrition", "fitness", "pharmacy", "clinic"];
-
 interface MissingNewsRow extends RowDataPacket {
   id: number;
+  title: string;
 }
 
 interface UsedPixabayRow extends RowDataPacket {
@@ -95,16 +91,14 @@ const getCachedSearchPage = async (conn: PoolConnection, term: string, page: num
   return response;
 };
 
-const loadCandidates = async (conn: PoolConnection, usedIds: Set<number>, needed: number): Promise<PixabayImage[]> => {
+/** Unused candidates for a single search term, paginating until enough are found or the term's ~500-hit pool is exhausted. */
+const loadCandidatesForTerm = async (conn: PoolConnection, term: string, usedIds: Set<number>, needed: number): Promise<PixabayImage[]> => {
   const candidates: PixabayImage[] = [];
-  const targetCandidateCount = Math.max(20, needed * 3);
-  for (const term of SEARCH_TERMS) {
-    for (let page = 1; page <= MAX_API_PAGES; page += 1) {
-      const result = await getCachedSearchPage(conn, term, page);
-      candidates.push(...result.hits.filter((hit) => !usedIds.has(hit.id)));
-      if (candidates.length >= targetCandidateCount || page * API_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
-    }
-    if (candidates.length >= targetCandidateCount) break;
+  const targetCandidateCount = Math.max(10, needed * 3);
+  for (let page = 1; page <= MAX_API_PAGES; page += 1) {
+    const result = await getCachedSearchPage(conn, term, page);
+    candidates.push(...result.hits.filter((hit) => !usedIds.has(hit.id)));
+    if (candidates.length >= targetCandidateCount || page * API_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
   }
   return shuffled(candidates);
 };
@@ -136,7 +130,7 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
     const [missingRows] = await conn.execute<MissingNewsRow[]>(
       `
-      SELECT n.id
+      SELECT n.id, n.title
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
@@ -163,15 +157,20 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
     const [usedRows] = await conn.query<UsedPixabayRow[]>("SELECT pixabay_id FROM news_card_images");
     const usedIds = new Set(usedRows.map((row) => Number(row.pixabay_id)));
-    const candidates = await loadCandidates(conn, usedIds, missingRows.length);
-    let candidateIndex = 0;
+    let fallbackIndex = 0;
+    let anyCandidatesSeen = false;
 
-    newsLoop: for (const news of missingRows) {
-      let assigned = false;
+    // Tries to assign one candidate from `term`'s pool to `news`. Returns
+    // "assigned" (incl. "skipped" — another process already filled it),
+    // "rate_limited" (caller should stop the whole batch), or "exhausted"
+    // (no usable candidate for this term — caller may try a fallback term).
+    const tryAssignWithTerm = async (news: MissingNewsRow, term: string): Promise<"assigned" | "rate_limited" | "exhausted"> => {
+      const candidates = await loadCandidatesForTerm(conn, term, usedIds, 1);
+      if (candidates.length > 0) anyCandidatesSeen = true;
+
       let attempts = 0;
-      while (!assigned && candidateIndex < candidates.length && attempts < MAX_CANDIDATE_ATTEMPTS_PER_NEWS) {
-        const candidate = candidates[candidateIndex];
-        candidateIndex += 1;
+      for (const candidate of candidates) {
+        if (attempts >= MAX_CANDIDATE_ATTEMPTS_PER_NEWS) break;
         if (usedIds.has(candidate.id)) continue;
         attempts += 1;
 
@@ -212,12 +211,11 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
           if (insertResult.affectedRows !== 1) {
             await removeDownloadedImage(downloaded.absolutePath);
             summary.skipped += 1;
-            assigned = true;
-            continue;
+            return "assigned";
           }
           usedIds.add(candidate.id);
           summary.assigned += 1;
-          assigned = true;
+          return "assigned";
         } catch (error) {
           if (downloaded) await removeDownloadedImage(downloaded.absolutePath);
           // Pixabay's CDN rate-limits per-account, not per-image — retrying more
@@ -225,22 +223,41 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
           // the rest of the batch hitting 429 immediately again. Stop the whole
           // batch here instead of misreporting every remaining item as "failed"
           // (they were never actually broken, just not attempted yet).
-          if (error instanceof PixabayRateLimitError) {
-            summary.rateLimited = true;
-            summary.reason = "Pixabay rate-limited this batch (HTTP 429) — stopping early; the rest will be picked up on the next run.";
-            break newsLoop;
-          }
+          if (error instanceof PixabayRateLimitError) return "rate_limited";
           const message = error instanceof Error ? error.message : "Unknown image assignment error";
           if (summary.errors.length < 10) summary.errors.push(`news ${news.id}: ${message}`);
         }
       }
+      return "exhausted";
+    };
 
-      if (!assigned) {
+    newsLoop: for (const news of missingRows) {
+      const primaryTerm = deriveSearchTerm(news.title, fallbackIndex);
+      const primaryIsFallback = (FALLBACK_TERMS as readonly string[]).includes(primaryTerm);
+      if (primaryIsFallback) fallbackIndex += 1;
+
+      let outcome = await tryAssignWithTerm(news, primaryTerm);
+
+      // The title-derived term found nothing usable — fall back to a
+      // generic term rather than failing the article outright over one
+      // narrow topic's pool being temporarily exhausted.
+      if (outcome === "exhausted" && !primaryIsFallback) {
+        const fallbackTerm = FALLBACK_TERMS[fallbackIndex % FALLBACK_TERMS.length];
+        fallbackIndex += 1;
+        outcome = await tryAssignWithTerm(news, fallbackTerm);
+      }
+
+      if (outcome === "rate_limited") {
+        summary.rateLimited = true;
+        summary.reason = "Pixabay rate-limited this batch (HTTP 429) — stopping early; the rest will be picked up on the next run.";
+        break newsLoop;
+      }
+      if (outcome === "exhausted") {
         summary.failed += 1;
       }
     }
 
-    if (summary.failed > 0 && candidates.length === 0) {
+    if (summary.failed > 0 && !anyCandidatesSeen) {
       summary.reason = "No unused Pixabay candidates are available.";
     }
     return summary;
