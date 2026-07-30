@@ -7,9 +7,41 @@ if (str_starts_with($path, '/api/admin/') || str_starts_with($path, '/api/intern
     @set_time_limit(290);
 }
 
-$opsKey = 'health-ops-20260725-rebuild';
+// Secrets live in .env (deployed separately via the .pixabay.env merge, never
+// committed) — this file is public on GitHub, so a hardcoded key here is a
+// live credential leak the moment it's committed. Previously WAS hardcoded
+// (health-ops-20260725-rebuild) and a stale hardcoded RSS_SYNC_SECRET
+// placeholder below; both fixed to read from .env instead.
+//
+// .pixabay.env is checked as a higher-priority override, not just .env:
+// FTP upload of a fresh .pixabay.env happens *before* apply-prebuilt-force
+// is called, but that call is what merges .pixabay.env into .env (inside
+// buildPrebuiltCommand, below) — so on the deploy that first introduces a
+// new key, .env on disk is still stale at the exact moment this key check
+// runs. Reading the freshly-uploaded .pixabay.env first closes that gap
+// without ever needing a hardcoded fallback secret.
+$readEnvVar = static function (string $name): string {
+    static $envVars = null;
+    if ($envVars === null) {
+        $envVars = [];
+        foreach (['/home/tw123457/health_app/.env', '/home/tw123457/health_app/.pixabay.env'] as $envFile) {
+            if (is_file($envFile)) {
+                foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+                    if (preg_match('/^([A-Z_]+)=(.*)$/', $line, $m)) {
+                        $envVars[$m[1]] = $m[2];
+                    }
+                }
+            }
+        }
+    }
+    return $envVars[$name] ?? '';
+};
+
+$opsKey = $readEnvVar('OPS_KEY');
 if (str_starts_with($path, '/__ops/')) {
-    if (($_GET['key'] ?? '') !== $opsKey) {
+    // An empty $opsKey (e.g. OPS_KEY missing from .env) must never grant
+    // access — otherwise an empty ?key= would satisfy '' !== '' === false.
+    if ($opsKey === '' || ($_GET['key'] ?? '') !== $opsKey) {
         http_response_code(403);
         header('Content-Type: text/plain; charset=utf-8');
         echo 'Forbidden';
@@ -594,9 +626,11 @@ if (!$skipHourlySync) {
         $lastRun = is_file($stateFile) ? (int) trim((string) file_get_contents($stateFile)) : 0;
         if ($lastRun === 0 || (time() - $lastRun) >= 3600) {
             @file_put_contents($stateFile, (string) time(), LOCK_EX);
-            $secret = 'CHANGE_ME_TO_A_LONG_RANDOM_SECRET';
-            $cmd = 'nohup curl -fsS -H ' . escapeshellarg('x-rss-sync-secret: ' . $secret) . ' http://127.0.0.1:3000/api/internal/rss-sync >/dev/null 2>&1 &';
-            @exec($cmd);
+            $secret = $readEnvVar('RSS_SYNC_SECRET');
+            if ($secret !== '') {
+                $cmd = 'nohup curl -fsS -H ' . escapeshellarg('x-rss-sync-secret: ' . $secret) . ' http://127.0.0.1:3000/api/internal/rss-sync >/dev/null 2>&1 &';
+                @exec($cmd);
+            }
         }
 
         @flock($lockHandle, LOCK_UN);
