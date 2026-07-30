@@ -238,13 +238,21 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
       let outcome = await tryAssignWithTerm(news, primaryTerm);
 
-      // The title-derived term found nothing usable — fall back to a
-      // generic term rather than failing the article outright over one
-      // narrow topic's pool being temporarily exhausted.
+      // The title-derived term found nothing usable — work through every
+      // generic fallback term (not just one) before giving up on this
+      // article. A single fallback attempt isn't enough: with the caller
+      // often requesting one item at a time (limit=1), an article whose
+      // term (and its lone fallback) are both exhausted would otherwise
+      // stay "missing" and get re-picked as the top candidate on every
+      // subsequent call — same failure, forever — rather than a rare
+      // one-off. Iterating the whole small fallback set costs little and
+      // makes that stuck state effectively impossible.
       if (outcome === "exhausted" && !primaryIsFallback) {
-        const fallbackTerm = FALLBACK_TERMS[fallbackIndex % FALLBACK_TERMS.length];
-        fallbackIndex += 1;
-        outcome = await tryAssignWithTerm(news, fallbackTerm);
+        for (let i = 0; i < FALLBACK_TERMS.length && outcome === "exhausted"; i++) {
+          const fallbackTerm = FALLBACK_TERMS[fallbackIndex % FALLBACK_TERMS.length];
+          fallbackIndex += 1;
+          outcome = await tryAssignWithTerm(news, fallbackTerm);
+        }
       }
 
       if (outcome === "rate_limited") {

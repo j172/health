@@ -77,11 +77,33 @@ function parseCsv(text) {
 
 const toHalfwidthDigits = (s) => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
 
+// A short unit (e.g. county+district, or just a truncated fragment of one)
+// sometimes repeats back-to-back near the start of these addresses — see
+// lib/server/facilities/csv.ts's dedupeAddressPrefix for the two confirmed
+// live shapes this handles.
+const dedupeAddressPrefix = (address) => {
+  for (let len = 12; len >= 4; len--) {
+    if (address.length >= len * 2 && address.slice(0, len) === address.slice(len, len * 2)) {
+      return address.slice(len);
+    }
+  }
+  for (let len = 2; len <= 4; len++) {
+    for (let start = 0; start <= 4; start++) {
+      const unit = address.slice(start, start + len);
+      if (unit.length === len && unit === address.slice(start + len, start + len * 2)) {
+        return address.slice(0, start + len) + address.slice(start + len * 2);
+      }
+    }
+  }
+  return address;
+};
+
 const normalizeAddress = (raw) => {
   const halfwidth = toHalfwidthDigits(raw);
   const firstAddress = halfwidth.split(/[,，]|及/)[0];
   const withoutParens = firstAddress.replace(/[（(][^）)]*[）)]/g, "");
-  return withoutParens.replace(/\s+/g, " ").trim();
+  const deduped = dedupeAddressPrefix(withoutParens.trim());
+  return deduped.replace(/\s+/g, " ").trim();
 };
 
 async function fetchRecords() {
@@ -98,7 +120,12 @@ async function fetchRecords() {
   return rows
     .filter((r) => r["機構名稱"] && r["地址"])
     .map((r) => {
-      const address = normalizeAddress(`${r["縣市"]}${r["鄉鎮市區"]}${r["地址"]}`);
+      // 地址 already includes the full county+district+street (confirmed:
+      // 263/266 rows start with 縣市 verbatim) — prepending unconditionally
+      // produced "新北市土城區新北市土城區中正路18號6樓"-style duplication.
+      // Only prepend for the rare row where it's genuinely missing.
+      const rawAddress = r["地址"].startsWith(r["縣市"]) ? r["地址"] : `${r["縣市"]}${r["鄉鎮市區"]}${r["地址"]}`;
+      const address = normalizeAddress(rawAddress);
       return {
         facilityType: "disability_welfare",
         sourceKey: "mohw_disability_welfare",
