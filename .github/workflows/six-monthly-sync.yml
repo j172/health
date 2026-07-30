@@ -24,7 +24,7 @@ jobs:
           node-version: 20
 
       - name: Install script dependencies
-        run: npm install adm-zip iconv-lite
+        run: npm install adm-zip
 
       - name: Run six-monthly sync
         env:
@@ -44,36 +44,11 @@ jobs:
           HEALTH_BASE_URL: https://health.j172.tw
         run: node scripts/import-tfda-food-operators.mjs
 
-      # The four steps below fetch from ltcpap.mohw.gov.tw / opendata.mohw.gov.tw,
-      # previously confirmed unreachable from the production host and (for
-      # ltcpap specifically) from GitHub Actions runners too — same mohw.gov.tw
-      # apex domain, suspected same IP-range block. Each uses continue-on-error
-      # so a confirmed block on one doesn't stop the rest of this workflow;
-      # check the run log to see which of these actually got through.
-      - name: Import MOHW long-term-care + health-check facility CSVs (ltcpap.mohw.gov.tw)
-        continue-on-error: true
-        env:
-          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
-        run: node scripts/import-mohw-facilities.mjs
-
-      - name: Import MOHW LTC contracted-service registry (ltcpap.mohw.gov.tw, ~15k institutions)
-        continue-on-error: true
-        env:
-          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
-        run: node scripts/import-mohw-ltc-contracted.mjs
-
-      - name: Import MOHW disability welfare institution directory (opendata.mohw.gov.tw)
-        continue-on-error: true
-        env:
-          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
-        run: node scripts/import-mohw-disability-welfare.mjs
-
-      - name: Import MOHW elder welfare institution directory (opendata.mohw.gov.tw, 22 counties)
-        continue-on-error: true
-        env:
-          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
-        run: node scripts/import-mohw-elder-welfare.mjs
+      # NOT run here: the 4 MOHW imports that fetch from ltcpap.mohw.gov.tw /
+      # opendata.mohw.gov.tw. Empirically confirmed unreachable from GitHub
+      # Actions runners too (20s timeout, HTTP 000, on all three hosts tested)
+      # — the IP-range block covers the whole mohw.gov.tw apex domain, not
+      # just ltcpap. These four (scripts/import-mohw-facilities.mjs, import-
+      # mohw-ltc-contracted.mjs, import-mohw-disability-welfare.mjs, import-
+      # mohw-elder-welfare.mjs) can only be run from a residential/office
+      # network by hand — see run-six-monthly-sync.sh's header comment.

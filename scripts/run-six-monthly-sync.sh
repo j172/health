@@ -7,20 +7,18 @@
 #   ADMIN_SECRET=<x-rss-sync-admin-secret value> bash scripts/run-six-monthly-sync.sh
 #
 # What this does NOT cover:
-# - The MOHW long-term-care/health-check facility CSVs (ltcpap.mohw.gov.tw),
-#   the MOHW LTC contracted-service registry (also ltcpap.mohw.gov.tw), and
-#   the MOHW disability/elder welfare institution directories
-#   (opendata.mohw.gov.tw, same mohw.gov.tw apex domain) — those four run as
-#   their own `continue-on-error` steps in six-monthly-sync.yml (scripts/
-#   import-mohw-facilities.mjs, import-mohw-ltc-contracted.mjs, import-mohw-
-#   disability-welfare.mjs, import-mohw-elder-welfare.mjs), not through this
-#   script, since ltcpap.mohw.gov.tw was previously confirmed IP-blocked from
-#   both the production host and GitHub Actions runners — if opendata.mohw.gov.tw
-#   turns out to be blocked the same way, those two steps just fail harmlessly
-#   and the data has to be imported by hand from a residential/office network
-#   instead (same four script names, run locally). This script still handles
-#   the geocoding backfill for whichever of these actually got in (LTC
-#   contracted excepted — it ships its own lat/lng).
+# - The MOHW long-term-care/health-check facility CSVs, the MOHW LTC
+#   contracted-service registry, and the MOHW disability/elder welfare
+#   institution directories (ltcpap.mohw.gov.tw / opendata.mohw.gov.tw —
+#   same mohw.gov.tw apex domain). Empirically confirmed unreachable from
+#   BOTH the production host and GitHub Actions runners (20s timeout, HTTP
+#   000, on all three hosts tested) — there's no automated path for these
+#   four, they can only be imported by running scripts/import-mohw-
+#   facilities.mjs, import-mohw-ltc-contracted.mjs, import-mohw-disability-
+#   welfare.mjs, and import-mohw-elder-welfare.mjs by hand from a regular
+#   residential/office network, every ~6 months. This script still handles
+#   the geocoding backfill for whichever of these were last imported that
+#   way (LTC contracted excepted — it ships its own lat/lng).
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
