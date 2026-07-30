@@ -72,11 +72,10 @@ const excerpt = (value: string | null | undefined, max = 120): string => {
 };
 
 // Small colored dot next to the source name, matching NextBlog's per-category tag
-// color — reuses the same gov/media/esg grouping the nav dropdowns and footer use.
+// color — reuses the same gov/media grouping the nav dropdowns and footer use.
 const CATEGORY_DOT_CLASS: Record<string, string> = {
   gov: "bg-accent-teal",
   media: "bg-accent-blue",
-  esg: "bg-accent-green",
 };
 
 const categoryDotClass = (sourceName: string): string => {

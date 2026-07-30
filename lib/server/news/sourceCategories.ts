@@ -38,12 +38,6 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "ttvc", label: "常春月刊" },
       { sourceName: "twhealth", label: "好健康" },
       { sourceName: "heho", label: "Heho健康" },
-    ],
-  },
-  {
-    key: "esg",
-    label: "ESG／永續",
-    sources: [
       { sourceName: "csr_cw", label: "CSR@天下" },
       { sourceName: "esg_gvm", label: "ESG遠見" },
       { sourceName: "esg_businesstoday", label: "ESG今周刊" },
