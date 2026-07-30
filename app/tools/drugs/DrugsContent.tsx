@@ -95,9 +95,9 @@ export default function DrugsContent() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="輸入藥品中文或英文名稱、許可證字號"
-          className="flex-1 rounded-none border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+          className="flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
         />
-        <button type="submit" className="rounded-none bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
+        <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
           搜尋
         </button>
       </form>
@@ -108,7 +108,7 @@ export default function DrugsContent() {
         </div>
       )}
 
-      {error && <div className="rounded-none bg-red-50 p-4 text-sm text-red-700">查詢藥品資料失敗，請稍後再試。</div>}
+      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">查詢藥品資料失敗，請稍後再試。</div>}
 
       {!loading && !error && drugs && (
         <>
@@ -121,9 +121,9 @@ export default function DrugsContent() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {drugs.map((d) => (
-                <div key={d.id} className="rounded-none border border-neutral-200 p-4">
+                <div key={d.id} className="rounded-xl border border-neutral-200 p-4">
                   <div className="flex gap-4">
-                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-none bg-neutral-50">
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-neutral-50">
                       {d.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={d.image_url} alt={d.name_zh} className="h-full w-full object-contain" loading="lazy" />

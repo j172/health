@@ -140,7 +140,7 @@ export default function CaloriesCalculator() {
                   setActivity(level.value);
                   setCalculated(false);
                 }}
-                className={`flex w-full items-center justify-between rounded-none border px-4 py-3 text-left transition-colors ${
+                className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
                   activity === level.value ? "border-primary bg-zumthor" : "border-neutral-300 hover:border-primary/50"
                 }`}
               >
@@ -167,12 +167,12 @@ export default function CaloriesCalculator() {
       {result && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-none border border-neutral-200 p-5 text-center">
+            <div className="rounded-xl border border-neutral-200 p-5 text-center">
               <p className="mb-1 text-sm text-neutral-500">基礎代謝率 (BMR)</p>
               <p className="text-4xl font-bold tabular-nums text-neutral-800">{result.bmr.toLocaleString()}</p>
               <p className="mt-1 text-sm text-neutral-500">大卡/天</p>
             </div>
-            <div className="rounded-none border border-primary/30 bg-zumthor p-5 text-center">
+            <div className="rounded-xl border border-primary/30 bg-zumthor p-5 text-center">
               <p className="mb-1 text-sm text-neutral-500">每日總熱量 (TDEE)</p>
               <p className="text-4xl font-bold tabular-nums text-primary">{result.tdee.toLocaleString()}</p>
               <p className="mt-1 text-sm text-neutral-500">大卡/天</p>
@@ -198,7 +198,7 @@ export default function CaloriesCalculator() {
         </div>
       )}
 
-      <div className="space-y-2 rounded-none border border-neutral-200 bg-neutral-50 p-5 text-sm">
+      <div className="space-y-2 rounded-xl border border-neutral-200 bg-neutral-50 p-5 text-sm">
         <p className="font-semibold text-neutral-800">計算公式說明</p>
         <p className="text-neutral-600">
           <strong>BMR</strong>（基礎代謝率）= 靜止時身體維持基本功能所需熱量，採用 Mifflin-St Jeor 公式計算。

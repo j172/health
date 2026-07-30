@@ -83,7 +83,7 @@ export default function WaistHipCalculator() {
         ))}
       </div>
 
-      <div className="space-y-1 rounded-none bg-zumthor p-4 text-sm text-neutral-600">
+      <div className="space-y-1 rounded-lg bg-zumthor p-4 text-sm text-neutral-600">
         <p className="font-medium text-neutral-800">📏 量測方式</p>
         <p>
           • <strong>腰圍</strong>：肋骨最低點與髂骨最高點中間位置，平緩呼氣後量測
@@ -152,7 +152,7 @@ export default function WaistHipCalculator() {
       </button>
 
       {result && (
-        <div className="space-y-4 rounded-none border border-neutral-200 p-6">
+        <div className="space-y-4 rounded-xl border border-neutral-200 p-6">
           <div className="text-center">
             <p className="mb-1 text-sm text-neutral-500">腰臀比 (WHR)</p>
             <p className={`text-5xl font-bold ${result.riskColor}`}>{result.ratio}</p>
@@ -160,12 +160,12 @@ export default function WaistHipCalculator() {
           </div>
 
           {!result.waistOk && (
-            <div className="rounded-none border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               ⚠️ 您的腰圍超過台灣衛福部建議標準（男性 90cm、女性 80cm），屬於腹部肥胖。
             </div>
           )}
 
-          <div className="space-y-2 rounded-none bg-neutral-50 p-4">
+          <div className="space-y-2 rounded-lg bg-neutral-50 p-4">
             <p className="text-sm text-neutral-800">{result.description}</p>
             <p className="text-sm text-neutral-600">💡 {result.suggestion}</p>
           </div>

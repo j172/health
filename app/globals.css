@@ -19,8 +19,13 @@
   --color-black: #181c31;
   --color-blackho: #2c3149;
   --color-blacksection: #1c2136;
-  --color-primary: #006bff;
-  --color-primaryho: #0063ec;
+  --color-primary: #625df5;
+  --color-primaryho: #534fd0;
+  --color-accent-blue: #2d68f8;
+  --color-accent-green: #22ad5c;
+  --color-accent-orange: #f39f10;
+  --color-accent-purple: #8646f4;
+  --color-accent-teal: #02aaa4;
   --color-meta: #20c5a8;
   --color-waterloo: #757693;
   --color-manatee: #999aa1;

@@ -193,7 +193,7 @@ export default function BodyFatCalculator() {
       </button>
 
       {result && (
-        <div className="space-y-4 rounded-none border border-neutral-200 p-6">
+        <div className="space-y-4 rounded-xl border border-neutral-200 p-6">
           <div className="text-center">
             <p className="mb-1 text-sm text-neutral-500">您的體脂率</p>
             <p className={`text-5xl font-bold ${result.categoryColor}`}>
@@ -204,13 +204,13 @@ export default function BodyFatCalculator() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="rounded-none bg-neutral-50 p-3 text-center">
+            <div className="rounded-lg bg-neutral-50 p-3 text-center">
               <p className="text-xs text-neutral-500">脂肪重量</p>
               <p className="text-xl font-bold text-neutral-800">
                 {result.fatMass} <span className="text-sm font-normal">kg</span>
               </p>
             </div>
-            <div className="rounded-none bg-neutral-50 p-3 text-center">
+            <div className="rounded-lg bg-neutral-50 p-3 text-center">
               <p className="text-xs text-neutral-500">去脂體重</p>
               <p className="text-xl font-bold text-neutral-800">
                 {result.leanMass} <span className="text-sm font-normal">kg</span>
@@ -218,7 +218,7 @@ export default function BodyFatCalculator() {
             </div>
           </div>
 
-          <div className="space-y-2 rounded-none bg-neutral-50 p-4">
+          <div className="space-y-2 rounded-lg bg-neutral-50 p-4">
             <p className="text-sm text-neutral-800">{result.description}</p>
             <p className="text-sm text-neutral-600">💡 {result.suggestion}</p>
           </div>

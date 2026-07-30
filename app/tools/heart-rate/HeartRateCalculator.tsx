@@ -67,7 +67,7 @@ export default function HeartRateCalculator() {
         <p className="text-neutral-600">使用 Karvonen 公式計算 5 個運動強度心率區間，幫助您精準控制訓練強度。</p>
       </div>
 
-      <div className="rounded-none bg-blue-50 p-4 text-sm text-neutral-600">
+      <div className="rounded-lg bg-blue-50 p-4 text-sm text-neutral-600">
         <p className="mb-1 font-medium text-neutral-800">📋 如何量測靜止心率？</p>
         <p>早晨醒來尚未起床時，量測 60 秒脈搏次數（手腕橈動脈或頸動脈）的平均值最為準確。</p>
         <p className="mt-1">若有使用 Apple Watch 或 iPhone「健康」App，可直接查看其記錄的靜止心率數值，手動輸入即可，無需自行量測。</p>
@@ -117,17 +117,17 @@ export default function HeartRateCalculator() {
       {result && (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-none border border-neutral-200 p-3 text-center">
+            <div className="rounded-xl border border-neutral-200 p-3 text-center">
               <p className="text-xs text-neutral-500">最大心率</p>
               <p className="text-2xl font-bold text-red-500">{result.maxHr}</p>
               <p className="text-xs text-neutral-500">次/分</p>
             </div>
-            <div className="rounded-none border border-neutral-200 p-3 text-center">
+            <div className="rounded-xl border border-neutral-200 p-3 text-center">
               <p className="text-xs text-neutral-500">靜止心率</p>
               <p className="text-2xl font-bold text-blue-500">{result.restHr}</p>
               <p className="text-xs text-neutral-500">次/分</p>
             </div>
-            <div className="rounded-none border border-neutral-200 p-3 text-center">
+            <div className="rounded-xl border border-neutral-200 p-3 text-center">
               <p className="text-xs text-neutral-500">心率儲備</p>
               <p className="text-2xl font-bold text-green-500">{result.hrr}</p>
               <p className="text-xs text-neutral-500">次/分</p>
@@ -137,7 +137,7 @@ export default function HeartRateCalculator() {
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-neutral-800">Karvonen 五區心率區間</h3>
             {result.zones.map((zone) => (
-              <div key={zone.name} className={`${zone.bg} rounded-none p-3`}>
+              <div key={zone.name} className={`${zone.bg} rounded-lg p-3`}>
                 <div className="mb-1 flex items-center justify-between">
                   <span className={`text-sm font-semibold ${zone.color}`}>{zone.name}</span>
                   <span className={`text-sm font-bold ${zone.color}`}>
@@ -152,7 +152,7 @@ export default function HeartRateCalculator() {
             ))}
           </div>
 
-          <div className="rounded-none bg-neutral-50 p-3 text-xs text-neutral-500">
+          <div className="rounded-lg bg-neutral-50 p-3 text-xs text-neutral-500">
             <p className="mb-1 font-medium">公式說明</p>
             <p>最大心率 = 207 - 0.7 × 年齡（Tanaka 公式，2001）</p>
             <p>目標心率 = (最大心率 - 靜止心率) × 強度% + 靜止心率（Karvonen 公式）</p>

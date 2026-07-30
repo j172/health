@@ -167,13 +167,13 @@ export default function VO2MaxCalculator() {
           <h2 className="text-xl font-bold text-neutral-800">估算結果</h2>
 
           <div className="grid grid-cols-2 gap-4 text-center">
-            <div className="rounded-none bg-zumthor p-5">
+            <div className="rounded-lg bg-zumthor p-5">
               <p className="mb-1 text-xs text-neutral-500">VO2Max</p>
               <p className="text-3xl font-bold text-primary">{result.vo2max}</p>
               <p className="text-xs text-neutral-500">mL/kg/min</p>
               <p className={`mt-1 text-sm font-semibold ${result.categoryColor}`}>{result.category}</p>
             </div>
-            <div className="rounded-none bg-neutral-50 p-5">
+            <div className="rounded-lg bg-neutral-50 p-5">
               <p className="mb-1 text-xs text-neutral-500">最大心率 (估)</p>
               <p className="text-3xl font-bold text-neutral-800">{result.hrMax}</p>
               <p className="text-xs text-neutral-500">bpm</p>
@@ -183,7 +183,7 @@ export default function VO2MaxCalculator() {
 
           <div className="text-sm leading-relaxed text-neutral-600">{result.description}</div>
 
-          <div className="rounded-none bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-600">💡 {result.suggestion}</div>
+          <div className="rounded-lg bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-600">💡 {result.suggestion}</div>
 
           <p className="text-xs text-neutral-500">※ 此估算值基於安靜心率，誤差約 ±5 mL/kg/min，僅供健康管理參考。正式評估請接受運動心肺測試。</p>
         </div>

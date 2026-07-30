@@ -78,7 +78,7 @@ export default function ToolsIndexPage() {
               <Link
                 key={tool.href}
                 href={tool.href}
-                className="group flex flex-col rounded-none border border-neutral-200 p-6 transition-colors hover:border-neutral-400"
+                className="group flex flex-col rounded-xl border border-neutral-200 p-6 transition-colors hover:border-neutral-400"
               >
                 <div className="mb-4 text-4xl">{tool.icon}</div>
                 <h2 className="mb-2 text-lg font-semibold text-neutral-800 group-hover:text-neutral-900">{tool.title}</h2>

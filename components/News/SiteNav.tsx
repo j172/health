@@ -62,7 +62,7 @@ const NavDropdown = ({ label, items }: { label: string; items: NavLinkItem[] }) 
           id={menuId}
           role="menu"
           aria-label={label}
-          className="absolute left-0 top-full z-10 min-w-[12rem] max-h-[70vh] overflow-y-auto rounded-none border border-neutral-200 bg-white shadow-lg"
+          className="absolute left-0 top-full z-10 min-w-[12rem] max-h-[70vh] overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-lg"
         >
           {items.map((item) => (
             <Link
@@ -90,7 +90,7 @@ const MobileGroup = ({ label, items, onNavigate }: { label: string; items: NavLi
           <Link
             href={item.href}
             onClick={onNavigate}
-            className="block rounded-none px-1 py-2 text-[15px] text-neutral-700 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="block rounded-md px-1 py-2 text-[15px] text-neutral-700 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {item.label}
           </Link>
@@ -184,7 +184,7 @@ export default function SiteNav() {
               target="_blank"
               rel="noreferrer noopener"
               onClick={closeMobile}
-              className="block rounded-none px-1 py-2 text-[15px] text-neutral-700 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="block rounded-md px-1 py-2 text-[15px] text-neutral-700 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               j172.tw ↗
             </a>

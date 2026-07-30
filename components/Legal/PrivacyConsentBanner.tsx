@@ -48,7 +48,7 @@ export default function PrivacyConsentBanner() {
         <button
           type="button"
           onClick={acknowledge}
-          className="shrink-0 rounded-none bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primaryho"
+          className="shrink-0 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primaryho"
         >
           我知道了
         </button>

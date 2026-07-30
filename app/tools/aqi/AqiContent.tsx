@@ -12,7 +12,7 @@ const COUNTIES = [
 
 function AqiPollutant({ label, value, unit }: { label: string; value: number | null; unit: string }) {
   return (
-    <div className="rounded-none bg-neutral-50 p-1.5 text-center">
+    <div className="rounded-lg bg-neutral-50 p-1.5 text-center">
       <p className="text-neutral-500">{label}</p>
       <p className="font-semibold text-neutral-800">{value !== null ? value : "—"}</p>
       <p className="text-neutral-400">{unit}</p>
@@ -68,7 +68,7 @@ export default function AqiContent() {
         <select
           value={county}
           onChange={(e) => setCounty(e.target.value)}
-          className="rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+          className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:border-primary focus:outline-none"
         >
           <option value="">全部縣市</option>
           {COUNTIES.map((c) => (
@@ -89,14 +89,14 @@ export default function AqiContent() {
         </div>
       )}
 
-      {error && <div className="rounded-none bg-red-50 p-4 text-sm text-red-700">查詢 AQI 資料失敗，請稍後再試。</div>}
+      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">查詢 AQI 資料失敗，請稍後再試。</div>}
 
       {!loading && !error && stations && stations.length === 0 && <div className="py-8 text-center text-neutral-500">目前無 AQI 資料。</div>}
 
       {!loading && stations && stations.length > 0 && (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stations.map((site) => (
-            <div key={site.siteId} className="rounded-none border border-neutral-200 p-4" style={{ borderLeftWidth: 4, borderLeftColor: site.aqiColor }}>
+            <div key={site.siteId} className="rounded-xl border border-neutral-200 p-4" style={{ borderLeftWidth: 4, borderLeftColor: site.aqiColor }}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="font-semibold text-neutral-800">{site.siteName}</p>

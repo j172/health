@@ -174,24 +174,24 @@ export default function LBMCalculator() {
           <h2 className="text-xl font-bold text-neutral-800">計算結果</h2>
 
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="rounded-none bg-zumthor p-4">
+            <div className="rounded-lg bg-zumthor p-4">
               <p className="mb-1 text-xs text-neutral-500">去脂體重</p>
               <p className="text-2xl font-bold text-primary">{result.lbm}</p>
               <p className="text-xs text-neutral-500">kg</p>
             </div>
-            <div className="rounded-none bg-neutral-50 p-4">
+            <div className="rounded-lg bg-neutral-50 p-4">
               <p className="mb-1 text-xs text-neutral-500">體脂重</p>
               <p className="text-2xl font-bold text-neutral-800">{result.bodyFat}</p>
               <p className="text-xs text-neutral-500">kg</p>
             </div>
-            <div className="rounded-none bg-neutral-50 p-4">
+            <div className="rounded-lg bg-neutral-50 p-4">
               <p className="mb-1 text-xs text-neutral-500">體脂率</p>
               <p className={`text-2xl font-bold ${result.lbmCategoryColor}`}>{result.bodyFatPct}%</p>
               <p className={`text-xs font-medium ${result.lbmCategoryColor}`}>{result.lbmCategory}</p>
             </div>
           </div>
 
-          <div className="rounded-none bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-600">💡 {result.suggestion}</div>
+          <div className="rounded-lg bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-600">💡 {result.suggestion}</div>
 
           <p className="text-xs text-neutral-500">※ 本結果為 Boer 公式估算值，僅供健康管理參考，不取代專業醫療診斷。</p>
         </div>

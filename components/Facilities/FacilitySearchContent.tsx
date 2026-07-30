@@ -132,9 +132,9 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder={searchPlaceholder}
-          className="flex-1 rounded-none border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+          className="flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
         />
-        <button type="submit" className="rounded-none bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
+        <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
           搜尋
         </button>
         {keyword && (
@@ -144,7 +144,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
               setKeyword("");
               setSearchInput("");
             }}
-            className="rounded-none border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50"
+            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50"
           >
             清除
           </button>
@@ -159,12 +159,12 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         </div>
       )}
 
-      {error && <div className="rounded-none bg-red-50 p-4 text-sm text-red-700">{errorText}</div>}
+      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{errorText}</div>}
 
       {!loading && !location.loading && !error && facilities && (
         <>
           {markers.length > 0 && (
-            <div className="h-[400px] overflow-hidden rounded-none border border-neutral-200">
+            <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200">
               <FacilityMap userLocation={location} markers={markers} radiusMeters={radiusMeters} showRadius={!keyword} />
             </div>
           )}
@@ -175,7 +175,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
             <div className="space-y-3">
               <p className="text-xs text-neutral-500">共 {facilities.length} 筆</p>
               {facilities.map((f) => (
-                <div key={f.id} className="rounded-none border border-neutral-200 p-4">
+                <div key={f.id} className="rounded-xl border border-neutral-200 p-4">
                   {serviceItem === "badge" ? (
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-semibold text-neutral-800">{f.name}</p>

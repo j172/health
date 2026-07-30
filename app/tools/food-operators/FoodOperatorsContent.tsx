@@ -53,9 +53,9 @@ export default function FoodOperatorsContent() {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="輸入公司名稱、統一編號或地址關鍵字"
-          className="flex-1 rounded-none border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+          className="flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
         />
-        <button type="submit" className="rounded-none bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
+        <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
           搜尋
         </button>
       </form>
@@ -66,7 +66,7 @@ export default function FoodOperatorsContent() {
         </div>
       )}
 
-      {error && <div className="rounded-none bg-red-50 p-4 text-sm text-red-700">查詢食品業者資料失敗，請稍後再試。</div>}
+      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">查詢食品業者資料失敗，請稍後再試。</div>}
 
       {!loading && !error && operators && (
         <>

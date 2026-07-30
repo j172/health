@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 const PRIVACY_DESCRIPTION = "j172tw Health 隱私權政策：說明本站蒐集哪些資料、如何使用，並符合 GDPR、CCPA/CPRA、APPI、CBPR 與台灣個人資料保護法之揭露與使用者權利規範。";
 
 export const viewport: Viewport = {
-  themeColor: "#006bff",
+  themeColor: "#625df5",
 };
 
 export const metadata: Metadata = {

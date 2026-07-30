@@ -87,7 +87,7 @@ export default function BloodPressureAnalyzer() {
         <p className="text-neutral-600">依 2023 ESH 高血壓指南分類血壓等級，支援多次記錄與平均值分析。</p>
       </div>
 
-      <div className="rounded-none bg-orange-50 p-4 text-sm text-neutral-600">
+      <div className="rounded-xl bg-orange-50 p-4 text-sm text-neutral-600">
         <p className="mb-1 font-medium text-neutral-800">📋 量測建議</p>
         <p>• 靜坐 5 分鐘後量測，雙腳平放地面，上臂與心臟等高</p>
         <p>• 早晨服藥前、晚間睡前各量一次，連續測量 7 天取平均</p>
@@ -145,7 +145,7 @@ export default function BloodPressureAnalyzer() {
       )}
 
       {latestResult && (
-        <div className={`${latestResult.bgColor} space-y-3 rounded-none border border-neutral-200 p-5`}>
+        <div className={`${latestResult.bgColor} space-y-3 rounded-xl border border-neutral-200 p-5`}>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-neutral-500">最新量測結果</p>
@@ -162,7 +162,7 @@ export default function BloodPressureAnalyzer() {
       )}
 
       {avgResult && records.length >= 2 && (
-        <div className="space-y-1 rounded-none bg-neutral-50 p-4 text-sm">
+        <div className="space-y-1 rounded-lg bg-neutral-50 p-4 text-sm">
           <p className="font-medium text-neutral-800">
             {records.length} 次量測平均：<span className={avgResult.categoryColor}>{avgResult.category}</span>
           </p>

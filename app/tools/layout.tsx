@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ["latin"] });
 const TOOLS_DESCRIPTION = "免費健康計算機與查詢工具：BMI、卡路里、體脂率、血壓、睡眠評估，以及全台醫療院所、藥局、藥品、長照機構查詢。";
 
 export const viewport: Viewport = {
-  themeColor: "#006bff",
+  themeColor: "#625df5",
 };
 
 export const metadata: Metadata = {

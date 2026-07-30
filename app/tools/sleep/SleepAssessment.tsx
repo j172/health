@@ -172,7 +172,7 @@ export default function SleepAssessment() {
         </div>
       </div>
 
-      <div className="rounded-none bg-blue-50 p-4 text-sm text-neutral-600">
+      <div className="rounded-lg bg-blue-50 p-4 text-sm text-neutral-600">
         <p>💡 若有使用 Apple Watch 或 iPhone「健康」App 的睡眠追蹤功能，可先查看其記錄的平均睡眠時數與入睡時間，回答第 1、3 題時會更準確。</p>
       </div>
 
@@ -188,7 +188,7 @@ export default function SleepAssessment() {
                 <button
                   key={opt.value}
                   onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: opt.value }))}
-                  className={`rounded-none border px-3 py-2 text-left text-sm transition-all ${
+                  className={`rounded-lg border px-3 py-2 text-left text-sm transition-all ${
                     answers[q.id] === opt.value ? "border-primary bg-zumthor font-medium text-primary" : "border-neutral-300 hover:border-primary/50"
                   }`}
                 >
@@ -203,7 +203,7 @@ export default function SleepAssessment() {
         <button
           onClick={handleSubmit}
           disabled={Object.keys(answers).length < questions.length}
-          className="w-full rounded-none bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primaryho disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primaryho disabled:cursor-not-allowed disabled:opacity-50"
         >
           查看評估結果
         </button>
@@ -211,7 +211,7 @@ export default function SleepAssessment() {
 
       {result && (
         <div className="space-y-4">
-          <div className={`${result.bgColor} space-y-3 rounded-none border border-neutral-200 p-5`}>
+          <div className={`${result.bgColor} space-y-3 rounded-xl border border-neutral-200 p-5`}>
             <div className="space-y-1 text-center">
               <p className="text-xs text-neutral-500">PSQI 參考分數（0–21）</p>
               <p className="text-5xl font-bold tabular-nums text-neutral-800">{result.score}</p>

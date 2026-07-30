@@ -110,7 +110,7 @@ export default function StressAssessment() {
         <p className="text-neutral-600">採用 PSS-10 知覺壓力量表，10 道題目量化壓力程度，提供個人化減壓策略。</p>
       </div>
 
-      <div className="rounded-none bg-neutral-50 p-4 text-sm text-neutral-600">
+      <div className="rounded-lg bg-neutral-50 p-4 text-sm text-neutral-600">
         <p className="mb-1 font-medium text-neutral-800">📝 注意事項</p>
         <p>
           請根據<strong>過去一個月</strong>的整體感受作答，每題選一個最符合的選項，沒有對錯之分。
@@ -141,7 +141,7 @@ export default function StressAssessment() {
                 <button
                   key={opt.value}
                   onClick={() => setAnswers((prev) => ({ ...prev, [q.id]: opt.value }))}
-                  className={`flex flex-col items-center gap-0.5 rounded-none border py-2 text-xs transition-all ${
+                  className={`flex flex-col items-center gap-0.5 rounded-lg border py-2 text-xs transition-all ${
                     answers[q.id] === opt.value ? "border-primary bg-zumthor font-semibold text-primary" : "border-neutral-300 text-neutral-500 hover:border-primary/50"
                   }`}
                 >
@@ -157,7 +157,7 @@ export default function StressAssessment() {
         <button
           onClick={() => setSubmitted(true)}
           disabled={answeredCount < PSS_QUESTIONS.length}
-          className="w-full rounded-none bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primaryho disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-lg bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primaryho disabled:cursor-not-allowed disabled:opacity-50"
         >
           {answeredCount < PSS_QUESTIONS.length ? `還有 ${PSS_QUESTIONS.length - answeredCount} 題未作答` : "查看壓力評估結果"}
         </button>
@@ -165,7 +165,7 @@ export default function StressAssessment() {
 
       {result && (
         <div className="space-y-4">
-          <div className={`${result.bgColor} space-y-3 rounded-none border border-neutral-200 p-5`}>
+          <div className={`${result.bgColor} space-y-3 rounded-xl border border-neutral-200 p-5`}>
             <div className="space-y-1 text-center">
               <p className="text-xs text-neutral-500">PSS-10 總分（0–40）</p>
               <p className="text-5xl font-bold tabular-nums text-neutral-800">{result.total}</p>

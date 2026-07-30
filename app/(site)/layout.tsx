@@ -9,7 +9,7 @@ import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 const inter = Inter({ subsets: ["latin"] });
 
 export const viewport: Viewport = {
-  themeColor: "#006bff",
+  themeColor: "#625df5",
 };
 
 export const metadata: Metadata = {

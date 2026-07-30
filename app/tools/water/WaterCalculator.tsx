@@ -46,7 +46,7 @@ export function WaterCalculator() {
         <p className="text-neutral-600">依體重與活動量計算每日建議飲水量，並提供分段補水時間表。</p>
       </div>
 
-      <section className="space-y-6 rounded-none border border-neutral-200 p-6">
+      <section className="space-y-6 rounded-xl border border-neutral-200 p-6">
         <h2 className="text-xl font-bold text-neutral-800">輸入您的資訊</h2>
 
         <div className="space-y-2">
@@ -76,7 +76,7 @@ export function WaterCalculator() {
             id="activity-select"
             value={activityLevel}
             onChange={(e) => setActivityLevel(Number(e.target.value))}
-            className="w-full rounded-none border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:border-primary focus:outline-none"
           >
             {ACTIVITY_LEVELS.map((lvl) => (
               <option key={lvl.value} value={lvl.value}>
@@ -100,19 +100,19 @@ export function WaterCalculator() {
         </div>
       </section>
 
-      <section className="space-y-4 rounded-none border border-primary/20 bg-zumthor p-6">
+      <section className="space-y-4 rounded-xl border border-primary/20 bg-zumthor p-6">
         <h2 className="text-xl font-bold text-neutral-800">每日建議飲水量</h2>
 
         <div className="flex flex-wrap gap-4">
-          <div className="min-w-[120px] flex-1 rounded-none border border-neutral-200 bg-white p-4 text-center">
+          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center">
             <p className="text-3xl font-extrabold tabular-nums text-primary">{totalMl.toLocaleString()}</p>
             <p className="mt-1 text-sm text-neutral-500">毫升 (ml)</p>
           </div>
-          <div className="min-w-[120px] flex-1 rounded-none border border-neutral-200 bg-white p-4 text-center">
+          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center">
             <p className="text-3xl font-extrabold tabular-nums text-primary">{(totalMl / 1000).toFixed(1)}</p>
             <p className="mt-1 text-sm text-neutral-500">公升 (L)</p>
           </div>
-          <div className="min-w-[120px] flex-1 rounded-none border border-neutral-200 bg-white p-4 text-center">
+          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center">
             <p className="text-3xl font-extrabold tabular-nums text-primary">{cups}</p>
             <p className="mt-1 text-sm text-neutral-500">杯（250 ml/杯）</p>
           </div>
@@ -121,7 +121,7 @@ export function WaterCalculator() {
         <p className="text-xs text-neutral-500">* 以上為參考值，實際需求依個人身體狀況、疾病史有所不同，建議諮詢醫師或營養師。</p>
       </section>
 
-      <section className="rounded-none border border-neutral-200 p-6">
+      <section className="rounded-xl border border-neutral-200 p-6">
         <h2 className="mb-4 text-lg font-bold text-neutral-800">建議補水時間表</h2>
         <ul className="space-y-2">
           {schedule.map((slot) => (
@@ -137,7 +137,7 @@ export function WaterCalculator() {
         <p className="mt-3 text-xs text-neutral-500">早晨起床後與睡前各補充一杯水效果更佳。</p>
       </section>
 
-      <section className="space-y-2 rounded-none border border-blue-200 bg-blue-50 p-5">
+      <section className="space-y-2 rounded-xl border border-blue-200 bg-blue-50 p-5">
         <h2 className="text-base font-bold text-blue-800">💡 補水小知識</h2>
         <ul className="list-inside list-disc space-y-1 text-sm text-blue-700">
           <li>口渴時代表身體已輕度缺水，應主動規律補水</li>

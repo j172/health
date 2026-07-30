@@ -111,7 +111,7 @@ export default function BMICalculator() {
         <p className="text-neutral-600">採用台灣國民健康署 BMI 分類標準。輸入您的身高與體重，立即計算 BMI 值。</p>
       </div>
 
-      <div className="space-y-5 rounded-none border border-neutral-200 p-6">
+      <div className="space-y-5 rounded-xl border border-neutral-200 p-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="height" className="mb-2 block text-sm font-medium text-neutral-700">
@@ -129,7 +129,7 @@ export default function BMICalculator() {
                   setHeight(e.target.value);
                   setCalculated(false);
                 }}
-                className="w-full rounded-none border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none"
                 placeholder="例: 170"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500">cm</span>
@@ -152,7 +152,7 @@ export default function BMICalculator() {
                   setWeight(e.target.value);
                   setCalculated(false);
                 }}
-                className="w-full rounded-none border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none"
                 placeholder="例: 65"
               />
               <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500">kg</span>
@@ -163,13 +163,13 @@ export default function BMICalculator() {
         <div className="flex gap-3">
           <button
             onClick={handleCalculate}
-            className="flex-1 rounded-none bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primaryho"
+            className="flex-1 rounded-lg bg-primary py-3 text-base font-semibold text-white transition-colors hover:bg-primaryho"
           >
             計算 BMI
           </button>
           <button
             onClick={handleReset}
-            className="rounded-none border border-neutral-300 px-6 py-3 text-neutral-600 transition-colors hover:bg-neutral-50"
+            className="rounded-lg border border-neutral-300 px-6 py-3 text-neutral-600 transition-colors hover:bg-neutral-50"
           >
             重置
           </button>
@@ -177,7 +177,7 @@ export default function BMICalculator() {
       </div>
 
       {result && (
-        <div className="space-y-5 rounded-none border border-neutral-200 p-6">
+        <div className="space-y-5 rounded-xl border border-neutral-200 p-6">
           <div className="text-center">
             <p className="mb-1 text-sm text-neutral-500">您的 BMI 值</p>
             <p className="text-6xl font-bold tabular-nums text-neutral-800">{result.bmi}</p>
@@ -208,14 +208,14 @@ export default function BMICalculator() {
             </div>
           )}
 
-          <div className="space-y-2 rounded-none bg-neutral-50 p-4">
+          <div className="space-y-2 rounded-lg bg-neutral-50 p-4">
             <p className="text-sm text-neutral-800">{result.description}</p>
             <p className="text-sm text-neutral-600">{result.suggestion}</p>
           </div>
         </div>
       )}
 
-      <div className="rounded-none border border-neutral-200 p-6">
+      <div className="rounded-xl border border-neutral-200 p-6">
         <h2 className="mb-4 text-lg font-bold text-neutral-800">BMI 分類標準 (台灣國健署)</h2>
         <div className="space-y-2">
           {BMI_CATEGORIES.map((cat) => (

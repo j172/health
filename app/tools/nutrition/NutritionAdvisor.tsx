@@ -157,12 +157,12 @@ export default function NutritionAdvisor() {
           <h2 className="text-xl font-bold text-neutral-800">計算結果</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-none bg-neutral-50 p-4 text-center">
+            <div className="rounded-lg bg-neutral-50 p-4 text-center">
               <p className="mb-1 text-xs text-neutral-500">每日總消耗熱量（TDEE）</p>
               <p className="text-3xl font-bold text-primary">{result.tdee}</p>
               <p className="mt-1 text-xs text-neutral-500">大卡</p>
             </div>
-            <div className="rounded-none bg-zumthor p-4 text-center">
+            <div className="rounded-lg bg-zumthor p-4 text-center">
               <p className="mb-1 text-xs text-neutral-500">建議每日攝取熱量</p>
               <p className="text-3xl font-bold text-primary">{result.targetCalories}</p>
               <p className="mt-1 text-xs text-neutral-500">大卡</p>

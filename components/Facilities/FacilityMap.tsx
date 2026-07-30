@@ -16,7 +16,7 @@ L.Icon.Default.mergeOptions({
 
 const userIcon = new L.DivIcon({
   className: "",
-  html: `<div style="width:14px;height:14px;border-radius:50%;background:#006bff;border:3px solid #fff;box-shadow:0 0 0 2px #006bff;"></div>`,
+  html: `<div style="width:14px;height:14px;border-radius:50%;background:#625df5;border:3px solid #fff;box-shadow:0 0 0 2px #625df5;"></div>`,
   iconSize: [14, 14],
   iconAnchor: [7, 7],
 });
@@ -49,7 +49,7 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
         <Popup>{userLocation.isDefault ? "預設位置" : "您目前的位置"}</Popup>
       </Marker>
 
-      {showRadius && <Circle center={center} radius={radiusMeters} pathOptions={{ color: "#006bff", fillColor: "#006bff", fillOpacity: 0.07 }} />}
+      {showRadius && <Circle center={center} radius={radiusMeters} pathOptions={{ color: "#625df5", fillColor: "#625df5", fillOpacity: 0.07 }} />}
 
       {markers.map((m) => (
         <Marker key={m.id} position={[m.lat, m.lng]}>

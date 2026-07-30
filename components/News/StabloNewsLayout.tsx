@@ -71,6 +71,26 @@ const excerpt = (value: string | null | undefined, max = 120): string => {
   return plain.length > max ? `${plain.slice(0, max)}…` : plain;
 };
 
+// Small colored dot next to the source name, matching NextBlog's per-category tag
+// color — reuses the same gov/media/esg grouping the nav dropdowns and footer use.
+const CATEGORY_DOT_CLASS: Record<string, string> = {
+  gov: "bg-accent-teal",
+  media: "bg-accent-blue",
+  esg: "bg-accent-green",
+};
+
+const categoryDotClass = (sourceName: string): string => {
+  const category = SOURCE_CATEGORIES.find((c) => c.sources.some((s) => s.sourceName === sourceName));
+  return (category && CATEGORY_DOT_CLASS[category.key]) || "bg-neutral-300";
+};
+
+const SourceLabel = ({ item }: { item: NewsListItem }) => (
+  <p className="flex items-center gap-1.5 text-[14px] font-medium text-neutral-500">
+    <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${categoryDotClass(item.source_name)}`} aria-hidden="true" />
+    {item.feed_name}
+  </p>
+);
+
 const PostMeta = ({ item }: { item: NewsListItem }) => (
   <div className="mt-2.5 flex items-center gap-1.5 text-[14px] text-neutral-500">
     <span>{resolveAuthorLabel(item)}</span>
@@ -81,14 +101,14 @@ const PostMeta = ({ item }: { item: NewsListItem }) => (
 
 const PostCard = ({ item, titleClassName = "text-[18px]" }: { item: NewsListItem; titleClassName?: string }) => (
   <article className="group cursor-pointer">
-    <Link className="block overflow-hidden rounded-none bg-neutral-100" href={`/news/${item.id}`}>
+    <Link className="block overflow-hidden rounded-xl bg-neutral-100" href={`/news/${item.id}`}>
       <div className="relative aspect-[16/10] overflow-hidden">
         <CardImage item={item} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
       </div>
     </Link>
 
     <div className="mt-4">
-      <p className="text-[14px] font-medium text-neutral-500">{item.feed_name}</p>
+      <SourceLabel item={item} />
       <h2 className={`mt-2 font-semibold leading-[1.375] tracking-[-0.025em] text-neutral-800 ${titleClassName}`}>
         <Link href={`/news/${item.id}`} className="transition-colors duration-200 group-hover:text-neutral-900">
           {item.title}
@@ -238,7 +258,7 @@ export const StabloFooter = () => {
           <div className="flex items-center gap-4">
             <Link
               href="/privacy"
-              className="rounded-none transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="rounded-md transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               隱私權政策
             </Link>
@@ -246,7 +266,7 @@ export const StabloFooter = () => {
               href="https://www.j172.tw"
               target="_blank"
               rel="noreferrer noopener"
-              className="rounded-none transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="rounded-md transition-colors hover:text-neutral-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               j172.tw ↗
             </a>
@@ -266,7 +286,7 @@ const FooterColumn = ({ label, children }: { label: string; children: React.Reac
 
 const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
   <li>
-    <Link href={href} className="rounded-none text-neutral-600 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+    <Link href={href} className="rounded-md text-neutral-600 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
       {children}
     </Link>
   </li>
@@ -391,14 +411,14 @@ export default function StabloNewsLayout({
           <>
             <section className="grid gap-8 lg:grid-cols-3">
               <article className="group lg:col-span-2">
-                <Link className="block overflow-hidden rounded-none bg-neutral-100" href={`/news/${featured.id}`}>
+                <Link className="block overflow-hidden rounded-xl bg-neutral-100" href={`/news/${featured.id}`}>
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <CardImage item={featured} sizes="(max-width: 1024px) 100vw, 66vw" />
                   </div>
                 </Link>
 
                 <div className="mt-5">
-                  <p className="text-[14px] font-medium text-neutral-500">{featured.feed_name}</p>
+                  <SourceLabel item={featured} />
                   <h1 className="mt-3 text-[30px] font-semibold leading-[1.2] tracking-[-0.025em] text-neutral-800">
                     <Link href={`/news/${featured.id}`} className="transition-colors duration-200 group-hover:text-neutral-900">
                       {featured.title}
