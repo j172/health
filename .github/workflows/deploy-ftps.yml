@@ -54,6 +54,7 @@ jobs:
           MOENV_PM25_API_KEY_SECRET: ${{ secrets.MOENV_PM25_API_KEY }}
           MOENV_AQI_FORECAST_API_KEY_SECRET: ${{ secrets.MOENV_AQI_FORECAST_API_KEY }}
           OPS_KEY_SECRET: ${{ secrets.OPS_KEY }}
+          GOOGLE_MAPS_API_KEY_SECRET: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: |
           set -euo pipefail
           trap 'rm -f .pixabay.env' EXIT
@@ -67,6 +68,7 @@ jobs:
           MOENV_PM25_API_KEY_CLEAN="$(printf '%s' "${MOENV_PM25_API_KEY_SECRET:-}" | tr -d '\r\n')"
           MOENV_AQI_FORECAST_API_KEY_CLEAN="$(printf '%s' "${MOENV_AQI_FORECAST_API_KEY_SECRET:-}" | tr -d '\r\n')"
           OPS_KEY_CLEAN="$(printf '%s' "${OPS_KEY_SECRET:-}" | tr -d '\r\n')"
+          GOOGLE_MAPS_API_KEY_CLEAN="$(printf '%s' "${GOOGLE_MAPS_API_KEY_SECRET:-}" | tr -d '\r\n')"
 
           if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
             echo "Missing one of required deployment values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD / PIXABAY_API_KEY"
@@ -92,6 +94,9 @@ jobs:
           fi
           if [ -n "$OPS_KEY_CLEAN" ]; then
             printf 'OPS_KEY=%s\n' "$OPS_KEY_CLEAN" >> .pixabay.env
+          fi
+          if [ -n "$GOOGLE_MAPS_API_KEY_CLEAN" ]; then
+            printf 'GOOGLE_MAPS_API_KEY=%s\n' "$GOOGLE_MAPS_API_KEY_CLEAN" >> .pixabay.env
           fi
 
           FTP_URL="ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-next3.tgz"

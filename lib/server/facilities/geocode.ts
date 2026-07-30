@@ -6,8 +6,42 @@ export interface LatLng {
 }
 
 // ---------------------------------------------------------------------------
-// OpenCage — primary. Own 2,500/day quota, independent of Nominatim's shared
-// public pool, so trying this first spares Nominatim for OpenCage's overflow.
+// Google Maps Geocoding — primary when configured. Most accurate of the three
+// providers for Taiwan addresses (this is what actually fixes the wrong-city
+// mismatches OpenCage/Nominatim occasionally produce); OpenCage/Nominatim
+// remain as fallbacks for when no Google key is set or its quota is hit.
+// ---------------------------------------------------------------------------
+const GOOGLE_MIN_INTERVAL_MS = 100;
+let googleLastRequestAt = 0;
+
+const queryGoogle = async (query: string): Promise<LatLng | null> => {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return null;
+
+  const wait = GOOGLE_MIN_INTERVAL_MS - (Date.now() - googleLastRequestAt);
+  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+  googleLastRequestAt = Date.now();
+
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}&region=tw&language=zh-TW&components=country:TW`;
+  const { status, text } = await httpGetText(url);
+  if (status < 200 || status >= 300) {
+    console.error(`geocodeAddress: Google HTTP ${status} for "${query}"`);
+    return null;
+  }
+
+  const data: { status: string; results: { geometry: { location: { lat: number; lng: number } } }[] } = JSON.parse(text);
+  if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
+    console.error(`geocodeAddress: Google status ${data.status} for "${query}"`);
+    return null;
+  }
+
+  const first = data.results?.[0];
+  return first ? { lat: first.geometry.location.lat, lng: first.geometry.location.lng } : null;
+};
+
+// ---------------------------------------------------------------------------
+// OpenCage — secondary. Own 2,500/day quota, independent of Nominatim's shared
+// public pool, so trying this before Nominatim spares it for the overflow.
 // ---------------------------------------------------------------------------
 const OPENCAGE_MIN_INTERVAL_MS = 1000;
 let openCageLastRequestAt = 0;
@@ -95,6 +129,13 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
     tried.add(candidate);
 
     const query = withCountry(candidate);
+    try {
+      const fromGoogle = await queryGoogle(query);
+      if (fromGoogle) return fromGoogle;
+    } catch (error) {
+      console.error(`geocodeAddress: Google request failed for "${candidate}":`, error instanceof Error ? error.message : error);
+    }
+
     try {
       const fromOpenCage = await queryOpenCage(query);
       if (fromOpenCage) return fromOpenCage;
