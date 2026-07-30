@@ -7,22 +7,20 @@
 #   ADMIN_SECRET=<x-rss-sync-admin-secret value> bash scripts/run-six-monthly-sync.sh
 #
 # What this does NOT cover:
-# - The MOHW long-term-care/health-check facility CSVs (ltcpap.mohw.gov.tw) —
-#   that source is unreachable from both the production host and GitHub
-#   Actions runners (IP-range block), so it can only be synced by running
-#   scripts/import-mohw-facilities.mjs from a regular residential/office
-#   network by hand. This script only backfills geocoding for whatever was
-#   last imported that way.
-# - The MOHW LTC contracted-service registry (also ltcpap.mohw.gov.tw, same
-#   IP-range block) — run scripts/import-mohw-ltc-contracted.mjs by hand too.
-#   It already ships lat/lng, so no geocoding combo is needed for it here.
-# - The MOHW disability/elder welfare institution directories — these live on
-#   opendata.mohw.gov.tw, the same mohw.gov.tw apex domain as ltcpap above and
-#   confirmed unreachable from this host the same way, so run scripts/import-
-#   mohw-disability-welfare.mjs and scripts/import-mohw-elder-welfare.mjs by
-#   hand too. Unlike the LTC registry these have no coordinates, so their
-#   (facility_type, source_key) pairs ARE still in this script's geocoding
-#   COMBOS below.
+# - The MOHW long-term-care/health-check facility CSVs (ltcpap.mohw.gov.tw),
+#   the MOHW LTC contracted-service registry (also ltcpap.mohw.gov.tw), and
+#   the MOHW disability/elder welfare institution directories
+#   (opendata.mohw.gov.tw, same mohw.gov.tw apex domain) — those four run as
+#   their own `continue-on-error` steps in six-monthly-sync.yml (scripts/
+#   import-mohw-facilities.mjs, import-mohw-ltc-contracted.mjs, import-mohw-
+#   disability-welfare.mjs, import-mohw-elder-welfare.mjs), not through this
+#   script, since ltcpap.mohw.gov.tw was previously confirmed IP-blocked from
+#   both the production host and GitHub Actions runners — if opendata.mohw.gov.tw
+#   turns out to be blocked the same way, those two steps just fail harmlessly
+#   and the data has to be imported by hand from a residential/office network
+#   instead (same four script names, run locally). This script still handles
+#   the geocoding backfill for whichever of these actually got in (LTC
+#   contracted excepted — it ships its own lat/lng).
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
