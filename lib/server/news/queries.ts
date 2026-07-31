@@ -77,21 +77,25 @@ const ACTIVE_WARNING_WINDOW_HOURS = 6;
 /** Recent items from the CWA warnings/advisories feed, for a navbar alert
  * strip — deliberately not grouped into the source-archive nav dropdowns,
  * since these are transient alerts rather than browsable news coverage. */
+import { memoizeQuery } from "@/lib/server/cache/memo";
+
 export const listActiveWeatherWarnings = async (limit = 5): Promise<WeatherWarningItem[]> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT id, title, published_at_utc
-      FROM news_items
-      WHERE source_name = 'cwa'
-        AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
-      ORDER BY published_at_utc DESC
-      LIMIT ?
-      `,
-      [ACTIVE_WARNING_WINDOW_HOURS, limit],
-    );
-    return rows as unknown as WeatherWarningItem[];
-  });
+  memoizeQuery(`active_weather_warnings_${limit}`, async () =>
+    withConnection(async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT id, title, published_at_utc
+        FROM news_items
+        WHERE source_name = 'cwa'
+          AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+        ORDER BY published_at_utc DESC
+        LIMIT ?
+        `,
+        [ACTIVE_WARNING_WINDOW_HOURS, limit],
+      );
+      return rows as unknown as WeatherWarningItem[];
+    }),
+  );
 
 export interface NewsSitemapItem {
   id: number;
@@ -148,38 +152,46 @@ export const listLatestNews = async (
   sourceName?: string,
   keyword?: string,
   sourceNames?: string[],
-): Promise<NewsListItem[]> =>
-  withConnection(async (conn) => {
-    const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-             n.canonical_url, n.description_html,
-             c.local_path AS card_image_url,
-             CASE
-               WHEN c.local_path IS NOT NULL THEN 'pixabay'
-               ELSE NULL
-             END AS card_image_source,
-             c.source_page_url AS card_image_source_page_url,
-             c.contributor_name AS card_image_contributor
-      FROM news_items n
-      LEFT JOIN news_card_images c ON c.news_item_id = n.id
-      ${whereClause}
-      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
-      LIMIT ? OFFSET ?
-      `,
-      [...params, limit, offset],
-    );
+): Promise<NewsListItem[]> => {
+  const cacheKey = `list_news_${limit}_${offset}_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
+  return memoizeQuery(cacheKey, async () =>
+    withConnection(async (conn) => {
+      const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+               n.canonical_url, n.description_html,
+               c.local_path AS card_image_url,
+               CASE
+                 WHEN c.local_path IS NOT NULL THEN 'pixabay'
+                 ELSE NULL
+               END AS card_image_source,
+               c.source_page_url AS card_image_source_page_url,
+               c.contributor_name AS card_image_contributor
+        FROM news_items n
+        LEFT JOIN news_card_images c ON c.news_item_id = n.id
+        ${whereClause}
+        ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+        LIMIT ? OFFSET ?
+        `,
+        [...params, limit, offset],
+      );
 
-    return rows as unknown as NewsListItem[];
-  });
+      return rows as unknown as NewsListItem[];
+    }),
+  );
+};
 
-export const countNewsItems = async (sourceName?: string, keyword?: string, sourceNames?: string[]): Promise<number> =>
-  withConnection(async (conn) => {
-    const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
-    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items n ${whereClause}`, params);
-    return Number(rows[0]?.total ?? 0);
-  });
+export const countNewsItems = async (sourceName?: string, keyword?: string, sourceNames?: string[]): Promise<number> => {
+  const cacheKey = `count_news_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
+  return memoizeQuery(cacheKey, async () =>
+    withConnection(async (conn) => {
+      const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
+      const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items n ${whereClause}`, params);
+      return Number(rows[0]?.total ?? 0);
+    }),
+  );
+};
 
 export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
   withConnection(async (conn) => {

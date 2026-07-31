@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import dynamic from "next/dynamic";
 import ThemeToggler from "@/components/Header/ThemeToggler";
-import SearchModal from "@/components/Search/SearchModal";
+
+const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), { ssr: false });
 
 const CALCULATOR_TOOLS = TOOL_CATALOG.filter((t) => t.group === "calculator").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
 const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));

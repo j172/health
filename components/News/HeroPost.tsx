@@ -41,6 +41,8 @@ export default function HeroPost({
             <img
               src={src}
               alt={hero.title}
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           ) : (
