@@ -125,6 +125,16 @@ export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours 
          LIMIT ?`,
         [minMagnitude, hours, limit],
       );
-      return rows as unknown as SignificantEarthquake[];
+      return rows.map((r) => ({
+        id: Number(r.id),
+        event_time: r.event_time,
+        magnitude: Number(r.magnitude),
+        depth_km: r.depth_km != null ? Number(r.depth_km) : null,
+        place: r.place ?? null,
+        place_zh: r.place_zh ?? null,
+        tsunami_warning: Number(r.tsunami_warning ?? 0),
+        primary_source: r.primary_source ?? null,
+        url: r.url ?? null,
+      })) as SignificantEarthquake[];
     }),
   );

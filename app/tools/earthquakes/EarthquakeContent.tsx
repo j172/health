@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { SignificantEarthquake } from "@/lib/server/earthquakes/queries";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const toTaipeiTime = (value: Date | null): string => {
   if (!value) return "";
@@ -12,7 +13,14 @@ const toTaipeiTime = (value: Date | null): string => {
   }).format(new Date(value));
 };
 
-const getMagBadge = (mag: number) => {
+const getMagBadge = (magInput: number) => {
+  const mag = Number(magInput);
+  if (isNaN(mag)) {
+    return {
+      bg: "bg-slate-500 text-white dark:bg-slate-600",
+      label: "M -",
+    };
+  }
   if (mag >= 7.0) {
     return {
       bg: "bg-red-500 text-white dark:bg-red-600",
@@ -33,8 +41,9 @@ const getMagBadge = (mag: number) => {
 
 export default function EarthquakeContent({ earthquakes }: { earthquakes: SignificantEarthquake[] }) {
   const [filterMinMag, setFilterMinMag] = useState<number>(6.0);
+  const { locale, tDynamic } = useLanguage();
 
-  const filtered = earthquakes.filter((e) => e.magnitude >= filterMinMag);
+  const filtered = earthquakes.filter((e) => Number(e.magnitude) >= filterMinMag);
 
   return (
     <div className="space-y-8">
@@ -44,21 +53,23 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
           <div className="flex items-center gap-2">
             <span className="flex h-3 w-3 rounded-full bg-amber-500 animate-ping" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              全球與全台顯著地震動態 (M6.0+)
+              {tDynamic("全球與全台顯著地震動態 (M6.0+)")}
             </h2>
           </div>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            資料來源：美國地質調查局 (USGS) · 歐洲地中海地震中心 (EMSC) · 中央氣象署 (CWA)
+            {tDynamic("資料來源：美國地質調查局 (USGS) · 歐洲地中海地震中心 (EMSC) · 中央氣象署 (CWA)")}
           </p>
         </div>
 
         {/* Magnitude Filter Pills */}
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">篩選規模：</span>
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            {tDynamic("篩選規模：")}
+          </span>
           {[
-            { label: "全部 (M4.0+)", val: 4.0 },
-            { label: "M6.0+ 顯著", val: 6.0 },
-            { label: "M7.0+ 強震", val: 7.0 },
+            { label: tDynamic("全部 (M4.0+)"), val: 4.0 },
+            { label: tDynamic("M6.0+ 顯著"), val: 6.0 },
+            { label: tDynamic("M7.0+ 強震"), val: 7.0 },
           ].map((opt) => (
             <button
               key={opt.val}
@@ -78,13 +89,14 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
       {/* Earthquakes List Grid */}
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-          目前沒有符合此規模篩選條件的顯著地震紀錄。
+          {tDynamic("目前沒有符合此規模篩選條件的顯著地震紀錄。")}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {filtered.map((item) => {
             const badge = getMagBadge(item.magnitude);
-            const location = item.place_zh?.trim() || item.place?.trim() || "未具名震央區域";
+            const rawLoc = locale === "en" ? (item.place?.trim() || item.place_zh?.trim()) : (item.place_zh?.trim() || item.place?.trim());
+            const location = tDynamic(rawLoc) || "未具名震央區域";
 
             return (
               <div

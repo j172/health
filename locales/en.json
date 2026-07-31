@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "news": "Latest News",
+    "tools": "Health & Tools",
+    "docs": "Documentation",
+    "pages": "Pages",
+    "support": "Support",
+    "github": "GitHub Repo 🌟"
+  },
+  "tools": {
+    "water": "Water Intake Calculator",
+    "waist_hip": "Waist-to-Hip Ratio",
+    "vo2max": "VO2Max Estimator",
+    "stress": "Stress Assessment",
+    "earthquakes": "Live Earthquakes",
+    "uv": "UV Index",
+    "aqi": "Air Quality (AQI)",
+    "facilities": "Healthcare Facilities"
+  },
+  "common": {
+    "language": "Language",
+    "zh_tw": "正體中文",
+    "zh_cn": "简体中文",
+    "en": "English",
+    "search": "Search",
+    "filter": "Filter",
+    "all": "All",
+    "view_more": "View More ↗",
+    "loading": "Loading..."
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy"
+  }
+}

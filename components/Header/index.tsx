@@ -4,12 +4,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import ThemeToggler from "./ThemeToggler";
+import LanguageToggler from "./LanguageToggler";
 import menuData from "./menuData";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [dropdownToggler, setDropdownToggler] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
+  const { t } = useLanguage();
 
   const pathUrl = usePathname();
 
@@ -100,7 +103,7 @@ const Header = () => {
                         onClick={() => setDropdownToggler(!dropdownToggler)}
                         className="flex cursor-pointer items-center justify-between gap-3 hover:text-primary"
                       >
-                        {menuItem.title}
+                        {menuItem.titleKey ? t(menuItem.titleKey, menuItem.title) : menuItem.title}
                         <span>
                           <svg
                             className="h-3 w-3 cursor-pointer fill-waterloo group-hover:fill-primary"
@@ -117,7 +120,9 @@ const Header = () => {
                       >
                         {menuItem.submenu.map((item, key) => (
                           <li key={key} className="hover:text-primary">
-                            <Link href={item.path || "#"}>{item.title}</Link>
+                            <Link href={item.path || "#"}>
+                              {item.titleKey ? t(item.titleKey, item.title) : item.title}
+                            </Link>
                           </li>
                         ))}
                       </ul>
@@ -131,7 +136,7 @@ const Header = () => {
                           : "hover:text-primary"
                       }
                     >
-                      {menuItem.title}
+                      {menuItem.titleKey ? t(menuItem.titleKey, menuItem.title) : menuItem.title}
                     </Link>
                   )}
                 </li>
@@ -139,16 +144,16 @@ const Header = () => {
             </ul>
           </nav>
 
-          <div className="mt-7 flex items-center gap-6 xl:mt-0">
+          <div className="mt-7 flex items-center gap-4 xl:mt-0">
+            <LanguageToggler />
             <ThemeToggler />
 
             <Link
               href="https://github.com/NextJSTemplates/solid-nextjs"
               className="text-regular font-medium text-waterloo hover:text-primary"
             >
-              GitHub Repo 🌟
+              {t("nav.github")}
             </Link>
-
           </div>
         </div>
       </div>

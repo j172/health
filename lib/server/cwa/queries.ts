@@ -419,7 +419,15 @@ export const getNearestUvReading = async (lat: number, lng: number): Promise<(La
       `,
       [lat, lng, lat],
     );
-    return (rows[0] as unknown as (LatestUvReading & { distance_km: number })) ?? null;
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      station_id: String(row.station_id),
+      station_name: row.station_name ?? null,
+      county_name: row.county_name ?? null,
+      uv_index: Number(row.uv_index),
+      distance_km: Number(row.distance_km),
+    };
   });
 
 export interface UvStationItem {
@@ -443,7 +451,13 @@ export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
         ORDER BY u.uv_index DESC
         `,
       );
-      return (rows as unknown as UvStationItem[]) ?? [];
+      return (rows as RowDataPacket[]).map((r) => ({
+        station_id: String(r.station_id),
+        station_name: r.station_name ?? null,
+        county_name: r.county_name ?? null,
+        uv_index: Number(r.uv_index),
+        obs_date: String(r.obs_date),
+      }));
     });
   } catch (err) {
     console.error("Failed to list UV readings:", err);

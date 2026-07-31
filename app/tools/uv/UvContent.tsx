@@ -3,7 +3,18 @@
 import { useState } from "react";
 import type { UvStationItem } from "@/lib/server/cwa/queries";
 
-const getUvRiskLevel = (uv: number) => {
+const getUvRiskLevel = (uvInput: number) => {
+  const uv = Number(uvInput);
+  if (isNaN(uv)) {
+    return {
+      level: "未知量級",
+      bg: "bg-slate-500 text-white dark:bg-slate-600",
+      border: "border-slate-200 dark:border-slate-800",
+      cardBg: "bg-slate-50/50 dark:bg-slate-900/20",
+      textColor: "text-slate-600 dark:text-slate-400",
+      advice: "暫無數據說明。",
+    };
+  }
   if (uv >= 11) {
     return {
       level: "極高量級 (11+)",
@@ -149,7 +160,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
                       {item.county_name ?? "全台測站"}
                     </span>
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold shadow-2xs ${risk.bg}`}>
-                      UV {item.uv_index.toFixed(1)}
+                      UV {Number(item.uv_index).toFixed(1)}
                     </span>
                   </div>
 

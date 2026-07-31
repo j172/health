@@ -1,8 +1,10 @@
 "use client";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const Footer = () => {
+  const { t } = useLanguage();
   return (
     <>
       <footer className="border-t border-stroke bg-white dark:border-strokedark dark:bg-blacksection">
@@ -46,7 +48,7 @@ const Footer = () => {
                 </a>
 
                 <p className="mb-10 mt-5">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                  j172tw Healthz — 智慧健康與生活資訊整合平台
                 </p>
 
                 <p className="mb-1.5 text-sectiontitle uppercase tracking-[5px]">
@@ -56,7 +58,7 @@ const Footer = () => {
                   href="#"
                   className="text-itemtitle font-medium text-black dark:text-white"
                 >
-                  hello@solid.com
+                  hello@j172.tw
                 </a>
               </motion.div>
 
@@ -80,40 +82,40 @@ const Footer = () => {
                   className="animate_top"
                 >
                   <h4 className="mb-9 text-itemtitle2 font-medium text-black dark:text-white">
-                    Quick Links
+                    {t("nav.tools")}
                   </h4>
 
                   <ul>
                     <li>
                       <a
-                        href="#"
+                        href="/tools/earthquakes"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Home
+                        {t("tools.earthquakes")}
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/tools/uv"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Product
+                        {t("tools.uv")}
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/tools/aqi"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Careers
+                        {t("tools.aqi")}
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/tools/water"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Pricing
+                        {t("tools.water")}
                       </a>
                     </li>
                   </ul>
@@ -138,40 +140,24 @@ const Footer = () => {
                   className="animate_top"
                 >
                   <h4 className="mb-9 text-itemtitle2 font-medium text-black dark:text-white">
-                    Support
+                    {t("nav.support")}
                   </h4>
 
                   <ul>
                     <li>
                       <a
-                        href="#"
+                        href="/news"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Company
+                        {t("nav.news")}
                       </a>
                     </li>
                     <li>
                       <a
-                        href="#"
+                        href="/privacy"
                         className="mb-3 inline-block hover:text-primary"
                       >
-                        Press media
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="mb-3 inline-block hover:text-primary"
-                      >
-                        Our Blog
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="#"
-                        className="mb-3 inline-block hover:text-primary"
-                      >
-                        Contact Us
+                        {t("footer.privacy")}
                       </a>
                     </li>
                   </ul>
@@ -265,18 +251,8 @@ const Footer = () => {
             >
               <ul className="flex items-center gap-8">
                 <li>
-                  <a href="#" className="hover:text-primary">
-                    English
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary">
-                    Privacy Policy
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-primary">
-                    Support
+                  <a href="/privacy" className="hover:text-primary">
+                    {t("footer.privacy")}
                   </a>
                 </li>
               </ul>
@@ -301,7 +277,7 @@ const Footer = () => {
               className="animate_top"
             >
               <p>
-                &copy; {new Date().getFullYear()} Solid. All rights reserved
+                &copy; {new Date().getFullYear()} j172tw Healthz. {t("footer.rights")}
               </p>
             </motion.div>
 

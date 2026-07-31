@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "home": "首頁",
+    "features": "特色功能",
+    "news": "最新新聞",
+    "tools": "健康與生活工具",
+    "docs": "說明文件",
+    "pages": "頁面指引",
+    "support": "支援服務",
+    "github": "GitHub 專案 🌟"
+  },
+  "tools": {
+    "water": "飲水量計算器",
+    "waist_hip": "腰臀比計算器",
+    "vo2max": "VO2Max 估算器",
+    "stress": "壓力評估測驗",
+    "earthquakes": "即時全球地震",
+    "uv": "紫外線指數 (UV)",
+    "aqi": "空氣品質 (AQI)",
+    "facilities": "健保院所診所"
+  },
+  "common": {
+    "language": "語言",
+    "zh_tw": "正體中文",
+    "zh_cn": "简体中文",
+    "en": "English",
+    "search": "搜尋",
+    "filter": "篩選",
+    "all": "全部",
+    "view_more": "查看更多 ↗",
+    "loading": "載入中..."
+  },
+  "footer": {
+    "rights": "版權所有",
+    "privacy": "隱私權政策"
+  }
+}
