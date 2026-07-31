@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import ThemeToggler from "@/components/Header/ThemeToggler";
+import SearchModal from "@/components/Search/SearchModal";
 
 const CALCULATOR_TOOLS = TOOL_CATALOG.filter((t) => t.group === "calculator").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
 const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
@@ -16,15 +18,11 @@ interface NavLinkItem {
   label: string;
 }
 
-// ─── Chevron icon ─────────────────────────────────────────────────────────────
-
 const ChevronIcon = () => (
   <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200">
     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
   </svg>
 );
-
-// ─── Desktop dropdown ──────────────────────────────────────────────────────────
 
 const NavDropdown = ({ label, items }: { label: string; items: NavLinkItem[] }) => {
   const [open, setOpen] = useState(false);
@@ -48,7 +46,7 @@ const NavDropdown = ({ label, items }: { label: string; items: NavLinkItem[] }) 
         aria-haspopup="true"
         aria-controls={menuId}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 py-4 text-[14px] font-medium text-neutral-600 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="flex items-center gap-1 py-4 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
       >
         {label}
         <ChevronIcon />
@@ -58,7 +56,7 @@ const NavDropdown = ({ label, items }: { label: string; items: NavLinkItem[] }) 
           id={menuId}
           role="menu"
           aria-label={label}
-          className="absolute left-0 top-full z-50 max-h-[70vh] min-w-[13rem] overflow-y-auto rounded-2xl border border-neutral-100 bg-white py-2 shadow-xl ring-1 ring-black/5"
+          className="absolute left-0 top-full z-50 max-h-[70vh] min-w-[13rem] overflow-y-auto rounded-2xl border border-slate-200 bg-white py-2 shadow-xl dark:border-slate-800 dark:bg-slate-900"
         >
           {items.map((item) => (
             <Link
@@ -66,7 +64,7 @@ const NavDropdown = ({ label, items }: { label: string; items: NavLinkItem[] }) 
               href={item.href}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="block whitespace-nowrap px-4 py-2 text-sm text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-primary focus-visible:bg-neutral-50 focus-visible:text-primary focus-visible:outline-none"
+              className="block whitespace-nowrap px-4 py-2 text-xs font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
             >
               {item.label}
             </Link>
@@ -77,36 +75,13 @@ const NavDropdown = ({ label, items }: { label: string; items: NavLinkItem[] }) 
   );
 };
 
-// ─── Mobile group ──────────────────────────────────────────────────────────────
-
-const MobileGroup = ({ label, items, onNavigate }: { label: string; items: NavLinkItem[]; onNavigate: () => void }) => (
-  <div className="py-2">
-    <p className="px-1 text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">{label}</p>
-    <ul className="mt-1">
-      {items.map((item) => (
-        <li key={item.href}>
-          <Link
-            href={item.href}
-            onClick={onNavigate}
-            className="block rounded-lg px-1 py-2 text-[15px] text-neutral-700 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            {item.label}
-          </Link>
-        </li>
-      ))}
-    </ul>
-  </div>
-);
-
-// ─── Main nav ──────────────────────────────────────────────────────────────────
-
 export default function SiteNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const mobilePanelId = useId();
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Scroll-based shadow
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
     handler();
@@ -114,124 +89,128 @@ export default function SiteNav() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // Escape to close mobile menu
+  // Keyboard shortcut Ctrl+K / Cmd+K listener
   useEffect(() => {
-    if (!mobileOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { setMobileOpen(false); toggleButtonRef.current?.focus(); }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [mobileOpen]);
-
-  const closeMobile = () => setMobileOpen(false);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
-    <div
-      className={`sticky top-0 z-50 border-b bg-white/95 backdrop-blur-sm transition-shadow duration-300 ${
-        scrolled ? "border-neutral-200 shadow-sm" : "border-transparent"
-      }`}
-    >
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 items-center justify-between gap-4">
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            <Image src="/images/logo/j172tw-health-logo.png" alt="j172tw Health" width={32} height={32} className="h-8 w-8" />
-            <span className="text-[15px] font-bold tracking-tight text-neutral-900">j172tw Health</span>
-          </Link>
-
-          {/* Desktop nav */}
-          <nav aria-label="主要導覽" className="hidden items-center gap-1 text-sm font-medium md:flex">
-            <Link href="/" className="rounded-lg px-3 py-2 text-[14px] font-medium text-neutral-600 transition-colors hover:bg-neutral-50 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
-              首頁
-            </Link>
-            <NavDropdown label="醫療院所" items={FACILITY_TOOLS} />
-            <NavDropdown label="長照機構" items={LTC_TOOLS} />
-            <NavDropdown label="食品營養" items={FOOD_TOOLS} />
-            <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
-            {SOURCE_CATEGORIES.map((cat) => (
-              <NavDropdown
-                key={cat.key}
-                label={cat.label}
-                items={cat.sources.map((s) => ({ href: `/news?source=${encodeURIComponent(s.sourceName)}`, label: s.label }))}
+    <>
+      <div
+        className={`sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md transition-all duration-300 dark:bg-slate-950/90 ${
+          scrolled
+            ? "border-slate-200 shadow-xs dark:border-slate-800"
+            : "border-slate-100 dark:border-slate-900"
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between gap-4">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image
+                src="/images/logo/j172tw-health-logo.png"
+                alt="j172tw Health"
+                width={36}
+                height={36}
+                className="h-9 w-9 rounded-xl shadow-xs"
               />
-            ))}
-            {/* External link */}
-            <a
-              href="https://www.j172.tw"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="ml-1 rounded-lg px-3 py-2 text-[14px] font-medium text-neutral-500 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-            >
-              j172.tw
-            </a>
-          </nav>
-
-          {/* Right actions */}
-          <div className="flex items-center gap-2">
-            {/* Search icon */}
-            <Link
-              href="/news"
-              aria-label="搜尋新聞"
-              className="hidden items-center justify-center rounded-full p-2 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:flex"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
+              <span className="text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+                j172tw <span className="text-indigo-600 dark:text-indigo-400">Health</span>
+              </span>
             </Link>
 
-            {/* Mobile hamburger */}
-            <button
-              ref={toggleButtonRef}
-              type="button"
-              aria-expanded={mobileOpen}
-              aria-controls={mobilePanelId}
-              aria-label={mobileOpen ? "關閉選單" : "開啟選單"}
-              onClick={() => setMobileOpen((v) => !v)}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-neutral-600 transition-colors hover:bg-neutral-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:hidden"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true" className="h-6 w-6">
-                {mobileOpen
-                  ? <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  : <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />}
-              </svg>
-            </button>
+            {/* Desktop Navigation */}
+            <nav aria-label="主要導覽" className="hidden items-center gap-1.5 md:flex">
+              <Link
+                href="/"
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+              >
+                首頁
+              </Link>
+              <Link
+                href="/news"
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+              >
+                最新新聞
+              </Link>
+              <Link
+                href="/tools/aqi"
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+              >
+                即時空品 (AQI)
+              </Link>
+              <NavDropdown label="醫療院所" items={FACILITY_TOOLS} />
+              <NavDropdown label="長照機構" items={LTC_TOOLS} />
+              <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
+            </nav>
+
+            {/* Right Actions (Search Button + Theme Toggler) */}
+            <div className="flex items-center gap-3">
+              {/* Cmd+K Search Trigger */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs text-slate-400 hover:border-indigo-300 hover:bg-white hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:bg-slate-850 dark:hover:text-indigo-400 transition-all shadow-xs"
+              >
+                <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="hidden sm:inline">搜尋新聞...</span>
+                <kbd className="hidden sm:inline-block rounded bg-slate-200/60 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                  ⌘K
+                </kbd>
+              </button>
+
+              {/* Theme Toggler */}
+              <ThemeToggler />
+
+              {/* Mobile Hamburger */}
+              <button
+                ref={toggleButtonRef}
+                type="button"
+                aria-expanded={mobileOpen}
+                aria-controls={mobilePanelId}
+                onClick={() => setMobileOpen((v) => !v)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 dark:border-slate-800 dark:text-slate-300 md:hidden"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-5 w-5">
+                  {mobileOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Mobile panel */}
+        {/* Mobile Navigation Drawer */}
         {mobileOpen && (
-          <nav id={mobilePanelId} aria-label="行動裝置導覽" className="max-h-[75vh] overflow-y-auto border-t border-neutral-100 pb-4 md:hidden">
-            <MobileGroup label="首頁" items={[{ href: "/", label: "首頁" }]} onNavigate={closeMobile} />
-            <MobileGroup label="醫療院所" items={FACILITY_TOOLS} onNavigate={closeMobile} />
-            <MobileGroup label="長照機構" items={LTC_TOOLS} onNavigate={closeMobile} />
-            <MobileGroup label="食品營養" items={FOOD_TOOLS} onNavigate={closeMobile} />
-            <MobileGroup label="健康工具" items={CALCULATOR_TOOLS} onNavigate={closeMobile} />
-            {SOURCE_CATEGORIES.map((cat) => (
-              <MobileGroup
-                key={cat.key}
-                label={cat.label}
-                items={cat.sources.map((s) => ({ href: `/news?source=${encodeURIComponent(s.sourceName)}`, label: s.label }))}
-                onNavigate={closeMobile}
-              />
-            ))}
-            <div className="py-2">
-              <a
-                href="https://www.j172.tw"
-                target="_blank"
-                rel="noreferrer noopener"
-                onClick={closeMobile}
-                className="block rounded-lg px-1 py-2 text-[15px] text-neutral-700 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
-                j172.tw ↗
-              </a>
+          <div id={mobilePanelId} className="border-t border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
+            <div className="flex flex-col gap-2 text-sm font-semibold">
+              <Link href="/" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
+                首頁
+              </Link>
+              <Link href="/news" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
+                最新新聞
+              </Link>
+              <Link href="/tools/aqi" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
+                即時空品 (AQI)
+              </Link>
             </div>
-          </nav>
+          </div>
         )}
       </div>
-    </div>
+
+      {/* Modal Search */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+    </>
   );
 }

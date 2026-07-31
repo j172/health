@@ -70,7 +70,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
   const authorLabel = resolveAuthorLabel(news);
 
   return (
-    <div className="min-h-screen bg-white text-neutral-800">
+    <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
       {jsonLd.map((schema, index) => (
         <script
           key={index}
@@ -80,146 +80,151 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
       ))}
       <StabloHeader />
 
-      <main className="pb-16">
-        <nav aria-label="Breadcrumb" className="mx-auto max-w-screen-lg px-6 pt-6 text-xs text-neutral-500 sm:px-8">
-          <ol className="flex flex-wrap items-center gap-x-2">
-            <li>
-              <Link href="/" className="hover:text-neutral-800">首頁</Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <Link href="/news" className="hover:text-neutral-800">健康新聞</Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li className="max-w-xs truncate text-neutral-700" aria-current="page">{news.title}</li>
-          </ol>
-        </nav>
+      <main className="pb-20">
+        {/* NextBlog Reader Container (Centered ~800px) */}
+        <div className="mx-auto max-w-4xl px-4 pt-8 sm:px-6 lg:px-8">
+          {/* Breadcrumbs */}
+          <nav aria-label="Breadcrumb" className="mb-8 text-xs font-semibold text-slate-400">
+            <ol className="flex flex-wrap items-center gap-x-2">
+              <li>
+                <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400">首頁</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link href="/news" className="hover:text-indigo-600 dark:hover:text-indigo-400">健康新聞</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="max-w-xs truncate text-slate-600 dark:text-slate-300" aria-current="page">
+                {news.title}
+              </li>
+            </ol>
+          </nav>
 
-        <article>
-          <header className="mx-auto max-w-screen-lg px-6 pb-8 pt-10 text-center sm:px-8 sm:pt-14 lg:pb-12 lg:pt-16">
-            <span className="inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              {news.feed_name}
-            </span>
-            <h1 className="mx-auto mt-5 max-w-4xl text-[2rem] font-bold leading-[1.2] tracking-[-0.03em] text-neutral-900 sm:text-[2.75rem] lg:text-[3.25rem]">
-              {news.title}
-            </h1>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-neutral-500">
-              <span className="font-medium text-neutral-800">{authorLabel}</span>
-              <span aria-hidden="true">•</span>
-              <time>{toTaipei(news.published_at_utc)}</time>
-              <span aria-hidden="true">•</span>
-              <span>{readingTime(news.detail_text)} 分鐘閱讀</span>
-            </div>
-          </header>
+          <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
+            {/* Header */}
+            <header className="text-center">
+              <div className="flex items-center justify-center gap-2">
+                <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                  {news.feed_name}
+                </span>
+              </div>
+              <h1 className="mt-5 text-2xl font-extrabold leading-snug tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl lg:text-4xl">
+                {news.title}
+              </h1>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span className="font-bold text-slate-800 dark:text-slate-200">{authorLabel}</span>
+                <span aria-hidden="true">•</span>
+                <time>{toTaipei(news.published_at_utc)}</time>
+                <span aria-hidden="true">•</span>
+                <span>{readingTime(news.detail_text)} 分鐘閱讀</span>
+              </div>
+            </header>
 
-          {news.geo_summary?.trim() ? (
-            <div className="mx-auto max-w-3xl px-6 pb-8 sm:px-8">
-              <div id="geo-summary" className="rounded-2xl border border-primary/20 bg-primary/5 px-6 py-5 text-[15px] leading-7 text-neutral-800 shadow-sm">
-                <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-primary">重點摘要</p>
+            {/* GEO Summary if available */}
+            {news.geo_summary?.trim() ? (
+              <div className="mt-8 rounded-2xl border border-indigo-200/80 bg-indigo-50/50 p-5 text-sm leading-relaxed text-slate-800 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-slate-200">
+                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+                  💡 重點摘要
+                </p>
                 {news.geo_summary.trim()}
               </div>
-            </div>
-          ) : null}
-
-          {hero ? (
-            <figure className="mx-auto max-w-screen-lg px-4 sm:px-8">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={hero.url} alt={hero.caption || news.title} className="max-h-[38rem] w-full rounded-2xl bg-neutral-100 object-cover shadow-sm" />
-              {hero.caption ? (
-                <figcaption className="mt-3 text-center text-xs text-neutral-500">{hero.caption}</figcaption>
-              ) : hero.isPixabay ? (
-                <figcaption className="mt-3 text-center text-xs text-neutral-500">
-                  示意圖：Pixabay
-                  {news.card_image_contributor ? ` · ${news.card_image_contributor}` : ""}
-                  {news.card_image_source_page_url ? (
-                    <>
-                      {" "}
-                      ·{" "}
-                      <a href={news.card_image_source_page_url} target="_blank" rel="noreferrer noopener" className="underline decoration-neutral-300 underline-offset-4 hover:text-neutral-800">
-                        來源
-                      </a>
-                    </>
-                  ) : null}
-                </figcaption>
-              ) : null}
-            </figure>
-          ) : null}
-
-          <div className="mx-auto max-w-3xl px-6 pb-6 pt-10 sm:px-8 sm:pt-12">
-            <NewsArticleBody html={articleHtml} title={news.title} sourceUrl={news.canonical_url} />
-
-            {keywords.length > 0 ? (
-              <ul className="mt-10 flex flex-wrap gap-2" aria-label="相關標籤">
-                {keywords.map((keyword) => (
-                  <li key={keyword}>
-                    <Link
-                      href={`/news?keyword=${encodeURIComponent(keyword)}`}
-                      className="inline-block rounded-full bg-neutral-100 px-3.5 py-1 text-xs font-medium text-neutral-600 transition-colors hover:bg-primary/10 hover:text-primary"
-                    >
-                      #{keyword}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
             ) : null}
 
+            {/* Hero Image */}
+            {hero ? (
+              <figure className="mt-8">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={hero.url}
+                  alt={hero.caption || news.title}
+                  className="max-h-[32rem] w-full rounded-2xl bg-slate-100 object-cover shadow-sm dark:bg-slate-800"
+                />
+                {hero.caption ? (
+                  <figcaption className="mt-3 text-center text-xs text-slate-400">{hero.caption}</figcaption>
+                ) : hero.isPixabay ? (
+                  <figcaption className="mt-3 text-center text-xs text-slate-400">
+                    示意圖：Pixabay {news.card_image_contributor ? ` · ${news.card_image_contributor}` : ""}
+                  </figcaption>
+                ) : null}
+              </figure>
+            ) : null}
+
+            {/* Article Content Body */}
+            <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <NewsArticleBody html={articleHtml} title={news.title} sourceUrl={news.canonical_url} />
+            </div>
+
+            {/* Keywords / Tags */}
+            {keywords.length > 0 ? (
+              <div className="mt-10 flex flex-wrap gap-2 pt-6 border-t border-slate-100 dark:border-slate-800">
+                {keywords.map((keyword) => (
+                  <Link
+                    key={keyword}
+                    href={`/news?keyword=${encodeURIComponent(keyword)}`}
+                    className="inline-block rounded-full bg-slate-100 px-3.5 py-1 text-xs font-semibold text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-indigo-400 transition-colors"
+                  >
+                    #{keyword}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Attachments Card */}
             {attachments.length > 0 ? (
-              <section className="mt-12 rounded-2xl border border-neutral-200 p-6" aria-labelledby="news-attachments-title">
-                <h2 id="news-attachments-title" className="text-base font-bold text-neutral-900">
-                  相關附件
-                </h2>
-                <ul className="mt-3 space-y-2 text-sm">
+              <div className="mt-10 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-850">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  📎 相關附件檔案下載
+                </h3>
+                <ul className="mt-3 space-y-2 text-xs">
                   {attachments.map((asset) => (
                     <li key={asset.id}>
-                      <a href={asset.url} target="_blank" rel="noreferrer noopener" className="text-neutral-700 underline decoration-neutral-300 underline-offset-4 transition-colors hover:text-primary">
-                        {asset.title || asset.url}
+                      <a
+                        href={asset.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="font-medium text-indigo-600 underline decoration-indigo-200 underline-offset-4 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                      >
+                        {asset.title || asset.url} ↗
                       </a>
                     </li>
                   ))}
                 </ul>
-              </section>
+              </div>
             ) : null}
 
-            <div className="mt-12 flex items-center justify-between gap-4 border-b border-t border-neutral-200 py-6 text-sm">
-              <Link href="/news" className="font-medium text-neutral-700 transition-colors hover:text-primary">
-                ← 查看所有新聞
+            {/* Article Footer Navigation & Original Link */}
+            <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6 text-xs dark:border-slate-800">
+              <Link
+                href="/news"
+                className="font-bold text-slate-700 hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400 transition-colors"
+              >
+                ← 返回所有健康新聞
               </Link>
-              <a href={news.canonical_url} target="_blank" rel="noreferrer noopener" className="text-neutral-500 underline decoration-neutral-300 underline-offset-4 transition-colors hover:text-neutral-900">
-                原始來源 ↗
+              <a
+                href={news.canonical_url}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+              >
+                前往官方原始網頁 ↗
               </a>
             </div>
+          </article>
 
-            <aside className="mt-8 rounded-2xl bg-neutral-50 p-6 sm:p-8" aria-label="新聞來源">
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-neutral-400">新聞來源</p>
-              <h2 className="mt-2 text-lg font-bold text-neutral-900">{authorLabel}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-neutral-600">本頁彙整自政府機關及新聞媒體之公開資訊，內容與附件以原始來源公告為準。</p>
-            </aside>
-
-            <a
-              href="https://www.j172.tw"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-6 flex items-center justify-between gap-4 rounded-2xl border border-neutral-200 p-6 text-sm transition-colors hover:border-primary/40 hover:bg-neutral-50"
-            >
-              <span className="text-neutral-700">想了解更多？歡迎造訪 j172.tw</span>
-              <span className="font-bold text-primary">前往 →</span>
-            </a>
-          </div>
-        </article>
-
-        {/* ── Related Articles Section ────────────────── */}
-        {relatedItems.length > 0 && (
-          <section className="mx-auto mt-16 max-w-5xl px-4 sm:px-6 lg:px-8 border-t border-neutral-200 pt-12" aria-label="相關文章">
-            <h2 className="text-2xl font-bold tracking-tight text-neutral-900 mb-8">
-              相關文章
-            </h2>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              {relatedItems.map((item) => (
-                <NewsCard key={item.id} item={item} />
-              ))}
-            </div>
-          </section>
-        )}
+          {/* Related Articles Section */}
+          {relatedItems.length > 0 && (
+            <section className="mt-16 border-t border-slate-200 pt-10 dark:border-slate-800" aria-label="相關文章">
+              <h2 className="mb-8 text-xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+                最新相關文章推薦
+              </h2>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedItems.map((item) => (
+                  <NewsCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       </main>
 
       <StabloFooter />

@@ -260,3 +260,30 @@ export const listRelatedNews = async (
     );
     return rows as unknown as NewsListItem[];
   });
+
+export const searchNewsItems = async (query: string, limit = 10): Promise<NewsListItem[]> =>
+  withConnection(async (conn) => {
+    const trimmed = query.trim();
+    if (!trimmed) return [];
+    const pattern = `%${trimmed}%`;
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+             n.canonical_url, n.description_html,
+             c.local_path AS card_image_url,
+             CASE
+               WHEN c.local_path IS NOT NULL THEN 'pixabay'
+               ELSE NULL
+             END AS card_image_source,
+             c.source_page_url AS card_image_source_page_url,
+             c.contributor_name AS card_image_contributor
+      FROM news_items n
+      LEFT JOIN news_card_images c ON c.news_item_id = n.id
+      WHERE n.title LIKE ? OR n.description_html LIKE ? OR n.keywords LIKE ?
+      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+      LIMIT ?
+      `,
+      [pattern, pattern, pattern, limit],
+    );
+    return rows as unknown as NewsListItem[];
+  });

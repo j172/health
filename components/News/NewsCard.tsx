@@ -2,32 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
-import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const CATEGORY_STYLE: Record<string, { bg: string; text: string }> = {
-  gov: { bg: "bg-accent-teal/10", text: "text-accent-teal" },
-  media: { bg: "bg-accent-blue/10", text: "text-accent-blue" },
-};
-
-const AVATAR_COLORS = ["bg-primary", "bg-accent-teal", "bg-accent-blue", "bg-accent-purple"];
-
-function categoryStyle(sourceName: string) {
-  const cat = SOURCE_CATEGORIES.find((c) => c.sources.some((s) => s.sourceName === sourceName));
-  return (cat && CATEGORY_STYLE[cat.key]) || { bg: "bg-primary/10", text: "text-primary" };
-}
-
-function avatarColor(sourceName: string): string {
-  let hash = 0;
-  for (const ch of sourceName) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffffffff;
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
-}
 
 const stripHtml = (html: string | null | undefined): string =>
   (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-const excerpt = (html: string | null | undefined, max = 90): string => {
+const excerpt = (html: string | null | undefined, max = 95): string => {
   const plain = stripHtml(html);
   if (!plain) return "";
   return plain.length > max ? `${plain.slice(0, max)}...` : plain;
@@ -40,24 +19,22 @@ const toTaipei = (value: Date | null): string => {
   );
 };
 
-// ─── Thumbnail ────────────────────────────────────────────────────────────────
-
 function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
   const src = item.card_image_url;
   const cls =
-    "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]";
+    "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105";
 
   if (!src) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-neutral-100 via-neutral-50 to-neutral-200 p-4">
+      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-4">
         <Image
           src="/images/logo/j172tw-health-logo.png"
           alt="j172tw Health"
-          width={56}
-          height={56}
-          className="h-12 w-12 opacity-40 transition-transform duration-500 group-hover:scale-110"
+          width={48}
+          height={48}
+          className="h-10 w-10 opacity-40 transition-transform duration-500 group-hover:scale-110"
         />
-        <span className="mt-2 text-[11px] font-semibold tracking-wider text-neutral-400 opacity-60">j172tw Health</span>
+        <span className="mt-2 text-[10px] font-semibold tracking-wider text-slate-400 opacity-60">j172tw Health</span>
       </div>
     );
   }
@@ -79,11 +56,8 @@ function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
   );
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
-
 export default function NewsCard({
   item,
-  featured = false,
   horizontal = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
 }: {
@@ -92,52 +66,69 @@ export default function NewsCard({
   horizontal?: boolean;
   sizes?: string;
 }) {
-  const { bg, text } = categoryStyle(item.source_name);
   const authorLabel = resolveAuthorLabel(item);
-  const initial = authorLabel.charAt(0).toUpperCase();
-  const color = avatarColor(item.source_name);
 
   if (horizontal) {
     return (
-      <article className="group flex gap-3">
-        <Link href={`/news/${item.id}`} className="relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-neutral-100" tabIndex={-1} aria-hidden="true">
+      <article className="group flex gap-3.5 items-center p-2 rounded-xl transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+        <Link
+          href={`/news/${item.id}`}
+          className="relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800"
+          tabIndex={-1}
+          aria-hidden="true"
+        >
           <CardThumb item={item} sizes="80px" />
         </Link>
-        <div className="min-w-0">
-          <h3 className="line-clamp-2 text-[13px] font-semibold leading-snug text-neutral-800 transition-colors group-hover:text-primary">
+        <div className="min-w-0 flex-1">
+          <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
             <Link href={`/news/${item.id}`}>{item.title}</Link>
           </h3>
-          <p className="mt-1 text-[11px] text-neutral-400">{toTaipei(item.published_at_utc)}</p>
+          <p className="mt-1 text-[11px] text-slate-400">{toTaipei(item.published_at_utc)}</p>
         </div>
       </article>
     );
   }
 
   return (
-    <article className="group flex flex-col">
-      <Link href={`/news/${item.id}`} className="block flex-shrink-0 overflow-hidden rounded-2xl bg-neutral-100" tabIndex={-1} aria-hidden="true">
-        <div className={`relative overflow-hidden ${featured ? "aspect-video" : "aspect-[16/10]"}`}>
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+      <Link
+        href={`/news/${item.id}`}
+        className="block flex-shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800"
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        <div className="relative aspect-[16/10] overflow-hidden">
           <CardThumb item={item} sizes={sizes} />
         </div>
       </Link>
-      <div className="mt-4 flex flex-1 flex-col">
-        <span className={`inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider ${bg} ${text}`}>
-          {item.feed_name}
-        </span>
-        <h2 className={`mt-2.5 font-bold leading-snug tracking-[-0.02em] text-neutral-900 transition-colors duration-200 group-hover:text-primary ${featured ? "text-[20px]" : "text-[17px]"} line-clamp-2`}>
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+            {item.feed_name}
+          </span>
+          <span className="text-[11px] text-slate-400">
+            {toTaipei(item.published_at_utc)}
+          </span>
+        </div>
+
+        <h2 className="mt-3 text-base font-bold leading-snug tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400 line-clamp-2">
           <Link href={`/news/${item.id}`}>{item.title}</Link>
         </h2>
-        {!featured && (
-          <p className="mt-2 line-clamp-2 text-[13.5px] leading-6 text-neutral-500">{excerpt(item.description_html)}</p>
-        )}
-        <div className="mt-4 flex items-center gap-2.5">
-          <span className={`inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white ${color}`} aria-hidden="true">
-            {initial}
+
+        <p className="mt-2 flex-1 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          {excerpt(item.description_html)}
+        </p>
+
+        <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+          <span className="truncate font-medium text-slate-600 dark:text-slate-400">
+            {authorLabel}
           </span>
-          <div className="min-w-0">
-            <p className="truncate text-[13px] font-medium text-neutral-700">{authorLabel}</p>
-            <p className="text-[11.5px] text-neutral-400">{toTaipei(item.published_at_utc)}</p>
-          </div>
+          <Link
+            href={`/news/${item.id}`}
+            className="font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+          >
+            閱讀全文 →
+          </Link>
         </div>
       </div>
     </article>

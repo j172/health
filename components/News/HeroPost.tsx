@@ -1,13 +1,11 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const stripHtml = (html: string | null | undefined): string =>
   (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-const excerpt = (html: string | null | undefined, max = 180): string => {
+const excerpt = (html: string | null | undefined, max = 140): string => {
   const plain = stripHtml(html);
   if (!plain) return "";
   return plain.length > max ? `${plain.slice(0, max)}...` : plain;
@@ -20,76 +18,114 @@ const toTaipei = (value: Date | null): string => {
   );
 };
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
-/**
- * Full-width hero section for the most recent featured article.
- * Shows a background image with gradient overlay, category tag, bold title,
- * description, and a "read more" CTA.
- */
-export default function HeroPost({ item }: { item: NewsListItem }) {
-  const authorLabel = resolveAuthorLabel(item);
-  const desc = excerpt(item.description_html);
-  const src = item.card_image_url;
-  const hasImg = !!src;
+export default function HeroPost({
+  hero,
+  secondary = [],
+}: {
+  hero: NewsListItem;
+  secondary?: NewsListItem[];
+}) {
+  const authorLabel = resolveAuthorLabel(hero);
+  const desc = excerpt(hero.description_html);
+  const src = hero.card_image_url;
 
   return (
-    <article className="group relative overflow-hidden rounded-3xl bg-neutral-900 shadow-2xl">
-      {/* Background */}
-      <div className="relative aspect-[4/3] min-h-[320px] sm:aspect-[21/9] sm:min-h-[420px] lg:min-h-[500px]">
-        {hasImg ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt={item.title}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary via-accent-purple to-accent-blue" />
-        )}
+    <div className="grid gap-6 lg:grid-cols-3">
+      {/* Primary Hero Post (Spans 2 columns on lg) */}
+      <article className="group relative overflow-hidden rounded-3xl bg-slate-900 shadow-xl lg:col-span-2 flex flex-col justify-between">
+        <div className="relative aspect-[16/10] sm:aspect-[21/10] w-full overflow-hidden">
+          {src ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={src}
+              alt={hero.title}
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700" />
+          )}
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
 
-        {/* Gradient overlay: bottom-heavy for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/5" />
-      </div>
+          {/* Top Pill */}
+          <div className="absolute left-6 top-6">
+            <span className="inline-flex items-center rounded-full bg-indigo-600 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+              {hero.feed_name}
+            </span>
+          </div>
 
-      {/* Content overlaid at bottom */}
-      <div className="absolute inset-x-0 bottom-0 flex flex-col justify-end px-6 pb-8 sm:px-10 sm:pb-10 lg:px-14 lg:pb-14">
-        {/* Category chip */}
-        <span className="inline-flex w-fit items-center rounded-full bg-primary px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-white">
-          {item.feed_name}
-        </span>
+          {/* Bottom Overlaid Text Content */}
+          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
+            <h1 className="max-w-3xl text-xl font-extrabold leading-snug text-white sm:text-2xl lg:text-3xl tracking-tight">
+              <Link href={`/news/${hero.id}`} className="transition-opacity hover:opacity-90">
+                {hero.title}
+              </Link>
+            </h1>
 
-        {/* Title */}
-        <h1 className="mt-3 max-w-4xl text-[1.6rem] font-bold leading-tight tracking-[-0.03em] text-white sm:text-[2.2rem] lg:text-[2.8rem]">
-          <Link href={`/news/${item.id}`} className="transition-opacity hover:opacity-90">
-            {item.title}
-          </Link>
-        </h1>
+            {desc && (
+              <p className="mt-2.5 line-clamp-2 max-w-2xl text-xs sm:text-sm text-slate-300">
+                {desc}
+              </p>
+            )}
 
-        {/* Excerpt */}
-        {desc && (
-          <p className="mt-3 max-w-2xl line-clamp-2 text-[14px] leading-6 text-white/70 sm:text-[15px]">
-            {desc}
-          </p>
-        )}
-
-        {/* Meta + CTA */}
-        <div className="mt-5 flex flex-wrap items-center gap-4">
-          <span className="text-sm text-white/60">
-            <span className="font-medium text-white/80">{authorLabel}</span>
-            {item.published_at_utc && <span> &middot; {toTaipei(item.published_at_utc)}</span>}
-          </span>
-          <Link
-            href={`/news/${item.id}`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-5 py-2 text-sm font-semibold text-neutral-900 shadow-sm transition-all hover:bg-primary hover:text-white"
-          >
-            閱讀全文
-            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4" aria-hidden="true">
-              <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.638L10.23 5.29a.75.75 0 111.04-1.08l5.5 5.25a.75.75 0 010 1.08l-5.5 5.25a.75.75 0 11-1.04-1.08l4.158-3.96H3.75A.75.75 0 013 10z" clipRule="evenodd" />
-            </svg>
-          </Link>
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-300 pt-2 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-white">{authorLabel}</span>
+                <span>·</span>
+                <span>{toTaipei(hero.published_at_utc)}</span>
+              </div>
+              <Link
+                href={`/news/${hero.id}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-slate-900 hover:bg-indigo-500 hover:text-white transition-colors"
+              >
+                閱讀報導 →
+              </Link>
+            </div>
+          </div>
         </div>
+      </article>
+
+      {/* Secondary Featured Cards Column (1 column on lg) */}
+      <div className="flex flex-col gap-6 lg:col-span-1">
+        {secondary.slice(0, 2).map((item) => {
+          const itemAuthor = resolveAuthorLabel(item);
+          return (
+            <article
+              key={item.id}
+              className="group relative flex flex-1 flex-col justify-between overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-bold uppercase text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                    {item.feed_name}
+                  </span>
+                  <span className="text-[11px] text-slate-400">
+                    {toTaipei(item.published_at_utc)}
+                  </span>
+                </div>
+                <h3 className="mt-3 text-base font-bold leading-snug text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400 line-clamp-2 transition-colors">
+                  <Link href={`/news/${item.id}`}>{item.title}</Link>
+                </h3>
+                <p className="mt-2 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+                  {excerpt(item.description_html, 90)}
+                </p>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <span className="font-medium text-slate-600 dark:text-slate-400">
+                  {itemAuthor}
+                </span>
+                <Link
+                  href={`/news/${item.id}`}
+                  className="font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                >
+                  閱讀 →
+                </Link>
+              </div>
+            </article>
+          );
+        })}
       </div>
-    </article>
+    </div>
   );
 }
