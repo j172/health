@@ -1,13 +1,19 @@
 import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 
-const toTaipeiShort = (value: Date): string =>
-  new Intl.DateTimeFormat("zh-TW", {
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Taipei",
-  }).format(new Date(value));
+const toTaipeiShort = (value: Date | string | null): string => {
+  if (!value) return "";
+  try {
+    return new Intl.DateTimeFormat("zh-TW", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Asia/Taipei",
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+};
 
 const magnitudeColor = (mag: number): string => {
   if (mag >= 8.0) return "#7c3aed";
@@ -48,13 +54,13 @@ export default function EarthquakeSidebarWidget({
                 <div className="flex items-center gap-2">
                   <span
                     className="text-2xl font-extrabold"
-                    style={{ color: magnitudeColor(Number(primaryQuake.magnitude)) }}
+                    style={{ color: magnitudeColor(Number(primaryQuake.magnitude || 0)) }}
                   >
-                    M {Number(primaryQuake.magnitude).toFixed(1)}
+                    M {(isNaN(Number(primaryQuake.magnitude)) ? 0 : Number(primaryQuake.magnitude)).toFixed(1)}
                   </span>
                   <span
                     className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-xs"
-                    style={{ backgroundColor: magnitudeColor(Number(primaryQuake.magnitude)) }}
+                    style={{ backgroundColor: magnitudeColor(Number(primaryQuake.magnitude || 0)) }}
                   >
                     顯著地震
                   </span>
@@ -74,16 +80,19 @@ export default function EarthquakeSidebarWidget({
 
             {secondaryQuakes.length > 0 && (
               <div className="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1.5 text-xs">
-                {secondaryQuakes.map((q) => (
-                  <div key={q.id} className="flex items-center justify-between text-slate-600 dark:text-slate-300">
-                    <span className="truncate max-w-[160px]">
-                      {q.place_zh ?? q.place ?? "地區"}
-                    </span>
-                    <span className="font-bold shrink-0" style={{ color: magnitudeColor(Number(q.magnitude)) }}>
-                      M{Number(q.magnitude).toFixed(1)} · {toTaipeiShort(q.event_time)}
-                    </span>
-                  </div>
-                ))}
+                {secondaryQuakes.map((q) => {
+                  const numMag = isNaN(Number(q.magnitude)) ? 0 : Number(q.magnitude);
+                  return (
+                    <div key={q.id} className="flex items-center justify-between text-slate-600 dark:text-slate-300">
+                      <span className="truncate max-w-[160px]">
+                        {q.place_zh ?? q.place ?? "地區"}
+                      </span>
+                      <span className="font-bold shrink-0" style={{ color: magnitudeColor(numMag) }}>
+                        M{numMag.toFixed(1)} · {toTaipeiShort(q.event_time)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

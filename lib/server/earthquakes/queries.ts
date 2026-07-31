@@ -100,7 +100,7 @@ export const upsertEarthquake = async (event: IncomingEarthquake): Promise<"inse
 
 export interface SignificantEarthquake {
   id: number;
-  event_time: Date;
+  event_time: Date | string;
   magnitude: number;
   depth_km: number | null;
   place: string | null;
@@ -127,14 +127,14 @@ export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours 
       );
       return rows.map((r) => ({
         id: Number(r.id),
-        event_time: r.event_time,
-        magnitude: Number(r.magnitude),
-        depth_km: r.depth_km != null ? Number(r.depth_km) : null,
-        place: r.place ?? null,
-        place_zh: r.place_zh ?? null,
+        event_time: r.event_time instanceof Date ? r.event_time.toISOString() : String(r.event_time ?? ""),
+        magnitude: isNaN(Number(r.magnitude)) ? 0 : Number(r.magnitude),
+        depth_km: r.depth_km != null && !isNaN(Number(r.depth_km)) ? Number(r.depth_km) : null,
+        place: r.place ? String(r.place) : null,
+        place_zh: r.place_zh ? String(r.place_zh) : null,
         tsunami_warning: Number(r.tsunami_warning ?? 0),
-        primary_source: r.primary_source ?? null,
-        url: r.url ?? null,
-      })) as SignificantEarthquake[];
+        primary_source: r.primary_source ? String(r.primary_source) : null,
+        url: r.url ? String(r.url) : null,
+      }));
     }),
   );

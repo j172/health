@@ -4,18 +4,22 @@ import { useState } from "react";
 import type { SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-const toTaipeiTime = (value: Date | null): string => {
+const toTaipeiTime = (value: Date | string | null): string => {
   if (!value) return "";
-  return new Intl.DateTimeFormat("zh-TW", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    timeZone: "Asia/Taipei",
-  }).format(new Date(value));
+  try {
+    return new Intl.DateTimeFormat("zh-TW", {
+      dateStyle: "medium",
+      timeStyle: "medium",
+      timeZone: "Asia/Taipei",
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
 };
 
-const getMagBadge = (magInput: number) => {
-  const mag = Number(magInput);
-  if (isNaN(mag)) {
+const getMagBadge = (magInput: number | string) => {
+  const mag = isNaN(Number(magInput)) ? 0 : Number(magInput);
+  if (mag <= 0) {
     return {
       bg: "bg-slate-500 text-white dark:bg-slate-600",
       label: "M -",
