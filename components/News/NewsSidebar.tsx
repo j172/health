@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { type NewsListItem } from "@/lib/server/news/queries";
+import { type NewsListItem, type WeatherWarningItem } from "@/lib/server/news/queries";
+import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
+import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWidget";
+import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget";
 
 const toTaipei = (value: Date | null): string => {
   if (!value) return "";
@@ -12,18 +15,28 @@ const toTaipei = (value: Date | null): string => {
 
 export default function NewsSidebar({
   recentNews = [],
+  weatherWarnings = [],
+  earthquakes = [],
   activeGroupKey,
 }: {
   recentNews?: NewsListItem[];
+  weatherWarnings?: WeatherWarningItem[];
+  earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
 }) {
   return (
-    <aside className="space-y-8" aria-label="側邊資訊欄">
+    <aside className="space-y-6" aria-label="側邊資訊欄">
       {/* 1. Instant AQI Widget */}
       <AqiSidebarWidget />
 
-      {/* 2. Source Categories Cloud */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      {/* 2. Weather Alert Card Widget */}
+      <WeatherAlertSidebarWidget warnings={weatherWarnings} />
+
+      {/* 3. Earthquake Card Widget */}
+      <EarthquakeSidebarWidget earthquakes={earthquakes} />
+
+      {/* 4. Source Categories Cloud */}
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-3.5">
           公衛與新聞來源
         </h3>
@@ -54,9 +67,9 @@ export default function NewsSidebar({
         </div>
       </div>
 
-      {/* 3. Popular / Recent News List */}
+      {/* 5. Popular / Recent News List */}
       {recentNews.length > 0 && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
             🔥 熱門焦點新聞
           </h3>

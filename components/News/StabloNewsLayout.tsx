@@ -25,60 +25,9 @@ interface Pagination {
   group?: string;
 }
 
-const WeatherAlertBar = async () => {
-  const warnings = await listActiveWeatherWarnings(3);
-  if (warnings.length === 0) return null;
-  return (
-    <div className="border-b border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/40">
-      <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-amber-900 dark:text-amber-300 sm:px-6 lg:px-8">
-        <span aria-hidden="true">⚠️</span>
-        <span className="shrink-0 font-bold">氣象警報：</span>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {warnings.map((w) => (
-            <Link
-              key={w.id}
-              href={`/news/${w.id}`}
-              className="whitespace-nowrap underline decoration-amber-300 underline-offset-2 hover:text-amber-950 dark:hover:text-amber-100"
-            >
-              {w.title}
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const SignificantEarthquakesBar = async () => {
-  const quakes = await getRecentSignificantEarthquakes(6.0, 72, 5);
-  if (quakes.length === 0) return null;
-  return (
-    <div className="border-b border-orange-200 bg-orange-50 dark:border-orange-900/50 dark:bg-orange-950/40">
-      <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-orange-900 dark:text-orange-300 sm:px-6 lg:px-8">
-        <span aria-hidden="true">🌐</span>
-        <span className="shrink-0 font-bold">全球地震：</span>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {quakes.map((q) => {
-            const magnitude = Number(q.magnitude);
-            return q.url ? (
-              <a key={q.id} href={q.url} target="_blank" rel="noreferrer noopener" className="hover:text-orange-950 dark:hover:text-orange-100">
-                <span className="font-semibold text-orange-600 dark:text-orange-400">M{magnitude.toFixed(1)}</span> {q.place_zh ?? q.place}
-              </a>
-            ) : (
-              <span key={q.id}>M{magnitude.toFixed(1)} {q.place_zh ?? q.place}</span>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const StabloHeader = async () => (
   <header>
-    <WeatherAlertBar />
     <NearbyWeatherBar />
-    <SignificantEarthquakesBar />
     <SiteNav />
   </header>
 );
@@ -111,7 +60,7 @@ const GroupTabs = ({ activeGroupKey }: { activeGroupKey?: string }) => (
   </nav>
 );
 
-export default function StabloNewsLayout({
+export default async function StabloNewsLayout({
   items,
   variant,
   pagination,
@@ -129,6 +78,12 @@ export default function StabloNewsLayout({
   const hero = items[0];
   const secondary = items.slice(1, 3);
   const mainList = items.slice(3);
+
+  // Fetch Weather Warnings & Earthquakes for Sidebar Card Widgets
+  const [weatherWarnings, earthquakes] = await Promise.all([
+    listActiveWeatherWarnings(3),
+    getRecentSignificantEarthquakes(6.0, 72, 5),
+  ]);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
@@ -167,7 +122,12 @@ export default function StabloNewsLayout({
 
               {/* Right Sidebar (1 column on lg) */}
               <div className="lg:col-span-1">
-                <NewsSidebar recentNews={items.slice(0, 5)} activeGroupKey={activeGroupKey} />
+                <NewsSidebar
+                  recentNews={items.slice(0, 5)}
+                  weatherWarnings={weatherWarnings}
+                  earthquakes={earthquakes}
+                  activeGroupKey={activeGroupKey}
+                />
               </div>
             </div>
           </>
@@ -200,7 +160,12 @@ export default function StabloNewsLayout({
                 )}
               </div>
               <div className="lg:col-span-1">
-                <NewsSidebar recentNews={items.slice(0, 5)} activeGroupKey={activeGroupKey} />
+                <NewsSidebar
+                  recentNews={items.slice(0, 5)}
+                  weatherWarnings={weatherWarnings}
+                  earthquakes={earthquakes}
+                  activeGroupKey={activeGroupKey}
+                />
               </div>
             </div>
           </>
