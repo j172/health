@@ -4,10 +4,7 @@ const segmentit = useDefault(new Segment());
 
 /**
  * Strict priority mapping of Traditional Chinese news keywords to English Pixabay search terms.
- * Checked top-to-bottom:
- * Priority 1: Specific Subject/Item (Food ingredients, Diseases, Vehicles, Ships, Animals)
- * Priority 2: Event Theme (Food festival, Hot pot festival, School handover, Disaster, Disaster relief)
- * Priority 3: Public Institution/Location (Exhibition center, City hall, Community)
+ * Using high-volume core English terms to maximize search hit counts on Pixabay.
  */
 const KEYWORD_TERMS: [RegExp, string][] = [
   // ─── 1. 具體食材、美食料理、飲品 (最高優先級) ──────────────────────────────────
@@ -30,7 +27,7 @@ const KEYWORD_TERMS: [RegExp, string][] = [
 
   // ─── 2. 交通車輛、航運船舶、物流設施 ──────────────────────────────────────
   [/救護車|急救|到院前/, "ambulance"],
-  [/小三通|班船|輪船|客輪|漁船|航線|船隻|港口/, "ferry ship"],
+  [/小三通|班船|輪船|客輪|漁船|航線|船隻|港口/, "ferry"],
   [/公車|專車|交管|交通|公車處|盲區警示/, "bus"],
   [/捷運|火車|高鐵|鐵路|軌道/, "train"],
   [/飛機|華航|長榮|機場|空運|直飛/, "airplane"],
@@ -74,10 +71,10 @@ const KEYWORD_TERMS: [RegExp, string][] = [
   // ─── 5. 警消、勞工職安、土地農耕、文化 ─────────────────────────────────────
   [/防詐|詐騙|車手|警方|警察|查獲|緝毒|刑警/, "police"],
   [/職安|工安|陳情|勞工|勞動|工殤|勞工局/, "workers"],
-  [/璞玉田|農田|田地|農耕|耕地|農遊|農會/, "farmland"],
-  [/原民|原住民|南島|台夏文化節|部落/, "tribal festival"],
-  [/地震|強震|震央|慈濟|賑災|物資直送/, "disaster relief"],
-  [/主題公園|公園|休閒廊道|綠地/, "city park"],
+  [/璞玉田|農田|田地|農耕|耕地|農遊|農會/, "farm"],
+  [/原民|原住民|南島|台夏文化節|部落/, "culture"],
+  [/地震|強震|震央|慈濟|賑災|物資直送/, "disaster"],
+  [/主題公園|公園|休閒廊道|綠地/, "park"],
   [/繪畫|比賽|得獎|作畫|作品/, "painting"],
   [/父親節|重陽節|母親節|節慶|紀念日/, "family"],
 
@@ -108,7 +105,7 @@ const KEYWORD_TERMS: [RegExp, string][] = [
 ];
 
 /** Tier 2 Fallback keywords if Jieba terms return no image on Pixabay */
-export const FALLBACK_TERMS = ["health", "life"] as const;
+export const FALLBACK_TERMS = ["health", "life", "nature"] as const;
 
 /**
  * Stage 1: Segment title using Segmentit (pure JS Jieba algorithm) and match against mapped English keywords.
@@ -140,7 +137,7 @@ export function deriveJiebaSearchTerm(title: string): string | null {
 }
 
 /**
- * Stage 2: Fallback term (health vs life) based on article ID or index.
+ * Stage 2: Fallback term (health vs life vs nature) based on article ID or index.
  */
 export function deriveFallbackTerm(indexOrId: number): string {
   return FALLBACK_TERMS[Math.abs(indexOrId) % FALLBACK_TERMS.length];
