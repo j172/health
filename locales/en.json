@@ -33,5 +33,11 @@
   "footer": {
     "rights": "All rights reserved.",
     "privacy": "Privacy Policy"
-  }
+  },
+  "tts_title": "Voice Reader",
+  "tts_play": "Read Aloud",
+  "tts_resume": "Resume",
+  "tts_pause": "Pause",
+  "tts_stop": "Stop",
+  "immersive_reader": "Immersive Reader"
 }

@@ -33,5 +33,11 @@
   "footer": {
     "rights": "版权所有",
     "privacy": "隐私权政策"
-  }
+  },
+  "tts_title": "语音朗读",
+  "tts_play": "朗读文章",
+  "tts_resume": "继续",
+  "tts_pause": "暂停",
+  "tts_stop": "停止",
+  "immersive_reader": "沉浸式阅读模式"
 }

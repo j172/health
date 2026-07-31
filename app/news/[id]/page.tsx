@@ -7,6 +7,7 @@ import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
+import ArticleReaderToolbar from "@/components/News/ArticleReaderToolbar";
 import NewsCard from "@/components/News/NewsCard";
 
 export const runtime = "nodejs";
@@ -121,6 +122,15 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
                 <span>{readingTime(news.detail_text)} 分鐘閱讀</span>
               </div>
             </header>
+
+            {/* Interactive Reader Toolbar: Voice Text-to-Speech & Immersive Reader Mode */}
+            <ArticleReaderToolbar
+              title={news.title}
+              authorLabel={authorLabel}
+              publishDateStr={toTaipei(news.published_at_utc)}
+              geoSummary={news.geo_summary}
+              articleHtml={articleHtml}
+            />
 
             {/* GEO Summary & AI Citation Box for LLM / AI Search Engines */}
             {news.geo_summary?.trim() ? (

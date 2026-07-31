@@ -33,5 +33,11 @@
   "footer": {
     "rights": "版權所有",
     "privacy": "隱私權政策"
-  }
+  },
+  "tts_title": "語音朗讀",
+  "tts_play": "朗讀文章",
+  "tts_resume": "繼續",
+  "tts_pause": "暫停",
+  "tts_stop": "停止",
+  "immersive_reader": "沉浸式閱讀模式"
 }
