@@ -148,6 +148,7 @@ jobs:
         run: |
           OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
           curl --fail --show-error --silent --insecure \
+            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
             --retry 3 \
             --retry-delay 2 \
             --retry-all-errors \
@@ -163,6 +164,7 @@ jobs:
 
           for ATTEMPT in $(seq 1 30); do
             STATUS="$(curl --fail --show-error --silent --insecure \
+              --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
               --resolve "health.j172.tw:443:103.21.221.12" \
               "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY_CLEAN&cb=$(date +%s)")"
 
