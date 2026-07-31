@@ -121,3 +121,7 @@ items.sort((a, b) => a.title.localeCompare(b.title, "zh-Hant", { numeric: true }
 
 ### 7.3 Google BreadcrumbList JSON-LD Schema
 * **Schema**: Integrated `buildBreadcrumbJsonLd()` across article pages (`/news/[id]`) and tool pages (`/tools/[slug]`) to enhance Google Sitelinks and AI search engine (GEO) citation visibility.
+
+### 7.4 Voice Reader (Text-to-Speech) & Immersive Reader Mode
+* **`ArticleReaderToolbar.tsx`**: Uses Web Speech API (`window.speechSynthesis`) to read news articles (Title ➔ Author ➔ AI Summary ➔ Article Body). Supports Play/Pause/Resume/Stop, speed adjustment (0.8x - 2.0x), and automatic voice language selection based on active locale (`zh-TW`, `zh-CN`, `en`).
+* **`ImmersiveReaderModal.tsx`**: Provides a fullscreen, distraction-free reading experience with customizable font sizes (A-/A+), line spacing, and theme palette (Pure White, Sepia Warm, Deep Dark).
