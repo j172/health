@@ -41,10 +41,9 @@ export const searchHealthImages = async (term: string, page: number, perPage = 2
   // validation" once nearly every candidate from the old fixed query was
   // already used). Adding a rotating free-text term alongside the category
   // gives each term its own up-to-500-hit pool, multiplying total coverage.
-  const params = new URLSearchParams({
+  const queryObj: Record<string, string> = {
     key: env.pixabayApiKey,
     q: term,
-    category: "health",
     image_type: "photo",
     orientation: "horizontal",
     safesearch: "true",
@@ -53,7 +52,14 @@ export const searchHealthImages = async (term: string, page: number, perPage = 2
     order: "popular",
     page: String(page),
     per_page: String(Math.min(200, Math.max(3, perPage))),
-  });
+  };
+
+  // Only constrain to category=health if the query is a generic fallback term
+  if (["health", "medical", "wellness"].includes(term.toLowerCase())) {
+    queryObj.category = "health";
+  }
+
+  const params = new URLSearchParams(queryObj);
 
   const response = await httpGetText(`${API_URL}?${params.toString()}`, {
     timeoutMs: REQUEST_TIMEOUT_MS,

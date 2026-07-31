@@ -43,15 +43,27 @@ async function backfillNewsImages() {
   console.log("📸 [Stage 1] 新聞文章補圖 (Jieba + Pixabay + LOGO)");
   console.log("========================================================\n");
 
+  const isReassign = process.argv.includes("--reassign");
   try {
-    console.log("🧹 正在清理舊的 Pixabay API 快取...");
-    await fetch(`${baseUrl}/api/admin/news-images`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ clearCache: true }),
-    });
-  } catch {
-    // Ignore cache clear failure
+    if (isReassign) {
+      console.log("🧹 [--reassign 模式] 正在清理舊有的所有卡片圖紀錄以重新指派...");
+      const res = await fetch(`${baseUrl}/api/admin/news-images`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ clearCardImages: true }),
+      });
+      const data = await res.json();
+      console.log(`  ✓ 已清理 ${data.clearedCardImages ?? 0} 筆舊卡片圖紀錄及 API 快取。`);
+    } else {
+      console.log("🧹 正在清理舊的 Pixabay API 快取...");
+      await fetch(`${baseUrl}/api/admin/news-images`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ clearCache: true }),
+      });
+    }
+  } catch (err) {
+    console.error("  ⚠️ 快取清理失敗:", err instanceof Error ? err.message : err);
   }
 
   let totalAssigned = 0;

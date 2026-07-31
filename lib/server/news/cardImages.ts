@@ -39,6 +39,13 @@ export const clearPixabayApiCache = async (): Promise<number> => {
   return result.affectedRows;
 };
 
+/** Clears existing news card images so articles can be re-matched with expanded Jieba title terms. */
+export const clearAllNewsCardImages = async (): Promise<number> => {
+  const pool = getMysqlPool();
+  const [result] = await pool.query<ResultSetHeader>("DELETE FROM news_card_images");
+  return result.affectedRows;
+};
+
 export interface CardImageAssignmentSummary {
   assigned: number;
   skipped: number;
