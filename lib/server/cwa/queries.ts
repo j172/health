@@ -451,13 +451,21 @@ export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
         ORDER BY u.uv_index DESC
         `,
       );
-      return (rows as RowDataPacket[]).map((r) => ({
-        station_id: String(r.station_id),
-        station_name: r.station_name ?? null,
-        county_name: r.county_name ?? null,
-        uv_index: Number(r.uv_index),
-        obs_date: String(r.obs_date),
-      }));
+      return (rows as RowDataPacket[]).map((r) => {
+        let obsDateStr = "";
+        if (r.obs_date instanceof Date) {
+          obsDateStr = r.obs_date.toISOString().split("T")[0];
+        } else if (r.obs_date) {
+          obsDateStr = String(r.obs_date).split("T")[0];
+        }
+        return {
+          station_id: String(r.station_id ?? ""),
+          station_name: r.station_name ? String(r.station_name) : null,
+          county_name: r.county_name ? String(r.county_name) : null,
+          uv_index: isNaN(Number(r.uv_index)) ? 0 : Number(r.uv_index),
+          obs_date: obsDateStr,
+        };
+      });
     });
   } catch (err) {
     console.error("Failed to list UV readings:", err);
