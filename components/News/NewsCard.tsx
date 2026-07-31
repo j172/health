@@ -57,6 +57,12 @@ function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
   );
 }
 
+const calcReadingTime = (html: string | null | undefined): number => {
+  const plain = stripHtml(html);
+  if (!plain) return 1;
+  return Math.max(1, Math.ceil(plain.length / 300));
+};
+
 export default function NewsCard({
   item,
   horizontal = false,
@@ -108,9 +114,11 @@ export default function NewsCard({
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${badgeStyle.bg} ${badgeStyle.text}`}>
             {item.feed_name}
           </span>
-          <span className="text-[11px] text-slate-400">
-            {toTaipei(item.published_at_utc)}
-          </span>
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+            <span>{toTaipei(item.published_at_utc)}</span>
+            <span aria-hidden="true">•</span>
+            <span>{calcReadingTime(item.description_html)} 分鐘閱讀</span>
+          </div>
         </div>
 
         <h2 className="mt-3 text-base font-bold leading-snug tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400 line-clamp-2">
