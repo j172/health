@@ -243,3 +243,42 @@ export const listNewsAssetsByNewsId = async (newsId: number): Promise<NewsAssetI
 
     return rows as unknown as NewsAssetItem[];
   });
+
+export const listRelatedNews = async (
+  sourceName: string,
+  excludeId: number,
+  limit = 3,
+): Promise<NewsListItem[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+             n.canonical_url, n.description_html,
+             COALESCE(
+               (SELECT a.url
+                FROM news_assets a
+                WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+                ORDER BY a.sort_order ASC, a.id ASC
+                LIMIT 1),
+               c.local_path
+             ) AS card_image_url,
+             CASE
+               WHEN EXISTS (
+                 SELECT 1 FROM news_assets a
+                 WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+               ) THEN 'rss'
+               WHEN c.local_path IS NOT NULL THEN 'pixabay'
+               ELSE NULL
+             END AS card_image_source,
+             c.source_page_url AS card_image_source_page_url,
+             c.contributor_name AS card_image_contributor
+      FROM news_items n
+      LEFT JOIN news_card_images c ON c.news_item_id = n.id
+      WHERE n.source_name = ? AND n.id != ?
+      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+      LIMIT ?
+      `,
+      [sourceName, excludeId, limit],
+    );
+    return rows as unknown as NewsListItem[];
+  });
