@@ -9,6 +9,8 @@ A Next.js 16 news site (health.j172.tw) that aggregates public-health RSS feeds 
 - Persists everything to MySQL (`news_items`, `news_assets`, `news_card_images`, `ingest_runs`, `ingest_errors`)
 - Auto-assigns a royalty-free card image (via the Pixabay API) to articles that don't ship their own image, downloading and hosting it locally rather than hotlinking
 - Serves `/news` (archive) and `/news/[id]` (article) with OpenGraph/JSON-LD metadata, plus `/sitemap.xml` and `/robots.txt`
+- Multi-language switching support (`zh-TW`, `zh-CN`, `en`) via `LanguageContext` and Header `LanguageToggler` dropdown, with OpenCC (`opencc-js`) dynamic Traditional-to-Simplified Chinese translation for live API content (news titles, earthquake locations, AQI stations)
+- Automatic collation by first character (`localeCompare('zh-Hant')`) for `TOOL_CATALOG` entries and `SiteFooter` category columns
 - Also syncs a 30-minute snapshot of MOENV's national AQI stations into `aqi_readings` and 12 CWA (中央氣象署) datasets into `cwa_*` tables, and (every 6 months) the NHI/MOL/TFDA facility and drug registries into `facilities`/`drugs` — see "Data source sync schedule" below
 
 ### RSS sources
