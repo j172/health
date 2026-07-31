@@ -107,3 +107,17 @@ items.sort((a, b) => a.title.localeCompare(b.title, "zh-Hant", { numeric: true }
 
 ### 6.2 Deployment Pipeline
 * **GitHub Actions Workflow**: `.github/workflows/deploy-ftps.yml` builds `.next3` package, uploads prebuilt assets via FTPS, and triggers remote apply script `/.remote-health-index.php`.
+
+---
+
+## 7. Performance & SEO Optimizations
+
+### 7.1 MySQL FULLTEXT `ngram` Search & Safety Fallback
+* **Index**: Added `ft_news_search` FULLTEXT index on `(title, description_html, keywords)` with `ngram` Chinese parser in `ensureSchema()`.
+* **Query Execution**: `searchNewsItems()` uses high-speed `MATCH(title, description_html, keywords) AGAINST(? IN BOOLEAN MODE)` with automatic fallback to `LIKE %query%` if FULLTEXT results yield no matches.
+
+### 7.2 PWA Service Worker v2
+* **`public/sw.js`**: Upgraded to Service Worker v2 using Stale-While-Revalidate caching for navigations and Cache-First for static assets, enabling seamless offline reading of cached articles and tools.
+
+### 7.3 Google BreadcrumbList JSON-LD Schema
+* **Schema**: Integrated `buildBreadcrumbJsonLd()` across article pages (`/news/[id]`) and tool pages (`/tools/[slug]`) to enhance Google Sitelinks and AI search engine (GEO) citation visibility.
