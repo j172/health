@@ -198,10 +198,25 @@ export interface FacilitySearchParams {
   lng?: number;
   radiusMeters?: number;
   limit?: number;
+  /** Exact match against the facilities.service_item column (e.g. a hospital tier or pharmacy contract type). */
+  serviceItem?: string;
+  sort?: "distance" | "name" | "category";
 }
 
+// Ranks the two known service_item taxonomies (hospital tier, pharmacy contract type) into one
+// ordering — the value sets never overlap between facility_types, so a single CASE WHEN covers both.
+const CATEGORY_RANK_SQL = `CASE service_item
+  WHEN '醫學中心' THEN 1
+  WHEN '區域醫院' THEN 2
+  WHEN '地區醫院' THEN 3
+  WHEN '基層診所' THEN 4
+  WHEN '健保特約藥局' THEN 1
+  WHEN '一般藥局' THEN 2
+  ELSE 99
+END`;
+
 /** Haversine distance filter is applied in SQL directly (facility counts are small enough that this is fine). */
-export const searchFacilities = async ({ facilityType, keyword, lat, lng, radiusMeters = 5000, limit = 200 }: FacilitySearchParams): Promise<FacilityListItem[]> =>
+export const searchFacilities = async ({ facilityType, keyword, lat, lng, radiusMeters = 5000, limit = 200, serviceItem, sort }: FacilitySearchParams): Promise<FacilityListItem[]> =>
   withConnection(async (conn) => {
     const conditions = ["facility_type = ?"];
     const params: unknown[] = [facilityType];
@@ -209,6 +224,11 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
     if (keyword) {
       conditions.push("(name LIKE ? OR address LIKE ?)");
       params.push(`%${keyword}%`, `%${keyword}%`);
+    }
+
+    if (serviceItem) {
+      conditions.push("service_item = ?");
+      params.push(serviceItem);
     }
 
     let distanceSelect = "";
@@ -228,13 +248,24 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
       conditions.push("lat IS NOT NULL AND lng IS NOT NULL");
     }
 
+    // Explicit sort wins; otherwise fall back to the old implicit default
+    // (distance when GPS coords are present, name otherwise).
+    const orderBy =
+      sort === "category"
+        ? `${CATEGORY_RANK_SQL} ASC, name ASC`
+        : sort === "name"
+          ? "name ASC"
+          : isGpsSearch
+            ? "distance_km ASC"
+            : "name ASC";
+
     const query = `
       SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json
         ${distanceSelect}
       FROM facilities
       WHERE ${conditions.join(" AND ")}
       ${havingClause}
-      ORDER BY ${lat !== undefined ? "distance_km ASC" : "name ASC"}
+      ORDER BY ${orderBy}
       LIMIT ?
     `;
 

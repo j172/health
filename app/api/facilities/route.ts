@@ -14,9 +14,12 @@ export async function GET(request: NextRequest) {
   const lat = params.get("lat") ? Number(params.get("lat")) : undefined;
   const lng = params.get("lng") ? Number(params.get("lng")) : undefined;
   const radiusMeters = params.get("radius") ? Number(params.get("radius")) : undefined;
+  const serviceItem = params.get("category")?.trim() || undefined;
+  const sortParam = params.get("sort");
+  const sort = sortParam === "distance" || sortParam === "name" || sortParam === "category" ? sortParam : undefined;
 
   try {
-    const facilities = await searchFacilities({ facilityType, keyword, lat, lng, radiusMeters });
+    const facilities = await searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, sort });
     return NextResponse.json({ facilities });
   } catch (error) {
     console.error("GET /api/facilities failed:", error);

@@ -27,6 +27,8 @@ export interface FacilitySearchConfig {
   showGeocodeNote?: boolean;
   /** Shown when the user hasn't searched by keyword and geolocation fell back to the default position. */
   locationDefaultWarning?: string;
+  /** When set, shows a category filter + sort dropdown next to the search bar, matching against the facilities.service_item column. */
+  categories?: { value: string; label: string }[];
 }
 
 interface FacilityItem {
@@ -62,14 +64,23 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     showWeeklyHours = false,
     showGeocodeNote = false,
     locationDefaultWarning,
+    categories,
   } = config;
 
   const location = useGeolocation();
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [category, setCategory] = useState("");
+  const [sort, setSort] = useState<"distance" | "name" | "category">("distance");
   const [facilities, setFacilities] = useState<FacilityItem[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Keyword search never sends lat/lng (see below), so distance can't be computed —
+  // drop back to name sort rather than let the dropdown keep a now-meaningless selection.
+  useEffect(() => {
+    if (keyword && sort === "distance") setSort("name");
+  }, [keyword, sort]);
 
   useEffect(() => {
     if (location.loading) return;
@@ -87,6 +98,8 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
       params.set("lng", String(location.lng));
       params.set("radius", String(radiusMeters));
     }
+    if (category) params.set("category", category);
+    if (sort) params.set("sort", sort);
 
     fetch(`/api/facilities?${params.toString()}`)
       .then((res) => {
@@ -106,7 +119,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     return () => {
       cancelled = true;
     };
-  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters]);
+  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, sort]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,14 +139,41 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         {noteLine && <p className="mt-1 text-xs text-neutral-500">{noteLine}</p>}
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
+      <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
         <input
           type="text"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder={searchPlaceholder}
-          className="flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+          className="min-w-[160px] flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
         />
+        {categories && categories.length > 0 && (
+          <>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              aria-label="分類篩選"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+            >
+              <option value="">全部分類</option>
+              {categories.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as typeof sort)}
+              aria-label="排序方式"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+            >
+              {!keyword && <option value="distance">距離最近</option>}
+              <option value="name">名稱 A-Z</option>
+              <option value="category">依分類</option>
+            </select>
+          </>
+        )}
         <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
           搜尋
         </button>

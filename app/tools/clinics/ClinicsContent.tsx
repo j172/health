@@ -16,6 +16,12 @@ export default function ClinicsContent() {
         emptyStateWithKeyword: "查無符合的院所。",
         serviceItem: "badge",
         showWeeklyHours: true,
+        categories: [
+          { value: "醫學中心", label: "醫學中心" },
+          { value: "區域醫院", label: "區域醫院" },
+          { value: "地區醫院", label: "地區醫院" },
+          { value: "基層診所", label: "基層診所" },
+        ],
       }}
     />
   );

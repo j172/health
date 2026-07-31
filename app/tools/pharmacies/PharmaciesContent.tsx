@@ -19,6 +19,10 @@ export default function PharmaciesContent() {
         showWeeklyHours: true,
         showGeocodeNote: true,
         locationDefaultWarning: "⚠️ 無法取得您的定位，附近搜尋改用預設位置範圍；您也可以直接用上方關鍵字搜尋全台藥局。",
+        categories: [
+          { value: "健保特約藥局", label: "健保特約藥局" },
+          { value: "一般藥局", label: "一般藥局" },
+        ],
       }}
     />
   );
