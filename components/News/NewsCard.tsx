@@ -110,14 +110,20 @@ export default function NewsCard({
         </div>
       </Link>
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${badgeStyle.bg} ${badgeStyle.text}`}>
             {item.feed_name}
           </span>
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
             <span>{toTaipei(item.published_at_utc)}</span>
             <span aria-hidden="true">•</span>
-            <span>{calcReadingTime(item.description_html)} 分鐘閱讀</span>
+            <span className="inline-flex items-center gap-1">
+              <svg className="h-3 w-3 shrink-0 opacity-70" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <polyline points="12 7 12 12 15 15" />
+              </svg>
+              <span>{calcReadingTime(item.description_html)} 分鐘閱讀</span>
+            </span>
           </div>
         </div>
 
