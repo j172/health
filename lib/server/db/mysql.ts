@@ -85,6 +85,14 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE aqi_readings
       ADD INDEX IF NOT EXISTS idx_aqi_reading_geo (lat, lng)
   `);
+  try {
+    await p.query(`
+      ALTER TABLE news_items
+        ADD FULLTEXT INDEX ft_news_search (title, description_html, keywords) WITH PARSER ngram
+    `);
+  } catch {
+    // Index already exists or non-supported storage engine
+  }
   schemaReady = true;
 };
 
