@@ -21,6 +21,17 @@ export interface ToolCatalogEntry {
 // title/description/FAQ text across files.
 export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
+    slug: "earthquakes",
+    group: "calculator",
+    title: "全球顯著地震查詢",
+    description: "即時查詢台灣與全球 M6.0+ 顯著地震動態資訊，包含震央地點、規模大小、震源深度與海嘯警報提示，整合 USGS、EMSC、HKO 與 CWA 多國測報數據。",
+    faqs: [
+      { question: "地震資料多久更新一次？", answer: "本站地震資料每 10 分鐘自動同步一次美國地質調查局 (USGS)、歐洲地中海地震中心 (EMSC) 與中央氣象署 (CWA) 的最新測報。" },
+      { question: "什麼是 M6.0+ 顯著地震？", answer: "M6.0（芮氏規模 6.0）以上的地震屬於中強震至強震，能量巨大且影響範圍廣，本站優先顯示顯著地震以提供即時防災防護參考。" },
+      { question: "海嘯警報標籤代表什麼？", answer: "當測報單位發布海嘯警報或海嘯觀察提示時，系統會自動在卡片上標示紅色的海嘯警戒警示，提示沿海地區居民注意防範。" },
+    ],
+  },
+  {
     slug: "bmi",
     group: "calculator",
     title: "BMI 計算器",

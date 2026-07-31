@@ -102,19 +102,22 @@ export interface SignificantEarthquake {
   id: number;
   event_time: Date;
   magnitude: number;
+  depth_km: number | null;
   place: string | null;
   place_zh: string | null;
+  tsunami_warning: number;
+  primary_source: string | null;
   url: string | null;
 }
 
 import { memoizeQuery } from "@/lib/server/cache/memo";
 
 /** Recent M6.0+ earthquakes worldwide, most recent first. */
-export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours = 72, limit = 5): Promise<SignificantEarthquake[]> =>
+export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours = 168, limit = 20): Promise<SignificantEarthquake[]> =>
   memoizeQuery(`earthquakes_${minMagnitude}_${hours}_${limit}`, async () =>
     withConnection(async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
-        `SELECT id, event_time, magnitude, place, place_zh, url
+        `SELECT id, event_time, magnitude, depth_km, place, place_zh, tsunami_warning, primary_source, url
          FROM global_earthquakes
          WHERE magnitude >= ?
            AND event_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
