@@ -131,13 +131,13 @@ export default function SiteNav() {
           <Link href="/" className="py-4 transition-colors hover:text-neutral-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
             首頁
           </Link>
-          {SOURCE_CATEGORIES.map((category) => (
-            <NavDropdown key={category.key} label={category.label} items={category.sources.map((source) => ({ href: `/news?source=${encodeURIComponent(source.sourceName)}`, label: source.label }))} />
-          ))}
-          <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
           <NavDropdown label="醫療院所" items={FACILITY_TOOLS} />
           <NavDropdown label="長照機構" items={LTC_TOOLS} />
           <NavDropdown label="食品營養" items={FOOD_TOOLS} />
+          <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
+          {SOURCE_CATEGORIES.map((category) => (
+            <NavDropdown key={category.key} label={category.label} items={category.sources.map((source) => ({ href: `/news?source=${encodeURIComponent(source.sourceName)}`, label: source.label }))} />
+          ))}
           <a
             href="https://www.j172.tw"
             target="_blank"
@@ -166,6 +166,10 @@ export default function SiteNav() {
       {mobileOpen ? (
         <nav id={mobilePanelId} aria-label="行動裝置導覽" className="max-h-[75vh] overflow-y-auto border-t border-neutral-200 pb-4 md:hidden">
           <MobileGroup label="首頁" items={[{ href: "/", label: "首頁" }]} onNavigate={closeMobile} />
+          <MobileGroup label="醫療院所" items={FACILITY_TOOLS} onNavigate={closeMobile} />
+          <MobileGroup label="長照機構" items={LTC_TOOLS} onNavigate={closeMobile} />
+          <MobileGroup label="食品營養" items={FOOD_TOOLS} onNavigate={closeMobile} />
+          <MobileGroup label="健康工具" items={CALCULATOR_TOOLS} onNavigate={closeMobile} />
           {SOURCE_CATEGORIES.map((category) => (
             <MobileGroup
               key={category.key}
@@ -174,10 +178,6 @@ export default function SiteNav() {
               onNavigate={closeMobile}
             />
           ))}
-          <MobileGroup label="健康工具" items={CALCULATOR_TOOLS} onNavigate={closeMobile} />
-          <MobileGroup label="醫療院所" items={FACILITY_TOOLS} onNavigate={closeMobile} />
-          <MobileGroup label="長照機構" items={LTC_TOOLS} onNavigate={closeMobile} />
-          <MobileGroup label="食品營養" items={FOOD_TOOLS} onNavigate={closeMobile} />
           <div className="py-2">
             <a
               href="https://www.j172.tw"

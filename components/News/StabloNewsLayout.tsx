@@ -213,22 +213,6 @@ export const StabloFooter = () => {
             <FooterLink href="/">首頁</FooterLink>
             <FooterLink href="/news">健康新聞</FooterLink>
           </FooterColumn>
-          {SOURCE_CATEGORIES.map((category) => (
-            <FooterColumn key={category.key} label={category.label}>
-              {category.sources.map((source) => (
-                <FooterLink key={source.sourceName} href={`/news?source=${encodeURIComponent(source.sourceName)}`}>
-                  {source.label}
-                </FooterLink>
-              ))}
-            </FooterColumn>
-          ))}
-          <FooterColumn label="健康工具">
-            {calculatorTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {tool.title}
-              </FooterLink>
-            ))}
-          </FooterColumn>
           <FooterColumn label="醫療院所">
             {facilityTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
@@ -250,6 +234,22 @@ export const StabloFooter = () => {
               </FooterLink>
             ))}
           </FooterColumn>
+          <FooterColumn label="健康工具">
+            {calculatorTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {tool.title}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+          {SOURCE_CATEGORIES.map((category) => (
+            <FooterColumn key={category.key} label={category.label}>
+              {category.sources.map((source) => (
+                <FooterLink key={source.sourceName} href={`/news?source=${encodeURIComponent(source.sourceName)}`}>
+                  {source.label}
+                </FooterLink>
+              ))}
+            </FooterColumn>
+          ))}
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-neutral-200 pt-6 text-sm text-neutral-500 md:flex-row md:items-center">
