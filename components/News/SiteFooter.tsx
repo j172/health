@@ -22,10 +22,24 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
 );
 
 export default function SiteFooter() {
-  const calculatorTools = TOOL_CATALOG.filter((t) => t.group === "calculator");
-  const facilityTools = TOOL_CATALOG.filter((t) => t.group === "facility");
-  const ltcTools = TOOL_CATALOG.filter((t) => t.group === "ltc");
-  const foodTools = TOOL_CATALOG.filter((t) => t.group === "food");
+  const overviewLinks = [
+    { href: "/", label: "首頁" },
+    { href: "/news", label: "健康新聞列表" },
+    { href: "/privacy", label: "隱私政策與宣告" },
+  ].sort((a, b) => a.label.localeCompare(b.label, "zh-Hant", { numeric: true }));
+
+  const calculatorTools = [...TOOL_CATALOG.filter((t) => t.group === "calculator")].sort((a, b) =>
+    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
+  );
+  const facilityTools = [...TOOL_CATALOG.filter((t) => t.group === "facility")].sort((a, b) =>
+    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
+  );
+  const ltcTools = [...TOOL_CATALOG.filter((t) => t.group === "ltc")].sort((a, b) =>
+    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
+  );
+  const foodTools = [...TOOL_CATALOG.filter((t) => t.group === "food")].sort((a, b) =>
+    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
+  );
 
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -65,9 +79,9 @@ export default function SiteFooter() {
         {/* Links Grid */}
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 border-t border-slate-100 pt-10 dark:border-slate-900">
           <FooterColumn label="全站總覽">
-            <FooterLink href="/">首頁</FooterLink>
-            <FooterLink href="/news">健康新聞列表</FooterLink>
-            <FooterLink href="/privacy">隱私政策與宣告</FooterLink>
+            {overviewLinks.map((item) => (
+              <FooterLink key={item.href} href={item.href}>{item.label}</FooterLink>
+            ))}
           </FooterColumn>
 
           <FooterColumn label="醫療院所">

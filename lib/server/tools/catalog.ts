@@ -289,3 +289,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
 ];
+
+// Sort TOOL_CATALOG globally by first character using Traditional Chinese localeCompare
+TOOL_CATALOG.sort((a, b) => a.title.localeCompare(b.title, "zh-Hant", { numeric: true }));
+
