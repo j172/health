@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
+import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 
 const stripHtml = (html: string | null | undefined): string =>
   (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -28,6 +29,7 @@ export default function HeroPost({
   const authorLabel = resolveAuthorLabel(hero);
   const desc = excerpt(hero.description_html);
   const src = hero.card_image_url;
+  const heroBadgeStyle = getSourceBadgeStyle(hero.source_name);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -49,7 +51,7 @@ export default function HeroPost({
 
           {/* Top Pill */}
           <div className="absolute left-6 top-6">
-            <span className="inline-flex items-center rounded-full bg-indigo-600 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+            <span className={`inline-flex items-center rounded-full ${heroBadgeStyle.heroBg} px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-md`}>
               {hero.feed_name}
             </span>
           </div>
@@ -89,6 +91,7 @@ export default function HeroPost({
       <div className="flex flex-col gap-6 lg:col-span-1">
         {secondary.slice(0, 2).map((item) => {
           const itemAuthor = resolveAuthorLabel(item);
+          const itemBadgeStyle = getSourceBadgeStyle(item.source_name);
           return (
             <article
               key={item.id}
@@ -96,7 +99,7 @@ export default function HeroPost({
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="inline-block rounded-full bg-indigo-50 px-2.5 py-0.5 text-[11px] font-bold uppercase text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${itemBadgeStyle.bg} ${itemBadgeStyle.text}`}>
                     {item.feed_name}
                   </span>
                   <span className="text-[11px] text-slate-400">

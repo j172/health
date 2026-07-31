@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
+import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 
 const stripHtml = (html: string | null | undefined): string =>
   (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -151,29 +152,31 @@ export default function SearchModal({
             </div>
           ) : (
             <div className="space-y-1">
-              {results.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/news/${item.id}`}
-                  onClick={onClose}
-                  className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-indigo-50/70 dark:hover:bg-slate-800/80"
-                >
-                  {item.card_image_url ? (
-                    <img
-                      src={item.card_image_url}
-                      alt=""
-                      className="h-14 w-20 shrink-0 rounded-lg object-cover bg-slate-100 dark:bg-slate-800"
-                    />
-                  ) : (
-                    <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 font-bold text-xs">
-                      Health
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block rounded-md bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                        {item.feed_name}
-                      </span>
+              {results.map((item) => {
+                const badgeStyle = getSourceBadgeStyle(item.source_name);
+                return (
+                  <Link
+                    key={item.id}
+                    href={`/news/${item.id}`}
+                    onClick={onClose}
+                    className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-indigo-50/70 dark:hover:bg-slate-800/80"
+                  >
+                    {item.card_image_url ? (
+                      <img
+                        src={item.card_image_url}
+                        alt=""
+                        className="h-14 w-20 shrink-0 rounded-lg object-cover bg-slate-100 dark:bg-slate-800"
+                      />
+                    ) : (
+                      <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400 font-bold text-xs">
+                        Health
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold ${badgeStyle.bg} ${badgeStyle.text}`}>
+                          {item.feed_name}
+                        </span>
                       <span className="text-[11px] text-slate-400">
                         {toTaipei(item.published_at_utc)}
                       </span>
@@ -185,8 +188,9 @@ export default function SearchModal({
                       {stripHtml(item.description_html)}
                     </p>
                   </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>

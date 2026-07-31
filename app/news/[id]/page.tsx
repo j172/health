@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getNewsById, listNewsAssetsByNewsId, listRelatedNews } from "@/lib/server/news/queries";
 import { buildArticleJsonLd, buildArticleMetadata } from "@/lib/server/news/seo";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
+import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
 import NewsCard from "@/components/News/NewsCard";
@@ -68,6 +69,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
   const articleHtml = news.detail_html || news.description_html || "<p>此則新聞目前沒有可顯示的完整內容。</p>";
   const jsonLd = buildArticleJsonLd(news);
   const authorLabel = resolveAuthorLabel(news);
+  const badgeStyle = getSourceBadgeStyle(news.source_name);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
@@ -104,7 +106,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
             {/* Header */}
             <header className="text-center">
               <div className="flex items-center justify-center gap-2">
-                <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-950 dark:text-indigo-300">
+                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${badgeStyle.bg} ${badgeStyle.text}`}>
                   {news.feed_name}
                 </span>
               </div>

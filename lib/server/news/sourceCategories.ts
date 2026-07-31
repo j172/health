@@ -46,3 +46,25 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
     ],
   },
 ];
+
+export const isGovSource = (sourceName: string): boolean => {
+  if (sourceName === "cwa") return true;
+  const govCat = SOURCE_CATEGORIES.find((c) => c.key === "gov");
+  return Boolean(govCat?.sources.some((s) => s.sourceName === sourceName));
+};
+
+export const getSourceBadgeStyle = (sourceName: string) => {
+  if (isGovSource(sourceName)) {
+    return {
+      bg: "bg-emerald-50 dark:bg-emerald-950/70",
+      text: "text-emerald-700 dark:text-emerald-300",
+      heroBg: "bg-emerald-600",
+    };
+  }
+  return {
+    bg: "bg-indigo-50 dark:bg-indigo-950/70",
+    text: "text-indigo-600 dark:text-indigo-300",
+    heroBg: "bg-indigo-600",
+  };
+};
+
