@@ -67,7 +67,6 @@ export default function SiteFooter() {
           <FooterColumn label="全站總覽">
             <FooterLink href="/">首頁</FooterLink>
             <FooterLink href="/news">健康新聞列表</FooterLink>
-            <FooterLink href="/tools/aqi">即時空氣品質 (AQI)</FooterLink>
             <FooterLink href="/privacy">隱私政策與宣告</FooterLink>
           </FooterColumn>
 

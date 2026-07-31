@@ -232,7 +232,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disability-welfare",
-    group: "facility",
+    group: "ltc",
     title: "身心障礙福利機構查詢",
     description: "查詢衛福部全國身心障礙福利機構名冊，支援關鍵字搜尋與附近定位。",
     faqs: [

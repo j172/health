@@ -140,12 +140,6 @@ export default function SiteNav() {
               >
                 最新新聞
               </Link>
-              <Link
-                href="/tools/aqi"
-                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
-              >
-                即時空品 (AQI)
-              </Link>
               <NavDropdown label="醫療院所" items={FACILITY_TOOLS} />
               <NavDropdown label="長照機構" items={LTC_TOOLS} />
               <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
@@ -200,9 +194,6 @@ export default function SiteNav() {
               </Link>
               <Link href="/news" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
                 最新新聞
-              </Link>
-              <Link href="/tools/aqi" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
-                即時空品 (AQI)
               </Link>
             </div>
           </div>
