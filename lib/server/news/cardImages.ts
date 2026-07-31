@@ -4,7 +4,7 @@ import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { env } from "@/lib/server/config/env";
 import { downloadPixabayImage, removeDownloadedImage, PixabayRateLimitError } from "@/lib/server/pixabay/download";
 import { searchHealthImages, type PixabayImage, type PixabaySearchResponse } from "@/lib/server/pixabay/client";
-import { deriveSearchTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
+import { deriveJiebaSearchTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
 const CACHE_TTL_HOURS = 24;
@@ -232,20 +232,19 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
     };
 
     newsLoop: for (const news of missingRows) {
-      const primaryTerm = deriveSearchTerm(news.title, fallbackIndex);
-      if ((FALLBACK_TERMS as readonly string[]).includes(primaryTerm)) fallbackIndex += 1;
+      const jiebaTerm = deriveJiebaSearchTerm(news.title);
+      const fallbackTerm = deriveFallbackTerm(news.id);
 
-      // Always try every remaining generic fallback term after the primary,
-      // regardless of whether the primary itself WAS one of them — a single
-      // fallback attempt isn't enough: with the caller often requesting one
-      // item at a time (limit=1), an article whose only two attempted terms
-      // are both exhausted would otherwise stay "missing" and get re-picked
-      // as the top candidate on every subsequent call, same failure forever.
-      // (Earlier version of this fix only added the extra attempts when the
-      // primary was a keyword match, so a keyword-less article whose
-      // randomly-picked single fallback term was exhausted still got stuck —
-      // confirmed live.)
-      const termsToTry = [primaryTerm, ...FALLBACK_TERMS.filter((term) => term !== primaryTerm)];
+      const termsToTry: string[] = [];
+      if (jiebaTerm) {
+        termsToTry.push(jiebaTerm);
+      }
+      termsToTry.push(fallbackTerm);
+      for (const term of FALLBACK_TERMS) {
+        if (!termsToTry.includes(term)) {
+          termsToTry.push(term);
+        }
+      }
 
       let outcome: "assigned" | "rate_limited" | "exhausted" = "exhausted";
       for (const term of termsToTry) {
