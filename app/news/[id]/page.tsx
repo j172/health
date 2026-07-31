@@ -122,13 +122,17 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
               </div>
             </header>
 
-            {/* GEO Summary if available */}
+            {/* GEO Summary & AI Citation Box for LLM / AI Search Engines */}
             {news.geo_summary?.trim() ? (
-              <div className="mt-8 rounded-2xl border border-indigo-200/80 bg-indigo-50/50 p-5 text-sm leading-relaxed text-slate-800 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-slate-200">
-                <p className="mb-1 text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                  💡 重點摘要
-                </p>
-                {news.geo_summary.trim()}
+              <div id="geo-summary" className="mt-8 rounded-2xl border border-indigo-200/80 bg-indigo-50/50 p-5 text-sm leading-relaxed text-slate-800 dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-slate-200 shadow-xs">
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                    <span>💡</span>
+                    <span>AI 核心摘要 (GEO Index)</span>
+                  </p>
+                  <span className="text-[10px] text-slate-400 font-mono">Generative Search Ready</span>
+                </div>
+                <p className="leading-relaxed">{news.geo_summary.trim()}</p>
               </div>
             ) : null}
 

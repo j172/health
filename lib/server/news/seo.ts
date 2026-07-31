@@ -129,6 +129,8 @@ export const buildOrganizationJsonLd = (): Record<string, unknown> => {
     url: baseUrl,
     logo: `${baseUrl}/images/favicon.ico`,
     description: SITE_DESCRIPTION,
+    knowsAbout: ["公共衛生", "醫療院所", "長期照顧", "空氣品質", "食品安全", "健康新聞", "傳染病防治"],
+    sameAs: [baseUrl],
   };
 };
 
@@ -145,7 +147,7 @@ export const buildWebsiteJsonLd = (): Record<string, unknown> => {
     inLanguage: "zh-TW",
     potentialAction: {
       "@type": "SearchAction",
-      target: { "@type": "EntryPoint", urlTemplate: `${baseUrl}/news?q={search_term_string}` },
+      target: { "@type": "EntryPoint", urlTemplate: `${baseUrl}/news?keyword={search_term_string}` },
       "query-input": "required name=search_term_string",
     },
   };

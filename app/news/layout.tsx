@@ -35,6 +35,10 @@ export const metadata: Metadata = {
 export default function NewsRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-Hant">
+      <head>
+        <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt Index" />
+        <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs Full Knowledge Base" />
+      </head>
       <body className={inter.className}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
