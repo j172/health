@@ -590,6 +590,12 @@ if (str_starts_with($path, '/_next/static/')) {
             'wasm' => 'application/wasm',
         ];
         $extension = strtolower(pathinfo($fileReal, PATHINFO_EXTENSION));
+        if (in_array($extension, ['woff', 'woff2', 'ttf', 'eot', 'otf', 'wasm'], true)) {
+            @ini_set('zlib.output_compression', 'Off');
+            if (function_exists('apache_setenv')) {
+                @apache_setenv('no-gzip', '1');
+            }
+        }
         header('Content-Type: ' . ($types[$extension] ?? 'application/octet-stream'));
         header('Cache-Control: public, max-age=31536000, immutable');
         header('Content-Length: ' . filesize($fileReal));
