@@ -613,6 +613,34 @@ if (str_starts_with($path, '/_next/static/')) {
     exit;
 }
 
+if (str_starts_with($path, '/images/')) {
+    $relative = rawurldecode(substr($path, strlen('/images/')));
+    if ($relative !== '' && !str_contains($relative, "\0") && !str_contains($relative, '..')) {
+        $publicReal = realpath('/home/tw123457/health_app/public/images');
+        $fileReal = realpath('/home/tw123457/health_app/public/images/' . $relative);
+        if ($fileReal !== false && $publicReal !== false && is_file($fileReal) && str_starts_with($fileReal, $publicReal . DIRECTORY_SEPARATOR)) {
+            $ext = strtolower(pathinfo($fileReal, PATHINFO_EXTENSION));
+            $mimeTypes = [
+                'png' => 'image/png',
+                'jpg' => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'webp' => 'image/webp',
+                'svg' => 'image/svg+xml',
+                'ico' => 'image/x-icon',
+            ];
+            header('Content-Type: ' . ($mimeTypes[$ext] ?? 'application/octet-stream'));
+            header('Cache-Control: public, max-age=31536000, immutable');
+            header('Access-Control-Allow-Origin: *');
+            header('Content-Length: ' . filesize($fileReal));
+            if ($method !== 'HEAD') {
+                readfile($fileReal);
+            }
+            exit;
+        }
+    }
+}
+
 $target = 'http://127.0.0.1:3000' . $uri;
 
 $skipHourlySync = str_starts_with($path, '/_next/')
