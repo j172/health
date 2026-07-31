@@ -29,12 +29,12 @@ function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
       <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-4">
         <Image
           src="/images/logo/j172tw-health-logo.png"
-          alt="j172tw Health"
+          alt="j172tw Healthz"
           width={48}
           height={48}
           className="h-10 w-10 opacity-40 transition-transform duration-500 group-hover:scale-110"
         />
-        <span className="mt-2 text-[10px] font-semibold tracking-wider text-slate-400 opacity-60">j172tw Health</span>
+        <span className="mt-2 text-[10px] font-semibold tracking-wider text-slate-400 opacity-60">j172tw Healthz</span>
       </div>
     );
   }

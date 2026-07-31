@@ -36,13 +36,13 @@ export default function SiteFooter() {
             <Link href="/" className="flex items-center gap-2.5">
               <Image
                 src="/images/logo/j172tw-health-logo.png"
-                alt="j172tw Health"
+                alt="j172tw Healthz"
                 width={36}
                 height={36}
                 className="h-9 w-9 rounded-xl shadow-xs"
               />
               <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                j172tw <span className="text-indigo-600 dark:text-indigo-400">Health</span>
+                j172tw <span className="text-indigo-600 dark:text-indigo-400">Healthz</span>
               </span>
             </Link>
             <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -98,7 +98,7 @@ export default function SiteFooter() {
 
         {/* Bottom copyright */}
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-400 dark:border-slate-900 sm:flex-row sm:items-center">
-          <p>&copy; {new Date().getFullYear()} j172tw Health. 版權所有。</p>
+          <p>&copy; {new Date().getFullYear()} j172tw Healthz. 版權所有。</p>
           <p>本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。</p>
         </div>
       </div>

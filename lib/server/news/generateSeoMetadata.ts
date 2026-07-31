@@ -1,7 +1,7 @@
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { runCloudflareAiChat } from "@/lib/server/cloudflare/aiClient";
 
-const SITE_NAME = "j172tw Health";
+const SITE_NAME = "j172tw Healthz";
 
 const truncate = (text: string, max: number): string => {
   const normalized = text.replace(/\s+/g, " ").trim();

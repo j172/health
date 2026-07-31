@@ -38,7 +38,7 @@ const Header = () => {
         <div className="flex w-full items-center justify-between xl:w-1/4">
           <a href="/">
             <span className="text-xl font-bold tracking-tight text-black dark:text-white">
-              j172tw Health
+              j172tw Healthz
             </span>
           </a>
 

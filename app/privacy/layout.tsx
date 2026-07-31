@@ -7,7 +7,7 @@ import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const PRIVACY_DESCRIPTION = "j172tw Health 隱私權政策：說明本站蒐集哪些資料、如何使用，並符合 GDPR、CCPA/CPRA、APPI、CBPR 與台灣個人資料保護法之揭露與使用者權利規範。";
+const PRIVACY_DESCRIPTION = "j172tw Healthz 隱私權政策：說明本站蒐集哪些資料、如何使用，並符合 GDPR、CCPA/CPRA、APPI、CBPR 與台灣個人資料保護法之揭露與使用者權利規範。";
 
 export const viewport: Viewport = {
   themeColor: "#625df5",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: { default: `隱私權政策 | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
   description: PRIVACY_DESCRIPTION,
   icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
-  appleWebApp: { capable: true, title: "j172tw Health", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "j172tw Healthz", statusBarStyle: "default" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

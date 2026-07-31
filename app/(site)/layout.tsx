@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
-  appleWebApp: { capable: true, title: "j172tw Health", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "j172tw Healthz", statusBarStyle: "default" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",

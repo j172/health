@@ -116,13 +116,13 @@ export default function SiteNav() {
             <Link href="/" className="flex items-center gap-2.5">
               <Image
                 src="/images/logo/j172tw-health-logo.png"
-                alt="j172tw Health"
+                alt="j172tw Healthz"
                 width={36}
                 height={36}
                 className="h-9 w-9 rounded-xl shadow-xs"
               />
               <span className="text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                j172tw <span className="text-indigo-600 dark:text-indigo-400">Health</span>
+                j172tw <span className="text-indigo-600 dark:text-indigo-400">Healthz</span>
               </span>
             </Link>
 
