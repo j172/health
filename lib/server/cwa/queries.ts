@@ -421,3 +421,27 @@ export const getNearestUvReading = async (lat: number, lng: number): Promise<(La
     );
     return (rows[0] as unknown as (LatestUvReading & { distance_km: number })) ?? null;
   });
+
+export interface UvStationItem {
+  station_id: string;
+  station_name: string | null;
+  county_name: string | null;
+  uv_index: number;
+  obs_date: string;
+}
+
+export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT u.station_id, s.station_name, s.county_name, u.uv_index, u.obs_date
+      FROM cwa_uv_index u
+      INNER JOIN cwa_station_weather s ON s.station_id = u.station_id
+      WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index)
+        AND u.uv_index IS NOT NULL
+      GROUP BY u.station_id, s.station_name, s.county_name, u.uv_index, u.obs_date
+      ORDER BY u.uv_index DESC
+      `,
+    );
+    return rows as unknown as UvStationItem[];
+  });

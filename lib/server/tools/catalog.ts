@@ -21,6 +21,17 @@ export interface ToolCatalogEntry {
 // title/description/FAQ text across files.
 export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
+    slug: "uv",
+    group: "calculator",
+    title: "全台即時紫外線指數 (UV)",
+    description: "即時查詢全台各縣市氣象站紫外線指數 (UV Index)，提供紫外線曝曬防護分級（低量、中量、高量、過量、極高量）與專業防曬係數與配件建議。",
+    faqs: [
+      { question: "紫外線指數分級標準為何？", answer: "依中央氣象署與環境部標準：0-2 為低量級（綠色）、3-5 為中量級（黃色）、6-7 為高量級（橘色）、8-10 為過量級（紅色）、11 以上為極高量級（紫色）。" },
+      { question: "過量級與極高量級應該如何防範？", answer: "當紫外線達到過量級（8-10）或極高量級（11+）時，曬傷時間約僅需 15-20 分鐘，建議儘量避免在上午 10 時至下午 2 時過度曝曬，戶外活動務必塗抹 SPF30+ 防曬乳、配戴帽子與太陽眼鏡。" },
+      { question: "資料來源與更新頻率？", answer: "本站紫外線資料同步自交通部中央氣象署全台各地面氣象觀測站即時監測數據。" },
+    ],
+  },
+  {
     slug: "earthquakes",
     group: "calculator",
     title: "全球顯著地震查詢",
