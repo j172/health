@@ -4,7 +4,6 @@ import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { getRecentSignificantEarthquakes } from "@/lib/server/earthquakes/queries";
 import SiteNav from "@/components/News/SiteNav";
 import SiteFooter from "@/components/News/SiteFooter";
-import NearbyWeatherBar from "@/components/News/NearbyWeatherBar";
 import NewsCard from "@/components/News/NewsCard";
 import HeroPost from "@/components/News/HeroPost";
 import NewsSidebar from "@/components/News/NewsSidebar";
@@ -27,7 +26,6 @@ interface Pagination {
 
 export const StabloHeader = async () => (
   <header>
-    <NearbyWeatherBar />
     <SiteNav />
   </header>
 );
