@@ -155,19 +155,8 @@ export const listLatestNews = async (
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html,
-             COALESCE(
-               (SELECT a.url
-                FROM news_assets a
-                WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-                ORDER BY a.sort_order ASC, a.id ASC
-                LIMIT 1),
-               c.local_path
-             ) AS card_image_url,
+             c.local_path AS card_image_url,
              CASE
-               WHEN EXISTS (
-                 SELECT 1 FROM news_assets a
-                 WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-               ) THEN 'rss'
                WHEN c.local_path IS NOT NULL THEN 'pixabay'
                ELSE NULL
              END AS card_image_source,
@@ -254,19 +243,8 @@ export const listRelatedNews = async (
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html,
-             COALESCE(
-               (SELECT a.url
-                FROM news_assets a
-                WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-                ORDER BY a.sort_order ASC, a.id ASC
-                LIMIT 1),
-               c.local_path
-             ) AS card_image_url,
+             c.local_path AS card_image_url,
              CASE
-               WHEN EXISTS (
-                 SELECT 1 FROM news_assets a
-                 WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-               ) THEN 'rss'
                WHEN c.local_path IS NOT NULL THEN 'pixabay'
                ELSE NULL
              END AS card_image_source,

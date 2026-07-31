@@ -134,10 +134,6 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
-        AND NOT EXISTS (
-          SELECT 1 FROM news_assets a
-          WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-        )
       ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
       LIMIT ?
       `,
@@ -188,10 +184,6 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
             WHERE NOT EXISTS (
               SELECT 1 FROM news_card_images c WHERE c.news_item_id = ?
             )
-              AND NOT EXISTS (
-                SELECT 1 FROM news_assets a
-                WHERE a.news_item_id = ? AND a.asset_type = 'image'
-              )
             `,
             [
               news.id,
@@ -204,7 +196,6 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
               downloaded.height,
               now,
               now,
-              news.id,
               news.id,
             ],
           );
