@@ -445,7 +445,7 @@ export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
         `
         SELECT DISTINCT u.station_id, s.station_name, s.county_name, u.uv_index, u.obs_date
         FROM cwa_uv_index u
-        INNER JOIN cwa_station_weather s ON s.station_id = u.station_id
+        LEFT JOIN cwa_station_weather s ON s.station_id = u.station_id
         WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index)
           AND u.uv_index IS NOT NULL
         ORDER BY u.uv_index DESC
@@ -458,11 +458,12 @@ export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
         } else if (r.obs_date) {
           obsDateStr = String(r.obs_date).split("T")[0];
         }
+        const numUv = typeof r.uv_index === "number" ? r.uv_index : parseFloat(String(r.uv_index ?? ""));
         return {
           station_id: String(r.station_id ?? ""),
           station_name: r.station_name ? String(r.station_name) : null,
           county_name: r.county_name ? String(r.county_name) : null,
-          uv_index: isNaN(Number(r.uv_index)) ? 0 : Number(r.uv_index),
+          uv_index: isNaN(numUv) ? 0 : numUv,
           obs_date: obsDateStr,
         };
       });

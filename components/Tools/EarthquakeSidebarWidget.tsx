@@ -15,7 +15,18 @@ const toTaipeiShort = (value: Date | string | null): string => {
   }
 };
 
-const magnitudeColor = (mag: number): string => {
+function safeToFixed(val: unknown, digits = 1): string {
+  const num = typeof val === "number" ? val : parseFloat(String(val ?? ""));
+  return isNaN(num) ? "0.0" : num.toFixed(digits);
+}
+
+const parseMag = (val: unknown): number => {
+  const num = typeof val === "number" ? val : parseFloat(String(val ?? ""));
+  return isNaN(num) ? 0 : num;
+};
+
+const magnitudeColor = (magInput: unknown): string => {
+  const mag = parseMag(magInput);
   if (mag >= 8.0) return "#7c3aed";
   if (mag >= 7.0) return "#dc2626";
   return "#ea580c";
@@ -54,13 +65,13 @@ export default function EarthquakeSidebarWidget({
                 <div className="flex items-center gap-2">
                   <span
                     className="text-2xl font-extrabold"
-                    style={{ color: magnitudeColor(Number(primaryQuake.magnitude || 0)) }}
+                    style={{ color: magnitudeColor(primaryQuake.magnitude) }}
                   >
-                    M {(isNaN(Number(primaryQuake.magnitude)) ? 0 : Number(primaryQuake.magnitude)).toFixed(1)}
+                    M {safeToFixed(primaryQuake.magnitude, 1)}
                   </span>
                   <span
                     className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-xs"
-                    style={{ backgroundColor: magnitudeColor(Number(primaryQuake.magnitude || 0)) }}
+                    style={{ backgroundColor: magnitudeColor(primaryQuake.magnitude) }}
                   >
                     顯著地震
                   </span>
@@ -81,14 +92,14 @@ export default function EarthquakeSidebarWidget({
             {secondaryQuakes.length > 0 && (
               <div className="mt-3 pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 space-y-1.5 text-xs">
                 {secondaryQuakes.map((q) => {
-                  const numMag = isNaN(Number(q.magnitude)) ? 0 : Number(q.magnitude);
+                  const numMag = parseMag(q.magnitude);
                   return (
                     <div key={q.id} className="flex items-center justify-between text-slate-600 dark:text-slate-300">
                       <span className="truncate max-w-[160px]">
                         {q.place_zh ?? q.place ?? "地區"}
                       </span>
                       <span className="font-bold shrink-0" style={{ color: magnitudeColor(numMag) }}>
-                        M{numMag.toFixed(1)} · {toTaipeiShort(q.event_time)}
+                        M{safeToFixed(numMag, 1)} · {toTaipeiShort(q.event_time)}
                       </span>
                     </div>
                   );

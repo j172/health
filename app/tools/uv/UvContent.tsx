@@ -3,9 +3,15 @@
 import { useState } from "react";
 import type { UvStationItem } from "@/lib/server/cwa/queries";
 
-const getUvRiskLevel = (uvInput: number) => {
-  const uv = Number(uvInput);
-  if (isNaN(uv)) {
+function safeToFixed(val: unknown, digits = 1): string {
+  const num = typeof val === "number" ? val : parseFloat(String(val ?? ""));
+  return isNaN(num) ? "-" : num.toFixed(digits);
+}
+
+const getUvRiskLevel = (uvInput: unknown) => {
+  const num = typeof uvInput === "number" ? uvInput : parseFloat(String(uvInput ?? ""));
+  const uv = isNaN(num) ? 0 : num;
+  if (isNaN(num)) {
     return {
       level: "未知量級",
       bg: "bg-slate-500 text-white dark:bg-slate-600",
@@ -147,9 +153,8 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((item) => {
-            const numUv = Number(item.uv_index);
-            const risk = getUvRiskLevel(numUv);
-            const displayUv = isNaN(numUv) ? "-" : numUv.toFixed(1);
+            const risk = getUvRiskLevel(item.uv_index);
+            const displayUv = safeToFixed(item.uv_index, 1);
 
             return (
               <div

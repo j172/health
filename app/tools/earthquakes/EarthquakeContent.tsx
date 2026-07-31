@@ -17,8 +17,14 @@ const toTaipeiTime = (value: Date | string | null): string => {
   }
 };
 
-const getMagBadge = (magInput: number | string) => {
-  const mag = isNaN(Number(magInput)) ? 0 : Number(magInput);
+function safeToFixed(val: unknown, digits = 1): string {
+  const num = typeof val === "number" ? val : parseFloat(String(val ?? ""));
+  return isNaN(num) ? "0.0" : num.toFixed(digits);
+}
+
+const getMagBadge = (magInput: unknown) => {
+  const parsed = typeof magInput === "number" ? magInput : parseFloat(String(magInput ?? ""));
+  const mag = isNaN(parsed) ? 0 : parsed;
   if (mag <= 0) {
     return {
       bg: "bg-slate-500 text-white dark:bg-slate-600",
@@ -39,7 +45,7 @@ const getMagBadge = (magInput: number | string) => {
   }
   return {
     bg: "bg-indigo-500 text-white dark:bg-indigo-600",
-    label: `M${mag.toFixed(1)}`,
+    label: `M${safeToFixed(mag, 1)}`,
   };
 };
 
@@ -47,7 +53,10 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
   const [filterMinMag, setFilterMinMag] = useState<number>(6.0);
   const { locale, tDynamic } = useLanguage();
 
-  const filtered = earthquakes.filter((e) => Number(e.magnitude) >= filterMinMag);
+  const filtered = earthquakes.filter((e) => {
+    const mag = typeof e.magnitude === "number" ? e.magnitude : parseFloat(String(e.magnitude ?? ""));
+    return !isNaN(mag) && mag >= filterMinMag;
+  });
 
   return (
     <div className="space-y-8">
