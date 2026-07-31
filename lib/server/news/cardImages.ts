@@ -8,8 +8,8 @@ import { deriveJiebaSearchTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib
 
 const LOCK_NAME = "news_card_image_assignment_lock";
 const CACHE_TTL_HOURS = 24;
-const API_RESULTS_PER_PAGE = 100;
-const MAX_API_PAGES = 5;
+const API_RESULTS_PER_PAGE = 30;
+const MAX_API_PAGES = 3;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
 interface MissingNewsRow extends RowDataPacket {
