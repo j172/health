@@ -7,6 +7,7 @@ import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import dynamic from "next/dynamic";
 import ThemeToggler from "@/components/Header/ThemeToggler";
+import LanguageToggler from "@/components/Header/LanguageToggler";
 
 const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), { ssr: false });
 
@@ -163,7 +164,8 @@ export default function SiteNav() {
                 </kbd>
               </button>
 
-              {/* Theme Toggler */}
+              {/* Language Switcher & Theme Toggler */}
+              <LanguageToggler />
               <ThemeToggler />
 
               {/* Mobile Hamburger */}
