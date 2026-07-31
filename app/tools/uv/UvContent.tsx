@@ -147,7 +147,9 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((item) => {
-            const risk = getUvRiskLevel(item.uv_index);
+            const numUv = Number(item.uv_index);
+            const risk = getUvRiskLevel(numUv);
+            const displayUv = isNaN(numUv) ? "-" : numUv.toFixed(1);
 
             return (
               <div
@@ -160,7 +162,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
                       {item.county_name ?? "全台測站"}
                     </span>
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold shadow-2xs ${risk.bg}`}>
-                      UV {Number(item.uv_index).toFixed(1)}
+                      UV {displayUv}
                     </span>
                   </div>
 
