@@ -27,7 +27,8 @@ export type FeedCode =
   | "healthforall"
   | "ttvc"
   | "twhealth"
-  | "heho";
+  | "heho"
+  | "mirrormedia_healthnews";
 
 export interface FeedConfig {
   code: FeedCode;

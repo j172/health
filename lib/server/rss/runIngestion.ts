@@ -5,6 +5,7 @@ import { releaseIngestionLock, tryAcquireIngestionLock } from "@/lib/server/db/m
 import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
 import { parseFeedXml } from "@/lib/server/rss/parseRss";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
+import { fetchMirrorMediaHealthnews } from "@/lib/server/rss/fetchMirrorMediaExternals";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
@@ -128,6 +129,72 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       // eslint-disable-next-line no-await-in-loop
       const enriched = await enrichItem(item);
       enrichedItems.push(enriched);
+    }
+
+    // -----------------------------------------------------------------------
+    // Mirror Media 健康醫療網 — JSON API (not RSS/XML; handled separately)
+    // -----------------------------------------------------------------------
+    const mirrorResult = await fetchMirrorMediaHealthnews();
+    if (!mirrorResult.ok) {
+      feedResults.push({
+        feed: {
+          code: "mirrormedia_healthnews",
+          name: "鏡週刊健康醫療網",
+          url: "https://api.mirrormedia.mg/externals",
+          sourceName: "mirrormedia_healthnews",
+        },
+        ok: false,
+        httpStatus: mirrorResult.httpStatus,
+        itemCount: 0,
+        errorMessage: mirrorResult.errorMessage,
+      });
+      await writeIngestionError({
+        runId,
+        feedCode: "mirrormedia_healthnews",
+        url: "https://api.mirrormedia.mg/externals",
+        message: mirrorResult.errorMessage ?? "Unknown Mirror Media fetch error",
+        detail: {},
+      });
+    } else {
+      feedResults.push({
+        feed: {
+          code: "mirrormedia_healthnews",
+          name: "鏡週刊健康醫療網",
+          url: "https://api.mirrormedia.mg/externals",
+          sourceName: "mirrormedia_healthnews",
+        },
+        ok: true,
+        httpStatus: mirrorResult.httpStatus,
+        itemCount: mirrorResult.itemCount,
+        errorMessage: null,
+      });
+
+      // Mirror Media API already returns full content — check hashes and skip
+      // unchanged items, then enrich only the new/changed ones with AI SEO.
+      const mirrorHashes = await getExistingPayloadHashes(mirrorResult.items);
+      for (const item of mirrorResult.items) {
+        if (mirrorHashes.get(itemKey(item)) === item.payloadHash) {
+          skippedUnchanged += 1;
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const seo = await generateSeoMetadataWithAi({
+          title: item.title,
+          descriptionText: item.descriptionText,
+          detailText: item.detailText,
+          feedName: item.feedName,
+          deptName: item.deptName,
+          sourceName: item.sourceName,
+          publishedAtUtc: item.publishedAtUtc,
+        });
+        enrichedItems.push({
+          ...item,
+          metaTitle: seo.metaTitle,
+          metaDescription: seo.metaDescription,
+          keywords: seo.keywords,
+          geoSummary: seo.geoSummary,
+        });
+      }
     }
 
     const persisted = await persistItems(enrichedItems);

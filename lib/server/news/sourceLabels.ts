@@ -20,6 +20,7 @@ const SOURCE_LABELS: Record<string, string> = {
   ttvc: "常春月刊",
   twhealth: "好健康（全民健康基金會）",
   heho: "Heho健康",
+  mirrormedia_healthnews: "鏡週刊健康醫療網",
 };
 
 export interface SourceLabelInput {
