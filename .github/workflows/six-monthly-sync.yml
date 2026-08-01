@@ -26,29 +26,66 @@ jobs:
       - name: Install script dependencies
         run: npm install adm-zip
 
+      # Admin sync endpoints have been observed getting a JS anti-bot
+      # challenge page instead of JSON when called from a GitHub Actions
+      # runner IP hitting the public domain — tunnel to the app's own
+      # loopback instead, same as every other scheduled sync in this repo.
+      # Background process persists into later steps of this job (same
+      # runner VM), so it only needs to be started once here.
+      - name: Open SSH tunnel to production loopback
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          KEY_FILE="$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          ssh -i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
+            -o ServerAliveInterval=30 -N -L 18080:127.0.0.1:3000 "$SSH_USER@$SSH_HOST" &
+          echo $! > "$RUNNER_TEMP/tunnel.pid"
+          for _ in $(seq 1 20); do
+            if curl -s -o /dev/null "http://127.0.0.1:18080/api/aqi"; then break; fi
+            sleep 0.5
+          done
+          curl -fsS -o /dev/null "http://127.0.0.1:18080/api/aqi"
+          echo "Tunnel ready on 127.0.0.1:18080."
+
       - name: Run six-monthly sync
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
         run: bash scripts/run-six-monthly-sync.sh
 
       - name: Import TFDA food nutrition database (~227k rows, unzipped/parsed here)
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-food-nutrition.mjs
 
       - name: Import TFDA food operator registry (~825k rows, unzipped/parsed here)
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-food-operators.mjs
 
+      - name: Close SSH tunnel
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/tunnel.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/tunnel.pid")" 2>/dev/null || true
+          fi
+          rm -f "$RUNNER_TEMP/deploy_key"
+
       # NOT run here: the 4 MOHW imports that fetch from ltcpap.mohw.gov.tw /
-      # opendata.mohw.gov.tw. Empirically confirmed unreachable from GitHub
-      # Actions runners too (20s timeout, HTTP 000, on all three hosts tested)
-      # — the IP-range block covers the whole mohw.gov.tw apex domain, not
-      # just ltcpap. These four (scripts/import-mohw-facilities.mjs, import-
-      # mohw-ltc-contracted.mjs, import-mohw-disability-welfare.mjs, import-
-      # mohw-elder-welfare.mjs) can only be run from a residential/office
-      # network by hand — see run-six-monthly-sync.sh's header comment.
+      # www.opendata.mohw.gov.tw. Empirically confirmed unreachable from the
+      # production host too (re-verified 2026-08-01 via direct SSH: both
+      # hosts time out after 15s) — this isn't the same public-domain/WAF
+      # issue the tunnel above works around, the mohw.gov.tw subdomains
+      # themselves are unreachable regardless of caller. These four
+      # (scripts/import-mohw-facilities.mjs, import-mohw-ltc-contracted.mjs,
+      # import-mohw-disability-welfare.mjs, import-mohw-elder-welfare.mjs)
+      # can only be run from a residential/office network by hand — see
+      # run-six-monthly-sync.sh's header comment.

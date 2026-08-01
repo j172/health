@@ -214,10 +214,31 @@ jobs:
             --data '{"purge_everything":true}' \
             "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" | jq .
 
+      - name: Sync scheduled-task crontab
+        continue-on-error: true
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          RSS_SYNC_SECRET: ${{ secrets.RSS_SYNC_SECRET }}
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY — skipping crontab sync."
+            exit 0
+          fi
+          bash scripts/deploy-crontab.sh
+
       - name: Backfill missing news card images
         continue-on-error: true
         env:
           RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
 
@@ -226,27 +247,44 @@ jobs:
             exit 1
           fi
 
+          # Admin/internal sync endpoints have been observed getting a JS
+          # anti-bot challenge page instead of JSON when called from outside
+          # the box (confirmed for other admin endpoints called from a
+          # GitHub Actions runner IP) — go through an SSH tunnel to the
+          # app's own loopback instead of the public domain, same as every
+          # other scheduled sync in this repo.
+          KEY_FILE="$(mktemp)"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          ssh -i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
+            -N -L 18080:127.0.0.1:3000 "$SSH_USER@$SSH_HOST" &
+          TUNNEL_PID=$!
+          cleanup() { kill "$TUNNEL_PID" 2>/dev/null || true; rm -f "$KEY_FILE"; }
+          trap cleanup EXIT
+          for _ in $(seq 1 20); do
+            if curl -s -o /dev/null "http://127.0.0.1:18080/api/aqi"; then break; fi
+            sleep 0.5
+          done
+
           # Pixabay candidate URLs from a cached search are signed/temporary and can
           # expire well within the 24h cache TTL, which then fails every download with
           # "content failed validation" until the cache is cleared. Deploys are a good
           # natural point to force a fresh fetch.
-          curl --fail --show-error --silent --insecure \
-            --resolve "health.j172.tw:443:103.21.221.12" \
+          curl --fail --show-error --silent \
             --request POST \
             --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
             --header "content-type: application/json" \
             --data '{"clearCache":true}' \
-            "https://health.j172.tw/api/admin/news-images" | jq .
+            "http://127.0.0.1:18080/api/admin/news-images" | jq .
 
           TOTAL_FAILED=0
           for ATTEMPT in $(seq 1 100); do
-            RESPONSE="$(curl --fail --show-error --silent --insecure \
-              --resolve "health.j172.tw:443:103.21.221.12" \
+            RESPONSE="$(curl --fail --show-error --silent \
               --request POST \
               --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
               --header "content-type: application/json" \
               --data '{"limit":1}' \
-              "https://health.j172.tw/api/admin/news-images")"
+              "http://127.0.0.1:18080/api/admin/news-images")"
 
             OK="$(printf '%s' "$RESPONSE" | jq -r '.ok')"
             ASSIGNED="$(printf '%s' "$RESPONSE" | jq -r '.summary.assigned // 0')"
