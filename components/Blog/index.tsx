@@ -2,7 +2,7 @@ import React from "react";
 import SectionHeader from "../Common/SectionHeader";
 import BlogItem from "./BlogItem";
 import { listLatestNews } from "@/lib/server/news/queries";
-import { Blog } from "@/types/blog";
+import type { Blog } from "@/types/blog";
 
 const Blog = async () => {
   const items = await listLatestNews(3);
