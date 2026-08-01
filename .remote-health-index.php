@@ -690,20 +690,20 @@ if (str_starts_with($path, '/images/')) {
 
 $target = 'http://127.0.0.1:3000' . $uri;
 
-$skipHourlySync = str_starts_with($path, '/_next/')
+$skipRssSync = str_starts_with($path, '/_next/')
     || str_starts_with($path, '/images/')
     || str_starts_with($path, '/api/')
     || $path === '/favicon.ico'
     || $path === '/images/favicon.ico';
 
-if (!$skipHourlySync) {
+if (!$skipRssSync) {
     $stateFile = '/home/tw123457/health_app/.rss-sync-last-run';
     $lockFile = '/home/tw123457/health_app/.rss-sync-trigger.lock';
     $lockHandle = @fopen($lockFile, 'c+');
 
     if ($lockHandle && @flock($lockHandle, LOCK_EX | LOCK_NB)) {
         $lastRun = is_file($stateFile) ? (int) trim((string) file_get_contents($stateFile)) : 0;
-        if ($lastRun === 0 || (time() - $lastRun) >= 3600) {
+        if ($lastRun === 0 || (time() - $lastRun) >= 1800) {
             @file_put_contents($stateFile, (string) time(), LOCK_EX);
             $secret = $readEnvVar('RSS_SYNC_SECRET');
             if ($secret !== '') {

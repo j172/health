@@ -6,6 +6,7 @@ import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
 import { parseFeedXml } from "@/lib/server/rss/parseRss";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { fetchMirrorMediaHealthnews } from "@/lib/server/rss/fetchMirrorMediaExternals";
+import { fetchUdnHealthNews } from "@/lib/server/rss/fetchUdnHealthNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
@@ -174,6 +175,73 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       const mirrorHashes = await getExistingPayloadHashes(mirrorResult.items);
       for (const item of mirrorResult.items) {
         if (mirrorHashes.get(itemKey(item)) === item.payloadHash) {
+          skippedUnchanged += 1;
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const seo = await generateSeoMetadataWithAi({
+          title: item.title,
+          descriptionText: item.descriptionText,
+          detailText: item.detailText,
+          feedName: item.feedName,
+          deptName: item.deptName,
+          sourceName: item.sourceName,
+          publishedAtUtc: item.publishedAtUtc,
+        });
+        enrichedItems.push({
+          ...item,
+          metaTitle: seo.metaTitle,
+          metaDescription: seo.metaDescription,
+          keywords: seo.keywords,
+          geoSummary: seo.geoSummary,
+        });
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // 元氣網（health.udn.com/health）— HTML ranking page (no RSS feed of its
+    // own), handled separately just like Mirror Media above.
+    // -----------------------------------------------------------------------
+    const udnResult = await fetchUdnHealthNews();
+    if (!udnResult.ok) {
+      feedResults.push({
+        feed: {
+          code: "udn_health",
+          name: "元氣網（聯合報健康）",
+          url: "https://health.udn.com/health/rank/newest/1005",
+          sourceName: "udn_health",
+        },
+        ok: false,
+        httpStatus: udnResult.httpStatus,
+        itemCount: 0,
+        errorMessage: udnResult.errorMessage,
+      });
+      await writeIngestionError({
+        runId,
+        feedCode: "udn_health",
+        url: "https://health.udn.com/health/rank/newest/1005",
+        message: udnResult.errorMessage ?? "Unknown UDN health fetch error",
+        detail: {},
+      });
+    } else {
+      feedResults.push({
+        feed: {
+          code: "udn_health",
+          name: "元氣網（聯合報健康）",
+          url: "https://health.udn.com/health/rank/newest/1005",
+          sourceName: "udn_health",
+        },
+        ok: true,
+        httpStatus: udnResult.httpStatus,
+        itemCount: udnResult.itemCount,
+        errorMessage: null,
+      });
+
+      // The rank page already includes a real summary paragraph — check hashes
+      // and skip unchanged items, then enrich only the new/changed ones with AI SEO.
+      const udnHashes = await getExistingPayloadHashes(udnResult.items);
+      for (const item of udnResult.items) {
+        if (udnHashes.get(itemKey(item)) === item.payloadHash) {
           skippedUnchanged += 1;
           continue;
         }

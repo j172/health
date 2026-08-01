@@ -1,0 +1,38 @@
+name: RSS sync schedule
+
+# Cron-based guarantee for the 30-minute ingestion cadence. The visit-driven
+# throttle in .remote-health-index.php (fires opportunistically on page
+# views, at most every 1800s) only runs when someone happens to visit the
+# site, so it can't guarantee a cadence during low-traffic windows — this
+# workflow is the real clock, and the PHP throttle is just a same-cadence
+# top-up for whatever gap sits between runs.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  rss-sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger RSS sync
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+
+          # GitHub-hosted runners have flaky DNS resolution for health.j172.tw's
+          # host, same issue worked around the same way in deploy-ftps.yml.
+          curl --fail --show-error --silent --insecure \
+            --resolve "health.j172.tw:443:103.21.221.12" \
+            --request POST \
+            --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
+            --header "content-type: application/json" \
+            --max-time 240 \
+            "https://health.j172.tw/api/admin/rss-sync" | jq .

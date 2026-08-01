@@ -39,6 +39,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "twhealth", label: "好健康" },
       { sourceName: "heho", label: "Heho健康" },
       { sourceName: "mirrormedia_healthnews", label: "鏡週刊健康醫療網" },
+      { sourceName: "udn_health", label: "元氣網（聯合報健康）" },
       { sourceName: "csr_cw", label: "CSR@天下" },
       { sourceName: "esg_gvm", label: "ESG遠見" },
       { sourceName: "esg_businesstoday", label: "ESG今周刊" },
