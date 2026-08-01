@@ -696,6 +696,11 @@ $skipRssSync = str_starts_with($path, '/_next/')
     || $path === '/favicon.ico'
     || $path === '/images/favicon.ico';
 
+// Low-traffic top-up only — the real 30-minute guarantee is the server
+// crontab (`crontab -l`: "5,35 * * * * ... /api/internal/rss-sync"), which
+// already hits this same endpoint via 127.0.0.1 regardless of visitors.
+// Left at 3600s (not 1800s) so this doesn't collide with the crontab's own
+// run and fight it for the ingestion lock.
 if (!$skipRssSync) {
     $stateFile = '/home/tw123457/health_app/.rss-sync-last-run';
     $lockFile = '/home/tw123457/health_app/.rss-sync-trigger.lock';
@@ -703,7 +708,7 @@ if (!$skipRssSync) {
 
     if ($lockHandle && @flock($lockHandle, LOCK_EX | LOCK_NB)) {
         $lastRun = is_file($stateFile) ? (int) trim((string) file_get_contents($stateFile)) : 0;
-        if ($lastRun === 0 || (time() - $lastRun) >= 1800) {
+        if ($lastRun === 0 || (time() - $lastRun) >= 3600) {
             @file_put_contents($stateFile, (string) time(), LOCK_EX);
             $secret = $readEnvVar('RSS_SYNC_SECRET');
             if ($secret !== '') {

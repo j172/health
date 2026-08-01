@@ -101,12 +101,14 @@
 
 ### 排程同步任務 (Cron Schedule)
 
-| 任務名稱 | 頻率 | Endpoint / 腳本 | 說明 |
+RSS／AQI／CWA／地震這四項是正式站主機上的 **crontab**（不在此 repo 內管理，只能透過 SSH 到主機用 `crontab -l` 查看/修改），全部經 `127.0.0.1` loopback 呼叫，不會經過對外網域，因此也不受站台前面的防機器人 WAF 影響。`.remote-health-index.php` 另外還有一段訪客觸發的節流邏輯，只是低流量時段的補充，不是主要保證。
+
+| 任務名稱 | 頻率 | Endpoint | 說明 |
 |---|---|---|---|
-| **RSS 新聞採集** | 每 30 分鐘 | `/api/admin/rss-sync`（`.github/workflows/scheduled-sync.yml`），另有 `/api/internal/rss-sync` 訪客觸發節流頂補 | 增量比對 23 個新聞來源（含元氣網）並持久化 |
-| **AQI 空氣品質** | 每 30 分鐘 | `/api/internal/aqi-sync`（`.github/workflows/scheduled-sync.yml`） | 快照環境部最新監測數據 |
-| **CWA 氣象與地震預報** | 每 30 分鐘 | `/api/admin/cwa-sync`（`.github/workflows/scheduled-sync.yml`） | 刷新預報、海嘯與氣象觀測 |
-| **全球顯著地震動態** | 每 30 分鐘 | `/api/admin/earthquakes-sync`（`.github/workflows/scheduled-sync.yml`） | 整合 USGS/EMSC/HKO/CWA 多源地震事件 |
+| **RSS 新聞採集** | 每 30 分鐘 | `/api/internal/rss-sync` | 增量比對 23 個新聞來源（含元氣網）並持久化 |
+| **AQI 空氣品質** | 每 30 分鐘 | `/api/internal/aqi-sync` | 快照環境部最新監測數據 |
+| **CWA 氣象觀測** | 每 30 分鐘 | `/api/admin/cwa-sync` | 刷新預報、海嘯與氣象觀測 |
+| **全球顯著地震動態** | 每 10 分鐘 | `/api/admin/earthquakes-sync` | 整合 USGS/EMSC/HKO/CWA 多源地震事件 |
 | **機構與藥品備份** | 每 6 個月 | `.github/workflows/six-monthly-sync.yml` | 透過 GitHub Actions 自動同步健保署與食藥署名冊 |
 
 ---
