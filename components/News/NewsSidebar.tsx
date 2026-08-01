@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { type NewsListItem, type WeatherWarningItem } from "@/lib/server/news/queries";
 import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
@@ -5,6 +7,7 @@ import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
 import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWidget";
 import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const toTaipei = (value: Date | null): string => {
   if (!value) return "";
@@ -24,6 +27,8 @@ export default function NewsSidebar({
   earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
 }) {
+  const { t, locale } = useLanguage();
+
   return (
     <aside className="space-y-6" aria-label="側邊資訊欄">
       {/* 1. Instant AQI Widget */}
@@ -38,7 +43,7 @@ export default function NewsSidebar({
       {/* 4. Source Categories Cloud */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-3.5">
-          公衛與新聞來源
+          {t("categories.sourcesHeading", "公衛與新聞來源")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -49,7 +54,7 @@ export default function NewsSidebar({
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
           >
-            全部新聞
+            {t("categories.allNews", "全部新聞")}
           </Link>
           {SOURCE_CATEGORIES.map((cat) => (
             <Link
@@ -61,7 +66,7 @@ export default function NewsSidebar({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               }`}
             >
-              {cat.label}
+              {locale === "en" ? t(`categories.${cat.key}`, cat.label) : cat.label}
             </Link>
           ))}
         </div>
@@ -71,7 +76,7 @@ export default function NewsSidebar({
       {recentNews.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
-            🔥 熱門焦點新聞
+            {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
           </h3>
           <div className="space-y-4">
             {recentNews.slice(0, 5).map((item, idx) => (

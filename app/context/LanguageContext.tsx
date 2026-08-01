@@ -1,16 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
-import * as OpenCC from "opencc-js";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import zhTW from "@/locales/zh-TW.json";
-import zhCN from "@/locales/zh-CN.json";
 import en from "@/locales/en.json";
 
-export type Locale = "zh-TW" | "zh-CN" | "en";
+export type Locale = "zh-TW" | "en";
 
 const dictionaries: Record<Locale, Record<string, unknown>> = {
   "zh-TW": zhTW,
-  "zh-CN": zhCN,
   en: en,
 };
 
@@ -18,7 +15,6 @@ interface LanguageContextType {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string, defaultValue?: string) => string;
-  tDynamic: (text: string | null | undefined) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -27,35 +23,24 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [locale, setLocaleState] = useState<Locale>("zh-TW");
   const [isMounted, setIsMounted] = useState(false);
 
-  // Initialize OpenCC converter lazily for Traditional to Simplified Chinese
-  const openccConverter = useMemo(() => {
-    try {
-      return OpenCC.Converter({ from: "tw", to: "cn" });
-    } catch {
-      return (text: string) => text;
-    }
-  }, []);
-
   useEffect(() => {
     setIsMounted(true);
     // 1. Check Cookie or LocalStorage
     const storedLocale = localStorage.getItem("locale") as Locale | null;
-    if (storedLocale && ["zh-TW", "zh-CN", "en"].includes(storedLocale)) {
+    if (storedLocale && ["zh-TW", "en"].includes(storedLocale)) {
       setLocaleState(storedLocale);
       return;
     }
 
     const cookieMatch = document.cookie.match(/(?:^|; )locale=([^;]*)/);
-    if (cookieMatch && ["zh-TW", "zh-CN", "en"].includes(cookieMatch[1])) {
+    if (cookieMatch && ["zh-TW", "en"].includes(cookieMatch[1])) {
       setLocaleState(cookieMatch[1] as Locale);
       return;
     }
 
     // 2. Auto-detect browser language
     const navLang = navigator.language.toLowerCase();
-    if (navLang.startsWith("zh-cn") || navLang.startsWith("zh-sg")) {
-      setLocaleState("zh-CN");
-    } else if (navLang.startsWith("zh")) {
+    if (navLang.startsWith("zh")) {
       setLocaleState("zh-TW");
     } else if (navLang.startsWith("en")) {
       setLocaleState("en");
@@ -95,19 +80,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [locale]
   );
 
-  const tDynamic = useCallback(
-    (text: string | null | undefined): string => {
-      if (!text) return "";
-      if (locale === "zh-CN") {
-        return openccConverter(text);
-      }
-      return text;
-    },
-    [locale, openccConverter]
-  );
-
   return (
-    <LanguageContext.Provider value={{ locale, setLocale, t, tDynamic }}>
+    <LanguageContext.Provider value={{ locale, setLocale, t }}>
       {children}
     </LanguageContext.Provider>
   );

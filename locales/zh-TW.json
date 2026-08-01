@@ -7,7 +7,16 @@
     "docs": "說明文件",
     "pages": "頁面指引",
     "support": "支援服務",
-    "github": "GitHub 專案 🌟"
+    "github": "GitHub 專案 🌟",
+    "facilities": "醫療院所",
+    "ltc": "長照機構",
+    "healthTools": "健康工具",
+    "searchPlaceholder": "搜尋新聞..."
+  },
+  "categories": {
+    "allNews": "全部新聞",
+    "sourcesHeading": "公衛與新聞來源",
+    "trendingHeading": "🔥 熱門焦點新聞"
   },
   "tools": {
     "water": "飲水量計算器",
@@ -22,7 +31,6 @@
   "common": {
     "language": "語言",
     "zh_tw": "正體中文",
-    "zh_cn": "简体中文",
     "en": "English",
     "search": "搜尋",
     "filter": "篩選",
@@ -31,8 +39,15 @@
     "loading": "載入中..."
   },
   "footer": {
-    "rights": "版權所有",
-    "privacy": "隱私權政策"
+    "rights": "版權所有。",
+    "privacy": "隱私權政策",
+    "overview": "全站總覽",
+    "calculatorTools": "健康算盤與工具",
+    "food": "食品營養",
+    "newsList": "健康新聞列表",
+    "tagline": "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。",
+    "mainSite": "主站 j172.tw",
+    "disclaimer": "本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。"
   },
   "tts_title": "語音朗讀",
   "tts_play": "朗讀文章",

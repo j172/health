@@ -7,7 +7,11 @@
     "docs": "Documentation",
     "pages": "Pages",
     "support": "Support",
-    "github": "GitHub Repo 🌟"
+    "github": "GitHub Repo 🌟",
+    "facilities": "Healthcare Facilities",
+    "ltc": "Long-Term Care",
+    "healthTools": "Health Tools",
+    "searchPlaceholder": "Search news..."
   },
   "tools": {
     "water": "Water Intake Calculator",
@@ -19,10 +23,45 @@
     "aqi": "Air Quality (AQI)",
     "facilities": "Healthcare Facilities"
   },
+  "catalog": {
+    "uv": "Taiwan Real-Time UV Index",
+    "earthquakes": "Global Significant Earthquakes",
+    "bmi": "BMI Calculator",
+    "calories": "Calorie Needs Calculator",
+    "nutrition": "Daily Nutrient Recommendation Calculator",
+    "water": "Water Intake Calculator",
+    "body-fat": "Body Fat Percentage Calculator",
+    "waist-hip": "Waist-to-Hip Ratio Calculator",
+    "heart-rate": "Target Heart Rate Calculator",
+    "blood-pressure": "Blood Pressure Analyzer",
+    "sleep": "Sleep Quality Assessment",
+    "stress": "Stress Assessment Test",
+    "lbm": "Lean Body Mass (LBM) Calculator",
+    "vo2max": "VO2Max Estimator",
+    "aqi": "Real-Time Air Quality Index (AQI)",
+    "clinics": "Healthcare Facility Finder",
+    "pharmacies": "Pharmacy Finder",
+    "drugs": "Drug Information Lookup",
+    "food-nutrition": "Food Nutrition Facts Lookup",
+    "food-operators": "Food Business Registration Lookup",
+    "health-checks": "Occupational Health Check Facility Finder",
+    "long-term-care": "Long-Term Care Facility Finder",
+    "home-healthcare": "Home Healthcare Service Finder",
+    "disability-welfare": "Disability Welfare Institution Finder",
+    "elder-welfare": "Elderly Welfare Institution Finder",
+    "ltc-contracted": "Long-Term Care 2.0 Contracted Service Finder",
+    "hakka-community": "Hakka Community Development Association Finder"
+  },
+  "categories": {
+    "gov": "Government Agencies",
+    "media": "Media & Other Sites",
+    "allNews": "All News",
+    "sourcesHeading": "Public Health & News Sources",
+    "trendingHeading": "🔥 Trending News"
+  },
   "common": {
     "language": "Language",
     "zh_tw": "正體中文",
-    "zh_cn": "简体中文",
     "en": "English",
     "search": "Search",
     "filter": "Filter",
@@ -32,7 +71,14 @@
   },
   "footer": {
     "rights": "All rights reserved.",
-    "privacy": "Privacy Policy"
+    "privacy": "Privacy Policy",
+    "overview": "Site Overview",
+    "calculatorTools": "Health Calculators & Tools",
+    "food": "Food & Nutrition",
+    "newsList": "Health News",
+    "tagline": "Aggregating public information from the Ministry of Health and Welfare, CDC, TFDA, and major health news outlets to help you stay on top of Taiwan's latest public health and air quality updates.",
+    "mainSite": "Main Site j172.tw",
+    "disclaimer": "Data on this site is aggregated from public RSS feeds and APIs provided by government and public health agencies; content is subject to the original publishing authority."
   },
   "tts_title": "Voice Reader",
   "tts_play": "Read Aloud",

@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const FooterColumn = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div>
@@ -22,22 +24,26 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
 );
 
 export default function SiteFooter() {
+  const { t, locale } = useLanguage();
+  const localizeTitle = (item: { slug: string; title: string }) =>
+    locale === "en" ? t(`catalog.${item.slug}`, item.title) : item.title;
+
   const overviewLinks = [
-    { href: "/", label: "首頁" },
-    { href: "/news", label: "健康新聞列表" },
-    { href: "/privacy", label: "隱私政策與宣告" },
+    { href: "/", label: t("nav.home", "首頁") },
+    { href: "/news", label: t("footer.newsList", "健康新聞列表") },
+    { href: "/privacy", label: t("footer.privacy", "隱私權政策") },
   ].sort((a, b) => a.label.localeCompare(b.label, "zh-Hant", { numeric: true }));
 
-  const calculatorTools = [...TOOL_CATALOG.filter((t) => t.group === "calculator")].sort((a, b) =>
+  const calculatorTools = [...TOOL_CATALOG.filter((tool) => tool.group === "calculator")].sort((a, b) =>
     a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
   );
-  const facilityTools = [...TOOL_CATALOG.filter((t) => t.group === "facility")].sort((a, b) =>
+  const facilityTools = [...TOOL_CATALOG.filter((tool) => tool.group === "facility")].sort((a, b) =>
     a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
   );
-  const ltcTools = [...TOOL_CATALOG.filter((t) => t.group === "ltc")].sort((a, b) =>
+  const ltcTools = [...TOOL_CATALOG.filter((tool) => tool.group === "ltc")].sort((a, b) =>
     a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
   );
-  const foodTools = [...TOOL_CATALOG.filter((t) => t.group === "food")].sort((a, b) =>
+  const foodTools = [...TOOL_CATALOG.filter((tool) => tool.group === "food")].sort((a, b) =>
     a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
   );
 
@@ -60,7 +66,10 @@ export default function SiteFooter() {
               </span>
             </Link>
             <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-              彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。
+              {t(
+                "footer.tagline",
+                "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。"
+              )}
             </p>
           </div>
 
@@ -71,48 +80,48 @@ export default function SiteFooter() {
               rel="noreferrer noopener"
               className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-indigo-400"
             >
-              主站 j172.tw ↗
+              {t("footer.mainSite", "主站 j172.tw")} ↗
             </a>
           </div>
         </div>
 
         {/* Links Grid */}
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 border-t border-slate-100 pt-10 dark:border-slate-900">
-          <FooterColumn label="全站總覽">
+          <FooterColumn label={t("footer.overview", "全站總覽")}>
             {overviewLinks.map((item) => (
               <FooterLink key={item.href} href={item.href}>{item.label}</FooterLink>
             ))}
           </FooterColumn>
 
-          <FooterColumn label="醫療院所">
-            {facilityTools.map((t) => (
-              <FooterLink key={t.slug} href={`/tools/${t.slug}`}>{t.title}</FooterLink>
+          <FooterColumn label={t("nav.facilities", "醫療院所")}>
+            {facilityTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
             ))}
           </FooterColumn>
 
-          <FooterColumn label="長照機構">
-            {ltcTools.map((t) => (
-              <FooterLink key={t.slug} href={`/tools/${t.slug}`}>{t.title}</FooterLink>
+          <FooterColumn label={t("nav.ltc", "長照機構")}>
+            {ltcTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
             ))}
           </FooterColumn>
 
-          <FooterColumn label="食品營養">
-            {foodTools.map((t) => (
-              <FooterLink key={t.slug} href={`/tools/${t.slug}`}>{t.title}</FooterLink>
+          <FooterColumn label={t("footer.food", "食品營養")}>
+            {foodTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
             ))}
           </FooterColumn>
 
-          <FooterColumn label="健康算盤與工具">
-            {calculatorTools.map((t) => (
-              <FooterLink key={t.slug} href={`/tools/${t.slug}`}>{t.title}</FooterLink>
+          <FooterColumn label={t("footer.calculatorTools", "健康算盤與工具")}>
+            {calculatorTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
             ))}
           </FooterColumn>
         </div>
 
         {/* Bottom copyright */}
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-400 dark:border-slate-900 sm:flex-row sm:items-center">
-          <p>&copy; {new Date().getFullYear()} j172tw Healthz. 版權所有。</p>
-          <p>本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。</p>
+          <p>&copy; {new Date().getFullYear()} j172tw Healthz. {t("footer.rights", "版權所有。")}</p>
+          <p>{t("footer.disclaimer", "本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。")}</p>
         </div>
       </div>
     </footer>

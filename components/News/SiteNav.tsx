@@ -3,18 +3,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import dynamic from "next/dynamic";
 import ThemeToggler from "@/components/Header/ThemeToggler";
 import LanguageToggler from "@/components/Header/LanguageToggler";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), { ssr: false });
 
-const CALCULATOR_TOOLS = TOOL_CATALOG.filter((t) => t.group === "calculator").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
-const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
-const LTC_TOOLS = TOOL_CATALOG.filter((t) => t.group === "ltc").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
-const FOOD_TOOLS = TOOL_CATALOG.filter((t) => t.group === "food").map((t) => ({ href: `/tools/${t.slug}`, label: t.title }));
+const CALCULATOR_TOOLS = TOOL_CATALOG.filter((t) => t.group === "calculator").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const LTC_TOOLS = TOOL_CATALOG.filter((t) => t.group === "ltc").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 
 interface NavLinkItem {
   href: string;
@@ -84,6 +83,14 @@ export default function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const mobilePanelId = useId();
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const { t, locale } = useLanguage();
+
+  const localizeItems = (items: { href: string; slug: string; title: string }[]): NavLinkItem[] =>
+    items.map((item) => ({ href: item.href, label: locale === "en" ? t(`catalog.${item.slug}`, item.title) : item.title }));
+
+  const facilityItems = localizeItems(FACILITY_TOOLS);
+  const ltcItems = localizeItems(LTC_TOOLS);
+  const calculatorItems = localizeItems(CALCULATOR_TOOLS);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -135,17 +142,17 @@ export default function SiteNav() {
                 href="/"
                 className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
               >
-                首頁
+                {t("nav.home", "首頁")}
               </Link>
               <Link
                 href="/news"
                 className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
               >
-                最新新聞
+                {t("nav.news", "最新新聞")}
               </Link>
-              <NavDropdown label="醫療院所" items={FACILITY_TOOLS} />
-              <NavDropdown label="長照機構" items={LTC_TOOLS} />
-              <NavDropdown label="健康工具" items={CALCULATOR_TOOLS} />
+              <NavDropdown label={t("nav.facilities", "醫療院所")} items={facilityItems} />
+              <NavDropdown label={t("nav.ltc", "長照機構")} items={ltcItems} />
+              <NavDropdown label={t("nav.healthTools", "健康工具")} items={calculatorItems} />
             </nav>
 
             {/* Right Actions (Search Button + Theme Toggler) */}
@@ -158,7 +165,7 @@ export default function SiteNav() {
                 <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                <span className="hidden sm:inline">搜尋新聞...</span>
+                <span className="hidden sm:inline">{t("nav.searchPlaceholder", "搜尋新聞...")}</span>
                 <kbd className="hidden sm:inline-block rounded bg-slate-200/60 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-mono text-slate-500 dark:text-slate-400">
                   ⌘K
                 </kbd>
@@ -191,15 +198,39 @@ export default function SiteNav() {
 
         {/* Mobile Navigation Drawer */}
         {mobileOpen && (
-          <div id={mobilePanelId} className="border-t border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
+          <div id={mobilePanelId} className="max-h-[75vh] overflow-y-auto border-t border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-950 md:hidden">
             <div className="flex flex-col gap-2 text-sm font-semibold">
               <Link href="/" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
-                首頁
+                {t("nav.home", "首頁")}
               </Link>
               <Link href="/news" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
-                最新新聞
+                {t("nav.news", "最新新聞")}
               </Link>
             </div>
+
+            {[
+              { heading: t("nav.facilities", "醫療院所"), items: facilityItems },
+              { heading: t("nav.ltc", "長照機構"), items: ltcItems },
+              { heading: t("nav.healthTools", "健康工具"), items: calculatorItems },
+            ].map((section) => (
+              <div key={section.heading} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+                <p className="px-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  {section.heading}
+                </p>
+                <div className="mt-1 flex flex-col gap-1">
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-lg p-2 text-sm font-medium text-slate-600 dark:text-slate-300"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

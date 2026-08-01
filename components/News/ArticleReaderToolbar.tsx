@@ -57,7 +57,7 @@ export default function ArticleReaderToolbar({
   }, []);
 
   const selectBestVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
-    const targetLang = locale === "en" ? "en" : locale === "zh-CN" ? "zh-CN" : "zh-TW";
+    const targetLang = locale === "en" ? "en" : "zh-TW";
 
     // 1. Exact locale match
     let voice = voices.find((v) => v.lang.toLowerCase().replace("_", "-") === targetLang.toLowerCase());
