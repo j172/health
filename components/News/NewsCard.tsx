@@ -66,11 +66,13 @@ const calcReadingTime = (html: string | null | undefined): number => {
 export default function NewsCard({
   item,
   horizontal = false,
+  compact = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
 }: {
   item: NewsListItem;
   featured?: boolean;
   horizontal?: boolean;
+  compact?: boolean;
   sizes?: string;
 }) {
   const authorLabel = resolveAuthorLabel(item);
@@ -131,11 +133,15 @@ export default function NewsCard({
           <Link href={`/news/${item.id}`}>{item.title}</Link>
         </h2>
 
-        <p className="mt-2 flex-1 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-          {excerpt(item.description_html)}
-        </p>
+        {!compact && (
+          <p className="mt-2 flex-1 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            {excerpt(item.description_html)}
+          </p>
+        )}
 
-        <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
+        <div
+          className={`flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800 text-xs ${compact ? "mt-3" : "mt-4"}`}
+        >
           <span className="truncate font-medium text-slate-600 dark:text-slate-400">
             {authorLabel}
           </span>

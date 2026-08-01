@@ -7,6 +7,12 @@ let schemaReady = false;
 
 const nowUtc = (): string => new Date().toISOString().slice(0, 19).replace("T", " ");
 
+const isConnectionUnavailableError = (error: unknown): boolean => {
+  if (!error) return false;
+  const message = error instanceof Error ? error.message : String(error);
+  return /ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EHOSTUNREACH|ECONNRESET|Connection lost|connect ECONNREFUSED/i.test(message);
+};
+
 export const getMysqlPool = (): Pool => {
   if (pool) return pool;
 
@@ -103,6 +109,19 @@ export const withConnection = async <T>(runner: (conn: PoolConnection) => Promis
     return await runner(conn);
   } finally {
     conn.release();
+  }
+};
+
+export const withConnectionFallback = async <T>(fallbackValue: T, runner: (conn: PoolConnection) => Promise<T>): Promise<T> => {
+  try {
+    return await withConnection(runner);
+  } catch (error) {
+    if (isConnectionUnavailableError(error)) {
+      console.warn(`[mysql] Falling back to empty data because the database is unavailable: ${error instanceof Error ? error.message : String(error)}`);
+      return fallbackValue;
+    }
+
+    throw error;
   }
 };
 

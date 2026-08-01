@@ -7,6 +7,7 @@ import SiteFooter from "@/components/News/SiteFooter";
 import NewsCard from "@/components/News/NewsCard";
 import HeroPost from "@/components/News/HeroPost";
 import NewsSidebar from "@/components/News/NewsSidebar";
+import HomeCategoryNewsSection from "@/components/News/HomeCategoryNewsSection";
 
 export { default as StabloFooter } from "@/components/News/SiteFooter";
 
@@ -180,7 +181,12 @@ export default async function StabloNewsLayout({
 }) {
   const hero = items[0];
   const secondary = items.slice(1, 3);
-  const mainList = items.slice(3);
+  const homeNewsPool = items.slice(3);
+  const homeSourceCategories = SOURCE_CATEGORIES.map((cat) => ({
+    key: cat.key,
+    label: cat.label,
+    sourceNames: cat.key === "gov" ? [...cat.sources.map((s) => s.sourceName), "cwa"] : cat.sources.map((s) => s.sourceName),
+  }));
 
   // Fetch Weather Warnings & Earthquakes for Sidebar Card Widgets
   const [weatherWarnings, earthquakes] = await Promise.all([
@@ -204,23 +210,7 @@ export default async function StabloNewsLayout({
             <div className="grid gap-10 lg:grid-cols-3">
               {/* Left News Grid (2 columns on lg) */}
               <div className="lg:col-span-2 space-y-8">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-4 dark:border-slate-800">
-                  <h2 className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                    最新健康動態與即時新聞
-                  </h2>
-                  <Link
-                    href="/news"
-                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
-                  >
-                    查看全部新聞 →
-                  </Link>
-                </div>
-
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {mainList.map((item) => (
-                    <NewsCard key={item.id} item={item} />
-                  ))}
-                </div>
+                <HomeCategoryNewsSection items={homeNewsPool} categories={homeSourceCategories} />
               </div>
 
               {/* Right Sidebar (1 column on lg) */}

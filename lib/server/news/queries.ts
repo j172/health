@@ -1,5 +1,5 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection } from "@/lib/server/db/mysql";
+import { withConnectionFallback } from "@/lib/server/db/mysql";
 
 export interface NewsListItem {
   id: number;
@@ -49,7 +49,7 @@ export interface NewsGeoSummaryItem {
 /** Recent items with their AI-generated GEO summaries, for llms.txt — a
  * lighter projection than NewsDetailItem since it skips html/detail text. */
 export const listRecentNewsForLlms = async (limit = 100): Promise<NewsGeoSummaryItem[]> =>
-  withConnection(async (conn) => {
+  withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT id, title, source_name, feed_name, dept_name, published_at_utc, geo_summary, meta_description
@@ -81,7 +81,7 @@ import { memoizeQuery } from "@/lib/server/cache/memo";
 
 export const listActiveWeatherWarnings = async (limit = 5): Promise<WeatherWarningItem[]> =>
   memoizeQuery(`active_weather_warnings_${limit}`, async () =>
-    withConnection(async (conn) => {
+    withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
         `
         SELECT id, title, published_at_utc
@@ -107,7 +107,7 @@ export interface NewsSitemapItem {
  * accepts articles published in the last 48 hours (older ones should be
  * dropped from the news sitemap entirely, not just deprioritized). */
 export const listRecentNewsForNewsSitemap = async (hours = 48): Promise<NewsSitemapItem[]> =>
-  withConnection(async (conn) => {
+  withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT id, title, published_at_utc
@@ -155,7 +155,7 @@ export const listLatestNews = async (
 ): Promise<NewsListItem[]> => {
   const cacheKey = `list_news_${limit}_${offset}_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
   return memoizeQuery(cacheKey, async () =>
-    withConnection(async (conn) => {
+    withConnectionFallback([], async (conn) => {
       const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
       const [rows] = await conn.query<RowDataPacket[]>(
         `
@@ -185,7 +185,7 @@ export const listLatestNews = async (
 export const countNewsItems = async (sourceName?: string, keyword?: string, sourceNames?: string[]): Promise<number> => {
   const cacheKey = `count_news_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
   return memoizeQuery(cacheKey, async () =>
-    withConnection(async (conn) => {
+    withConnectionFallback(0, async (conn) => {
       const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
       const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items n ${whereClause}`, params);
       return Number(rows[0]?.total ?? 0);
@@ -194,7 +194,7 @@ export const countNewsItems = async (sourceName?: string, keyword?: string, sour
 };
 
 export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
-  withConnection(async (conn) => {
+  withConnectionFallback(null, async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
@@ -231,7 +231,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
   });
 
 export const listNewsAssetsByNewsId = async (newsId: number): Promise<NewsAssetItem[]> =>
-  withConnection(async (conn) => {
+  withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT id, asset_type, title, url, sort_order
@@ -250,7 +250,7 @@ export const listRelatedNews = async (
   excludeId: number,
   limit = 3,
 ): Promise<NewsListItem[]> =>
-  withConnection(async (conn) => {
+  withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
@@ -274,7 +274,7 @@ export const listRelatedNews = async (
   });
 
 export const searchNewsItems = async (query: string, limit = 10): Promise<NewsListItem[]> =>
-  withConnection(async (conn) => {
+  withConnectionFallback([], async (conn) => {
     const trimmed = query.trim();
     if (!trimmed) return [];
 
@@ -327,4 +327,4 @@ export const searchNewsItems = async (query: string, limit = 10): Promise<NewsLi
       [pattern, pattern, pattern, limit],
     );
     return likeRows as unknown as NewsListItem[];
-  });
+  });
