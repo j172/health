@@ -255,6 +255,10 @@ jobs:
             echo "Card image backfill $ATTEMPT: assigned=$ASSIGNED failed=$FAILED reason=$REASON"
 
             test "$OK" = "true"
+            if [ "$ASSIGNED" = "0" ] && [ "$FAILED" = "1" ] && [ "$REASON" = "No unused Pixabay candidates are available." ]; then
+              echo "No unused Pixabay candidates are available — treating backfill as complete."
+              exit 0
+            fi
             # A single item can fail validation (e.g. a bad Pixabay candidate) without
             # anything actually being wrong; only abort if failures pile up, since that's
             # the signal something systemic (not just one unlucky candidate) is going on.
