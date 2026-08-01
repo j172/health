@@ -3,7 +3,7 @@ import { env } from "@/lib/server/config/env";
 import { httpGetText } from "@/lib/server/net/httpClient";
 
 const API_URL = "https://pixabay.com/api/";
-const REQUEST_TIMEOUT_MS = 12_000;
+const REQUEST_TIMEOUT_MS = 25_000;
 
 export interface PixabayImage {
   id: number;
