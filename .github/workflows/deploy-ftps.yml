@@ -215,6 +215,7 @@ jobs:
             "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" | jq .
 
       - name: Backfill missing news card images
+        continue-on-error: true
         env:
           RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
         run: |
