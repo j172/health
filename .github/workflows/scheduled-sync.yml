@@ -16,6 +16,12 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    # RSS_SYNC_SECRET / RSS_SYNC_ADMIN_SECRET live in the FTP_SERVER
+    # environment's secret store (same one deploy-ftps.yml and
+    # six-monthly-sync.yml use), not as repo-level secrets — without this,
+    # every secrets.* reference below silently resolves to an empty string
+    # instead of failing loudly at the workflow-syntax level.
+    environment: FTP_SERVER
     timeout-minutes: 10
     env:
       RSS_SYNC_SECRET: ${{ secrets.RSS_SYNC_SECRET }}
