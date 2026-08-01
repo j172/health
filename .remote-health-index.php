@@ -100,7 +100,13 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
             . "&& ({$pm2Bin} delete health-web >> .apply-prebuilt.log 2>&1 || true) "
             . "&& setsid {$pm2Bin} start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
-            . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 30); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
+            // Was 30 attempts (~30s worst case) — confirmed via direct SSH
+            // probe (2026-08-01) that /news and /news/60 respond fine once
+            // up, so this was a cold-start timing race, not an actual
+            // health problem: as the app has grown (61 routes and counting)
+            // cold start after a pm2 restart sometimes needs longer than
+            // 30s, causing an intermittent false-positive rollback.
+            . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 60); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
             . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
             . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
             . "&& curl -fsS --max-time 10 \"http://127.0.0.1:3000/_next/static/\$STATIC_REL\" | head -c 1 | grep -vq '<' "
