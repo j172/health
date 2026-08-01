@@ -223,21 +223,68 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/pm2-ensure-running') {
         header('Content-Type: text/plain; charset=utf-8');
-        $jlist = shell_exec($pm2Bin . ' jlist 2>/dev/null');
-        $procs = json_decode($jlist ?: '[]', true);
-        if (!is_array($procs)) {
-            $procs = [];
-        }
-        $isOnline = false;
-        foreach ($procs as $proc) {
-            if (($proc['name'] ?? '') === 'health-web' && ($proc['pm2_env']['status'] ?? '') === 'online') {
-                $isOnline = true;
-                break;
-            }
-        }
-
         $now = date('Y-m-d H:i:s');
         $watchdogLog = $appDir . '/.pm2-watchdog.log';
+
+        // `pm2 jlist` talks to the pm2 daemon over its socket; if the daemon
+        // itself is dead (not just health-web), a plain shell_exec() call
+        // can hang indefinitely waiting for a socket nothing is listening
+        // on, silently timing out this whole PHP request before it ever
+        // reaches the restart logic below. That's exactly what happened
+        // during the 2026-08-01 outage: this watchdog fired reliably ~14
+        // times over the prior 4 days for ordinary "app got killed" events,
+        // then went completely silent once the pm2 daemon itself died.
+        // `timeout 5` turns that hang into a fast, detectable failure
+        // (exit 124) instead of a silent no-op.
+        exec('timeout 5 ' . $pm2Bin . ' jlist 2>/dev/null', $jlistOutput, $jlistExit);
+        $daemonResponsive = ($jlistExit === 0);
+
+        if (!$daemonResponsive) {
+            @file_put_contents(
+                $watchdogLog,
+                "[{$now}] pm2 jlist did not respond (exit={$jlistExit}) — pm2 daemon itself appears dead, rebuilding it before restarting app.\n",
+                FILE_APPEND
+            );
+
+            // Best-effort graceful shutdown first (harmless if the daemon is
+            // actually still alive and just slow), then forcibly clear its
+            // runtime files so the next pm2 invocation is forced to spawn a
+            // brand new daemon rather than talking to a half-dead one.
+            exec('timeout 5 ' . $pm2Bin . ' kill 2>&1', $killOutput, $killExit);
+            exec('pkill -9 -f "PM2 v" 2>&1', $pkillOutput, $pkillExit);
+            @unlink('/home/tw123457/.pm2/pm2.pid');
+            @unlink('/home/tw123457/.pm2/rpc.sock');
+            @unlink('/home/tw123457/.pm2/pub.sock');
+
+            // Spawns a fresh daemon and restores every process from the
+            // last `pm2 save` — health-web and bid-web share this daemon on
+            // this host, so this brings both back, not just this one.
+            exec('timeout 20 ' . $pm2Bin . ' resurrect 2>&1', $resurrectOutput, $resurrectExit);
+            @file_put_contents(
+                $watchdogLog,
+                "[{$now}] daemon rebuild: kill_exit={$killExit} resurrect_exit={$resurrectExit}\n" . implode("\n", $resurrectOutput) . "\n",
+                FILE_APPEND
+            );
+
+            // Re-check with the now-hopefully-fresh daemon before deciding
+            // whether health-web still needs the full apply-prebuilt restart.
+            exec('timeout 5 ' . $pm2Bin . ' jlist 2>/dev/null', $jlistOutput, $jlistExit);
+            $daemonResponsive = ($jlistExit === 0);
+        }
+
+        $isOnline = false;
+        if ($daemonResponsive) {
+            $procs = json_decode(implode("\n", $jlistOutput) ?: '[]', true);
+            if (!is_array($procs)) {
+                $procs = [];
+            }
+            foreach ($procs as $proc) {
+                if (($proc['name'] ?? '') === 'health-web' && ($proc['pm2_env']['status'] ?? '') === 'online') {
+                    $isOnline = true;
+                    break;
+                }
+            }
+        }
 
         if ($isOnline) {
             echo "[{$now}] health-web is online. No action taken.\n";
