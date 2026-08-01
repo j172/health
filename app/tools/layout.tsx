@@ -4,6 +4,7 @@ import "../globals.css";
 import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
+import Provider from "../(site)/Provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -40,7 +41,7 @@ export default function ToolsRootLayout({ children }: Readonly<{ children: React
       <body className={inter.className}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
-        {children}
+        <Provider>{children}</Provider>
         <PrivacyConsentBanner />
         <RegisterServiceWorker />
       </body>
