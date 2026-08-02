@@ -11,15 +11,28 @@ import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
+import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
+import type { NewsAsset } from "@/types/rss";
 
 const LOCK_NAME = "rss_ingestion_lock";
 
 const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
 
 const enrichItem = async (item: NormalizedRssItem): Promise<EnrichedRssItem> => {
-  const detail = FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch
-    ? { detailHtml: null, detailText: null, assets: [] }
-    : await fetchDetailPage(item).catch(() => ({ detailHtml: null, detailText: null, assets: [] }));
+  let detail: { detailHtml: string | null; detailText: string | null; assets: NewsAsset[] } =
+    FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch
+      ? { detailHtml: null, detailText: null, assets: [] }
+      : await fetchDetailPage(item).catch(() => ({ detailHtml: null, detailText: null, assets: [] }));
+
+  // skipDetailFetch (ltn etc.) never stores body HTML, but cards still need a
+  // thumbnail. Pull og:image only — no article body scrape / republish.
+  // Also covers full detail fetches that found zero content images.
+  if (!detail.assets.some((asset) => asset.assetType === "image")) {
+    const ogAsset = await fetchOpenGraphImageAsset(item.canonicalUrl).catch(() => null);
+    if (ogAsset) {
+      detail = { ...detail, assets: [ogAsset, ...detail.assets] };
+    }
+  }
 
   const seo = await generateSeoMetadataWithAi({
     title: item.title,

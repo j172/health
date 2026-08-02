@@ -87,9 +87,9 @@ export const RSS_FEEDS: FeedConfig[] = [
     name: "自由時報－生活與健康新聞",
     url: "https://news.ltn.com.tw/rss/life.xml",
     sourceName: "ltn",
-    // Detail-page scraping kept pulling in ltn.com.tw's own <head>
-    // (title/base/meta) as if it were article content; use the RSS feed's
-    // own description instead of fetching/parsing the article page.
+    // Skip full article HTML scrape (ltn <head>/<base> used to leak into
+    // detail_html). Card thumbs still come from a lightweight og:image pull
+    // in runIngestion (fetchOpenGraphImageAsset) — not from body images.
     skipDetailFetch: true,
   },
   {
@@ -104,6 +104,7 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://www.top1health.com/Rss",
     sourceName: "top1health",
     // Same detail-page scraping issue as ltn.com.tw; use the RSS description instead.
+    // Card thumbs: OG pull via runIngestion when assets are empty.
     skipDetailFetch: true,
   },
   {

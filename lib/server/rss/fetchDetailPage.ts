@@ -25,6 +25,24 @@ const uniqueAssets = (assets: NewsAsset[]): NewsAsset[] => {
   return result;
 };
 
+const pickOpenGraphImageUrl = ($: ReturnType<typeof load>, baseUrl: string): string | null => {
+  const rawCandidates = [
+    $('meta[property="og:image"]').attr("content"),
+    $('meta[property="og:image:secure_url"]').attr("content"),
+    $('meta[property="og:image:url"]').attr("content"),
+    $('meta[name="twitter:image"]').attr("content"),
+    $('meta[name="twitter:image:src"]').attr("content"),
+  ];
+  for (const raw of rawCandidates) {
+    if (!raw?.trim()) continue;
+    const absolute = toAbsoluteUrl(raw.trim(), baseUrl);
+    if (!/^https?:\/\//i.test(absolute)) continue;
+    if (/logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png/i.test(absolute)) continue;
+    return absolute;
+  }
+  return null;
+};
+
 export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detailHtml: string | null; detailText: string | null; assets: NewsAsset[] }> => {
   const response = await httpGetText(item.canonicalUrl, {
     headers: {
@@ -40,6 +58,11 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
 
   const html = response.text;
   const $ = load(html);
+
+  // Capture social card image before stripping <head>/<meta> (ltn etc. often
+  // lack a clean article image container but always ship a reliable og:image).
+  const ogImageUrl = pickOpenGraphImageUrl($, item.canonicalUrl);
+  const ogImageAlt = $('meta[property="og:image:alt"]').attr("content")?.trim() || null;
 
   $("script,style,noscript,iframe").remove();
   // Removed before container selection so a body-level fallback (sites with no
@@ -68,6 +91,19 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
   const assets: NewsAsset[] = [];
   let idx = 0;
 
+  if (ogImageUrl) {
+    const localPath = await downloadArticleImage(ogImageUrl);
+    if (localPath) {
+      idx += 1;
+      assets.push({
+        assetType: "image",
+        title: ogImageAlt,
+        url: localPath,
+        sortOrder: 0,
+      });
+    }
+  }
+
   detailContainer.find("a[href]").each((_, el) => {
     const href = $(el).attr("href");
     if (!href) return;
@@ -82,12 +118,9 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
     });
   });
 
-  // Only trust <img> tags when we found a genuine content container. A raw
-  // <body> fallback (sites with no <article>/<main>/#maincontent, e.g.
-  // cdc.gov.tw, fda.gov.tw, hpa.gov.tw, ltn.com.tw) has no reliable way to
-  // distinguish an article photo from breadcrumb/toolbar/portal-badge icons,
-  // so skip image extraction entirely there and let the Pixabay fallback
-  // assign a card image instead.
+  // Only trust in-body <img> tags when we found a genuine content container. A
+  // raw <body> fallback has no reliable way to distinguish article photos from
+  // chrome icons — og:image above already covers the card thumbnail case.
   if (scopedContainer) {
     const imageElements = scopedContainer.find("img[src]").toArray();
     for (const el of imageElements) {
@@ -99,7 +132,6 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
       // Downloaded and re-hosted locally rather than storing the source
       // site's URL directly, so the front-end never hotlinks a third-party
       // domain (which can rate-limit, go offline, or move the file).
-      // eslint-disable-next-line no-await-in-loop
       const localPath = await downloadArticleImage(absolute);
       if (!localPath) continue;
 

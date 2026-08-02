@@ -8,8 +8,15 @@
 # survive its next restart until manually recovered. Writes its exit code to
 # .npm-ci-status so the workflow's "Wait for node_modules sync" step can poll
 # for completion via short, cheap SSH calls instead of one long-lived one.
+#
+# --maxsockets=1 --prefer-offline: confirmed live 2026-08-02, plain `npm ci
+# --omit=dev` got OOM SIGKILLed (exit 137) twice under host memory pressure
+# (swap ~95% full). Capping concurrent downloads and preferring the local
+# npm cache (already warm from earlier successful installs the same day)
+# lowers peak memory during install. Not a guaranteed fix for a genuinely
+# overloaded host, just a cheaper attempt.
 set -o pipefail
 export PATH=/home/tw123457/.nvm/versions/node/v20.20.2/bin:$PATH
 cd /home/tw123457/health_app || exit 1
-npm ci --omit=dev
+npm ci --omit=dev --maxsockets=1 --prefer-offline
 echo $? > .npm-ci-status

@@ -146,6 +146,37 @@ const buildNewsFilter = (
   return { whereClause: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "", params };
 };
 
+// Prefer a real article/RSS image (news_assets) over the Pixabay illustration.
+// Detail pages already used this COALESCE; list/search previously only joined
+// news_card_images, so homepage cards showed the logo placeholder even when
+// an OG/article image asset existed.
+const CARD_IMAGE_SELECT_SQL = `
+  COALESCE(
+    (SELECT a.url
+     FROM news_assets a
+     WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+     ORDER BY a.sort_order ASC, a.id ASC
+     LIMIT 1),
+    c.local_path
+  ) AS card_image_url,
+  CASE
+    WHEN EXISTS (
+      SELECT 1 FROM news_assets a
+      WHERE a.news_item_id = n.id AND a.asset_type = 'image'
+    ) THEN 'rss'
+    WHEN c.local_path IS NOT NULL THEN 'pixabay'
+    ELSE NULL
+  END AS card_image_source,
+  c.source_page_url AS card_image_source_page_url,
+  c.contributor_name AS card_image_contributor
+`;
+
+const NEWS_LIST_SELECT_SQL = `
+  n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+  n.canonical_url, n.description_html,
+  ${CARD_IMAGE_SELECT_SQL}
+`;
+
 export const listLatestNews = async (
   limit = 50,
   offset = 0,
@@ -159,15 +190,7 @@ export const listLatestNews = async (
       const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
       const [rows] = await conn.query<RowDataPacket[]>(
         `
-        SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-               n.canonical_url, n.description_html,
-               c.local_path AS card_image_url,
-               CASE
-                 WHEN c.local_path IS NOT NULL THEN 'pixabay'
-                 ELSE NULL
-               END AS card_image_source,
-               c.source_page_url AS card_image_source_page_url,
-               c.contributor_name AS card_image_contributor
+        SELECT ${NEWS_LIST_SELECT_SQL}
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         ${whereClause}
@@ -192,15 +215,7 @@ export const getTopViewedNews = async (limit = 5): Promise<NewsListItem[]> => {
     withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
         `
-        SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-               n.canonical_url, n.description_html,
-               c.local_path AS card_image_url,
-               CASE
-                 WHEN c.local_path IS NOT NULL THEN 'pixabay'
-                 ELSE NULL
-               END AS card_image_source,
-               c.source_page_url AS card_image_source_page_url,
-               c.contributor_name AS card_image_contributor
+        SELECT ${NEWS_LIST_SELECT_SQL}
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE n.views > 0
@@ -232,24 +247,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html, n.detail_html, n.detail_text,
              n.meta_title, n.meta_description, n.keywords, n.geo_summary,
-             COALESCE(
-               (SELECT a.url
-                FROM news_assets a
-                WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-                ORDER BY a.sort_order ASC, a.id ASC
-                LIMIT 1),
-               c.local_path
-             ) AS card_image_url,
-             CASE
-               WHEN EXISTS (
-                 SELECT 1 FROM news_assets a
-                 WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-               ) THEN 'rss'
-               WHEN c.local_path IS NOT NULL THEN 'pixabay'
-               ELSE NULL
-             END AS card_image_source,
-             c.source_page_url AS card_image_source_page_url,
-             c.contributor_name AS card_image_contributor
+             ${CARD_IMAGE_SELECT_SQL}
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE n.id = ?
@@ -285,15 +283,7 @@ export const listRelatedNews = async (
   withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-             n.canonical_url, n.description_html,
-             c.local_path AS card_image_url,
-             CASE
-               WHEN c.local_path IS NOT NULL THEN 'pixabay'
-               ELSE NULL
-             END AS card_image_source,
-             c.source_page_url AS card_image_source_page_url,
-             c.contributor_name AS card_image_contributor
+      SELECT ${NEWS_LIST_SELECT_SQL}
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE n.source_name = ? AND n.id != ?
@@ -313,15 +303,7 @@ export const searchNewsItems = async (query: string, limit = 10): Promise<NewsLi
     try {
       const [fulltextRows] = await conn.query<RowDataPacket[]>(
         `
-        SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-               n.canonical_url, n.description_html,
-               c.local_path AS card_image_url,
-               CASE
-                 WHEN c.local_path IS NOT NULL THEN 'pixabay'
-                 ELSE NULL
-               END AS card_image_source,
-               c.source_page_url AS card_image_source_page_url,
-               c.contributor_name AS card_image_contributor
+        SELECT ${NEWS_LIST_SELECT_SQL}
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE MATCH(n.title, n.description_html, n.keywords) AGAINST(? IN BOOLEAN MODE)
@@ -341,15 +323,7 @@ export const searchNewsItems = async (query: string, limit = 10): Promise<NewsLi
     const pattern = `%${trimmed}%`;
     const [likeRows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-             n.canonical_url, n.description_html,
-             c.local_path AS card_image_url,
-             CASE
-               WHEN c.local_path IS NOT NULL THEN 'pixabay'
-               ELSE NULL
-             END AS card_image_source,
-             c.source_page_url AS card_image_source_page_url,
-             c.contributor_name AS card_image_contributor
+      SELECT ${NEWS_LIST_SELECT_SQL}
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE n.title LIKE ? OR n.description_html LIKE ? OR n.keywords LIKE ?

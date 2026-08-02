@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { assignMissingNewsCardImages, clearPixabayApiCache, clearAllNewsCardImages } from "@/lib/server/news/cardImages";
+import { backfillMissingImagesFromOpenGraph } from "@/lib/server/news/backfillOgImages";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -10,7 +11,13 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (unauthorized) return unauthorized;
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { limit?: unknown; clearCache?: unknown; clearCardImages?: unknown };
+    const body = (await request.json().catch(() => ({}))) as {
+      limit?: unknown;
+      clearCache?: unknown;
+      clearCardImages?: unknown;
+      /** Prefer og:image backfill for items missing both RSS assets and Pixabay cards. */
+      backfillOg?: unknown;
+    };
 
     if (body.clearCache === true) {
       const cleared = await clearPixabayApiCache();
@@ -24,8 +31,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const limit = typeof body.limit === "number" ? body.limit : 10;
+
+    if (body.backfillOg === true) {
+      const summary = await backfillMissingImagesFromOpenGraph(limit);
+      return NextResponse.json({ ok: true, mode: "og", summary });
+    }
+
     const summary = await assignMissingNewsCardImages(limit);
-    return NextResponse.json({ ok: true, summary });
+    return NextResponse.json({ ok: true, mode: "pixabay", summary });
   } catch (error) {
     return NextResponse.json(
       {
