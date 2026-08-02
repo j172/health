@@ -170,8 +170,13 @@ jobs:
           chmod 600 "$KEY_FILE"
           trap 'rm -f "$KEY_FILE"' EXIT
 
-          SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
-          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+          # ServerAliveInterval keeps the connection alive across npm ci's
+          # ~40s run — confirmed live 2026-08-02: the very first run of this
+          # step dropped mid-install (exit 255) without it, deleting
+          # node_modules/next and leaving the server unable to survive its
+          # next restart until manually re-run to completion.
+          SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o ServerAliveInterval=15)
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o ServerAliveInterval=15)
 
           scp "${SCP_OPTS[@]}" package.json package-lock.json "$SSH_USER@$SSH_HOST:/home/tw123457/health_app/"
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
