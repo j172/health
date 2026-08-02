@@ -9,7 +9,14 @@ import { deriveJiebaSearchTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib
 const LOCK_NAME = "news_card_image_assignment_lock";
 const CACHE_TTL_HOURS = 24;
 const API_RESULTS_PER_PAGE = 30;
-const MAX_API_PAGES = 3;
+// Pixabay reports up to 500 retrievable hits per term (see client.ts), but
+// this only ever looked at the first 3 pages (90 results) — for the handful
+// of generic fallback terms (health/life/nature) that most unmatched titles
+// route to, that shallow top-90-by-popularity pool gets fully claimed over
+// time even though hundreds more results exist further in. Confirmed live
+// 2026-08-02: the top 5 "popular"-ranked results for both life and nature
+// were already 100% used. 10 pages reaches 300 of the 500 available.
+const MAX_API_PAGES = 10;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
 interface MissingNewsRow extends RowDataPacket {
@@ -141,7 +148,7 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
-      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
+      ORDER BY n.image_backfill_attempts ASC, COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
       LIMIT ?
       `,
       [limit],
@@ -257,6 +264,11 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       }
       if (outcome === "exhausted") {
         summary.failed += 1;
+        // Deprioritizes this article in future batches' ORDER BY (see
+        // missingRows above) instead of excluding it outright — it can still
+        // succeed later (e.g. once Pixabay adds new photos, or MAX_API_PAGES
+        // reaches further), just after every less-tried article gets a turn.
+        await conn.execute("UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?", [news.id]);
       }
     }
 

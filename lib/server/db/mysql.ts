@@ -78,6 +78,16 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE news_items
       ADD INDEX IF NOT EXISTS idx_news_views (views)
   `);
+  // Tracks how many times assignMissingNewsCardImages has exhausted every
+  // candidate term for this article without finding a usable image — without
+  // this, the missing-images query always re-fetches the same top-N-by-recency
+  // articles, so a handful of consistently-unmatchable ones permanently block
+  // every article behind them in the backfill queue (confirmed live 2026-08-02:
+  // one stuck article alone absorbed 70+ consecutive batch rounds).
+  await p.query(`
+    ALTER TABLE news_items
+      ADD COLUMN IF NOT EXISTS image_backfill_attempts INT UNSIGNED NOT NULL DEFAULT 0 AFTER views
+  `);
   await p.query(`
     ALTER TABLE facilities
       ADD COLUMN IF NOT EXISTS geocode_attempts INT NOT NULL DEFAULT 0 AFTER lng
