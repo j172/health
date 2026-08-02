@@ -56,11 +56,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl : "";
       const title = typeof body.title === "string" ? body.title : null;
       const result = await attachCardImageFromUrl(newsItemId, imageUrl, title);
-            return NextResponse.json(
-              { ok: result.ok, mode: "attach-image-url", localPath: result.localPath, reason: result.reason },
-              { status: result.ok ? 200 : 422 },
-            );
-          }
+      return NextResponse.json(
+        { ok: result.ok, mode: "attach-image-url", localPath: result.localPath, reason: result.reason },
+        { status: result.ok ? 200 : 422 },
+      );
+    }
 
     if (body.backfillOg === true) {
       const summary = await backfillMissingImagesFromOpenGraph(limit);
