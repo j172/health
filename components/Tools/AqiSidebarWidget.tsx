@@ -2,91 +2,98 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { type AqiSite } from "@/app/api/aqi/route";
+import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { type NearestAqiSite } from "@/app/api/aqi/nearest/route";
 
-const DEFAULT_COUNTIES = ["臺北市", "新北市", "臺中市", "高雄市", "桃園市"];
+interface ResolvedStation {
+  lat: number;
+  lng: number;
+  station: NearestAqiSite | null;
+}
 
 export default function AqiSidebarWidget() {
-  const [stations, setStations] = useState<AqiSite[]>([]);
-  const [selectedCounty, setSelectedCounty] = useState("臺北市");
-  const [loading, setLoading] = useState(true);
+  const location = useGeolocation();
+  const [resolved, setResolved] = useState<ResolvedStation | null>(null);
 
   useEffect(() => {
+    if (location.loading) return;
     let isMounted = true;
-    fetch(`/api/aqi?county=${encodeURIComponent(selectedCounty)}`)
-      .then((res) => res.json())
+    fetch(`/api/aqi/nearest?lat=${location.lat}&lng=${location.lng}`)
+      .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (isMounted && data.stations) {
-          setStations(data.stations);
-        }
+        if (isMounted) setResolved({ lat: location.lat, lng: location.lng, station: data?.station ?? null });
       })
-      .catch((err) => console.error("AQI Widget fetch error:", err))
-      .finally(() => {
-        if (isMounted) setLoading(false);
+      .catch((err) => {
+        console.error("AQI Widget fetch error:", err);
+        if (isMounted) setResolved({ lat: location.lat, lng: location.lng, station: null });
       });
     return () => {
       isMounted = false;
     };
-  }, [selectedCounty]);
+  }, [location.loading, location.lat, location.lng]);
 
-  const primarySite = stations[0];
+  const station = resolved?.station ?? null;
+  // 座標已更新（例如剛完成一次定位）但這組座標的測站資料還沒抓回來
+  const isFetchingStation = !location.loading && (!resolved || resolved.lat !== location.lat || resolved.lng !== location.lng);
+  const showSpinner = (location.loading || isFetchingStation) && !station;
+  const isRefreshing = location.refreshing || (isFetchingStation && station !== null);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-          <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            即時空氣品質 (AQI)
-          </h3>
+          <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">即時空氣品質 (AQI)</h3>
         </div>
-        <select
-          value={selectedCounty}
-          onChange={(e) => setSelectedCounty(e.target.value)}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 font-medium dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 outline-none"
+        <button
+          type="button"
+          onClick={location.refresh}
+          disabled={isRefreshing}
+          aria-label="重新定位"
+          title="重新定位"
+          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
-          {DEFAULT_COUNTIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          <svg className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
       </div>
 
-      {loading ? (
+      {showSpinner ? (
         <div className="mt-4 flex h-24 items-center justify-center">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
         </div>
-      ) : primarySite ? (
+      ) : station ? (
         <div className="mt-4">
           <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                {primarySite.county} · {primarySite.siteName}測站
+                {station.county} · {station.siteName}測站 · 約 {station.distanceKm} km
               </p>
               <div className="mt-1 flex items-center gap-2">
-                <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
-                  {primarySite.aqiValue ?? "--"}
-                </span>
+                <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{station.aqiValue ?? "--"}</span>
                 <span
                   className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-xs"
-                  style={{ backgroundColor: primarySite.aqiColor || "#10B981" }}
+                  style={{ backgroundColor: station.aqiColor || "#10B981" }}
                 >
-                  {primarySite.aqiStatus || "良好"}
+                  {station.aqiStatus || "良好"}
                 </span>
               </div>
             </div>
-            {primarySite.pm25 !== null && (
+            {station.pm25 !== null && (
               <div className="text-right">
-                <span className="block text-[10px] uppercase font-semibold text-slate-400">
-                  PM2.5
-                </span>
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  {primarySite.pm25} μg/m³
-                </span>
+                <span className="block text-[10px] uppercase font-semibold text-slate-400">PM2.5</span>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{station.pm25} μg/m³</span>
               </div>
             )}
           </div>
+          {location.isDefault && (
+            <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">定位權限未開啟，顯示台北101鄰近資料</p>
+          )}
         </div>
       ) : (
         <div className="mt-4 text-center text-xs text-slate-400 py-3">暫無測站資料</div>
