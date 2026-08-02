@@ -22,6 +22,16 @@ module.exports = {
       },
       max_memory_restart: '1024M',
       autorestart: true,
+      // Caps a broken-deploy crash loop instead of letting it retry forever.
+      // Confirmed live 2026-08-02: a deploy that left node_modules/next
+      // missing made this process fail-and-immediately-restart thousands of
+      // times (↺ 3220 in `pm2 status`), which itself burned enough CPU/RAM
+      // on this shared host to help OOM-kill the very npm ci trying to fix
+      // it — a self-reinforcing loop. With these set, pm2 gives up (goes to
+      // "errored") after max_restarts failures that each occur before
+      // min_uptime, instead of retrying indefinitely.
+      min_uptime: '10s',
+      max_restarts: 10,
       watch: false,
     },
   ],

@@ -142,7 +142,7 @@ jobs:
             --upload-file "ecosystem.config.cjs" \
             --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/ecosystem.config.cjs"
 
-      - name: Sync node_modules on server
+      - name: Trigger node_modules sync on server
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -165,22 +165,77 @@ jobs:
           # cold start failed its health probe with "Expected
           # clientReferenceManifest to be defined. This is a bug in Next.js."
           # — not a bug in Next.js, a version-skew bug in this deploy pipeline.
+          #
+          # npm ci now runs detached (nohup + closed stdio, launched from a
+          # subshell so it's immediately reparented) instead of being held
+          # open over this one SSH session — confirmed live 2026-08-02: even
+          # with ServerAliveInterval, this step dropped mid-install three
+          # separate times under host load (twice as a bare SSH disconnect,
+          # once as an outright OOM SIGKILL of npm itself), each time
+          # deleting node_modules/next without reinstalling it and leaving
+          # the server unable to survive its next restart until manually
+          # recovered. A held-open connection can't survive either failure
+          # mode; a detached job outlives a dropped connection, and an OOM
+          # kill is now at least detected (see "Wait for node_modules sync")
+          # instead of silently assumed to have succeeded.
           KEY_FILE="$(mktemp)"
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
           chmod 600 "$KEY_FILE"
           trap 'rm -f "$KEY_FILE"' EXIT
 
-          # ServerAliveInterval keeps the connection alive across npm ci's
-          # ~40s run — confirmed live 2026-08-02: the very first run of this
-          # step dropped mid-install (exit 255) without it, deleting
-          # node_modules/next and leaving the server unable to survive its
-          # next restart until manually re-run to completion.
-          SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o ServerAliveInterval=15)
-          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 -o ServerAliveInterval=15)
+          SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
 
-          scp "${SCP_OPTS[@]}" package.json package-lock.json "$SSH_USER@$SSH_HOST:/home/tw123457/health_app/"
+          scp "${SCP_OPTS[@]}" package.json package-lock.json scripts/server-npm-ci.sh "$SSH_USER@$SSH_HOST:/home/tw123457/health_app/"
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            'export PATH=/home/tw123457/.nvm/versions/node/v20.20.2/bin:$PATH && cd /home/tw123457/health_app && npm ci --omit=dev'
+            'cd /home/tw123457/health_app && rm -f .npm-ci-status && chmod +x server-npm-ci.sh && (nohup bash server-npm-ci.sh > /tmp/npm-ci.log 2>&1 < /dev/null &); echo triggered'
+
+      - name: Wait for node_modules sync
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY — skipping."
+            exit 0
+          fi
+
+          KEY_FILE="$(mktemp)"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          trap 'rm -f "$KEY_FILE"' EXIT
+
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+
+          # Each poll is a short, cheap SSH connection (just `cat` a status
+          # file) — far more likely to survive host load than one connection
+          # held open for npm ci's full ~40s+ runtime.
+          for ATTEMPT in $(seq 1 90); do
+            STATUS="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cat /home/tw123457/health_app/.npm-ci-status 2>/dev/null || echo PENDING')"
+
+            if [ "$STATUS" = "PENDING" ]; then
+              echo "npm ci still running on server ($ATTEMPT/90)..."
+              sleep 5
+              continue
+            fi
+
+            echo "npm ci finished with exit code: $STATUS"
+            if [ "$STATUS" != "0" ]; then
+              echo "npm ci failed — server-side log tail:"
+              ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'tail -n 50 /tmp/npm-ci.log' || true
+              exit 1
+            fi
+
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'test -f /home/tw123457/health_app/node_modules/next/dist/bin/next'
+            echo "node_modules/next confirmed present."
+            exit 0
+          done
+
+          echo "Timed out waiting for npm ci to finish (it may have been OOM-killed before writing a status file — check the server manually)."
+          exit 1
 
       - name: Trigger apply-prebuilt force
         env:
