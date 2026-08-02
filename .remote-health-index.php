@@ -777,25 +777,62 @@ $headers[] = 'X-Forwarded-Proto: https';
 $headers[] = 'X-Forwarded-For: ' . ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
 $body = file_get_contents('php://input');
 $isLongRunningApi = str_starts_with($path, '/api/admin/') || str_starts_with($path, '/api/internal/');
-$ch = curl_init($target);
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_HEADER => true,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_CUSTOMREQUEST => $method,
-    CURLOPT_HTTPHEADER => $headers,
-    CURLOPT_POSTFIELDS => in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']) ? $body : null,
-    CURLOPT_ENCODING => '',
-    CURLOPT_TIMEOUT => $isLongRunningApi ? 280 : 30,
-]);
-$response = curl_exec($ch);
+$isSafeMethod = in_array($method, ['GET', 'HEAD'], true);
+$allowSelfHealRetry = !$isLongRunningApi && $isSafeMethod;
+$triggerPm2Watchdog = static function () use ($opsKey): void {
+    if ($opsKey === '') {
+        return;
+    }
+
+    // Fire-and-forget: ask the existing watchdog endpoint to revive PM2/app
+    // if needed, then let the current request retry once.
+    $url = 'https://health.j172.tw/__ops/pm2-ensure-running?key=' . rawurlencode($opsKey) . '&cb=' . time();
+    $cmd = 'nohup curl -k -fsS --max-time 8 --resolve health.j172.tw:443:103.21.221.12 '
+        . escapeshellarg($url)
+        . ' >/dev/null 2>&1 &';
+    @exec($cmd);
+};
+
+$maxAttempts = $allowSelfHealRetry ? 2 : 1;
+$response = false;
+$lastCurlError = '';
+$attempt = 0;
+
+while ($attempt < $maxAttempts) {
+    $attempt++;
+    $ch = curl_init($target);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_CUSTOMREQUEST => $method,
+        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_POSTFIELDS => in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']) ? $body : null,
+        CURLOPT_ENCODING => '',
+        CURLOPT_TIMEOUT => $isLongRunningApi ? 280 : 30,
+    ]);
+
+    $response = curl_exec($ch);
+    if ($response !== false) {
+        break;
+    }
+
+    $lastCurlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($attempt < $maxAttempts) {
+        $triggerPm2Watchdog();
+        usleep(700000);
+    }
+}
+
 if ($response === false) {
     http_response_code(502);
     header('Content-Type: text/plain; charset=utf-8');
-    echo 'Proxy error: ' . curl_error($ch);
-    curl_close($ch);
+    echo 'Proxy error: ' . $lastCurlError;
     exit;
 }
+
 $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
