@@ -38,9 +38,14 @@ sed \
   -e "s/__OPS_KEY__/${OPS_KEY}/g" \
   "$CRONTAB_SOURCE" > "$BLOCK_FILE"
 
+# ssh and scp take the port flag under different letters (-p vs -P) — sharing
+# one array between them silently broke scp: it read -p (preserve
+# timestamps, no argument) plus a stray "22" positional arg, so this upload
+# has been failing on every deploy since this script was introduced.
 SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
 
-scp "${SSH_OPTS[@]}" "$BLOCK_FILE" "$SSH_USER@$SSH_HOST:/tmp/health-app-cron-block.txt"
+scp "${SCP_OPTS[@]}" "$BLOCK_FILE" "$SSH_USER@$SSH_HOST:/tmp/health-app-cron-block.txt"
 
 # shellcheck disable=SC2087
 ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" bash -s <<'REMOTE'
