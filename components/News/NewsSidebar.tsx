@@ -5,6 +5,7 @@ import { type NewsListItem, type WeatherWarningItem } from "@/lib/server/news/qu
 import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
+import UvSidebarWidget from "@/components/Tools/UvSidebarWidget";
 import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWidget";
 import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -36,6 +37,9 @@ export default function NewsSidebar({
 
       {/* 2. Weather Alert Card Widget */}
       <WeatherAlertSidebarWidget warnings={weatherWarnings} />
+
+      {/* 2.5. Instant UV Index Widget */}
+      <UvSidebarWidget />
 
       {/* 3. Earthquake Card Widget */}
       <EarthquakeSidebarWidget earthquakes={earthquakes} />
