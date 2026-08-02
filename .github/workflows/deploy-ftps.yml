@@ -166,18 +166,15 @@ jobs:
           # clientReferenceManifest to be defined. This is a bug in Next.js."
           # — not a bug in Next.js, a version-skew bug in this deploy pipeline.
           #
-          # npm ci now runs detached (nohup + closed stdio, launched from a
-          # subshell so it's immediately reparented) instead of being held
-          # open over this one SSH session — confirmed live 2026-08-02: even
-          # with ServerAliveInterval, this step dropped mid-install three
-          # separate times under host load (twice as a bare SSH disconnect,
-          # once as an outright OOM SIGKILL of npm itself), each time
-          # deleting node_modules/next without reinstalling it and leaving
-          # the server unable to survive its next restart until manually
-          # recovered. A held-open connection can't survive either failure
-          # mode; a detached job outlives a dropped connection, and an OOM
-          # kill is now at least detected (see "Wait for node_modules sync")
-          # instead of silently assumed to have succeeded.
+          # server-npm-ci.sh SKIPS npm ci when package-lock.json is unchanged and
+          # next is already present/version-matched. Confirmed live 2026-08-02:
+          # forcing a full npm ci on every code-only deploy got OOM SIGKILL
+          # (exit 137), wiped node_modules mid-install, and 502'd health-web
+          # until manual recovery. Only lockfile / next-skew changes pay for
+          # a reinstall. When an install is required it still runs detached
+          # (nohup + closed stdio) so a dropped SSH session can't interrupt
+          # mid-rm of node_modules. Wait step polls .npm-ci-status via short
+          # SSH calls.
           KEY_FILE="$(mktemp)"
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
           chmod 600 "$KEY_FILE"
@@ -210,19 +207,18 @@ jobs:
 
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
 
-          # Each poll is a short, cheap SSH connection (just `cat` a status
-          # file) — far more likely to survive host load than one connection
-          # held open for npm ci's full ~40s+ runtime.
+          # Skip path usually writes status 0 within a second (no install).
+          # Real installs still poll via short SSH calls rather than one long session.
           for ATTEMPT in $(seq 1 90); do
             STATUS="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cat /home/tw123457/health_app/.npm-ci-status 2>/dev/null || echo PENDING')"
 
             if [ "$STATUS" = "PENDING" ]; then
-              echo "npm ci still running on server ($ATTEMPT/90)..."
+              echo "node_modules sync still running on server ($ATTEMPT/90)..."
               sleep 5
               continue
             fi
 
-            echo "npm ci finished with exit code: $STATUS"
+            echo "node_modules sync finished with exit code: $STATUS"
             if [ "$STATUS" != "0" ]; then
               echo "npm ci failed — server-side log tail:"
               ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'tail -n 50 /tmp/npm-ci.log' || true
@@ -230,11 +226,12 @@ jobs:
             fi
 
             ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'test -f /home/tw123457/health_app/node_modules/next/dist/bin/next'
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'tail -n 20 /tmp/npm-ci.log' || true
             echo "node_modules/next confirmed present."
             exit 0
           done
 
-          echo "Timed out waiting for npm ci to finish (it may have been OOM-killed before writing a status file — check the server manually)."
+          echo "Timed out waiting for node_modules sync to finish (it may have been OOM-killed before writing a status file — check the server manually)."
           exit 1
 
       - name: Trigger apply-prebuilt force
