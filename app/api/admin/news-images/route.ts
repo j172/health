@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { assignMissingNewsCardImages, clearPixabayApiCache, clearAllNewsCardImages } from "@/lib/server/news/cardImages";
-import { backfillMissingImagesFromOpenGraph } from "@/lib/server/news/backfillOgImages";
+import {
+  attachCardImageFromUrl,
+  backfillMissingImagesFromOpenGraph,
+  listMissingCardImageTargets,
+} from "@/lib/server/news/backfillOgImages";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -15,8 +19,18 @@ export async function POST(request: Request): Promise<NextResponse> {
       limit?: unknown;
       clearCache?: unknown;
       clearCardImages?: unknown;
-      /** Prefer og:image backfill for items missing both RSS assets and Pixabay cards. */
+      /** Server-side og:image pull (shared-host egress; some publishers 403). */
       backfillOg?: unknown;
+      /** List missing targets for an external OG worker (GHA runner). */
+      listMissing?: unknown;
+      /**
+       * Attach a direct image URL resolved off-host (og:image CDN).
+       * Body: { attachImageUrl: true, newsItemId: number, imageUrl: string, title?: string }
+       */
+      attachImageUrl?: unknown;
+      newsItemId?: unknown;
+      imageUrl?: unknown;
+      title?: unknown;
     };
 
     if (body.clearCache === true) {
@@ -31,6 +45,22 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const limit = typeof body.limit === "number" ? body.limit : 10;
+
+    if (body.listMissing === true) {
+      const items = await listMissingCardImageTargets(limit);
+      return NextResponse.json({ ok: true, mode: "list-missing", items });
+    }
+
+    if (body.attachImageUrl === true) {
+      const newsItemId = typeof body.newsItemId === "number" ? body.newsItemId : Number(body.newsItemId);
+      const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl : "";
+      const title = typeof body.title === "string" ? body.title : null;
+      const result = await attachCardImageFromUrl(newsItemId, imageUrl, title);
+            return NextResponse.json(
+              { ok: result.ok, mode: "attach-image-url", localPath: result.localPath, reason: result.reason },
+              { status: result.ok ? 200 : 422 },
+            );
+          }
 
     if (body.backfillOg === true) {
       const summary = await backfillMissingImagesFromOpenGraph(limit);

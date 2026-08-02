@@ -13,10 +13,9 @@ const API_RESULTS_PER_PAGE = 30;
 // this only ever looked at the first 3 pages (90 results) — for the handful
 // of generic fallback terms (health/life/nature) that most unmatched titles
 // route to, that shallow top-90-by-popularity pool gets fully claimed over
-// time even though hundreds more results exist further in. Confirmed live
-// 2026-08-02: the top 5 "popular"-ranked results for both life and nature
-// were already 100% used. 10 pages reaches 300 of the 500 available.
-const MAX_API_PAGES = 10;
+// 10 pages = 300 hits; fallback terms (health/life/nature) still exhaust under
+// heavy backfill. 16 pages reaches 480 of Pixabay's ~500-hit cap per term.
+const MAX_API_PAGES = 16;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
 interface MissingNewsRow extends RowDataPacket {

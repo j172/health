@@ -28,8 +28,11 @@ export const fetchOpenGraphImageAsset = async (canonicalUrl: string): Promise<Ne
 
   const response = await httpGetText(canonicalUrl, {
     headers: {
-      "User-Agent": "health.j172.tw-rss-ingestor/1.0",
+      // Browser-like UA: some publishers (and WAFs) 403 the bare bot string.
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
     },
     timeoutMs: FETCH_TIMEOUT_MS,
   });

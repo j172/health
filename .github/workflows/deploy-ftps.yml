@@ -380,13 +380,24 @@ jobs:
             --data '{"clearCache":true}' \
             "http://127.0.0.1:18080/api/admin/news-images" | jq .
 
+          # External OG: HTML fetch runs on the GHA runner (clean egress). Shared-host
+          # IP is 403'd by ltn.com.tw article pages — confirmed live 2026-08-02 —
+          # so server-side backfillOg cannot fill those. Runner extracts og:image,
+          # then asks the app to re-host the CDN URL into news_assets.
+          echo "=== External OG backfill (runner egress) ==="
+          NEWS_IMAGES_BASE_URL="http://127.0.0.1:18080" \
+            OG_BACKFILL_LIMIT=20 \
+            OG_BACKFILL_ROUNDS=12 \
+            node scripts/gha-og-external-backfill.mjs
+
+          echo "=== Pixabay backfill ==="
           TOTAL_FAILED=0
-          for ATTEMPT in $(seq 1 100); do
+          for ATTEMPT in $(seq 1 80); do
             RESPONSE="$(curl --fail --show-error --silent \
               --request POST \
               --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
               --header "content-type: application/json" \
-              --data '{"limit":1}' \
+              --data '{"limit":5}' \
               "http://127.0.0.1:18080/api/admin/news-images")"
 
             OK="$(printf '%s' "$RESPONSE" | jq -r '.ok')"
@@ -400,11 +411,13 @@ jobs:
               echo "No unused Pixabay candidates are available — treating backfill as complete."
               exit 0
             fi
-            # A single item can fail validation (e.g. a bad Pixabay candidate) without
-            # anything actually being wrong; only abort if failures pile up, since that's
-            # the signal something systemic (not just one unlucky candidate) is going on.
+            if [ "$ASSIGNED" = "0" ] && [ "$FAILED" != "0" ] && [ "$REASON" = "No unused Pixabay candidates are available." ]; then
+              echo "Pixabay pool exhausted."
+              exit 0
+            fi
+            # A single item can fail validation without anything systemic being wrong.
             TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
-            if [ "$TOTAL_FAILED" -ge 10 ]; then
+            if [ "$TOTAL_FAILED" -ge 40 ]; then
               echo "Too many card image failures ($TOTAL_FAILED) — stopping."
               exit 1
             fi
@@ -413,7 +426,7 @@ jobs:
             fi
           done
 
-          echo "Card image backfill exceeded 100 assignments; run the workflow again to continue safely."
+          echo "Card image backfill exceeded 80 batches; run the workflow again to continue safely."
           exit 1
 
       - name: Verify public news pages and JavaScript chunks
