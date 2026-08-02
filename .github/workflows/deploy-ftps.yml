@@ -162,7 +162,17 @@ jobs:
           set -euo pipefail
           OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
 
-          for ATTEMPT in $(seq 1 30); do
+          # The server-side probe this polls for (.remote-health-index.php's
+          # buildPrebuiltCommand) budgets 60 one-second attempts, but each
+          # attempt can itself take up to ~20s if curl hangs instead of
+          # refusing outright — so its real-world worst case is far longer
+          # than 60s, and has been observed taking 80-100s+ under host load.
+          # This loop must comfortably outlast that, or it reports a false
+          # failure (and skips every later step, incl. the crontab sync)
+          # while the server-side apply is actually still in progress or
+          # about to succeed — confirmed happening twice on 2026-08-02 at
+          # the old 30-attempt/~60-80s budget.
+          for ATTEMPT in $(seq 1 150); do
             STATUS="$(curl --fail --show-error --silent --insecure \
               --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
               --resolve "health.j172.tw:443:103.21.221.12" \
@@ -179,8 +189,8 @@ jobs:
               exit 1
             fi
 
-            echo "Waiting for apply-prebuilt completion ($ATTEMPT/30)..."
-            sleep 2
+            echo "Waiting for apply-prebuilt completion ($ATTEMPT/150)..."
+            sleep 4
           done
 
           echo "Timed out waiting for [DONE-FORCE-V4]"
