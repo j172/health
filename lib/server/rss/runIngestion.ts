@@ -268,7 +268,12 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
     const persisted = await persistItems(enrichedItems);
     persisted.unchanged += skippedUnchanged;
     try {
-      await assignMissingNewsCardImages(3);
+      // Raised from 3: at 3/run (every 30 min via crontab) the ~2,244-article
+      // backlog would take ~15 days to clear even before today's MAX_API_PAGES
+      // and stuck-article fixes improved the per-attempt success rate. Pixabay
+      // search+download is the only part of this that takes real time, so 10
+      // still comfortably fits inside the cron's --max-time 280 budget.
+      await assignMissingNewsCardImages(10);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown card image assignment error";
       await writeIngestionError({
