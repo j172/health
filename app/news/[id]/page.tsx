@@ -8,6 +8,7 @@ import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
 import ArticleReaderToolbar from "@/components/News/ArticleReaderToolbar";
+import ArticleViewTracker from "@/components/News/ArticleViewTracker";
 import NewsCard from "@/components/News/NewsCard";
 
 export const runtime = "nodejs";
@@ -81,6 +82,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ))}
+      <ArticleViewTracker newsId={news.id} />
       <StabloHeader />
 
       <main className="pb-20">

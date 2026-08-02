@@ -182,6 +182,38 @@ export const listLatestNews = async (
   );
 };
 
+/** Top 5-ish by real view count (see /api/news/[id]/view) for the "熱門焦點
+ * 新聞" sidebar widget — excludes zero-view articles so a brand-new deploy
+ * with no view data yet doesn't show an arbitrary/misleading order; the
+ * caller falls back to the recency list until real views accumulate. */
+export const getTopViewedNews = async (limit = 5): Promise<NewsListItem[]> => {
+  const cacheKey = `top_viewed_news_${limit}`;
+  return memoizeQuery(cacheKey, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+               n.canonical_url, n.description_html,
+               c.local_path AS card_image_url,
+               CASE
+                 WHEN c.local_path IS NOT NULL THEN 'pixabay'
+                 ELSE NULL
+               END AS card_image_source,
+               c.source_page_url AS card_image_source_page_url,
+               c.contributor_name AS card_image_contributor
+        FROM news_items n
+        LEFT JOIN news_card_images c ON c.news_item_id = n.id
+        WHERE n.views > 0
+        ORDER BY n.views DESC
+        LIMIT ?
+        `,
+        [limit],
+      );
+      return rows as unknown as NewsListItem[];
+    }),
+  );
+};
+
 export const countNewsItems = async (sourceName?: string, keyword?: string, sourceNames?: string[]): Promise<number> => {
   const cacheKey = `count_news_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
   return memoizeQuery(cacheKey, async () =>

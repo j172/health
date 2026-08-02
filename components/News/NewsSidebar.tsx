@@ -17,12 +17,12 @@ const toTaipei = (value: Date | null): string => {
 };
 
 export default function NewsSidebar({
-  recentNews = [],
+  trendingNews = [],
   weatherWarnings = [],
   earthquakes = [],
   activeGroupKey,
 }: {
-  recentNews?: NewsListItem[];
+  trendingNews?: NewsListItem[];
   weatherWarnings?: WeatherWarningItem[];
   earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
@@ -72,14 +72,14 @@ export default function NewsSidebar({
         </div>
       </div>
 
-      {/* 5. Popular / Recent News List */}
-      {recentNews.length > 0 && (
+      {/* 5. Trending News List (by real view count — see getTopViewedNews) */}
+      {trendingNews.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
             {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
           </h3>
           <div className="space-y-4">
-            {recentNews.slice(0, 5).map((item, idx) => (
+            {trendingNews.slice(0, 5).map((item, idx) => (
               <article key={item.id} className="group flex gap-3 items-start">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                   {idx + 1}

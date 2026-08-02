@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/queries";
+import { getTopViewedNews, listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { getRecentSignificantEarthquakes } from "@/lib/server/earthquakes/queries";
 import SiteNav from "@/components/News/SiteNav";
@@ -188,11 +188,16 @@ export default async function StabloNewsLayout({
     sourceNames: cat.key === "gov" ? [...cat.sources.map((s) => s.sourceName), "cwa"] : cat.sources.map((s) => s.sourceName),
   }));
 
-  // Fetch Weather Warnings & Earthquakes for Sidebar Card Widgets
-  const [weatherWarnings, earthquakes] = await Promise.all([
+  // Fetch Weather Warnings, Earthquakes & Trending News for Sidebar Card Widgets
+  const [weatherWarnings, earthquakes, topViewedNews] = await Promise.all([
     listActiveWeatherWarnings(3),
     getRecentSignificantEarthquakes(6.0, 72, 5),
+    getTopViewedNews(5),
   ]);
+  // Falls back to the recency list until real view data accumulates (e.g.
+  // right after this feature ships) — otherwise the widget would render
+  // empty for every article that hasn't been viewed yet.
+  const trendingNews = topViewedNews.length > 0 ? topViewedNews : items.slice(0, 5);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
@@ -216,7 +221,7 @@ export default async function StabloNewsLayout({
               {/* Right Sidebar (1 column on lg) */}
               <div className="lg:col-span-1">
                 <NewsSidebar
-                  recentNews={items.slice(0, 5)}
+                  trendingNews={trendingNews}
                   weatherWarnings={weatherWarnings}
                   earthquakes={earthquakes}
                   activeGroupKey={activeGroupKey}
@@ -257,7 +262,7 @@ export default async function StabloNewsLayout({
               </div>
               <div className="lg:col-span-1">
                 <NewsSidebar
-                  recentNews={items.slice(0, 5)}
+                  trendingNews={trendingNews}
                   weatherWarnings={weatherWarnings}
                   earthquakes={earthquakes}
                   activeGroupKey={activeGroupKey}

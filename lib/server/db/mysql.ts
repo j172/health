@@ -71,6 +71,14 @@ export const ensureSchema = async (): Promise<void> => {
       ADD COLUMN IF NOT EXISTS geo_summary TEXT NULL AFTER keywords
   `);
   await p.query(`
+    ALTER TABLE news_items
+      ADD COLUMN IF NOT EXISTS views INT UNSIGNED NOT NULL DEFAULT 0 AFTER geo_summary
+  `);
+  await p.query(`
+    ALTER TABLE news_items
+      ADD INDEX IF NOT EXISTS idx_news_views (views)
+  `);
+  await p.query(`
     ALTER TABLE facilities
       ADD COLUMN IF NOT EXISTS geocode_attempts INT NOT NULL DEFAULT 0 AFTER lng
   `);

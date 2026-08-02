@@ -5,7 +5,7 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const LAST_UPDATED = "2026-07-29";
+const LAST_UPDATED = "2026-08-02";
 
 export default function PrivacyPage() {
   const baseUrl = getBaseUrl();
@@ -60,6 +60,11 @@ export default function PrivacyPage() {
                 <li>
                   <span className="font-medium text-neutral-800">本機儲存（localStorage）：</span>
                   本站僅使用瀏覽器本機儲存記住您是否已閱讀本頁的隱私權提示橫幅，不會用於追蹤或廣告目的。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800">文章瀏覽計數 Cookie：</span>
+                  當您閱讀一篇新聞文章時，本站會於您的瀏覽器設置一個不含個人資料、以文章編號命名的 Cookie（有效期 24
+                  小時），僅用於避免同一裝置短時間內重複瀏覽同一篇文章被重複計入「熱門焦點新聞」的點閱統計，不用於廣告、追蹤或建立個人輪廓，也不會與其他資料串接識別您的身分。
                 </li>
               </ul>
             </section>
