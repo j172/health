@@ -11,12 +11,21 @@
 # outside the box (confirmed for GitHub Actions runner IPs), so anything that
 # needs to run reliably on a schedule goes through loopback instead.
 #
-# __RSS_SYNC_SECRET__ / __RSS_SYNC_ADMIN_SECRET__ are placeholders substituted
-# with the real secret values at deploy time — this file itself never
-# contains a live secret.
+# __RSS_SYNC_SECRET__ / __RSS_SYNC_ADMIN_SECRET__ / __OPS_KEY__ are
+# placeholders substituted with the real secret values at deploy time — this
+# file itself never contains a live secret.
 # BEGIN health-app managed cron
 5,35 * * * * curl -s --max-time 280 -H "x-rss-sync-secret: __RSS_SYNC_SECRET__" "http://127.0.0.1:3000/api/internal/rss-sync" >> /home/tw123457/health_app/logs/rss-sync-cron.log 2>&1
 20,50 * * * * curl -s --max-time 280 -H "x-rss-sync-secret: __RSS_SYNC_SECRET__" "http://127.0.0.1:3000/api/internal/aqi-sync" >> /home/tw123457/health_app/logs/aqi-sync-cron.log 2>&1
 15,45 * * * * curl -s --max-time 60 -X POST -H "x-rss-sync-admin-secret: __RSS_SYNC_ADMIN_SECRET__" "http://127.0.0.1:3000/api/admin/cwa-sync" >> /home/tw123457/health_app/logs/cwa-sync-cron.log 2>&1
 3,13,23,33,43,53 * * * * curl -s --max-time 60 -X POST -H "x-rss-sync-admin-secret: __RSS_SYNC_ADMIN_SECRET__" "http://127.0.0.1:3000/api/admin/earthquakes-sync" >> /home/tw123457/health_app/logs/earthquakes-sync-cron.log 2>&1
+# /__ops/pm2-ensure-running is PHP-layer, not a Next.js route, so unlike the
+# four lines above it can't be reached via 127.0.0.1:3000 loopback — it only
+# exists behind the public vhost. --resolve pins straight to the origin IP
+# (same one deploy-ftps.yml already uses for /__ops/ calls) so this never
+# depends on DNS or round-trips through Cloudflare in front of the domain.
+# This host kills the health-web process roughly once a day (see the
+# pm2-ensure-running handler's own comments); this is the self-heal trigger
+# that used to be missing, so 502s from that no longer wait for a human.
+*/5 * * * * curl -s --max-time 90 --insecure --resolve "health.j172.tw:443:103.21.221.12" "https://health.j172.tw/__ops/pm2-ensure-running?key=__OPS_KEY__&cb=$(date +\%s)" >> /home/tw123457/health_app/logs/pm2-watchdog-cron.log 2>&1
 # END health-app managed cron

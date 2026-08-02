@@ -297,6 +297,27 @@ if (str_starts_with($path, '/__ops/')) {
             exit;
         }
 
+        // A restart triggered by this endpoint, apply-prebuilt-force, or a manual
+        // apply-prebuilt can take well over a minute to health-probe (worst case
+        // ~20 min if the probe curls hang instead of refusing outright) — easily
+        // longer than this endpoint's cron interval. Without this check, a cron
+        // tick landing mid-restart would race a second concurrent extract+restart
+        // against the one still running. All three code paths write the same log
+        // via the same START/DONE/FAIL markers, so checking for an unfinished run
+        // here catches an in-flight restart no matter which endpoint started it.
+        if (is_file($prebuiltLogFile)) {
+            $logContents = (string) file_get_contents($prebuiltLogFile);
+            $hasStarted = str_contains($logContents, '[START-V4]') || str_contains($logContents, '[START-FORCE-V4]');
+            $hasFinished = str_contains($logContents, '[DONE-V4]') || str_contains($logContents, '[DONE-FORCE-V4]')
+                || str_contains($logContents, '[FAIL-V4]') || str_contains($logContents, '[FAIL-FORCE-V4]');
+            $logAge = time() - (int) @filemtime($prebuiltLogFile);
+            if ($hasStarted && !$hasFinished && $logAge <= 1800) {
+                echo "[{$now}] health-web was not online, but a restart already appears to be in progress — not starting another.\n";
+                echo $logContents;
+                exit;
+            }
+        }
+
         @file_put_contents($watchdogLog, "[{$now}] health-web was not online (this host periodically kills long-running background processes) — restarting via apply-prebuilt.\n", FILE_APPEND);
 
         // Reuse the same tested apply-prebuilt path (re-extracts the last
