@@ -48,6 +48,11 @@ if [ ! -f "$LOCK_FILE" ]; then
 fi
 
 NEW_HASH="$(sha256sum "$LOCK_FILE" | awk '{print $1}')"
+if [ -z "$NEW_HASH" ]; then
+  echo "failed to hash $LOCK_FILE"
+  write_status 1
+  exit 1
+fi
 OLD_HASH="$(cat "$LOCK_HASH_FILE" 2>/dev/null || true)"
 
 installed_next_version() {

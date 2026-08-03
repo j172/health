@@ -18,6 +18,7 @@
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> node scripts/import-mohw-elder-welfare.mjs
  */
 import iconv from "iconv-lite";
+import { parseCsv, toHalfwidthDigits, normalizeAddress, submitFacilities } from "./lib/mohw-csv.mjs";
 
 const BASE_URL = process.env.HEALTH_BASE_URL || "https://health.j172.tw";
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
@@ -51,85 +52,6 @@ const COUNTY_URLS = [
   { county: "雲林縣", url: "https://www.opendata.mohw.gov.tw/dataset/opendata/sfaa/8572/%E9%9B%B2%E6%9E%97%E7%B8%A3%E8%80%81%E4%BA%BA%E7%A6%8F%E5%88%A9%E6%A9%9F%E6%A7%8B%E5%90%8D%E5%86%8A.csv" },
   { county: "高雄市", url: "https://www.opendata.mohw.gov.tw/dataset/opendata/sfaa/8572/%E9%AB%98%E9%9B%84%E5%B8%82%E8%80%81%E4%BA%BA%E7%A6%8F%E5%88%A9%E6%A9%9F%E6%A7%8B%E5%90%8D%E5%86%8A.csv" },
 ];
-
-// Full-text (not line-split-first) CSV parser — the 收容對象 column embeds
-// literal newlines inside quoted fields (e.g. `"安養\n養護"`), which a
-// split-on-newline-first parser would corrupt into bogus extra rows.
-function parseCsv(text) {
-  const cleaned = text.replace(/^﻿/, "");
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let inQuotes = false;
-  for (let i = 0; i < cleaned.length; i++) {
-    const char = cleaned[i];
-    if (inQuotes) {
-      if (char === '"') {
-        if (cleaned[i + 1] === '"') {
-          cell += '"';
-          i++;
-        } else inQuotes = false;
-      } else cell += char;
-      continue;
-    }
-    if (char === '"') inQuotes = true;
-    else if (char === ",") {
-      row.push(cell);
-      cell = "";
-    } else if (char === "\r") {
-      // skip
-    } else if (char === "\n") {
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else cell += char;
-  }
-  if (cell.length > 0 || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
-  const nonEmptyRows = rows.filter((r) => r.length > 1 || (r[0] ?? "").trim() !== "");
-  if (nonEmptyRows.length === 0) return [];
-  const headers = nonEmptyRows[0].map((h) => h.trim());
-  return nonEmptyRows.slice(1).map((cells) => {
-    const record = {};
-    headers.forEach((h, i) => (record[h] = (cells[i] ?? "").trim()));
-    return record;
-  });
-}
-
-const toHalfwidthDigits = (s) => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
-
-// A short unit (e.g. county+district, or just a truncated fragment of one)
-// sometimes repeats back-to-back near the start of these addresses — see
-// lib/server/facilities/csv.ts's dedupeAddressPrefix for the two confirmed
-// live shapes this handles (e.g. a source row's county truncated to "中市"
-// then a full "臺中市" prepended in front of it: "臺中市中市北屯區...").
-const dedupeAddressPrefix = (address) => {
-  for (let len = 12; len >= 4; len--) {
-    if (address.length >= len * 2 && address.slice(0, len) === address.slice(len, len * 2)) {
-      return address.slice(len);
-    }
-  }
-  for (let len = 2; len <= 4; len++) {
-    for (let start = 0; start <= 4; start++) {
-      const unit = address.slice(start, start + len);
-      if (unit.length === len && unit === address.slice(start + len, start + len * 2)) {
-        return address.slice(0, start + len) + address.slice(start + len * 2);
-      }
-    }
-  }
-  return address;
-};
-
-const normalizeAddress = (raw) => {
-  const halfwidth = toHalfwidthDigits(raw);
-  const firstAddress = halfwidth.split(/[,，]|及/)[0];
-  const withoutParens = firstAddress.replace(/[（(][^）)]*[）)]/g, "");
-  const deduped = dedupeAddressPrefix(withoutParens.trim());
-  return deduped.replace(/\s+/g, " ").trim();
-};
 
 async function fetchCounty(county, url) {
   const res = await fetch(url);
@@ -173,21 +95,10 @@ async function fetchRecords() {
   return all;
 }
 
-async function submit(records) {
-  const res = await fetch(`${BASE_URL}/api/admin/facilities-import`, {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-rss-sync-admin-secret": ADMIN_SECRET },
-    body: JSON.stringify({ records }),
-  });
-  const json = await res.json();
-  if (!res.ok || !json.ok) throw new Error(`Import failed: ${JSON.stringify(json)}`);
-  return json;
-}
-
 async function main() {
   const records = await fetchRecords();
   console.log(`Importing ${records.length} institutions total...`);
-  const result = await submit(records);
+  const result = await submitFacilities(BASE_URL, ADMIN_SECRET, records);
   console.log("Import result:", result);
 }
 

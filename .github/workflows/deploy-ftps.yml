@@ -60,17 +60,19 @@ jobs:
           set -euo pipefail
           trap 'rm -f .pixabay.env' EXIT
 
-          FTP_SERVER_CLEAN="$(printf '%s' "$FTP_SERVER" | tr -d '\r\n' | xargs)"
-          FTP_USERNAME_CLEAN="$(printf '%s' "$FTP_USERNAME" | tr -d '\r\n' | xargs)"
-          FTP_PASSWORD_CLEAN="$(printf '%s' "$FTP_PASSWORD" | tr -d '\r\n')"
-          MYSQL_PASSWORD_CLEAN="$(printf '%s' "${MYSQL_PASSWORD_SECRET:-}" | tr -d '\r\n')"
-          CLOUDFLARE_ACCOUNT_ID_CLEAN="$(printf '%s' "${CLOUDFLARE_ACCOUNT_ID_SECRET:-}" | tr -d '\r\n')"
-          CLOUDFLARE_API_TOKEN_CLEAN="$(printf '%s' "${CLOUDFLARE_API_TOKEN_SECRET:-}" | tr -d '\r\n')"
-          MOENV_PM25_API_KEY_CLEAN="$(printf '%s' "${MOENV_PM25_API_KEY_SECRET:-}" | tr -d '\r\n')"
-          MOENV_AQI_FORECAST_API_KEY_CLEAN="$(printf '%s' "${MOENV_AQI_FORECAST_API_KEY_SECRET:-}" | tr -d '\r\n')"
-          OPS_KEY_CLEAN="$(printf '%s' "${OPS_KEY_SECRET:-}" | tr -d '\r\n')"
-          GOOGLE_MAPS_API_KEY_CLEAN="$(printf '%s' "${GOOGLE_MAPS_API_KEY_SECRET:-}" | tr -d '\r\n')"
-          OPENCAGE_API_KEY_CLEAN="$(printf '%s' "${OPENCAGE_API_KEY_SECRET:-}" | tr -d '\r\n')"
+          clean() { printf '%s' "$1" | tr -d '\r\n'; }
+
+          FTP_SERVER_CLEAN="$(clean "$FTP_SERVER" | xargs)"
+          FTP_USERNAME_CLEAN="$(clean "$FTP_USERNAME" | xargs)"
+          FTP_PASSWORD_CLEAN="$(clean "$FTP_PASSWORD")"
+          MYSQL_PASSWORD_CLEAN="$(clean "${MYSQL_PASSWORD_SECRET:-}")"
+          CLOUDFLARE_ACCOUNT_ID_CLEAN="$(clean "${CLOUDFLARE_ACCOUNT_ID_SECRET:-}")"
+          CLOUDFLARE_API_TOKEN_CLEAN="$(clean "${CLOUDFLARE_API_TOKEN_SECRET:-}")"
+          MOENV_PM25_API_KEY_CLEAN="$(clean "${MOENV_PM25_API_KEY_SECRET:-}")"
+          MOENV_AQI_FORECAST_API_KEY_CLEAN="$(clean "${MOENV_AQI_FORECAST_API_KEY_SECRET:-}")"
+          OPS_KEY_CLEAN="$(clean "${OPS_KEY_SECRET:-}")"
+          GOOGLE_MAPS_API_KEY_CLEAN="$(clean "${GOOGLE_MAPS_API_KEY_SECRET:-}")"
+          OPENCAGE_API_KEY_CLEAN="$(clean "${OPENCAGE_API_KEY_SECRET:-}")"
 
           if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
             echo "Missing one of required deployment values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD / PIXABAY_API_KEY"
@@ -79,30 +81,27 @@ jobs:
 
           umask 077
           printf 'PIXABAY_API_KEY=%s\n' "$PIXABAY_API_KEY" > .pixabay.env
-          if [ -n "$MYSQL_PASSWORD_CLEAN" ]; then
-            printf 'MYSQL_PASSWORD=%s\n' "$MYSQL_PASSWORD_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$CLOUDFLARE_ACCOUNT_ID_CLEAN" ]; then
-            printf 'CLOUDFLARE_ACCOUNT_ID=%s\n' "$CLOUDFLARE_ACCOUNT_ID_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$CLOUDFLARE_API_TOKEN_CLEAN" ]; then
-            printf 'CLOUDFLARE_API_TOKEN=%s\n' "$CLOUDFLARE_API_TOKEN_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$MOENV_PM25_API_KEY_CLEAN" ]; then
-            printf 'MOENV_PM25_API_KEY=%s\n' "$MOENV_PM25_API_KEY_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$MOENV_AQI_FORECAST_API_KEY_CLEAN" ]; then
-            printf 'MOENV_AQI_FORECAST_API_KEY=%s\n' "$MOENV_AQI_FORECAST_API_KEY_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$OPS_KEY_CLEAN" ]; then
-            printf 'OPS_KEY=%s\n' "$OPS_KEY_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$GOOGLE_MAPS_API_KEY_CLEAN" ]; then
-            printf 'GOOGLE_MAPS_API_KEY=%s\n' "$GOOGLE_MAPS_API_KEY_CLEAN" >> .pixabay.env
-          fi
-          if [ -n "$OPENCAGE_API_KEY_CLEAN" ]; then
-            printf 'OPENCAGE_API_KEY=%s\n' "$OPENCAGE_API_KEY_CLEAN" >> .pixabay.env
-          fi
+          # name:value pairs (not an associative array — iteration order over
+          # those isn't guaranteed, and a stable .pixabay.env is easier to eyeball
+          # when debugging a deploy). Split only on the first ":" so a value that
+          # itself contains a colon is preserved intact.
+          PIXABAY_ENV_ITEMS=(
+            "MYSQL_PASSWORD:$MYSQL_PASSWORD_CLEAN"
+            "CLOUDFLARE_ACCOUNT_ID:$CLOUDFLARE_ACCOUNT_ID_CLEAN"
+            "CLOUDFLARE_API_TOKEN:$CLOUDFLARE_API_TOKEN_CLEAN"
+            "MOENV_PM25_API_KEY:$MOENV_PM25_API_KEY_CLEAN"
+            "MOENV_AQI_FORECAST_API_KEY:$MOENV_AQI_FORECAST_API_KEY_CLEAN"
+            "OPS_KEY:$OPS_KEY_CLEAN"
+            "GOOGLE_MAPS_API_KEY:$GOOGLE_MAPS_API_KEY_CLEAN"
+            "OPENCAGE_API_KEY:$OPENCAGE_API_KEY_CLEAN"
+          )
+          for item in "${PIXABAY_ENV_ITEMS[@]}"; do
+            name="${item%%:*}"
+            value="${item#*:}"
+            if [ -n "$value" ]; then
+              printf '%s=%s\n' "$name" "$value" >> .pixabay.env
+            fi
+          done
 
           FTP_URL="ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-next3.tgz"
           echo "Uploading prebuilt bundle to FTP host ${FTP_SERVER_CLEAN} as ${FTP_USERNAME_CLEAN}"
@@ -175,10 +174,8 @@ jobs:
           # (nohup + closed stdio) so a dropped SSH session can't interrupt
           # mid-rm of node_modules. Wait step polls .npm-ci-status via short
           # SSH calls.
-          KEY_FILE="$(mktemp)"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
-          chmod 600 "$KEY_FILE"
-          trap 'rm -f "$KEY_FILE"' EXIT
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
 
           SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
@@ -200,10 +197,8 @@ jobs:
             exit 0
           fi
 
-          KEY_FILE="$(mktemp)"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
-          chmod 600 "$KEY_FILE"
-          trap 'rm -f "$KEY_FILE"' EXIT
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
 
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
 
@@ -355,21 +350,28 @@ jobs:
           # HawkHost disables TCP forwarding (AllowTcpForwarding no) — confirmed
           # live 2026-08-03: `ssh -L` fails with "administratively prohibited".
           # All admin API calls run as remote curl on the app host loopback.
-          KEY_FILE="$(mktemp)"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
-          chmod 600 "$KEY_FILE"
-          trap 'rm -f "$KEY_FILE"' EXIT
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
 
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
           ssh_admin() {
             # $1 = JSON body
+            #
+            # The admin secret is piped to the remote curl's stdin via `-K -`
+            # (a curl config file, one directive per line) instead of being
+            # embedded in the command string handed to `ssh` — this is a
+            # shared cPanel host, so any argument on that command line would
+            # be visible to other tenants via `ps aux` on the box for as long
+            # as curl runs. `ssh host cmd` forwards local stdin to the remote
+            # command by default, so this reaches curl without ever touching
+            # the process argv.
             local body="$1"
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -sS --max-time 180 -X POST http://127.0.0.1:3000/api/admin/news-images \
-                -H 'content-type: application/json' \
-                -H $(printf %q "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET") \
-                -d $(printf %q "$body")"
+            printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+              ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+                "curl -K - -sS --max-time 180 -X POST http://127.0.0.1:3000/api/admin/news-images \
+                  -H 'content-type: application/json' \
+                  -d $(printf %q "$body")"
           }
 
           echo "=== clear Pixabay cache ==="
