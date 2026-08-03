@@ -1,7 +1,7 @@
 import { Inter } from "next/font/google";
 import "../globals.css";
 import type { Metadata, Viewport } from "next";
-import Proivder from "./Provider";
+import Provider from "./Provider";
 import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
@@ -52,7 +52,7 @@ export default function RootLayout({
       <body className={`dark:bg-black ${inter.className}`}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
-        <Proivder>{children}</Proivder>
+        <Provider>{children}</Provider>
         <PrivacyConsentBanner />
         <RegisterServiceWorker />
       </body>
