@@ -1,19 +1,29 @@
 #!/bin/bash
-# Runs npm ci server-side. Launched detached (nohup, backgrounded, stdio
-# closed) by deploy-ftps.yml's "Trigger node_modules sync on server" step so
-# a dropped SSH connection under host load can't interrupt it mid-install —
-# confirmed live 2026-08-02: holding one SSH session open for npm ci's ~40s+
-# runtime got disconnected mid-run three times, each time deleting
-# node_modules/next without reinstalling it and leaving the server unable to
-# survive its next restart until manually recovered. Writes its exit code to
-# .npm-ci-status so the workflow's "Wait for node_modules sync" step can poll
-# for completion via short, cheap SSH calls instead of one long-lived one.
+# Installs server-side dependencies (npm install, not npm ci — see below).
+# Launched detached (nohup, backgrounded, stdio closed) by deploy-ftps.yml's
+# "Trigger node_modules sync on server" step so a dropped SSH connection
+# under host load can't interrupt it mid-install — confirmed live 2026-08-02:
+# holding one SSH session open for the install's ~40s+ runtime got
+# disconnected mid-run three times, each time deleting node_modules/next
+# without reinstalling it and leaving the server unable to survive its next
+# restart until manually recovered. Writes its exit code to .npm-ci-status so
+# the workflow's "Wait for node_modules sync" step can poll for completion
+# via short, cheap SSH calls instead of one long-lived one.
 #
 # Skip when package-lock.json is unchanged AND next is already installable —
-# confirmed live 2026-08-02: re-running npm ci on every deploy (even code-only
-# deploys with an identical lockfile) got OOM SIGKILLed (exit 137) under host
-# memory pressure, wiped a working node_modules, and left health-web 502 until
-# manual recovery. Code-only deploys only need the prebuilt .next3 swap.
+# confirmed live 2026-08-02: re-running a full reinstall on every deploy
+# (even code-only deploys with an identical lockfile) got OOM SIGKILLed
+# (exit 137) under host memory pressure. Code-only deploys only need the
+# prebuilt .next3 swap.
+#
+# Uses `npm install`, not `npm ci`: confirmed live 2026-08-03, `npm ci`
+# deletes node_modules up front before reinstalling everything from scratch,
+# so getting OOM-killed a few seconds in (as happened installing node-cron,
+# a single small new dependency) risks leaving node_modules mid-wipe.
+# `npm install` reconciles in place — it only fetches/links what's actually
+# missing or mismatched — which is both far cheaper on this constrained host
+# for incremental dependency additions and self-heals a previously
+# interrupted install instead of requiring a full redo.
 #
 # --maxsockets=1 --prefer-offline: cheaper peak memory when a real install is
 # required. NODE_OPTIONS caps V8 heap so pressure surfaces as a normal error
@@ -81,15 +91,15 @@ should_skip_install() {
 }
 
 if should_skip_install; then
-  echo "package-lock unchanged (or next already matches lock) — skipping npm ci"
+  echo "package-lock unchanged and all dependencies present — skipping install"
   echo "next=$(installed_next_version 2>/dev/null || echo unknown) lock=$NEW_HASH"
   write_status 0
   exit 0
 fi
 
 export NODE_OPTIONS="${NODE_OPTIONS:---max-old-space-size=512}"
-echo "running npm ci (lock=$NEW_HASH old=${OLD_HASH:-none})"
-npm ci --omit=dev --maxsockets=1 --prefer-offline --no-audit --no-fund
+echo "running npm install (lock=$NEW_HASH old=${OLD_HASH:-none})"
+npm install --omit=dev --maxsockets=1 --prefer-offline --no-audit --no-fund
 STATUS=$?
 write_status "$STATUS"
 if [ "$STATUS" -eq 0 ]; then
