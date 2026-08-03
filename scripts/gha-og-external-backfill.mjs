@@ -2,32 +2,54 @@
 /**
  * External OG card-image backfill for GitHub Actions.
  *
- * Why: the production shared-host IP is blocked by some publishers (ltn.com.tw
+ * Why: production shared-host IP is blocked by some publishers (ltn.com.tw
  * returns 403 for article HTML). GHA runners have clean egress — fetch HTML +
- * extract og:image here, then ask the app (via SSH tunnel to loopback) to
- * re-host the CDN image URL into news_assets.
+ * extract og:image here, then ask the app to re-host the CDN image URL.
+ *
+ * Transport (NEWS_IMAGES_TRANSPORT):
+ *   ssh (default in deploy) — remote curl to 127.0.0.1:3000 on the app host.
+ *     HawkHost disables TCP forwarding (AllowTcpForwarding no), so -L tunnels
+ *     fail with "administratively prohibited" — confirmed live 2026-08-03.
+ *   http — POST to NEWS_IMAGES_BASE_URL (local tunnel / loopback).
  *
  * Env:
- *   RSS_SYNC_ADMIN_SECRET  admin header
- *   NEWS_IMAGES_BASE_URL   default http://127.0.0.1:18080
- *   OG_BACKFILL_LIMIT      items per list call (default 20)
- *   OG_BACKFILL_ROUNDS     list rounds (default 15)
+ *   RSS_SYNC_ADMIN_SECRET
+ *   NEWS_IMAGES_TRANSPORT=ssh|http
+ *   NEWS_IMAGES_BASE_URL (http mode, default http://127.0.0.1:18080)
+ *   SSH_HOST SSH_PORT SSH_USER SSH_KEY_FILE (ssh mode)
+ *   OG_BACKFILL_LIMIT (default 20)
+ *   OG_BACKFILL_ROUNDS (default 12)
  */
 import { load } from "cheerio";
+import { spawnSync } from "node:child_process";
 
+const TRANSPORT = (process.env.NEWS_IMAGES_TRANSPORT || "http").toLowerCase();
 const BASE = (process.env.NEWS_IMAGES_BASE_URL || "http://127.0.0.1:18080").replace(/\/$/, "");
 const SECRET = process.env.RSS_SYNC_ADMIN_SECRET || "";
 const LIMIT = Math.min(50, Math.max(1, Number(process.env.OG_BACKFILL_LIMIT || 20)));
-const ROUNDS = Math.min(50, Math.max(1, Number(process.env.OG_BACKFILL_ROUNDS || 15)));
+const ROUNDS = Math.min(50, Math.max(1, Number(process.env.OG_BACKFILL_ROUNDS || 12)));
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+const SSH_HOST = process.env.SSH_HOST || "";
+const SSH_PORT = process.env.SSH_PORT || "22";
+const SSH_USER = process.env.SSH_USER || "";
+const SSH_KEY_FILE = process.env.SSH_KEY_FILE || "";
 
 if (!SECRET) {
   console.error("Missing RSS_SYNC_ADMIN_SECRET");
   process.exit(1);
 }
+if (TRANSPORT === "ssh") {
+  if (!SSH_HOST || !SSH_USER || !SSH_KEY_FILE) {
+    console.error("ssh transport requires SSH_HOST, SSH_USER, SSH_KEY_FILE");
+    process.exit(1);
+  }
+}
 
-const adminPost = async (body) => {
+const shellQuote = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
+
+const adminPostHttp = async (body) => {
   const res = await fetch(`${BASE}/api/admin/news-images`, {
     method: "POST",
     headers: {
@@ -44,6 +66,56 @@ const adminPost = async (body) => {
     throw new Error(`non-json ${res.status}: ${text.slice(0, 200)}`);
   }
   return { status: res.status, json };
+};
+
+const adminPostSsh = (body) => {
+  const payload = JSON.stringify(body);
+  // Run curl on the app host against loopback — no TCP forward needed.
+  const remote = [
+    "curl -sS --max-time 120",
+    "-X POST http://127.0.0.1:3000/api/admin/news-images",
+    '-H "content-type: application/json"',
+    `-H ${shellQuote(`x-rss-sync-admin-secret: ${SECRET}`)}`,
+    `-d ${shellQuote(payload)}`,
+  ].join(" ");
+
+  const result = spawnSync(
+    "ssh",
+    [
+      "-i",
+      SSH_KEY_FILE,
+      "-p",
+      String(SSH_PORT),
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "StrictHostKeyChecking=accept-new",
+      "-o",
+      "ConnectTimeout=15",
+      `${SSH_USER}@${SSH_HOST}`,
+      remote,
+    ],
+    { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
+  );
+
+  if (result.error) throw result.error;
+  const out = (result.stdout || "").trim();
+  const lines = out.split(/\r?\n/).filter((l) => l.trim().startsWith("{"));
+  const text = lines.length ? lines[lines.length - 1] : out;
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(
+      `ssh curl non-json exit=${result.status}: ${(result.stderr || "").slice(0, 200)} | ${text.slice(0, 200)}`,
+    );
+  }
+  return { status: result.status === 0 ? 200 : 500, json };
+};
+
+const adminPost = async (body) => {
+  if (TRANSPORT === "ssh") return adminPostSsh(body);
+  return adminPostHttp(body);
 };
 
 const extractOgImage = (html, baseUrl) => {
@@ -85,6 +157,7 @@ const fetchHtml = async (url) => {
 };
 
 const main = async () => {
+  console.log(`transport=${TRANSPORT}`);
   let assigned = 0;
   let failed = 0;
   let skipped = 0;
@@ -120,7 +193,7 @@ const main = async () => {
           continue;
         }
 
-        const { status, json: attached } = await adminPost({
+        const { json: attached } = await adminPost({
           attachImageUrl: true,
           newsItemId: item.id,
           imageUrl: og,
@@ -133,7 +206,7 @@ const main = async () => {
           console.log(`ok id=${item.id} path=${attached.localPath}`);
         } else {
           failed += 1;
-          console.log(`fail id=${item.id} attach=${attached.reason || status}`);
+          console.log(`fail id=${item.id} attach=${attached.reason || "unknown"}`);
         }
       } catch (err) {
         failed += 1;
@@ -148,7 +221,6 @@ const main = async () => {
   }
 
   console.log(JSON.stringify({ assigned, failed, skipped }));
-  // Non-zero only on hard failure; partial success is still a green deploy step.
 };
 
 main().catch((err) => {

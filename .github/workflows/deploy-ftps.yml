@@ -349,57 +349,51 @@ jobs:
             echo "Missing RSS_SYNC_ADMIN_SECRET"
             exit 1
           fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
 
-          # Admin/internal sync endpoints have been observed getting a JS
-          # anti-bot challenge page instead of JSON when called from outside
-          # the box (confirmed for other admin endpoints called from a
-          # GitHub Actions runner IP) — go through an SSH tunnel to the
-          # app's own loopback instead of the public domain, same as every
-          # other scheduled sync in this repo.
+          # HawkHost disables TCP forwarding (AllowTcpForwarding no) — confirmed
+          # live 2026-08-03: `ssh -L` fails with "administratively prohibited".
+          # All admin API calls run as remote curl on the app host loopback.
           KEY_FILE="$(mktemp)"
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
           chmod 600 "$KEY_FILE"
-          ssh -i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
-            -N -L 18080:127.0.0.1:3000 "$SSH_USER@$SSH_HOST" &
-          TUNNEL_PID=$!
-          cleanup() { kill "$TUNNEL_PID" 2>/dev/null || true; rm -f "$KEY_FILE"; }
-          trap cleanup EXIT
-          for _ in $(seq 1 20); do
-            if curl -s -o /dev/null "http://127.0.0.1:18080/api/aqi"; then break; fi
-            sleep 0.5
-          done
+          trap 'rm -f "$KEY_FILE"' EXIT
 
-          # Pixabay candidate URLs from a cached search are signed/temporary and can
-          # expire well within the 24h cache TTL, which then fails every download with
-          # "content failed validation" until the cache is cleared. Deploys are a good
-          # natural point to force a fresh fetch.
-          curl --fail --show-error --silent \
-            --request POST \
-            --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
-            --header "content-type: application/json" \
-            --data '{"clearCache":true}' \
-            "http://127.0.0.1:18080/api/admin/news-images" | jq .
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          # External OG: HTML fetch runs on the GHA runner (clean egress). Shared-host
-          # IP is 403'd by ltn.com.tw article pages — confirmed live 2026-08-02 —
-          # so server-side backfillOg cannot fill those. Runner extracts og:image,
-          # then asks the app to re-host the CDN URL into news_assets.
-          echo "=== External OG backfill (runner egress) ==="
-          NEWS_IMAGES_BASE_URL="http://127.0.0.1:18080" \
+          ssh_admin() {
+            # $1 = JSON body
+            local body="$1"
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -sS --max-time 180 -X POST http://127.0.0.1:3000/api/admin/news-images \
+                -H 'content-type: application/json' \
+                -H $(printf %q "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET") \
+                -d $(printf %q "$body")"
+          }
+
+          echo "=== clear Pixabay cache ==="
+          ssh_admin '{"clearCache":true}' | jq .
+
+          # External OG: HTML on GHA runner (clean egress); attach via SSH curl.
+          # Shared-host IP is 403'd by ltn.com.tw article pages.
+          echo "=== External OG backfill (runner egress + SSH attach) ==="
+          NEWS_IMAGES_TRANSPORT=ssh \
+            SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
             OG_BACKFILL_LIMIT=20 \
             OG_BACKFILL_ROUNDS=12 \
             node scripts/gha-og-external-backfill.mjs
 
-          echo "=== Pixabay backfill ==="
+          echo "=== Pixabay backfill (remote loopback) ==="
           TOTAL_FAILED=0
           for ATTEMPT in $(seq 1 80); do
-            RESPONSE="$(curl --fail --show-error --silent \
-              --request POST \
-              --header "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" \
-              --header "content-type: application/json" \
-              --data '{"limit":5}' \
-              "http://127.0.0.1:18080/api/admin/news-images")"
-
+            RESPONSE="$(ssh_admin '{"limit":5}')"
             OK="$(printf '%s' "$RESPONSE" | jq -r '.ok')"
             ASSIGNED="$(printf '%s' "$RESPONSE" | jq -r '.summary.assigned // 0')"
             FAILED="$(printf '%s' "$RESPONSE" | jq -r '.summary.failed // 0')"
@@ -407,15 +401,10 @@ jobs:
             echo "Card image backfill $ATTEMPT: assigned=$ASSIGNED failed=$FAILED reason=$REASON"
 
             test "$OK" = "true"
-            if [ "$ASSIGNED" = "0" ] && [ "$FAILED" = "1" ] && [ "$REASON" = "No unused Pixabay candidates are available." ]; then
-              echo "No unused Pixabay candidates are available — treating backfill as complete."
-              exit 0
-            fi
             if [ "$ASSIGNED" = "0" ] && [ "$FAILED" != "0" ] && [ "$REASON" = "No unused Pixabay candidates are available." ]; then
               echo "Pixabay pool exhausted."
               exit 0
             fi
-            # A single item can fail validation without anything systemic being wrong.
             TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
             if [ "$TOTAL_FAILED" -ge 40 ]; then
               echo "Too many card image failures ($TOTAL_FAILED) — stopping."
