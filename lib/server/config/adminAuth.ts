@@ -8,9 +8,3 @@ export const requireAdminSecret = (request: Request): NextResponse | null => {
   const secret = request.headers.get("x-rss-sync-admin-secret") || "";
   return secret === env.rssSyncAdminSecret ? null : unauthorized();
 };
-
-/** Checks the x-rss-sync-secret header used by /api/internal/* routes (hit from crontab, not the admin UI). Returns a 401 response if invalid, or null if the caller should proceed. */
-export const requireInternalSecret = (request: Request): NextResponse | null => {
-  const secret = request.headers.get("x-rss-sync-secret") || "";
-  return secret === env.rssSyncSecret ? null : unauthorized();
-};

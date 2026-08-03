@@ -20,7 +20,6 @@ export const env = {
     database: mustGet("MYSQL_DATABASE"),
     ssl: parseBool(process.env.MYSQL_SSL, false),
   },
-  rssSyncSecret: mustGet("RSS_SYNC_SECRET"),
   rssSyncAdminSecret: mustGet("RSS_SYNC_ADMIN_SECRET"),
   pixabayApiKey: process.env.PIXABAY_API_KEY?.trim() || null,
   cloudflare: {
