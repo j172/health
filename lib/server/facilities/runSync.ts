@@ -6,6 +6,7 @@ import { fetchNhiHospitals } from "@/lib/server/facilities/sources/nhiHospitals"
 import { fetchNhiPharmacies } from "@/lib/server/facilities/sources/nhiPharmacies";
 import { fetchNhiHomeHealthcare } from "@/lib/server/facilities/sources/nhiHomeHealthcare";
 import { fetchHakkaCommunity } from "@/lib/server/facilities/sources/hakkaCommunity";
+import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
   sourceKey: string;
@@ -14,6 +15,8 @@ export interface FacilitySyncResult {
   updated: number;
   error: string | null;
 }
+
+const ZERO_COUNTS = { fetched: 0, inserted: 0, updated: 0 };
 
 // Registry of facility sources — add one entry per source as they're wired up
 // (drugs, health-checks, etc.), each behind its own fetch function.
@@ -40,19 +43,13 @@ export async function runFacilitySync(): Promise<FacilitySyncResult[]> {
   const results: FacilitySyncResult[] = [];
 
   for (const source of SOURCES) {
-    try {
-      const records = await source.fetch();
-      const { inserted, updated } = await upsertFacilities(records);
-      results.push({ sourceKey: source.key, fetched: records.length, inserted, updated, error: null });
-    } catch (error) {
-      results.push({
-        sourceKey: source.key,
-        fetched: 0,
-        inserted: 0,
-        updated: 0,
-        error: error instanceof Error ? error.message : "Unknown sync error",
-      });
-    }
+    results.push(
+      await runSource(source.key, ZERO_COUNTS, async () => {
+        const records = await source.fetch();
+        const { inserted, updated } = await upsertFacilities(records);
+        return { fetched: records.length, inserted, updated };
+      }),
+    );
   }
 
   return results;
