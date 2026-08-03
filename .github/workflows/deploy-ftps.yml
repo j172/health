@@ -323,8 +323,6 @@ jobs:
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          RSS_SYNC_SECRET: ${{ secrets.RSS_SYNC_SECRET }}
-          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           OPS_KEY: ${{ secrets.OPS_KEY }}
         run: |
           set -euo pipefail

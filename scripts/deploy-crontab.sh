@@ -8,8 +8,6 @@
 # Required env vars:
 #   SSH_HOST, SSH_PORT, SSH_USER   — connection details
 #   SSH_PRIVATE_KEY                — PEM-format private key content
-#   RSS_SYNC_SECRET                — substituted for __RSS_SYNC_SECRET__
-#   RSS_SYNC_ADMIN_SECRET          — substituted for __RSS_SYNC_ADMIN_SECRET__
 #   OPS_KEY                        — substituted for __OPS_KEY__
 set -euo pipefail
 
@@ -17,8 +15,6 @@ set -euo pipefail
 : "${SSH_PORT:?Missing SSH_PORT}"
 : "${SSH_USER:?Missing SSH_USER}"
 : "${SSH_PRIVATE_KEY:?Missing SSH_PRIVATE_KEY}"
-: "${RSS_SYNC_SECRET:?Missing RSS_SYNC_SECRET}"
-: "${RSS_SYNC_ADMIN_SECRET:?Missing RSS_SYNC_ADMIN_SECRET}"
 : "${OPS_KEY:?Missing OPS_KEY}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,8 +29,6 @@ printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
 chmod 600 "$KEY_FILE"
 
 sed \
-  -e "s/__RSS_SYNC_SECRET__/${RSS_SYNC_SECRET}/g" \
-  -e "s/__RSS_SYNC_ADMIN_SECRET__/${RSS_SYNC_ADMIN_SECRET}/g" \
   -e "s/__OPS_KEY__/${OPS_KEY}/g" \
   "$CRONTAB_SOURCE" > "$BLOCK_FILE"
 
