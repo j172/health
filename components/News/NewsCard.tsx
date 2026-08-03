@@ -3,22 +3,7 @@ import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
-
-const stripHtml = (html: string | null | undefined): string =>
-  (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-const excerpt = (html: string | null | undefined, max = 95): string => {
-  const plain = stripHtml(html);
-  if (!plain) return "";
-  return plain.length > max ? `${plain.slice(0, max)}...` : plain;
-};
-
-const toTaipei = (value: Date | null): string => {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium", timeZone: "Asia/Taipei" }).format(
-    new Date(value),
-  );
-};
+import { toTaipei, excerpt, calcReadingTime } from "@/lib/format/news";
 
 function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
   const src = item.card_image_url;
@@ -56,12 +41,6 @@ function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
     />
   );
 }
-
-const calcReadingTime = (html: string | null | undefined): number => {
-  const plain = stripHtml(html);
-  if (!plain) return 1;
-  return Math.max(1, Math.ceil(plain.length / 300));
-};
 
 export default function NewsCard({
   item,
@@ -135,7 +114,7 @@ export default function NewsCard({
 
         {!compact && (
           <p className="mt-2 flex-1 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            {excerpt(item.description_html)}
+            {excerpt(item.description_html, 95)}
           </p>
         )}
 

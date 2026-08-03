@@ -217,11 +217,9 @@ export default function ArticleReaderToolbar({
           articleHtml={articleHtml}
           isPlaying={isPlaying}
           isPaused={isPaused}
-          rate={rate}
           onPlay={handlePlay}
           onPause={handlePause}
           onStop={handleStop}
-          onRateChange={handleRateChange}
           onClose={() => setIsImmersiveOpen(false)}
         />
       )}

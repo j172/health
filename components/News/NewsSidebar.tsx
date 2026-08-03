@@ -9,13 +9,7 @@ import UvSidebarWidget from "@/components/Tools/UvSidebarWidget";
 import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWidget";
 import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
-
-const toTaipei = (value: Date | null): string => {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("zh-TW", { dateStyle: "short", timeZone: "Asia/Taipei" }).format(
-    new Date(value),
-  );
-};
+import { toTaipei } from "@/lib/format/news";
 
 export default function NewsSidebar({
   trendingNews = [],
@@ -93,7 +87,7 @@ export default function NewsSidebar({
                     <Link href={`/news/${item.id}`}>{item.title}</Link>
                   </h4>
                   <p className="mt-1 text-[11px] text-slate-400">
-                    {item.feed_name} · {toTaipei(item.published_at_utc)}
+                    {item.feed_name} · {toTaipei(item.published_at_utc, "short")}
                   </p>
                 </div>
               </article>

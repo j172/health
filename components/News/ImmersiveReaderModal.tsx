@@ -10,11 +10,9 @@ export interface ImmersiveReaderModalProps {
   articleHtml: string;
   isPlaying: boolean;
   isPaused: boolean;
-  rate: number;
   onPlay: () => void;
   onPause: () => void;
   onStop: () => void;
-  onRateChange: (rate: number) => void;
   onClose: () => void;
 }
 
@@ -26,16 +24,13 @@ export default function ImmersiveReaderModal({
   articleHtml,
   isPlaying,
   isPaused,
-  rate,
   onPlay,
   onPause,
   onStop,
-  onRateChange,
   onClose,
 }: ImmersiveReaderModalProps) {
   const [fontSize, setFontSize] = useState<"sm" | "md" | "lg" | "xl">("lg");
   const [theme, setTheme] = useState<"light" | "sepia" | "dark">("sepia");
-  const [lineHeight, setLineHeight] = useState<"normal" | "relaxed" | "loose">("relaxed");
 
   const themeClasses = {
     light: "bg-white text-slate-900 border-slate-200",
