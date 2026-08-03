@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
+import { internalErrorResponse } from "@/lib/server/http/errorResponse";
 import { upsertFoodNutrition, type FoodNutritionRecord } from "@/lib/server/food/nutrition";
 
 export const runtime = "nodejs";
@@ -23,6 +24,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     const { inserted, updated } = await upsertFoodNutrition(records);
     return NextResponse.json({ ok: true, fetched: records.length, inserted, updated });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "Unknown import error" }, { status: 500 });
+    return internalErrorResponse(error, "Unknown import error");
   }
 }

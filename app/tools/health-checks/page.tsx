@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import HealthChecksContent from "./HealthChecksContent";
+import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
+import { facilitySearchConfigs } from "../facilityConfigs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/health-checks`;
+const catalogEntry = getToolCatalogEntry("health-checks");
 
 export const metadata: Metadata = {
-  title: "健康檢查機構查詢",
-  description: "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院，支援關鍵字搜尋與附近定位。",
+  title: catalogEntry.title,
+  description: catalogEntry.description,
   keywords: ["健康檢查機構", "勞工健檢", "健檢醫院", "職業傷病防治網絡"],
   alternates: { canonical },
   robots: { index: false },
@@ -19,8 +22,8 @@ export const metadata: Metadata = {
 
 export default function HealthChecksPage() {
   return (
-    <ToolPageShell slug="health-checks" title="健康檢查機構查詢" maxWidthClassName="max-w-3xl">
-      <HealthChecksContent />
+    <ToolPageShell slug="health-checks" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <FacilitySearchContent config={facilitySearchConfigs["health-checks"]} />
     </ToolPageShell>
   );
 }

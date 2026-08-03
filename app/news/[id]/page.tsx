@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getNewsById, listNewsAssetsByNewsId, listRelatedNews } from "@/lib/server/news/queries";
 import { buildArticleJsonLd, buildArticleMetadata } from "@/lib/server/news/seo";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
+import { resolveHeroImage } from "@/lib/server/news/heroImage";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
@@ -60,12 +61,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
     listRelatedNews(news.source_name, news.id, 3),
   ]);
 
-  const heroAsset = assets.find((asset) => asset.asset_type === "image" && /^https?:\/\//i.test(asset.url));
-  const hero = heroAsset
-    ? { url: heroAsset.url, caption: heroAsset.title, isPixabay: false }
-    : news.card_image_url && news.card_image_source === "pixabay"
-      ? { url: news.card_image_url, caption: null, isPixabay: true }
-      : null;
+  const hero = resolveHeroImage(news, assets);
   const attachments = assets.filter((asset) => asset.asset_type === "attachment" && /^https?:\/\//i.test(asset.url));
   const keywords = Array.from(new Set((news.keywords ?? "").split(",").map((value) => value.trim()).filter(Boolean)));
   const articleHtml = news.detail_html || news.description_html || "<p>此則新聞目前沒有可顯示的完整內容。</p>";

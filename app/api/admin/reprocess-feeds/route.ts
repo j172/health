@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
+import { internalErrorResponse } from "@/lib/server/http/errorResponse";
 import { clearDetailContentForFeeds, invalidatePayloadHashesForFeeds } from "@/lib/server/news/reprocessFeeds";
 
 export const runtime = "nodejs";
@@ -23,12 +24,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     const invalidated = await invalidatePayloadHashesForFeeds(feedCodes);
     return NextResponse.json({ ok: true, invalidated });
   } catch (error) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown reprocess error",
-      },
-      { status: 500 },
-    );
+    return internalErrorResponse(error, "Unknown reprocess error");
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
+import { internalErrorResponse } from "@/lib/server/http/errorResponse";
 import { findFacilitiesMissingCoords, updateFacilityCoords, recordGeocodeFailure } from "@/lib/server/facilities/queries";
 import { geocodeAddress } from "@/lib/server/facilities/geocode";
 
@@ -44,6 +45,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ ok: true, summary: { attempted: pending.length, geocoded, failed } });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "Unknown geocode error" }, { status: 500 });
+    return internalErrorResponse(error, "Unknown geocode error");
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { AqiSite } from "@/app/api/aqi/route";
+import type { AqiSite } from "@/lib/server/aqi/types";
 
 const COUNTIES = [
   "臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市",

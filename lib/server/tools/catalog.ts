@@ -293,3 +293,13 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
 // Sort TOOL_CATALOG globally by first character using Traditional Chinese localeCompare
 TOOL_CATALOG.sort((a, b) => a.title.localeCompare(b.title, "zh-Hant", { numeric: true }));
 
+/** Look up a tool's catalog entry by slug — throws if missing so a typo'd slug fails
+ * loudly at build/request time instead of silently rendering blank title/description. */
+export function getToolCatalogEntry(slug: string): ToolCatalogEntry {
+  const entry = TOOL_CATALOG.find((tool) => tool.slug === slug);
+  if (!entry) {
+    throw new Error(`No TOOL_CATALOG entry for slug "${slug}"`);
+  }
+  return entry;
+}
+

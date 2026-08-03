@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getNearestAqiReading } from "@/lib/server/aqi/queries";
 import { getAqiStatusAndColor } from "@/lib/server/aqi/status";
-import { type AqiSite } from "@/app/api/aqi/route";
+import type { AqiSite } from "@/lib/server/aqi/types";
 
 export const runtime = "nodejs";
 

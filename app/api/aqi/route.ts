@@ -1,24 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLatestAqiReadings } from "@/lib/server/aqi/queries";
 import { getAqiStatusAndColor } from "@/lib/server/aqi/status";
+import type { AqiSite } from "@/lib/server/aqi/types";
 
 export const runtime = "nodejs";
-
-export interface AqiSite {
-  siteId: string;
-  siteName: string;
-  county: string;
-  aqiValue: number | null;
-  aqiStatus: string;
-  aqiColor: string;
-  pm25: number | null;
-  pm10: number | null;
-  o3: number | null;
-  no2: number | null;
-  so2: number | null;
-  co: number | null;
-  recordedAt: string | null;
-}
 
 export async function GET(request: NextRequest) {
   const county = request.nextUrl.searchParams.get("county")?.trim();
