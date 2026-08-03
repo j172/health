@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import FoodNutritionContent from "./FoodNutritionContent";
 
@@ -7,10 +8,11 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/food-nutrition`;
+const catalogEntry = getToolCatalogEntry("food-nutrition");
 
 export const metadata: Metadata = {
-  title: "食品營養成分查詢",
-  description: "查詢衛福部食藥署食品營養成分資料庫，依食品名稱搜尋熱量、蛋白質、脂肪、碳水化合物等營養成分含量。",
+  title: catalogEntry.title,
+  description: catalogEntry.description,
   keywords: ["食品營養成分", "營養成分資料庫", "食藥署", "熱量查詢"],
   alternates: { canonical },
   robots: { index: false },
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
 
 export default function FoodNutritionPage() {
   return (
-    <ToolPageShell slug="food-nutrition" title="食品營養成分查詢" maxWidthClassName="max-w-4xl">
+    <ToolPageShell slug="food-nutrition" title={catalogEntry.title} maxWidthClassName="max-w-4xl">
       <FoodNutritionContent />
     </ToolPageShell>
   );

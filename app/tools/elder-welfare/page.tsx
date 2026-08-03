@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import ElderWelfareContent from "./ElderWelfareContent";
+import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
+import { facilitySearchConfigs } from "../facilityConfigs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/elder-welfare`;
+const catalogEntry = getToolCatalogEntry("elder-welfare");
 
 export const metadata: Metadata = {
-  title: "老人福利機構查詢",
-  description: "查詢衛福部全國老人福利機構名冊，支援關鍵字搜尋與附近定位。",
+  title: catalogEntry.title,
+  description: catalogEntry.description,
   keywords: ["老人福利機構", "安養機構", "養護機構", "衛福部"],
   alternates: { canonical },
   robots: { index: false },
@@ -19,8 +22,8 @@ export const metadata: Metadata = {
 
 export default function ElderWelfarePage() {
   return (
-    <ToolPageShell slug="elder-welfare" title="老人福利機構查詢" maxWidthClassName="max-w-3xl">
-      <ElderWelfareContent />
+    <ToolPageShell slug="elder-welfare" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <FacilitySearchContent config={facilitySearchConfigs["elder-welfare"]} />
     </ToolPageShell>
   );
 }
