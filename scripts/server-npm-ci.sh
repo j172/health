@@ -40,16 +40,6 @@ fi
 NEW_HASH="$(sha256sum "$LOCK_FILE" | awk '{print $1}')"
 OLD_HASH="$(cat "$LOCK_HASH_FILE" 2>/dev/null || true)"
 
-lockfile_next_version() {
-  # package-lock v2/v3 nests the resolved package under packages["node_modules/next"].
-  node -e '
-    const lock = require("./package-lock.json");
-    const pkg = lock.packages && lock.packages["node_modules/next"];
-    if (!pkg || !pkg.version) process.exit(2);
-    process.stdout.write(pkg.version);
-  ' 2>/dev/null
-}
-
 installed_next_version() {
   node -e '
     const pkg = require("./node_modules/next/package.json");
@@ -62,18 +52,15 @@ should_skip_install() {
     return 1
   fi
 
+  # Only skip when a PRIOR successful npm ci recorded this exact lockfile's
+  # hash. There is deliberately no "next version matches, so other packages
+  # must too" fallback here anymore: confirmed live 2026-08-03, that fallback
+  # let a lockfile that added a brand-new package (node-cron) skip npm ci
+  # entirely — because next's own version happened to be unchanged — and
+  # then recorded the new hash as if the install had actually happened,
+  # leaving node-cron permanently missing from node_modules until a human
+  # noticed and cleared this file by hand.
   if [ -n "$OLD_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
-    return 0
-  fi
-
-  # First run after this guard (no hash file yet): still skip when the already
-  # installed next matches the lockfile, so a healthy server is not forced
-  # through another OOM-prone full reinstall on the next code-only deploy.
-  local want have
-  want="$(lockfile_next_version || true)"
-  have="$(installed_next_version || true)"
-  if [ -n "$want" ] && [ -n "$have" ] && [ "$want" = "$have" ]; then
-    echo "$NEW_HASH" > "$LOCK_HASH_FILE"
     return 0
   fi
 
