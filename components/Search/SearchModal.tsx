@@ -4,16 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
-
-const stripHtml = (html: string | null | undefined): string =>
-  (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-const toTaipei = (value: Date | string | null): string => {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium", timeZone: "Asia/Taipei" }).format(
-    new Date(value),
-  );
-};
+import { toTaipei, stripHtml } from "@/lib/format/news";
 
 export default function SearchModal({
   isOpen,

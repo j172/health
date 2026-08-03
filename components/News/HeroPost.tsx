@@ -2,28 +2,7 @@ import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
-
-const stripHtml = (html: string | null | undefined): string =>
-  (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-
-const excerpt = (html: string | null | undefined, max = 140): string => {
-  const plain = stripHtml(html);
-  if (!plain) return "";
-  return plain.length > max ? `${plain.slice(0, max)}...` : plain;
-};
-
-const toTaipei = (value: Date | null): string => {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium", timeZone: "Asia/Taipei" }).format(
-    new Date(value),
-  );
-};
-
-const calcReadingTime = (html: string | null | undefined): number => {
-  const plain = stripHtml(html);
-  if (!plain) return 1;
-  return Math.max(1, Math.ceil(plain.length / 300));
-};
+import { toTaipei, excerpt, calcReadingTime } from "@/lib/format/news";
 
 export default function HeroPost({
   hero,
@@ -33,7 +12,7 @@ export default function HeroPost({
   secondary?: NewsListItem[];
 }) {
   const authorLabel = resolveAuthorLabel(hero);
-  const desc = excerpt(hero.description_html);
+  const desc = excerpt(hero.description_html, 140);
   const src = hero.card_image_url;
   const heroBadgeStyle = getSourceBadgeStyle(hero.source_name);
 
