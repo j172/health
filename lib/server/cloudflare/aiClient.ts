@@ -1,6 +1,7 @@
 import "server-only";
 import { env } from "@/lib/server/config/env";
 import { httpRequest } from "@/lib/server/net/httpClient";
+import { withRetry } from "@/lib/server/net/withRetry";
 
 const MODEL = "@cf/meta/llama-3.1-8b-instruct";
 const DEFAULT_TIMEOUT_MS = 20_000;
@@ -32,8 +33,6 @@ interface WorkersAiChatResponse {
   };
   errors?: { message: string }[];
 }
-
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));
 
 const runOnce = async (accountId: string, apiToken: string, prompt: string, timeoutMs: number): Promise<string> => {
   const response = await httpRequest(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${MODEL}`, {
@@ -83,20 +82,10 @@ export const runCloudflareAiChat = async (prompt: string, timeoutMs = DEFAULT_TI
     throw new CloudflareAiNotConfiguredError();
   }
 
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      return await runOnce(accountId, apiToken, prompt, timeoutMs);
-    } catch (error) {
-      lastError = error;
-      if (error instanceof CloudflareAiQuotaExceededError) break;
-      if (attempt < MAX_ATTEMPTS) {
-        // eslint-disable-next-line no-await-in-loop
-        await sleep(RETRY_DELAY_MS * attempt);
-      }
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error("Cloudflare AI request failed.");
+  return withRetry(() => runOnce(accountId, apiToken, prompt, timeoutMs), {
+    maxAttempts: MAX_ATTEMPTS,
+    delayMs: RETRY_DELAY_MS,
+    isRetryable: (error) => !(error instanceof CloudflareAiQuotaExceededError),
+    nonErrorMessage: "Cloudflare AI request failed.",
+  });
 };
