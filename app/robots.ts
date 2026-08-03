@@ -8,10 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        // Leftover routes from the starter template (Solid SaaS Boilerplate)
-        // with placeholder demo content unrelated to this site — keep them
-        // out of the index instead of deleting the routes outright.
-        disallow: ["/blog", "/docs", "/support", "/auth/signin", "/auth/signup", "/error"],
       },
       // Explicit allow for AI answer-engine/training crawlers — GEO goal is to
       // be citable, so these are deliberately not more restrictive than "*".
