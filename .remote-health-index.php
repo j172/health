@@ -3,7 +3,7 @@ $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
-if (str_starts_with($path, '/api/admin/') || str_starts_with($path, '/api/internal/')) {
+if (str_starts_with($path, '/api/admin/')) {
     @set_time_limit(290);
 }
 
@@ -717,41 +717,6 @@ if (str_starts_with($path, '/images/')) {
 }
 
 $target = 'http://127.0.0.1:3000' . $uri;
-
-$skipRssSync = str_starts_with($path, '/_next/')
-    || str_starts_with($path, '/images/')
-    || str_starts_with($path, '/api/')
-    || $path === '/favicon.ico'
-    || $path === '/images/favicon.ico';
-
-// Low-traffic top-up only — the real 30-minute guarantee is the server
-// crontab (`crontab -l`: "5,35 * * * * ... /api/internal/rss-sync"), which
-// already hits this same endpoint via 127.0.0.1 regardless of visitors.
-// Left at 3600s (not 1800s) so this doesn't collide with the crontab's own
-// run and fight it for the ingestion lock.
-if (!$skipRssSync) {
-    $stateFile = '/home/tw123457/health_app/.rss-sync-last-run';
-    $lockFile = '/home/tw123457/health_app/.rss-sync-trigger.lock';
-    $lockHandle = @fopen($lockFile, 'c+');
-
-    if ($lockHandle && @flock($lockHandle, LOCK_EX | LOCK_NB)) {
-        $lastRun = is_file($stateFile) ? (int) trim((string) file_get_contents($stateFile)) : 0;
-        if ($lastRun === 0 || (time() - $lastRun) >= 3600) {
-            @file_put_contents($stateFile, (string) time(), LOCK_EX);
-            $secret = $readEnvVar('RSS_SYNC_SECRET');
-            if ($secret !== '') {
-                $cmd = 'nohup curl -fsS -H ' . escapeshellarg('x-rss-sync-secret: ' . $secret) . ' http://127.0.0.1:3000/api/internal/rss-sync >/dev/null 2>&1 &';
-                @exec($cmd);
-            }
-        }
-
-        @flock($lockHandle, LOCK_UN);
-    }
-
-    if ($lockHandle) {
-        fclose($lockHandle);
-    }
-}
 
 if ($path === '/favicon.ico' || $path === '/images/favicon.ico') {
     $favicon = '/home/tw123457/health_app/public/images/favicon.ico';
