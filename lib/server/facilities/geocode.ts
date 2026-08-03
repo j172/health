@@ -1,4 +1,5 @@
 import { httpGetText } from "@/lib/server/net/httpClient";
+import { rateLimiter } from "@/lib/server/net/rateLimiter";
 
 export interface LatLng {
   lat: number;
@@ -11,16 +12,13 @@ export interface LatLng {
 // mismatches OpenCage/Nominatim occasionally produce); OpenCage/Nominatim
 // remain as fallbacks for when no Google key is set or its quota is hit.
 // ---------------------------------------------------------------------------
-const GOOGLE_MIN_INTERVAL_MS = 100;
-let googleLastRequestAt = 0;
+const throttleGoogle = rateLimiter(100);
 
 const queryGoogle = async (query: string): Promise<LatLng | null> => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) return null;
 
-  const wait = GOOGLE_MIN_INTERVAL_MS - (Date.now() - googleLastRequestAt);
-  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-  googleLastRequestAt = Date.now();
+  await throttleGoogle();
 
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}&region=tw&language=zh-TW&components=country:TW`;
   const { status, text } = await httpGetText(url);
@@ -43,16 +41,13 @@ const queryGoogle = async (query: string): Promise<LatLng | null> => {
 // OpenCage — secondary. Own 2,500/day quota, independent of Nominatim's shared
 // public pool, so trying this before Nominatim spares it for the overflow.
 // ---------------------------------------------------------------------------
-const OPENCAGE_MIN_INTERVAL_MS = 1000;
-let openCageLastRequestAt = 0;
+const throttleOpenCage = rateLimiter(1000);
 
 const queryOpenCage = async (query: string): Promise<LatLng | null> => {
   const apiKey = process.env.OPENCAGE_API_KEY;
   if (!apiKey) return null;
 
-  const wait = OPENCAGE_MIN_INTERVAL_MS - (Date.now() - openCageLastRequestAt);
-  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-  openCageLastRequestAt = Date.now();
+  await throttleOpenCage();
 
   const url = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&countrycode=tw&limit=1&no_annotations=1`;
   const { status, text } = await httpGetText(url);
@@ -75,13 +70,10 @@ const queryOpenCage = async (query: string): Promise<LatLng | null> => {
 // per their usage policy (https://operations.osmfoundation.org/policies/nominatim/).
 // ---------------------------------------------------------------------------
 const NOMINATIM_USER_AGENT = "j172tw-health/1.0 (https://health.j172.tw)";
-const NOMINATIM_MIN_INTERVAL_MS = 1100;
-let nominatimLastRequestAt = 0;
+const throttleNominatim = rateLimiter(1100);
 
 const queryNominatim = async (query: string): Promise<LatLng | null> => {
-  const wait = NOMINATIM_MIN_INTERVAL_MS - (Date.now() - nominatimLastRequestAt);
-  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-  nominatimLastRequestAt = Date.now();
+  await throttleNominatim();
 
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=tw`;
   const { status, text } = await httpGetText(url, { headers: { "User-Agent": NOMINATIM_USER_AGENT } });

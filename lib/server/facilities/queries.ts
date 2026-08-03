@@ -1,5 +1,6 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 
 export interface FacilityRecord {
   facilityType: string;
@@ -31,71 +32,50 @@ export interface FacilityListItem {
   extra_json: { weeklyHours?: Record<string, string[]> } | null;
 }
 
-const UPSERT_BATCH_SIZE = 500;
-
 /** Upserts a batch of facility records for one source, keyed by (source_key, source_id). Chunks into multi-row INSERTs — sources like NHI's clinic tier run to tens of thousands of rows, and one round-trip per row doesn't scale. */
-export const upsertFacilities = async (records: FacilityRecord[]): Promise<{ inserted: number; updated: number }> =>
-  withConnection(async (conn) => {
-    let inserted = 0;
-    let updated = 0;
-    const now = utcNowSql();
-
-    for (let i = 0; i < records.length; i += UPSERT_BATCH_SIZE) {
-      const chunk = records.slice(i, i + UPSERT_BATCH_SIZE);
-      const values = chunk.map((r) => [
-        r.facilityType,
-        r.sourceKey,
-        r.sourceId,
-        r.name,
-        r.address,
-        r.phone,
-        r.lat,
-        r.lng,
-        r.serviceItem,
-        r.serviceTime,
-        r.dataOrg,
-        r.extra ? JSON.stringify(r.extra) : null,
-        now,
-        now,
-        now,
-      ]);
-
-      const [result] = await conn.query(
-        `
-        INSERT INTO facilities
-          (facility_type, source_key, source_id, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json, synced_at, created_at, updated_at)
-        VALUES ?
-        ON DUPLICATE KEY UPDATE
-          name = VALUES(name),
-          address = VALUES(address),
-          phone = VALUES(phone),
-          -- Sources with no coordinates of their own (pharmacies, health-checks)
-          -- always re-sync lat/lng as NULL; don't let that clobber coordinates
-          -- a geocode backfill already filled in. A source that does carry real
-          -- coordinates would still update normally since VALUES(lat) is
-          -- non-null and wins.
-          lat = COALESCE(VALUES(lat), lat),
-          lng = COALESCE(VALUES(lng), lng),
-          service_item = VALUES(service_item),
-          service_time = VALUES(service_time),
-          data_org = VALUES(data_org),
-          extra_json = VALUES(extra_json),
-          synced_at = VALUES(synced_at),
-          updated_at = VALUES(updated_at)
-        `,
-        [values],
-      );
-
-      // MySQL's upsert convention: affectedRows = 1 per new row + 2 per updated row.
-      // So for a chunk of N rows, updated = affectedRows - N, inserted = N - updated.
-      const affected = (result as { affectedRows: number }).affectedRows;
-      const chunkUpdated = affected - chunk.length;
-      updated += chunkUpdated;
-      inserted += chunk.length - chunkUpdated;
-    }
-
-    return { inserted, updated };
-  });
+export const upsertFacilities = (records: FacilityRecord[]): Promise<{ inserted: number; updated: number }> =>
+  chunkedUpsert(
+    records,
+    `
+    INSERT INTO facilities
+      (facility_type, source_key, source_id, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json, synced_at, created_at, updated_at)
+    VALUES ?
+    ON DUPLICATE KEY UPDATE
+      name = VALUES(name),
+      address = VALUES(address),
+      phone = VALUES(phone),
+      -- Sources with no coordinates of their own (pharmacies, health-checks)
+      -- always re-sync lat/lng as NULL; don't let that clobber coordinates
+      -- a geocode backfill already filled in. A source that does carry real
+      -- coordinates would still update normally since VALUES(lat) is
+      -- non-null and wins.
+      lat = COALESCE(VALUES(lat), lat),
+      lng = COALESCE(VALUES(lng), lng),
+      service_item = VALUES(service_item),
+      service_time = VALUES(service_time),
+      data_org = VALUES(data_org),
+      extra_json = VALUES(extra_json),
+      synced_at = VALUES(synced_at),
+      updated_at = VALUES(updated_at)
+    `,
+    (r, now) => [
+      r.facilityType,
+      r.sourceKey,
+      r.sourceId,
+      r.name,
+      r.address,
+      r.phone,
+      r.lat,
+      r.lng,
+      r.serviceItem,
+      r.serviceTime,
+      r.dataOrg,
+      r.extra ? JSON.stringify(r.extra) : null,
+      now,
+      now,
+      now,
+    ],
+  );
 
 export interface FacilityMissingCoords {
   id: number;

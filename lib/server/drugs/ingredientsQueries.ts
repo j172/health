@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { createHash } from "node:crypto";
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { withConnection } from "@/lib/server/db/mysql";
+import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 
 export interface DrugIngredientRecord {
   licenseNo: string;
@@ -26,52 +27,32 @@ const buildRowKey = (r: DrugIngredientRecord): string =>
     .update(`${r.licenseNo}|${r.ingredientCode}|${r.ingredientName}|${r.contentDescription}|${r.contentAmount}|${r.contentUnit}`)
     .digest("hex");
 
-const UPSERT_BATCH_SIZE = 500;
-
 /** Upserts a batch of (license × ingredient) rows, keyed by a hash of the full row (no clean natural key — see schema.ts). */
-export const upsertDrugIngredients = async (records: DrugIngredientRecord[]): Promise<{ inserted: number; updated: number }> =>
-  withConnection(async (conn) => {
-    let inserted = 0;
-    let updated = 0;
-    const now = utcNowSql();
-
-    for (let i = 0; i < records.length; i += UPSERT_BATCH_SIZE) {
-      const chunk = records.slice(i, i + UPSERT_BATCH_SIZE);
-      const values = chunk.map((r) => [
-        buildRowKey(r),
-        r.licenseNo,
-        r.prescriptionLabel,
-        r.ingredientName,
-        r.ingredientCode,
-        r.contentDescription,
-        r.contentAmount,
-        r.contentUnit,
-        now,
-        now,
-        now,
-      ]);
-
-      const [result] = await conn.query(
-        `
-        INSERT INTO tfda_drug_ingredients
-          (row_key, license_no, prescription_label, ingredient_name, ingredient_code, content_description, content_amount, content_unit, synced_at, created_at, updated_at)
-        VALUES ?
-        ON DUPLICATE KEY UPDATE
-          synced_at = VALUES(synced_at),
-          updated_at = VALUES(updated_at)
-        `,
-        [values],
-      );
-
-      // MySQL's upsert convention: affectedRows = 1 per new row + 2 per updated row.
-      const affected = (result as { affectedRows: number }).affectedRows;
-      const chunkUpdated = affected - chunk.length;
-      updated += chunkUpdated;
-      inserted += chunk.length - chunkUpdated;
-    }
-
-    return { inserted, updated };
-  });
+export const upsertDrugIngredients = (records: DrugIngredientRecord[]): Promise<{ inserted: number; updated: number }> =>
+  chunkedUpsert(
+    records,
+    `
+    INSERT INTO tfda_drug_ingredients
+      (row_key, license_no, prescription_label, ingredient_name, ingredient_code, content_description, content_amount, content_unit, synced_at, created_at, updated_at)
+    VALUES ?
+    ON DUPLICATE KEY UPDATE
+      synced_at = VALUES(synced_at),
+      updated_at = VALUES(updated_at)
+    `,
+    (r, now) => [
+      buildRowKey(r),
+      r.licenseNo,
+      r.prescriptionLabel,
+      r.ingredientName,
+      r.ingredientCode,
+      r.contentDescription,
+      r.contentAmount,
+      r.contentUnit,
+      now,
+      now,
+      now,
+    ],
+  );
 
 export const getIngredientsByLicenseNo = async (licenseNo: string): Promise<DrugIngredientItem[]> =>
   withConnection(async (conn) => {

@@ -1,31 +1,6 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
-
-const BATCH_SIZE = 500;
-
-const chunkedUpsert = async <T>(
-  records: T[],
-  tableSql: string,
-  toRow: (record: T, now: string) => unknown[],
-): Promise<{ inserted: number; updated: number }> =>
-  withConnection(async (conn) => {
-    let inserted = 0;
-    let updated = 0;
-    const now = utcNowSql();
-
-    for (let i = 0; i < records.length; i += BATCH_SIZE) {
-      const chunk = records.slice(i, i + BATCH_SIZE);
-      if (chunk.length === 0) continue;
-      const values = chunk.map((record) => toRow(record, now));
-      const [result] = await conn.query(tableSql, [values]);
-      const affected = (result as { affectedRows: number }).affectedRows;
-      const chunkUpdated = affected - chunk.length;
-      updated += chunkUpdated;
-      inserted += chunk.length - chunkUpdated;
-    }
-
-    return { inserted, updated };
-  });
+import { withConnection } from "@/lib/server/db/mysql";
+import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 
 export interface CwaForecastRecord {
   countyName: string;
