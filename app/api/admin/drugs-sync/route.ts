@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
+import { internalErrorResponse } from "@/lib/server/http/errorResponse";
 import { runDrugSync } from "@/lib/server/drugs/runSync";
 
 export const runtime = "nodejs";
@@ -13,6 +14,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     const results = await runDrugSync();
     return NextResponse.json({ ok: true, results });
   } catch (error) {
-    return NextResponse.json({ ok: false, error: error instanceof Error ? error.message : "Unknown sync error" }, { status: 500 });
+    return internalErrorResponse(error, "Unknown sync error");
   }
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
+import { internalErrorResponse } from "@/lib/server/http/errorResponse";
 import { assignMissingNewsCardImages, clearPixabayApiCache, clearAllNewsCardImages } from "@/lib/server/news/cardImages";
 import {
   attachCardImageFromUrl,
@@ -70,12 +71,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     const summary = await assignMissingNewsCardImages(limit);
     return NextResponse.json({ ok: true, mode: "pixabay", summary });
   } catch (error) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown card image assignment error",
-      },
-      { status: 500 },
-    );
+    return internalErrorResponse(error, "Unknown card image assignment error");
   }
 }
