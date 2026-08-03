@@ -47,20 +47,33 @@ installed_next_version() {
   ' 2>/dev/null
 }
 
+# Every package.json "dependencies" entry (not devDependencies — this server
+# install always runs --omit=dev) must actually exist under node_modules.
+# This is the guard that catches a stale/wrong $LOCK_HASH_FILE: a previous
+# buggy version of this script recorded a lockfile's hash as "installed"
+# without ever running npm ci, so node-cron was silently missing even though
+# the hash comparison alone said everything was fine. Checking presence
+# directly means that corrupted recorded state can't mask a real gap.
+dependencies_present() {
+  node -e '
+    const fs = require("fs");
+    const pkg = require("./package.json");
+    const deps = Object.keys(pkg.dependencies || {});
+    for (const name of deps) {
+      if (!fs.existsSync(`node_modules/${name}/package.json`)) process.exit(1);
+    }
+    process.exit(0);
+  ' 2>/dev/null
+}
+
 should_skip_install() {
   if [ ! -f "$NEXT_BIN" ]; then
     return 1
   fi
 
   # Only skip when a PRIOR successful npm ci recorded this exact lockfile's
-  # hash. There is deliberately no "next version matches, so other packages
-  # must too" fallback here anymore: confirmed live 2026-08-03, that fallback
-  # let a lockfile that added a brand-new package (node-cron) skip npm ci
-  # entirely — because next's own version happened to be unchanged — and
-  # then recorded the new hash as if the install had actually happened,
-  # leaving node-cron permanently missing from node_modules until a human
-  # noticed and cleared this file by hand.
-  if [ -n "$OLD_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ]; then
+  # hash AND every declared dependency is actually present on disk.
+  if [ -n "$OLD_HASH" ] && [ "$OLD_HASH" = "$NEW_HASH" ] && dependencies_present; then
     return 0
   fi
 
