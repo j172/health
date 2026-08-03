@@ -109,6 +109,12 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE aqi_readings
       ADD INDEX IF NOT EXISTS idx_aqi_reading_geo (lat, lng)
   `);
+  // Unlike the DDL above, this can't use `ADD INDEX IF NOT EXISTS` — MySQL
+  // has no "if not exists" form for FULLTEXT indexes, so a second run (or a
+  // host whose MySQL build lacks the ngram parser plugin) throws here every
+  // time rather than being a no-op. Swallowing it is safe either way:
+  // searchNewsItems() (lib/server/news/queries.ts) always has a LIKE-based
+  // fallback for when this index is missing or MATCH AGAINST itself fails.
   try {
     await p.query(`
       ALTER TABLE news_items
