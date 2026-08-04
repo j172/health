@@ -1,5 +1,5 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import { utcNowSql, withConnection } from "@/lib/server/db/mysql";
+import { utcNowSql, withConnection, withTransaction } from "@/lib/server/db/mysql";
 import { buildSocialCaption, SOCIAL_PLATFORMS, type CaptionSourceNews } from "@/lib/server/social/captions";
 
 const DEFAULT_MAX_ITEMS = 3;
@@ -41,6 +41,7 @@ const ELIGIBLE_NEWS_SQL = `
 export interface DailyDraftQueueSummary {
   selectedNewsItemIds: number[];
   queuedRows: number;
+  failedNewsItemIds: number[];
 }
 
 /**
@@ -52,32 +53,53 @@ export interface DailyDraftQueueSummary {
  * item is always picked next rather than ever waiting on one to gain an
  * image (spec section 2.2). The NOT EXISTS guard means an item already
  * queued on a previous run (any platform) is never re-selected.
+ *
+ * Each item's 3 platform rows are inserted inside their own transaction and
+ * isolated in their own try/catch: a failure partway through one item rolls
+ * that item's rows back (leaving zero rows, so the NOT EXISTS guard above
+ * picks it up again next run for a clean retry) instead of stranding it
+ * half-queued forever, and doesn't abort the rest of the day's batch —
+ * matching the per-source isolation lib/server/sync/runSource.ts already
+ * gives the other jobs registered in registerJobs.ts.
  */
-export const buildDailyDraftQueue = async (maxItems = DEFAULT_MAX_ITEMS): Promise<DailyDraftQueueSummary> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<EligibleNewsRow[]>(ELIGIBLE_NEWS_SQL, [maxItems]);
+export const buildDailyDraftQueue = async (maxItems = DEFAULT_MAX_ITEMS): Promise<DailyDraftQueueSummary> => {
+  const rows = await withConnection((conn) =>
+    conn.query<EligibleNewsRow[]>(ELIGIBLE_NEWS_SQL, [maxItems]).then(([result]) => result),
+  );
 
-    const now = utcNowSql();
-    let queuedRows = 0;
+  let queuedRows = 0;
+  const failedNewsItemIds: number[] = [];
 
-    for (const news of rows) {
-      for (const platform of SOCIAL_PLATFORMS) {
-        const caption = buildSocialCaption(news, platform);
-        // INSERT IGNORE + the uq_social_queue_item_platform unique key is a
-        // belt-and-suspenders guard against a rare race (e.g. an overlapping
-        // manual admin trigger) re-inserting a row the SELECT above already
-        // considered available.
-        const [result] = await conn.execute<ResultSetHeader>(
-          `
-          INSERT IGNORE INTO social_post_queue
-            (news_item_id, platform, caption, image_path, status, created_at, updated_at)
-          VALUES (?, ?, ?, ?, 'draft', ?, ?)
-          `,
-          [news.id, platform, caption, news.image_path, now, now],
-        );
-        queuedRows += result.affectedRows;
-      }
+  for (const news of rows) {
+    try {
+      queuedRows += await withTransaction(async (conn) => {
+        const now = utcNowSql();
+        let insertedForItem = 0;
+
+        for (const platform of SOCIAL_PLATFORMS) {
+          const caption = buildSocialCaption(news, platform);
+          // INSERT IGNORE + the uq_social_queue_item_platform unique key is a
+          // belt-and-suspenders guard against a rare race (e.g. an overlapping
+          // manual admin trigger) re-inserting a row the SELECT above already
+          // considered available.
+          const [result] = await conn.execute<ResultSetHeader>(
+            `
+            INSERT IGNORE INTO social_post_queue
+              (news_item_id, platform, caption, image_path, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, 'draft', ?, ?)
+            `,
+            [news.id, platform, caption, news.image_path, now, now],
+          );
+          insertedForItem += result.affectedRows;
+        }
+
+        return insertedForItem;
+      });
+    } catch (error) {
+      failedNewsItemIds.push(news.id);
+      console.error(`[social-post-queue] Failed to queue drafts for news_item_id=${news.id}:`, error);
     }
+  }
 
-    return { selectedNewsItemIds: rows.map((news) => news.id), queuedRows };
-  });
+  return { selectedNewsItemIds: rows.map((news) => news.id), queuedRows, failedNewsItemIds };
+};
