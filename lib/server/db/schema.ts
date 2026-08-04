@@ -542,4 +542,31 @@ export const TABLE_DDL = {
       KEY idx_food_operator_unified_no (unified_business_no)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Social-post draft queue (Phase 1) — see
+  // docs/specs/social-icons-and-post-drafts.md section 2. Daily cron
+  // (lib/server/social/buildDailyDraftQueue.ts) inserts one 'draft' row per
+  // platform for each selected news item; status flips to 'posted'/'failed'
+  // only once a follow-up spec wires up the actual Meta Graph/Threads API
+  // calls (out of scope here).
+  socialPostQueue: `
+    CREATE TABLE IF NOT EXISTS social_post_queue (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      news_item_id BIGINT NOT NULL,
+      platform VARCHAR(20) NOT NULL,       -- 'facebook' | 'instagram' | 'threads'
+      caption TEXT NOT NULL,
+      image_path VARCHAR(500) NOT NULL,    -- copied from news_card_images.local_path
+      status VARCHAR(20) NOT NULL DEFAULT 'draft', -- 'draft' | 'posted' | 'failed'
+      scheduled_at DATETIME NULL,
+      posted_at DATETIME NULL,
+      error_message TEXT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_social_queue_item_platform (news_item_id, platform),
+      KEY idx_social_queue_status (status, created_at),
+      CONSTRAINT fk_social_queue_news_item FOREIGN KEY (news_item_id)
+        REFERENCES news_items(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
