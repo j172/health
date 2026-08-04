@@ -23,6 +23,45 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
   </li>
 );
 
+// Inline SVG (currentColor) rather than next/image + public/images/icon/*.svg
+// files: these need the same hover/dark-mode color transition as FooterLink,
+// which requires the SVG to inherit color from its wrapping <a>'s Tailwind
+// classes — an <img>/next/image reference can't do that (external SVG
+// documents don't inherit page CSS), so inline is the only way to keep this
+// exact treatment consistent.
+const SocialIcon = ({ href, label, children }: { href: string; label: string; children: React.ReactNode }) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noreferrer noopener"
+    aria-label={label}
+    className="text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+  >
+    {children}
+  </a>
+);
+
+const InstagramIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4.2" />
+    <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const FacebookIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M14.3 8.4h-1.6c-1 0-1.6.6-1.6 1.6v1.6h3.1l-.4 2.3h-2.7V21" />
+  </svg>
+);
+
+const ThreadsIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3c-4.5 0-7 2.7-7 7.2 0 3.6 1.7 6.1 4.4 7.4.8.4 1.7-.1 1.7-1v-.2c0-.6-.4-1-.9-1.3-1.6-.9-2.5-2.5-2.5-4.6 0-3.1 1.6-4.7 4.1-4.9 2.6-.2 4.4 1.1 4.6 3.3.1 1.4-.4 2.4-1.5 2.7-.8.2-1.4-.1-1.6-.8-.1-.4 0-.8.3-1.2.4-.5.3-1.1-.2-1.4-.6-.4-1.3-.1-1.7.5-.6 1-.7 2.2-.2 3.3.6 1.4 2 2.1 3.6 1.7 1.9-.5 2.9-2.2 2.7-4.4C20.6 6 17.7 3 12 3z" />
+  </svg>
+);
+
 export default function SiteFooter() {
   const { t, locale } = useLanguage();
   const localizeTitle = (item: { slug: string; title: string }) =>
@@ -73,7 +112,19 @@ export default function SiteFooter() {
             </p>
           </div>
 
-          <div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <SocialIcon href="https://www.instagram.com/j172twhealths/" label="Instagram">
+                <InstagramIcon />
+              </SocialIcon>
+              <SocialIcon href="https://www.facebook.com/profile.php?id=61592584239566" label="Facebook">
+                <FacebookIcon />
+              </SocialIcon>
+              <SocialIcon href="https://www.threads.com/@j172twhealths" label="Threads">
+                <ThreadsIcon />
+              </SocialIcon>
+            </div>
+
             <a
               href="https://www.j172.tw"
               target="_blank"

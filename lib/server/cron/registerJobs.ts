@@ -5,6 +5,7 @@ import { runRssIngestion } from "@/lib/server/rss/runIngestion";
 import { runAqiSync } from "@/lib/server/aqi/runSync";
 import { runCwaSync } from "@/lib/server/cwa/runSync";
 import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
+import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -44,17 +45,23 @@ const runGuarded = (logFile: string, run: () => Promise<unknown>): (() => Promis
 };
 
 /**
- * Registers the four in-process sync jobs that used to be driven by system
- * crontab entries hitting Next.js API routes over an HTTP loopback call (see
- * docs/specs/in-app-cron-scheduler.md). Called once from instrumentation.ts.
+ * Registers the in-process sync jobs. The first four used to be driven by
+ * system crontab entries hitting Next.js API routes over an HTTP loopback
+ * call (see docs/specs/in-app-cron-scheduler.md); the social-post draft
+ * queue job is new (docs/specs/social-icons-and-post-drafts.md) but follows
+ * the exact same in-process pattern. Called once from instrumentation.ts.
  * Each job is a direct, in-process function call — no HTTP, no secret
  * headers — since there is no longer an external caller to authenticate.
- * The fifth crontab entry, pm2-ensure-running, stays in the system crontab
- * and is untouched by this module.
+ * The pm2-ensure-running crontab entry stays in the system crontab and is
+ * untouched by this module.
  */
 export const registerCronJobs = (): void => {
   cron.schedule("5,35 * * * *", runGuarded("rss-sync-cron.log", () => runRssIngestion("internal-cron")));
   cron.schedule("20,50 * * * *", runGuarded("aqi-sync-cron.log", () => runAqiSync()));
   cron.schedule("15,45 * * * *", runGuarded("cwa-sync-cron.log", () => runCwaSync()));
   cron.schedule("3,13,23,33,43,53 * * * *", runGuarded("earthquakes-sync-cron.log", () => runEarthquakeSync()));
+  // Once daily — no specific business requirement on exact hour, 8am
+  // server-local keeps it clear of the denser :00-ish traffic from the jobs
+  // above. See docs/specs/social-icons-and-post-drafts.md section 2.3.
+  cron.schedule("0 8 * * *", runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()));
 };
