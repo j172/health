@@ -25,12 +25,17 @@ const BlogItem = ({ blog }: { blog: Blog }) => {
         }}
         initial="hidden"
         whileInView="visible"
-        transition={{ duration: 1, delay: 0.5 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         viewport={{ once: true }}
-        className="animate_top rounded-lg bg-white p-4 pb-9 shadow-solid-8 dark:bg-blacksection"
+        className="animate_top btn-press overflow-hidden rounded-lg bg-white p-4 pb-9 shadow-solid-8 dark:bg-blacksection"
       >
-        <Link href={targetHref} className="relative block aspect-368/239">
-          <Image src={imageSrc} alt={title} fill />
+        <Link href={targetHref} className="group relative block aspect-368/239 overflow-hidden rounded-md">
+          <Image
+            src={imageSrc}
+            alt={title}
+            fill
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
+          />
         </Link>
 
         <div className="px-4">

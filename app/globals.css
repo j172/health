@@ -73,9 +73,12 @@
   --shadow-solid-12: 0px 2px 10px rgba(0, 0, 0, 0.05);
   --shadow-solid-13: 0px 2px 19px rgba(0, 0, 0, 0.05);
 
-  --animate-line1: line 3s linear infinite;
-  --animate-line2: line 6s linear infinite;
-  --animate-line3: line 9s linear infinite;
+  --ease-out-emil: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+
+  --animate-shimmer: shimmer 1.6s infinite linear;
+  --animate-alert-ripple: alert-ripple 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
 
   @keyframes line {
     0%,
@@ -84,6 +87,80 @@
     }
     50% {
       transform: translateY(0);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes alert-ripple {
+    0% {
+      transform: scale(0.95);
+      opacity: 0.9;
+    }
+    50% {
+      transform: scale(1.4);
+      opacity: 0.3;
+    }
+    100% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
+}
+
+@layer utilities {
+  .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(226, 232, 240, 0.4) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(226, 232, 240, 0.4) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite linear;
+  }
+
+  .dark .animate-shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(30, 41, 59, 0.4) 0%,
+      rgba(51, 65, 85, 0.7) 50%,
+      rgba(30, 41, 59, 0.4) 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .btn-press {
+    transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 150ms cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-press:hover {
+    transform: translateY(-1.5px);
+  }
+
+  .btn-press:active {
+    transform: scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn-press,
+    .btn-press:hover,
+    .btn-press:active {
+      transform: none !important;
+      transition: none !important;
+    }
+    .animate-shimmer {
+      animation: none !important;
     }
   }
 }

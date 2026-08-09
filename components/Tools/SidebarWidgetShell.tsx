@@ -37,7 +37,10 @@ export default function SidebarWidgetShell({
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className={`flex h-2.5 w-2.5 rounded-full ${dotColorClass} animate-pulse`} />
+          <span className="relative flex h-2.5 w-2.5 items-center justify-center">
+            <span className={`absolute inline-flex h-full w-full rounded-full ${dotColorClass} animate-alert-ripple`} />
+            <span className={`relative inline-flex h-2 w-2 rounded-full ${dotColorClass}`} />
+          </span>
           <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">{title}</h3>
         </div>
         <button
@@ -46,7 +49,7 @@ export default function SidebarWidgetShell({
           disabled={refreshing}
           aria-label="重新定位"
           title="重新定位"
-          className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+          className="btn-press rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-slate-300"
         >
           <svg className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path

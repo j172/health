@@ -8,7 +8,7 @@ import { toTaipei, excerpt, calcReadingTime } from "@/lib/format/news";
 function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
   const src = item.card_image_url;
   const cls =
-    "h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105";
+    "h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]";
 
   if (!src) {
     return (
@@ -18,7 +18,7 @@ function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
           alt="j172tw Healthz"
           width={48}
           height={48}
-          className="h-10 w-10 opacity-40 transition-transform duration-500 group-hover:scale-110"
+          className="h-10 w-10 opacity-40 transition-transform duration-300 group-hover:scale-105"
         />
         <span className="mt-2 text-[10px] font-semibold tracking-wider text-slate-400 opacity-60">j172tw Healthz</span>
       </div>
@@ -59,7 +59,7 @@ export default function NewsCard({
 
   if (horizontal) {
     return (
-      <article className="group flex gap-3.5 items-center p-2 rounded-xl transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50">
+      <article className="group btn-press flex gap-3.5 items-center p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50">
         <Link
           href={`/news/${item.id}`}
           className="relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800"
@@ -79,7 +79,7 @@ export default function NewsCard({
   }
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+    <article className="group btn-press flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-lg dark:hover:shadow-slate-950/40 dark:border-slate-800 dark:bg-slate-900">
       <Link
         href={`/news/${item.id}`}
         className="block flex-shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800"

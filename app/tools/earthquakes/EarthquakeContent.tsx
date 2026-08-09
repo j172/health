@@ -123,7 +123,11 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
                     </span>
 
                     {item.tsunami_warning === 1 && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-bold text-red-600 dark:bg-red-950 dark:text-red-300 animate-pulse">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-bold text-red-600 dark:bg-red-950 dark:text-red-300">
+                        <span className="relative flex h-2 w-2 items-center justify-center">
+                          <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 animate-alert-ripple" />
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600" />
+                        </span>
                         🌊 海嘯警報
                       </span>
                     )}
