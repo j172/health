@@ -8,6 +8,7 @@ type FaqData = {
 
 const FAQItem = ({ faqData }: { faqData: FaqData }) => {
   const { activeFaq, id, handleFaqToggle, quest, ans } = faqData;
+  const isOpen = activeFaq === id;
 
   return (
     <>
@@ -16,24 +17,11 @@ const FAQItem = ({ faqData }: { faqData: FaqData }) => {
           onClick={() => {
             handleFaqToggle(id);
           }}
-          className="flex cursor-pointer items-center justify-between px-6 py-5 text-metatitle3 font-medium text-black dark:text-white lg:px-9 lg:py-7.5"
+          className="btn-press flex cursor-pointer items-center justify-between px-6 py-5 text-metatitle3 font-medium text-black dark:text-white lg:px-9 lg:py-7.5"
         >
-          {quest}
+          <span>{quest}</span>
 
-          {activeFaq === id ? (
-            <svg
-              width="18"
-              height="4"
-              viewBox="0 0 18 4"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M17.1666 0.833374H10.1666H7.83331H0.833313V3.16671H7.83331H10.1666H17.1666V0.833374Z"
-                fill="currentColor"
-              />
-            </svg>
-          ) : (
+          <span className={`transform transition-transform duration-200 ease-out ${isOpen ? "rotate-45" : ""}`}>
             <svg
               width="18"
               height="18"
@@ -46,15 +34,19 @@ const FAQItem = ({ faqData }: { faqData: FaqData }) => {
                 fill="currentColor"
               />
             </svg>
-          )}
+          </span>
         </button>
-        <p
-          className={`border-t border-stroke px-6 py-5 dark:border-strokedark lg:px-9 lg:py-7.5 ${
-            activeFaq === id ? "block" : "hidden"
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-200 ease-out ${
+            isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
           }`}
         >
-          {ans}
-        </p>
+          <div className="overflow-hidden">
+            <p className="border-t border-stroke px-6 py-5 dark:border-strokedark lg:px-9 lg:py-7.5">
+              {ans}
+            </p>
+          </div>
+        </div>
       </div>
     </>
   );

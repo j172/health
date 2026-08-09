@@ -78,12 +78,15 @@ export default function ToolsIndexPage() {
               <Link
                 key={tool.href}
                 href={tool.href}
-                className="group flex flex-col rounded-xl border border-neutral-200 p-6 transition-colors hover:border-neutral-400"
+                className="group btn-press flex flex-col rounded-xl border border-neutral-200 p-6 shadow-2xs hover:border-indigo-300 hover:shadow-md dark:border-neutral-800 dark:hover:border-indigo-700"
               >
-                <div className="mb-4 text-4xl">{tool.icon}</div>
-                <h2 className="mb-2 text-lg font-semibold text-neutral-800 group-hover:text-neutral-900">{tool.title}</h2>
-                <p className="flex-1 text-sm text-neutral-600">{tool.description}</p>
-                <span className="mt-4 text-sm font-medium text-neutral-800 group-hover:underline">立即使用 →</span>
+                <div className="mb-4 text-4xl transition-transform duration-300 ease-out group-hover:scale-110">{tool.icon}</div>
+                <h2 className="mb-2 text-lg font-semibold text-neutral-800 transition-colors group-hover:text-indigo-600 dark:text-neutral-100 dark:group-hover:text-indigo-400">{tool.title}</h2>
+                <p className="flex-1 text-sm text-neutral-600 dark:text-neutral-400">{tool.description}</p>
+                <span className="mt-4 text-sm font-medium text-neutral-800 dark:text-neutral-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                  <span>立即使用</span>
+                  <span className="ml-1 inline-block transition-transform duration-200 ease-out group-hover:translate-x-1">→</span>
+                </span>
               </Link>
             ))}
           </section>

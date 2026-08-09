@@ -148,7 +148,7 @@ export default function ArticleReaderToolbar({
                 {!isPlaying ? (
                   <button
                     onClick={handlePlay}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 transition-colors cursor-pointer"
+                    className="btn-press inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 cursor-pointer"
                   >
                     <span>▶</span>
                     <span>{isPaused ? t("tts_resume", "繼續") : t("tts_play", "朗讀文章")}</span>
@@ -156,7 +156,7 @@ export default function ArticleReaderToolbar({
                 ) : (
                   <button
                     onClick={handlePause}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 transition-colors cursor-pointer"
+                    className="btn-press inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 cursor-pointer"
                   >
                     <span>⏸</span>
                     <span>{t("tts_pause", "暫停")}</span>
@@ -166,7 +166,7 @@ export default function ArticleReaderToolbar({
                 {(isPlaying || isPaused) && (
                   <button
                     onClick={handleStop}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    className="btn-press inline-flex items-center gap-1.5 rounded-full bg-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer"
                   >
                     <span>⏹</span>
                     <span>{t("tts_stop", "停止")}</span>
@@ -198,7 +198,7 @@ export default function ArticleReaderToolbar({
           <div>
             <button
               onClick={() => setIsImmersiveOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-xs font-bold text-indigo-600 shadow-2xs hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-400 dark:hover:bg-indigo-950/50 transition-colors cursor-pointer"
+              className="btn-press inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-xs font-bold text-indigo-600 shadow-2xs hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-400 dark:hover:bg-indigo-950/50 cursor-pointer"
             >
               <span>📖</span>
               <span>{t("immersive_reader", "沉浸式閱讀模式")}</span>
