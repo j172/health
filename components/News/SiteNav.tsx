@@ -14,6 +14,7 @@ const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), { s
 const CALCULATOR_TOOLS = TOOL_CATALOG.filter((t) => t.group === "calculator").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 const LTC_TOOLS = TOOL_CATALOG.filter((t) => t.group === "ltc").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const DISABILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "disability").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 
 interface NavLinkItem {
   href: string;
@@ -90,6 +91,7 @@ export default function SiteNav() {
 
   const facilityItems = localizeItems(FACILITY_TOOLS);
   const ltcItems = localizeItems(LTC_TOOLS);
+  const disabilityItems = localizeItems(DISABILITY_TOOLS);
   const calculatorItems = localizeItems(CALCULATOR_TOOLS);
 
   useEffect(() => {
@@ -152,6 +154,13 @@ export default function SiteNav() {
               </Link>
               <NavDropdown label={t("nav.facilities", "醫療院所")} items={facilityItems} />
               <NavDropdown label={t("nav.ltc", "長照機構")} items={ltcItems} />
+              <NavDropdown label={t("nav.disability", "身心障礙")} items={disabilityItems} />
+              <Link
+                href="/tools/green-shops"
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+              >
+                {t("nav.greenShops", "綠色商店")}
+              </Link>
               <NavDropdown label={t("nav.healthTools", "健康工具")} items={calculatorItems} />
             </nav>
 
@@ -206,11 +215,15 @@ export default function SiteNav() {
               <Link href="/news" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
                 {t("nav.news", "最新新聞")}
               </Link>
+              <Link href="/tools/green-shops" onClick={() => setMobileOpen(false)} className="rounded-lg p-2 text-slate-700 dark:text-slate-200">
+                {t("nav.greenShops", "綠色商店")}
+              </Link>
             </div>
 
             {[
               { heading: t("nav.facilities", "醫療院所"), items: facilityItems },
               { heading: t("nav.ltc", "長照機構"), items: ltcItems },
+              { heading: t("nav.disability", "身心障礙"), items: disabilityItems },
               { heading: t("nav.healthTools", "健康工具"), items: calculatorItems },
             ].map((section) => (
               <div key={section.heading} className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">

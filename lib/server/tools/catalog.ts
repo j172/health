@@ -3,14 +3,14 @@ export interface ToolFaq {
   answer: string;
 }
 
-export type ToolGroup = "calculator" | "facility" | "food" | "ltc";
+export type ToolGroup = "calculator" | "facility" | "food" | "ltc" | "disability" | "green-shop";
 
 export interface ToolCatalogEntry {
   slug: string;
   title: string;
   description: string;
   faqs: ToolFaq[];
-  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups); "food" → 食品營養 nav dropdown (TFDA food nutrition/operator lookups); "ltc" → 長照機構 nav dropdown (long-term-care/elder-care lookups). */
+  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups); "food" → 食品營養 nav dropdown (TFDA food nutrition/operator lookups); "ltc" → 長照機構 nav dropdown (long-term-care/elder-care lookups); "disability" → 身心障礙 nav dropdown (disability welfare/accessibility lookups); "green-shop" → 綠色商店 direct nav link (certified green shop lookups). */
   group: ToolGroup;
 }
 
@@ -254,7 +254,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disability-welfare",
-    group: "ltc",
+    group: "disability",
     title: "身心障礙福利機構查詢",
     description: "查詢衛福部全國身心障礙福利機構名冊，支援關鍵字搜尋與附近定位。",
     faqs: [
@@ -286,6 +286,19 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     description: "查詢客家委員會客庄社區發展協會名冊，支援關鍵字搜尋與附近定位。",
     faqs: [
       { question: "客庄社區發展協會提供哪些服務？", answer: "客庄社區發展協會多承辦社區照顧關懷據點等在地服務，實際服務項目（如共餐、關懷訪視）依各協會而定，建議直接與協會聯繫確認。" },
+    ],
+  },
+  {
+    // Catalog stub only — no data/route wired up yet. Title/description
+    // match the copy already finalized in docs/specs/phase3-green-shops.md
+    // §3 so nav/footer don't show placeholder-looking text in the
+    // meantime; Phase 3 owns the actual facilitySearchConfigs entry + page.
+    slug: "green-shops",
+    group: "green-shop",
+    title: "綠色商店查詢",
+    description: "查詢環境部認證綠色商店。資料來源：環境部。",
+    faqs: [
+      { question: "什麼是環境部認證綠色商店？", answer: "綠色商店是通過環境部認證、優先採購及販售環保標章商品的商店，資料來源為環境部認證名冊。" },
     ],
   },
 ];

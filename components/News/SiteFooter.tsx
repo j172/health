@@ -82,6 +82,12 @@ export default function SiteFooter() {
   const ltcTools = [...TOOL_CATALOG.filter((tool) => tool.group === "ltc")].sort((a, b) =>
     a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
   );
+  const disabilityTools = [...TOOL_CATALOG.filter((tool) => tool.group === "disability")].sort((a, b) =>
+    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
+  );
+  const greenShopTools = [...TOOL_CATALOG.filter((tool) => tool.group === "green-shop")].sort((a, b) =>
+    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
+  );
   const foodTools = [...TOOL_CATALOG.filter((tool) => tool.group === "food")].sort((a, b) =>
     a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
   );
@@ -137,7 +143,7 @@ export default function SiteFooter() {
         </div>
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 border-t border-slate-100 pt-10 dark:border-slate-900">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 border-t border-slate-100 pt-10 dark:border-slate-900">
           <FooterColumn label={t("footer.overview", "全站總覽")}>
             {overviewLinks.map((item) => (
               <FooterLink key={item.href} href={item.href}>{item.label}</FooterLink>
@@ -152,6 +158,18 @@ export default function SiteFooter() {
 
           <FooterColumn label={t("nav.ltc", "長照機構")}>
             {ltcTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+            ))}
+          </FooterColumn>
+
+          <FooterColumn label={t("nav.disability", "身心障礙")}>
+            {disabilityTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+            ))}
+          </FooterColumn>
+
+          <FooterColumn label={t("nav.greenShops", "綠色商店")}>
+            {greenShopTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
             ))}
           </FooterColumn>
