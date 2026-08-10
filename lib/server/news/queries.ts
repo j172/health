@@ -74,9 +74,23 @@ export interface WeatherWarningItem {
 // stale/likely superseded.
 const ACTIVE_WARNING_WINDOW_HOURS = 6;
 
-/** Recent items from the CWA warnings/advisories feed, for a navbar alert
- * strip — deliberately not grouped into the source-archive nav dropdowns,
- * since these are transient alerts rather than browsable news coverage. */
+// WRA's drought/water-restriction sync (lib/server/wra/runSync.ts) runs
+// daily, not hourly, and re-upserts its news_items rows on the same "keep
+// refreshing while still current" pattern as CWA above — but a 6-hour window
+// would flap the widget on/off between daily sync runs, so WRA gets its own,
+// much longer window sized to comfortably survive one missed sync. See
+// docs/specs/phase5-wra-drought-alerts.md section 3.
+const ACTIVE_WARNING_WINDOW_HOURS_BY_SOURCE: Record<string, number> = {
+  cwa: ACTIVE_WARNING_WINDOW_HOURS,
+  wra: 48,
+};
+
+/** Recent items from the CWA/WRA warnings feeds, for a navbar alert strip —
+ * deliberately not grouped into the source-archive nav dropdowns, since
+ * these are transient alerts rather than browsable news coverage. Each
+ * source_name gets its own freshness window (see
+ * ACTIVE_WARNING_WINDOW_HOURS_BY_SOURCE above) rather than one shared
+ * constant, since sync cadence differs a lot between sources. */
 import { memoizeQuery } from "@/lib/server/cache/memo";
 
 export const listActiveWeatherWarnings = async (limit = 5): Promise<WeatherWarningItem[]> =>
@@ -86,12 +100,12 @@ export const listActiveWeatherWarnings = async (limit = 5): Promise<WeatherWarni
         `
         SELECT id, title, published_at_utc
         FROM news_items
-        WHERE source_name = 'cwa'
-          AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+        WHERE (source_name = 'cwa' AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR))
+           OR (source_name = 'wra' AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR))
         ORDER BY published_at_utc DESC
         LIMIT ?
         `,
-        [ACTIVE_WARNING_WINDOW_HOURS, limit],
+        [ACTIVE_WARNING_WINDOW_HOURS_BY_SOURCE.cwa, ACTIVE_WARNING_WINDOW_HOURS_BY_SOURCE.wra, limit],
       );
       return rows as unknown as WeatherWarningItem[];
     }),

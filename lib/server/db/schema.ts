@@ -569,4 +569,26 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 經濟部水利署 (WRA) 枯旱限水通報 (Phase 5) — opendata.wra.gov.tw, daily cron.
+  // Audit/history mirror of the raw feed, keyed the same way the source
+  // itself is keyed (one row per reservoir × report date); mirrors
+  // cwa_alerts's shape but with WRA's own fields since the source isn't
+  // CAP-format and has no effective/expires timestamps. The widget itself
+  // never reads this table — it reads news_items (see
+  // lib/server/wra/queries.ts and docs/specs/phase5-wra-drought-alerts.md).
+  wraDroughtAlerts: `
+    CREATE TABLE IF NOT EXISTS wra_drought_alerts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      reservoir_name VARCHAR(255) NOT NULL,
+      report_date DATE NOT NULL,
+      alert_level VARCHAR(50) NULL,
+      supply_area VARCHAR(255) NULL,
+      title VARCHAR(255) NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_drought_alert (reservoir_name, report_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
