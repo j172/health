@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 
 interface FoodOperator {
   id: number;
@@ -62,7 +63,7 @@ export default function FoodOperatorsContent() {
 
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <LoadingOrb size={32} />
         </div>
       )}
 

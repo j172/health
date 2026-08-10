@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 
 interface FoodSample {
   sample_id: string;
@@ -101,7 +102,7 @@ export default function FoodNutritionContent() {
 
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <LoadingOrb size={32} />
         </div>
       )}
 
@@ -136,7 +137,7 @@ export default function FoodNutritionContent() {
                     <div className="bg-neutral-50 px-4 py-3">
                       {itemsLoading && (
                         <div className="flex justify-center py-4">
-                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          <LoadingOrb size={24} />
                         </div>
                       )}
                       {!itemsLoading && items && items.length === 0 && <p className="text-sm text-neutral-500">無營養成分資料。</p>}

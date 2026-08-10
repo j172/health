@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { type ReactNode } from "react";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 
 /**
  * Shared card shell for the geolocation-driven sidebar widgets (AQI, UV):
@@ -63,7 +64,7 @@ export default function SidebarWidgetShell({
 
       {showSpinner ? (
         <div className="mt-4 flex h-24 items-center justify-center">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <LoadingOrb size={20} />
         </div>
       ) : hasData ? (
         <div className="mt-4">{children}</div>

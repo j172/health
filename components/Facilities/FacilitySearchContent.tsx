@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import type { MapMarker } from "@/components/Facilities/FacilityMap";
 import WeeklyHoursLine from "@/components/Facilities/WeeklyHours";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -195,7 +196,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
 
       {(loading || location.loading) && (
         <div className="flex justify-center py-8">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <LoadingOrb size={32} />
         </div>
       )}
 

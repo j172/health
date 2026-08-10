@@ -11,6 +11,7 @@ import NewsArticleBody from "@/components/News/NewsArticleBody";
 import ArticleReaderToolbar from "@/components/News/ArticleReaderToolbar";
 import ArticleViewTracker from "@/components/News/ArticleViewTracker";
 import NewsCard from "@/components/News/NewsCard";
+import HeroImage from "@/components/News/HeroImage";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
@@ -146,21 +147,16 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
 
             {/* Hero Image */}
             {hero ? (
-              <figure className="mt-8">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={hero.url}
-                  alt={hero.caption || news.title}
-                  className="max-h-[32rem] w-full rounded-2xl bg-slate-100 object-cover shadow-sm dark:bg-slate-800"
-                />
-                {hero.caption ? (
-                  <figcaption className="mt-3 text-center text-xs text-slate-400">{hero.caption}</figcaption>
-                ) : hero.isPixabay ? (
-                  <figcaption className="mt-3 text-center text-xs text-slate-400">
-                    示意圖：Pixabay {news.card_image_contributor ? ` · ${news.card_image_contributor}` : ""}
-                  </figcaption>
-                ) : null}
-              </figure>
+              <HeroImage
+                src={hero.url}
+                alt={hero.caption || news.title}
+                caption={
+                  hero.caption ||
+                  (hero.isPixabay
+                    ? `示意圖：Pixabay${news.card_image_contributor ? ` · ${news.card_image_contributor}` : " "}`
+                    : null)
+                }
+              />
             ) : null}
 
             {/* Article Content Body */}
