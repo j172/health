@@ -29,7 +29,8 @@ export type FeedCode =
   | "twhealth"
   | "heho"
   | "mirrormedia_healthnews"
-  | "udn_health";
+  | "udn_health"
+  | "moenv_mnews";
 
 export interface FeedConfig {
   code: FeedCode;

@@ -7,6 +7,7 @@ import { parseFeedXml } from "@/lib/server/rss/parseRss";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { fetchMirrorMediaHealthnews } from "@/lib/server/rss/fetchMirrorMediaExternals";
 import { fetchUdnHealthNews } from "@/lib/server/rss/fetchUdnHealthNews";
+import { fetchMoenvNews } from "@/lib/server/rss/fetchMoenvNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
@@ -255,6 +256,73 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       const udnHashes = await getExistingPayloadHashes(udnResult.items);
       for (const item of udnResult.items) {
         if (udnHashes.get(itemKey(item)) === item.payloadHash) {
+          skippedUnchanged += 1;
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const seo = await generateSeoMetadataWithAi({
+          title: item.title,
+          descriptionText: item.descriptionText,
+          detailText: item.detailText,
+          feedName: item.feedName,
+          deptName: item.deptName,
+          sourceName: item.sourceName,
+          publishedAtUtc: item.publishedAtUtc,
+        });
+        enrichedItems.push({
+          ...item,
+          metaTitle: seo.metaTitle,
+          metaDescription: seo.metaDescription,
+          keywords: seo.keywords,
+          geoSummary: seo.geoSummary,
+        });
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // 環境部（MOENV）新聞專區 — JSON open-data API (not RSS/XML; handled
+    // separately just like Mirror Media and UDN above).
+    // -----------------------------------------------------------------------
+    const moenvResult = await fetchMoenvNews();
+    if (!moenvResult.ok) {
+      feedResults.push({
+        feed: {
+          code: "moenv_mnews",
+          name: "環境部",
+          url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
+          sourceName: "moenv",
+        },
+        ok: false,
+        httpStatus: moenvResult.httpStatus,
+        itemCount: 0,
+        errorMessage: moenvResult.errorMessage,
+      });
+      await writeIngestionError({
+        runId,
+        feedCode: "moenv_mnews",
+        url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
+        message: moenvResult.errorMessage ?? "Unknown MOENV news fetch error",
+        detail: {},
+      });
+    } else {
+      feedResults.push({
+        feed: {
+          code: "moenv_mnews",
+          name: "環境部",
+          url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
+          sourceName: "moenv",
+        },
+        ok: true,
+        httpStatus: moenvResult.httpStatus,
+        itemCount: moenvResult.itemCount,
+        errorMessage: null,
+      });
+
+      // The API already returns full article content — check hashes and skip
+      // unchanged items, then enrich only the new/changed ones with AI SEO.
+      const moenvHashes = await getExistingPayloadHashes(moenvResult.items);
+      for (const item of moenvResult.items) {
+        if (moenvHashes.get(itemKey(item)) === item.payloadHash) {
           skippedUnchanged += 1;
           continue;
         }
