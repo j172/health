@@ -10,6 +10,8 @@
     "github": "GitHub Repo 🌟",
     "facilities": "Healthcare Facilities",
     "ltc": "Long-Term Care",
+    "disability": "Disability Services",
+    "greenShops": "Green Shops",
     "healthTools": "Health Tools",
     "searchPlaceholder": "Search news..."
   },
@@ -50,7 +52,8 @@
     "disability-welfare": "Disability Welfare Institution Finder",
     "elder-welfare": "Elderly Welfare Institution Finder",
     "ltc-contracted": "Long-Term Care 2.0 Contracted Service Finder",
-    "hakka-community": "Hakka Community Development Association Finder"
+    "hakka-community": "Hakka Community Development Association Finder",
+    "green-shops": "Green Shop Finder"
   },
   "categories": {
     "gov": "Government Agencies",
