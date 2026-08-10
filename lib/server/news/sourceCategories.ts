@@ -21,6 +21,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "cdc", label: "疾病管制署" },
       { sourceName: "tfda", label: "食品藥物管理署" },
       { sourceName: "nhi", label: "中央健康保險署" },
+      { sourceName: "moenv", label: "環境部" },
     ],
   },
   {
