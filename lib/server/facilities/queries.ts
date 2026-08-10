@@ -178,7 +178,7 @@ export interface FacilitySearchParams {
   lng?: number;
   radiusMeters?: number;
   limit?: number;
-  /** Exact match against the facilities.service_item column (e.g. a hospital tier or pharmacy contract type). */
+  /** Substring match against the facilities.service_item column (e.g. a hospital tier, pharmacy contract type, or one badge within a combined multi-badge value). */
   serviceItem?: string;
   sort?: "distance" | "name" | "category";
 }
@@ -207,8 +207,14 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
     }
 
     if (serviceItem) {
-      conditions.push("service_item = ?");
-      params.push(serviceItem);
+      // Substring match, not exact — some sources (e.g. disability_atm) store
+      // a combined service_item like "輪椅可及、語音服務" for a row that
+      // qualifies under more than one category filter value; a plain "="
+      // would make that row invisible to either single-category filter.
+      // Safe for the existing exact-taxonomy sources too since none of their
+      // category values are substrings of one another.
+      conditions.push("service_item LIKE ?");
+      params.push(`%${serviceItem}%`);
     }
 
     let distanceSelect = "";

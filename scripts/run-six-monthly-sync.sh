@@ -24,6 +24,13 @@
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
 #   nutrition.mjs, scripts/import-tfda-food-operators.mjs), not through this
 #   script, since they need Node + adm-zip rather than just curl.
+# - NFCC's accessible-ATM CSVs (nfcc.org.tw, no known reachability issue,
+#   unlike the mohw.gov.tw sources above) — still imported by hand via
+#   scripts/import-nfcc-accessible-atm.mjs to keep this small two-CSV,
+#   rarely-changing source self-contained rather than adding a registered
+#   facilities-sync fetcher for it. This script handles its geocoding
+#   backfill below (disability_atm / nfcc_accessible_atm), same as the MOHW
+#   sources.
 set -euo pipefail
 
 BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"
@@ -66,6 +73,7 @@ COMBOS=(
   "pharmacy tfda_pharmacy"
   "long_term_care mohw_ltc_full"
   "disability_welfare mohw_disability_welfare"
+  "disability_atm nfcc_accessible_atm"
   "elder_welfare mohw_elder_welfare"
   "hakka_community hakka_dtst20230600002"
 )

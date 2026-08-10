@@ -88,6 +88,21 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: { label: "機構類型：" },
   },
+  "disability-atm": {
+    facilityType: "disability_atm",
+    emoji: "🏧",
+    title: "信用合作社無障礙ATM查詢",
+    description: "查詢全台信用合作社提供輪椅可及或語音服務的無障礙ATM。資料來源：中華民國信用合作社聯合社。",
+    searchPlaceholder: "輸入信合社名稱或縣市關鍵字",
+    errorText: "查詢ATM資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的無障礙ATM，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的ATM。",
+    serviceItem: "badge",
+    categories: [
+      { value: "輪椅可及", label: "輪椅可及" },
+      { value: "語音服務", label: "語音服務" },
+    ],
+  },
   "health-checks": {
     facilityType: "health_check",
     emoji: "🩻",
