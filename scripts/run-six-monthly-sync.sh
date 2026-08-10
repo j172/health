@@ -24,6 +24,14 @@
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-
 #   nutrition.mjs, scripts/import-tfda-food-operators.mjs), not through this
 #   script, since they need Node + adm-zip rather than just curl.
+# - The MOENV green shop directory (gp_p_01, 50k+ rows / 8.5k+ stores) —
+#   data.moenv.gov.tw itself is reachable from production (see
+#   fetchMoenvNews.ts), but this dataset's own paginated size makes it a
+#   better fit for the "run by hand, observe the batches" MOHW-script
+#   pattern than a silent facilities-sync source. Run
+#   scripts/import-moenv-green-shops.mjs by hand every ~6 months (needs
+#   MOENV_GP_API_KEY in addition to ADMIN_SECRET). This script still handles
+#   its geocoding backfill below.
 set -euo pipefail
 
 BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"
@@ -68,6 +76,7 @@ COMBOS=(
   "disability_welfare mohw_disability_welfare"
   "elder_welfare mohw_elder_welfare"
   "hakka_community hakka_dtst20230600002"
+  "green_shop moenv_green_shop"
 )
 
 for combo in "${COMBOS[@]}"; do
