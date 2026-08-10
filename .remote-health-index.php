@@ -52,9 +52,88 @@ if (str_starts_with($path, '/__ops/')) {
     $logFile = $appDir . '/.rebuild-homepage.log';
     $buildLockFile = $appDir . '/.rebuild-homepage.lock';
     $prebuiltLogFile = $appDir . '/.apply-prebuilt.log';
+    // .apply-prebuilt.lock is now purely an flock() mutex handle (its
+    // *content* is never read) guarding the check-then-spawn critical
+    // section below — .apply-prebuilt.pid (written by the spawned script
+    // itself, as its very first action) is the actual source of truth for
+    // "is a run still alive", checked via /proc, not a bypassable mtime
+    // heuristic. See triggerPrebuiltRun()/isPrebuiltRunning() below — this
+    // replaces the old scheme where /apply-prebuilt-force unconditionally
+    // deleted the lock/log and spawned a new run regardless of whether a
+    // previous one was still genuinely mid-flight, which stacked multiple
+    // concurrent pm2 delete/start + 150-attempt health-probe loops on top of
+    // each other and exhausted the host's process/memory budget on
+    // 2026-08-10 (confirmed via a live `ps aux` from hosting support showing
+    // a still-running instance from a much earlier trigger).
     $prebuiltLockFile = $appDir . '/.apply-prebuilt.lock';
+    $prebuiltPidFile = $appDir . '/.apply-prebuilt.pid';
     $nodeBin = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node';
     $pm2Bin = $nodeBin . ' /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
+
+    // True if the PID last recorded by a spawned apply-prebuilt run is still
+    // a live process. /proc/<pid> existing is a sufficient liveness check on
+    // Linux without depending on the posix/pcntl extensions (not assumed
+    // enabled on this shared host, and not used anywhere else in this file).
+    $isPrebuiltRunning = static function () use ($prebuiltPidFile): int {
+        if (!is_file($prebuiltPidFile)) {
+            return 0;
+        }
+        $pid = (int) trim((string) @file_get_contents($prebuiltPidFile));
+        return ($pid > 0 && is_dir("/proc/{$pid}")) ? $pid : 0;
+    };
+
+    // Kills a still-running apply-prebuilt instance's direct children (tar,
+    // curl, the `pm2 delete`/`pm2 start` invocations at the moment of kill)
+    // then the wrapper shell itself. Deliberately does NOT touch pm2/node —
+    // the "pm2 start" line inside the script runs under its own `setsid`
+    // specifically so the app survives even when this wrapper gets killed;
+    // only the wrapper and its transient helpers die.
+    $killPrebuiltRun = static function (int $pid): void {
+        @exec('pkill -9 -P ' . $pid . ' 2>&1');
+        @exec('kill -9 ' . $pid . ' 2>&1');
+    };
+
+    // Single choke point for starting an apply-prebuilt run, used by all
+    // three trigger paths (/apply-prebuilt, /apply-prebuilt-force,
+    // pm2-ensure-running's escalation) so "is one already running" can never
+    // again be answered by two different, easily-desynced mechanisms.
+    // Holds an flock() across the entire check -> (maybe kill) -> spawn
+    // sequence, not just the check, so two requests landing at the same
+    // instant can't both see "nothing running" and both spawn — the second
+    // one blocks on flock() until the first has recorded its new PID.
+    // $force=false: refuse (return null) if a run is genuinely still alive.
+    // $force=true: kill the still-alive run first, then always proceeds —
+    // "force" now actually means "make sure exactly one instance ends up
+    // running", not "ignore whether one already is".
+    $triggerPrebuiltRun = static function (bool $force, string $cmd) use (
+        $prebuiltLockFile,
+        $isPrebuiltRunning,
+        $killPrebuiltRun
+    ): ?int {
+        $fh = fopen($prebuiltLockFile, 'c');
+        if ($fh === false) {
+            // Can't lock — fail open (spawn anyway) rather than block all
+            // deploys forever over a filesystem hiccup.
+            @exec($cmd);
+            return null;
+        }
+        try {
+            flock($fh, LOCK_EX);
+            $runningPid = $isPrebuiltRunning();
+            if ($runningPid !== 0) {
+                if (!$force) {
+                    return $runningPid;
+                }
+                $killPrebuiltRun($runningPid);
+                usleep(300000); // let the kill land before the replacement starts writing the same log/pid files
+            }
+            @exec($cmd);
+            return null;
+        } finally {
+            flock($fh, LOCK_UN);
+            fclose($fh);
+        }
+    };
 
     $buildPrebuiltCommand = static function (bool $force) use ($appDir, $nodeBin, $pm2Bin): string {
         $startMarker = $force ? '[START-FORCE-V4]' : '[START-V4]';
@@ -63,6 +142,11 @@ if (str_starts_with($path, '/__ops/')) {
         $script = "cd {$appDir} "
             . "&& SWAPPED=0; "
             . "{ "
+            // Recorded first, before anything else, so triggerPrebuiltRun()'s
+            // /proc/<pid> liveness check is accurate from the instant this
+            // process exists — this file (not .apply-prebuilt.lock's mtime)
+            // is now the sole source of truth for "is a run still alive".
+            . "echo \$\$ > .apply-prebuilt.pid; "
             . "echo '{$startMarker} '$(date) > .apply-prebuilt.log; "
             . "echo '[PWD] '$(pwd) >> .apply-prebuilt.log; "
             . "rm -rf .next3_stage .next3_failed >> .apply-prebuilt.log 2>&1 "
@@ -117,7 +201,7 @@ if (str_starts_with($path, '/__ops/')) {
             . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; {$pm2Bin} restart health-web >> .apply-prebuilt.log 2>&1 || true; fi; "
             . "echo '{$failMarker} '$(date) >> .apply-prebuilt.log; "
             . "}; "
-            . "rm -f .apply-prebuilt.lock";
+            . "rm -f .apply-prebuilt.pid";
 
         return "nohup /bin/sh -lc " . escapeshellarg($script) . " >/dev/null 2>&1 &";
     };
@@ -185,25 +269,16 @@ if (str_starts_with($path, '/__ops/')) {
             exit;
         }
 
-        if (is_file($prebuiltLockFile) && (time() - (int) @filemtime($prebuiltLockFile)) > 1800) {
-            @unlink($prebuiltLockFile);
-        }
-
-        if (is_file($prebuiltLockFile)) {
-            header('Content-Type: text/plain; charset=utf-8');
-            echo "Apply already running.\n";
+        header('Content-Type: text/plain; charset=utf-8');
+        $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(false));
+        if ($alreadyRunningPid !== null) {
+            echo "Apply already running (pid {$alreadyRunningPid}).\n";
             if (is_file($prebuiltLogFile)) {
                 echo file_get_contents($prebuiltLogFile);
             }
             exit;
         }
 
-        @file_put_contents($prebuiltLockFile, (string) time(), LOCK_EX);
-
-        $cmd = $buildPrebuiltCommand(false);
-        @exec($cmd);
-
-        header('Content-Type: text/plain; charset=utf-8');
         echo "Apply prebuilt triggered. Check /__ops/apply-prebuilt-status?key=...\n";
         exit;
     }
@@ -216,12 +291,13 @@ if (str_starts_with($path, '/__ops/')) {
             exit;
         }
 
-        // Force mode: ignore stale lock and rerun unpack + restart.
-        @unlink($prebuiltLockFile);
-        @unlink($prebuiltLogFile);
-
-        $cmd = $buildPrebuiltCommand(true);
-        @exec($cmd);
+        // Force mode: if a previous run is genuinely still alive (checked via
+        // /proc inside triggerPrebuiltRun, not a bypassable mtime file), kill
+        // it first rather than orphaning it — "force" means "make sure
+        // exactly one instance ends up running", not "ignore whether one
+        // already is" (the latter is what stacked concurrent runs and
+        // exhausted the host on 2026-08-10).
+        $triggerPrebuiltRun(true, $buildPrebuiltCommand(true));
 
         header('Content-Type: text/plain; charset=utf-8');
         echo "Apply prebuilt force-triggered-v4. Check /__ops/apply-prebuilt-status?key=...\n";
@@ -303,22 +379,10 @@ if (str_starts_with($path, '/__ops/')) {
         // ~20 min if the probe curls hang instead of refusing outright) — easily
         // longer than this endpoint's cron interval. Without this check, a cron
         // tick landing mid-restart would race a second concurrent extract+restart
-        // against the one still running. All three code paths write the same log
-        // via the same START/DONE/FAIL markers, so checking for an unfinished run
-        // here catches an in-flight restart no matter which endpoint started it.
-        if (is_file($prebuiltLogFile)) {
-            $logContents = (string) file_get_contents($prebuiltLogFile);
-            $hasStarted = str_contains($logContents, '[START-V4]') || str_contains($logContents, '[START-FORCE-V4]');
-            $hasFinished = str_contains($logContents, '[DONE-V4]') || str_contains($logContents, '[DONE-FORCE-V4]')
-                || str_contains($logContents, '[FAIL-V4]') || str_contains($logContents, '[FAIL-FORCE-V4]');
-            $logAge = time() - (int) @filemtime($prebuiltLogFile);
-            if ($hasStarted && !$hasFinished && $logAge <= 1800) {
-                echo "[{$now}] health-web was not online, but a restart already appears to be in progress — not starting another.\n";
-                echo $logContents;
-                exit;
-            }
-        }
-
+        // against the one still running. triggerPrebuiltRun()'s /proc-based check
+        // (shared with /apply-prebuilt and /apply-prebuilt-force) catches an
+        // in-flight restart no matter which endpoint started it, so this no
+        // longer needs its own bespoke log-scraping copy of that logic.
         @file_put_contents($watchdogLog, "[{$now}] health-web was not online (this host periodically kills long-running background processes) — restarting via apply-prebuilt.\n", FILE_APPEND);
 
         // Reuse the same tested apply-prebuilt path (re-extracts the last
@@ -326,11 +390,19 @@ if (str_starts_with($path, '/__ops/')) {
         // failure) rather than a bespoke "just pm2 start" — this host has
         // been silently killing the health-web process roughly once a day,
         // and this endpoint is meant to be hit by an external cron job so
-        // it recovers without anyone noticing a 502 first.
-        @unlink($prebuiltLockFile);
-        @unlink($prebuiltLogFile);
-        $cmd = $buildPrebuiltCommand(true);
-        @exec($cmd);
+        // it recovers without anyone noticing a 502 first. $force=false here
+        // (refuse rather than kill-and-replace if one's still running) —
+        // this path fires unattended every 5 minutes, so it should never be
+        // the one deciding to kill a run that might just be taking a while
+        // under host load; only a human-triggered apply-prebuilt-force does that.
+        $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(true));
+        if ($alreadyRunningPid !== null) {
+            echo "[{$now}] health-web was not online, but a restart already appears to be in progress (pid {$alreadyRunningPid}) — not starting another.\n";
+            if (is_file($prebuiltLogFile)) {
+                echo file_get_contents($prebuiltLogFile);
+            }
+            exit;
+        }
 
         echo "[{$now}] health-web was not online. Restart triggered — check /__ops/apply-prebuilt-status?key=...\n";
         exit;
@@ -528,9 +600,10 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/apply-prebuilt-status') {
         header('Content-Type: text/plain; charset=utf-8');
-        echo is_file($prebuiltLockFile) ? "running\n" : "idle\n";
-        if (is_file($prebuiltLockFile)) {
-            echo "lock_mtime=" . date('c', (int) @filemtime($prebuiltLockFile)) . "\n";
+        $livePid = $isPrebuiltRunning();
+        echo $livePid !== 0 ? "running\n" : "idle\n";
+        if ($livePid !== 0) {
+            echo "pid={$livePid}\n";
         }
         if (is_file($prebuiltLogFile)) {
             echo file_get_contents($prebuiltLogFile);
