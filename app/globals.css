@@ -79,6 +79,7 @@
 
   --animate-shimmer: shimmer 1.6s infinite linear;
   --animate-alert-ripple: alert-ripple 1.8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+  --animate-orb-pulse: orb-pulse 1.2s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 
   @keyframes line {
     0%,
@@ -111,6 +112,22 @@
     100% {
       transform: scale(1.8);
       opacity: 0;
+    }
+  }
+
+  /* LoadingOrb dot pulse — each of the 9 dots in the 3x3 lattice runs this
+     same keyframe, staggered via a per-dot animation-delay (see
+     components/ui/LoadingOrb.tsx) so the pulse appears to radiate outward
+     from the centre dot. */
+  @keyframes orb-pulse {
+    0%,
+    100% {
+      transform: scale(0.4);
+      opacity: 0.35;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 }
@@ -161,6 +178,13 @@
     }
     .animate-shimmer {
       animation: none !important;
+    }
+    /* Static fallback: freeze each dot at full size/opacity instead of the
+       mid-pulse dim state, so the lattice still reads as a dot grid. */
+    .animate-orb-pulse {
+      animation: none !important;
+      transform: none !important;
+      opacity: 0.9;
     }
   }
 }

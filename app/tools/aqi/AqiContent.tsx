@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { AqiSite } from "@/lib/server/aqi/types";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 
 const COUNTIES = [
   "臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市",
@@ -105,7 +106,7 @@ export default function AqiContent() {
 
       {loading && (
         <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
+          <LoadingOrb size={32} />
         </div>
       )}
 

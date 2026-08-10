@@ -1,46 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { toTaipei, excerpt, calcReadingTime } from "@/lib/format/news";
-
-function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
-  const src = item.card_image_url;
-  const cls =
-    "h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]";
-
-  if (!src) {
-    return (
-      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-4">
-        <Image
-          src="/images/logo/j172tw-health-logo.png"
-          alt="j172tw Healthz"
-          width={48}
-          height={48}
-          className="h-10 w-10 opacity-40 transition-transform duration-300 group-hover:scale-105"
-        />
-        <span className="mt-2 text-[10px] font-semibold tracking-wider text-slate-400 opacity-60">j172tw Healthz</span>
-      </div>
-    );
-  }
-
-  if (/^https?:\/\//i.test(src)) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt={item.title} className={cls} loading="lazy" />;
-  }
-
-  return (
-    <Image
-      src={src}
-      alt={item.title}
-      fill
-      className={cls}
-      sizes={sizes}
-      unoptimized={src.startsWith("/images/news/pixabay/") || src.startsWith("/images/news/articles/")}
-    />
-  );
-}
+import CardThumb from "@/components/News/CardThumb";
 
 export default function NewsCard({
   item,

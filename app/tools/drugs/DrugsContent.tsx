@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 
 interface DrugItem {
   id: number;
@@ -104,7 +105,7 @@ export default function DrugsContent() {
 
       {loading && (
         <div className="flex justify-center py-8">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+          <LoadingOrb size={32} />
         </div>
       )}
 
@@ -156,7 +157,7 @@ export default function DrugsContent() {
                     <div className="mt-2 border-t border-neutral-100 pt-2">
                       {ingredientsLoading && (
                         <div className="flex justify-center py-2">
-                          <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                          <LoadingOrb size={20} />
                         </div>
                       )}
                       {!ingredientsLoading && ingredients && ingredients.length === 0 && <p className="text-xs text-neutral-500">無成分資料。</p>}
