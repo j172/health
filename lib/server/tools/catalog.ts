@@ -262,6 +262,15 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "disability-atm",
+    group: "disability",
+    title: "信用合作社無障礙ATM查詢",
+    description: "查詢全台信用合作社提供輪椅可及或語音服務的無障礙ATM，支援關鍵字搜尋與附近定位。",
+    faqs: [
+      { question: "資料涵蓋哪些無障礙ATM？", answer: "資料來源為中華民國信用合作社聯合社的輪椅可及ATM與語音服務ATM名冊，兩份名單依信用合作社分社代號合併，同一分社若同時提供兩種服務會標示為「輪椅可及、語音服務」。" },
+    ],
+  },
+  {
     slug: "elder-welfare",
     group: "ltc",
     title: "老人福利機構查詢",
