@@ -25,20 +25,15 @@
 #   nutrition.mjs, scripts/import-tfda-food-operators.mjs), not through this
 #   script, since they need Node + adm-zip rather than just curl.
 # - NFCC's accessible-ATM CSVs (nfcc.org.tw, no known reachability issue,
-#   unlike the mohw.gov.tw sources above) — still imported by hand via
-#   scripts/import-nfcc-accessible-atm.mjs to keep this small two-CSV,
-#   rarely-changing source self-contained rather than adding a registered
-#   facilities-sync fetcher for it. This script handles its geocoding
-#   backfill below (disability_atm / nfcc_accessible_atm), same as the MOHW
-#   sources.
-# - The MOENV green shop directory (gp_p_01, 50k+ rows / 8.5k+ stores) —
-#   data.moenv.gov.tw itself is reachable from production (see
-#   fetchMoenvNews.ts), but this dataset's own paginated size makes it a
-#   better fit for the "run by hand, observe the batches" MOHW-script
-#   pattern than a silent facilities-sync source. Run
-#   scripts/import-moenv-green-shops.mjs by hand every ~6 months (needs
-#   MOENV_GP_API_KEY in addition to ADMIN_SECRET). This script still handles
-#   its geocoding backfill below.
+#   unlike the mohw.gov.tw sources above) and the MOENV green shop directory
+#   (gp_p_01, 50k+ rows / 8.5k+ stores) — both fetch/parse/import in their
+#   own scripts (scripts/import-nfcc-accessible-atm.mjs,
+#   scripts/import-moenv-green-shops.mjs), run automatically as their own
+#   steps in six-monthly-sync.yml (same "separate step" pattern as the TFDA
+#   imports below, since observe-the-batches output is easier to read as its
+#   own step than folded into this script's log). This script still handles
+#   both sources' geocoding backfill (disability_atm/nfcc_accessible_atm,
+#   green_shop/moenv_green_shop) below, same as every other source.
 set -euo pipefail
 
 BASE_URL="${HEALTH_BASE_URL:-https://health.j172.tw}"

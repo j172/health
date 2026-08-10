@@ -71,6 +71,19 @@ jobs:
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-food-operators.mjs
 
+      - name: Import NFCC accessible-ATM lists (wheelchair + voice, ~150 rows)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-nfcc-accessible-atm.mjs
+
+      - name: Import MOENV green shop directory (~8.5k stores, paginated here)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-green-shops.mjs
+
       - name: Close SSH tunnel
         if: always()
         run: |
