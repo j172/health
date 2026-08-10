@@ -137,4 +137,14 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的長照機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
   },
+  "green-shops": {
+    facilityType: "green_shop",
+    emoji: "🌱",
+    title: "綠色商店查詢",
+    description: "查詢環境部認證綠色商店。資料來源：環境部。",
+    searchPlaceholder: "輸入商店名稱或縣市關鍵字",
+    errorText: "查詢商店資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的綠色商店，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的商店。",
+  },
 } satisfies Record<string, FacilitySearchConfig>;
