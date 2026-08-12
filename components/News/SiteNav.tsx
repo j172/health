@@ -14,6 +14,7 @@ const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), { s
 const CALCULATOR_TOOLS = TOOL_CATALOG.filter((t) => t.group === "calculator").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 const LTC_TOOLS = TOOL_CATALOG.filter((t) => t.group === "ltc").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const CHILD_WELFARE_TOOLS = TOOL_CATALOG.filter((t) => t.group === "child-welfare").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 const DISABILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "disability").map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 
 interface NavLinkItem {
@@ -91,6 +92,7 @@ export default function SiteNav() {
 
   const facilityItems = localizeItems(FACILITY_TOOLS);
   const ltcItems = localizeItems(LTC_TOOLS);
+  const childWelfareItems = localizeItems(CHILD_WELFARE_TOOLS);
   const disabilityItems = localizeItems(DISABILITY_TOOLS);
   const calculatorItems = localizeItems(CALCULATOR_TOOLS);
 
@@ -154,6 +156,7 @@ export default function SiteNav() {
               </Link>
               <NavDropdown label={t("nav.facilities", "醫療院所")} items={facilityItems} />
               <NavDropdown label={t("nav.ltc", "長照機構")} items={ltcItems} />
+              <NavDropdown label={t("nav.childWelfare", "兒少福利")} items={childWelfareItems} />
               <NavDropdown label={t("nav.disability", "身心障礙")} items={disabilityItems} />
               <Link
                 href="/tools/green-shops"
@@ -223,6 +226,7 @@ export default function SiteNav() {
             {[
               { heading: t("nav.facilities", "醫療院所"), items: facilityItems },
               { heading: t("nav.ltc", "長照機構"), items: ltcItems },
+              { heading: t("nav.childWelfare", "兒少福利"), items: childWelfareItems },
               { heading: t("nav.disability", "身心障礙"), items: disabilityItems },
               { heading: t("nav.healthTools", "健康工具"), items: calculatorItems },
             ].map((section) => (

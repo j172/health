@@ -34,7 +34,10 @@ export async function fetchNhiWeeklyHours(): Promise<WeeklyHoursEntry[]> {
       if (periods.length > 0) weeklyHours[DAY_LABELS[day]] = periods;
     }
 
-    if (Object.keys(weeklyHours).length > 0) entries.push({ sourceId, weeklyHours });
+    const noteRaw = row["看診備註"];
+    const note = noteRaw && noteRaw.trim() !== "-" && noteRaw.trim() !== "" ? noteRaw.trim() : undefined;
+
+    if (Object.keys(weeklyHours).length > 0 || note) entries.push({ sourceId, weeklyHours, note });
   }
 
   return entries;

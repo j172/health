@@ -3,14 +3,14 @@ export interface ToolFaq {
   answer: string;
 }
 
-export type ToolGroup = "calculator" | "facility" | "food" | "ltc" | "disability" | "green-shop";
+export type ToolGroup = "calculator" | "facility" | "food" | "ltc" | "disability" | "green-shop" | "child-welfare";
 
 export interface ToolCatalogEntry {
   slug: string;
   title: string;
   description: string;
   faqs: ToolFaq[];
-  /** "calculator" → 健康工具 nav dropdown (calculators/assessments/live data); "facility" → 醫療院所 nav dropdown (government facility lookups); "food" → 食品營養 nav dropdown (TFDA food nutrition/operator lookups); "ltc" → 長照機構 nav dropdown (long-term-care/elder-care lookups); "disability" → 身心障礙 nav dropdown (disability welfare/accessibility lookups); "green-shop" → 綠色商店 direct nav link (certified green shop lookups). */
+  /** "calculator" → 健康工具 nav dropdown; "facility" → 醫療院所 nav dropdown; "food" → 食品營養 nav dropdown; "ltc" → 長照機構 nav dropdown; "disability" → 身心障礙 nav dropdown; "green-shop" → 綠色商店 direct nav link; "child-welfare" → 兒少福利 nav dropdown. */
   group: ToolGroup;
 }
 
@@ -308,6 +308,26 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     description: "查詢環境部認證綠色商店。資料來源：環境部。",
     faqs: [
       { question: "什麼是環境部認證綠色商店？", answer: "綠色商店是通過環境部認證、優先採購及販售環保標章商品的商店，資料來源為環境部認證名冊。" },
+    ],
+  },
+  {
+    slug: "child-welfare-nurseries",
+    group: "child-welfare",
+    title: "全國親子館查詢",
+    description: "查詢全國親子館（托育資源中心）名冊，提供育兒資源與親子互動空間場所資訊。資料來源：衛福部社會及家庭署開放資料。",
+    faqs: [
+      { question: "什麼是親子館（托育資源中心）？", answer: "親子館為政府補助設置的免費或平價育兒資源場所，提供學齡前幼兒親子活動空間、圖書玩具借閱、育兒諮詢與親職教育課程。" },
+      { question: "資料來源是哪裡？", answer: "資料來源為衛福部社會及家庭署開放資料「全國親子館(托育資源中心)名冊」。" },
+    ],
+  },
+  {
+    slug: "child-welfare-centers",
+    group: "child-welfare",
+    title: "兒少福利中心查詢",
+    description: "查詢全台兒童及少年福利服務中心一覽表，提供兒童與青少年個案輔導、社區關懷與家庭支持服務。資料來源：衛福部社會及家庭署開放資料。",
+    faqs: [
+      { question: "兒少福利服務中心提供哪些服務？", answer: "兒少福利服務中心提供兒童與青少年心理輔導、家庭支持、課後照顧、福利諮詢及兒少權益宣導等多項社會福利服務。" },
+      { question: "資料來源是哪裡？", answer: "資料來源為衛福部社會及家庭署開放資料「兒童及少年福利服務中心一覽表」。" },
     ],
   },
 ];

@@ -40,7 +40,7 @@ interface FacilityItem {
   lat: number | null;
   lng: number | null;
   service_item: string | null;
-  extra_json: { weeklyHours?: Record<string, string[]> } | null;
+  extra_json: { weeklyHours?: Record<string, string[]>; weeklyHoursNote?: string } | null;
 }
 
 /**
@@ -233,7 +233,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                       {f.service_item}
                     </p>
                   )}
-                  {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} />}
+                  {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400">（尚未完成地理定位，暫不顯示於地圖）</p>}
                 </div>
               ))}

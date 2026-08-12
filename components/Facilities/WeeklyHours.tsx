@@ -1,24 +1,43 @@
 const DAYS = ["一", "二", "三", "四", "五", "六", "日"];
 
-/** Groups consecutive days sharing the exact same open periods, e.g. {一:[上午,下午], 二:[上午,下午], 六:[上午]} → "一至二 上午、下午｜六 上午". */
-function formatWeeklyHours(weeklyHours: Record<string, string[]>): string {
-  const groups: { days: string[]; periods: string }[] = [];
+export default function WeeklyHoursLine({
+  weeklyHours,
+  note,
+}: {
+  weeklyHours?: Record<string, string[]> | null;
+  note?: string | null;
+}) {
+  if ((!weeklyHours || Object.keys(weeklyHours).length === 0) && !note) return null;
 
-  for (const day of DAYS) {
-    const periods = (weeklyHours[day] ?? []).join("、");
-    if (!periods) continue;
-    const last = groups[groups.length - 1];
-    if (last && last.periods === periods) {
-      last.days.push(day);
-    } else {
-      groups.push({ days: [day], periods });
-    }
-  }
-
-  return groups.map((g) => `${g.days.length > 1 ? `${g.days[0]}至${g.days[g.days.length - 1]}` : g.days[0]} ${g.periods}`).join("｜");
-}
-
-export default function WeeklyHoursLine({ weeklyHours }: { weeklyHours?: Record<string, string[]> | null }) {
-  if (!weeklyHours || Object.keys(weeklyHours).length === 0) return null;
-  return <p className="mt-1 text-xs text-neutral-500">🕒 {formatWeeklyHours(weeklyHours)}</p>;
+  return (
+    <div className="mt-2 space-y-1">
+      {weeklyHours && Object.keys(weeklyHours).length > 0 && (
+        <div className="flex flex-wrap items-center gap-1 text-xs">
+          <span className="mr-1 font-medium text-neutral-500">看診時段：</span>
+          {DAYS.map((day) => {
+            const periods = weeklyHours[day] ?? [];
+            const open = periods.length > 0;
+            return (
+              <span
+                key={day}
+                title={open ? `${day}：${periods.join("、")}` : `${day}：休診`}
+                className={`inline-flex h-5 w-5 items-center justify-center rounded text-[11px] font-semibold ${
+                  open
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+                    : "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500"
+                }`}
+              >
+                {day}
+              </span>
+            );
+          })}
+        </div>
+      )}
+      {note && note !== "-" && (
+        <p className="text-xs text-amber-600 dark:text-amber-400">
+          📝 備註：{note}
+        </p>
+      )}
+    </div>
+  );
 }

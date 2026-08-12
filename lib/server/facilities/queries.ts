@@ -116,6 +116,7 @@ export const recordGeocodeFailure = async (id: number): Promise<void> =>
 export interface WeeklyHoursEntry {
   sourceId: string;
   weeklyHours: Record<string, string[]>;
+  note?: string;
 }
 
 const WEEKLY_HOURS_BATCH_SIZE = 500;
@@ -133,21 +134,16 @@ export const applyWeeklyHours = async (entries: WeeklyHoursEntry[]): Promise<{ m
     if (entries.length === 0) return { matched: 0 };
 
     await conn.query("DROP TEMPORARY TABLE IF EXISTS tmp_weekly_hours");
-    // `seq` lets the UPDATE JOIN below run in bounded slices instead of one
-    // giant JOIN across the whole table — even with idx_facility_source_id
-    // in place, a single multi-thousand-row JOIN UPDATE can still hold
-    // facilities locked for a while, and this table is under steady
-    // concurrent writes from the geocode cron.
     await conn.query(
-      "CREATE TEMPORARY TABLE tmp_weekly_hours (seq INT AUTO_INCREMENT PRIMARY KEY, source_id VARCHAR(100) NOT NULL, weekly_hours JSON NOT NULL, UNIQUE KEY uq_source_id (source_id))",
+      "CREATE TEMPORARY TABLE tmp_weekly_hours (seq INT AUTO_INCREMENT PRIMARY KEY, source_id VARCHAR(100) NOT NULL, weekly_hours JSON NOT NULL, note VARCHAR(500) NULL, UNIQUE KEY uq_source_id (source_id))",
     );
 
     for (let i = 0; i < entries.length; i += WEEKLY_HOURS_BATCH_SIZE) {
       const chunk = entries.slice(i, i + WEEKLY_HOURS_BATCH_SIZE);
-      const values = chunk.map((e) => [e.sourceId, JSON.stringify(e.weeklyHours)]);
+      const values = chunk.map((e) => [e.sourceId, JSON.stringify(e.weeklyHours), e.note || null]);
       await conn.query(
-        `INSERT INTO tmp_weekly_hours (source_id, weekly_hours) VALUES ?
-         ON DUPLICATE KEY UPDATE weekly_hours = VALUES(weekly_hours)`,
+        `INSERT INTO tmp_weekly_hours (source_id, weekly_hours, note) VALUES ?
+         ON DUPLICATE KEY UPDATE weekly_hours = VALUES(weekly_hours), note = VALUES(note)`,
         [values],
       );
     }
@@ -158,7 +154,13 @@ export const applyWeeklyHours = async (entries: WeeklyHoursEntry[]): Promise<{ m
       const [result] = await conn.query(
         `UPDATE facilities f
          JOIN tmp_weekly_hours t ON t.source_id = f.source_id AND t.seq BETWEEN ? AND ?
-         SET f.extra_json = JSON_MERGE_PATCH(COALESCE(f.extra_json, JSON_OBJECT()), JSON_OBJECT('weeklyHours', JSON_EXTRACT(t.weekly_hours, '$'))),
+         SET f.extra_json = JSON_MERGE_PATCH(
+               COALESCE(f.extra_json, JSON_OBJECT()),
+               JSON_OBJECT(
+                 'weeklyHours', JSON_EXTRACT(t.weekly_hours, '$'),
+                 'weeklyHoursNote', t.note
+               )
+             ),
              f.updated_at = ?
          WHERE f.source_key IN ('nhi_hospital', 'nhi_pharmacy')`,
         [start, start + WEEKLY_HOURS_BATCH_SIZE - 1, utcNowSql()],

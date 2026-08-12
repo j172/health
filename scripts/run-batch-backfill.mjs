@@ -130,6 +130,8 @@ const FACILITY_SOURCES = [
   { facilityType: "ltc-contracted", sourceKey: "mohw-ltc-contracted", label: "長照特約機構" },
   { facilityType: "elder-welfare", sourceKey: "mohw-elder-welfare", label: "老人福利機構" },
   { facilityType: "disability-welfare", sourceKey: "mohw-disability-welfare", label: "身障福利機構" },
+  { facilityType: "child_welfare_nursery", sourceKey: "mohw_child_welfare_nursery", label: "全國親子館" },
+  { facilityType: "child_welfare_center", sourceKey: "mohw_child_welfare_center", label: "兒少福利中心" },
   { facilityType: "health-check", sourceKey: "hpa-health-checks", label: "健檢機構" },
 ];
 
