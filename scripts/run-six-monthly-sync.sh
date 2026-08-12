@@ -78,6 +78,8 @@ COMBOS=(
   "disability_welfare mohw_disability_welfare"
   "disability_atm nfcc_accessible_atm"
   "elder_welfare mohw_elder_welfare"
+  "child_welfare_nursery mohw_child_welfare_nursery"
+  "child_welfare_center mohw_child_welfare_center"
   "hakka_community hakka_dtst20230600002"
   "green_shop moenv_green_shop"
 )

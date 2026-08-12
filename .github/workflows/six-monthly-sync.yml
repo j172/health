@@ -84,6 +84,18 @@ jobs:
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-green-shops.mjs
 
+      - name: Import MOHW child welfare nurseries (~200 centers)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-mohw-child-welfare-nurseries.mjs
+
+      - name: Import MOHW child welfare centers (~40 centers)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-mohw-child-welfare-centers.mjs
+
       - name: Close SSH tunnel
         if: always()
         run: |
