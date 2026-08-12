@@ -6,6 +6,7 @@ import { runAqiSync } from "@/lib/server/aqi/runSync";
 import { runCwaSync } from "@/lib/server/cwa/runSync";
 import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
+import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -64,4 +65,6 @@ export const registerCronJobs = (): void => {
   // server-local keeps it clear of the denser :00-ish traffic from the jobs
   // above. See docs/specs/social-icons-and-post-drafts.md section 2.3.
   cron.schedule("0 8 * * *", runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()));
+  // Weekly on Sunday at 4am — NHI updates clinic/pharmacy weekly service hours data weekly
+  cron.schedule("0 4 * * 0", runGuarded("facilities-hours-sync-cron.log", () => runFacilityHoursSync()));
 };
