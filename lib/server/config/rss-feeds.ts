@@ -208,4 +208,21 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://heho.com.tw/feed",
     sourceName: "heho",
   },
+  {
+    code: "yahoo_health",
+    name: "健康",
+    // Real RSS 2.0 feed of its own (confirmed live, Phase 8 spec section
+    // 1a) — unlike SETN/ETtoday/healthnews.com.tw/fiftyplus below, which
+    // have no RSS and are handled as special sources in runIngestion.ts.
+    url: "https://tw.news.yahoo.com/rss/health",
+    sourceName: "yahoo_health",
+    // Yahoo健康 is a syndication aggregator (frequently reprints
+    // SETN/ETtoday/etc. content under its own URLs) — never store full
+    // body, same as every other commercial media source here. Also skips
+    // the detail-page fetch entirely; the odd bare-URL <content:encoded>
+    // this feed uses for its thumbnail isn't parsed specially, so
+    // enrichItem's og:image fallback in runIngestion.ts supplies the card
+    // thumbnail instead.
+    skipDetailFetch: true,
+  },
 ];

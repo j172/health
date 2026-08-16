@@ -1,4 +1,4 @@
-import type { EnrichedRssItem, FeedFetchResult, IngestionSummary, NormalizedRssItem } from "@/types/rss";
+import type { EnrichedRssItem, FeedCode, FeedFetchResult, IngestionSummary, NormalizedRssItem } from "@/types/rss";
 import { RSS_FEEDS } from "@/lib/server/config/rss-feeds";
 import { createIngestionRun, finishIngestionRun, writeIngestionError } from "@/lib/server/logging/ingestionLogger";
 import { releaseIngestionLock, tryAcquireIngestionLock } from "@/lib/server/db/mysql";
@@ -8,6 +8,10 @@ import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { fetchMirrorMediaHealthnews } from "@/lib/server/rss/fetchMirrorMediaExternals";
 import { fetchUdnHealthNews } from "@/lib/server/rss/fetchUdnHealthNews";
 import { fetchMoenvNews } from "@/lib/server/rss/fetchMoenvNews";
+import { fetchSetnHealthNews } from "@/lib/server/rss/fetchSetnHealthNews";
+import { fetchEttodayHealthNews } from "@/lib/server/rss/fetchEttodayHealthNews";
+import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
+import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
@@ -55,6 +59,106 @@ const enrichItem = async (item: NormalizedRssItem): Promise<EnrichedRssItem> => 
     keywords: seo.keywords,
     geoSummary: seo.geoSummary,
   };
+};
+
+// ---------------------------------------------------------------------------
+// "Special sources" — non-RSS/XML sources (a JSON API, a scraped HTML
+// listing page, ...) that can't go through the RSS_FEEDS loop above, so they
+// get fetched directly and normalized into EnrichedRssItem[] by their own
+// fetcher module instead. Originally 3 near-identical ~60-line blocks
+// (Mirror Media / UDN / MOENV) copy-pasted inline here; extracted into this
+// shared helper as part of Phase 8 when 4 more (SETN/ETtoday/healthnews.com.tw/
+// fiftyplus) were added, to stop that duplication from growing further.
+// Behavior-preserving extraction — no logic changes from the original 3
+// inline blocks.
+// ---------------------------------------------------------------------------
+
+interface SpecialSourceMeta {
+  code: FeedCode;
+  name: string;
+  url: string;
+  sourceName: string;
+}
+
+interface SpecialSourceFetchResult {
+  ok: boolean;
+  httpStatus: number | null;
+  itemCount: number;
+  items: EnrichedRssItem[];
+  errorMessage: string | null;
+}
+
+interface SpecialSourceContext {
+  runId: number;
+  feedResults: FeedFetchResult[];
+  enrichedItems: EnrichedRssItem[];
+}
+
+const processSpecialSource = async (
+  meta: SpecialSourceMeta,
+  fetchFn: () => Promise<SpecialSourceFetchResult>,
+  ctx: SpecialSourceContext,
+): Promise<{ skippedUnchanged: number }> => {
+  const result = await fetchFn();
+  const feedConfig = { code: meta.code, name: meta.name, url: meta.url, sourceName: meta.sourceName };
+
+  if (!result.ok) {
+    ctx.feedResults.push({
+      feed: feedConfig,
+      ok: false,
+      httpStatus: result.httpStatus,
+      itemCount: 0,
+      errorMessage: result.errorMessage,
+    });
+    await writeIngestionError({
+      runId: ctx.runId,
+      feedCode: meta.code,
+      url: meta.url,
+      message: result.errorMessage ?? `Unknown ${meta.name} fetch error`,
+      detail: {},
+    });
+    return { skippedUnchanged: 0 };
+  }
+
+  ctx.feedResults.push({
+    feed: feedConfig,
+    ok: true,
+    httpStatus: result.httpStatus,
+    itemCount: result.itemCount,
+    errorMessage: null,
+  });
+
+  // These fetchers already return full/complete content (or a deliberate
+  // summary-only payload, per source) — check hashes and skip unchanged
+  // items, then enrich only the new/changed ones with AI SEO, same as every
+  // RSS feed item above.
+  const hashes = await getExistingPayloadHashes(result.items);
+  let skippedUnchanged = 0;
+  for (const item of result.items) {
+    if (hashes.get(itemKey(item)) === item.payloadHash) {
+      skippedUnchanged += 1;
+      continue;
+    }
+    // eslint-disable-next-line no-await-in-loop
+    const seo = await generateSeoMetadataWithAi({
+      title: item.title,
+      descriptionText: item.descriptionText,
+      detailText: item.detailText,
+      feedName: item.feedName,
+      deptName: item.deptName,
+      sourceName: item.sourceName,
+      publishedAtUtc: item.publishedAtUtc,
+    });
+    ctx.enrichedItems.push({
+      ...item,
+      metaTitle: seo.metaTitle,
+      metaDescription: seo.metaDescription,
+      keywords: seo.keywords,
+      geoSummary: seo.geoSummary,
+    });
+  }
+
+  return { skippedUnchanged };
 };
 
 export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual"): Promise<IngestionSummary> => {
@@ -146,205 +250,107 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       enrichedItems.push(enriched);
     }
 
+    const specialSourceCtx: SpecialSourceContext = { runId, feedResults, enrichedItems };
+
     // -----------------------------------------------------------------------
     // Mirror Media 健康醫療網 — JSON API (not RSS/XML; handled separately)
     // -----------------------------------------------------------------------
-    const mirrorResult = await fetchMirrorMediaHealthnews();
-    if (!mirrorResult.ok) {
-      feedResults.push({
-        feed: {
-          code: "mirrormedia_healthnews",
-          name: "鏡週刊健康醫療網",
-          url: "https://api.mirrormedia.mg/externals",
-          sourceName: "mirrormedia_healthnews",
-        },
-        ok: false,
-        httpStatus: mirrorResult.httpStatus,
-        itemCount: 0,
-        errorMessage: mirrorResult.errorMessage,
-      });
-      await writeIngestionError({
-        runId,
-        feedCode: "mirrormedia_healthnews",
+    const mirrorResult = await processSpecialSource(
+      {
+        code: "mirrormedia_healthnews",
+        name: "鏡週刊健康醫療網",
         url: "https://api.mirrormedia.mg/externals",
-        message: mirrorResult.errorMessage ?? "Unknown Mirror Media fetch error",
-        detail: {},
-      });
-    } else {
-      feedResults.push({
-        feed: {
-          code: "mirrormedia_healthnews",
-          name: "鏡週刊健康醫療網",
-          url: "https://api.mirrormedia.mg/externals",
-          sourceName: "mirrormedia_healthnews",
-        },
-        ok: true,
-        httpStatus: mirrorResult.httpStatus,
-        itemCount: mirrorResult.itemCount,
-        errorMessage: null,
-      });
-
-      // Mirror Media API already returns full content — check hashes and skip
-      // unchanged items, then enrich only the new/changed ones with AI SEO.
-      const mirrorHashes = await getExistingPayloadHashes(mirrorResult.items);
-      for (const item of mirrorResult.items) {
-        if (mirrorHashes.get(itemKey(item)) === item.payloadHash) {
-          skippedUnchanged += 1;
-          continue;
-        }
-        // eslint-disable-next-line no-await-in-loop
-        const seo = await generateSeoMetadataWithAi({
-          title: item.title,
-          descriptionText: item.descriptionText,
-          detailText: item.detailText,
-          feedName: item.feedName,
-          deptName: item.deptName,
-          sourceName: item.sourceName,
-          publishedAtUtc: item.publishedAtUtc,
-        });
-        enrichedItems.push({
-          ...item,
-          metaTitle: seo.metaTitle,
-          metaDescription: seo.metaDescription,
-          keywords: seo.keywords,
-          geoSummary: seo.geoSummary,
-        });
-      }
-    }
+        sourceName: "mirrormedia_healthnews",
+      },
+      fetchMirrorMediaHealthnews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += mirrorResult.skippedUnchanged;
 
     // -----------------------------------------------------------------------
     // 元氣網（health.udn.com/health）— HTML ranking page (no RSS feed of its
     // own), handled separately just like Mirror Media above.
     // -----------------------------------------------------------------------
-    const udnResult = await fetchUdnHealthNews();
-    if (!udnResult.ok) {
-      feedResults.push({
-        feed: {
-          code: "udn_health",
-          name: "元氣網（聯合報健康）",
-          url: "https://health.udn.com/health/rank/newest/1005",
-          sourceName: "udn_health",
-        },
-        ok: false,
-        httpStatus: udnResult.httpStatus,
-        itemCount: 0,
-        errorMessage: udnResult.errorMessage,
-      });
-      await writeIngestionError({
-        runId,
-        feedCode: "udn_health",
+    const udnResult = await processSpecialSource(
+      {
+        code: "udn_health",
+        name: "元氣網（聯合報健康）",
         url: "https://health.udn.com/health/rank/newest/1005",
-        message: udnResult.errorMessage ?? "Unknown UDN health fetch error",
-        detail: {},
-      });
-    } else {
-      feedResults.push({
-        feed: {
-          code: "udn_health",
-          name: "元氣網（聯合報健康）",
-          url: "https://health.udn.com/health/rank/newest/1005",
-          sourceName: "udn_health",
-        },
-        ok: true,
-        httpStatus: udnResult.httpStatus,
-        itemCount: udnResult.itemCount,
-        errorMessage: null,
-      });
-
-      // The rank page already includes a real summary paragraph — check hashes
-      // and skip unchanged items, then enrich only the new/changed ones with AI SEO.
-      const udnHashes = await getExistingPayloadHashes(udnResult.items);
-      for (const item of udnResult.items) {
-        if (udnHashes.get(itemKey(item)) === item.payloadHash) {
-          skippedUnchanged += 1;
-          continue;
-        }
-        // eslint-disable-next-line no-await-in-loop
-        const seo = await generateSeoMetadataWithAi({
-          title: item.title,
-          descriptionText: item.descriptionText,
-          detailText: item.detailText,
-          feedName: item.feedName,
-          deptName: item.deptName,
-          sourceName: item.sourceName,
-          publishedAtUtc: item.publishedAtUtc,
-        });
-        enrichedItems.push({
-          ...item,
-          metaTitle: seo.metaTitle,
-          metaDescription: seo.metaDescription,
-          keywords: seo.keywords,
-          geoSummary: seo.geoSummary,
-        });
-      }
-    }
+        sourceName: "udn_health",
+      },
+      fetchUdnHealthNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += udnResult.skippedUnchanged;
 
     // -----------------------------------------------------------------------
     // 環境部（MOENV）新聞專區 — JSON open-data API (not RSS/XML; handled
     // separately just like Mirror Media and UDN above).
     // -----------------------------------------------------------------------
-    const moenvResult = await fetchMoenvNews();
-    if (!moenvResult.ok) {
-      feedResults.push({
-        feed: {
-          code: "moenv_mnews",
-          name: "環境部",
-          url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
-          sourceName: "moenv",
-        },
-        ok: false,
-        httpStatus: moenvResult.httpStatus,
-        itemCount: 0,
-        errorMessage: moenvResult.errorMessage,
-      });
-      await writeIngestionError({
-        runId,
-        feedCode: "moenv_mnews",
+    const moenvResult = await processSpecialSource(
+      {
+        code: "moenv_mnews",
+        name: "環境部",
         url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
-        message: moenvResult.errorMessage ?? "Unknown MOENV news fetch error",
-        detail: {},
-      });
-    } else {
-      feedResults.push({
-        feed: {
-          code: "moenv_mnews",
-          name: "環境部",
-          url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
-          sourceName: "moenv",
-        },
-        ok: true,
-        httpStatus: moenvResult.httpStatus,
-        itemCount: moenvResult.itemCount,
-        errorMessage: null,
-      });
+        sourceName: "moenv",
+      },
+      fetchMoenvNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += moenvResult.skippedUnchanged;
 
-      // The API already returns full article content — check hashes and skip
-      // unchanged items, then enrich only the new/changed ones with AI SEO.
-      const moenvHashes = await getExistingPayloadHashes(moenvResult.items);
-      for (const item of moenvResult.items) {
-        if (moenvHashes.get(itemKey(item)) === item.payloadHash) {
-          skippedUnchanged += 1;
-          continue;
-        }
-        // eslint-disable-next-line no-await-in-loop
-        const seo = await generateSeoMetadataWithAi({
-          title: item.title,
-          descriptionText: item.descriptionText,
-          detailText: item.detailText,
-          feedName: item.feedName,
-          deptName: item.deptName,
-          sourceName: item.sourceName,
-          publishedAtUtc: item.publishedAtUtc,
-        });
-        enrichedItems.push({
-          ...item,
-          metaTitle: seo.metaTitle,
-          metaDescription: seo.metaDescription,
-          keywords: seo.keywords,
-          geoSummary: seo.geoSummary,
-        });
-      }
-    }
+    // -----------------------------------------------------------------------
+    // 祝你健康（SETN）/ ETtoday健康雲 / 健康醫療網 / 50+（橘世代）— Phase 8:
+    // 4 more HTML-scrape special sources, none of which have an RSS feed of
+    // their own. Same treatment as Mirror Media/UDN/MOENV above.
+    // -----------------------------------------------------------------------
+    const setnResult = await processSpecialSource(
+      {
+        code: "setn_health",
+        name: "祝你健康",
+        url: "https://health.setn.com/",
+        sourceName: "setn",
+      },
+      fetchSetnHealthNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += setnResult.skippedUnchanged;
+
+    const ettodayResult = await processSpecialSource(
+      {
+        code: "ettoday_health",
+        name: "ETtoday健康雲",
+        url: "https://health.ettoday.net/",
+        sourceName: "ettoday",
+      },
+      fetchEttodayHealthNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += ettodayResult.skippedUnchanged;
+
+    const healthnewsResult = await processSpecialSource(
+      {
+        code: "healthnews_tw",
+        name: "健康醫療網",
+        url: "https://www.healthnews.com.tw/",
+        sourceName: "healthnews",
+      },
+      fetchHealthnewsNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += healthnewsResult.skippedUnchanged;
+
+    const fiftyplusResult = await processSpecialSource(
+      {
+        code: "fiftyplus_health",
+        name: "50+（橘世代）",
+        url: "https://www.fiftyplus.com.tw/category/health",
+        sourceName: "fiftyplus",
+      },
+      fetchFiftyplusHealthNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += fiftyplusResult.skippedUnchanged;
 
     const persisted = await persistItems(enrichedItems);
     persisted.unchanged += skippedUnchanged;
