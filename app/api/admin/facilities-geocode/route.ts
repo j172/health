@@ -11,8 +11,17 @@ export const maxDuration = 60;
 // response cycle (shared hosting also caps how long a single PHP-proxied
 // request may run) — call this repeatedly (e.g. from a cron or manually)
 // until `remaining` reaches 0, same pattern as /api/admin/news-images.
-const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 30;
+//
+// Cut from 20/30 to 10/10 on 2026-08-17: a batch where most addresses need
+// geocodeAddress()'s full fallback cascade (worst case now 3 throttled
+// OpenCage+Nominatim round trips per address, see geocode.ts) was blowing
+// past the 60s maxDuration above and dying mid-batch with a 500/502 —
+// happening in practice once Google (removed) and OpenCage's daily quota
+// were both exhausted, leaving every attempt to run the full
+// Nominatim-throttled gauntlet. 10 keeps worst-case batch time comfortably
+// under the 60s ceiling even when every address needs the full cascade.
+const DEFAULT_LIMIT = 10;
+const MAX_LIMIT = 10;
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const unauthorized = requireAdminSecret(request);
