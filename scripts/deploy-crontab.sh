@@ -9,6 +9,11 @@
 #   SSH_HOST, SSH_PORT, SSH_USER   — connection details
 #   SSH_PRIVATE_KEY                — PEM-format private key content
 #   OPS_KEY                        — substituted for __OPS_KEY__
+# Optional env vars:
+#   HEALTHCHECKS_URL                — substituted for __HEALTHCHECKS_URL__;
+#                                      left empty (harmless curl no-op in the
+#                                      cron line) if unset, so this dead-man's
+#                                      -switch ping is opt-in, not required.
 set -euo pipefail
 
 : "${SSH_HOST:?Missing SSH_HOST}"
@@ -16,6 +21,7 @@ set -euo pipefail
 : "${SSH_USER:?Missing SSH_USER}"
 : "${SSH_PRIVATE_KEY:?Missing SSH_PRIVATE_KEY}"
 : "${OPS_KEY:?Missing OPS_KEY}"
+: "${HEALTHCHECKS_URL:=}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CRONTAB_SOURCE="$SCRIPT_DIR/health-app.crontab"
@@ -30,6 +36,7 @@ chmod 600 "$KEY_FILE"
 
 sed \
   -e "s/__OPS_KEY__/${OPS_KEY}/g" \
+  -e "s#__HEALTHCHECKS_URL__#${HEALTHCHECKS_URL}#g" \
   "$CRONTAB_SOURCE" > "$BLOCK_FILE"
 
 # ssh and scp take the port flag under different letters (-p vs -P) — sharing

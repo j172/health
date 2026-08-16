@@ -12,8 +12,9 @@
 # in-process since its entire purpose is reviving this same process after
 # the host's CloudLinux LVE kills it.
 #
-# __OPS_KEY__ is a placeholder substituted with the real secret value at
-# deploy time — this file itself never contains a live secret.
+# __OPS_KEY__ and __HEALTHCHECKS_URL__ are placeholders substituted with the
+# real secret values at deploy time — this file itself never contains a live
+# secret.
 # BEGIN health-app managed cron
 # /__ops/pm2-ensure-running is PHP-layer, not a Next.js route, so unlike the
 # app's own sync jobs (now in-process node-cron) it can't be reached via
@@ -25,4 +26,18 @@
 # pm2-ensure-running handler's own comments); this is the self-heal trigger
 # that used to be missing, so 502s from that no longer wait for a human.
 */5 * * * * curl -s --max-time 90 --insecure --resolve "health.j172.tw:443:103.21.221.12" "https://health.j172.tw/__ops/pm2-ensure-running?key=__OPS_KEY__&cb=$(date +\%s)" >> /home/tw123457/health_app/logs/pm2-watchdog-cron.log 2>&1
+#
+# Independent dead-man's-switch liveness ping (healthchecks.io) — added
+# 2026-08-16 after a 502 outage went unnoticed for hours because nothing
+# external was watching. Deliberately does NOT read pm2-ensure-running's own
+# verdict above: that endpoint can go silent by omission (PHP itself
+# unreachable, this whole cron entry lost from a bad crontab sync, the
+# account fully wedged like the 2026-08-10 escalation) in ways it can never
+# self-report. Instead this does its own real end-to-end page fetch and only
+# pings healthchecks.io on genuine success, so "site broken" and "nothing
+# checked at all" both surface the same way to healthchecks: silence past the
+# expected window. __HEALTHCHECKS_URL__ is substituted empty (harmless
+# curl no-op) when HEALTHCHECKS_URL isn't set in CI secrets — opt-in, not
+# required.
+*/5 * * * * curl -fsS --max-time 15 --insecure --resolve "health.j172.tw:443:103.21.221.12" "https://health.j172.tw/news" >/dev/null 2>&1 && curl -fsS --max-time 10 "__HEALTHCHECKS_URL__" >> /home/tw123457/health_app/logs/healthchecks-ping-cron.log 2>&1
 # END health-app managed cron

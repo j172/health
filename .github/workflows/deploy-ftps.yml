@@ -56,6 +56,7 @@ jobs:
           OPS_KEY_SECRET: ${{ secrets.OPS_KEY }}
           GOOGLE_MAPS_API_KEY_SECRET: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           OPENCAGE_API_KEY_SECRET: ${{ secrets.OPENCAGE_API_KEY }}
+          NTFY_TOPIC_SECRET: ${{ secrets.NTFY_TOPIC }}
         run: |
           set -euo pipefail
           trap 'rm -f .pixabay.env' EXIT
@@ -73,6 +74,7 @@ jobs:
           OPS_KEY_CLEAN="$(clean "${OPS_KEY_SECRET:-}")"
           GOOGLE_MAPS_API_KEY_CLEAN="$(clean "${GOOGLE_MAPS_API_KEY_SECRET:-}")"
           OPENCAGE_API_KEY_CLEAN="$(clean "${OPENCAGE_API_KEY_SECRET:-}")"
+          NTFY_TOPIC_CLEAN="$(clean "${NTFY_TOPIC_SECRET:-}")"
 
           if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
             echo "Missing one of required deployment values: FTP_SERVER / FTP_USERNAME / FTP_PASSWORD / PIXABAY_API_KEY"
@@ -94,6 +96,7 @@ jobs:
             "OPS_KEY:$OPS_KEY_CLEAN"
             "GOOGLE_MAPS_API_KEY:$GOOGLE_MAPS_API_KEY_CLEAN"
             "OPENCAGE_API_KEY:$OPENCAGE_API_KEY_CLEAN"
+            "NTFY_TOPIC:$NTFY_TOPIC_CLEAN"
           )
           for item in "${PIXABAY_ENV_ITEMS[@]}"; do
             name="${item%%:*}"
@@ -319,6 +322,7 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           OPS_KEY: ${{ secrets.OPS_KEY }}
+          HEALTHCHECKS_URL: ${{ secrets.HEALTHCHECKS_URL }}
         run: |
           set -euo pipefail
           if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then

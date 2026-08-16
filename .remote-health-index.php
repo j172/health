@@ -38,6 +38,14 @@ $readEnvVar = static function (string $name): string {
 };
 
 $opsKey = $readEnvVar('OPS_KEY');
+// Push channel for the apply-prebuilt consecutive-failure alert below (see
+// $failAlertThreshold in $buildPrebuiltCommand) — a free ntfy.sh topic, not
+// an authenticated channel, so its unguessability *is* its access control;
+// treat it like a secret. Empty when NTFY_TOPIC isn't set in .env, which
+// silently disables the alert (no crash, no notification) rather than
+// erroring — this endpoint's core self-heal job must never depend on
+// notification config being present.
+$ntfyUrl = ($ntfyTopic = $readEnvVar('NTFY_TOPIC')) !== '' ? 'https://ntfy.sh/' . rawurlencode($ntfyTopic) : '';
 if (str_starts_with($path, '/__ops/')) {
     // An empty $opsKey (e.g. OPS_KEY missing from .env) must never grant
     // access — otherwise an empty ?key= would satisfy '' !== '' === false.
@@ -135,10 +143,21 @@ if (str_starts_with($path, '/__ops/')) {
         }
     };
 
-    $buildPrebuiltCommand = static function (bool $force) use ($appDir, $nodeBin, $pm2Bin): string {
+    $buildPrebuiltCommand = static function (bool $force) use ($appDir, $nodeBin, $pm2Bin, $ntfyUrl): string {
         $startMarker = $force ? '[START-FORCE-V4]' : '[START-V4]';
         $doneMarker = $force ? '[DONE-FORCE-V4]' : '[DONE-V4]';
         $failMarker = $force ? '[FAIL-FORCE-V4]' : '[FAIL-V4]';
+        // 2026-08-16: apply-prebuilt-force used to fail identically every 5
+        // minutes (the pm2-ensure-running cron) with nobody told — a stuck
+        // .next3_stage left it silently failing for hours until a human
+        // happened to check the site. .apply-prebuilt-fail-count persists
+        // across runs (reset to 0 on success, incremented on failure); once
+        // it's a multiple of this threshold we push an ntfy.sh alert instead
+        // of just logging. 3 fails * the 5-min cron interval = ~15 min
+        // before the first alert — long enough to skip a single transient
+        // blip, short enough that "found out via a human visiting the site"
+        // should never happen again.
+        $failAlertThreshold = 3;
         $script = "cd {$appDir} "
             . "&& SWAPPED=0; "
             . "{ "
@@ -149,15 +168,28 @@ if (str_starts_with($path, '/__ops/')) {
             . "echo \$\$ > .apply-prebuilt.pid; "
             . "echo '{$startMarker} '$(date) > .apply-prebuilt.log; "
             . "echo '[PWD] '$(pwd) >> .apply-prebuilt.log; "
-            . "rm -rf .next3_stage .next3_failed >> .apply-prebuilt.log 2>&1 "
-            . "&& mkdir -p .next3_stage >> .apply-prebuilt.log 2>&1 "
-            . "&& tar --no-same-owner --no-same-permissions --delay-directory-restore --warning=no-unknown-keyword -xzf .prebuilt-next3.tgz -C .next3_stage >> .apply-prebuilt.log 2>&1 "
-            . "&& test -s .next3_stage/.next3/BUILD_ID "
-            . "&& test -d .next3_stage/.next3/server "
-            . "&& test -d .next3_stage/.next3/static/chunks "
-            . "&& test -s .next3_stage/.next3/routes-manifest.json "
-            . "&& find .next3_stage/.next3/static/chunks -type f -name '*.js' -print -quit | grep -q . "
-            . "&& chmod -R u+rwX .next3_stage/.next3 >> .apply-prebuilt.log 2>&1 "
+            // Stage dir is unique per run (own PID suffix), and cleanup of
+            // *previous* runs' leftovers is best-effort / non-blocking —
+            // deliberately NOT part of the && chain. 2026-08-16: a
+            // CloudLinux resource-throttle kill interrupted an `rm -rf
+            // .next3_stage` mid-flight, leaving every file "Permission
+            // denied" to a plain rm. Back when this used one fixed-name
+            // directory, that single stuck leftover made every subsequent
+            // 5-minute self-heal tick fail on the exact same `rm -rf` —
+            // forever, silently, with nobody notified — until a human
+            // eventually noticed the site was down and a hosting-support
+            // ticket got it manually deleted. A stuck leftover now just sits
+            // there inert; it can never block a new run from proceeding.
+            . "STAGE_DIR=.next3_stage.\$\$; "
+            . "{ chmod -R u+rwX .next3_stage* .next3_failed; rm -rf .next3_stage* .next3_failed; } >> .apply-prebuilt.log 2>&1; "
+            . "mkdir -p \$STAGE_DIR >> .apply-prebuilt.log 2>&1 "
+            . "&& tar --no-same-owner --no-same-permissions --delay-directory-restore --warning=no-unknown-keyword -xzf .prebuilt-next3.tgz -C \$STAGE_DIR >> .apply-prebuilt.log 2>&1 "
+            . "&& test -s \$STAGE_DIR/.next3/BUILD_ID "
+            . "&& test -d \$STAGE_DIR/.next3/server "
+            . "&& test -d \$STAGE_DIR/.next3/static/chunks "
+            . "&& test -s \$STAGE_DIR/.next3/routes-manifest.json "
+            . "&& find \$STAGE_DIR/.next3/static/chunks -type f -name '*.js' -print -quit | grep -q . "
+            . "&& chmod -R u+rwX \$STAGE_DIR/.next3 >> .apply-prebuilt.log 2>&1 "
             . "&& mkdir -p public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
             . "&& chmod u+rwx public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
             // Best-effort: extracts INTO the existing public/ dir (no wipe first), so
@@ -178,8 +210,8 @@ if (str_starts_with($path, '/__ops/')) {
             . "fi; } "
             . "&& rm -rf .next3_previous >> .apply-prebuilt.log 2>&1 "
             . "&& { if [ -d .next3 ]; then mv .next3 .next3_previous; fi; } "
-            . "&& mv .next3_stage/.next3 .next3 >> .apply-prebuilt.log 2>&1 "
-            . "&& rmdir .next3_stage >> .apply-prebuilt.log 2>&1 "
+            . "&& mv \$STAGE_DIR/.next3 .next3 >> .apply-prebuilt.log 2>&1 "
+            . "&& rmdir \$STAGE_DIR >> .apply-prebuilt.log 2>&1 "
             . "&& SWAPPED=1 "
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
             . "&& ({$pm2Bin} delete health-web >> .apply-prebuilt.log 2>&1 || true) "
@@ -195,10 +227,23 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
             . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
             . "&& curl -fsS --max-time 10 \"http://127.0.0.1:3000/_next/static/\$STATIC_REL\" | head -c 1 | grep -vq '<' "
+            . "&& { PREV_FAILS=$(cat .apply-prebuilt-fail-count 2>/dev/null || echo 0); rm -f .apply-prebuilt-fail-count; "
+            . (
+                $ntfyUrl !== ''
+                    ? "if [ \"\$PREV_FAILS\" -ge {$failAlertThreshold} ]; then curl -fsS --max-time 8 -H 'Title: health.j172.tw self-heal recovered' -d \"apply-prebuilt-force succeeded after \$PREV_FAILS consecutive failure(s)\" " . escapeshellarg($ntfyUrl) . " >/dev/null 2>&1 || true; fi; "
+                    : ''
+            )
+            . "} "
             . "&& echo '{$doneMarker} '$(date) >> .apply-prebuilt.log; "
             . "} || { "
             . "echo '[ROLLBACK] apply or health probe failed' >> .apply-prebuilt.log; "
             . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; {$pm2Bin} restart health-web >> .apply-prebuilt.log 2>&1 || true; fi; "
+            . "FAILS=$(( $(cat .apply-prebuilt-fail-count 2>/dev/null || echo 0) + 1 )); echo \"\$FAILS\" > .apply-prebuilt-fail-count; "
+            . (
+                $ntfyUrl !== ''
+                    ? "if [ $((FAILS % {$failAlertThreshold})) -eq 0 ]; then curl -fsS --max-time 8 -H 'Title: health.j172.tw self-heal FAILING' -H 'Priority: urgent' -d \"apply-prebuilt-force has failed \$FAILS time(s) in a row. https://health.j172.tw/__ops/apply-prebuilt-status?key=...\" " . escapeshellarg($ntfyUrl) . " >/dev/null 2>&1 || true; fi; "
+                    : ''
+            )
             . "echo '{$failMarker} '$(date) >> .apply-prebuilt.log; "
             . "}; "
             . "rm -f .apply-prebuilt.pid";
