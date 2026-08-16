@@ -30,7 +30,12 @@ export type FeedCode =
   | "heho"
   | "mirrormedia_healthnews"
   | "udn_health"
-  | "moenv_mnews";
+  | "moenv_mnews"
+  | "yahoo_health"
+  | "setn_health"
+  | "ettoday_health"
+  | "healthnews_tw"
+  | "fiftyplus_health";
 
 export interface FeedConfig {
   code: FeedCode;

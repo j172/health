@@ -45,6 +45,11 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "esg_gvm", label: "ESG遠見" },
       { sourceName: "esg_businesstoday", label: "ESG今周刊" },
       { sourceName: "ubrand_udn", label: "倡議家" },
+      { sourceName: "setn", label: "祝你健康" },
+      { sourceName: "ettoday", label: "ETtoday健康雲" },
+      { sourceName: "healthnews", label: "健康醫療網" },
+      { sourceName: "fiftyplus", label: "50+（橘世代）" },
+      { sourceName: "yahoo_health", label: "Yahoo奇摩新聞健康" },
     ],
   },
 ];
