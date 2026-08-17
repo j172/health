@@ -253,7 +253,7 @@ export default function SiteNav() {
       </div>
 
       {/* Modal Search */}
-      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen ? <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} /> : null}
     </>
   );
 }
