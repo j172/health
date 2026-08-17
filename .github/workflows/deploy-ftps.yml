@@ -381,18 +381,11 @@ jobs:
           echo "=== clear Pixabay cache ==="
           ssh_admin '{"clearCache":true}' | jq .
 
-          # External OG: HTML on GHA runner (clean egress); attach via SSH curl.
-          # Shared-host IP is 403'd by ltn.com.tw article pages.
-          echo "=== External OG backfill (runner egress + SSH attach) ==="
-          NEWS_IMAGES_TRANSPORT=ssh \
-            SSH_KEY_FILE="$KEY_FILE" \
-            SSH_HOST="$SSH_HOST" \
-            SSH_PORT="$SSH_PORT" \
-            SSH_USER="$SSH_USER" \
-            RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
-            OG_BACKFILL_LIMIT=20 \
-            OG_BACKFILL_ROUNDS=12 \
-            node scripts/gha-og-external-backfill.mjs
+          # External OG backfill used to run here too (runner egress + SSH
+          # attach) but is now independently scheduled every 30 min — see
+          # .github/workflows/news-og-backfill.yml and
+          # docs/specs/news-card-image-freshness-scheduling.md — so it isn't
+          # gated on deploy cadence and doesn't double-run alongside it here.
 
           echo "=== Pixabay backfill (remote loopback) ==="
           TOTAL_FAILED=0

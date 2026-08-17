@@ -7,6 +7,7 @@ import { runCwaSync } from "@/lib/server/cwa/runSync";
 import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
+import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -67,4 +68,11 @@ export const registerCronJobs = (): void => {
   cron.schedule("0 8 * * *", runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()));
   // Weekly on Sunday at 4am — NHI updates clinic/pharmacy weekly service hours data weekly
   cron.schedule("0 4 * * 0", runGuarded("facilities-hours-sync-cron.log", () => runFacilityHoursSync()));
+  // Every 10 minutes — decoupled from rss-sync (see
+  // docs/specs/news-card-image-freshness-scheduling.md) so Pixabay
+  // assignment cadence isn't limited by rss-sync's own overlap guard.
+  // assignMissingNewsCardImages() already takes out its own MySQL GET_LOCK
+  // (news_card_image_assignment_lock), so this is safe to run alongside any
+  // other trigger of the same function without double-work.
+  cron.schedule("*/10 * * * *", runGuarded("news-card-images-cron.log", () => assignMissingNewsCardImages(15)));
 };

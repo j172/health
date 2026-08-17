@@ -14,7 +14,6 @@ import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
-import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
 import type { NewsAsset } from "@/types/rss";
@@ -354,21 +353,6 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
 
     const persisted = await persistItems(enrichedItems);
     persisted.unchanged += skippedUnchanged;
-    try {
-      // Raised from 3: at 3/run (every 30 min via crontab) the ~2,244-article
-      // backlog would take ~15 days to clear even before today's MAX_API_PAGES
-      // and stuck-article fixes improved the per-attempt success rate. Pixabay
-      // search+download is the only part of this that takes real time, so 10
-      // still comfortably fits inside the cron's --max-time 280 budget.
-      await assignMissingNewsCardImages(10);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown card image assignment error";
-      await writeIngestionError({
-        runId,
-        message: `News persisted, but automatic card image assignment failed: ${message}`,
-        detail: { stage: "pixabay-card-images" },
-      });
-    }
     const ended = new Date();
     const summary: IngestionSummary = {
       trigger,
