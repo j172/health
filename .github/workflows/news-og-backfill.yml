@@ -1,0 +1,67 @@
+name: News OG image backfill
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Matches rss-sync cadence (docs/specs/in-app-cron-scheduler.md) so real
+    # og:image backfill runs independently of deploy cadence — previously
+    # this only ran as a step inside deploy-ftps.yml, i.e. only at deploy
+    # time. See docs/specs/news-card-image-freshness-scheduling.md.
+    - cron: "*/30 * * * *"
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # External OG: HTML fetched on the GHA runner (clean egress) since the
+      # shared-host IP is 403'd by some publishers (e.g. ltn.com.tw); the
+      # extracted image URL is then attached via SSH curl against the app's
+      # own loopback — see scripts/gha-og-external-backfill.mjs header.
+      - name: External OG backfill (runner egress + SSH attach)
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
+
+          # HawkHost disables TCP forwarding (AllowTcpForwarding no) —
+          # confirmed live 2026-08-03: `ssh -L` fails with "administratively
+          # prohibited". Admin API calls run as remote curl on the app host
+          # loopback instead.
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          NEWS_IMAGES_TRANSPORT=ssh \
+            SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
+            OG_BACKFILL_LIMIT=20 \
+            OG_BACKFILL_ROUNDS=12 \
+            node scripts/gha-og-external-backfill.mjs
