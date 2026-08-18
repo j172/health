@@ -190,8 +190,22 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& test -s \$STAGE_DIR/.next3/routes-manifest.json "
             . "&& find \$STAGE_DIR/.next3/static/chunks -type f -name '*.js' -print -quit | grep -q . "
             . "&& chmod -R u+rwX \$STAGE_DIR/.next3 >> .apply-prebuilt.log 2>&1 "
-            . "&& mkdir -p public/images/news/pixabay public/images/news/pexels public/images/news/unsplash >> .apply-prebuilt.log 2>&1 "
-            . "&& chmod u+rwx public/images/news/pixabay public/images/news/pexels public/images/news/unsplash >> .apply-prebuilt.log 2>&1 "
+            . "&& mkdir -p public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
+            . "&& chmod u+rwx public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
+            // Best-effort, deliberately NOT part of the required && chain (unlike
+            // the pixabay step above): confirmed live 2026-08-18 that this host's
+            // public/images/news/ directory permissions let this process no-op
+            // "mkdir -p" an already-existing subdir (pixabay) but refuse to create
+            // a genuinely new one ("Permission denied") — so a hard requirement
+            // here would abort every deploy until a human fixes host permissions
+            // out-of-band. The `|| true` swallows that failure; if it does fail,
+            // Pexels/Unsplash images simply won't have anywhere to land until the
+            // in-app Node process (a different user context — see
+            // lib/server/pexels/download.ts, lib/server/unsplash/download.ts,
+            // both of which already do their own `mkdir(..., { recursive: true })`
+            // before writing) creates these directories itself on first use.
+            . "&& { mkdir -p public/images/news/pexels public/images/news/unsplash "
+            . "&& chmod u+rwx public/images/news/pexels public/images/news/unsplash || true; } >> .apply-prebuilt.log 2>&1 "
             // Best-effort: extracts INTO the existing public/ dir (no wipe first), so
             // runtime-generated subdirs like images/news/pixabay, images/news/pexels,
             // images/news/unsplash, and images/news/articles are left untouched — only
