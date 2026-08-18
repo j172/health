@@ -66,7 +66,11 @@ export const downloadUnsplashImage = async (image: UnsplashImage): Promise<Downl
   const imageUrl = image.urls.full || image.urls.regular;
   const response = await httpRequest(imageUrl, {
     timeoutMs: DOWNLOAD_TIMEOUT_MS,
-    headers: { Accept: "image/avif,image/webp,image/png,image/jpeg" },
+    // See the matching comment in lib/server/pexels/download.ts — avif
+    // dropped from this Accept header because it isn't in
+    // MIME_EXTENSIONS/hasExpectedSignature below and Unsplash's CDN, like
+    // Pexels', will actually serve it if offered.
+    headers: { Accept: "image/webp,image/png,image/jpeg" },
   });
 
   if (response.status === 429) {

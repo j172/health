@@ -45,7 +45,14 @@ export const downloadPexelsImage = async (image: PexelsImage): Promise<Downloade
   const imageUrl = image.src.large2x || image.src.large || image.src.original;
   const response = await httpRequest(imageUrl, {
     timeoutMs: DOWNLOAD_TIMEOUT_MS,
-    headers: { Accept: "image/avif,image/webp,image/png,image/jpeg" },
+    // No "image/avif" here (unlike Pixabay's copy of this header) — Pexels'
+    // CDN actually honors the preference and serves avif, which
+    // MIME_EXTENSIONS/hasExpectedSignature below don't recognize, so every
+    // candidate was failing "unsupported content type" (confirmed live
+    // 2026-08-18). Pixabay never serves avif in practice so it never hit
+    // this; Pexels does, so it's excluded here rather than adding avif
+    // signature support for a format we don't otherwise need.
+    headers: { Accept: "image/webp,image/png,image/jpeg" },
   });
 
   if (response.status === 429) {
