@@ -48,6 +48,10 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_USERNAME || 'j172@j172.tw' }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          PEXELS_API_KEY_SECRET: ${{ secrets.PEXELS_API_KEY }}
+          UNSPLASH_ACCESS_KEY_SECRET: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          UNSPLASH_SECRET_KEY_SECRET: ${{ secrets.UNSPLASH_SECRET_KEY }}
+          UNSPLASH_APPLICATION_ID_SECRET: ${{ secrets.UNSPLASH_APPLICATION_ID }}
           MYSQL_PASSWORD_SECRET: ${{ secrets.MYSQL_PASSWORD }}
           CLOUDFLARE_ACCOUNT_ID_SECRET: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN_SECRET: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -66,6 +70,10 @@ jobs:
           FTP_SERVER_CLEAN="$(clean "$FTP_SERVER" | xargs)"
           FTP_USERNAME_CLEAN="$(clean "$FTP_USERNAME" | xargs)"
           FTP_PASSWORD_CLEAN="$(clean "$FTP_PASSWORD")"
+          PEXELS_API_KEY_CLEAN="$(clean "${PEXELS_API_KEY_SECRET:-}")"
+          UNSPLASH_ACCESS_KEY_CLEAN="$(clean "${UNSPLASH_ACCESS_KEY_SECRET:-}")"
+          UNSPLASH_SECRET_KEY_CLEAN="$(clean "${UNSPLASH_SECRET_KEY_SECRET:-}")"
+          UNSPLASH_APPLICATION_ID_CLEAN="$(clean "${UNSPLASH_APPLICATION_ID_SECRET:-}")"
           MYSQL_PASSWORD_CLEAN="$(clean "${MYSQL_PASSWORD_SECRET:-}")"
           CLOUDFLARE_ACCOUNT_ID_CLEAN="$(clean "${CLOUDFLARE_ACCOUNT_ID_SECRET:-}")"
           CLOUDFLARE_API_TOKEN_CLEAN="$(clean "${CLOUDFLARE_API_TOKEN_SECRET:-}")"
@@ -88,6 +96,10 @@ jobs:
           # when debugging a deploy). Split only on the first ":" so a value that
           # itself contains a colon is preserved intact.
           PIXABAY_ENV_ITEMS=(
+            "PEXELS_API_KEY:$PEXELS_API_KEY_CLEAN"
+            "UNSPLASH_ACCESS_KEY:$UNSPLASH_ACCESS_KEY_CLEAN"
+            "UNSPLASH_SECRET_KEY:$UNSPLASH_SECRET_KEY_CLEAN"
+            "UNSPLASH_APPLICATION_ID:$UNSPLASH_APPLICATION_ID_CLEAN"
             "MYSQL_PASSWORD:$MYSQL_PASSWORD_CLEAN"
             "CLOUDFLARE_ACCOUNT_ID:$CLOUDFLARE_ACCOUNT_ID_CLEAN"
             "CLOUDFLARE_API_TOKEN:$CLOUDFLARE_API_TOKEN_CLEAN"
