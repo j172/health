@@ -1,4 +1,4 @@
-export type EarthquakeSource = "usgs" | "emsc" | "hko";
+export type EarthquakeSource = "usgs" | "emsc" | "hko" | "cwa";
 
 export interface IncomingEarthquake {
   source: EarthquakeSource;

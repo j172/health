@@ -1,6 +1,6 @@
 import { getTopViewedNews, listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
-import { getRecentSignificantEarthquakes } from "@/lib/server/earthquakes/queries";
+import { getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
 import SiteNav from "@/components/News/SiteNav";
 import SiteFooter from "@/components/News/SiteFooter";
 import NewsCard from "@/components/News/NewsCard";
@@ -48,7 +48,7 @@ export default async function StabloNewsLayout({
   // Fetch Weather Warnings, Earthquakes & Trending News for Sidebar Card Widgets
   const [weatherWarnings, earthquakes, topViewedNews] = await Promise.all([
     listActiveWeatherWarnings(3),
-    getRecentSignificantEarthquakes(6.0, 72, 5),
+    getTieredEarthquakes(168, 20),
     getTopViewedNews(5),
   ]);
   // Falls back to the recency list until real view data accumulates (e.g.
