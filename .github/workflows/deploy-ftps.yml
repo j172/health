@@ -398,8 +398,12 @@ jobs:
             echo "Card image backfill $ATTEMPT: assigned=$ASSIGNED failed=$FAILED reason=$REASON"
 
             test "$OK" = "true"
-            if [ "$ASSIGNED" = "0" ] && [ "$FAILED" != "0" ] && [ "$REASON" = "No unused Pixabay candidates are available." ]; then
-              echo "Pixabay pool exhausted."
+            # Reason text updated for the Pixabay->Pexels->Unsplash fallback chain
+            # (see docs/specs/news-card-image-multi-provider-fallback.md) — was
+            # "No unused Pixabay candidates are available." when this only ever
+            # tried one provider.
+            if [ "$ASSIGNED" = "0" ] && [ "$FAILED" != "0" ] && [ "$REASON" = "No unused candidates are available from any configured provider." ]; then
+              echo "All provider pools exhausted."
               exit 0
             fi
             TOTAL_FAILED=$((TOTAL_FAILED + FAILED))
