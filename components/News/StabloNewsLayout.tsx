@@ -49,12 +49,12 @@ export default async function StabloNewsLayout({
   const [weatherWarnings, earthquakes, topViewedNews] = await Promise.all([
     listActiveWeatherWarnings(3),
     getTieredEarthquakes(168, 20),
-    getTopViewedNews(5),
+    getTopViewedNews(10),
   ]);
   // Falls back to the recency list until real view data accumulates (e.g.
   // right after this feature ships) — otherwise the widget would render
   // empty for every article that hasn't been viewed yet.
-  const trendingNews = topViewedNews.length > 0 ? topViewedNews : items.slice(0, 5);
+  const trendingNews = topViewedNews.length > 0 ? topViewedNews : items.slice(0, 10);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">

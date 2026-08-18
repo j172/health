@@ -77,7 +77,7 @@ export default function NewsSidebar({
             {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
           </h3>
           <div className="space-y-4">
-            {trendingNews.slice(0, 5).map((item, idx) => (
+            {trendingNews.slice(0, 10).map((item, idx) => (
               <article key={item.id} className="group flex gap-3 items-start">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                   {idx + 1}
