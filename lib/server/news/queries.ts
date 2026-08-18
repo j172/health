@@ -205,12 +205,20 @@ export const listLatestNews = async (
   );
 };
 
-/** Top 5-ish by real view count (see /api/news/[id]/view) for the "熱門焦點
+/** Top-N by real view count (see /api/news/[id]/view) for the "熱門焦點
  * 新聞" sidebar widget — excludes zero-view articles so a brand-new deploy
  * with no view data yet doesn't show an arbitrary/misleading order; the
- * caller falls back to the recency list until real views accumulate. */
-export const getTopViewedNews = async (limit = 5): Promise<NewsListItem[]> => {
-  const cacheKey = `top_viewed_news_${limit}`;
+ * caller falls back to the recency list until real views accumulate.
+ *
+ * `views` is a single cumulative counter (no per-view timestamp log), so a
+ * true rolling "views in the last N days" isn't computable. Instead this
+ * restricts the candidate pool to articles published within `windowDays` —
+ * for a recently-published article, its cumulative view count *is*
+ * effectively its recent view count, which approximates a recency-weighted
+ * ranking well enough to stop old evergreen articles from permanently
+ * squatting the trending list without needing a new view-events table. */
+export const getTopViewedNews = async (limit = 5, windowDays = 7): Promise<NewsListItem[]> => {
+  const cacheKey = `top_viewed_news_${limit}_${windowDays}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
@@ -219,10 +227,11 @@ export const getTopViewedNews = async (limit = 5): Promise<NewsListItem[]> => {
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE n.views > 0
+          AND COALESCE(n.published_at_utc, n.created_at) >= (UTC_TIMESTAMP() - INTERVAL ? DAY)
         ORDER BY n.views DESC
         LIMIT ?
         `,
-        [limit],
+        [windowDays, limit],
       );
       return rows as unknown as NewsListItem[];
     }),
