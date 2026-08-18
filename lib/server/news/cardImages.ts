@@ -1,7 +1,7 @@
 import "server-only";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
-import { deriveJiebaSearchTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
+import { deriveJiebaSearchTerm, deriveDictionaryTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
 import {
   IMAGE_PROVIDERS,
   ProviderRateLimitError,
@@ -265,11 +265,17 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
     for (const news of missingRows) {
       const jiebaTerm = deriveJiebaSearchTerm(news.title);
+      // Only worth a dictionary lookup when the curated KEYWORD_TERMS table
+      // didn't already match — see deriveDictionaryTerm's doc comment.
+      const dictionaryTerm = jiebaTerm ? null : deriveDictionaryTerm(news.title);
       const fallbackTerm = deriveFallbackTerm(news.id);
 
       const termsToTry: string[] = [];
       if (jiebaTerm) {
         termsToTry.push(jiebaTerm);
+      }
+      if (dictionaryTerm && !termsToTry.includes(dictionaryTerm)) {
+        termsToTry.push(dictionaryTerm);
       }
       termsToTry.push(fallbackTerm);
       for (const term of FALLBACK_TERMS) {
