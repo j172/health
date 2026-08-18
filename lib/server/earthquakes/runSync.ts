@@ -1,6 +1,7 @@
 import { fetchUsgsEarthquakes } from "@/lib/server/earthquakes/sources/usgs";
 import { fetchEmscEarthquakes } from "@/lib/server/earthquakes/sources/emsc";
 import { fetchHkoEarthquakes } from "@/lib/server/earthquakes/sources/hko";
+import { fetchCwaEarthquakesAsIncoming } from "@/lib/server/earthquakes/sources/cwa";
 import { upsertEarthquake } from "@/lib/server/earthquakes/queries";
 import type { EarthquakeSource } from "@/lib/server/earthquakes/types";
 import { runSource } from "@/lib/server/sync/runSource";
@@ -17,6 +18,7 @@ const SOURCES: { key: EarthquakeSource; fetch: () => Promise<Awaited<ReturnType<
   { key: "usgs", fetch: fetchUsgsEarthquakes },
   { key: "emsc", fetch: fetchEmscEarthquakes },
   { key: "hko", fetch: fetchHkoEarthquakes },
+  { key: "cwa", fetch: fetchCwaEarthquakesAsIncoming },
 ];
 
 const ZERO_COUNTS = { fetched: 0, inserted: 0, matched: 0 };

@@ -50,7 +50,7 @@ const getMagBadge = (magInput: unknown) => {
 };
 
 export default function EarthquakeContent({ earthquakes }: { earthquakes: SignificantEarthquake[] }) {
-  const [filterMinMag, setFilterMinMag] = useState<number>(6.0);
+  const [filterMinMag, setFilterMinMag] = useState<number>(4.0);
   const { locale } = useLanguage();
 
   const filtered = earthquakes.filter((e) => {
@@ -66,11 +66,11 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
           <div className="flex items-center gap-2">
             <span className="flex h-3 w-3 rounded-full bg-amber-500 animate-ping" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              全球與全台顯著地震動態 (M6.0+)
+              全台與全球顯著地震動態
             </h2>
           </div>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            資料來源：美國地質調查局 (USGS) · 歐洲地中海地震中心 (EMSC) · 中央氣象署 (CWA)
+            資料來源：中央氣象署 (CWA，全台 M4.0+) · 美國地質調查局 (USGS，全球 M6.0+)
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
             篩選規模：
           </span>
           {[
-            { label: "全部 (M4.0+)", val: 4.0 },
+            { label: "台灣+全球顯著", val: 4.0 },
             { label: "M6.0+ 顯著", val: 6.0 },
             { label: "M7.0+ 強震", val: 7.0 },
           ].map((opt) => (
