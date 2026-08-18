@@ -450,7 +450,7 @@ jobs:
             test "$(head -c 1 "$TMP_DIR/chunk.js")" != '<'
           done < "$TMP_DIR/chunks.txt"
 
-          grep -hoE 'src="/images/news/pixabay/[^"?]+"' "$TMP_DIR"/*.html \
+          grep -hoE 'src="/images/news/(pixabay|pexels|unsplash)/[^"?]+"' "$TMP_DIR"/*.html \
             | sed -E 's/^src="([^"]+)"$/\1/' \
             | sort -u > "$TMP_DIR/card-images.txt" || true
 

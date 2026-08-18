@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { internalErrorResponse } from "@/lib/server/http/errorResponse";
-import { assignMissingNewsCardImages, clearPixabayApiCache, clearAllNewsCardImages } from "@/lib/server/news/cardImages";
+import { assignMissingNewsCardImages, clearImageProviderApiCaches, clearAllNewsCardImages } from "@/lib/server/news/cardImages";
 import {
   attachCardImageFromUrl,
   backfillMissingImagesFromOpenGraph,
@@ -35,13 +35,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     };
 
     if (body.clearCache === true) {
-      const cleared = await clearPixabayApiCache();
+      const cleared = await clearImageProviderApiCaches();
       return NextResponse.json({ ok: true, cleared });
     }
 
     if (body.clearCardImages === true) {
       const clearedCardImages = await clearAllNewsCardImages();
-      const clearedCache = await clearPixabayApiCache();
+      const clearedCache = await clearImageProviderApiCaches();
       return NextResponse.json({ ok: true, clearedCardImages, clearedCache });
     }
 
@@ -69,7 +69,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const summary = await assignMissingNewsCardImages(limit);
-    return NextResponse.json({ ok: true, mode: "pixabay", summary });
+    return NextResponse.json({ ok: true, mode: "stock-photo", summary });
   } catch (error) {
     return internalErrorResponse(error, "Unknown card image assignment error");
   }

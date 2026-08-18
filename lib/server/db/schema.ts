@@ -85,6 +85,37 @@ export const TABLE_DDL = {
       KEY idx_pixabay_cache_fetched (fetched_at_utc)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Search-result cache for the Pexels/Unsplash fallback providers — same
+  // "cache the raw API response, re-fetch once the TTL expires" pattern as
+  // pixabay_api_cache above, generalized across providers (cache_key is
+  // provider-prefixed, e.g. "pexels-health-v1-...", "unsplash-health-v1-...")
+  // rather than duplicated as two more single-provider tables. Pixabay keeps
+  // using its own existing table unchanged — no reason to touch a working
+  // path during an incident-response fix. See lib/server/news/imageProviders.ts.
+  providerApiCache: `
+    CREATE TABLE IF NOT EXISTS provider_api_cache (
+      cache_key VARCHAR(150) NOT NULL,
+      response_json LONGTEXT NOT NULL,
+      fetched_at_utc DATETIME NOT NULL,
+      PRIMARY KEY (cache_key),
+      KEY idx_provider_cache_fetched (fetched_at_utc)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // DB-backed escalating backoff per image provider (see
+  // docs/specs/news-card-image-multi-provider-fallback.md section 2) — must
+  // be DB-backed rather than in-memory because the in-app cron process
+  // restarts on every deploy, which would otherwise silently reset a
+  // still-cooling-down provider right back to zero. One row per provider,
+  // upserted lazily on first use (no pre-seeding needed).
+  imageProviderCooldown: `
+    CREATE TABLE IF NOT EXISTS image_provider_cooldown (
+      provider VARCHAR(20) NOT NULL,
+      consecutive_rate_limits INT UNSIGNED NOT NULL DEFAULT 0,
+      cooldown_until DATETIME NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (provider)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestRuns: `
     CREATE TABLE IF NOT EXISTS ingest_runs (
       id BIGINT NOT NULL AUTO_INCREMENT,

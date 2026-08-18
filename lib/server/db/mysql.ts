@@ -42,6 +42,8 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.newsAssets);
   await p.query(TABLE_DDL.newsCardImages);
   await p.query(TABLE_DDL.pixabayApiCache);
+  await p.query(TABLE_DDL.providerApiCache);
+  await p.query(TABLE_DDL.imageProviderCooldown);
   await p.query(TABLE_DDL.ingestRuns);
   await p.query(TABLE_DDL.ingestErrors);
   await p.query(TABLE_DDL.facilities);
@@ -88,6 +90,36 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(`
     ALTER TABLE news_items
       ADD COLUMN IF NOT EXISTS image_backfill_attempts INT UNSIGNED NOT NULL DEFAULT 0 AFTER views
+  `);
+  // news_card_images was originally Pixabay-only (pixabay_id BIGINT NOT NULL
+  // UNIQUE, see TABLE_DDL.newsCardImages above, deliberately left as-is).
+  // Generalizing to the Pixabay/Pexels/Unsplash provider chain (see
+  // docs/specs/news-card-image-multi-provider-fallback.md section 4) adds a
+  // provider + provider_image_id pair without dropping/renaming pixabay_id,
+  // so existing production rows are untouched.
+  await p.query(`
+    ALTER TABLE news_card_images
+      ADD COLUMN IF NOT EXISTS provider VARCHAR(20) NOT NULL DEFAULT 'pixabay' AFTER news_item_id,
+      ADD COLUMN IF NOT EXISTS provider_image_id VARCHAR(64) NULL AFTER provider
+  `);
+  // One-time backfill: every existing row is a Pixabay row (this table
+  // predates the other providers), so its pixabay_id doubles as its
+  // provider_image_id. Safe to re-run — only ever touches NULL rows.
+  await p.query(`
+    UPDATE news_card_images SET provider_image_id = pixabay_id WHERE provider_image_id IS NULL
+  `);
+  await p.query(`
+    ALTER TABLE news_card_images
+      ADD UNIQUE KEY IF NOT EXISTS uq_card_image_provider_image (provider, provider_image_id)
+  `);
+  // pixabay_id was NOT NULL UNIQUE back when this table only ever held
+  // Pixabay rows. Pexels/Unsplash rows have no pixabay_id at all, so the
+  // column has to accept NULL (uq_card_image_pixabay's UNIQUE KEY still
+  // works fine with multiple NULLs — MySQL doesn't treat those as
+  // duplicates). Safe to re-run: a no-op once already nullable.
+  await p.query(`
+    ALTER TABLE news_card_images
+      MODIFY COLUMN pixabay_id BIGINT NULL
   `);
   await p.query(`
     ALTER TABLE facilities

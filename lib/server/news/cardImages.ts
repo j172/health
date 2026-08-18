@@ -1,20 +1,32 @@
 import "server-only";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
-import { env } from "@/lib/server/config/env";
-import { downloadPixabayImage, removeDownloadedImage, PixabayRateLimitError } from "@/lib/server/pixabay/download";
-import { searchHealthImages, type PixabayImage, type PixabaySearchResponse } from "@/lib/server/pixabay/client";
 import { deriveJiebaSearchTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
+import {
+  IMAGE_PROVIDERS,
+  ProviderRateLimitError,
+  SEARCH_RESULTS_PER_PAGE,
+  type ImageProvider,
+  type ProviderImage,
+  type DownloadedProviderImage,
+} from "@/lib/server/news/imageProviders";
+import {
+  loadProviderCooldownState,
+  isProviderCoolingDown,
+  recordProviderRateLimit,
+  recordProviderSuccess,
+} from "@/lib/server/news/providerCooldown";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
-const CACHE_TTL_HOURS = 24;
-const API_RESULTS_PER_PAGE = 30;
-// Pixabay reports up to 500 retrievable hits per term (see client.ts), but
-// this only ever looked at the first 3 pages (90 results) — for the handful
-// of generic fallback terms (health/life/nature) that most unmatched titles
-// route to, that shallow top-90-by-popularity pool gets fully claimed over
-// 10 pages = 300 hits; fallback terms (health/life/nature) still exhaust under
-// heavy backfill. 16 pages reaches 480 of Pixabay's ~500-hit cap per term.
+// Pixabay reports up to 500 retrievable hits per term (see
+// lib/server/pixabay/client.ts), but this only ever looked at the first 3
+// pages (90 results) — for the handful of generic fallback terms
+// (health/life/nature) that most unmatched titles route to, that shallow
+// top-90-by-popularity pool gets fully claimed over heavy backfill. 16 pages
+// reaches 480 of Pixabay's ~500-hit cap per term; applied uniformly to
+// Pexels/Unsplash too even though their own pool depths aren't documented as
+// precisely, since MAX_CANDIDATE_ATTEMPTS_PER_NEWS below still bounds actual
+// download attempts regardless.
 const MAX_API_PAGES = 16;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
@@ -23,26 +35,26 @@ interface MissingNewsRow extends RowDataPacket {
   title: string;
 }
 
-interface UsedPixabayRow extends RowDataPacket {
-  pixabay_id: number;
-}
-
-interface CacheRow extends RowDataPacket {
-  response_json: string;
+interface UsedProviderImageRow extends RowDataPacket {
+  provider: string;
+  provider_image_id: string;
 }
 
 /**
- * Deletes cached Pixabay search results. Cached candidate image URLs are
+ * Deletes cached provider search results (Pixabay's own pixabay_api_cache
+ * plus the shared provider_api_cache used by Pexels/Unsplash — see
+ * lib/server/news/imageProviders.ts). Cached candidate image URLs are
  * signed/temporary and can expire well within the 24h cache TTL, at which
  * point every download attempt fails "content failed validation" (the
- * response is an expired-link page, not image bytes) even though Pixabay
- * itself and our download code are both fine — evidenced by the same
- * request succeeding immediately when re-fetched fresh.
+ * response is an expired-link page, not image bytes) even though the
+ * provider itself and our download code are both fine — evidenced by the
+ * same request succeeding immediately when re-fetched fresh.
  */
-export const clearPixabayApiCache = async (): Promise<number> => {
+export const clearImageProviderApiCaches = async (): Promise<number> => {
   const pool = getMysqlPool();
-  const [result] = await pool.query<ResultSetHeader>("DELETE FROM pixabay_api_cache");
-  return result.affectedRows;
+  const [pixabayResult] = await pool.query<ResultSetHeader>("DELETE FROM pixabay_api_cache");
+  const [providerResult] = await pool.query<ResultSetHeader>("DELETE FROM provider_api_cache");
+  return pixabayResult.affectedRows + providerResult.affectedRows;
 };
 
 /** Clears existing news card images so articles can be re-matched with expanded Jieba title terms. */
@@ -71,47 +83,20 @@ const shuffled = <T>(values: T[]): T[] => {
   return copy;
 };
 
-const getCachedSearchPage = async (conn: PoolConnection, term: string, page: number): Promise<PixabaySearchResponse> => {
-  const cacheKey = `health-horizontal-photo-safe-v2-${term}-per-${API_RESULTS_PER_PAGE}-page-${page}`;
-  const [cachedRows] = await conn.execute<CacheRow[]>(
-    `
-    SELECT response_json
-    FROM pixabay_api_cache
-    WHERE cache_key = ?
-      AND fetched_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
-    LIMIT 1
-    `,
-    [cacheKey, CACHE_TTL_HOURS],
-  );
-
-  if (cachedRows[0]) {
-    try {
-      return JSON.parse(cachedRows[0].response_json) as PixabaySearchResponse;
-    } catch {
-      await conn.execute("DELETE FROM pixabay_api_cache WHERE cache_key = ?", [cacheKey]);
-    }
-  }
-
-  const response = await searchHealthImages(term, page, API_RESULTS_PER_PAGE);
-  await conn.execute(
-    `
-    INSERT INTO pixabay_api_cache (cache_key, response_json, fetched_at_utc)
-    VALUES (?, ?, ?)
-    ON DUPLICATE KEY UPDATE response_json = VALUES(response_json), fetched_at_utc = VALUES(fetched_at_utc)
-    `,
-    [cacheKey, JSON.stringify(response), utcNowSql()],
-  );
-  return response;
-};
-
-/** Unused candidates for a single search term, paginating until enough are found or the term's ~500-hit pool is exhausted. */
-const loadCandidatesForTerm = async (conn: PoolConnection, term: string, usedIds: Set<number>, needed: number): Promise<PixabayImage[]> => {
-  const candidates: PixabayImage[] = [];
+/** Unused candidates for a single (provider, term) pair, paginating until enough are found or the pool is exhausted. */
+const loadCandidatesForProviderTerm = async (
+  conn: PoolConnection,
+  provider: ImageProvider,
+  term: string,
+  usedIds: Set<string>,
+  needed: number,
+): Promise<ProviderImage[]> => {
+  const candidates: ProviderImage[] = [];
   const targetCandidateCount = Math.max(10, needed * 3);
   for (let page = 1; page <= MAX_API_PAGES; page += 1) {
-    const result = await getCachedSearchPage(conn, term, page);
-    candidates.push(...result.hits.filter((hit) => !usedIds.has(hit.id)));
-    if (candidates.length >= targetCandidateCount || page * API_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
+    const result = await provider.search(conn, term, page);
+    candidates.push(...result.candidates.filter((hit) => !usedIds.has(hit.id)));
+    if (candidates.length >= targetCandidateCount || page * SEARCH_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
   }
   return shuffled(candidates);
 };
@@ -158,23 +143,60 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       return summary;
     }
 
-    if (!env.pixabayApiKey) {
+    const configuredProviders = IMAGE_PROVIDERS.filter((provider) => provider.isConfigured());
+    if (configuredProviders.length === 0) {
       summary.skipped = missingRows.length;
-      summary.reason = "PIXABAY_API_KEY is not configured.";
+      summary.reason = "No image provider API keys are configured (PIXABAY_API_KEY / PEXELS_API_KEY / UNSPLASH_ACCESS_KEY).";
       return summary;
     }
 
-    const [usedRows] = await conn.query<UsedPixabayRow[]>("SELECT pixabay_id FROM news_card_images");
-    const usedIds = new Set(usedRows.map((row) => Number(row.pixabay_id)));
-    let fallbackIndex = 0;
+    const [usedRows] = await conn.query<UsedProviderImageRow[]>(
+      "SELECT provider, provider_image_id FROM news_card_images WHERE provider_image_id IS NOT NULL",
+    );
+    const usedIdsByProvider = new Map<string, Set<string>>();
+    for (const row of usedRows) {
+      const set = usedIdsByProvider.get(row.provider) ?? new Set<string>();
+      set.add(String(row.provider_image_id));
+      usedIdsByProvider.set(row.provider, set);
+    }
+
+    // Snapshot of each provider's escalating-backoff state for the duration
+    // of this call — see lib/server/news/providerCooldown.ts. Updated live
+    // as 429s/successes happen below, so a provider that starts cooling
+    // down partway through this batch is correctly skipped for the rest of
+    // it (no need to re-query the DB per item).
+    const cooldownState = await loadProviderCooldownState(conn);
+    const rateLimitedProviders = new Set<string>();
     let anyCandidatesSeen = false;
 
-    // Tries to assign one candidate from `term`'s pool to `news`. Returns
-    // "assigned" (incl. "skipped" — another process already filled it),
-    // "rate_limited" (caller should stop the whole batch), or "exhausted"
-    // (no usable candidate for this term — caller may try a fallback term).
-    const tryAssignWithTerm = async (news: MissingNewsRow, term: string): Promise<"assigned" | "rate_limited" | "exhausted"> => {
-      const candidates = await loadCandidatesForTerm(conn, term, usedIds, 1);
+    // Tries to assign one candidate from `provider`'s pool for `term` to
+    // `news`. Returns "assigned" (incl. an insert-race loss — another
+    // process already filled it), "rate_limited" (this provider just hit a
+    // 429 and has now been recorded into cooldownState), "cooling_down"
+    // (skipped entirely — no request attempted, still cooling down from an
+    // earlier hit), or "exhausted" (no usable candidate from this provider
+    // for this term). Unlike the single-provider version this replaces, a
+    // "rate_limited" outcome no longer aborts the whole batch — the caller
+    // just moves on to the next provider in the fallback chain, which is
+    // the entire point of having one.
+    const tryAssignWithProviderTerm = async (
+      news: MissingNewsRow,
+      term: string,
+      provider: ImageProvider,
+    ): Promise<"assigned" | "rate_limited" | "cooling_down" | "exhausted"> => {
+      if (isProviderCoolingDown(cooldownState, provider.name, new Date())) return "cooling_down";
+
+      const usedIds = usedIdsByProvider.get(provider.name) ?? new Set<string>();
+      usedIdsByProvider.set(provider.name, usedIds);
+
+      let candidates: ProviderImage[];
+      try {
+        candidates = await loadCandidatesForProviderTerm(conn, provider, term, usedIds, 1);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Unknown image search error";
+        if (summary.errors.length < 10) summary.errors.push(`news ${news.id} [${provider.name} search]: ${message}`);
+        return "exhausted";
+      }
       if (candidates.length > 0) anyCandidatesSeen = true;
 
       let attempts = 0;
@@ -183,27 +205,33 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
         if (usedIds.has(candidate.id)) continue;
         attempts += 1;
 
-        let downloaded: Awaited<ReturnType<typeof downloadPixabayImage>> | null = null;
+        let downloaded: DownloadedProviderImage | null = null;
         try {
-          downloaded = await downloadPixabayImage(candidate);
+          downloaded = await provider.download(candidate);
           const now = utcNowSql();
           const [insertResult] = await conn.execute<ResultSetHeader>(
             `
             INSERT IGNORE INTO news_card_images (
-              news_item_id, pixabay_id, local_path, source_page_url, contributor_name,
-              content_sha256, width, height, created_at, updated_at
+              news_item_id, provider, provider_image_id, pixabay_id, local_path, source_page_url,
+              contributor_name, content_sha256, width, height, created_at, updated_at
             )
-            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+            SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
             WHERE NOT EXISTS (
               SELECT 1 FROM news_card_images c WHERE c.news_item_id = ?
             )
             `,
             [
               news.id,
+              candidate.provider,
               candidate.id,
+              // Legacy pixabay_id column stays populated for Pixabay rows
+              // only (see docs/specs/news-card-image-multi-provider-fallback.md
+              // section 4) — it's now nullable so Pexels/Unsplash rows can
+              // simply omit it rather than needing a sentinel value.
+              candidate.provider === "pixabay" ? Number(candidate.id) : null,
               downloaded.localPath,
               candidate.pageURL,
-              candidate.user || null,
+              candidate.contributorName,
               downloaded.contentSha256,
               downloaded.width,
               downloaded.height,
@@ -213,29 +241,29 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
             ],
           );
           if (insertResult.affectedRows !== 1) {
-            await removeDownloadedImage(downloaded.absolutePath);
+            await provider.remove(downloaded.absolutePath);
             summary.skipped += 1;
             return "assigned";
           }
           usedIds.add(candidate.id);
+          await recordProviderSuccess(conn, cooldownState, provider.name);
           summary.assigned += 1;
           return "assigned";
         } catch (error) {
-          if (downloaded) await removeDownloadedImage(downloaded.absolutePath);
-          // Pixabay's CDN rate-limits per-account, not per-image — retrying more
-          // candidates (for this item or the next one) would just burn through
-          // the rest of the batch hitting 429 immediately again. Stop the whole
-          // batch here instead of misreporting every remaining item as "failed"
-          // (they were never actually broken, just not attempted yet).
-          if (error instanceof PixabayRateLimitError) return "rate_limited";
+          if (downloaded) await provider.remove(downloaded.absolutePath);
+          if (error instanceof ProviderRateLimitError) {
+            rateLimitedProviders.add(provider.name);
+            await recordProviderRateLimit(conn, cooldownState, provider.name);
+            return "rate_limited";
+          }
           const message = error instanceof Error ? error.message : "Unknown image assignment error";
-          if (summary.errors.length < 10) summary.errors.push(`news ${news.id}: ${message}`);
+          if (summary.errors.length < 10) summary.errors.push(`news ${news.id} [${provider.name}]: ${message}`);
         }
       }
       return "exhausted";
     };
 
-    newsLoop: for (const news of missingRows) {
+    for (const news of missingRows) {
       const jiebaTerm = deriveJiebaSearchTerm(news.title);
       const fallbackTerm = deriveFallbackTerm(news.id);
 
@@ -250,30 +278,39 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
         }
       }
 
-      let outcome: "assigned" | "rate_limited" | "exhausted" = "exhausted";
-      for (const term of termsToTry) {
-        outcome = await tryAssignWithTerm(news, term);
-        if (outcome !== "exhausted") break;
+      let assignedThisNews = false;
+      termLoop: for (const term of termsToTry) {
+        // Pixabay → Pexels → Unsplash, skipping any provider currently in
+        // cooldown (see docs/specs/news-card-image-multi-provider-fallback.md
+        // section 1) — one provider being rate-limited or unconfigured no
+        // longer stalls articles the other two can still serve.
+        for (const provider of configuredProviders) {
+          const outcome = await tryAssignWithProviderTerm(news, term, provider);
+          if (outcome === "assigned") {
+            assignedThisNews = true;
+            break termLoop;
+          }
+        }
       }
 
-      if (outcome === "rate_limited") {
-        summary.rateLimited = true;
-        summary.reason = "Pixabay rate-limited this batch (HTTP 429) — stopping early; the rest will be picked up on the next run.";
-        break newsLoop;
-      }
-      if (outcome === "exhausted") {
+      if (!assignedThisNews) {
         summary.failed += 1;
         // Deprioritizes this article in future batches' ORDER BY (see
         // missingRows above) instead of excluding it outright — it can still
-        // succeed later (e.g. once Pixabay adds new photos, or MAX_API_PAGES
-        // reaches further), just after every less-tried article gets a turn.
+        // succeed later (e.g. once a provider adds new photos, cooldowns
+        // clear, or MAX_API_PAGES reaches further), just after every
+        // less-tried article gets a turn.
         await conn.execute("UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?", [news.id]);
       }
     }
 
-    if (summary.failed > 0 && !anyCandidatesSeen) {
-      summary.reason = "No unused Pixabay candidates are available.";
+    if (rateLimitedProviders.size > 0) {
+      summary.rateLimited = true;
+      summary.reason = `Rate-limited this run (now cooling down per its backoff schedule): ${[...rateLimitedProviders].join(", ")}.`;
+    } else if (summary.failed > 0 && !anyCandidatesSeen) {
+      summary.reason = "No unused candidates are available from any configured provider.";
     }
+
     return summary;
   } finally {
     if (gotLock) {

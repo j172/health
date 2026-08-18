@@ -38,8 +38,10 @@ yarn-error.log*
 # SSH credentials
 /.ssh/
 
-# runtime-downloaded Pixabay card images and re-hosted article images
+# runtime-downloaded card images (Pixabay/Pexels/Unsplash) and re-hosted article images
 /public/images/news/pixabay/
+/public/images/news/pexels/
+/public/images/news/unsplash/
 /public/images/news/articles/
 
 # vercel

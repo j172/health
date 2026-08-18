@@ -149,13 +149,9 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
             {hero ? (
               <HeroImage
                 src={hero.url}
-                alt={hero.caption || news.title}
-                caption={
-                  hero.caption ||
-                  (hero.isPixabay
-                    ? `示意圖：Pixabay${news.card_image_contributor ? ` · ${news.card_image_contributor}` : " "}`
-                    : null)
-                }
+                alt={hero.attribution?.contributorName || hero.caption || news.title}
+                caption={hero.caption}
+                attribution={hero.attribution}
               />
             ) : null}
 
