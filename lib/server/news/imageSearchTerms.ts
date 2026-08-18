@@ -1,6 +1,15 @@
 import { Segment, useDefault } from "segmentit";
+import { lookupChineseWord } from "@/lib/server/news/cedict";
 
 const segmentit = useDefault(new Segment());
+
+// Common function words segmentit can still emit as standalone tokens (particles,
+// conjunctions, pronouns) — never useful as an image search term on their own.
+const STOPWORDS = new Set([
+  "的", "了", "在", "是", "和", "與", "也", "就", "都", "而", "及", "等",
+  "後", "前", "中", "內", "外", "將", "把", "被", "讓", "使", "對", "為",
+  "但", "卻", "又", "還", "再", "更", "最", "很", "已", "已經", "正在",
+]);
 
 /**
  * Strict priority mapping of Traditional Chinese news keywords to English Pixabay search terms.
@@ -134,6 +143,34 @@ export function deriveJiebaSearchTerm(title: string): string | null {
   }
 
   return null;
+}
+
+/**
+ * Stage 1.5: when no KEYWORD_TERMS regex matched (deriveJiebaSearchTerm
+ * returned null), look the title's most specific segmented word up in the
+ * offline CC-CEDICT dictionary (see cedict.ts) instead of falling straight
+ * to the generic health/life/nature rotation. Picks the *longest* Chinese
+ * token — segmentit tends to produce the most specific/topical word as its
+ * longest segment, while short tokens are disproportionately particles,
+ * single-character fragments, or numbers. Only titles whose Jieba match
+ * failed pay this extra lookup; it's an in-memory Map read, not a network
+ * call, so it's cheap even on every retry.
+ */
+export function deriveDictionaryTerm(title: string): string | null {
+  if (!title) return null;
+  const tokens = segmentit.doSegment(title);
+
+  let longest: string | null = null;
+  for (const token of tokens) {
+    const word = token.w;
+    if (word.length < 2) continue; // single chars are noise far more often than not
+    if (/^[0-9]+$/.test(word)) continue; // pure numbers
+    if (STOPWORDS.has(word)) continue;
+    if (!longest || word.length > longest.length) longest = word;
+  }
+  if (!longest) return null;
+
+  return lookupChineseWord(longest);
 }
 
 /**
