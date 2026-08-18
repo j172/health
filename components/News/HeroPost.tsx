@@ -20,7 +20,7 @@ export default function HeroPost({
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Primary Hero Post (Spans 2 columns on lg) */}
       <article className="group relative overflow-hidden rounded-3xl bg-slate-900 shadow-xl lg:col-span-2 flex flex-col justify-between">
-        <div className="relative aspect-[16/10] sm:aspect-[21/10] w-full overflow-hidden">
+        <div className="relative aspect-[16/10] sm:aspect-[21/10] lg:aspect-auto lg:h-full w-full overflow-hidden">
           {src ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
