@@ -190,12 +190,13 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& test -s \$STAGE_DIR/.next3/routes-manifest.json "
             . "&& find \$STAGE_DIR/.next3/static/chunks -type f -name '*.js' -print -quit | grep -q . "
             . "&& chmod -R u+rwX \$STAGE_DIR/.next3 >> .apply-prebuilt.log 2>&1 "
-            . "&& mkdir -p public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
-            . "&& chmod u+rwx public/images/news/pixabay >> .apply-prebuilt.log 2>&1 "
+            . "&& mkdir -p public/images/news/pixabay public/images/news/pexels public/images/news/unsplash >> .apply-prebuilt.log 2>&1 "
+            . "&& chmod u+rwx public/images/news/pixabay public/images/news/pexels public/images/news/unsplash >> .apply-prebuilt.log 2>&1 "
             // Best-effort: extracts INTO the existing public/ dir (no wipe first), so
-            // runtime-generated subdirs like images/news/pixabay and images/news/articles
-            // are left untouched — only files actually present in the uploaded tarball
-            // get added/overwritten. A missing or bad tarball shouldn't fail the deploy.
+            // runtime-generated subdirs like images/news/pixabay, images/news/pexels,
+            // images/news/unsplash, and images/news/articles are left untouched — only
+            // files actually present in the uploaded tarball get added/overwritten. A
+            // missing or bad tarball shouldn't fail the deploy.
             . "&& { if [ -s .prebuilt-public.tgz ]; then tar --no-same-owner --no-same-permissions -xzf .prebuilt-public.tgz -C public >> .apply-prebuilt.log 2>&1 && rm -f .prebuilt-public.tgz; fi; } "
             . "&& test -s .env "
             . "&& { if [ -s .pixabay.env ]; then "
@@ -697,10 +698,11 @@ if (str_starts_with($path, '/__ops/')) {
     }
 }
 
-// Shared by /images/news/pixabay/ and /images/news/articles/ below — both serve
-// a single flat asset directory the same way (resolve + traversal-check, 404 on
-// miss, 415 on unrecognized extension, else serve with a long-lived cache
-// header). Always exits, so behavior at each call site is unchanged.
+// Shared by /images/news/{pixabay,pexels,unsplash}/ and /images/news/articles/
+// below — all serve a single flat asset directory the same way (resolve +
+// traversal-check, 404 on miss, 415 on unrecognized extension, else serve
+// with a long-lived cache header). Always exits, so behavior at each call
+// site is unchanged.
 $serveNewsAsset = static function (string $relative, string $root, array $types) use ($method): void {
     $rootReal = realpath($root);
     $fileReal = $relative === '' ? false : realpath($root . '/' . $relative);
@@ -732,6 +734,22 @@ if (str_starts_with($path, '/images/news/pixabay/')) {
     $serveNewsAsset(
         rawurldecode(substr($path, strlen('/images/news/pixabay/'))),
         '/home/tw123457/health_app/public/images/news/pixabay',
+        ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'],
+    );
+}
+
+if (str_starts_with($path, '/images/news/pexels/')) {
+    $serveNewsAsset(
+        rawurldecode(substr($path, strlen('/images/news/pexels/'))),
+        '/home/tw123457/health_app/public/images/news/pexels',
+        ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'],
+    );
+}
+
+if (str_starts_with($path, '/images/news/unsplash/')) {
+    $serveNewsAsset(
+        rawurldecode(substr($path, strlen('/images/news/unsplash/'))),
+        '/home/tw123457/health_app/public/images/news/unsplash',
         ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'],
     );
 }

@@ -58,7 +58,12 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
         fill
         className={`${imgClass} ${fadeClass}`}
         sizes={sizes}
-        unoptimized={src.startsWith("/images/news/pixabay/") || src.startsWith("/images/news/articles/")}
+        unoptimized={
+          src.startsWith("/images/news/pixabay/") ||
+          src.startsWith("/images/news/pexels/") ||
+          src.startsWith("/images/news/unsplash/") ||
+          src.startsWith("/images/news/articles/")
+        }
         onLoad={() => setLoaded(true)}
       />
     </>

@@ -22,6 +22,18 @@ export const env = {
   },
   rssSyncAdminSecret: mustGet("RSS_SYNC_ADMIN_SECRET"),
   pixabayApiKey: process.env.PIXABAY_API_KEY?.trim() || null,
+  pexelsApiKey: process.env.PEXELS_API_KEY?.trim() || null,
+  // Unsplash issues three related credentials per registered app; only
+  // accessKey is used for API calls (Client-ID auth on every request incl.
+  // the required "trigger download" ping — see lib/server/unsplash/download.ts).
+  // secretKey/applicationId aren't needed for the read-only demo-tier usage
+  // this feature makes, but are captured here for parity with what's already
+  // in .env and in case OAuth-flow usage is ever added later.
+  unsplash: {
+    accessKey: process.env.UNSPLASH_ACCESS_KEY?.trim() || null,
+    secretKey: process.env.UNSPLASH_SECRET_KEY?.trim() || null,
+    applicationId: process.env.UNSPLASH_APPLICATION_ID?.trim() || null,
+  },
   moenvNewsApiKey: process.env.MOENV_NEWS_API_KEY?.trim() || null,
   // 綠色商店基本資料 (gp_p_01) — consumed by scripts/import-moenv-green-shops.mjs,
   // a standalone script (like the MOHW import-*.mjs scripts) rather than an

@@ -12,7 +12,7 @@ export interface NewsListItem {
   canonical_url: string;
   description_html: string | null;
   card_image_url: string | null;
-  card_image_source: "rss" | "pixabay" | null;
+  card_image_source: "rss" | "pixabay" | "pexels" | "unsplash" | null;
   card_image_source_page_url: string | null;
   card_image_contributor: string | null;
 }
@@ -164,7 +164,7 @@ const CARD_IMAGE_SELECT_SQL = `
       SELECT 1 FROM news_assets a
       WHERE a.news_item_id = n.id AND a.asset_type = 'image'
     ) THEN 'rss'
-    WHEN c.local_path IS NOT NULL THEN 'pixabay'
+    WHEN c.local_path IS NOT NULL THEN c.provider
     ELSE NULL
   END AS card_image_source,
   c.source_page_url AS card_image_source_page_url,
