@@ -116,6 +116,38 @@ export const TABLE_DDL = {
       PRIMARY KEY (provider)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Persistent, account-level daily budget + circuit breaker for the
+  // facility-geocoding batch job (see docs/specs/phase9-opencage-geocode-batch.md
+  // and lib/server/facilities/geocodeBudget.ts). OpenCage's and Nominatim's
+  // rate limits are per API-key/IP, not per facility source, so all 16
+  // facility sources share one row per provider per day rather than each
+  // getting an independent counter. DB-backed for the same reason as
+  // image_provider_cooldown above: the in-app cron process restarts on every
+  // deploy, and an in-memory counter would silently forget how much of
+  // today's budget is already spent.
+  geocodeProviderBudget: `
+    CREATE TABLE IF NOT EXISTS geocode_provider_budget (
+      provider VARCHAR(20) NOT NULL,
+      budget_date DATE NOT NULL,
+      requests_used INT UNSIGNED NOT NULL DEFAULT 0,
+      circuit_broken TINYINT(1) NOT NULL DEFAULT 0,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (provider, budget_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // One-time-action markers for the geocode batch job — currently just the
+  // single controlled geocode_attempts reset called for in the spec ("never
+  // reset on every scheduled run"). A generic flag_key/flag_value shape
+  // rather than a single boolean column so any future one-time action can
+  // reuse this table instead of another migration.
+  geocodeBackfillFlags: `
+    CREATE TABLE IF NOT EXISTS geocode_backfill_flags (
+      flag_key VARCHAR(64) NOT NULL,
+      flag_value TINYINT(1) NOT NULL DEFAULT 0,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (flag_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestRuns: `
     CREATE TABLE IF NOT EXISTS ingest_runs (
       id BIGINT NOT NULL AUTO_INCREMENT,
