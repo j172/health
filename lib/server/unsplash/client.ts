@@ -39,6 +39,19 @@ export class UnsplashConfigurationError extends Error {
 }
 
 /**
+ * Thrown for both the search call (this file) and the download call
+ * (lib/server/unsplash/download.ts) so lib/server/news/imageProviders.ts can
+ * catch one type and convert it to the shared ProviderRateLimitError,
+ * regardless of which of the two calls actually hit the limit.
+ */
+export class UnsplashRateLimitError extends Error {
+  constructor() {
+    super("Unsplash API request failed with HTTP 429/403 (rate limited).");
+    this.name = "UnsplashRateLimitError";
+  }
+}
+
+/**
  * Unsplash search — last link in the Pixabay → Pexels → Unsplash fallback
  * chain (see lib/server/news/imageProviders.ts). Demo-tier apps are capped
  * at 50 req/hour, well below what this steady-state, backoff-aware cron
@@ -67,8 +80,18 @@ export const searchUnsplashImages = async (term: string, page: number, perPage =
     },
   });
 
-  if (response.status === 429) {
-    throw new Error("Unsplash API request failed with HTTP 429.");
+  // Unsplash's demo tier (see this function's doc comment) signals its
+  // 50 req/hour cap with HTTP 403, not 429 — confirmed live 2026-08-20 via
+  // a direct curl against api.unsplash.com with this app's own key
+  // (200 OK, x-ratelimit-limit: 50). Before this fix, a 403 fell through
+  // to the generic error below, which cardImages.ts's orchestration loop
+  // (lib/server/news/imageProviders.ts) treated as an ordinary per-term
+  // failure rather than a rate limit — so the existing Pixabay-style
+  // cooldown/backoff (providerCooldown.ts) never engaged for Unsplash, and
+  // every subsequent term/article kept re-hammering an already-exhausted
+  // quota for the rest of that hour instead of backing off.
+  if (response.status === 429 || response.status === 403) {
+    throw new UnsplashRateLimitError();
   }
   if (response.status < 200 || response.status >= 300) {
     throw new Error(`Unsplash API request failed with HTTP ${response.status}.`);

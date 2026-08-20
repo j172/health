@@ -226,59 +226,80 @@ const pexelsAdapter: ImageProvider = {
 
 // ─── Unsplash adapter ───────────────────────────────────────────────────────
 
-const unsplashAdapter: ImageProvider = {
-  name: "unsplash",
-  isConfigured: () => Boolean(env.unsplash.accessKey),
-  search: async (conn, term, page) => {
-    const cacheKey = `unsplash-health-v1-${term}-per-${SEARCH_RESULTS_PER_PAGE}-page-${page}`;
-    const [cachedRows] = await conn.execute<CacheRow[]>(
-      `
-      SELECT response_json
-      FROM provider_api_cache
-      WHERE cache_key = ?
-        AND fetched_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
-      LIMIT 1
-      `,
-      [cacheKey, CACHE_TTL_HOURS],
-    );
+/** Extracted from the adapter's `search` so the rate-limit conversion below
+ * has one call site to wrap, regardless of which internal branch (cache-miss
+ * vs invalid-cache-JSON-refetch) actually made the network call. */
+const unsplashSearch = async (
+  conn: PoolConnection,
+  term: string,
+  page: number,
+): Promise<{ candidates: ProviderImage[]; totalHits: number }> => {
+  const cacheKey = `unsplash-health-v1-${term}-per-${SEARCH_RESULTS_PER_PAGE}-page-${page}`;
+  const [cachedRows] = await conn.execute<CacheRow[]>(
+    `
+    SELECT response_json
+    FROM provider_api_cache
+    WHERE cache_key = ?
+      AND fetched_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+    LIMIT 1
+    `,
+    [cacheKey, CACHE_TTL_HOURS],
+  );
 
-    let hits: UnsplashImage[];
-    let totalHits: number;
-    if (cachedRows[0]) {
-      try {
-        const parsed = JSON.parse(cachedRows[0].response_json) as { hits: UnsplashImage[]; totalHits: number };
-        hits = parsed.hits;
-        totalHits = parsed.totalHits;
-      } catch {
-        await conn.execute("DELETE FROM provider_api_cache WHERE cache_key = ?", [cacheKey]);
-        const fresh = await searchUnsplashImages(term, page, SEARCH_RESULTS_PER_PAGE);
-        hits = fresh.hits;
-        totalHits = fresh.totalHits;
-        await conn.execute(
-          "INSERT INTO provider_api_cache (cache_key, response_json, fetched_at_utc) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE response_json = VALUES(response_json), fetched_at_utc = VALUES(fetched_at_utc)",
-          [cacheKey, JSON.stringify(fresh), utcNowSql()],
-        );
-      }
-    } else {
+  let hits: UnsplashImage[];
+  let totalHits: number;
+  if (cachedRows[0]) {
+    try {
+      const parsed = JSON.parse(cachedRows[0].response_json) as { hits: UnsplashImage[]; totalHits: number };
+      hits = parsed.hits;
+      totalHits = parsed.totalHits;
+    } catch {
+      await conn.execute("DELETE FROM provider_api_cache WHERE cache_key = ?", [cacheKey]);
       const fresh = await searchUnsplashImages(term, page, SEARCH_RESULTS_PER_PAGE);
       hits = fresh.hits;
       totalHits = fresh.totalHits;
       await conn.execute(
         "INSERT INTO provider_api_cache (cache_key, response_json, fetched_at_utc) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE response_json = VALUES(response_json), fetched_at_utc = VALUES(fetched_at_utc)",
-        [cacheKey, JSON.stringify({ total: totalHits, totalHits, hits }), utcNowSql()],
+        [cacheKey, JSON.stringify(fresh), utcNowSql()],
       );
     }
+  } else {
+    const fresh = await searchUnsplashImages(term, page, SEARCH_RESULTS_PER_PAGE);
+    hits = fresh.hits;
+    totalHits = fresh.totalHits;
+    await conn.execute(
+      "INSERT INTO provider_api_cache (cache_key, response_json, fetched_at_utc) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE response_json = VALUES(response_json), fetched_at_utc = VALUES(fetched_at_utc)",
+      [cacheKey, JSON.stringify({ total: totalHits, totalHits, hits }), utcNowSql()],
+    );
+  }
 
-    const candidates: ProviderImage[] = hits.map((hit) => ({
-      provider: "unsplash",
-      id: hit.id,
-      pageURL: hit.links.html,
-      contributorName: hit.user?.name || null,
-      width: hit.width,
-      height: hit.height,
-      raw: hit,
-    }));
-    return { candidates, totalHits };
+  const candidates: ProviderImage[] = hits.map((hit) => ({
+    provider: "unsplash",
+    id: hit.id,
+    pageURL: hit.links.html,
+    contributorName: hit.user?.name || null,
+    width: hit.width,
+    height: hit.height,
+    raw: hit,
+  }));
+  return { candidates, totalHits };
+};
+
+const unsplashAdapter: ImageProvider = {
+  name: "unsplash",
+  isConfigured: () => Boolean(env.unsplash.accessKey),
+  search: async (conn, term, page) => {
+    // Unsplash's demo-tier rate limit surfaces as HTTP 403 on the search
+    // call itself (see client.ts's searchUnsplashImages) — without this
+    // conversion, cardImages.ts's orchestration loop would treat it as an
+    // ordinary per-term failure instead of engaging the same
+    // cooldown/backoff Pixabay 429s already get (providerCooldown.ts).
+    try {
+      return await unsplashSearch(conn, term, page);
+    } catch (error) {
+      if (error instanceof UnsplashRateLimitError) throw new ProviderRateLimitError("unsplash");
+      throw error;
+    }
   },
   download: async (candidate) => {
     try {

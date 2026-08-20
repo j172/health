@@ -2,7 +2,14 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { UnsplashImage } from "@/lib/server/unsplash/client";
+import { UnsplashRateLimitError, type UnsplashImage } from "@/lib/server/unsplash/client";
+
+// Re-exported for existing importers (lib/server/news/imageProviders.ts) —
+// the class now lives in client.ts since both the search call there and the
+// download call below need to throw/catch the same type. See client.ts's
+// doc comment for why (Unsplash signals its demo-tier rate limit via 403 on
+// search, 429 on download).
+export { UnsplashRateLimitError };
 import { env } from "@/lib/server/config/env";
 import { httpRequest } from "@/lib/server/net/httpClient";
 
@@ -29,13 +36,6 @@ export interface DownloadedUnsplashImage {
   contentSha256: string;
   width: number;
   height: number;
-}
-
-export class UnsplashRateLimitError extends Error {
-  constructor() {
-    super("Unsplash image download failed with HTTP 429.");
-    this.name = "UnsplashRateLimitError";
-  }
 }
 
 export const removeDownloadedImage = async (absolutePath: string): Promise<void> => {
