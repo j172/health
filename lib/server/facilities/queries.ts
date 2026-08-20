@@ -88,7 +88,7 @@ export interface FacilityMissingCoords {
 // forever, and letting those rows stay at the head of the ORDER BY id queue
 // would waste most of every batch's capacity re-trying known failures
 // instead of reaching rows that haven't been attempted yet.
-const MAX_GEOCODE_ATTEMPTS = 3;
+export const MAX_GEOCODE_ATTEMPTS = 3;
 
 export const findFacilitiesMissingCoords = async (facilityType: string, sourceKey: string, limit: number): Promise<FacilityMissingCoords[]> =>
   withConnection(async (conn) => {
