@@ -3,9 +3,22 @@ import type { Metadata } from "next";
 import type { NewsListItem, NewsDetailItem } from "./queries";
 import { resolveAuthorLabel } from "./sourceLabels";
 
-/** og:image fallback for articles with no card_image_url — see app/api/og/news/[sourceName]/route.tsx and sourcePlaceholder.ts. Previously these articles had no og:image at all (imageUrl was undefined), leaving shared links with a blank social-preview card. Used for both openGraph/twitter (buildArticleMetadata) and JSON-LD's `image` field (buildArticleJsonLd) so the two stay consistent. */
-const resolveArticleImageUrl = (news: NewsDetailItem, baseUrl: string): string =>
-  toAbsoluteUrl(news.card_image_url, baseUrl) ?? `${baseUrl}/api/og/news/${encodeURIComponent(news.source_name)}`;
+/**
+ * og:image resolution for an article. Used to fall back to a dynamic,
+ * source-branded placeholder (app/api/og/news/[sourceName]/route.tsx, built
+ * on next/og's ImageResponse) when card_image_url is null — **reverted**
+ * 2026-08-21, hours after shipping: that route's WASM-based PNG rendering
+ * (satori/resvg, used internally by ImageResponse) crash-looped production
+ * with `RangeError: WebAssembly.instantiate(): Out of memory` — this host's
+ * V8 heap is capped at 768MB (ecosystem.config.cjs, see the 2026-08-02 LVE
+ * memory-limit incident) and next/og's WASM instantiation doesn't fit
+ * inside that budget on this host. The route itself was deleted; articles
+ * with no card image simply have no og:image again, same as before that
+ * attempt. Revisit only with a non-WASM approach (e.g. pre-generated static
+ * PNGs at build/deploy time, which was the alternative rejected in favor of
+ * dynamic rendering before this was found) if this is picked up again.
+ */
+const resolveArticleImageUrl = (news: NewsDetailItem, baseUrl: string): string | undefined => toAbsoluteUrl(news.card_image_url, baseUrl);
 
 export const SITE_NAME = "j172tw Healthz";
 export const SITE_DESCRIPTION = "彙整台灣官方機構健康新聞、ESG永續發展與企業社會責任報導，以及中央氣象署即時警報，提供繁體中文公共資訊總覽。";
