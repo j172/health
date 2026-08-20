@@ -39,3 +39,6 @@ export interface SourceLabelInput {
 /** Resolves a human-friendly attribution label for a news item across all RSS sources. */
 export const resolveAuthorLabel = (item: SourceLabelInput): string =>
   item.dept_name || (item.source_name ? SOURCE_LABELS[item.source_name] : undefined) || item.feed_name;
+
+/** Looks up a source_name's display label directly (falls back to the raw source_name if unmapped) — used by the source-branded image-missing placeholder (sourcePlaceholder.ts) where there's no dept_name/feed_name to fall back through like resolveAuthorLabel has. */
+export const getSourceLabel = (sourceName: string): string => SOURCE_LABELS[sourceName] || sourceName;
