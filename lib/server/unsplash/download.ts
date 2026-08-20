@@ -63,7 +63,17 @@ const triggerUnsplashDownload = async (downloadLocation: string): Promise<void> 
 };
 
 export const downloadUnsplashImage = async (image: UnsplashImage): Promise<DownloadedUnsplashImage> => {
-  const imageUrl = image.urls.full || image.urls.regular;
+  // `regular` (Unsplash-side resized to ~1080px wide) preferred over `full`
+  // (original resolution, frequently 20-50MB+ for modern photography) —
+  // this only ever needs to fill a fixed-size 16:10 card thumbnail
+  // (CardThumb.tsx/NewsCard.tsx), so `full` just wastes bandwidth/disk and,
+  // confirmed live 2026-08-20, regularly blew the 12MB MAX_IMAGE_BYTES cap
+  // below, rejecting every single candidate for a term even when perfectly
+  // usable images were available. Matches the same "prefer a bounded large
+  // variant, not the absolute original" pattern already used by the sibling
+  // providers (lib/server/pixabay/download.ts's largeImageURL,
+  // lib/server/pexels/download.ts's large2x) — Unsplash was the outlier.
+  const imageUrl = image.urls.regular || image.urls.full;
   const response = await httpRequest(imageUrl, {
     timeoutMs: DOWNLOAD_TIMEOUT_MS,
     // See the matching comment in lib/server/pexels/download.ts — avif
