@@ -34,17 +34,21 @@ const VARIANT_REPLACEMENTS = [
   [/[，,]/g, "，"],
 ];
 const PARENTHETICAL_PATTERN = /[（(][^）)]*[）)]/g;
-function normalizeAddressForQuery(rawAddress) {
-  let normalized = rawAddress.trim();
-  if (!normalized) return "";
+const appendCountry = (address) => (address.includes("台灣") ? address : `${address}, 台灣`);
+function cleanAddress(rawAddress) {
+  let cleaned = rawAddress.trim();
+  if (!cleaned) return "";
   for (const [pattern, replacement] of VARIANT_REPLACEMENTS) {
-    normalized = normalized.replace(pattern, replacement);
+    cleaned = cleaned.replace(pattern, replacement);
   }
-  normalized = normalized.replace(PARENTHETICAL_PATTERN, " ");
-  normalized = normalized.replace(/\s+/g, " ").replace(/，+/g, "，").trim();
-  normalized = normalized.replace(/^[，,]+|[，,]+$/g, "").trim();
-  if (!normalized) return "";
-  return normalized.includes("台灣") ? normalized : `${normalized}, 台灣`;
+  cleaned = cleaned.replace(PARENTHETICAL_PATTERN, " ");
+  cleaned = cleaned.replace(/\s+/g, " ").replace(/，+/g, "，").trim();
+  cleaned = cleaned.replace(/^[，,]+|[，,]+$/g, "").trim();
+  return cleaned;
+}
+function normalizeAddressForQuery(rawAddress) {
+  const cleaned = cleanAddress(rawAddress);
+  return cleaned ? appendCountry(cleaned) : "";
 }
 
 test("normalizeAddressForQuery: 臺 -> 台, appends 台灣", () => {
@@ -68,6 +72,43 @@ test("normalizeAddressForQuery: empty/whitespace-only -> empty string", () => {
 
 test("normalizeAddressForQuery: full-width space and comma variants collapse", () => {
   assert.equal(normalizeAddressForQuery("高雄市苓雅區　四維三路2號,高雄"), "高雄市苓雅區 四維三路2號，高雄, 台灣");
+});
+
+// ─── buildQueryCandidates (progressive address-simplification cascade) ────
+const FALLBACK_STRIPS = [/\d+號.*$/, /(\d+巷|\d+弄).*$/];
+function buildQueryCandidates(rawAddress) {
+  const base = cleanAddress(rawAddress);
+  if (!base) return [];
+  const candidates = [];
+  const seen = new Set();
+  let candidate = base;
+  for (let attempt = 0; attempt <= FALLBACK_STRIPS.length; attempt++) {
+    if (attempt > 0) {
+      candidate = candidate.replace(FALLBACK_STRIPS[attempt - 1], "").trim();
+    }
+    if (!candidate || seen.has(candidate)) continue;
+    seen.add(candidate);
+    candidates.push(appendCountry(candidate));
+  }
+  return candidates;
+}
+
+test("buildQueryCandidates: full address with 巷/號 -> 3 progressively-simplified candidates", () => {
+  const candidates = buildQueryCandidates("台北市信義區信義路二段79巷15號之8");
+  assert.deepEqual(candidates, [
+    "台北市信義區信義路二段79巷15號之8, 台灣",
+    "台北市信義區信義路二段79巷, 台灣",
+    "台北市信義區信義路二段, 台灣",
+  ]);
+});
+
+test("buildQueryCandidates: address with only 號, no 巷/弄 -> 2 candidates (dedup drops the no-op 3rd strip)", () => {
+  const candidates = buildQueryCandidates("台北市信義路五段7號");
+  assert.deepEqual(candidates, ["台北市信義路五段7號, 台灣", "台北市信義路五段, 台灣"]);
+});
+
+test("buildQueryCandidates: empty address -> empty array", () => {
+  assert.deepEqual(buildQueryCandidates(""), []);
 });
 
 // ─── isWithinTaiwanBounds ───────────────────────────────────────────────────

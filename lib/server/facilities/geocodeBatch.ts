@@ -2,7 +2,7 @@ import "server-only";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { MAX_GEOCODE_ATTEMPTS } from "@/lib/server/facilities/queries";
-import { normalizeAddressForQuery } from "@/lib/server/facilities/addressNormalize";
+import { buildQueryCandidates } from "@/lib/server/facilities/addressNormalize";
 import { queryOpenCage, queryNominatim, type LatLng } from "@/lib/server/facilities/geocodeProviders";
 import { loadGeocodeBudgetState, isBudgetExhausted, recordGeocodeRequest, tripCircuitBreaker, type GeocodeBudgetState, type GeocodeProvider } from "@/lib/server/facilities/geocodeBudget";
 
@@ -19,12 +19,18 @@ import { loadGeocodeBudgetState, isBudgetExhausted, recordGeocodeRequest, tripCi
 const LOCK_NAME = "geocode_batch_lock";
 const RESET_FLAG_KEY = "geocode_attempts_reset_v1";
 // One HTTP invocation (Next.js route, maxDuration=60s) budgets at most this
-// many facilities: worst case each one costs a throttled OpenCage attempt
-// (~1s) plus a throttled Nominatim fallback (~1.1s) before either responds,
-// so 20 * ~2.1s ≈ 42s stays comfortably under the ceiling even if every
-// single one needs the full two-provider cascade.
-const MAX_FACILITIES_PER_INVOCATION = 20;
-const PER_SOURCE_FETCH_LIMIT = 10;
+// many address groups. Each one can now cost up to 3 progressively-stripped
+// candidates (buildQueryCandidates) times a throttled OpenCage attempt
+// (~1s) plus a throttled Nominatim fallback (~1.1s) before either responds
+// — worst case ~6.3s per group. 8 * ~6.3s ≈ 50s stays under the ceiling
+// even if every single group needs the full cascade against both
+// providers. Mirrors the lesson already learned the hard way by the
+// single-source /api/admin/facilities-geocode route (see its own comment:
+// cut from 20/30 to 10/10 on 2026-08-17 after batches blew past 60s) —
+// this job's cascade is deeper (3 candidates vs. that route's None-until-now),
+// so it needs an even smaller cap.
+const MAX_FACILITIES_PER_INVOCATION = 8;
+const PER_SOURCE_FETCH_LIMIT = 8;
 
 export interface FacilitySourceSpec {
   facilityType: string;
@@ -108,25 +114,37 @@ const findMissingCoordsForSource = async (conn: PoolConnection, facilityType: st
   return rows;
 };
 
-/** Tries OpenCage then Nominatim for one normalized query, respecting each provider's remaining daily budget and recording usage/circuit-breaker state as it goes. Returns null if neither provider had budget left or neither found a usable result. */
-const geocodeOneQuery = async (
+/**
+ * Tries OpenCage then Nominatim across progressively-simplified address
+ * candidates (see buildQueryCandidates — a full address with house number
+ * routinely returns zero results even though the street itself geocodes
+ * fine), respecting each provider's remaining daily budget and recording
+ * usage/circuit-breaker state as it goes. Returns null once every candidate
+ * has been tried against every provider with budget left, or budget runs
+ * out entirely.
+ */
+const geocodeOneAddress = async (
   conn: PoolConnection,
   budgetState: Map<GeocodeProvider, GeocodeBudgetState>,
-  normalizedQuery: string,
+  candidates: string[],
 ): Promise<LatLng | null> => {
-  if (!isBudgetExhausted(budgetState, "opencage")) {
-    await recordGeocodeRequest(conn, budgetState, "opencage");
-    const outcome = await queryOpenCage(normalizedQuery);
-    if (outcome.kind === "ok") return outcome.coords;
-    if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "opencage");
-    // no_result / rejected / error all fall through to Nominatim below.
-  }
+  for (const candidate of candidates) {
+    if (isBudgetExhausted(budgetState, "opencage") && isBudgetExhausted(budgetState, "nominatim")) return null;
 
-  if (!isBudgetExhausted(budgetState, "nominatim")) {
-    await recordGeocodeRequest(conn, budgetState, "nominatim");
-    const outcome = await queryNominatim(normalizedQuery);
-    if (outcome.kind === "ok") return outcome.coords;
-    if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "nominatim");
+    if (!isBudgetExhausted(budgetState, "opencage")) {
+      await recordGeocodeRequest(conn, budgetState, "opencage");
+      const outcome = await queryOpenCage(candidate);
+      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "opencage");
+      // no_result / rejected / error fall through to Nominatim / the next candidate.
+    }
+
+    if (!isBudgetExhausted(budgetState, "nominatim")) {
+      await recordGeocodeRequest(conn, budgetState, "nominatim");
+      const outcome = await queryNominatim(candidate);
+      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "nominatim");
+    }
   }
 
   return null;
@@ -171,23 +189,28 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
 
       // Dedup exact normalized addresses within this fetched batch — one
       // successful lookup applies to every facility sharing that address
-      // (see the spec's "Deduplicate exact normalized addresses").
-      const idsByQuery = new Map<string, number[]>();
+      // (see the spec's "Deduplicate exact normalized addresses"). Keyed by
+      // the fully-normalized address (buildQueryCandidates' first/most
+      // specific candidate) so two facilities at the same address are
+      // grouped together regardless of which progressively-stripped
+      // candidate eventually succeeds for them.
+      const groupsByAddress = new Map<string, { ids: number[]; candidates: string[] }>();
       for (const row of rows) {
-        const query = normalizeAddressForQuery(row.address);
-        if (!query) continue;
-        const ids = idsByQuery.get(query) ?? [];
-        ids.push(row.id);
-        idsByQuery.set(query, ids);
+        const candidates = buildQueryCandidates(row.address);
+        if (candidates.length === 0) continue;
+        const dedupKey = candidates[0];
+        const group = groupsByAddress.get(dedupKey) ?? { ids: [], candidates };
+        group.ids.push(row.id);
+        groupsByAddress.set(dedupKey, group);
       }
 
       const sourceSummary: GeocodeBatchSourceSummary = { sourceKey: source.sourceKey, facilityType: source.facilityType, attempted: 0, geocoded: 0, failed: 0 };
       summary.bySource.push(sourceSummary);
 
-      for (const [query, ids] of idsByQuery) {
+      for (const { ids, candidates } of groupsByAddress.values()) {
         if (isBudgetExhausted(budgetState, "opencage") && isBudgetExhausted(budgetState, "nominatim")) break;
 
-        const coords = await geocodeOneQuery(conn, budgetState, query);
+        const coords = await geocodeOneAddress(conn, budgetState, candidates);
         if (coords) {
           await conn.query("UPDATE facilities SET lat = ?, lng = ?, updated_at = ? WHERE id IN (?)", [coords.lat, coords.lng, utcNowSql(), ids]);
           sourceSummary.geocoded += ids.length;
