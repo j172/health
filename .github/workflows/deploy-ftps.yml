@@ -32,6 +32,15 @@ jobs:
       - name: Build app
         run: npm run build
 
+      # Runs on this GHA runner (ample RAM), not the production host — see
+      # ops_health_502_watchdog memory's 2026-08-21 incident: next/og's
+      # ImageResponse renders via WASM, which crash-loops the production
+      # process (768MB V8 heap cap). Output is plain static PNGs, packaged
+      # into public/ below like any other static asset; the production
+      # process itself never touches next/og.
+      - name: Generate source og:image placeholders
+        run: node scripts/generate-source-og-images.mjs
+
       - name: Package prebuilt bundle
         run: |
           test -d .next3
