@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import ImageSkeleton from "@/components/ui/ImageSkeleton";
+import { getSourcePlaceholderStyle } from "@/lib/server/news/sourcePlaceholder";
 
 /**
  * News card thumbnail — extracted from NewsCard.tsx as its own client
@@ -19,16 +20,20 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
   const fadeClass = `transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`;
 
   if (!src) {
+    // Source-branded, text-only placeholder (no outlet logos — those are
+    // third-party trademarks this site has no license to reproduce) rather
+    // than the old one-size-fits-all "j172tw Healthz" logo. Purely a
+    // rendering-time fallback: card_image_url in the DB stays null, so the
+    // backfill cron keeps retrying and swaps in a real image the moment one
+    // is found — see sourcePlaceholder.ts's doc comment.
+    const { label, isGov } = getSourcePlaceholderStyle(item.source_name);
+    const theme = isGov
+      ? { bg: "from-emerald-50 to-slate-100 dark:from-emerald-950/40 dark:to-slate-900", text: "text-emerald-600 dark:text-emerald-400" }
+      : { bg: "from-indigo-50 to-slate-100 dark:from-indigo-950/40 dark:to-slate-900", text: "text-indigo-600 dark:text-indigo-400" };
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 p-4">
-        <Image
-          src="/images/logo/j172tw-health-logo.png"
-          alt="j172tw Healthz"
-          width={48}
-          height={48}
-          className="h-10 w-10 opacity-40 transition-transform duration-300 group-hover:scale-105"
-        />
-        <span className="mt-2 text-[10px] font-semibold tracking-wider text-slate-400 opacity-60">j172tw Healthz</span>
+      <div className={`flex h-full w-full flex-col items-center justify-center bg-gradient-to-br ${theme.bg} p-4 text-center`}>
+        <span className={`text-sm font-bold tracking-wide ${theme.text}`}>{label}</span>
+        <span className="mt-1.5 text-[10px] font-medium tracking-wider text-slate-400 dark:text-slate-500 opacity-70">j172tw Healthz</span>
       </div>
     );
   }
