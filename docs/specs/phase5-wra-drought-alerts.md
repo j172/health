@@ -116,3 +116,33 @@ on a daily schedule, e.g. `cron.schedule("0 7 * * *", runGuarded("wra-drought-sy
   past the 48h window).
 - Manual: confirm re-running the sync twice in a row doesn't create
   duplicate `news_items` rows for the same reservoir (upsert, not insert).
+
+---
+
+## 7. Implementation note (2026-08-21) — upstream is behind bot protection
+
+Phase 5 is now implemented: `lib/server/wra/client.ts`, `lib/server/wra/runSync.ts`,
+the per-source window in `listActiveWeatherWarnings`, the daily 07:00 cron in
+`registerJobs.ts`, and a manual trigger at `POST /api/admin/wra-sync`.
+
+**It cannot currently return data.** The source URL in section 1 sits behind an
+F5 Shape/BIG-IP JavaScript challenge. A plain server-side request gets
+`HTTP 200` with `Content-Type: text/html` and a `bobcmn`/`TSPD` challenge page
+rather than JSON — verified directly against the live endpoint.
+
+`fetchWraDroughtRecords()` detects this and throws `WraFeedBlockedError`, so the
+daily cron logs an accurate reason instead of an opaque JSON parse failure, and
+`runWraDroughtSync()` returns it in `result.error` without touching `news_items`.
+Nothing else in the app is affected: the widget query already tolerates zero WRA
+rows, and CWA warnings are unchanged.
+
+Unblocking it needs one of:
+
+1. an allowlisted source address for the production host with WRA,
+2. a credentialed WRA API route, if one exists for this dataset, or
+3. a mirror of the dataset that is not challenge-protected (data.gov.tw carries
+   copies of many WRA datasets — worth checking for this resource id).
+
+Section 4's optional `wra_drought_alerts` audit table was deliberately not built,
+per that section's own guidance: the widget does not need it, and it would add
+schema surface for no current benefit.

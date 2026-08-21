@@ -64,12 +64,20 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     if (body.attachImageUrl === true) {
-      const newsItemId = typeof body.newsItemId === "number" ? body.newsItemId : Number(body.newsItemId);
+      const newsItemId =
+        typeof body.newsItemId === "number"
+          ? body.newsItemId
+          : Number(body.newsItemId);
       const imageUrl = typeof body.imageUrl === "string" ? body.imageUrl : "";
       const title = typeof body.title === "string" ? body.title : null;
       const result = await attachCardImageFromUrl(newsItemId, imageUrl, title);
       return NextResponse.json(
-        { ok: result.ok, mode: "attach-image-url", localPath: result.localPath, reason: result.reason },
+        {
+          ok: result.ok,
+          mode: "attach-image-url",
+          localPath: result.localPath,
+          reason: result.reason,
+        },
         { status: result.ok ? 200 : 422 },
       );
     }
@@ -82,13 +90,22 @@ export async function POST(request: Request): Promise<NextResponse> {
     const newerThanHours = normalizeNewerThanHours(body.newerThanHours);
     if (body.newerThanHours !== undefined && newerThanHours === null) {
       return NextResponse.json(
-        { ok: false, error: "newerThanHours must be a whole number of hours between 1 and 168." },
+        {
+          ok: false,
+          error:
+            "newerThanHours must be a whole number of hours between 1 and 168.",
+        },
         { status: 400 },
       );
     }
 
     const summary = await assignMissingNewsCardImages(limit, newerThanHours);
-    return NextResponse.json({ ok: true, mode: "stock-photo", newerThanHours, summary });
+    return NextResponse.json({
+      ok: true,
+      mode: "stock-photo",
+      newerThanHours,
+      summary,
+    });
   } catch (error) {
     return internalErrorResponse(error, "Unknown card image assignment error");
   }

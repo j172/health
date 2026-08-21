@@ -8,6 +8,7 @@ import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
+import { runWraDroughtSync } from "@/lib/server/wra/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -30,7 +31,10 @@ const appendLog = async (fileName: string, line: unknown): Promise<void> => {
  * side of the request while the server handler kept running past the
  * timeout.
  */
-const runGuarded = (logFile: string, run: () => Promise<unknown>): (() => Promise<void>) => {
+const runGuarded = (
+  logFile: string,
+  run: () => Promise<unknown>,
+): (() => Promise<void>) => {
   let running = false;
   return async () => {
     if (running) return;
@@ -39,7 +43,10 @@ const runGuarded = (logFile: string, run: () => Promise<unknown>): (() => Promis
       const summary = await run();
       await appendLog(logFile, { ok: true, summary });
     } catch (error) {
-      await appendLog(logFile, { ok: false, error: error instanceof Error ? error.message : String(error) });
+      await appendLog(logFile, {
+        ok: false,
+        error: error instanceof Error ? error.message : String(error),
+      });
     } finally {
       running = false;
     }
@@ -58,21 +65,52 @@ const runGuarded = (logFile: string, run: () => Promise<unknown>): (() => Promis
  * untouched by this module.
  */
 export const registerCronJobs = (): void => {
-  cron.schedule("5,35 * * * *", runGuarded("rss-sync-cron.log", () => runRssIngestion("internal-cron")));
-  cron.schedule("20,50 * * * *", runGuarded("aqi-sync-cron.log", () => runAqiSync()));
-  cron.schedule("15,45 * * * *", runGuarded("cwa-sync-cron.log", () => runCwaSync()));
-  cron.schedule("3,13,23,33,43,53 * * * *", runGuarded("earthquakes-sync-cron.log", () => runEarthquakeSync()));
+  cron.schedule(
+    "5,35 * * * *",
+    runGuarded("rss-sync-cron.log", () => runRssIngestion("internal-cron")),
+  );
+  cron.schedule(
+    "20,50 * * * *",
+    runGuarded("aqi-sync-cron.log", () => runAqiSync()),
+  );
+  cron.schedule(
+    "15,45 * * * *",
+    runGuarded("cwa-sync-cron.log", () => runCwaSync()),
+  );
+  cron.schedule(
+    "3,13,23,33,43,53 * * * *",
+    runGuarded("earthquakes-sync-cron.log", () => runEarthquakeSync()),
+  );
   // Once daily — no specific business requirement on exact hour, 8am
   // server-local keeps it clear of the denser :00-ish traffic from the jobs
   // above. See docs/specs/social-icons-and-post-drafts.md section 2.3.
-  cron.schedule("0 8 * * *", runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()));
+  cron.schedule(
+    "0 8 * * *",
+    runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()),
+  );
+  // Once daily at 7am — the WRA drought bulletin is a slow-moving feed (it does
+  // not update hourly), and listActiveWeatherWarnings gives 'wra' a 48h window
+  // precisely so one missed run cannot flap the widget.
+  // See docs/specs/phase5-wra-drought-alerts.md section 5.
+  cron.schedule(
+    "0 7 * * *",
+    runGuarded("wra-drought-sync-cron.log", () => runWraDroughtSync()),
+  );
   // Weekly on Sunday at 4am — NHI updates clinic/pharmacy weekly service hours data weekly
-  cron.schedule("0 4 * * 0", runGuarded("facilities-hours-sync-cron.log", () => runFacilityHoursSync()));
+  cron.schedule(
+    "0 4 * * 0",
+    runGuarded("facilities-hours-sync-cron.log", () => runFacilityHoursSync()),
+  );
   // Every 10 minutes — decoupled from rss-sync (see
   // docs/specs/news-card-image-freshness-scheduling.md) so Pixabay
   // assignment cadence isn't limited by rss-sync's own overlap guard.
   // assignMissingNewsCardImages() already takes out its own MySQL GET_LOCK
   // (news_card_image_assignment_lock), so this is safe to run alongside any
   // other trigger of the same function without double-work.
-  cron.schedule("*/10 * * * *", runGuarded("news-card-images-cron.log", () => assignMissingNewsCardImages(15)));
+  cron.schedule(
+    "*/10 * * * *",
+    runGuarded("news-card-images-cron.log", () =>
+      assignMissingNewsCardImages(15),
+    ),
+  );
 };

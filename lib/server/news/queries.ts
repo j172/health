@@ -12,7 +12,15 @@ export interface NewsListItem {
   canonical_url: string;
   description_html: string | null;
   card_image_url: string | null;
-  card_image_source: "rss" | "pixabay" | "pexels" | "unsplash" | "static_map" | "og_image" | string | null;
+  card_image_source:
+    | "rss"
+    | "pixabay"
+    | "pexels"
+    | "unsplash"
+    | "static_map"
+    | "og_image"
+    | string
+    | null;
   card_image_source_page_url: string | null;
   card_image_contributor: string | null;
   lat?: number | null;
@@ -52,7 +60,9 @@ export interface NewsGeoSummaryItem {
 
 /** Recent items with their AI-generated GEO summaries, for llms.txt — a
  * lighter projection than NewsDetailItem since it skips html/detail text. */
-export const listRecentNewsForLlms = async (limit = 100): Promise<NewsGeoSummaryItem[]> =>
+export const listRecentNewsForLlms = async (
+  limit = 100,
+): Promise<NewsGeoSummaryItem[]> =>
   withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -83,19 +93,40 @@ const ACTIVE_WARNING_WINDOW_HOURS = 6;
  * since these are transient alerts rather than browsable news coverage. */
 import { memoizeQuery } from "@/lib/server/cache/memo";
 
-export const listActiveWeatherWarnings = async (limit = 5): Promise<WeatherWarningItem[]> =>
+/**
+ * Freshness window per source, in hours.
+ *
+ * Deliberately not one shared constant. Neither source stores an expiry — a
+ * bulletin counts as active for as long as its sync job keeps re-publishing it —
+ * so the window has to be sized against each job's cadence. CWA syncs twice an
+ * hour, so 6h is generous. WRA syncs once a day (docs/specs/phase5-wra-drought-alerts.md
+ * section 3), so a 6h window would flap the widget on and off between runs; 48h
+ * comfortably survives one missed sync.
+ */
+const WARNING_WINDOW_HOURS_BY_SOURCE = {
+  cwa: ACTIVE_WARNING_WINDOW_HOURS,
+  wra: 48,
+} as const;
+
+export const listActiveWeatherWarnings = async (
+  limit = 5,
+): Promise<WeatherWarningItem[]> =>
   memoizeQuery(`active_weather_warnings_${limit}`, async () =>
     withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
         `
         SELECT id, title, published_at_utc
         FROM news_items
-        WHERE source_name = 'cwa'
-          AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+        WHERE (source_name = 'cwa' AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR))
+           OR (source_name = 'wra' AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR))
         ORDER BY published_at_utc DESC
         LIMIT ?
         `,
-        [ACTIVE_WARNING_WINDOW_HOURS, limit],
+        [
+          WARNING_WINDOW_HOURS_BY_SOURCE.cwa,
+          WARNING_WINDOW_HOURS_BY_SOURCE.wra,
+          limit,
+        ],
       );
       return rows as unknown as WeatherWarningItem[];
     }),
@@ -110,7 +141,9 @@ export interface NewsSitemapItem {
 /** Articles published within the last `hours` — Google News Sitemap only
  * accepts articles published in the last 48 hours (older ones should be
  * dropped from the news sitemap entirely, not just deprioritized). */
-export const listRecentNewsForNewsSitemap = async (hours = 48): Promise<NewsSitemapItem[]> =>
+export const listRecentNewsForNewsSitemap = async (
+  hours = 48,
+): Promise<NewsSitemapItem[]> =>
   withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -126,7 +159,8 @@ export const listRecentNewsForNewsSitemap = async (hours = 48): Promise<NewsSite
 
 // Matches a single comma-separated keyword tag exactly (via comma-bounded
 // substring), so filtering by "健康" doesn't also match "健康新聞" or similar.
-const KEYWORD_MATCH_SQL = "CONCAT(',', n.keywords, ',') LIKE CONCAT('%,', ?, ',%')";
+const KEYWORD_MATCH_SQL =
+  "CONCAT(',', n.keywords, ',') LIKE CONCAT('%,', ?, ',%')";
 
 const buildNewsFilter = (
   sourceName?: string,
@@ -140,14 +174,19 @@ const buildNewsFilter = (
     conditions.push("n.source_name = ?");
     params.push(sourceName);
   } else if (sourceNames && sourceNames.length > 0) {
-    conditions.push(`n.source_name IN (${sourceNames.map(() => "?").join(", ")})`);
+    conditions.push(
+      `n.source_name IN (${sourceNames.map(() => "?").join(", ")})`,
+    );
     params.push(...sourceNames);
   }
   if (keyword) {
     conditions.push(KEYWORD_MATCH_SQL);
     params.push(keyword);
   }
-  return { whereClause: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "", params };
+  return {
+    whereClause: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "",
+    params,
+  };
 };
 
 // Prefer a real article/RSS image (news_assets) over the Pixabay illustration.
@@ -191,7 +230,11 @@ export const listLatestNews = async (
   const cacheKey = `list_news_${limit}_${offset}_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback([], async (conn) => {
-      const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
+      const { whereClause, params } = buildNewsFilter(
+        sourceName,
+        keyword,
+        sourceNames,
+      );
       const [rows] = await conn.query<RowDataPacket[]>(
         `
         SELECT ${NEWS_LIST_SELECT_SQL}
@@ -221,7 +264,10 @@ export const listLatestNews = async (
  * effectively its recent view count, which approximates a recency-weighted
  * ranking well enough to stop old evergreen articles from permanently
  * squatting the trending list without needing a new view-events table. */
-export const getTopViewedNews = async (limit = 5, windowDays = 7): Promise<NewsListItem[]> => {
+export const getTopViewedNews = async (
+  limit = 5,
+  windowDays = 7,
+): Promise<NewsListItem[]> => {
   const cacheKey = `top_viewed_news_${limit}_${windowDays}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback([], async (conn) => {
@@ -242,12 +288,23 @@ export const getTopViewedNews = async (limit = 5, windowDays = 7): Promise<NewsL
   );
 };
 
-export const countNewsItems = async (sourceName?: string, keyword?: string, sourceNames?: string[]): Promise<number> => {
+export const countNewsItems = async (
+  sourceName?: string,
+  keyword?: string,
+  sourceNames?: string[],
+): Promise<number> => {
   const cacheKey = `count_news_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback(0, async (conn) => {
-      const { whereClause, params } = buildNewsFilter(sourceName, keyword, sourceNames);
-      const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM news_items n ${whereClause}`, params);
+      const { whereClause, params } = buildNewsFilter(
+        sourceName,
+        keyword,
+        sourceNames,
+      );
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `SELECT COUNT(*) AS total FROM news_items n ${whereClause}`,
+        params,
+      );
       return Number(rows[0]?.total ?? 0);
     }),
   );
@@ -274,7 +331,9 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
     return rows[0] as unknown as NewsDetailItem;
   });
 
-export const listNewsWithLocation = async (limit = 30): Promise<NewsListItem[]> =>
+export const listNewsWithLocation = async (
+  limit = 30,
+): Promise<NewsListItem[]> =>
   memoizeQuery(`news_with_location_${limit}`, async () =>
     withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
@@ -292,7 +351,9 @@ export const listNewsWithLocation = async (limit = 30): Promise<NewsListItem[]> 
     }),
   );
 
-export const listNewsAssetsByNewsId = async (newsId: number): Promise<NewsAssetItem[]> =>
+export const listNewsAssetsByNewsId = async (
+  newsId: number,
+): Promise<NewsAssetItem[]> =>
   withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -327,7 +388,10 @@ export const listRelatedNews = async (
     return rows as unknown as NewsListItem[];
   });
 
-export const searchNewsItems = async (query: string, limit = 10): Promise<NewsListItem[]> =>
+export const searchNewsItems = async (
+  query: string,
+  limit = 10,
+): Promise<NewsListItem[]> =>
   withConnectionFallback([], async (conn) => {
     const trimmed = query.trim();
     if (!trimmed) return [];
