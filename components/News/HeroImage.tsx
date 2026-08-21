@@ -28,6 +28,11 @@ export default function HeroImage({
   attribution?: HeroImageAttribution | null;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return null;
+  }
 
   return (
     <figure className="mt-8">
@@ -38,6 +43,7 @@ export default function HeroImage({
           src={src}
           alt={alt}
           onLoad={() => setLoaded(true)}
+          onError={() => setHasError(true)}
           className={`max-h-[32rem] w-full object-cover transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`}
         />
       </div>

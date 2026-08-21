@@ -5,14 +5,14 @@ import crypto from "node:crypto";
 import type { PoolConnection, ResultSetHeader } from "mysql2/promise";
 import { utcNowSql } from "@/lib/server/db/mysql";
 
-const MAP_UPLOADS_DIR = path.join(process.cwd(), "public", "uploads", "maps");
+const MAP_IMAGES_DIR = path.join(process.cwd(), "public", "images", "news", "maps");
 
 /**
- * Ensures map upload directory exists.
+ * Ensures map image directory exists.
  */
 async function ensureMapDir(): Promise<void> {
   try {
-    await fs.mkdir(MAP_UPLOADS_DIR, { recursive: true });
+    await fs.mkdir(MAP_IMAGES_DIR, { recursive: true });
   } catch {
     // Ignore already exists
   }
@@ -104,8 +104,8 @@ export async function assignStaticMapImage(
 
   const svgContent = generateStaticMapSvg(lat, lng, locationName);
   const fileName = `map_${newsId}_${lat.toFixed(4)}_${lng.toFixed(4)}.svg`;
-  const relativePath = `/uploads/maps/${fileName}`;
-  const absolutePath = path.join(MAP_UPLOADS_DIR, fileName);
+  const relativePath = `/images/news/maps/${fileName}`;
+  const absolutePath = path.join(MAP_IMAGES_DIR, fileName);
 
   await fs.writeFile(absolutePath, svgContent, "utf-8");
 

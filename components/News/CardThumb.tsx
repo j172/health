@@ -14,18 +14,20 @@ import { getSourcePlaceholderStyle } from "@/lib/server/news/sourcePlaceholder";
  */
 export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
   const [loaded, setLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const src = item.card_image_url;
   const imgClass =
     "h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]";
   const fadeClass = `transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`;
 
-  if (!src) {
+  if (!src || hasError) {
     // Source-branded, text-only placeholder (no outlet logos — those are
     // third-party trademarks this site has no license to reproduce) rather
     // than the old one-size-fits-all "j172tw Healthz" logo. Purely a
     // rendering-time fallback: card_image_url in the DB stays null, so the
     // backfill cron keeps retrying and swaps in a real image the moment one
-    // is found — see sourcePlaceholder.ts's doc comment.
+    // is found — see sourcePlaceholder.ts's doc comment. Also acts as an
+    // onError fallback when an image fails to load or 404s.
     const { label, isGov } = getSourcePlaceholderStyle(item.source_name);
     const theme = isGov
       ? { bg: "from-emerald-50 to-slate-100 dark:from-emerald-950/40 dark:to-slate-900", text: "text-emerald-600 dark:text-emerald-400" }
@@ -49,6 +51,7 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
           className={`${imgClass} ${fadeClass}`}
           loading="lazy"
           onLoad={() => setLoaded(true)}
+          onError={() => setHasError(true)}
         />
       </>
     );
@@ -64,12 +67,12 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
         className={`${imgClass} ${fadeClass}`}
         sizes={sizes}
         unoptimized={
-          src.startsWith("/images/news/pixabay/") ||
-          src.startsWith("/images/news/pexels/") ||
-          src.startsWith("/images/news/unsplash/") ||
-          src.startsWith("/images/news/articles/")
+          src.endsWith(".svg") ||
+          src.startsWith("/images/news/") ||
+          src.startsWith("/uploads/maps/")
         }
         onLoad={() => setLoaded(true)}
+        onError={() => setHasError(true)}
       />
     </>
   );

@@ -133,6 +133,13 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE news_card_images
       MODIFY COLUMN pixabay_id BIGINT NULL
   `);
+  // Normalize legacy static map paths from /uploads/maps/ to /images/news/maps/
+  // so all card images share the same /images/:path* immutable caching policy.
+  await p.query(`
+    UPDATE news_card_images
+      SET local_path = REPLACE(local_path, '/uploads/maps/', '/images/news/maps/')
+      WHERE local_path LIKE '/uploads/maps/%'
+  `);
   await p.query(`
     ALTER TABLE facilities
       ADD COLUMN IF NOT EXISTS geocode_attempts INT NOT NULL DEFAULT 0 AFTER lng
