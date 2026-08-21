@@ -55,3 +55,14 @@ The image is permanently stuck in `opacity-0`, resulting in a completely blank c
 2. `npm run lint` passes with 0 errors.
 3. `npm run build` compiles cleanly.
 4. Git branch merged to `main` with a clean history and deployed/pushed.
+
+---
+
+## 4. Post-Deploy Follow-Up (found & patched 2026-08-21, same day)
+
+Two gaps surfaced only after this spec's fix actually reached production:
+
+1. **Merging to `main` does not deploy.** `deploy-ftps.yml` is `workflow_dispatch`-only. The fix commit (`3a5dbcc`) landed ~11 minutes *after* the last production deploy had already applied, so the live site kept serving the pre-fix `CardThumb.tsx` (no `onError`, no `unoptimized` for `/uploads/maps/`) until someone manually ran `gh workflow run deploy-ftps.yml`. The blank-card symptom this spec describes is fully reproducible any time a fix like this sits merged-but-undeployed.
+2. **§2.4's DB migration rewrites `local_path` strings only — it never moves the physical file.** `UPDATE news_card_images SET local_path = REPLACE(...)` ran fine on deploy and repointed every `static_map` row from `/uploads/maps/…` to `/images/news/maps/…`, but the actual `.svg` files were still sitting under the old `public/uploads/maps/` directory (which the app's `MAP_IMAGES_DIR` no longer writes to). Result: every static-map row migrated straight into a 404 at its *new* path, with the (still-working) old file now orphaned and unreferenced by any row. `onError` masked this as a placeholder card instead of a blank one, so it didn't look broken — but the map itself never rendered.
+   - **Manual remediation applied 2026-08-21**: all 6 legacy files under `public/uploads/maps/` on production were `cp`'d (not moved) into `public/images/news/maps/` via SSH, restoring every affected article's real map.
+   - **Not yet fixed at the code level**: nothing prevents this from recurring for any *future* schema/path migration of `news_card_images`. A real fix should make the migration step itself copy/move the physical file alongside the `local_path` rewrite (or have `assignStaticMapImage`/the read path self-heal by regenerating when the referenced file is missing, since today's `INSERT ... WHERE NOT EXISTS` guard means a row with a lost file is never retried).
