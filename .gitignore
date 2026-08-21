@@ -13,6 +13,13 @@
 /.next2/
 /.next3/
 /out/
+
+# local cron/script log output (see scripts/*.mjs invocations)
+/logs/
+
+# local agent/tool scratch state (Codex CLI config+worktrees, agent worktrees) — not part of the app
+/.codex/
+/.agents/
 tsconfig.tsbuildinfo
 
 # contentlayer
