@@ -139,7 +139,7 @@ const processSpecialSource = async (
       skippedUnchanged += 1;
       continue;
     }
-    // eslint-disable-next-line no-await-in-loop
+     
     const seo = await generateSeoMetadataWithAi({
       title: item.title,
       descriptionText: item.descriptionText,
@@ -213,7 +213,7 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
           skippedUnchanged += 1;
           continue;
         }
-        // eslint-disable-next-line no-await-in-loop
+         
         const enriched = await enrichItem(item);
         enrichedItems.push(enriched);
       }

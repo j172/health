@@ -75,7 +75,7 @@ export const fetchBusinessweeklyHealthNews = async (): Promise<BusinessweeklyHea
   for (const { path, label } of CATEGORY_PAGES) {
     const listUrl = `${BASE_URL}${path}`;
     try {
-      // eslint-disable-next-line no-await-in-loop
+       
       const response = await httpGetText(listUrl, {
         headers: {
           "User-Agent": "health.j172.tw-rss-ingestor/1.0",
@@ -126,7 +126,7 @@ export const fetchBusinessweeklyHealthNews = async (): Promise<BusinessweeklyHea
 
         const assets: EnrichedRssItem["assets"] = [];
         if (imgSrc) {
-          // eslint-disable-next-line no-await-in-loop
+           
           const localPath = await downloadArticleImage(imgSrc);
           if (localPath) {
             assets.push({ assetType: "image", title: null, url: localPath, sortOrder: 0 });

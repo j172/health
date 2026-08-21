@@ -182,6 +182,12 @@ export default function SearchModal({
                     className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-indigo-50/70 dark:hover:bg-slate-800/80"
                   >
                     {item.card_image_url ? (
+                      /* Remote news thumbnails stay a plain <img>, as everywhere
+                         else in this codebase (CardThumb, HeroImage, HeroPost) —
+                         they come from many uncontrolled hosts and routing them
+                         through next/image would put the optimizer on the request
+                         path of a memory-constrained shared host. */
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={item.card_image_url}
                         alt=""

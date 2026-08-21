@@ -67,7 +67,7 @@ export const fetchFiftyplusHealthNews = async (): Promise<FiftyplusHealthFetchRe
   for (const { path, label } of CATEGORY_PAGES) {
     const listUrl = `${BASE_URL}${path}`;
     try {
-      // eslint-disable-next-line no-await-in-loop
+       
       const response = await httpGetText(listUrl, {
         headers: {
           "User-Agent": "health.j172.tw-rss-ingestor/1.0",
@@ -115,7 +115,7 @@ export const fetchFiftyplusHealthNews = async (): Promise<FiftyplusHealthFetchRe
 
         const assets: EnrichedRssItem["assets"] = [];
         if (imgSrc) {
-          // eslint-disable-next-line no-await-in-loop
+           
           const localPath = await downloadArticleImage(imgSrc);
           if (localPath) {
             assets.push({ assetType: "image", title: null, url: localPath, sortOrder: 0 });

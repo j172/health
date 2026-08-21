@@ -100,7 +100,7 @@ export const fetchHealthnewsNews = async (): Promise<HealthnewsFetchResult> => {
 
       const assets: EnrichedRssItem["assets"] = [];
       if (imgSrc) {
-        // eslint-disable-next-line no-await-in-loop
+         
         const localPath = await downloadArticleImage(imgSrc);
         if (localPath) {
           assets.push({ assetType: "image", title: null, url: localPath, sortOrder: 0 });

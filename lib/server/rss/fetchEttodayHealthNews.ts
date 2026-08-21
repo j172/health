@@ -105,7 +105,7 @@ export const fetchEttodayHealthNews = async (): Promise<EttodayHealthFetchResult
 
       const assets: EnrichedRssItem["assets"] = [];
       if (imgSrc) {
-        // eslint-disable-next-line no-await-in-loop
+         
         const localPath = await downloadArticleImage(imgSrc);
         if (localPath) {
           assets.push({ assetType: "image", title: imgEl.attr("alt")?.trim() || null, url: localPath, sortOrder: 0 });

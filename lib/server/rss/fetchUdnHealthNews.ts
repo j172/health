@@ -103,7 +103,7 @@ export const fetchUdnHealthNews = async (): Promise<UdnHealthFetchResult> => {
       // hotlinks a third-party image host.
       const assets: EnrichedRssItem["assets"] = [];
       if (imgSrc) {
-        // eslint-disable-next-line no-await-in-loop
+         
         const localPath = await downloadArticleImage(imgSrc);
         if (localPath) {
           assets.push({ assetType: "image", title: imgEl.attr("alt")?.trim() || null, url: localPath, sortOrder: 0 });

@@ -21,8 +21,14 @@ const nextConfig = {
     ],
   },
   async headers() {
-    const publicCache = { key: "Cache-Control", value: "public, s-maxage=60, stale-while-revalidate=600" };
-    const immutableStaticCache = { key: "Cache-Control", value: "public, max-age=31536000, immutable" };
+    const publicCache = {
+      key: "Cache-Control",
+      value: "public, s-maxage=60, stale-while-revalidate=600",
+    };
+    const immutableStaticCache = {
+      key: "Cache-Control",
+      value: "public, max-age=31536000, immutable",
+    };
     return [
       { source: "/", headers: [publicCache] },
       { source: "/news", headers: [publicCache] },
@@ -33,6 +39,21 @@ const nextConfig = {
       { source: "/llms-full.txt", headers: [publicCache] },
       { source: "/_next/static/:path*", headers: [immutableStaticCache] },
       { source: "/images/:path*", headers: [immutableStaticCache] },
+      // Admin pages carry a session cookie and must never be cached by the PHP
+      // handler, a proxy, or the browser, nor leak their URL through Referer.
+      {
+        source: "/admin/:path*",
+        headers: [
+          { key: "Cache-Control", value: "no-store, max-age=0" },
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      // The ingestion-run log is the one admin GET; it must not be cached either.
+      {
+        source: "/api/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store, max-age=0" }],
+      },
     ];
   },
 };
