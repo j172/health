@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
+import { memoizeQuery } from "@/lib/server/cache/memo";
 
 export interface CwaForecastRecord {
   countyName: string;
@@ -25,7 +26,18 @@ export const upsertCwaForecasts = (records: CwaForecastRecord[]) =>
        parameter_unit = VALUES(parameter_unit),
        synced_at = VALUES(synced_at),
        updated_at = VALUES(updated_at)`,
-    (r, now) => [r.countyName, r.elementName, r.startTime, r.endTime, r.parameterName, r.parameterValue, r.parameterUnit, now, now, now],
+    (r, now) => [
+      r.countyName,
+      r.elementName,
+      r.startTime,
+      r.endTime,
+      r.parameterName,
+      r.parameterValue,
+      r.parameterUnit,
+      now,
+      now,
+      now,
+    ],
   );
 
 export interface CwaEarthquakeRecord {
@@ -118,7 +130,18 @@ export const upsertCwaTsunamis = (records: CwaTsunamiRecord[]) =>
        web = VALUES(web),
        synced_at = VALUES(synced_at),
        updated_at = VALUES(updated_at)`,
-    (r, now) => [r.reportNo, r.reportType, r.reportColor, r.issueTime, r.endTime, r.reportContent, r.web, now, now, now],
+    (r, now) => [
+      r.reportNo,
+      r.reportType,
+      r.reportColor,
+      r.issueTime,
+      r.endTime,
+      r.reportContent,
+      r.web,
+      now,
+      now,
+      now,
+    ],
   );
 
 export interface CwaAlertRecord {
@@ -200,7 +223,17 @@ export const upsertCwaTownshipHazards = (records: CwaTownshipHazardRecord[]) =>
        end_time = VALUES(end_time),
        synced_at = VALUES(synced_at),
        updated_at = VALUES(updated_at)`,
-    (r, now) => [r.locationName, r.geocode, r.phenomena, r.significance, r.startTime, r.endTime, now, now, now],
+    (r, now) => [
+      r.locationName,
+      r.geocode,
+      r.phenomena,
+      r.significance,
+      r.startTime,
+      r.endTime,
+      now,
+      now,
+      now,
+    ],
   );
 
 export interface CwaStationWeatherRecord {
@@ -374,7 +407,10 @@ export interface LatestUvReading {
 }
 
 /** Nearest station's UV reading (most recent obs_date) to a given point (Haversine, km). Joined against cwa_station_weather for coordinates and name. */
-export const getNearestUvReading = async (lat: number, lng: number): Promise<(LatestUvReading & { distance_km: number }) | null> =>
+export const getNearestUvReading = async (
+  lat: number,
+  lng: number,
+): Promise<(LatestUvReading & { distance_km: number }) | null> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -415,9 +451,12 @@ export interface UvStationItem {
 
 export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
   try {
-    return await withConnection(async (conn) => {
-      const [rows] = await conn.query<RowDataPacket[]>(
-        `
+    // §3.3 — rendered on every /tools/uv hit; CWA only publishes a new observation
+    // date once per day, so a 60s memo removes nearly all of these round-trips.
+    return await memoizeQuery("latest_uv_readings_all", async () =>
+      withConnection(async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
         SELECT DISTINCT u.station_id, s.station_name, s.county_name, u.uv_index, u.obs_date
         FROM cwa_uv_index u
         LEFT JOIN cwa_station_weather s ON s.station_id = u.station_id
@@ -425,24 +464,28 @@ export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
           AND u.uv_index IS NOT NULL
         ORDER BY u.uv_index DESC
         `,
-      );
-      return (rows as RowDataPacket[]).map((r) => {
-        let obsDateStr = "";
-        if (r.obs_date instanceof Date) {
-          obsDateStr = r.obs_date.toISOString().split("T")[0];
-        } else if (r.obs_date) {
-          obsDateStr = String(r.obs_date).split("T")[0];
-        }
-        const numUv = typeof r.uv_index === "number" ? r.uv_index : parseFloat(String(r.uv_index ?? ""));
-        return {
-          station_id: String(r.station_id ?? ""),
-          station_name: r.station_name ? String(r.station_name) : null,
-          county_name: r.county_name ? String(r.county_name) : null,
-          uv_index: isNaN(numUv) ? 0 : numUv,
-          obs_date: obsDateStr,
-        };
-      });
-    });
+        );
+        return (rows as RowDataPacket[]).map((r) => {
+          let obsDateStr = "";
+          if (r.obs_date instanceof Date) {
+            obsDateStr = r.obs_date.toISOString().split("T")[0];
+          } else if (r.obs_date) {
+            obsDateStr = String(r.obs_date).split("T")[0];
+          }
+          const numUv =
+            typeof r.uv_index === "number"
+              ? r.uv_index
+              : parseFloat(String(r.uv_index ?? ""));
+          return {
+            station_id: String(r.station_id ?? ""),
+            station_name: r.station_name ? String(r.station_name) : null,
+            county_name: r.county_name ? String(r.county_name) : null,
+            uv_index: isNaN(numUv) ? 0 : numUv,
+            obs_date: obsDateStr,
+          };
+        });
+      }),
+    );
   } catch (err) {
     console.error("Failed to list UV readings:", err);
     return [];

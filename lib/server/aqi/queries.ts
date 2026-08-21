@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import type { AqiSiteSnapshot } from "@/lib/server/aqi/fetchAqi";
+import { memoizeQuery } from "@/lib/server/cache/memo";
 
 export interface AqiReadingRow {
   site_id: string;
@@ -20,7 +21,9 @@ export interface AqiReadingRow {
 }
 
 /** Upserts one hourly snapshot per site, keyed by (site_id, recorded_at) — re-running the same hour is a no-op update, not a duplicate row. */
-export const upsertAqiReadings = async (sites: AqiSiteSnapshot[]): Promise<{ inserted: number; updated: number }> =>
+export const upsertAqiReadings = async (
+  sites: AqiSiteSnapshot[],
+): Promise<{ inserted: number; updated: number }> =>
   withConnection(async (conn) => {
     if (sites.length === 0) return { inserted: 0, updated: 0 };
     const now = utcNowSql();
@@ -76,10 +79,14 @@ export const upsertAqiReadings = async (sites: AqiSiteSnapshot[]): Promise<{ ins
   });
 
 /** Latest reading per site, optionally filtered by county substring, ordered by site name. */
-export const getLatestAqiReadings = async (county?: string): Promise<AqiReadingRow[]> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
+export const getLatestAqiReadings = async (
+  county?: string,
+): Promise<AqiReadingRow[]> =>
+  // §3.3 — this renders on every /tools/aqi hit and the data only moves hourly.
+  memoizeQuery(`latest_aqi_readings_${county ?? "all"}`, async () =>
+    withConnection(async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
       SELECT r.site_id, r.site_name, r.county, r.lat, r.lng, r.aqi_value, r.aqi_status, r.pm25, r.pm10, r.o3, r.no2, r.so2, r.co, r.recorded_at
       FROM aqi_readings r
       INNER JOIN (
@@ -90,13 +97,17 @@ export const getLatestAqiReadings = async (county?: string): Promise<AqiReadingR
       WHERE ? = '' OR r.county LIKE CONCAT('%', ?, '%')
       ORDER BY r.site_name ASC
       `,
-      [county ?? "", county ?? ""],
-    );
-    return rows as unknown as AqiReadingRow[];
-  });
+        [county ?? "", county ?? ""],
+      );
+      return rows as unknown as AqiReadingRow[];
+    }),
+  );
 
 /** Nearest station's latest reading to a given point (Haversine, km). Only considers geocoded stations. */
-export const getNearestAqiReading = async (lat: number, lng: number): Promise<(AqiReadingRow & { distance_km: number }) | null> =>
+export const getNearestAqiReading = async (
+  lat: number,
+  lng: number,
+): Promise<(AqiReadingRow & { distance_km: number }) | null> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -117,5 +128,7 @@ export const getNearestAqiReading = async (lat: number, lng: number): Promise<(A
       `,
       [lat, lng, lat],
     );
-    return (rows[0] as unknown as (AqiReadingRow & { distance_km: number })) ?? null;
+    return (
+      (rows[0] as unknown as AqiReadingRow & { distance_km: number }) ?? null
+    );
   });

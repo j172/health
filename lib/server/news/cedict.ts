@@ -1,5 +1,4 @@
 import "server-only";
-import cedictTerms from "@/lib/server/news/data/cedict-terms.json";
 
 /**
  * Offline Traditional-Chinese -> English lookup used as a middle tier for
@@ -22,10 +21,38 @@ import cedictTerms from "@/lib/server/news/data/cedict-terms.json";
  * import instead becomes part of the webpack module graph and gets bundled
  * into `.next3` along with the rest of this module's compiled server code.
  */
-const cedictMap: Record<string, string> = cedictTerms;
+/**
+ * Loaded on first lookup via dynamic import rather than a top-level static one.
+ * The dynamic form keeps the file in the webpack module graph — so it still ships
+ * inside `.next3`, which is the whole reason this is a JSON import and not an fs
+ * read — while deferring the ~1.86MB parse until something actually needs a gloss.
+ * Only titles whose KEYWORD_TERMS regex missed ever reach here, so on most routes
+ * the map is never built at all.
+ */
+let cedictMap: Record<string, string> | null = null;
+let cedictLoad: Promise<Record<string, string>> | null = null;
+
+const loadCedictMap = async (): Promise<Record<string, string>> => {
+  if (cedictMap) return cedictMap;
+  // Share one in-flight load between concurrent callers.
+  if (!cedictLoad) {
+    cedictLoad = import("@/lib/server/news/data/cedict-terms.json").then(
+      (mod) => {
+        cedictMap = (mod.default ?? mod) as Record<string, string>;
+        return cedictMap;
+      },
+    );
+  }
+  return cedictLoad;
+};
 
 /** Looks up a Traditional Chinese word's shortest usable English gloss, or
  * null if the word isn't in CC-CEDICT or every definition was filtered out
  * as unusable (cross-reference, abbreviation, classifier note, etc.) when
  * data/cedict-terms.json was generated. */
-export const lookupChineseWord = (word: string): string | null => cedictMap[word] ?? null;
+export const lookupChineseWord = async (
+  word: string,
+): Promise<string | null> => {
+  const map = await loadCedictMap();
+  return map[word] ?? null;
+};

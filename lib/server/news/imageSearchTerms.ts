@@ -1,14 +1,56 @@
 import { Segment, useDefault as initDefaultSegmentit } from "segmentit";
 import { lookupChineseWord } from "@/lib/server/news/cedict";
 
-const segmentit = initDefaultSegmentit(new Segment());
+// Built on first use rather than at module load. useDefault() constructs a full
+// segmentation dictionary, and this module is pulled into any route that touches
+// news card images — paying that allocation on a cold request path (and holding it
+// for the process lifetime) is what the ~768MB heap cap on the host cannot afford
+// when nothing on the route ever segments a title.
+let segmentitInstance: Segment | null = null;
+const getSegmentit = (): Segment => {
+  if (!segmentitInstance)
+    segmentitInstance = initDefaultSegmentit(new Segment());
+  return segmentitInstance;
+};
 
 // Common function words segmentit can still emit as standalone tokens (particles,
 // conjunctions, pronouns) — never useful as an image search term on their own.
 const STOPWORDS = new Set([
-  "的", "了", "在", "是", "和", "與", "也", "就", "都", "而", "及", "等",
-  "後", "前", "中", "內", "外", "將", "把", "被", "讓", "使", "對", "為",
-  "但", "卻", "又", "還", "再", "更", "最", "很", "已", "已經", "正在",
+  "的",
+  "了",
+  "在",
+  "是",
+  "和",
+  "與",
+  "也",
+  "就",
+  "都",
+  "而",
+  "及",
+  "等",
+  "後",
+  "前",
+  "中",
+  "內",
+  "外",
+  "將",
+  "把",
+  "被",
+  "讓",
+  "使",
+  "對",
+  "為",
+  "但",
+  "卻",
+  "又",
+  "還",
+  "再",
+  "更",
+  "最",
+  "很",
+  "已",
+  "已經",
+  "正在",
 ]);
 
 /**
@@ -96,7 +138,10 @@ const KEYWORD_TERMS: [RegExp, string][] = [
   [/能源|虛擬電廠|節能|綠能|太陽能/, "solar energy"],
 
   // ─── 7. 活動主題、美食節慶 (次要優先級) ──────────────────────────────────
-  [/美食展|美食節|美食|小吃|佳餚|名店|名廚|美饌|餐飲|傳統美食|在地美食/, "delicious food"],
+  [
+    /美食展|美食節|美食|小吃|佳餚|名店|名廚|美饌|餐飲|傳統美食|在地美食/,
+    "delicious food",
+  ],
   [/鍋烤節|火鍋|燒肉|烤肉|涮涮鍋|麻辣鍋/, "hot pot"],
   [/校長|交接|學校|國小|國中|高中|教職|教育局|教育部/, "school"],
   [/學生|學童|大考|命題|試題|大學|澎科大|中山醫/, "students"],
@@ -122,7 +167,7 @@ export const FALLBACK_TERMS = ["health", "life", "nature"] as const;
  */
 export function deriveJiebaSearchTerm(title: string): string | null {
   if (!title) return null;
-  const tokens = segmentit.doSegment(title);
+  const tokens = getSegmentit().doSegment(title);
 
   // Check each segmented token against the keyword map
   for (const token of tokens) {
@@ -156,9 +201,11 @@ export function deriveJiebaSearchTerm(title: string): string | null {
  * failed pay this extra lookup; it's an in-memory Map read, not a network
  * call, so it's cheap even on every retry.
  */
-export function deriveDictionaryTerm(title: string): string | null {
+export async function deriveDictionaryTerm(
+  title: string,
+): Promise<string | null> {
   if (!title) return null;
-  const tokens = segmentit.doSegment(title);
+  const tokens = getSegmentit().doSegment(title);
 
   let longest: string | null = null;
   for (const token of tokens) {

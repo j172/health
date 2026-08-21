@@ -1,8 +1,15 @@
 import "server-only";
+import type { PoolConnection } from "mysql2/promise";
 import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import type { RowDataPacket } from "mysql2/promise";
-import { TAIWAN_DISTRICT_COORDINATES, TAIWAN_COUNTY_CENTROIDS } from "./data/taiwanDistricts";
-import { queryOpenCage, queryNominatim } from "@/lib/server/facilities/geocodeProviders";
+import {
+  TAIWAN_DISTRICT_COORDINATES,
+  TAIWAN_COUNTY_CENTROIDS,
+} from "./data/taiwanDistricts";
+import {
+  queryOpenCage,
+  queryNominatim,
+} from "@/lib/server/facilities/geocodeProviders";
 import {
   loadGeocodeBudgetState,
   isBudgetExhausted,
@@ -22,26 +29,62 @@ export interface ExtractedLocation {
 
 // Prominent medical centers and regional hospital keywords with known aliases
 const COMMON_HOSPITAL_PATTERNS: { regex: RegExp; searchName: string }[] = [
-  { regex: /台大醫院|臺大醫院|臺灣大學醫學院附設醫院/, searchName: "國立臺灣大學醫學院附設醫院" },
+  {
+    regex: /台大醫院|臺大醫院|臺灣大學醫學院附設醫院/,
+    searchName: "國立臺灣大學醫學院附設醫院",
+  },
   { regex: /台北榮總|臺北榮總|榮民總醫院|中榮|高榮/, searchName: "榮民總醫院" },
-  { regex: /林口長庚|高雄長庚|基隆長庚|長庚醫院|長庚紀念醫院/, searchName: "長庚醫療財團法人" },
-  { regex: /成大醫院|成功大學醫學院附設醫院/, searchName: "國立成功大學醫學院附設醫院" },
+  {
+    regex: /林口長庚|高雄長庚|基隆長庚|長庚醫院|長庚紀念醫院/,
+    searchName: "長庚醫療財團法人",
+  },
+  {
+    regex: /成大醫院|成功大學醫學院附設醫院/,
+    searchName: "國立成功大學醫學院附設醫院",
+  },
   { regex: /三軍總醫院|三總/, searchName: "三軍總醫院" },
   { regex: /馬偕醫院|馬偕紀念醫院/, searchName: "馬偕紀念醫院" },
-  { regex: /新光醫院|新光吳火獅紀念醫院/, searchName: "新光醫療財團法人新光吳火獅紀念醫院" },
-  { regex: /國泰醫院|國泰綜合醫院/, searchName: "國泰醫療財團法人國泰綜合醫院" },
-  { regex: /亞東醫院|亞東紀念醫院/, searchName: "醫療財團法人徐元智先生醫藥基金會亞東紀念醫院" },
+  {
+    regex: /新光醫院|新光吳火獅紀念醫院/,
+    searchName: "新光醫療財團法人新光吳火獅紀念醫院",
+  },
+  {
+    regex: /國泰醫院|國泰綜合醫院/,
+    searchName: "國泰醫療財團法人國泰綜合醫院",
+  },
+  {
+    regex: /亞東醫院|亞東紀念醫院/,
+    searchName: "醫療財團法人徐元智先生醫藥基金會亞東紀念醫院",
+  },
   { regex: /雙和醫院|雙和/, searchName: "衛生福利部雙和醫院" },
   { regex: /慈濟醫院|慈濟綜合醫院/, searchName: "佛教慈濟醫療財團法人" },
-  { regex: /彰基|彰化基督教醫院/, searchName: "彰化基督教醫療財團法人彰化基督教醫院" },
+  {
+    regex: /彰基|彰化基督教醫院/,
+    searchName: "彰化基督教醫療財團法人彰化基督教醫院",
+  },
   { regex: /奇美醫院|奇美醫療/, searchName: "奇美醫療財團法人奇美醫院" },
   { regex: /振興醫院/, searchName: "振興醫療財團法人振興醫院" },
   { regex: /萬芳醫院/, searchName: "臺北市立萬芳醫院" },
-  { regex: /和平醫院|聯合醫院和平院區/, searchName: "臺北市立聯合醫院和平院區" },
-  { regex: /仁愛醫院|聯合醫院仁愛院區/, searchName: "臺北市立聯合醫院仁愛院區" },
-  { regex: /中興醫院|聯合醫院中興院區/, searchName: "臺北市立聯合醫院中興院區" },
-  { regex: /陽明醫院|聯合醫院陽明院區/, searchName: "臺北市立聯合醫院陽明院區" },
-  { regex: /忠孝醫院|聯合醫院忠孝院區/, searchName: "臺北市立聯合醫院忠孝院區" },
+  {
+    regex: /和平醫院|聯合醫院和平院區/,
+    searchName: "臺北市立聯合醫院和平院區",
+  },
+  {
+    regex: /仁愛醫院|聯合醫院仁愛院區/,
+    searchName: "臺北市立聯合醫院仁愛院區",
+  },
+  {
+    regex: /中興醫院|聯合醫院中興院區/,
+    searchName: "臺北市立聯合醫院中興院區",
+  },
+  {
+    regex: /陽明醫院|聯合醫院陽明院區/,
+    searchName: "臺北市立聯合醫院陽明院區",
+  },
+  {
+    regex: /忠孝醫院|聯合醫院忠孝院區/,
+    searchName: "臺北市立聯合醫院忠孝院區",
+  },
   { regex: /童綜合醫院/, searchName: "童綜合醫療社團法人童綜合醫院" },
   { regex: /秀傳醫院/, searchName: "秀傳醫療社團法人秀傳紀念醫院" },
   { regex: /部立桃園醫院|衛福部桃園醫院/, searchName: "衛生福利部桃園醫院" },
@@ -56,8 +99,20 @@ const COMMON_HOSPITAL_PATTERNS: { regex: RegExp; searchName: string }[] = [
 /**
  * Searches local facilities database for a matching medical/welfare facility by name.
  */
-async function findFacilityInDb(searchName: string): Promise<{ id: number; name: string; lat: number | null; lng: number | null; address: string | null } | null> {
-  return withConnectionFallback(null, async (conn) => {
+async function findFacilityInDb(
+  searchName: string,
+  existingConn?: PoolConnection,
+): Promise<{
+  id: number;
+  name: string;
+  lat: number | null;
+  lng: number | null;
+  address: string | null;
+} | null> {
+  // When the caller already holds a connection (e.g. persistItems, mid-transaction)
+  // we must reuse it. Acquiring a second connection from an 8-slot pool while the
+  // first is still checked out inside an open transaction deadlocks under load.
+  const run = async (conn: PoolConnection) => {
     const pattern = `%${searchName}%`;
     const [rows] = await conn.query<RowDataPacket[]>(
       `
@@ -78,7 +133,10 @@ async function findFacilityInDb(searchName: string): Promise<{ id: number; name:
       lng: rows[0].lng != null ? Number(rows[0].lng) : null,
       address: rows[0].address ? String(rows[0].address) : null,
     };
-  });
+  };
+
+  if (existingConn) return run(existingConn);
+  return withConnectionFallback(null, run);
 }
 
 /**
@@ -95,6 +153,7 @@ export async function extractLocationFromText(
   title: string,
   content?: string | null,
   allowExternalGeocode = false,
+  existingConn?: PoolConnection,
 ): Promise<ExtractedLocation | null> {
   const combinedText = `${title} ${content || ""}`.trim();
   if (!combinedText) return null;
@@ -102,7 +161,7 @@ export async function extractLocationFromText(
   // 1. Facility Database Match (Zero API Cost)
   for (const { regex, searchName } of COMMON_HOSPITAL_PATTERNS) {
     if (regex.test(combinedText)) {
-      const facility = await findFacilityInDb(searchName);
+      const facility = await findFacilityInDb(searchName, existingConn);
       if (facility && facility.lat && facility.lng) {
         return {
           lat: facility.lat,
@@ -162,7 +221,9 @@ export async function extractLocationFromText(
   // 4. External Geocoding API Fallback (Controlled rate & daily budget)
   if (allowExternalGeocode) {
     // Look for address-like fragments: [縣市][區鄉鎮市][路街道巷弄號]
-    const addressMatch = combinedText.match(/([台臺][北中南東]|新北|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|屏東|宜蘭|花蓮|臺東|台東|澎湖|金門|連江)[縣市][^，,。\n\r ]{2,20}(?:路|街|大道|巷|弄|號)/);
+    const addressMatch = combinedText.match(
+      /([台臺][北中南東]|新北|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|屏東|宜蘭|花蓮|臺東|台東|澎湖|金門|連江)[縣市][^，,。\n\r ]{2,20}(?:路|街|大道|巷|弄|號)/,
+    );
     if (addressMatch) {
       const rawAddress = addressMatch[0];
       const normalizedQuery = normalizeAddressForQuery(rawAddress);
@@ -223,7 +284,11 @@ export async function enrichNewsItemLocation(
   content?: string | null,
   allowExternalGeocode = false,
 ): Promise<ExtractedLocation | null> {
-  const location = await extractLocationFromText(title, content, allowExternalGeocode);
+  const location = await extractLocationFromText(
+    title,
+    content,
+    allowExternalGeocode,
+  );
 
   await withConnection(async (conn) => {
     if (location) {
@@ -233,7 +298,13 @@ export async function enrichNewsItemLocation(
         SET lat = ?, lng = ?, location_name = ?, facility_id = ?
         WHERE id = ?
         `,
-        [location.lat, location.lng, location.locationName, location.facilityId, newsItemId],
+        [
+          location.lat,
+          location.lng,
+          location.locationName,
+          location.facilityId,
+          newsItemId,
+        ],
       );
     } else {
       await conn.query(

@@ -61,6 +61,26 @@ export interface HttpRequestOptions {
   timeoutMs?: number;
   maxRedirects?: number;
   body?: string;
+  /**
+   * Hard ceiling on the response body, in bytes. The socket is destroyed as soon
+   * as the limit is passed, so an oversized or hostile response can never become
+   * resident. Defaults to DEFAULT_MAX_RESPONSE_BYTES.
+   *
+   * This matters more here than on a normal host: production runs under a ~768MB
+   * V8 heap cap, and every caller's own size check (MAX_IMAGE_BYTES and friends)
+   * runs only *after* the full body has already been buffered.
+   */
+  maxResponseBytes?: number;
+}
+
+/** 24MB — comfortably above the largest article image we fetch, far below the heap cap. */
+export const DEFAULT_MAX_RESPONSE_BYTES = 24 * 1024 * 1024;
+
+export class ResponseTooLargeError extends Error {
+  constructor(url: string, limit: number) {
+    super(`Response body exceeded ${limit} bytes: ${url}`);
+    this.name = "ResponseTooLargeError";
+  }
 }
 
 export interface HttpResponse {
@@ -69,7 +89,10 @@ export interface HttpResponse {
   buffer: Buffer;
 }
 
-const decodeBody = (buffer: Buffer, contentEncoding: string | undefined): Buffer => {
+const decodeBody = (
+  buffer: Buffer,
+  contentEncoding: string | undefined,
+): Buffer => {
   try {
     if (contentEncoding === "gzip") return zlib.gunzipSync(buffer);
     if (contentEncoding === "br") return zlib.brotliDecompressSync(buffer);
@@ -80,7 +103,10 @@ const decodeBody = (buffer: Buffer, contentEncoding: string | undefined): Buffer
   return buffer;
 };
 
-const requestOnce = (url: string, options: HttpRequestOptions): Promise<HttpResponse> =>
+const requestOnce = (
+  url: string,
+  options: HttpRequestOptions,
+): Promise<HttpResponse> =>
   new Promise((resolve, reject) => {
     let parsed: URL;
     try {
@@ -102,16 +128,42 @@ const requestOnce = (url: string, options: HttpRequestOptions): Promise<HttpResp
           // ones that look like a normal browser — confirmed live: the exact
           // same URL succeeded via curl (which sends a default UA) and failed
           // with HTTP 429 "Rate limit exceeded" via plain Node https without one.
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
           ...options.headers,
         },
         timeout: options.timeoutMs ?? 15_000,
         ...(parsed.protocol === "https:" ? { ca: TRUSTED_CAS } : {}),
       },
       (res) => {
+        const limit = options.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
+
+        // Trust Content-Length when the origin sends one — this rejects an
+        // oversized download before a single byte of it is buffered.
+        const declared = Number(res.headers["content-length"]);
+        if (Number.isFinite(declared) && declared > limit) {
+          res.destroy();
+          reject(new ResponseTooLargeError(url, limit));
+          return;
+        }
+
         const chunks: Buffer[] = [];
-        res.on("data", (chunk: Buffer) => chunks.push(chunk));
+        let received = 0;
+        let aborted = false;
+
+        res.on("data", (chunk: Buffer) => {
+          if (aborted) return;
+          received += chunk.length;
+          if (received > limit) {
+            aborted = true;
+            res.destroy();
+            reject(new ResponseTooLargeError(url, limit));
+            return;
+          }
+          chunks.push(chunk);
+        });
         res.on("end", () => {
+          if (aborted) return;
           const raw = Buffer.concat(chunks);
           resolve({
             status: res.statusCode ?? 0,
@@ -119,18 +171,26 @@ const requestOnce = (url: string, options: HttpRequestOptions): Promise<HttpResp
             buffer: decodeBody(raw, res.headers["content-encoding"]),
           });
         });
-        res.on("error", reject);
+        res.on("error", (error) => {
+          if (aborted) return;
+          reject(error);
+        });
       },
     );
 
-    req.on("timeout", () => req.destroy(new Error(`Request timed out: ${url}`)));
+    req.on("timeout", () =>
+      req.destroy(new Error(`Request timed out: ${url}`)),
+    );
     req.on("error", reject);
 
     if (options.body) req.write(options.body);
     req.end();
   });
 
-export const httpRequest = async (url: string, options: HttpRequestOptions = {}): Promise<HttpResponse> => {
+export const httpRequest = async (
+  url: string,
+  options: HttpRequestOptions = {},
+): Promise<HttpResponse> => {
   let currentUrl = url;
   let redirectsLeft = options.maxRedirects ?? 5;
 

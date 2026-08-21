@@ -14,8 +14,15 @@ const dateToSql = (value: Date | null): string | null => {
   return value.toISOString().slice(0, 19).replace("T", " ");
 };
 
-const clearAndInsertAssets = async (newsItemId: number, assets: EnrichedRssItem["assets"], now: string, conn: Parameters<Parameters<typeof withTransaction>[0]>[0]) => {
-  await conn.execute("DELETE FROM news_assets WHERE news_item_id = ?", [newsItemId]);
+const clearAndInsertAssets = async (
+  newsItemId: number,
+  assets: EnrichedRssItem["assets"],
+  now: string,
+  conn: Parameters<Parameters<typeof withTransaction>[0]>[0],
+) => {
+  await conn.execute("DELETE FROM news_assets WHERE news_item_id = ?", [
+    newsItemId,
+  ]);
 
   for (const asset of assets) {
     await conn.execute(
@@ -23,12 +30,21 @@ const clearAndInsertAssets = async (newsItemId: number, assets: EnrichedRssItem[
       INSERT INTO news_assets (news_item_id, asset_type, title, url, sort_order, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [newsItemId, asset.assetType, asset.title, asset.url, asset.sortOrder, now],
+      [
+        newsItemId,
+        asset.assetType,
+        asset.title,
+        asset.url,
+        asset.sortOrder,
+        now,
+      ],
     );
   }
 };
 
-export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistStats> => {
+export const persistItems = async (
+  items: EnrichedRssItem[],
+): Promise<PersistStats> => {
   if (items.length === 0) {
     return { inserted: 0, updated: 0, unchanged: 0 };
   }
@@ -40,7 +56,14 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
 
     for (const item of items) {
       const now = utcNowSql();
-      const loc = await extractLocationFromText(item.title, item.detailText || item.descriptionText, false).catch(() => null);
+      // Reuse the transaction's own connection — opening a second one here would
+      // deadlock the 8-slot pool once enough transactions run concurrently.
+      const loc = await extractLocationFromText(
+        item.title,
+        item.detailText || item.descriptionText,
+        false,
+        conn,
+      ).catch(() => null);
 
       const [existingRows] = await conn.execute<RowDataPacket[]>(
         `

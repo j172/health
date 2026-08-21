@@ -1,7 +1,16 @@
 import "server-only";
-import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import type {
+  PoolConnection,
+  ResultSetHeader,
+  RowDataPacket,
+} from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
-import { deriveJiebaSearchTerm, deriveDictionaryTerm, deriveFallbackTerm, FALLBACK_TERMS } from "@/lib/server/news/imageSearchTerms";
+import {
+  deriveJiebaSearchTerm,
+  deriveDictionaryTerm,
+  deriveFallbackTerm,
+  FALLBACK_TERMS,
+} from "@/lib/server/news/imageSearchTerms";
 import {
   IMAGE_PROVIDERS,
   ProviderRateLimitError,
@@ -23,6 +32,8 @@ import { extractLocationFromText } from "@/lib/server/news/geoExtractor";
 const LOCK_NAME = "news_card_image_assignment_lock";
 const MAX_API_PAGES = 16;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
+/** How many recent card-image assignments to consider when de-duplicating provider images. */
+const USED_IMAGE_LOOKBACK = 20_000;
 
 interface MissingNewsRow extends RowDataPacket {
   id: number;
@@ -51,15 +62,21 @@ interface UsedProviderImageRow extends RowDataPacket {
  */
 export const clearImageProviderApiCaches = async (): Promise<number> => {
   const pool = getMysqlPool();
-  const [pixabayResult] = await pool.query<ResultSetHeader>("DELETE FROM pixabay_api_cache");
-  const [providerResult] = await pool.query<ResultSetHeader>("DELETE FROM provider_api_cache");
+  const [pixabayResult] = await pool.query<ResultSetHeader>(
+    "DELETE FROM pixabay_api_cache",
+  );
+  const [providerResult] = await pool.query<ResultSetHeader>(
+    "DELETE FROM provider_api_cache",
+  );
   return pixabayResult.affectedRows + providerResult.affectedRows;
 };
 
 /** Clears existing news card images so articles can be re-matched with expanded Jieba title terms. */
 export const clearAllNewsCardImages = async (): Promise<number> => {
   const pool = getMysqlPool();
-  const [result] = await pool.query<ResultSetHeader>("DELETE FROM news_card_images");
+  const [result] = await pool.query<ResultSetHeader>(
+    "DELETE FROM news_card_images",
+  );
   return result.affectedRows;
 };
 
@@ -95,12 +112,18 @@ const loadCandidatesForProviderTerm = async (
   for (let page = 1; page <= MAX_API_PAGES; page += 1) {
     const result = await provider.search(conn, term, page);
     candidates.push(...result.candidates.filter((hit) => !usedIds.has(hit.id)));
-    if (candidates.length >= targetCandidateCount || page * SEARCH_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)) break;
+    if (
+      candidates.length >= targetCandidateCount ||
+      page * SEARCH_RESULTS_PER_PAGE >= Math.min(result.totalHits, 500)
+    )
+      break;
   }
   return shuffled(candidates);
 };
 
-export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<CardImageAssignmentSummary> => {
+export const assignMissingNewsCardImages = async (
+  requestedLimit = 10,
+): Promise<CardImageAssignmentSummary> => {
   const limit = Math.min(50, Math.max(1, Math.trunc(requestedLimit)));
   const summary: CardImageAssignmentSummary = {
     assigned: 0,
@@ -117,7 +140,10 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
   let gotLock = false;
 
   try {
-    const [lockRows] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, 1) AS ok", [LOCK_NAME]);
+    const [lockRows] = await conn.query<RowDataPacket[]>(
+      "SELECT GET_LOCK(?, 1) AS ok",
+      [LOCK_NAME],
+    );
     gotLock = lockRows[0]?.ok === 1;
     if (!gotLock) {
       summary.locked = true;
@@ -142,15 +168,29 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       return summary;
     }
 
-    const configuredProviders = IMAGE_PROVIDERS.filter((provider) => provider.isConfigured());
+    const configuredProviders = IMAGE_PROVIDERS.filter((provider) =>
+      provider.isConfigured(),
+    );
     if (configuredProviders.length === 0) {
       summary.skipped = missingRows.length;
-      summary.reason = "No image provider API keys are configured (PIXABAY_API_KEY / PEXELS_API_KEY / UNSPLASH_ACCESS_KEY).";
+      summary.reason =
+        "No image provider API keys are configured (PIXABAY_API_KEY / PEXELS_API_KEY / UNSPLASH_ACCESS_KEY).";
       return summary;
     }
 
+    // Bounded on purpose. This set exists to stop the same provider image being
+    // assigned to two articles, and that only matters against images a reader could
+    // still see side by side — but an unbounded SELECT grows with the table forever
+    // and every id lands in a resident Set under a ~768MB heap cap. The most recent
+    // USED_IMAGE_LOOKBACK rows cover the visible window; reusing an image older than
+    // that is not a defect worth paying unbounded memory for.
     const [usedRows] = await conn.query<UsedProviderImageRow[]>(
-      "SELECT provider, provider_image_id FROM news_card_images WHERE provider_image_id IS NOT NULL",
+      `SELECT provider, provider_image_id
+       FROM news_card_images
+       WHERE provider_image_id IS NOT NULL
+       ORDER BY id DESC
+       LIMIT ?`,
+      [USED_IMAGE_LOOKBACK],
     );
     const usedIdsByProvider = new Map<string, Set<string>>();
     for (const row of usedRows) {
@@ -183,17 +223,28 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       term: string,
       provider: ImageProvider,
     ): Promise<"assigned" | "rate_limited" | "cooling_down" | "exhausted"> => {
-      if (isProviderCoolingDown(cooldownState, provider.name, new Date())) return "cooling_down";
+      if (isProviderCoolingDown(cooldownState, provider.name, new Date()))
+        return "cooling_down";
 
       const usedIds = usedIdsByProvider.get(provider.name) ?? new Set<string>();
       usedIdsByProvider.set(provider.name, usedIds);
 
       let candidates: ProviderImage[];
       try {
-        candidates = await loadCandidatesForProviderTerm(conn, provider, term, usedIds, 1);
+        candidates = await loadCandidatesForProviderTerm(
+          conn,
+          provider,
+          term,
+          usedIds,
+          1,
+        );
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown image search error";
-        if (summary.errors.length < 10) summary.errors.push(`news ${news.id} [${provider.name} search]: ${message}`);
+        const message =
+          error instanceof Error ? error.message : "Unknown image search error";
+        if (summary.errors.length < 10)
+          summary.errors.push(
+            `news ${news.id} [${provider.name} search]: ${message}`,
+          );
         return "exhausted";
       }
       if (candidates.length > 0) anyCandidatesSeen = true;
@@ -255,8 +306,14 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
             await recordProviderRateLimit(conn, cooldownState, provider.name);
             return "rate_limited";
           }
-          const message = error instanceof Error ? error.message : "Unknown image assignment error";
-          if (summary.errors.length < 10) summary.errors.push(`news ${news.id} [${provider.name}]: ${message}`);
+          const message =
+            error instanceof Error
+              ? error.message
+              : "Unknown image assignment error";
+          if (summary.errors.length < 10)
+            summary.errors.push(
+              `news ${news.id} [${provider.name}]: ${message}`,
+            );
         }
       }
       return "exhausted";
@@ -266,7 +323,9 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       const jiebaTerm = deriveJiebaSearchTerm(news.title);
       // Only worth a dictionary lookup when the curated KEYWORD_TERMS table
       // didn't already match — see deriveDictionaryTerm's doc comment.
-      const dictionaryTerm = jiebaTerm ? null : deriveDictionaryTerm(news.title);
+      const dictionaryTerm = jiebaTerm
+        ? null
+        : await deriveDictionaryTerm(news.title);
       const fallbackTerm = deriveFallbackTerm(news.id);
 
       const termsToTry: string[] = [];
@@ -303,8 +362,14 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
         let lng = news.lng != null ? Number(news.lng) : null;
         let locName = news.location_name;
 
-        if ((lat == null || lng == null) && (news.title || news.detail_text || news.description_text)) {
-          const extracted = await extractLocationFromText(news.title, news.detail_text || news.description_text);
+        if (
+          (lat == null || lng == null) &&
+          (news.title || news.detail_text || news.description_text)
+        ) {
+          const extracted = await extractLocationFromText(
+            news.title,
+            news.detail_text || news.description_text,
+          );
           if (extracted) {
             lat = extracted.lat;
             lng = extracted.lng;
@@ -318,14 +383,21 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
         if (lat != null && lng != null && locName) {
           try {
-            const mapAssigned = await assignStaticMapImage(conn, news.id, lat, lng, locName);
+            const mapAssigned = await assignStaticMapImage(
+              conn,
+              news.id,
+              lat,
+              lng,
+              locName,
+            );
             if (mapAssigned) {
               assignedThisNews = true;
               summary.assigned += 1;
             }
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
-            if (summary.errors.length < 10) summary.errors.push(`news ${news.id} [static_map]: ${msg}`);
+            if (summary.errors.length < 10)
+              summary.errors.push(`news ${news.id} [static_map]: ${msg}`);
           }
         }
       }
@@ -337,7 +409,10 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
         // succeed later (e.g. once a provider adds new photos, cooldowns
         // clear, or MAX_API_PAGES reaches further), just after every
         // less-tried article gets a turn.
-        await conn.execute("UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?", [news.id]);
+        await conn.execute(
+          "UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?",
+          [news.id],
+        );
       }
     }
 
@@ -345,7 +420,8 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
       summary.rateLimited = true;
       summary.reason = `Rate-limited this run (now cooling down per its backoff schedule): ${[...rateLimitedProviders].join(", ")}.`;
     } else if (summary.failed > 0 && !anyCandidatesSeen) {
-      summary.reason = "No unused candidates are available from any configured provider.";
+      summary.reason =
+        "No unused candidates are available from any configured provider.";
     }
 
     return summary;
