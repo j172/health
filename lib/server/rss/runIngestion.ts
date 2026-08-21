@@ -1,6 +1,16 @@
-import type { EnrichedRssItem, FeedCode, FeedFetchResult, IngestionSummary, NormalizedRssItem } from "@/types/rss";
+import type {
+  EnrichedRssItem,
+  FeedCode,
+  FeedFetchResult,
+  IngestionSummary,
+  NormalizedRssItem,
+} from "@/types/rss";
 import { RSS_FEEDS } from "@/lib/server/config/rss-feeds";
-import { createIngestionRun, finishIngestionRun, writeIngestionError } from "@/lib/server/logging/ingestionLogger";
+import {
+  createIngestionRun,
+  finishIngestionRun,
+  writeIngestionError,
+} from "@/lib/server/logging/ingestionLogger";
 import { withAdvisoryLock } from "@/lib/server/db/mysql";
 import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
 import { parseFeedXml } from "@/lib/server/rss/parseRss";
@@ -14,7 +24,10 @@ import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
-import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
+import {
+  getExistingPayloadHashes,
+  itemKey,
+} from "@/lib/server/rss/existingHashes";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
 import type { NewsAsset } from "@/types/rss";
@@ -23,17 +36,28 @@ const LOCK_NAME = "rss_ingestion_lock";
 
 const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
 
-const enrichItem = async (item: NormalizedRssItem): Promise<EnrichedRssItem> => {
-  let detail: { detailHtml: string | null; detailText: string | null; assets: NewsAsset[] } =
-    FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch
-      ? { detailHtml: null, detailText: null, assets: [] }
-      : await fetchDetailPage(item).catch(() => ({ detailHtml: null, detailText: null, assets: [] }));
+const enrichItem = async (
+  item: NormalizedRssItem,
+): Promise<EnrichedRssItem> => {
+  let detail: {
+    detailHtml: string | null;
+    detailText: string | null;
+    assets: NewsAsset[];
+  } = FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch
+    ? { detailHtml: null, detailText: null, assets: [] }
+    : await fetchDetailPage(item).catch(() => ({
+        detailHtml: null,
+        detailText: null,
+        assets: [],
+      }));
 
   // skipDetailFetch (ltn etc.) never stores body HTML, but cards still need a
   // thumbnail. Pull og:image only — no article body scrape / republish.
   // Also covers full detail fetches that found zero content images.
   if (!detail.assets.some((asset) => asset.assetType === "image")) {
-    const ogAsset = await fetchOpenGraphImageAsset(item.canonicalUrl).catch(() => null);
+    const ogAsset = await fetchOpenGraphImageAsset(item.canonicalUrl).catch(
+      () => null,
+    );
     if (ogAsset) {
       detail = { ...detail, assets: [ogAsset, ...detail.assets] };
     }
@@ -100,7 +124,12 @@ const processSpecialSource = async (
   ctx: SpecialSourceContext,
 ): Promise<{ skippedUnchanged: number }> => {
   const result = await fetchFn();
-  const feedConfig = { code: meta.code, name: meta.name, url: meta.url, sourceName: meta.sourceName };
+  const feedConfig = {
+    code: meta.code,
+    name: meta.name,
+    url: meta.url,
+    sourceName: meta.sourceName,
+  };
 
   if (!result.ok) {
     ctx.feedResults.push({
@@ -139,7 +168,7 @@ const processSpecialSource = async (
       skippedUnchanged += 1;
       continue;
     }
-     
+
     const seo = await generateSeoMetadataWithAi({
       title: item.title,
       descriptionText: item.descriptionText,
@@ -161,7 +190,9 @@ const processSpecialSource = async (
   return { skippedUnchanged };
 };
 
-export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual"): Promise<IngestionSummary> => {
+export const runRssIngestion = async (
+  trigger: "internal-cron" | "admin-manual",
+): Promise<IngestionSummary> => {
   const started = new Date();
   const runId = await createIngestionRun(trigger);
 
@@ -184,7 +215,8 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
             errorMessage: null,
           });
         } catch (error) {
-          const message = error instanceof Error ? error.message : "Unknown feed error";
+          const message =
+            error instanceof Error ? error.message : "Unknown feed error";
           feedResults.push({
             feed,
             ok: false,
@@ -213,12 +245,16 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
           skippedUnchanged += 1;
           continue;
         }
-         
+
         const enriched = await enrichItem(item);
         enrichedItems.push(enriched);
       }
 
-      const specialSourceCtx: SpecialSourceContext = { runId, feedResults, enrichedItems };
+      const specialSourceCtx: SpecialSourceContext = {
+        runId,
+        feedResults,
+        enrichedItems,
+      };
 
       // -----------------------------------------------------------------------
       // Mirror Media 健康醫療網 — JSON API (not RSS/XML; handled separately)
@@ -364,7 +400,8 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       return summary;
     } catch (error) {
       const ended = new Date();
-      const message = error instanceof Error ? error.message : "Unknown ingestion error";
+      const message =
+        error instanceof Error ? error.message : "Unknown ingestion error";
       await writeIngestionError({
         runId,
         message,

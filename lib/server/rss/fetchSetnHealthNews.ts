@@ -1,9 +1,9 @@
-import { createHash } from "crypto";
 import { load } from "cheerio";
 import type { EnrichedRssItem } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
 import { parseTaipeiDateToUtc } from "@/lib/server/rss/time";
+import { sha256, toAbsoluteUrl } from "@/lib/server/rss/scraperUtils";
 
 // ---------------------------------------------------------------------------
 // 祝你健康（health.setn.com, 三立新聞網）— has no RSS feed of its own
@@ -27,16 +27,6 @@ const FEED_NAME = "祝你健康";
 const BASE_URL = "https://health.setn.com";
 const LIST_URL = `${BASE_URL}/`;
 
-const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
-
-const toAbsoluteUrl = (url: string, base: string): string => {
-  try {
-    return new URL(url, base).toString();
-  } catch {
-    return url;
-  }
-};
-
 export interface SetnHealthFetchResult {
   ok: boolean;
   httpStatus: number | null;
@@ -52,7 +42,8 @@ export const fetchSetnHealthNews = async (): Promise<SetnHealthFetchResult> => {
     const response = await httpGetText(LIST_URL, {
       headers: {
         "User-Agent": "health.j172.tw-rss-ingestor/1.0",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
       timeoutMs: 15_000,
     });
@@ -78,29 +69,48 @@ export const fetchSetnHealthNews = async (): Promise<SetnHealthFetchResult> => {
       if (seenExternalIds.has(externalId)) continue;
       seenExternalIds.add(externalId);
 
-      const title = anchor.find("h3").first().text().replace(/\s+/g, " ").trim();
+      const title = anchor
+        .find("h3")
+        .first()
+        .text()
+        .replace(/\s+/g, " ")
+        .trim();
       if (!title) continue;
 
       const canonicalUrl = `${BASE_URL}/news/${externalId}`;
 
-      const timeText = anchor.find("span.newsTimer").first().text().replace(/\s+/g, " ").trim();
-      const timeMatch = timeText.match(/^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2})$/);
+      const timeText = anchor
+        .find("span.newsTimer")
+        .first()
+        .text()
+        .replace(/\s+/g, " ")
+        .trim();
+      const timeMatch = timeText.match(
+        /^(\d{4})\/(\d{2})\/(\d{2})\s+(\d{2}):(\d{2})$/,
+      );
       const publishedAtUtc = timeMatch
-        ? parseTaipeiDateToUtc(`${timeMatch[1]}-${timeMatch[2]}-${timeMatch[3]} ${timeMatch[4]}:${timeMatch[5]}:00`)
+        ? parseTaipeiDateToUtc(
+            `${timeMatch[1]}-${timeMatch[2]}-${timeMatch[3]} ${timeMatch[4]}:${timeMatch[5]}:00`,
+          )
         : null;
 
       const imgEl = anchor.find("img").first();
-      const rawImgSrc = imgEl.attr("data-original") || imgEl.attr("src") || null;
+      const rawImgSrc =
+        imgEl.attr("data-original") || imgEl.attr("src") || null;
       const imgSrc = rawImgSrc ? toAbsoluteUrl(rawImgSrc, canonicalUrl) : null;
 
       // Downloaded and re-hosted locally rather than hotlinking
       // attach.setn.com — same treatment as fetchUdnHealthNews.ts.
       const assets: EnrichedRssItem["assets"] = [];
       if (imgSrc) {
-         
         const localPath = await downloadArticleImage(imgSrc);
         if (localPath) {
-          assets.push({ assetType: "image", title: imgEl.attr("alt")?.trim() || null, url: localPath, sortOrder: 0 });
+          assets.push({
+            assetType: "image",
+            title: imgEl.attr("alt")?.trim() || null,
+            url: localPath,
+            sortOrder: 0,
+          });
         }
       }
 
@@ -150,7 +160,10 @@ export const fetchSetnHealthNews = async (): Promise<SetnHealthFetchResult> => {
       errorMessage: null,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown SETN health fetch error";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown SETN health fetch error";
     return {
       ok: false,
       httpStatus,

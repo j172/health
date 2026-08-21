@@ -21,15 +21,20 @@ const htmlToText = (html: string): string => {
   return $.text().replace(/\s+/g, " ").trim();
 };
 
-const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
+const sha256 = (text: string): string =>
+  createHash("sha256").update(text).digest("hex");
 
-export const normalizeItem = (feed: FeedConfig, rawItem: Record<string, unknown>): NormalizedRssItem => {
+export const normalizeItem = (
+  feed: FeedConfig,
+  rawItem: Record<string, unknown>,
+): NormalizedRssItem => {
   const title = pickText(rawItem.title);
   const link = pickText(rawItem.link);
   const sourceUrl = pickText(rawItem.source) || link;
   const descriptionHtml = pickText(rawItem.description);
   const descriptionText = htmlToText(descriptionHtml);
-  const externalId = pickText(rawItem.NewsID) || pickText(rawItem.newsid) || link;
+  const externalId =
+    pickText(rawItem.NewsID) || pickText(rawItem.newsid) || link;
   const deptName = pickText(rawItem.DeptName) || null;
   const categoryRaw = pickText(rawItem.Category) || null;
   const displayType = pickText(rawItem.DisplayType) || null;

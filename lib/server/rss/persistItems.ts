@@ -1,6 +1,10 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import type { EnrichedRssItem } from "@/types/rss";
-import { utcNowSql, withTransaction } from "@/lib/server/db/mysql";
+import {
+  toSqlDateTime,
+  utcNowSql,
+  withTransaction,
+} from "@/lib/server/db/mysql";
 import { extractLocationFromText } from "@/lib/server/news/geoExtractor";
 
 export interface PersistStats {
@@ -11,7 +15,7 @@ export interface PersistStats {
 
 const dateToSql = (value: Date | null): string | null => {
   if (!value) return null;
-  return value.toISOString().slice(0, 19).replace("T", " ");
+  return toSqlDateTime(value);
 };
 
 const clearAndInsertAssets = async (

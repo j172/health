@@ -26,8 +26,7 @@ const API_URL =
 const sha256 = (text: string): string =>
   createHash("sha256").update(text).digest("hex");
 
-const str = (v: unknown): string =>
-  typeof v === "string" ? v.trim() : "";
+const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
 const htmlToText = (html: string): string => {
   if (!html) return "";
@@ -57,17 +56,17 @@ const parsePublishedDate = (v: unknown): Date | null => {
 
 interface MirrorExternalItem {
   _id?: string;
-  name?: string;          // e.g. "healthnews_12345" — used to build the slug
-  slug?: string;          // alias of name in some responses
+  name?: string; // e.g. "healthnews_12345" — used to build the slug
+  slug?: string; // alias of name in some responses
   title?: string;
   brief?: {
     html?: string;
     md?: string;
   };
-  content?: string;       // full article HTML
+  content?: string; // full article HTML
   publishedDate?: string; // ISO-8601
-  thumb?: string;         // thumbnail URL (may be relative)
-  source?: string;        // original source URL (healthnews.com.tw)
+  thumb?: string; // thumbnail URL (may be relative)
+  source?: string; // original source URL (healthnews.com.tw)
   categories?: Array<{ name?: string }>;
   // heroImage exists in some responses as a fallback
   heroImage?: {
@@ -96,134 +95,137 @@ export interface MirrorMediaFetchResult {
   errorMessage: string | null;
 }
 
-export const fetchMirrorMediaHealthnews = async (): Promise<MirrorMediaFetchResult> => {
-  let httpStatus: number | null = null;
+export const fetchMirrorMediaHealthnews =
+  async (): Promise<MirrorMediaFetchResult> => {
+    let httpStatus: number | null = null;
 
-  try {
-    const response = await httpGetText(API_URL, {
-      headers: {
-        "User-Agent": "health.j172.tw-rss-ingestor/1.0",
-        Accept: "application/json",
-      },
-      timeoutMs: 15_000,
-    });
-
-    httpStatus = response.status;
-
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(`Mirror Media API HTTP ${response.status}`);
-    }
-
-    let parsed: EveResponse;
     try {
-      parsed = JSON.parse(response.text) as EveResponse;
-    } catch {
-      throw new Error("Mirror Media API returned non-JSON response");
-    }
+      const response = await httpGetText(API_URL, {
+        headers: {
+          "User-Agent": "health.j172.tw-rss-ingestor/1.0",
+          Accept: "application/json",
+        },
+        timeoutMs: 15_000,
+      });
 
-    const rawItems = parsed._items ?? [];
-    const enrichedItems: EnrichedRssItem[] = [];
+      httpStatus = response.status;
 
-    for (const raw of rawItems) {
-      const externalId = str(raw._id);
-      if (!externalId) continue;
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(`Mirror Media API HTTP ${response.status}`);
+      }
 
-      // Build canonical URL from `name` or `slug` field
-      const nameSlug = str(raw.name) || str(raw.slug);
-      const canonicalUrl = nameSlug
-        ? `https://www.mirrormedia.mg/external/${nameSlug}`
-        : `https://www.mirrormedia.mg/external/${externalId}`;
+      let parsed: EveResponse;
+      try {
+        parsed = JSON.parse(response.text) as EveResponse;
+      } catch {
+        throw new Error("Mirror Media API returned non-JSON response");
+      }
 
-      const sourceUrl = str(raw.source) || canonicalUrl;
-      const title = str(raw.title);
-      if (!title) continue; // skip items with no title
+      const rawItems = parsed._items ?? [];
+      const enrichedItems: EnrichedRssItem[] = [];
 
-      const descriptionHtml = raw.brief?.html ?? "";
-      const descriptionText = descriptionHtml
-        ? htmlToText(descriptionHtml)
-        : htmlToText(str(raw.brief?.md));
+      for (const raw of rawItems) {
+        const externalId = str(raw._id);
+        if (!externalId) continue;
 
-      const detailHtml = str(raw.content) || null;
-      const detailText = detailHtml ? htmlToText(detailHtml) : null;
+        // Build canonical URL from `name` or `slug` field
+        const nameSlug = str(raw.name) || str(raw.slug);
+        const canonicalUrl = nameSlug
+          ? `https://www.mirrormedia.mg/external/${nameSlug}`
+          : `https://www.mirrormedia.mg/external/${externalId}`;
 
-      const publishedAtUtc = parsePublishedDate(raw.publishedDate);
+        const sourceUrl = str(raw.source) || canonicalUrl;
+        const title = str(raw.title);
+        if (!title) continue; // skip items with no title
 
-      // Resolve thumbnail: prefer `thumb`, fall back to heroImage
-      const thumbUrl =
-        resolveImageUrl(raw.thumb) ??
-        resolveImageUrl(raw.heroImage?.image?.resizedTargets?.tablet?.url) ??
-        resolveImageUrl(raw.heroImage?.image?.resizedTargets?.mobile?.url);
+        const descriptionHtml = raw.brief?.html ?? "";
+        const descriptionText = descriptionHtml
+          ? htmlToText(descriptionHtml)
+          : htmlToText(str(raw.brief?.md));
 
-      const assets: EnrichedRssItem["assets"] = thumbUrl
-        ? [{ assetType: "image", title: null, url: thumbUrl, sortOrder: 0 }]
-        : [];
+        const detailHtml = str(raw.content) || null;
+        const detailText = detailHtml ? htmlToText(detailHtml) : null;
 
-      const categoryRaw =
-        (raw.categories ?? [])
-          .map((c) => str(c.name))
-          .filter(Boolean)
-          .join(",") || null;
+        const publishedAtUtc = parsePublishedDate(raw.publishedDate);
 
-      // Payload hash — covers all mutable fields so any edit triggers an update
-      const payloadHash = sha256(
-        JSON.stringify({
-          title,
+        // Resolve thumbnail: prefer `thumb`, fall back to heroImage
+        const thumbUrl =
+          resolveImageUrl(raw.thumb) ??
+          resolveImageUrl(raw.heroImage?.image?.resizedTargets?.tablet?.url) ??
+          resolveImageUrl(raw.heroImage?.image?.resizedTargets?.mobile?.url);
+
+        const assets: EnrichedRssItem["assets"] = thumbUrl
+          ? [{ assetType: "image", title: null, url: thumbUrl, sortOrder: 0 }]
+          : [];
+
+        const categoryRaw =
+          (raw.categories ?? [])
+            .map((c) => str(c.name))
+            .filter(Boolean)
+            .join(",") || null;
+
+        // Payload hash — covers all mutable fields so any edit triggers an update
+        const payloadHash = sha256(
+          JSON.stringify({
+            title,
+            canonicalUrl,
+            sourceUrl,
+            descriptionHtml,
+            detailHtml,
+            categoryRaw,
+            publishedAtUtc: publishedAtUtc?.toISOString() ?? null,
+            thumbUrl,
+          }),
+        );
+
+        enrichedItems.push({
+          sourceName: SOURCE_NAME,
+          feedCode: FEED_CODE,
+          feedName: FEED_NAME,
+          externalId,
           canonicalUrl,
           sourceUrl,
+          title,
           descriptionHtml,
+          descriptionText,
           detailHtml,
+          detailText,
+          deptName: null,
           categoryRaw,
-          publishedAtUtc: publishedAtUtc?.toISOString() ?? null,
-          thumbUrl,
-        }),
-      );
+          displayType: null,
+          publishedAtUtc,
+          publicBeginAtTaipei: null,
+          publicEndAtTaipei: null,
+          payloadHash,
+          assets,
+          // SEO metadata will be generated by generateSeoMetadataWithAi below if needed.
+          // We pass empty strings so that the enrichItem path in runIngestion is bypassed
+          // entirely — this fetcher returns EnrichedRssItem directly.
+          metaTitle: "",
+          metaDescription: "",
+          keywords: "",
+          geoSummary: "",
+        });
+      }
 
-      enrichedItems.push({
-        sourceName: SOURCE_NAME,
-        feedCode: FEED_CODE,
-        feedName: FEED_NAME,
-        externalId,
-        canonicalUrl,
-        sourceUrl,
-        title,
-        descriptionHtml,
-        descriptionText,
-        detailHtml,
-        detailText,
-        deptName: null,
-        categoryRaw,
-        displayType: null,
-        publishedAtUtc,
-        publicBeginAtTaipei: null,
-        publicEndAtTaipei: null,
-        payloadHash,
-        assets,
-        // SEO metadata will be generated by generateSeoMetadataWithAi below if needed.
-        // We pass empty strings so that the enrichItem path in runIngestion is bypassed
-        // entirely — this fetcher returns EnrichedRssItem directly.
-        metaTitle: "",
-        metaDescription: "",
-        keywords: "",
-        geoSummary: "",
-      });
+      return {
+        ok: true,
+        httpStatus,
+        itemCount: enrichedItems.length,
+        items: enrichedItems,
+        errorMessage: null,
+      };
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unknown Mirror Media fetch error";
+      return {
+        ok: false,
+        httpStatus,
+        itemCount: 0,
+        items: [],
+        errorMessage: message,
+      };
     }
-
-    return {
-      ok: true,
-      httpStatus,
-      itemCount: enrichedItems.length,
-      items: enrichedItems,
-      errorMessage: null,
-    };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown Mirror Media fetch error";
-    return {
-      ok: false,
-      httpStatus,
-      itemCount: 0,
-      items: [],
-      errorMessage: message,
-    };
-  }
-};
+  };

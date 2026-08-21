@@ -6,7 +6,9 @@ export const parseRfc822ToDate = (value: unknown): Date | null => {
 
 export const parseTaipeiDateToUtc = (value: unknown): Date | null => {
   if (typeof value !== "string" || !value.trim()) return null;
-  const m = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
+  const m = value
+    .trim()
+    .match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})$/);
   if (!m) return null;
 
   const year = Number(m[1]);

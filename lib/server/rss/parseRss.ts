@@ -11,7 +11,10 @@ const parser = new XMLParser({
   cdataPropName: "__cdata",
 });
 
-export const parseFeedXml = (feed: FeedConfig, xml: string): NormalizedRssItem[] => {
+export const parseFeedXml = (
+  feed: FeedConfig,
+  xml: string,
+): NormalizedRssItem[] => {
   const parsed = parser.parse(xml);
   const channel = parsed?.rss?.channel;
   if (!channel) return [];

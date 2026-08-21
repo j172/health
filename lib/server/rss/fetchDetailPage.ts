@@ -25,7 +25,10 @@ const uniqueAssets = (assets: NewsAsset[]): NewsAsset[] => {
   return result;
 };
 
-const pickOpenGraphImageUrl = ($: ReturnType<typeof load>, baseUrl: string): string | null => {
+const pickOpenGraphImageUrl = (
+  $: ReturnType<typeof load>,
+  baseUrl: string,
+): string | null => {
   const rawCandidates = [
     $('meta[property="og:image"]').attr("content"),
     $('meta[property="og:image:secure_url"]').attr("content"),
@@ -37,13 +40,24 @@ const pickOpenGraphImageUrl = ($: ReturnType<typeof load>, baseUrl: string): str
     if (!raw?.trim()) continue;
     const absolute = toAbsoluteUrl(raw.trim(), baseUrl);
     if (!/^https?:\/\//i.test(absolute)) continue;
-    if (/logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png/i.test(absolute)) continue;
+    if (
+      /logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png/i.test(
+        absolute,
+      )
+    )
+      continue;
     return absolute;
   }
   return null;
 };
 
-export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detailHtml: string | null; detailText: string | null; assets: NewsAsset[] }> => {
+export const fetchDetailPage = async (
+  item: NormalizedRssItem,
+): Promise<{
+  detailHtml: string | null;
+  detailText: string | null;
+  assets: NewsAsset[];
+}> => {
   const response = await httpGetText(item.canonicalUrl, {
     headers: {
       "User-Agent": "health.j172.tw-rss-ingestor/1.0",
@@ -53,7 +67,9 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
   });
 
   if (response.status < 200 || response.status >= 300) {
-    throw new Error(`Detail page HTTP ${response.status} for ${item.canonicalUrl}`);
+    throw new Error(
+      `Detail page HTTP ${response.status} for ${item.canonicalUrl}`,
+    );
   }
 
   const html = response.text;
@@ -62,7 +78,8 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
   // Capture social card image before stripping <head>/<meta> (ltn etc. often
   // lack a clean article image container but always ship a reliable og:image).
   const ogImageUrl = pickOpenGraphImageUrl($, item.canonicalUrl);
-  const ogImageAlt = $('meta[property="og:image:alt"]').attr("content")?.trim() || null;
+  const ogImageAlt =
+    $('meta[property="og:image:alt"]').attr("content")?.trim() || null;
 
   $("script,style,noscript,iframe").remove();
   // Removed before container selection so a body-level fallback (sites with no
@@ -108,7 +125,8 @@ export const fetchDetailPage = async (item: NormalizedRssItem): Promise<{ detail
     const href = $(el).attr("href");
     if (!href) return;
     const absolute = toAbsoluteUrl(href, item.canonicalUrl);
-    if (!/\/dl-|\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar)$/i.test(absolute)) return;
+    if (!/\/dl-|\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar)$/i.test(absolute))
+      return;
     idx += 1;
     assets.push({
       assetType: "attachment",

@@ -1,16 +1,26 @@
-import mysql, { type Pool, type PoolConnection, type RowDataPacket } from "mysql2/promise";
+import mysql, {
+  type Pool,
+  type PoolConnection,
+  type RowDataPacket,
+} from "mysql2/promise";
 import { env } from "@/lib/server/config/env";
 import { TABLE_DDL } from "@/lib/server/db/schema";
 
 let pool: Pool | null = null;
 let schemaReady = false;
 
-const nowUtc = (): string => new Date().toISOString().slice(0, 19).replace("T", " ");
+/** Formats a Date as MySQL DATETIME (`YYYY-MM-DD HH:MM:SS`, UTC). */
+export const toSqlDateTime = (value: Date): string =>
+  value.toISOString().slice(0, 19).replace("T", " ");
+
+const nowUtc = (): string => toSqlDateTime(new Date());
 
 const isConnectionUnavailableError = (error: unknown): boolean => {
   if (!error) return false;
   const message = error instanceof Error ? error.message : String(error);
-  return /ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EHOSTUNREACH|ECONNRESET|Connection lost|connect ECONNREFUSED/i.test(message);
+  return /ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EHOSTUNREACH|ECONNRESET|Connection lost|connect ECONNREFUSED/i.test(
+    message,
+  );
 };
 
 export const getMysqlPool = (): Pool => {
@@ -178,7 +188,9 @@ export const ensureSchema = async (): Promise<void> => {
   schemaReady = true;
 };
 
-export const withConnection = async <T>(runner: (conn: PoolConnection) => Promise<T>): Promise<T> => {
+export const withConnection = async <T>(
+  runner: (conn: PoolConnection) => Promise<T>,
+): Promise<T> => {
   await ensureSchema();
   const conn = await getMysqlPool().getConnection();
   try {
@@ -188,12 +200,17 @@ export const withConnection = async <T>(runner: (conn: PoolConnection) => Promis
   }
 };
 
-export const withConnectionFallback = async <T>(fallbackValue: T, runner: (conn: PoolConnection) => Promise<T>): Promise<T> => {
+export const withConnectionFallback = async <T>(
+  fallbackValue: T,
+  runner: (conn: PoolConnection) => Promise<T>,
+): Promise<T> => {
   try {
     return await withConnection(runner);
   } catch (error) {
     if (isConnectionUnavailableError(error)) {
-      console.warn(`[mysql] Falling back to empty data because the database is unavailable: ${error instanceof Error ? error.message : String(error)}`);
+      console.warn(
+        `[mysql] Falling back to empty data because the database is unavailable: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return fallbackValue;
     }
 
@@ -201,7 +218,9 @@ export const withConnectionFallback = async <T>(fallbackValue: T, runner: (conn:
   }
 };
 
-export const withTransaction = async <T>(runner: (conn: PoolConnection) => Promise<T>): Promise<T> =>
+export const withTransaction = async <T>(
+  runner: (conn: PoolConnection) => Promise<T>,
+): Promise<T> =>
   withConnection(async (conn) => {
     await conn.beginTransaction();
     try {
@@ -214,7 +233,8 @@ export const withTransaction = async <T>(runner: (conn: PoolConnection) => Promi
     }
   });
 
-export type AdvisoryLockResult<T> = { acquired: true; result: T } | { acquired: false };
+export type AdvisoryLockResult<T> =
+  { acquired: true; result: T } | { acquired: false };
 
 /**
  * Runs a callback with a MySQL advisory lock (GET_LOCK).
@@ -230,7 +250,10 @@ export const withAdvisoryLock = async <T>(
   const conn = await pool.getConnection();
   let gotLock = false;
   try {
-    const [rows] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, ?) AS ok", [lockName, timeoutSeconds]);
+    const [rows] = await conn.query<RowDataPacket[]>(
+      "SELECT GET_LOCK(?, ?) AS ok",
+      [lockName, timeoutSeconds],
+    );
     gotLock = rows?.[0]?.ok === 1;
     if (!gotLock) {
       return { acquired: false };

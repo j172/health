@@ -1,6 +1,15 @@
 import "server-only";
-import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
+import type {
+  PoolConnection,
+  ResultSetHeader,
+  RowDataPacket,
+} from "mysql2/promise";
+import {
+  getMysqlPool,
+  ensureSchema,
+  utcNowSql,
+  withConnection,
+} from "@/lib/server/db/mysql";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
 
@@ -40,10 +49,12 @@ const MISSING_WHERE = `
 `;
 
 /** Targets for external OG workers (GHA runner) that can fetch HTML off-host. */
-export const listMissingCardImageTargets = async (requestedLimit = 20): Promise<MissingCardImageTarget[]> => {
+export const listMissingCardImageTargets = async (
+  requestedLimit = 20,
+): Promise<MissingCardImageTarget[]> => {
   const limit = Math.min(50, Math.max(1, Math.trunc(requestedLimit)));
   await ensureSchema();
-  return withPool(async (conn) => {
+  return withConnection(async (conn) => {
     const [rows] = await conn.execute<MissingOgRow[]>(
       `
       SELECT n.id, n.canonical_url, n.title, n.source_name
@@ -75,9 +86,12 @@ export const attachCardImageFromUrl = async (
   title: string | null = null,
 ): Promise<{ ok: boolean; localPath?: string; reason?: string }> => {
   const id = Math.trunc(newsItemId);
-  if (!Number.isFinite(id) || id < 1) return { ok: false, reason: "invalid newsItemId" };
-  if (!imageUrl || !/^https?:\/\//i.test(imageUrl)) return { ok: false, reason: "invalid imageUrl" };
-  if (/news\.google\.com/i.test(imageUrl)) return { ok: false, reason: "google news url not allowed" };
+  if (!Number.isFinite(id) || id < 1)
+    return { ok: false, reason: "invalid newsItemId" };
+  if (!imageUrl || !/^https?:\/\//i.test(imageUrl))
+    return { ok: false, reason: "invalid imageUrl" };
+  if (/news\.google\.com/i.test(imageUrl))
+    return { ok: false, reason: "google news url not allowed" };
 
   await ensureSchema();
   const conn = await getMysqlPool().getConnection();
@@ -120,7 +134,9 @@ export const attachCardImageFromUrl = async (
  * Note: shared-host egress is blocked by some publishers (ltn 403). Prefer
  * the GHA external worker (list + attach) for those sources.
  */
-export const backfillMissingImagesFromOpenGraph = async (requestedLimit = 20): Promise<OgImageBackfillSummary> => {
+export const backfillMissingImagesFromOpenGraph = async (
+  requestedLimit = 20,
+): Promise<OgImageBackfillSummary> => {
   const limit = Math.min(50, Math.max(1, Math.trunc(requestedLimit)));
   const summary: OgImageBackfillSummary = {
     assigned: 0,
@@ -136,7 +152,10 @@ export const backfillMissingImagesFromOpenGraph = async (requestedLimit = 20): P
   let gotLock = false;
 
   try {
-    const [lockRows] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, 1) AS ok", [LOCK_NAME]);
+    const [lockRows] = await conn.query<RowDataPacket[]>(
+      "SELECT GET_LOCK(?, 1) AS ok",
+      [LOCK_NAME],
+    );
     gotLock = lockRows[0]?.ok === 1;
     if (!gotLock) {
       summary.locked = true;
@@ -157,7 +176,8 @@ export const backfillMissingImagesFromOpenGraph = async (requestedLimit = 20): P
     );
 
     if (missingRows.length === 0) {
-      summary.reason = "No news items are missing both RSS and Pixabay card images.";
+      summary.reason =
+        "No news items are missing both RSS and Pixabay card images.";
       return summary;
     }
 
@@ -172,7 +192,9 @@ export const backfillMissingImagesFromOpenGraph = async (requestedLimit = 20): P
         if (!asset) {
           summary.failed += 1;
           if (summary.errors.length < 10) {
-            summary.errors.push(`news ${news.id}: og fetch empty (${news.source_name})`);
+            summary.errors.push(
+              `news ${news.id}: og fetch empty (${news.source_name})`,
+            );
           }
           await conn.execute(
             "UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?",
@@ -201,8 +223,10 @@ export const backfillMissingImagesFromOpenGraph = async (requestedLimit = 20): P
         }
       } catch (error) {
         summary.failed += 1;
-        const message = error instanceof Error ? error.message : "Unknown OG backfill error";
-        if (summary.errors.length < 10) summary.errors.push(`news ${news.id}: ${message}`);
+        const message =
+          error instanceof Error ? error.message : "Unknown OG backfill error";
+        if (summary.errors.length < 10)
+          summary.errors.push(`news ${news.id}: ${message}`);
         await conn.execute(
           "UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?",
           [news.id],
@@ -219,7 +243,10 @@ export const backfillMissingImagesFromOpenGraph = async (requestedLimit = 20): P
   }
 };
 
-const alreadyHasImage = async (conn: PoolConnection, newsId: number): Promise<boolean> => {
+const alreadyHasImage = async (
+  conn: PoolConnection,
+  newsId: number,
+): Promise<boolean> => {
   const [rows] = await conn.execute<RowDataPacket[]>(
     `
     SELECT 1 AS ok
@@ -238,13 +265,4 @@ const alreadyHasImage = async (conn: PoolConnection, newsId: number): Promise<bo
     [newsId],
   );
   return rows.length > 0;
-};
-
-const withPool = async <T>(fn: (conn: PoolConnection) => Promise<T>): Promise<T> => {
-  const conn = await getMysqlPool().getConnection();
-  try {
-    return await fn(conn);
-  } finally {
-    conn.release();
-  }
 };

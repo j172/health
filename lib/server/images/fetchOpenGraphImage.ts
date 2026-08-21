@@ -16,14 +16,18 @@ const toAbsoluteUrl = (url: string, base: string): string | null => {
 
 /** Skip hosts/paths that are never usable card photos. */
 const isUnusableImageUrl = (url: string): boolean =>
-  /logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking/i.test(url);
+  /logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking/i.test(
+    url,
+  );
 
 /**
  * Lightweight card-image path for feeds that skip full detail scrape
  * (e.g. ltn.com.tw): pull og:image / twitter:image only, re-host locally.
  * Does not parse or store article body HTML.
  */
-export const fetchOpenGraphImageAsset = async (canonicalUrl: string): Promise<NewsAsset | null> => {
+export const fetchOpenGraphImageAsset = async (
+  canonicalUrl: string,
+): Promise<NewsAsset | null> => {
   if (!canonicalUrl || /news\.google\.com/i.test(canonicalUrl)) return null;
 
   const response = await httpGetText(canonicalUrl, {
@@ -51,7 +55,12 @@ export const fetchOpenGraphImageAsset = async (canonicalUrl: string): Promise<Ne
   for (const raw of rawCandidates) {
     if (!raw?.trim()) continue;
     const absolute = toAbsoluteUrl(raw.trim(), canonicalUrl);
-    if (!absolute || !/^https?:\/\//i.test(absolute) || isUnusableImageUrl(absolute)) continue;
+    if (
+      !absolute ||
+      !/^https?:\/\//i.test(absolute) ||
+      isUnusableImageUrl(absolute)
+    )
+      continue;
 
     const localPath = await downloadArticleImage(absolute);
     if (!localPath) continue;

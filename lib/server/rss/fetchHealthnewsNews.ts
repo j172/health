@@ -1,8 +1,8 @@
-import { createHash } from "crypto";
 import { load } from "cheerio";
 import type { EnrichedRssItem } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
+import { sha256, toAbsoluteUrl } from "@/lib/server/rss/scraperUtils";
 
 // ---------------------------------------------------------------------------
 // 健康醫療網（healthnews.com.tw）— has no RSS feed of its own (confirmed:
@@ -39,16 +39,6 @@ const FEED_NAME = "健康醫療網";
 const BASE_URL = "https://www.healthnews.com.tw";
 const LIST_URL = `${BASE_URL}/`;
 
-const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
-
-const toAbsoluteUrl = (url: string, base: string): string => {
-  try {
-    return new URL(url, base).toString();
-  } catch {
-    return url;
-  }
-};
-
 export interface HealthnewsFetchResult {
   ok: boolean;
   httpStatus: number | null;
@@ -64,7 +54,8 @@ export const fetchHealthnewsNews = async (): Promise<HealthnewsFetchResult> => {
     const response = await httpGetText(LIST_URL, {
       headers: {
         "User-Agent": "health.j172.tw-rss-ingestor/1.0",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
       timeoutMs: 15_000,
     });
@@ -88,7 +79,12 @@ export const fetchHealthnewsNews = async (): Promise<HealthnewsFetchResult> => {
       const externalId = match[1];
       if (seenExternalIds.has(externalId)) continue;
 
-      const title = anchor.find("div.a1").first().text().replace(/\s+/g, " ").trim();
+      const title = anchor
+        .find("div.a1")
+        .first()
+        .text()
+        .replace(/\s+/g, " ")
+        .trim();
       if (!title) continue; // skips the truncated .a1-title sidebar-widget variants of these same articles
 
       seenExternalIds.add(externalId);
@@ -100,14 +96,20 @@ export const fetchHealthnewsNews = async (): Promise<HealthnewsFetchResult> => {
 
       const assets: EnrichedRssItem["assets"] = [];
       if (imgSrc) {
-         
         const localPath = await downloadArticleImage(imgSrc);
         if (localPath) {
-          assets.push({ assetType: "image", title: null, url: localPath, sortOrder: 0 });
+          assets.push({
+            assetType: "image",
+            title: null,
+            url: localPath,
+            sortOrder: 0,
+          });
         }
       }
 
-      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, imgSrc }));
+      const payloadHash = sha256(
+        JSON.stringify({ title, canonicalUrl, imgSrc }),
+      );
 
       items.push({
         sourceName: SOURCE_NAME,
@@ -144,7 +146,10 @@ export const fetchHealthnewsNews = async (): Promise<HealthnewsFetchResult> => {
       errorMessage: null,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown healthnews.com.tw fetch error";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown healthnews.com.tw fetch error";
     return {
       ok: false,
       httpStatus,

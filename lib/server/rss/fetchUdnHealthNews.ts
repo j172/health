@@ -1,9 +1,9 @@
-import { createHash } from "crypto";
 import { load } from "cheerio";
 import type { EnrichedRssItem } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
 import { parseTaipeiDateToUtc } from "@/lib/server/rss/time";
+import { sha256, toAbsoluteUrl } from "@/lib/server/rss/scraperUtils";
 
 // ---------------------------------------------------------------------------
 // 元氣網（health.udn.com）— has no RSS feed of its own, so this scrapes the
@@ -24,16 +24,6 @@ const FEED_NAME = "元氣網（聯合報健康）";
 const BASE_URL = "https://health.udn.com";
 const LIST_URL = `${BASE_URL}/health/rank/newest/1005`;
 
-const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
-
-const toAbsoluteUrl = (url: string, base: string): string => {
-  try {
-    return new URL(url, base).toString();
-  } catch {
-    return url;
-  }
-};
-
 export interface UdnHealthFetchResult {
   ok: boolean;
   httpStatus: number | null;
@@ -49,7 +39,8 @@ export const fetchUdnHealthNews = async (): Promise<UdnHealthFetchResult> => {
     const response = await httpGetText(LIST_URL, {
       headers: {
         "User-Agent": "health.j172.tw-rss-ingestor/1.0",
-        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       },
       timeoutMs: 15_000,
     });
@@ -79,7 +70,13 @@ export const fetchUdnHealthNews = async (): Promise<UdnHealthFetchResult> => {
       if (seenExternalIds.has(externalId)) continue;
       seenExternalIds.add(externalId);
 
-      const title = (anchor.attr("title") || card.find(".pic-8to5-item__title").text() || "").replace(/\s+/g, " ").trim();
+      const title = (
+        anchor.attr("title") ||
+        card.find(".pic-8to5-item__title").text() ||
+        ""
+      )
+        .replace(/\s+/g, " ")
+        .trim();
       if (!title) continue;
 
       const canonicalUrl = `${BASE_URL}/health/story/${categoryId}/${articleId}`;
@@ -87,12 +84,25 @@ export const fetchUdnHealthNews = async (): Promise<UdnHealthFetchResult> => {
       // The "note" line is "YYYY-MM-DD HH:MM:SS <category>", e.g.
       // "2026-08-01 10:01:42 抗老養生" — split the timestamp from the
       // trailing category label.
-      const noteText = card.find(".pic-8to5-item__note").text().replace(/\s+/g, " ").trim();
-      const noteMatch = noteText.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s*(.*)$/);
-      const publishedAtUtc = noteMatch ? parseTaipeiDateToUtc(noteMatch[1]) : null;
-      const categoryRaw = noteMatch && noteMatch[2] ? noteMatch[2].trim() : null;
+      const noteText = card
+        .find(".pic-8to5-item__note")
+        .text()
+        .replace(/\s+/g, " ")
+        .trim();
+      const noteMatch = noteText.match(
+        /^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\s*(.*)$/,
+      );
+      const publishedAtUtc = noteMatch
+        ? parseTaipeiDateToUtc(noteMatch[1])
+        : null;
+      const categoryRaw =
+        noteMatch && noteMatch[2] ? noteMatch[2].trim() : null;
 
-      const descriptionText = card.find(".pic-8to5-item__description").text().replace(/\s+/g, " ").trim();
+      const descriptionText = card
+        .find(".pic-8to5-item__description")
+        .text()
+        .replace(/\s+/g, " ")
+        .trim();
 
       const imgEl = card.find("img").first();
       const rawImgSrc = imgEl.attr("data-src") || imgEl.attr("src") || null;
@@ -103,10 +113,14 @@ export const fetchUdnHealthNews = async (): Promise<UdnHealthFetchResult> => {
       // hotlinks a third-party image host.
       const assets: EnrichedRssItem["assets"] = [];
       if (imgSrc) {
-         
         const localPath = await downloadArticleImage(imgSrc);
         if (localPath) {
-          assets.push({ assetType: "image", title: imgEl.attr("alt")?.trim() || null, url: localPath, sortOrder: 0 });
+          assets.push({
+            assetType: "image",
+            title: imgEl.attr("alt")?.trim() || null,
+            url: localPath,
+            sortOrder: 0,
+          });
         }
       }
 
@@ -158,7 +172,8 @@ export const fetchUdnHealthNews = async (): Promise<UdnHealthFetchResult> => {
       errorMessage: null,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown UDN health fetch error";
+    const message =
+      error instanceof Error ? error.message : "Unknown UDN health fetch error";
     return {
       ok: false,
       httpStatus,

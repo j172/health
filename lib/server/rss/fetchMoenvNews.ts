@@ -45,7 +45,8 @@ const FALLBACK_URL = `${DETAIL_BASE_URL}/`;
 
 const RECENCY_WINDOW_MS = 90 * 24 * 60 * 60 * 1000; // ~90 days, see spec section 3
 
-const sha256 = (text: string): string => createHash("sha256").update(text).digest("hex");
+const sha256 = (text: string): string =>
+  createHash("sha256").update(text).digest("hex");
 
 const str = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
@@ -86,8 +87,7 @@ export const fetchMoenvNews = async (): Promise<MoenvNewsFetchResult> => {
       throw new Error("MOENV_NEWS_API_KEY is not configured");
     }
 
-    const url =
-      `${API_URL}?api_key=${encodeURIComponent(apiKey)}&limit=1000&sort=ImportDate%20desc&format=JSON`;
+    const url = `${API_URL}?api_key=${encodeURIComponent(apiKey)}&limit=1000&sort=ImportDate%20desc&format=JSON`;
 
     const response = await httpGetText(url, {
       headers: {
@@ -112,7 +112,7 @@ export const fetchMoenvNews = async (): Promise<MoenvNewsFetchResult> => {
     const rawItems: MoenvNewsRecord[] = Array.isArray(parsed)
       ? (parsed as MoenvNewsRecord[])
       : Array.isArray((parsed as { records?: unknown } | null)?.records)
-        ? ((parsed as { records: MoenvNewsRecord[] }).records)
+        ? (parsed as { records: MoenvNewsRecord[] }).records
         : [];
 
     const cutoffMs = Date.now() - RECENCY_WINDOW_MS;
@@ -139,7 +139,9 @@ export const fetchMoenvNews = async (): Promise<MoenvNewsFetchResult> => {
 
       const relativeUrl = str(raw.relativeurl);
       const canonicalUrl =
-        relativeUrl && relativeUrl !== "-" ? new URL(relativeUrl, DETAIL_BASE_URL).toString() : FALLBACK_URL;
+        relativeUrl && relativeUrl !== "-"
+          ? new URL(relativeUrl, DETAIL_BASE_URL).toString()
+          : FALLBACK_URL;
 
       const deptName = str(raw.newssource) || null;
 
@@ -191,7 +193,8 @@ export const fetchMoenvNews = async (): Promise<MoenvNewsFetchResult> => {
       errorMessage: null,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown MOENV news fetch error";
+    const message =
+      error instanceof Error ? error.message : "Unknown MOENV news fetch error";
     return {
       ok: false,
       httpStatus,

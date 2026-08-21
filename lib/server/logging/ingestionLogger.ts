@@ -1,7 +1,17 @@
-import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import type {
+  PoolConnection,
+  ResultSetHeader,
+  RowDataPacket,
+} from "mysql2/promise";
+import {
+  withConnection,
+  toSqlDateTime,
+  utcNowSql,
+} from "@/lib/server/db/mysql";
 
-export const createIngestionRun = async (triggerType: string): Promise<number> =>
+export const createIngestionRun = async (
+  triggerType: string,
+): Promise<number> =>
   withConnection(async (conn) => {
     const now = utcNowSql();
     const [result] = await conn.execute<ResultSetHeader>(
@@ -28,8 +38,11 @@ export const finishIngestionRun = async (params: {
 }): Promise<void> => {
   await withConnection(async (conn) => {
     const endedAt = new Date();
-    const endedAtSql = endedAt.toISOString().slice(0, 19).replace("T", " ");
-    const durationMs = Math.max(0, endedAt.getTime() - params.startedAt.getTime());
+    const endedAtSql = toSqlDateTime(endedAt);
+    const durationMs = Math.max(
+      0,
+      endedAt.getTime() - params.startedAt.getTime(),
+    );
     const now = utcNowSql();
     await conn.execute(
       `
@@ -71,7 +84,14 @@ export const writeIngestionError = async (params: {
       INSERT INTO ingest_errors (ingest_run_id, feed_code, url, message, detail_json, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [params.runId, params.feedCode || null, params.url || null, params.message, params.detail ? JSON.stringify(params.detail) : null, now],
+      [
+        params.runId,
+        params.feedCode || null,
+        params.url || null,
+        params.message,
+        params.detail ? JSON.stringify(params.detail) : null,
+        now,
+      ],
     );
   });
 };
