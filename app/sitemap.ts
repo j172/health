@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { listLatestNews } from "@/lib/server/news/queries";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
-import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { TOOL_CATALOG, isToolIndexable } from "@/lib/server/tools/catalog";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,20 +20,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const newsEntries: MetadataRoute.Sitemap = items.map((item) => ({
     url: `${baseUrl}/news/${item.id}`,
-    lastModified: item.published_at_utc ? new Date(item.published_at_utc) : undefined,
+    lastModified: item.published_at_utc
+      ? new Date(item.published_at_utc)
+      : undefined,
     changeFrequency: "daily",
     priority: 0.7,
   }));
 
-  const sourceEntries: MetadataRoute.Sitemap = SOURCE_CATEGORIES.flatMap((category) =>
-    category.sources.map((source) => ({
-      url: `${baseUrl}/news?source=${encodeURIComponent(source.sourceName)}`,
-      changeFrequency: "hourly" as const,
-      priority: 0.6,
-    })),
+  const sourceEntries: MetadataRoute.Sitemap = SOURCE_CATEGORIES.flatMap(
+    (category) =>
+      category.sources.map((source) => ({
+        url: `${baseUrl}/news?source=${encodeURIComponent(source.sourceName)}`,
+        changeFrequency: "hourly" as const,
+        priority: 0.6,
+      })),
   );
 
-  const toolEntries: MetadataRoute.Sitemap = TOOL_CATALOG.map((tool) => ({
+  const toolEntries: MetadataRoute.Sitemap = TOOL_CATALOG.filter(
+    isToolIndexable,
+  ).map((tool) => ({
     url: `${baseUrl}/tools/${tool.slug}`,
     changeFrequency: "monthly" as const,
     priority: 0.6,

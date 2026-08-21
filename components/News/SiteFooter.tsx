@@ -2,17 +2,31 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { toolsInGroup } from "@/lib/server/tools/catalog";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-const FooterColumn = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const FooterColumn = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
   <div>
-    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">{label}</p>
+    <p className="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+      {label}
+    </p>
     <ul className="mt-3 space-y-2 text-xs font-medium">{children}</ul>
   </div>
 );
 
-const FooterLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+const FooterLink = ({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) => (
   <li>
     <Link
       href={href}
@@ -29,7 +43,15 @@ const FooterLink = ({ href, children }: { href: string; children: React.ReactNod
 // classes — an <img>/next/image reference can't do that (external SVG
 // documents don't inherit page CSS), so inline is the only way to keep this
 // exact treatment consistent.
-const SocialIcon = ({ href, label, children }: { href: string; label: string; children: React.ReactNode }) => (
+const SocialIcon = ({
+  href,
+  label,
+  children,
+}: {
+  href: string;
+  label: string;
+  children: React.ReactNode;
+}) => (
   <a
     href={href}
     target="_blank"
@@ -42,7 +64,17 @@ const SocialIcon = ({ href, label, children }: { href: string; label: string; ch
 );
 
 const InstagramIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <rect x="3" y="3" width="18" height="18" rx="5" />
     <circle cx="12" cy="12" r="4.2" />
     <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none" />
@@ -50,14 +82,34 @@ const InstagramIcon = () => (
 );
 
 const FacebookIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="12" r="9" />
     <path d="M14.3 8.4h-1.6c-1 0-1.6.6-1.6 1.6v1.6h3.1l-.4 2.3h-2.7V21" />
   </svg>
 );
 
 const ThreadsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.6"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
     <path d="M12 3c-4.5 0-7 2.7-7 7.2 0 3.6 1.7 6.1 4.4 7.4.8.4 1.7-.1 1.7-1v-.2c0-.6-.4-1-.9-1.3-1.6-.9-2.5-2.5-2.5-4.6 0-3.1 1.6-4.7 4.1-4.9 2.6-.2 4.4 1.1 4.6 3.3.1 1.4-.4 2.4-1.5 2.7-.8.2-1.4-.1-1.6-.8-.1-.4 0-.8.3-1.2.4-.5.3-1.1-.2-1.4-.6-.4-1.3-.1-1.7.5-.6 1-.7 2.2-.2 3.3.6 1.4 2 2.1 3.6 1.7 1.9-.5 2.9-2.2 2.7-4.4C20.6 6 17.7 3 12 3z" />
   </svg>
 );
@@ -71,26 +123,20 @@ export default function SiteFooter() {
     { href: "/", label: t("nav.home", "首頁") },
     { href: "/news", label: t("footer.newsList", "健康新聞列表") },
     { href: "/privacy", label: t("footer.privacy", "隱私權政策") },
-  ].sort((a, b) => a.label.localeCompare(b.label, "zh-Hant", { numeric: true }));
+  ].sort((a, b) =>
+    a.label.localeCompare(b.label, "zh-Hant", { numeric: true }),
+  );
 
-  const calculatorTools = [...TOOL_CATALOG.filter((tool) => tool.group === "calculator")].sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
-  );
-  const facilityTools = [...TOOL_CATALOG.filter((tool) => tool.group === "facility")].sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
-  );
-  const ltcTools = [...TOOL_CATALOG.filter((tool) => tool.group === "ltc")].sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
-  );
-  const disabilityTools = [...TOOL_CATALOG.filter((tool) => tool.group === "disability")].sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
-  );
-  const greenShopTools = [...TOOL_CATALOG.filter((tool) => tool.group === "green-shop")].sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
-  );
-  const foodTools = [...TOOL_CATALOG.filter((tool) => tool.group === "food")].sort((a, b) =>
-    a.title.localeCompare(b.title, "zh-Hant", { numeric: true })
-  );
+  // One helper, one comparator (SPECIFICATION.md 5.1). Sorting on localizeTitle
+  // rather than tool.title is what keeps the English footer in order — it used to
+  // sort by the Traditional Chinese title while rendering the English one.
+  const calculatorTools = toolsInGroup("calculator", localizeTitle);
+  const facilityTools = toolsInGroup("facility", localizeTitle);
+  const ltcTools = toolsInGroup("ltc", localizeTitle);
+  const disabilityTools = toolsInGroup("disability", localizeTitle);
+  const childWelfareTools = toolsInGroup("child-welfare", localizeTitle);
+  const greenShopTools = toolsInGroup("green-shop", localizeTitle);
+  const foodTools = toolsInGroup("food", localizeTitle);
 
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -107,26 +153,38 @@ export default function SiteFooter() {
                 className="h-9 w-9 rounded-xl shadow-xs"
               />
               <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-                j172tw <span className="text-indigo-600 dark:text-indigo-400">Healthz</span>
+                j172tw{" "}
+                <span className="text-indigo-600 dark:text-indigo-400">
+                  Healthz
+                </span>
               </span>
             </Link>
             <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
               {t(
                 "footer.tagline",
-                "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。"
+                "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。",
               )}
             </p>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <SocialIcon href="https://www.instagram.com/j172twhealths/" label="Instagram">
+              <SocialIcon
+                href="https://www.instagram.com/j172twhealths/"
+                label="Instagram"
+              >
                 <InstagramIcon />
               </SocialIcon>
-              <SocialIcon href="https://www.facebook.com/profile.php?id=61592584239566" label="Facebook">
+              <SocialIcon
+                href="https://www.facebook.com/profile.php?id=61592584239566"
+                label="Facebook"
+              >
                 <FacebookIcon />
               </SocialIcon>
-              <SocialIcon href="https://www.threads.com/@j172twhealths" label="Threads">
+              <SocialIcon
+                href="https://www.threads.com/@j172twhealths"
+                label="Threads"
+              >
                 <ThreadsIcon />
               </SocialIcon>
             </div>
@@ -143,54 +201,84 @@ export default function SiteFooter() {
         </div>
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 border-t border-slate-100 pt-10 dark:border-slate-900">
+        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 dark:border-slate-900">
           <FooterColumn label={t("footer.overview", "全站總覽")}>
             {overviewLinks.map((item) => (
-              <FooterLink key={item.href} href={item.href}>{item.label}</FooterLink>
+              <FooterLink key={item.href} href={item.href}>
+                {item.label}
+              </FooterLink>
             ))}
           </FooterColumn>
 
           <FooterColumn label={t("nav.facilities", "醫療院所")}>
             {facilityTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
             ))}
           </FooterColumn>
 
           <FooterColumn label={t("nav.ltc", "長照機構")}>
             {ltcTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
             ))}
           </FooterColumn>
 
           <FooterColumn label={t("nav.disability", "身心障礙")}>
             {disabilityTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+
+          <FooterColumn label={t("nav.childWelfare", "兒少福利")}>
+            {childWelfareTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
             ))}
           </FooterColumn>
 
           <FooterColumn label={t("nav.greenShops", "綠色商店")}>
             {greenShopTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
             ))}
           </FooterColumn>
 
           <FooterColumn label={t("footer.food", "食品營養")}>
             {foodTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
             ))}
           </FooterColumn>
 
           <FooterColumn label={t("footer.calculatorTools", "健康算盤與工具")}>
             {calculatorTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>{localizeTitle(tool)}</FooterLink>
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
             ))}
           </FooterColumn>
         </div>
 
         {/* Bottom copyright */}
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-400 dark:border-slate-900 sm:flex-row sm:items-center">
-          <p>&copy; {new Date().getFullYear()} j172tw Healthz. {t("footer.rights", "版權所有。")}</p>
-          <p>{t("footer.disclaimer", "本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。")}</p>
+        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-400 sm:flex-row sm:items-center dark:border-slate-900">
+          <p suppressHydrationWarning>
+            &copy; {new Date().getFullYear()} j172tw Healthz.{" "}
+            {t("footer.rights", "版權所有。")}
+          </p>
+          <p>
+            {t(
+              "footer.disclaimer",
+              "本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。",
+            )}
+          </p>
         </div>
       </div>
     </footer>
