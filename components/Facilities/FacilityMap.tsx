@@ -6,7 +6,6 @@ import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { GEO_DEFAULTS } from "./useGeolocation";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png",

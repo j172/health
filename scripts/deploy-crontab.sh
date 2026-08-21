@@ -54,19 +54,53 @@ set -euo pipefail
 BEGIN_MARK="# BEGIN health-app managed cron"
 END_MARK="# END health-app managed cron"
 BLOCK_FILE="/tmp/health-app-cron-block.txt"
+NEW_CRONTAB="$(mktemp /tmp/health-app-crontab.XXXXXX)"
 
-CURRENT="$(crontab -l 2>/dev/null || true)"
+cleanup() {
+  rm -f "$BLOCK_FILE" "$NEW_CRONTAB"
+}
+trap cleanup EXIT
 
-STRIPPED="$(printf '%s\n' "$CURRENT" | awk -v b="$BEGIN_MARK" -v e="$END_MARK" '
-  $0==b {skip=1}
-  skip && $0==e {skip=0; next}
-  skip {next}
-  {print}
-')"
+# Safely read current crontab without masking real errors
+CURRENT=""
+if CRONTAB_OUT="$(crontab -l 2>&1)"; then
+  CURRENT="$CRONTAB_OUT"
+elif [[ "$CRONTAB_OUT" =~ "no crontab for" ]]; then
+  CURRENT=""
+else
+  echo "Error querying remote crontab: $CRONTAB_OUT" >&2
+  exit 1
+fi
 
-{ printf '%s\n' "$STRIPPED"; cat "$BLOCK_FILE"; } | crontab -
+# Create backup if existing crontab has entries
+if [ -n "$CURRENT" ]; then
+  BACKUP_DIR="$HOME/.crontab_backups"
+  mkdir -p "$BACKUP_DIR"
+  printf '%s\n' "$CURRENT" > "$BACKUP_DIR/crontab_$(date +%Y%m%d_%H%M%S).bak"
+fi
 
-rm -f "$BLOCK_FILE"
-echo "Crontab updated:"
+STRIPPED=""
+if [ -n "$CURRENT" ]; then
+  STRIPPED="$(printf '%s\n' "$CURRENT" | awk -v b="$BEGIN_MARK" -v e="$END_MARK" '
+    $0==b {skip=1}
+    skip && $0==e {skip=0; next}
+    skip {next}
+    {print}
+  ')"
+fi
+
+# Merge into temporary crontab file
+if [ -n "$STRIPPED" ]; then
+  printf '%s\n\n' "$STRIPPED" > "$NEW_CRONTAB"
+else
+  : > "$NEW_CRONTAB"
+fi
+cat "$BLOCK_FILE" >> "$NEW_CRONTAB"
+printf '\n' >> "$NEW_CRONTAB"
+
+# Atomically apply new crontab from validated staging file
+crontab "$NEW_CRONTAB"
+
+echo "Crontab successfully updated:"
 crontab -l
 REMOTE

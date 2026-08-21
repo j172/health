@@ -214,16 +214,39 @@ export const withTransaction = async <T>(runner: (conn: PoolConnection) => Promi
     }
   });
 
-export const tryAcquireIngestionLock = async (lockName = "rss_ingestion_lock", timeoutSeconds = 1): Promise<boolean> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, ?) AS ok", [lockName, timeoutSeconds]);
-    return rows?.[0]?.ok === 1;
-  });
+export type AdvisoryLockResult<T> = { acquired: true; result: T } | { acquired: false };
 
-export const releaseIngestionLock = async (lockName = "rss_ingestion_lock"): Promise<void> => {
-  await withConnection(async (conn) => {
-    await conn.query("DO RELEASE_LOCK(?)", [lockName]);
-  });
+/**
+ * Runs a callback with a MySQL advisory lock (GET_LOCK).
+ * Guarantees that lock acquisition, execution, and lock release (RELEASE_LOCK)
+ * occur on the exact same pooled connection before it is returned to the pool.
+ */
+export const withAdvisoryLock = async <T>(
+  lockName: string,
+  timeoutSeconds: number,
+  runner: (conn: PoolConnection) => Promise<T>,
+): Promise<AdvisoryLockResult<T>> => {
+  const pool = getMysqlPool();
+  const conn = await pool.getConnection();
+  let gotLock = false;
+  try {
+    const [rows] = await conn.query<RowDataPacket[]>("SELECT GET_LOCK(?, ?) AS ok", [lockName, timeoutSeconds]);
+    gotLock = rows?.[0]?.ok === 1;
+    if (!gotLock) {
+      return { acquired: false };
+    }
+    const result = await runner(conn);
+    return { acquired: true, result };
+  } finally {
+    if (gotLock) {
+      try {
+        await conn.query("DO RELEASE_LOCK(?)", [lockName]);
+      } catch (err) {
+        console.error(`Failed to release advisory lock ${lockName}:`, err);
+      }
+    }
+    conn.release();
+  }
 };
 
 export const utcNowSql = nowUtc;

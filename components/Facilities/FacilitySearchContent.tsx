@@ -79,15 +79,11 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
 
   // Keyword search never sends lat/lng (see below), so distance can't be computed —
   // drop back to name sort rather than let the dropdown keep a now-meaningless selection.
-  useEffect(() => {
-    if (keyword && sort === "distance") setSort("name");
-  }, [keyword, sort]);
+  const effectiveSort = keyword && sort === "distance" ? "name" : sort;
 
   useEffect(() => {
     if (location.loading) return;
     let cancelled = false;
-    setLoading(true);
-    setError(false);
 
     const params = new URLSearchParams({ type: facilityType });
     if (keyword) {
@@ -100,7 +96,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
       params.set("radius", String(radiusMeters));
     }
     if (category) params.set("category", category);
-    if (sort) params.set("sort", sort);
+    if (effectiveSort) params.set("sort", effectiveSort);
 
     fetch(`/api/facilities?${params.toString()}`)
       .then((res) => {
@@ -108,23 +104,31 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         return res.json();
       })
       .then((data) => {
-        if (!cancelled) setFacilities(data.facilities);
+        if (!cancelled) {
+          setFacilities(data.facilities);
+          setError(false);
+          setLoading(false);
+        }
       })
       .catch(() => {
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, sort]);
+  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, effectiveSort]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setKeyword(searchInput.trim());
+    const trimmed = searchInput.trim();
+    setKeyword(trimmed);
+    if (trimmed && sort === "distance") {
+      setSort("name");
+    }
   };
 
   const geocoded = (facilities ?? []).filter((f): f is FacilityItem & { lat: number; lng: number } => f.lat !== null && f.lng !== null);
@@ -133,11 +137,11 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">
           {emoji} {title}
         </h1>
-        <p className="text-neutral-600">{description}</p>
-        {noteLine && <p className="mt-1 text-xs text-neutral-500">{noteLine}</p>}
+        <p className="text-neutral-600 dark:text-slate-300">{description}</p>
+        {noteLine && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">{noteLine}</p>}
       </div>
 
       <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
@@ -146,15 +150,15 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder={searchPlaceholder}
-          className="min-w-[160px] flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+          className="min-w-[160px] flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         />
         {categories && categories.length > 0 && (
           <>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              aria-label="分類篩選"
-              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+              aria-label="分類篩解"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="">全部分類</option>
               {categories.map((c) => (
@@ -167,7 +171,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
               value={sort}
               onChange={(e) => setSort(e.target.value as typeof sort)}
               aria-label="排序方式"
-              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               {!keyword && <option value="distance">距離最近</option>}
               <option value="name">名稱 A-Z</option>
@@ -185,14 +189,14 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
               setKeyword("");
               setSearchInput("");
             }}
-            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50"
+            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             清除
           </button>
         )}
       </form>
 
-      {locationDefaultWarning && !keyword && location.isDefault && !location.loading && <p className="text-xs text-neutral-500">{locationDefaultWarning}</p>}
+      {locationDefaultWarning && !keyword && location.isDefault && !location.loading && <p className="text-xs text-neutral-500 dark:text-slate-400">{locationDefaultWarning}</p>}
 
       {(loading || location.loading) && (
         <div className="flex justify-center py-8">
@@ -200,41 +204,41 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         </div>
       )}
 
-      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700">{errorText}</div>}
+      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{errorText}</div>}
 
       {!loading && !location.loading && !error && facilities && (
         <>
           {markers.length > 0 && (
-            <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200">
+            <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200 dark:border-slate-800">
               <FacilityMap userLocation={location} markers={markers} radiusMeters={radiusMeters} showRadius={!keyword} />
             </div>
           )}
 
           {facilities.length === 0 ? (
-            <p className="py-8 text-center text-neutral-500">{keyword ? emptyStateWithKeyword : emptyStateNoKeyword}</p>
+            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword ? emptyStateWithKeyword : emptyStateNoKeyword}</p>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-neutral-500">共 {facilities.length} 筆</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400">共 {facilities.length} 筆</p>
               {facilities.map((f) => (
-                <div key={f.id} className="rounded-xl border border-neutral-200 p-4">
+                <div key={f.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   {serviceItem === "badge" ? (
                     <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-neutral-800">{f.name}</p>
-                      {f.service_item && <span className="shrink-0 rounded-full bg-zumthor px-2 py-0.5 text-xs text-primary">{f.service_item}</span>}
+                      <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
+                      {f.service_item && <span className="shrink-0 rounded-full bg-zumthor px-2 py-0.5 text-xs text-primary dark:bg-primary/20">{f.service_item}</span>}
                     </div>
                   ) : (
-                    <p className="font-semibold text-neutral-800">{f.name}</p>
+                    <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
                   )}
-                  {f.address && <p className="mt-1 text-sm text-neutral-600">{f.address}</p>}
-                  {f.phone && <p className="mt-1 text-xs text-neutral-500">📞 {f.phone}</p>}
+                  {f.address && <p className="mt-1 text-sm text-neutral-600 dark:text-slate-300">{f.address}</p>}
+                  {f.phone && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">📞 {f.phone}</p>}
                   {typeof serviceItem === "object" && f.service_item && (
-                    <p className="mt-1 text-xs text-neutral-500">
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
                       {serviceItem.label}
                       {f.service_item}
                     </p>
                   )}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
-                  {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400">（尚未完成地理定位，暫不顯示於地圖）</p>}
+                  {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">（尚未完成地理定位，暫不顯示於地圖）</p>}
                 </div>
               ))}
             </div>

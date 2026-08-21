@@ -37,7 +37,6 @@ export async function GET(): Promise<Response> {
     "",
     "## 多語言支援 (Multi-language Support)",
     "- 正體中文 (zh-TW, zh-Hant) - 官方權威標準",
-    "- 简体中文 (zh-CN, zh-Hans) - 即時動態 OpenCC 轉換",
     "- English (en) - 全球公衛介面支援",
     "",
     "## 30+ 款健康計算器與公衛資料庫 (Tools & Registries)",

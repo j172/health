@@ -3,6 +3,10 @@ name: Deploy prebuilt via FTPS
 on:
   workflow_dispatch:
 
+concurrency:
+  group: deploy-ftps
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

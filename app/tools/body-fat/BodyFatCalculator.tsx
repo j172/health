@@ -79,8 +79,8 @@ export default function BodyFatCalculator() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">🔬 體脂率計算器</h1>
-        <p className="text-neutral-600">採用美國海軍體脂計算法（Navy Method），對照 ACSM 標準分類。</p>
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">🔬 體脂率計算器</h1>
+        <p className="text-neutral-600 dark:text-slate-300">採用美國海軍體脂計算法（Navy Method），對照 ACSM 標準分類。</p>
       </div>
 
       <div className="flex gap-3">
@@ -193,9 +193,9 @@ export default function BodyFatCalculator() {
       </button>
 
       {result && (
-        <div className="space-y-4 rounded-xl border border-neutral-200 p-6">
+        <div className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="text-center">
-            <p className="mb-1 text-sm text-neutral-500">您的體脂率</p>
+            <p className="mb-1 text-sm text-neutral-500 dark:text-slate-400">您的體脂率</p>
             <p className={`text-5xl font-bold ${result.categoryColor}`}>
               {result.bodyFatPercent}
               <span className="text-2xl">%</span>
@@ -204,33 +204,33 @@ export default function BodyFatCalculator() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="rounded-lg bg-neutral-50 p-3 text-center">
-              <p className="text-xs text-neutral-500">脂肪重量</p>
-              <p className="text-xl font-bold text-neutral-800">
+            <div className="rounded-lg bg-neutral-50 p-3 text-center dark:bg-slate-800/60">
+              <p className="text-xs text-neutral-500 dark:text-slate-400">脂肪重量</p>
+              <p className="text-xl font-bold text-neutral-800 dark:text-slate-100">
                 {result.fatMass} <span className="text-sm font-normal">kg</span>
               </p>
             </div>
-            <div className="rounded-lg bg-neutral-50 p-3 text-center">
-              <p className="text-xs text-neutral-500">去脂體重</p>
-              <p className="text-xl font-bold text-neutral-800">
+            <div className="rounded-lg bg-neutral-50 p-3 text-center dark:bg-slate-800/60">
+              <p className="text-xs text-neutral-500 dark:text-slate-400">去脂體重</p>
+              <p className="text-xl font-bold text-neutral-800 dark:text-slate-100">
                 {result.leanMass} <span className="text-sm font-normal">kg</span>
               </p>
             </div>
           </div>
 
-          <div className="space-y-2 rounded-lg bg-neutral-50 p-4">
-            <p className="text-sm text-neutral-800">{result.description}</p>
-            <p className="text-sm text-neutral-600">💡 {result.suggestion}</p>
+          <div className="space-y-2 rounded-lg bg-neutral-50 p-4 dark:bg-slate-800/60">
+            <p className="text-sm text-neutral-800 dark:text-slate-200">{result.description}</p>
+            <p className="text-sm text-neutral-600 dark:text-slate-300">💡 {result.suggestion}</p>
           </div>
 
-          <div className="border-t border-neutral-200 pt-3 text-xs text-neutral-500">
+          <div className="border-t border-neutral-200 pt-3 text-xs text-neutral-500 dark:border-slate-800 dark:text-slate-400">
             <p className="mb-2 font-medium">{gender === "male" ? "男性" : "女性"}體脂率分類參考 (ACSM)</p>
             <div className="grid grid-cols-3 gap-1">
               {(gender === "male"
                 ? [["必要脂肪", "<6%"], ["運動員型", "6–13%"], ["體態優良", "14–17%"], ["一般", "18–24%"], ["肥胖", ">25%"]]
                 : [["必要脂肪", "<14%"], ["運動員型", "14–20%"], ["體態優良", "21–24%"], ["一般", "25–31%"], ["肥胖", ">32%"]]
               ).map(([label, range]) => (
-                <span key={label} className="rounded bg-neutral-100 px-1.5 py-0.5 text-center">
+                <span key={label} className="rounded bg-neutral-100 px-1.5 py-0.5 text-center dark:bg-slate-800 dark:text-slate-300">
                   {label}: {range}
                 </span>
               ))}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
@@ -18,58 +18,63 @@ export default function SearchModal({
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const handleClose = useCallback(() => {
+    setQuery("");
+    setResults([]);
+    setLoading(false);
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 50);
-    } else {
-      setQuery("");
-      setResults([]);
     }
   }, [isOpen]);
 
   // Debounced search API call
   useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
+    const trimmed = query.trim();
+    if (!trimmed) return;
 
-    setLoading(true);
+    let cancelled = false;
     const timer = setTimeout(async () => {
+      setLoading(true);
       try {
-        const res = await fetch(`/api/news/search?q=${encodeURIComponent(query)}`);
-        if (res.ok) {
+        const res = await fetch(`/api/news/search?q=${encodeURIComponent(trimmed)}`);
+        if (res.ok && !cancelled) {
           const data = await res.json();
           setResults(data.results || []);
         }
       } catch (err) {
         console.error("Failed to search:", err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }, 250);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [query]);
 
   // Escape key handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   if (!isOpen) return null;
 
   return (
     <div
       className="fixed inset-0 z-99999 flex items-start justify-center p-4 pt-16 sm:pt-24 bg-slate-950/60 backdrop-blur-md transition-opacity animate-in fade-in duration-200"
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900"
@@ -110,7 +115,7 @@ export default function SearchModal({
             </button>
           )}
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="ml-2 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label="關閉搜尋"
           >

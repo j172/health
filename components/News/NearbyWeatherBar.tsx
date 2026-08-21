@@ -48,8 +48,8 @@ export default function NearbyWeatherBar() {
   if (!data || (!data.aqi && !data.pm25 && !data.uv && !data.forecast)) return null;
 
   return (
-    <div className="border-b border-sky-200 bg-sky-50">
-      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-sky-900 sm:px-6 lg:px-8">
+    <div className="border-b border-sky-200 bg-sky-50 dark:border-sky-900/50 dark:bg-sky-950/60">
+      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-sky-900 dark:text-sky-200 sm:px-6 lg:px-8">
         <span aria-hidden="true">📍</span>
         <span className="shrink-0">附近測站：</span>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

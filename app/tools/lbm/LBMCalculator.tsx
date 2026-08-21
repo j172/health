@@ -53,10 +53,10 @@ function calcLBM(height: number, weight: number, gender: Gender): LBMResult {
 }
 
 const BODY_FAT_STANDARDS = [
-  { label: "體脂過低", male: "< 10%", female: "< 18%", color: "bg-blue-100 text-blue-700" },
-  { label: "理想範圍", male: "10 – 20%", female: "18 – 28%", color: "bg-green-100 text-green-700" },
-  { label: "略高", male: "21 – 25%", female: "29 – 33%", color: "bg-yellow-100 text-yellow-700" },
-  { label: "體脂過高", male: "> 25%", female: "> 33%", color: "bg-red-100 text-red-600" },
+  { label: "體脂過低", male: "< 10%", female: "< 18%", color: "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300" },
+  { label: "理想範圍", male: "10 – 20%", female: "18 – 28%", color: "bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300" },
+  { label: "略高", male: "21 – 25%", female: "29 – 33%", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/60 dark:text-yellow-300" },
+  { label: "體脂過高", male: "> 25%", female: "> 33%", color: "bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-300" },
 ];
 
 export default function LBMCalculator() {
@@ -89,13 +89,13 @@ export default function LBMCalculator() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">💪 去脂體重 (LBM) 計算器</h1>
-        <p className="text-neutral-600">以 Boer 公式估算去脂體重與體脂率，了解您的身體組成狀況。</p>
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">💪 去脂體重 (LBM) 計算器</h1>
+        <p className="text-neutral-600 dark:text-slate-300">以 Boer 公式估算去脂體重與體脂率，了解您的身體組成狀況。</p>
       </div>
 
       <div className={cardClass}>
         <div>
-          <label className="mb-2 block text-sm font-medium text-neutral-700">性別</label>
+          <label className="mb-2 block text-sm font-medium text-neutral-700 dark:text-slate-200">性別</label>
           <div className="flex gap-3">
             {(["male", "female"] as Gender[]).map((g) => (
               <button
@@ -115,7 +115,7 @@ export default function LBMCalculator() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="lbm-height" className="mb-1.5 block text-sm font-medium text-neutral-700">
+            <label htmlFor="lbm-height" className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-slate-200">
               身高
             </label>
             <div className="relative">
@@ -132,12 +132,12 @@ export default function LBMCalculator() {
                 }}
                 className={`${inputClass} pr-10`}
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">cm</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500 dark:text-slate-400">cm</span>
             </div>
           </div>
 
           <div>
-            <label htmlFor="lbm-weight" className="mb-1.5 block text-sm font-medium text-neutral-700">
+            <label htmlFor="lbm-weight" className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-slate-200">
               體重
             </label>
             <div className="relative">
@@ -154,7 +154,7 @@ export default function LBMCalculator() {
                 }}
                 className={`${inputClass} pr-10`}
               />
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500">kg</span>
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500 dark:text-slate-400">kg</span>
             </div>
           </div>
         </div>
@@ -171,38 +171,38 @@ export default function LBMCalculator() {
 
       {result && (
         <div className={cardClass}>
-          <h2 className="text-xl font-bold text-neutral-800">計算結果</h2>
+          <h2 className="text-xl font-bold text-neutral-800 dark:text-slate-100">計算結果</h2>
 
           <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="rounded-lg bg-zumthor p-4">
-              <p className="mb-1 text-xs text-neutral-500">去脂體重</p>
+            <div className="rounded-lg bg-zumthor p-4 dark:bg-primary/20">
+              <p className="mb-1 text-xs text-neutral-500 dark:text-slate-400">去脂體重</p>
               <p className="text-2xl font-bold text-primary">{result.lbm}</p>
-              <p className="text-xs text-neutral-500">kg</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400">kg</p>
             </div>
-            <div className="rounded-lg bg-neutral-50 p-4">
-              <p className="mb-1 text-xs text-neutral-500">體脂重</p>
-              <p className="text-2xl font-bold text-neutral-800">{result.bodyFat}</p>
-              <p className="text-xs text-neutral-500">kg</p>
+            <div className="rounded-lg bg-neutral-50 p-4 dark:bg-slate-800/60">
+              <p className="mb-1 text-xs text-neutral-500 dark:text-slate-400">體脂重</p>
+              <p className="text-2xl font-bold text-neutral-800 dark:text-slate-100">{result.bodyFat}</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400">kg</p>
             </div>
-            <div className="rounded-lg bg-neutral-50 p-4">
-              <p className="mb-1 text-xs text-neutral-500">體脂率</p>
+            <div className="rounded-lg bg-neutral-50 p-4 dark:bg-slate-800/60">
+              <p className="mb-1 text-xs text-neutral-500 dark:text-slate-400">體脂率</p>
               <p className={`text-2xl font-bold ${result.lbmCategoryColor}`}>{result.bodyFatPct}%</p>
               <p className={`text-xs font-medium ${result.lbmCategoryColor}`}>{result.lbmCategory}</p>
             </div>
           </div>
 
-          <div className="rounded-lg bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-600">💡 {result.suggestion}</div>
+          <div className="rounded-lg bg-neutral-50 p-4 text-sm leading-relaxed text-neutral-600 dark:bg-slate-800/60 dark:text-slate-300">💡 {result.suggestion}</div>
 
-          <p className="text-xs text-neutral-500">※ 本結果為 Boer 公式估算值，僅供健康管理參考，不取代專業醫療診斷。</p>
+          <p className="text-xs text-neutral-500 dark:text-slate-400">※ 本結果為 Boer 公式估算值，僅供健康管理參考，不取代專業醫療診斷。</p>
         </div>
       )}
 
       <div className={cardClass}>
-        <h2 className="mb-4 text-xl font-bold text-neutral-800">體脂率標準對照（台灣衛福部參考值）</h2>
+        <h2 className="mb-4 text-xl font-bold text-neutral-800 dark:text-slate-100">體脂率標準對照（台灣衛福部參考值）</h2>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-neutral-200 text-left text-neutral-500">
+              <tr className="border-b border-neutral-200 text-left text-neutral-500 dark:border-slate-700 dark:text-slate-400">
                 <th className="pb-2 pr-4 font-medium">分類</th>
                 <th className="pb-2 pr-4 font-medium">男性</th>
                 <th className="pb-2 font-medium">女性</th>
@@ -210,12 +210,12 @@ export default function LBMCalculator() {
             </thead>
             <tbody>
               {BODY_FAT_STANDARDS.map(({ label, male: m, female: f, color }) => (
-                <tr key={label} className="border-b border-neutral-100 last:border-0">
+                <tr key={label} className="border-b border-neutral-100 last:border-0 dark:border-slate-800">
                   <td className="py-2 pr-4">
                     <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${color}`}>{label}</span>
                   </td>
-                  <td className="py-2 pr-4 font-mono text-neutral-800">{m}</td>
-                  <td className="py-2 font-mono text-neutral-800">{f}</td>
+                  <td className="py-2 pr-4 font-mono text-neutral-800 dark:text-slate-200">{m}</td>
+                  <td className="py-2 font-mono text-neutral-800 dark:text-slate-200">{f}</td>
                 </tr>
               ))}
             </tbody>

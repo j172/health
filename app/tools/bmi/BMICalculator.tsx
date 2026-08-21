@@ -68,12 +68,12 @@ function calculateBMI(height: number, weight: number): BMIResult {
 }
 
 const BMI_CATEGORIES = [
-  { label: "體重過輕", range: "< 18.5", color: "bg-blue-100 text-blue-700" },
-  { label: "健康體重", range: "18.5 – 23.9", color: "bg-green-100 text-green-700" },
-  { label: "體重過重", range: "24 – 26.9", color: "bg-yellow-100 text-yellow-700" },
-  { label: "輕度肥胖", range: "27 – 29.9", color: "bg-orange-100 text-orange-700" },
-  { label: "中度肥胖", range: "30 – 34.9", color: "bg-red-100 text-red-600" },
-  { label: "重度肥胖", range: "≥ 35", color: "bg-red-200 text-red-700" },
+  { label: "體重過輕", range: "< 18.5", color: "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300" },
+  { label: "健康體重", range: "18.5 – 23.9", color: "bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300" },
+  { label: "體重過重", range: "24 – 26.9", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/60 dark:text-yellow-300" },
+  { label: "輕度肥胖", range: "27 – 29.9", color: "bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300" },
+  { label: "中度肥胖", range: "30 – 34.9", color: "bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-300" },
+  { label: "重度肥胖", range: "≥ 35", color: "bg-red-200 text-red-700 dark:bg-red-900/60 dark:text-red-200" },
 ];
 
 export default function BMICalculator() {
@@ -107,14 +107,14 @@ export default function BMICalculator() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">⚖️ BMI 計算器</h1>
-        <p className="text-neutral-600">採用台灣國民健康署 BMI 分類標準。輸入您的身高與體重，立即計算 BMI 值。</p>
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">⚖️ BMI 計算器</h1>
+        <p className="text-neutral-600 dark:text-slate-300">採用台灣國民健康署 BMI 分類標準。輸入您的身高與體重，立即計算 BMI 值。</p>
       </div>
 
-      <div className="space-y-5 rounded-xl border border-neutral-200 p-6">
+      <div className="space-y-5 rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="height" className="mb-2 block text-sm font-medium text-neutral-700">
+            <label htmlFor="height" className="mb-2 block text-sm font-medium text-neutral-700 dark:text-slate-200">
               身高 (公分)
             </label>
             <div className="relative">
@@ -129,15 +129,15 @@ export default function BMICalculator() {
                   setHeight(e.target.value);
                   setCalculated(false);
                 }}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 placeholder="例: 170"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500">cm</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500 dark:text-slate-400">cm</span>
             </div>
           </div>
 
           <div>
-            <label htmlFor="weight" className="mb-2 block text-sm font-medium text-neutral-700">
+            <label htmlFor="weight" className="mb-2 block text-sm font-medium text-neutral-700 dark:text-slate-200">
               體重 (公斤)
             </label>
             <div className="relative">
@@ -152,10 +152,10 @@ export default function BMICalculator() {
                   setWeight(e.target.value);
                   setCalculated(false);
                 }}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-4 py-3 pr-12 text-lg text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                 placeholder="例: 65"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500">kg</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-neutral-500 dark:text-slate-400">kg</span>
             </div>
           </div>
         </div>
@@ -169,7 +169,7 @@ export default function BMICalculator() {
           </button>
           <button
             onClick={handleReset}
-            className="rounded-lg border border-neutral-300 px-6 py-3 text-neutral-600 transition-colors hover:bg-neutral-50"
+            className="rounded-lg border border-neutral-300 px-6 py-3 text-neutral-600 transition-colors hover:bg-neutral-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
             重置
           </button>
@@ -177,10 +177,10 @@ export default function BMICalculator() {
       </div>
 
       {result && (
-        <div className="space-y-5 rounded-xl border border-neutral-200 p-6">
+        <div className="space-y-5 rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="text-center">
-            <p className="mb-1 text-sm text-neutral-500">您的 BMI 值</p>
-            <p className="text-6xl font-bold tabular-nums text-neutral-800">{result.bmi}</p>
+            <p className="mb-1 text-sm text-neutral-500 dark:text-slate-400">您的 BMI 值</p>
+            <p className="text-6xl font-bold tabular-nums text-neutral-800 dark:text-slate-100">{result.bmi}</p>
             <p className={`mt-2 text-xl font-semibold ${result.categoryColor}`}>{result.category}</p>
           </div>
 
@@ -197,7 +197,7 @@ export default function BMICalculator() {
                   style={{ left: `calc(${gaugePercent}% - 2px)` }}
                 />
               </div>
-              <div className="flex justify-between text-xs text-neutral-500">
+              <div className="flex justify-between text-xs text-neutral-500 dark:text-slate-400">
                 <span>15</span>
                 <span>18.5</span>
                 <span>24</span>
@@ -208,15 +208,15 @@ export default function BMICalculator() {
             </div>
           )}
 
-          <div className="space-y-2 rounded-lg bg-neutral-50 p-4">
-            <p className="text-sm text-neutral-800">{result.description}</p>
-            <p className="text-sm text-neutral-600">{result.suggestion}</p>
+          <div className="space-y-2 rounded-lg bg-neutral-50 p-4 dark:bg-slate-800/60">
+            <p className="text-sm text-neutral-800 dark:text-slate-200">{result.description}</p>
+            <p className="text-sm text-neutral-600 dark:text-slate-400">{result.suggestion}</p>
           </div>
         </div>
       )}
 
-      <div className="rounded-xl border border-neutral-200 p-6">
-        <h2 className="mb-4 text-lg font-bold text-neutral-800">BMI 分類標準 (台灣國健署)</h2>
+      <div className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="mb-4 text-lg font-bold text-neutral-800 dark:text-slate-100">BMI 分類標準 (台灣國健署)</h2>
         <div className="space-y-2">
           {BMI_CATEGORIES.map((cat) => (
             <div
@@ -232,7 +232,7 @@ export default function BMICalculator() {
         </div>
       </div>
 
-      <p className="px-4 text-center text-xs text-neutral-500">⚠️ 本工具僅供參考，不構成醫療建議。如有健康疑慮，請諮詢專業醫療人員。</p>
+      <p className="px-4 text-center text-xs text-neutral-500 dark:text-slate-400">⚠️ 本工具僅供參考，不構成醫療建議。如有健康疑慮，請諮詢專業醫療人員。</p>
     </div>
   );
 }

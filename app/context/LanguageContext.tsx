@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useSyncExternalStore } from "react";
 import zhTW from "@/locales/zh-TW.json";
 import en from "@/locales/en.json";
 
@@ -19,36 +19,43 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [locale, setLocaleState] = useState<Locale>("zh-TW");
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    // 1. Check Cookie or LocalStorage
+const getClientLocale = (): Locale => {
+  if (typeof window === "undefined") return "zh-TW";
+  try {
     const storedLocale = localStorage.getItem("locale") as Locale | null;
     if (storedLocale && ["zh-TW", "en"].includes(storedLocale)) {
-      setLocaleState(storedLocale);
-      return;
+      return storedLocale;
     }
 
     const cookieMatch = document.cookie.match(/(?:^|; )locale=([^;]*)/);
     if (cookieMatch && ["zh-TW", "en"].includes(cookieMatch[1])) {
-      setLocaleState(cookieMatch[1] as Locale);
-      return;
+      return cookieMatch[1] as Locale;
     }
 
-    // 2. Auto-detect browser language
     const navLang = navigator.language.toLowerCase();
-    if (navLang.startsWith("zh")) {
-      setLocaleState("zh-TW");
-    } else if (navLang.startsWith("en")) {
-      setLocaleState("en");
+    if (navLang.startsWith("en")) {
+      return "en";
     }
-  }, []);
+  } catch {}
+  return "zh-TW";
+};
+
+const subscribeToStorage = (callback: () => void) => {
+  window.addEventListener("storage", callback);
+  return () => window.removeEventListener("storage", callback);
+};
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [userLocale, setUserLocale] = useState<Locale | null>(null);
+  const detectedLocale = useSyncExternalStore(
+    subscribeToStorage,
+    getClientLocale,
+    () => "zh-TW" as Locale,
+  );
+  const locale = userLocale ?? detectedLocale;
 
   const setLocale = useCallback((newLocale: Locale) => {
-    setLocaleState(newLocale);
+    setUserLocale(newLocale);
     try {
       localStorage.setItem("locale", newLocale);
       document.cookie = `locale=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;

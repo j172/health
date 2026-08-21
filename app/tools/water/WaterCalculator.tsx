@@ -42,16 +42,16 @@ export function WaterCalculator() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">💧 飲水量計算器</h1>
-        <p className="text-neutral-600">依體重與活動量計算每日建議飲水量，並提供分段補水時間表。</p>
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">💧 飲水量計算器</h1>
+        <p className="text-neutral-600 dark:text-slate-300">依體重與活動量計算每日建議飲水量，並提供分段補水時間表。</p>
       </div>
 
-      <section className="space-y-6 rounded-xl border border-neutral-200 p-6">
-        <h2 className="text-xl font-bold text-neutral-800">輸入您的資訊</h2>
+      <section className="space-y-6 rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-slate-100">輸入您的資訊</h2>
 
         <div className="space-y-2">
-          <label htmlFor="weight-input" className="block text-sm font-medium text-neutral-700">
-            體重 <span className="ml-1 text-neutral-500">(kg)</span>
+          <label htmlFor="weight-input" className="block text-sm font-medium text-neutral-700 dark:text-slate-200">
+            體重 <span className="ml-1 text-neutral-500 dark:text-slate-400">(kg)</span>
           </label>
           <div className="flex items-center gap-4">
             <input
@@ -69,14 +69,14 @@ export function WaterCalculator() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="activity-select" className="block text-sm font-medium text-neutral-700">
+          <label htmlFor="activity-select" className="block text-sm font-medium text-neutral-700 dark:text-slate-200">
             日常活動量
           </label>
           <select
             id="activity-select"
             value={activityLevel}
             onChange={(e) => setActivityLevel(Number(e.target.value))}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:border-primary focus:outline-none"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {ACTIVITY_LEVELS.map((lvl) => (
               <option key={lvl.value} value={lvl.value}>
@@ -94,52 +94,52 @@ export function WaterCalculator() {
             onChange={(e) => setHotClimate(e.target.checked)}
             className="h-4 w-4 accent-primary"
           />
-          <label htmlFor="hot-climate-toggle" className="cursor-pointer text-sm text-neutral-700">
-            高溫或出汗較多的環境 <span className="ml-1 text-xs text-neutral-500">（+500 ml）</span>
+          <label htmlFor="hot-climate-toggle" className="cursor-pointer text-sm text-neutral-700 dark:text-slate-200">
+            高溫或出汗較多的環境 <span className="ml-1 text-xs text-neutral-500 dark:text-slate-400">（+500 ml）</span>
           </label>
         </div>
       </section>
 
-      <section className="space-y-4 rounded-xl border border-primary/20 bg-zumthor p-6">
-        <h2 className="text-xl font-bold text-neutral-800">每日建議飲水量</h2>
+      <section className="space-y-4 rounded-xl border border-primary/20 bg-zumthor p-6 dark:border-primary/30 dark:bg-primary/20">
+        <h2 className="text-xl font-bold text-neutral-800 dark:text-slate-100">每日建議飲水量</h2>
 
         <div className="flex flex-wrap gap-4">
-          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center">
+          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900">
             <p className="text-3xl font-extrabold tabular-nums text-primary">{totalMl.toLocaleString()}</p>
-            <p className="mt-1 text-sm text-neutral-500">毫升 (ml)</p>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-slate-400">毫升 (ml)</p>
           </div>
-          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center">
+          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900">
             <p className="text-3xl font-extrabold tabular-nums text-primary">{(totalMl / 1000).toFixed(1)}</p>
-            <p className="mt-1 text-sm text-neutral-500">公升 (L)</p>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-slate-400">公升 (L)</p>
           </div>
-          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center">
+          <div className="min-w-[120px] flex-1 rounded-xl border border-neutral-200 bg-white p-4 text-center dark:border-slate-800 dark:bg-slate-900">
             <p className="text-3xl font-extrabold tabular-nums text-primary">{cups}</p>
-            <p className="mt-1 text-sm text-neutral-500">杯（250 ml/杯）</p>
+            <p className="mt-1 text-sm text-neutral-500 dark:text-slate-400">杯（250 ml/杯）</p>
           </div>
         </div>
 
-        <p className="text-xs text-neutral-500">* 以上為參考值，實際需求依個人身體狀況、疾病史有所不同，建議諮詢醫師或營養師。</p>
+        <p className="text-xs text-neutral-500 dark:text-slate-400">* 以上為參考值，實際需求依個人身體狀況、疾病史有所不同，建議諮詢醫師或營養師。</p>
       </section>
 
-      <section className="rounded-xl border border-neutral-200 p-6">
-        <h2 className="mb-4 text-lg font-bold text-neutral-800">建議補水時間表</h2>
+      <section className="rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="mb-4 text-lg font-bold text-neutral-800 dark:text-slate-100">建議補水時間表</h2>
         <ul className="space-y-2">
           {schedule.map((slot) => (
-            <li key={slot.time} className="flex items-center justify-between border-b border-neutral-100 py-2 text-sm last:border-0">
-              <span className="font-medium tabular-nums text-neutral-800">{slot.time}</span>
-              <span className="flex items-center gap-1 text-neutral-500">
+            <li key={slot.time} className="flex items-center justify-between border-b border-neutral-100 py-2 text-sm last:border-0 dark:border-slate-800">
+              <span className="font-medium tabular-nums text-neutral-800 dark:text-slate-100">{slot.time}</span>
+              <span className="flex items-center gap-1 text-neutral-500 dark:text-slate-400">
                 <span aria-hidden="true">💧</span>
                 {slot.amount} ml
               </span>
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-xs text-neutral-500">早晨起床後與睡前各補充一杯水效果更佳。</p>
+        <p className="mt-3 text-xs text-neutral-500 dark:text-slate-400">早晨起床後與睡前各補充一杯水效果更佳。</p>
       </section>
 
-      <section className="space-y-2 rounded-xl border border-blue-200 bg-blue-50 p-5">
-        <h2 className="text-base font-bold text-blue-800">💡 補水小知識</h2>
-        <ul className="list-inside list-disc space-y-1 text-sm text-blue-700">
+      <section className="space-y-2 rounded-xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-900/50 dark:bg-blue-950/40">
+        <h2 className="text-base font-bold text-blue-800 dark:text-blue-300">💡 補水小知識</h2>
+        <ul className="list-inside list-disc space-y-1 text-sm text-blue-700 dark:text-blue-200">
           <li>口渴時代表身體已輕度缺水，應主動規律補水</li>
           <li>咖啡、茶、酒精有利尿作用，飲用後需額外補水</li>
           <li>蔬菜水果含水量高達 80-95%，可計入每日攝取</li>

@@ -13,7 +13,12 @@
  */
 
 const BASE_URL = process.env.HEALTH_BASE_URL || "https://health.j172.tw";
-const ADMIN_SECRET = process.env.ADMIN_SECRET || "4_33K2V3PkCrjMPIdnOEljntFhRLSvQZ";
+const ADMIN_SECRET = process.env.ADMIN_SECRET || process.env.RSS_SYNC_ADMIN_SECRET;
+
+if (!ADMIN_SECRET) {
+  console.error("Missing ADMIN_SECRET or RSS_SYNC_ADMIN_SECRET env var (the x-rss-sync-admin-secret value).");
+  process.exit(1);
+}
 
 const SOURCES_IN_PRIORITY = [
   // Priority 1: 兒少福利 (剛新增)

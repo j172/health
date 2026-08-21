@@ -9,6 +9,10 @@ on:
     # time. See docs/specs/news-card-image-freshness-scheduling.md.
     - cron: "*/30 * * * *"
 
+concurrency:
+  group: news-og-backfill
+  cancel-in-progress: false
+
 jobs:
   backfill:
     runs-on: ubuntu-latest

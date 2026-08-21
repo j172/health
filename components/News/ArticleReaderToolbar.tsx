@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import ImmersiveReaderModal from "./ImmersiveReaderModal";
 
@@ -24,7 +24,12 @@ export default function ArticleReaderToolbar({
   const [isPaused, setIsPaused] = useState(false);
   const [rate, setRate] = useState<number>(1.0);
   const [isImmersiveOpen, setIsImmersiveOpen] = useState(false);
-  const [isSupported, setIsSupported] = useState(true);
+
+  const isSupported = useSyncExternalStore(
+    () => () => {},
+    () => typeof window !== "undefined" && "speechSynthesis" in window,
+    () => true,
+  );
 
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
@@ -45,8 +50,6 @@ export default function ArticleReaderToolbar({
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       synthRef.current = window.speechSynthesis;
-    } else {
-      setIsSupported(false);
     }
 
     return () => {

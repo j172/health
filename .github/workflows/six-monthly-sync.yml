@@ -6,6 +6,10 @@ on:
     # ~03:00 Taipei time on Jan 2 and Jul 2 (cron is UTC).
     - cron: "0 19 1 1,7 *"
 
+concurrency:
+  group: six-monthly-sync
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest

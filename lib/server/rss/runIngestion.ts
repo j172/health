@@ -1,7 +1,7 @@
 import type { EnrichedRssItem, FeedCode, FeedFetchResult, IngestionSummary, NormalizedRssItem } from "@/types/rss";
 import { RSS_FEEDS } from "@/lib/server/config/rss-feeds";
 import { createIngestionRun, finishIngestionRun, writeIngestionError } from "@/lib/server/logging/ingestionLogger";
-import { releaseIngestionLock, tryAcquireIngestionLock } from "@/lib/server/db/mysql";
+import { withAdvisoryLock } from "@/lib/server/db/mysql";
 import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
 import { parseFeedXml } from "@/lib/server/rss/parseRss";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
@@ -164,9 +164,245 @@ const processSpecialSource = async (
 export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual"): Promise<IngestionSummary> => {
   const started = new Date();
   const runId = await createIngestionRun(trigger);
-  const gotLock = await tryAcquireIngestionLock(LOCK_NAME, 1);
 
-  if (!gotLock) {
+  const lockResult = await withAdvisoryLock(LOCK_NAME, 1, async () => {
+    const feedResults: FeedFetchResult[] = [];
+    const normalizedItems: NormalizedRssItem[] = [];
+
+    try {
+      for (const feed of RSS_FEEDS) {
+        try {
+          const response = await fetchFeedXml(feed);
+          const items = parseFeedXml(feed, response.xml);
+          normalizedItems.push(...items);
+
+          feedResults.push({
+            feed,
+            ok: true,
+            httpStatus: response.status,
+            itemCount: items.length,
+            errorMessage: null,
+          });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown feed error";
+          feedResults.push({
+            feed,
+            ok: false,
+            httpStatus: null,
+            itemCount: 0,
+            errorMessage: message,
+          });
+          await writeIngestionError({
+            runId,
+            feedCode: feed.code,
+            url: feed.url,
+            message,
+            detail: { error },
+          });
+        }
+      }
+
+      const existingHashes = await getExistingPayloadHashes(normalizedItems);
+      let skippedUnchanged = 0;
+
+      const enrichedItems: EnrichedRssItem[] = [];
+      for (const item of normalizedItems) {
+        if (existingHashes.get(itemKey(item)) === item.payloadHash) {
+          // Already stored with an identical payload — skip the expensive detail-page
+          // fetch/parse entirely instead of redoing it on every run just to no-op.
+          skippedUnchanged += 1;
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        const enriched = await enrichItem(item);
+        enrichedItems.push(enriched);
+      }
+
+      const specialSourceCtx: SpecialSourceContext = { runId, feedResults, enrichedItems };
+
+      // -----------------------------------------------------------------------
+      // Mirror Media 健康醫療網 — JSON API (not RSS/XML; handled separately)
+      // -----------------------------------------------------------------------
+      const mirrorResult = await processSpecialSource(
+        {
+          code: "mirrormedia_healthnews",
+          name: "鏡週刊健康醫療網",
+          url: "https://api.mirrormedia.mg/externals",
+          sourceName: "mirrormedia_healthnews",
+        },
+        fetchMirrorMediaHealthnews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += mirrorResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // 元氣網（health.udn.com/health）— HTML ranking page (no RSS feed of its
+      // own), handled separately just like Mirror Media above.
+      // -----------------------------------------------------------------------
+      const udnResult = await processSpecialSource(
+        {
+          code: "udn_health",
+          name: "元氣網（聯合報健康）",
+          url: "https://health.udn.com/health/rank/newest/1005",
+          sourceName: "udn_health",
+        },
+        fetchUdnHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += udnResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // 環境部（MOENV）新聞專區 — JSON open-data API (not RSS/XML; handled
+      // separately just like Mirror Media and UDN above).
+      // -----------------------------------------------------------------------
+      const moenvResult = await processSpecialSource(
+        {
+          code: "moenv_mnews",
+          name: "環境部",
+          url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
+          sourceName: "moenv",
+        },
+        fetchMoenvNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += moenvResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // 祝你健康（SETN）/ ETtoday健康雲 / 健康醫療網 / 50+（橘世代）— Phase 8:
+      // 4 more HTML-scrape special sources, none of which have an RSS feed of
+      // their own. Same treatment as Mirror Media/UDN/MOENV above.
+      // -----------------------------------------------------------------------
+      const setnResult = await processSpecialSource(
+        {
+          code: "setn_health",
+          name: "祝你健康",
+          url: "https://health.setn.com/",
+          sourceName: "setn",
+        },
+        fetchSetnHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += setnResult.skippedUnchanged;
+
+      const ettodayResult = await processSpecialSource(
+        {
+          code: "ettoday_health",
+          name: "ETtoday健康雲",
+          url: "https://health.ettoday.net/",
+          sourceName: "ettoday",
+        },
+        fetchEttodayHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += ettodayResult.skippedUnchanged;
+
+      const healthnewsResult = await processSpecialSource(
+        {
+          code: "healthnews_tw",
+          name: "健康醫療網",
+          url: "https://www.healthnews.com.tw/",
+          sourceName: "healthnews",
+        },
+        fetchHealthnewsNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += healthnewsResult.skippedUnchanged;
+
+      const fiftyplusResult = await processSpecialSource(
+        {
+          code: "fiftyplus_health",
+          name: "50+（橘世代）",
+          url: "https://www.fiftyplus.com.tw/category/health",
+          sourceName: "fiftyplus",
+        },
+        fetchFiftyplusHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += fiftyplusResult.skippedUnchanged;
+
+      const businessweeklyResult = await processSpecialSource(
+        {
+          code: "businessweekly_health",
+          name: "良醫健康網",
+          url: "https://health.businessweekly.com.tw/",
+          sourceName: "healthbw",
+        },
+        fetchBusinessweeklyHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += businessweeklyResult.skippedUnchanged;
+
+      const persisted = await persistItems(enrichedItems);
+      persisted.unchanged += skippedUnchanged;
+      const ended = new Date();
+      const summary: IngestionSummary = {
+        trigger,
+        runId,
+        startedAt: started.toISOString(),
+        endedAt: ended.toISOString(),
+        durationMs: ended.getTime() - started.getTime(),
+        fetched: normalizedItems.length,
+        inserted: persisted.inserted,
+        updated: persisted.updated,
+        unchanged: persisted.unchanged,
+        failedFeeds: feedResults.filter((f) => !f.ok).length,
+        feedResults,
+      };
+
+      await finishIngestionRun({
+        runId,
+        status: "success",
+        startedAt: started,
+        fetchedCount: summary.fetched,
+        insertedCount: summary.inserted,
+        updatedCount: summary.updated,
+        unchangedCount: summary.unchanged,
+        failedFeedsCount: summary.failedFeeds,
+        summaryJson: JSON.stringify(summary),
+      });
+
+      return summary;
+    } catch (error) {
+      const ended = new Date();
+      const message = error instanceof Error ? error.message : "Unknown ingestion error";
+      await writeIngestionError({
+        runId,
+        message,
+        detail: { error },
+      });
+
+      const summary: IngestionSummary = {
+        trigger,
+        runId,
+        startedAt: started.toISOString(),
+        endedAt: ended.toISOString(),
+        durationMs: ended.getTime() - started.getTime(),
+        fetched: normalizedItems.length,
+        inserted: 0,
+        updated: 0,
+        unchanged: 0,
+        failedFeeds: Math.max(1, feedResults.filter((f) => !f.ok).length),
+        feedResults,
+      };
+
+      await finishIngestionRun({
+        runId,
+        status: "failed",
+        startedAt: started,
+        fetchedCount: summary.fetched,
+        insertedCount: 0,
+        updatedCount: 0,
+        unchangedCount: 0,
+        failedFeedsCount: summary.failedFeeds,
+        summaryJson: JSON.stringify(summary),
+        errorMessage: message,
+      });
+
+      throw error;
+    }
+  });
+
+  if (!lockResult.acquired) {
     const now = new Date();
     const blockedSummary: IngestionSummary = {
       trigger,
@@ -198,240 +434,5 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
     throw new Error("Another ingestion is currently running.");
   }
 
-  const feedResults: FeedFetchResult[] = [];
-  const normalizedItems: NormalizedRssItem[] = [];
-
-  try {
-    for (const feed of RSS_FEEDS) {
-      try {
-        const response = await fetchFeedXml(feed);
-        const items = parseFeedXml(feed, response.xml);
-        normalizedItems.push(...items);
-
-        feedResults.push({
-          feed,
-          ok: true,
-          httpStatus: response.status,
-          itemCount: items.length,
-          errorMessage: null,
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Unknown feed error";
-        feedResults.push({
-          feed,
-          ok: false,
-          httpStatus: null,
-          itemCount: 0,
-          errorMessage: message,
-        });
-        await writeIngestionError({
-          runId,
-          feedCode: feed.code,
-          url: feed.url,
-          message,
-          detail: { error },
-        });
-      }
-    }
-
-    const existingHashes = await getExistingPayloadHashes(normalizedItems);
-    let skippedUnchanged = 0;
-
-    const enrichedItems: EnrichedRssItem[] = [];
-    for (const item of normalizedItems) {
-      if (existingHashes.get(itemKey(item)) === item.payloadHash) {
-        // Already stored with an identical payload — skip the expensive detail-page
-        // fetch/parse entirely instead of redoing it on every run just to no-op.
-        skippedUnchanged += 1;
-        continue;
-      }
-      // eslint-disable-next-line no-await-in-loop
-      const enriched = await enrichItem(item);
-      enrichedItems.push(enriched);
-    }
-
-    const specialSourceCtx: SpecialSourceContext = { runId, feedResults, enrichedItems };
-
-    // -----------------------------------------------------------------------
-    // Mirror Media 健康醫療網 — JSON API (not RSS/XML; handled separately)
-    // -----------------------------------------------------------------------
-    const mirrorResult = await processSpecialSource(
-      {
-        code: "mirrormedia_healthnews",
-        name: "鏡週刊健康醫療網",
-        url: "https://api.mirrormedia.mg/externals",
-        sourceName: "mirrormedia_healthnews",
-      },
-      fetchMirrorMediaHealthnews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += mirrorResult.skippedUnchanged;
-
-    // -----------------------------------------------------------------------
-    // 元氣網（health.udn.com/health）— HTML ranking page (no RSS feed of its
-    // own), handled separately just like Mirror Media above.
-    // -----------------------------------------------------------------------
-    const udnResult = await processSpecialSource(
-      {
-        code: "udn_health",
-        name: "元氣網（聯合報健康）",
-        url: "https://health.udn.com/health/rank/newest/1005",
-        sourceName: "udn_health",
-      },
-      fetchUdnHealthNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += udnResult.skippedUnchanged;
-
-    // -----------------------------------------------------------------------
-    // 環境部（MOENV）新聞專區 — JSON open-data API (not RSS/XML; handled
-    // separately just like Mirror Media and UDN above).
-    // -----------------------------------------------------------------------
-    const moenvResult = await processSpecialSource(
-      {
-        code: "moenv_mnews",
-        name: "環境部",
-        url: "https://data.moenv.gov.tw/api/v2/mnews_p_01",
-        sourceName: "moenv",
-      },
-      fetchMoenvNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += moenvResult.skippedUnchanged;
-
-    // -----------------------------------------------------------------------
-    // 祝你健康（SETN）/ ETtoday健康雲 / 健康醫療網 / 50+（橘世代）— Phase 8:
-    // 4 more HTML-scrape special sources, none of which have an RSS feed of
-    // their own. Same treatment as Mirror Media/UDN/MOENV above.
-    // -----------------------------------------------------------------------
-    const setnResult = await processSpecialSource(
-      {
-        code: "setn_health",
-        name: "祝你健康",
-        url: "https://health.setn.com/",
-        sourceName: "setn",
-      },
-      fetchSetnHealthNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += setnResult.skippedUnchanged;
-
-    const ettodayResult = await processSpecialSource(
-      {
-        code: "ettoday_health",
-        name: "ETtoday健康雲",
-        url: "https://health.ettoday.net/",
-        sourceName: "ettoday",
-      },
-      fetchEttodayHealthNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += ettodayResult.skippedUnchanged;
-
-    const healthnewsResult = await processSpecialSource(
-      {
-        code: "healthnews_tw",
-        name: "健康醫療網",
-        url: "https://www.healthnews.com.tw/",
-        sourceName: "healthnews",
-      },
-      fetchHealthnewsNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += healthnewsResult.skippedUnchanged;
-
-    const fiftyplusResult = await processSpecialSource(
-      {
-        code: "fiftyplus_health",
-        name: "50+（橘世代）",
-        url: "https://www.fiftyplus.com.tw/category/health",
-        sourceName: "fiftyplus",
-      },
-      fetchFiftyplusHealthNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += fiftyplusResult.skippedUnchanged;
-
-    const businessweeklyResult = await processSpecialSource(
-      {
-        code: "businessweekly_health",
-        name: "良醫健康網",
-        url: "https://health.businessweekly.com.tw/",
-        sourceName: "healthbw",
-      },
-      fetchBusinessweeklyHealthNews,
-      specialSourceCtx,
-    );
-    skippedUnchanged += businessweeklyResult.skippedUnchanged;
-
-    const persisted = await persistItems(enrichedItems);
-    persisted.unchanged += skippedUnchanged;
-    const ended = new Date();
-    const summary: IngestionSummary = {
-      trigger,
-      runId,
-      startedAt: started.toISOString(),
-      endedAt: ended.toISOString(),
-      durationMs: ended.getTime() - started.getTime(),
-      fetched: normalizedItems.length,
-      inserted: persisted.inserted,
-      updated: persisted.updated,
-      unchanged: persisted.unchanged,
-      failedFeeds: feedResults.filter((f) => !f.ok).length,
-      feedResults,
-    };
-
-    await finishIngestionRun({
-      runId,
-      status: "success",
-      startedAt: started,
-      fetchedCount: summary.fetched,
-      insertedCount: summary.inserted,
-      updatedCount: summary.updated,
-      unchangedCount: summary.unchanged,
-      failedFeedsCount: summary.failedFeeds,
-      summaryJson: JSON.stringify(summary),
-    });
-
-    return summary;
-  } catch (error) {
-    const ended = new Date();
-    const message = error instanceof Error ? error.message : "Unknown ingestion error";
-    await writeIngestionError({
-      runId,
-      message,
-      detail: { error },
-    });
-
-    const summary: IngestionSummary = {
-      trigger,
-      runId,
-      startedAt: started.toISOString(),
-      endedAt: ended.toISOString(),
-      durationMs: ended.getTime() - started.getTime(),
-      fetched: normalizedItems.length,
-      inserted: 0,
-      updated: 0,
-      unchanged: 0,
-      failedFeeds: Math.max(1, feedResults.filter((f) => !f.ok).length),
-      feedResults,
-    };
-
-    await finishIngestionRun({
-      runId,
-      status: "failed",
-      startedAt: started,
-      fetchedCount: summary.fetched,
-      insertedCount: 0,
-      updatedCount: 0,
-      unchangedCount: 0,
-      failedFeedsCount: summary.failedFeeds,
-      summaryJson: JSON.stringify(summary),
-      errorMessage: message,
-    });
-
-    throw error;
-  } finally {
-    await releaseIngestionLock(LOCK_NAME);
-  }
+  return lockResult.result;
 };

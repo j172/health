@@ -64,8 +64,8 @@ export default function WaistHipCalculator() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">📏 腰臀比計算器</h1>
-        <p className="text-neutral-600">計算腰臀比（WHR），依 WHO 標準評估腹部肥胖與心血管代謝風險。</p>
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">📏 腰臀比計算器</h1>
+        <p className="text-neutral-600 dark:text-slate-300">計算腰臀比（WHR），依 WHO 標準評估腹部肥胖與心血管代謝風險。</p>
       </div>
 
       <div className="flex gap-3">
@@ -83,8 +83,8 @@ export default function WaistHipCalculator() {
         ))}
       </div>
 
-      <div className="space-y-1 rounded-lg bg-zumthor p-4 text-sm text-neutral-600">
-        <p className="font-medium text-neutral-800">📏 量測方式</p>
+      <div className="space-y-1 rounded-lg bg-zumthor p-4 text-sm text-neutral-600 dark:bg-primary/20 dark:text-slate-200">
+        <p className="font-medium text-neutral-800 dark:text-slate-100">📏 量測方式</p>
         <p>
           • <strong>腰圍</strong>：肋骨最低點與髂骨最高點中間位置，平緩呼氣後量測
         </p>
@@ -130,7 +130,7 @@ export default function WaistHipCalculator() {
         </div>
         <div className="col-span-2 sm:col-span-1">
           <label htmlFor="wh-height" className={labelClass}>
-            身高 (cm) <span className="text-xs text-neutral-500">用於計算腰身比</span>
+            身高 (cm) <span className="text-xs text-neutral-500 dark:text-slate-400">用於計算腰身比</span>
           </label>
           <input
             id="wh-height"
@@ -152,32 +152,32 @@ export default function WaistHipCalculator() {
       </button>
 
       {result && (
-        <div className="space-y-4 rounded-xl border border-neutral-200 p-6">
+        <div className="space-y-4 rounded-xl border border-neutral-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
           <div className="text-center">
-            <p className="mb-1 text-sm text-neutral-500">腰臀比 (WHR)</p>
+            <p className="mb-1 text-sm text-neutral-500 dark:text-slate-400">腰臀比 (WHR)</p>
             <p className={`text-5xl font-bold ${result.riskColor}`}>{result.ratio}</p>
             <p className={`mt-2 text-lg font-semibold ${result.riskColor}`}>{result.riskLevel}</p>
           </div>
 
           {!result.waistOk && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
               ⚠️ 您的腰圍超過台灣衛福部建議標準（男性 90cm、女性 80cm），屬於腹部肥胖。
             </div>
           )}
 
-          <div className="space-y-2 rounded-lg bg-neutral-50 p-4">
-            <p className="text-sm text-neutral-800">{result.description}</p>
-            <p className="text-sm text-neutral-600">💡 {result.suggestion}</p>
+          <div className="space-y-2 rounded-lg bg-neutral-50 p-4 dark:bg-slate-800/60">
+            <p className="text-sm text-neutral-800 dark:text-slate-200">{result.description}</p>
+            <p className="text-sm text-neutral-600 dark:text-slate-300">💡 {result.suggestion}</p>
           </div>
 
-          <div className="border-t border-neutral-200 pt-3 text-xs text-neutral-500">
+          <div className="border-t border-neutral-200 pt-3 text-xs text-neutral-500 dark:border-slate-800 dark:text-slate-400">
             <p className="mb-2 font-medium">WHO 腰臀比標準 — {gender === "male" ? "男性" : "女性"}</p>
             <div className="flex flex-wrap gap-2">
               {(gender === "male"
                 ? [["低風險", "< 0.90"], ["中等", "0.90–0.99"], ["高風險", "≥ 1.00"]]
                 : [["低風險", "< 0.80"], ["中等", "0.80–0.84"], ["高風險", "≥ 0.85"]]
               ).map(([label, range]) => (
-                <span key={label} className="rounded bg-neutral-100 px-2 py-0.5">
+                <span key={label} className="rounded bg-neutral-100 px-2 py-0.5 dark:bg-slate-800 dark:text-slate-300">
                   {label}: {range}
                 </span>
               ))}

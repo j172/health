@@ -1,4 +1,4 @@
-// Hand-written PWA Service Worker v2 (Stale-While-Revalidate & Offline Resilience)
+// Hand-written PWA Service Worker v2 (Network-First for navigations, Cache-First for static assets)
 const CACHE_VERSION = "v2";
 const STATIC_CACHE = `j172-health-static-${CACHE_VERSION}`;
 const CORE_ROUTES = ["/", "/news", "/privacy"];
@@ -34,13 +34,15 @@ self.addEventListener("fetch", (event) => {
   // Never cache API sync triggers or admin endpoints
   if (url.pathname.startsWith("/api/admin/") || url.pathname.startsWith("/api/internal/")) return;
 
-  // Navigations: Network-first with Stale-While-Revalidate fallback for offline support
+  // Navigations: Network-First with cache fallback and offline page
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+          if (response.status === 200) {
+            const copy = response.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
         .catch(() =>
@@ -56,23 +58,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets: Cache-First with background revalidation
+  // Static assets: Cache-First (hashed assets / static images)
   const isStaticAsset =
     /\.(png|jpg|jpeg|svg|webp|ico|woff2?|css|js)$/.test(url.pathname) || url.pathname.startsWith("/_next/static/");
 
   if (isStaticAsset) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        const fetchPromise = fetch(request)
-          .then((networkResponse) => {
-            if (networkResponse.status === 200) {
-              const copy = networkResponse.clone();
-              caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
-            }
-            return networkResponse;
-          })
-          .catch(() => cached);
-        return cached || fetchPromise;
+        if (cached) return cached;
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
+          }
+          return networkResponse;
+        });
       })
     );
   }

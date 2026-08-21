@@ -30,8 +30,6 @@ export default function AqiContent() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(false);
 
     const params = new URLSearchParams();
     if (county) params.set("county", county);
@@ -45,12 +43,14 @@ export default function AqiContent() {
         if (cancelled) return;
         setStations(data.stations);
         setUpdatedAt(data.updatedAt);
+        setError(false);
+        setLoading(false);
       })
       .catch(() => {
-        if (!cancelled) setError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setError(true);
+          setLoading(false);
+        }
       });
 
     return () => {

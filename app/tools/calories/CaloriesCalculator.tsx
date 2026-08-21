@@ -70,18 +70,18 @@ export default function CaloriesCalculator() {
 
   const goals = result
     ? [
-        { label: "🔴 積極減重", kcal: result.weightLoss, description: "每日減少 500 大卡，每週約減輕 0.5 公斤", color: "border-red-200 bg-red-50" },
-        { label: "🟡 溫和減重", kcal: result.mildWeightLoss, description: "每日減少 250 大卡，較易維持且不易復胖", color: "border-yellow-200 bg-yellow-50" },
-        { label: "🟢 維持體重", kcal: result.tdee, description: "維持目前體重的每日熱量攝取建議", color: "border-green-200 bg-green-50" },
-        { label: "🔵 增加體重", kcal: result.weightGain, description: "每日增加 500 大卡，搭配重量訓練增肌", color: "border-blue-200 bg-blue-50" },
+        { label: "🔴 積極減重", kcal: result.weightLoss, description: "每日減少 500 大卡，每週約減輕 0.5 公斤", color: "border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/40" },
+        { label: "🟡 溫和減重", kcal: result.mildWeightLoss, description: "每日減少 250 大卡，較易維持且不易復胖", color: "border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-950/40" },
+        { label: "🟢 維持體重", kcal: result.tdee, description: "維持目前體重的每日熱量攝取建議", color: "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-950/40" },
+        { label: "🔵 增加體重", kcal: result.weightGain, description: "每日增加 500 大卡，搭配重量訓練增肌", color: "border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/40" },
       ]
     : [];
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="mb-2 text-3xl font-bold text-neutral-800 md:text-4xl">🔥 每日卡路里計算器</h1>
-        <p className="text-neutral-600">採用 Mifflin-St Jeor 公式計算基礎代謝率 (BMR)，再依活動量估算每日總熱量需求 (TDEE)。</p>
+        <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">🔥 每日卡路里計算器</h1>
+        <p className="text-neutral-600 dark:text-slate-300">採用 Mifflin-St Jeor 公式計算基礎代謝率 (BMR)，再依活動量估算每日總熱量需求 (TDEE)。</p>
       </div>
 
       <div className={cardClass}>
@@ -124,7 +124,7 @@ export default function CaloriesCalculator() {
                   }}
                   className={`${inputClass} pr-10`}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500">{unit}</span>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-500 dark:text-slate-400">{unit}</span>
               </div>
             </div>
           ))}
@@ -141,14 +141,14 @@ export default function CaloriesCalculator() {
                   setCalculated(false);
                 }}
                 className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors ${
-                  activity === level.value ? "border-primary bg-zumthor" : "border-neutral-300 hover:border-primary/50"
+                  activity === level.value ? "border-primary bg-zumthor dark:bg-primary/20 dark:border-primary" : "border-neutral-300 hover:border-primary/50 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary/50"
                 }`}
               >
                 <div>
-                  <span className="text-sm font-medium">{level.label}</span>
-                  <span className="ml-2 text-xs text-neutral-500">— {level.description}</span>
+                  <span className="text-sm font-medium text-neutral-800 dark:text-slate-100">{level.label}</span>
+                  <span className="ml-2 text-xs text-neutral-500 dark:text-slate-400">— {level.description}</span>
                 </div>
-                <span className="ml-2 shrink-0 text-xs text-neutral-500">×{level.multiplier}</span>
+                <span className="ml-2 shrink-0 text-xs text-neutral-500 dark:text-slate-400">×{level.multiplier}</span>
               </button>
             ))}
           </div>
@@ -167,28 +167,28 @@ export default function CaloriesCalculator() {
       {result && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-xl border border-neutral-200 p-5 text-center">
-              <p className="mb-1 text-sm text-neutral-500">基礎代謝率 (BMR)</p>
-              <p className="text-4xl font-bold tabular-nums text-neutral-800">{result.bmr.toLocaleString()}</p>
-              <p className="mt-1 text-sm text-neutral-500">大卡/天</p>
+            <div className="rounded-xl border border-neutral-200 bg-white p-5 text-center dark:border-slate-800 dark:bg-slate-900">
+              <p className="mb-1 text-sm text-neutral-500 dark:text-slate-400">基礎代謝率 (BMR)</p>
+              <p className="text-4xl font-bold tabular-nums text-neutral-800 dark:text-slate-100">{result.bmr.toLocaleString()}</p>
+              <p className="mt-1 text-sm text-neutral-500 dark:text-slate-400">大卡/天</p>
             </div>
-            <div className="rounded-xl border border-primary/30 bg-zumthor p-5 text-center">
-              <p className="mb-1 text-sm text-neutral-500">每日總熱量 (TDEE)</p>
+            <div className="rounded-xl border border-primary/30 bg-zumthor p-5 text-center dark:border-primary/40 dark:bg-primary/15">
+              <p className="mb-1 text-sm text-neutral-500 dark:text-slate-400">每日總熱量 (TDEE)</p>
               <p className="text-4xl font-bold tabular-nums text-primary">{result.tdee.toLocaleString()}</p>
-              <p className="mt-1 text-sm text-neutral-500">大卡/天</p>
+              <p className="mt-1 text-sm text-neutral-500 dark:text-slate-400">大卡/天</p>
             </div>
           </div>
 
           <div className={cardClass}>
-            <h2 className="text-lg font-bold text-neutral-800">不同目標建議攝取量</h2>
+            <h2 className="text-lg font-bold text-neutral-800 dark:text-slate-100">不同目標建議攝取量</h2>
             <div className="space-y-3">
               {goals.map((g) => (
                 <div key={g.label} className={`flex items-center justify-between rounded-xl border p-4 ${g.color}`}>
                   <div>
-                    <p className="text-sm font-semibold text-neutral-800">{g.label}</p>
-                    <p className="mt-0.5 text-xs text-neutral-500">{g.description}</p>
+                    <p className="text-sm font-semibold text-neutral-800 dark:text-slate-100">{g.label}</p>
+                    <p className="mt-0.5 text-xs text-neutral-500 dark:text-slate-400">{g.description}</p>
                   </div>
-                  <span className="ml-4 shrink-0 text-xl font-bold tabular-nums text-neutral-800">
+                  <span className="ml-4 shrink-0 text-xl font-bold tabular-nums text-neutral-800 dark:text-slate-100">
                     {g.kcal.toLocaleString()} <span className="text-sm font-normal">大卡</span>
                   </span>
                 </div>
@@ -198,12 +198,12 @@ export default function CaloriesCalculator() {
         </div>
       )}
 
-      <div className="space-y-2 rounded-xl border border-neutral-200 bg-neutral-50 p-5 text-sm">
-        <p className="font-semibold text-neutral-800">計算公式說明</p>
-        <p className="text-neutral-600">
+      <div className="space-y-2 rounded-xl border border-neutral-200 bg-neutral-50 p-5 text-sm dark:border-slate-800 dark:bg-slate-900">
+        <p className="font-semibold text-neutral-800 dark:text-slate-100">計算公式說明</p>
+        <p className="text-neutral-600 dark:text-slate-300">
           <strong>BMR</strong>（基礎代謝率）= 靜止時身體維持基本功能所需熱量，採用 Mifflin-St Jeor 公式計算。
         </p>
-        <p className="text-neutral-600">
+        <p className="text-neutral-600 dark:text-slate-300">
           <strong>TDEE</strong>（每日總熱量消耗）= BMR × 活動係數，代表考量活動量後的每日總熱量需求。
         </p>
       </div>

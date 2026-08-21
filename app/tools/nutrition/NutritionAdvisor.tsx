@@ -73,10 +73,10 @@ export default function NutritionAdvisor() {
 
   return (
     <section aria-labelledby="nutrition-heading">
-      <h1 id="nutrition-heading" className="mb-2 text-3xl font-bold text-neutral-800">
+      <h1 id="nutrition-heading" className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100">
         🥗 每日營養素建議計算器
       </h1>
-      <p className="mb-8 text-sm text-neutral-600">基於 Mifflin-St Jeor 公式計算每日總消耗熱量（TDEE），再依您的目標分配三大營養素。</p>
+      <p className="mb-8 text-sm text-neutral-600 dark:text-slate-300">基於 Mifflin-St Jeor 公式計算每日總消耗熱量（TDEE），再依您的目標分配三大營養素。</p>
 
       <div className={`mb-6 ${cardClass}`}>
         <div>
@@ -154,23 +154,23 @@ export default function NutritionAdvisor() {
 
       {result && (
         <div className={`space-y-6 ${cardClass}`} aria-live="polite">
-          <h2 className="text-xl font-bold text-neutral-800">計算結果</h2>
+          <h2 className="text-xl font-bold text-neutral-800 dark:text-slate-100">計算結果</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="rounded-lg bg-neutral-50 p-4 text-center">
-              <p className="mb-1 text-xs text-neutral-500">每日總消耗熱量（TDEE）</p>
+            <div className="rounded-lg bg-neutral-50 p-4 text-center dark:bg-slate-800/60">
+              <p className="mb-1 text-xs text-neutral-500 dark:text-slate-400">每日總消耗熱量（TDEE）</p>
               <p className="text-3xl font-bold text-primary">{result.tdee}</p>
-              <p className="mt-1 text-xs text-neutral-500">大卡</p>
+              <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">大卡</p>
             </div>
-            <div className="rounded-lg bg-zumthor p-4 text-center">
-              <p className="mb-1 text-xs text-neutral-500">建議每日攝取熱量</p>
+            <div className="rounded-lg bg-zumthor p-4 text-center dark:bg-primary/20">
+              <p className="mb-1 text-xs text-neutral-500 dark:text-slate-400">建議每日攝取熱量</p>
               <p className="text-3xl font-bold text-primary">{result.targetCalories}</p>
-              <p className="mt-1 text-xs text-neutral-500">大卡</p>
+              <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">大卡</p>
             </div>
           </div>
 
           <div>
-            <h3 className="mb-3 text-base font-semibold text-neutral-800">每日三大營養素建議</h3>
+            <h3 className="mb-3 text-base font-semibold text-neutral-800 dark:text-slate-100">每日三大營養素建議</h3>
             <div className="space-y-3">
               {[
                 { label: "蛋白質", value: result.protein, cal: result.proteinCal, color: "bg-blue-500", pct: Math.round((result.proteinCal / result.targetCalories) * 100) },
@@ -179,12 +179,12 @@ export default function NutritionAdvisor() {
               ].map((item) => (
                 <div key={item.label}>
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="font-medium text-neutral-800">{item.label}</span>
-                    <span className="text-neutral-500">
+                    <span className="font-medium text-neutral-800 dark:text-slate-100">{item.label}</span>
+                    <span className="text-neutral-500 dark:text-slate-400">
                       {item.value}g（{item.cal} 大卡 / {item.pct}%）
                     </span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-neutral-100">
+                  <div className="h-2 overflow-hidden rounded-full bg-neutral-100 dark:bg-slate-800">
                     <div className={`h-full ${item.color} rounded-full transition-all duration-500`} style={{ width: `${item.pct}%` }} />
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export default function NutritionAdvisor() {
             </div>
           </div>
 
-          <p className={`border-t border-neutral-200 pt-4 ${disclaimerClass}`}>⚠️ 本工具結果僅供參考，實際飲食計畫建議諮詢營養師或醫師。</p>
+          <p className={`border-t border-neutral-200 pt-4 dark:border-slate-800 ${disclaimerClass}`}>⚠️ 本工具結果僅供參考，實際飲食計畫建議諮詢營養師或醫師。</p>
         </div>
       )}
     </section>

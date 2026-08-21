@@ -9,6 +9,10 @@ on:
     # lib/server/facilities/geocodeBatch.ts.
     - cron: "*/10 * * * *"
 
+concurrency:
+  group: facilities-geocode-batch
+  cancel-in-progress: false
+
 jobs:
   geocode:
     runs-on: ubuntu-latest
