@@ -21,13 +21,21 @@
  *   OG_BACKFILL_ROUNDS (default 12)
  */
 import { load } from "cheerio";
-import { spawnSync } from "node:child_process";
+import { createSshLoopback, shellQuote } from "./lib/ssh-loopback.mjs";
 
 const TRANSPORT = (process.env.NEWS_IMAGES_TRANSPORT || "http").toLowerCase();
-const BASE = (process.env.NEWS_IMAGES_BASE_URL || "http://127.0.0.1:18080").replace(/\/$/, "");
+const BASE = (
+  process.env.NEWS_IMAGES_BASE_URL || "http://127.0.0.1:18080"
+).replace(/\/$/, "");
 const SECRET = process.env.RSS_SYNC_ADMIN_SECRET || "";
-const LIMIT = Math.min(50, Math.max(1, Number(process.env.OG_BACKFILL_LIMIT || 20)));
-const ROUNDS = Math.min(50, Math.max(1, Number(process.env.OG_BACKFILL_ROUNDS || 12)));
+const LIMIT = Math.min(
+  50,
+  Math.max(1, Number(process.env.OG_BACKFILL_LIMIT || 20)),
+);
+const ROUNDS = Math.min(
+  50,
+  Math.max(1, Number(process.env.OG_BACKFILL_ROUNDS || 12)),
+);
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -47,7 +55,15 @@ if (TRANSPORT === "ssh") {
   }
 }
 
-const shellQuote = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
+const ssh =
+  TRANSPORT === "ssh"
+    ? createSshLoopback({
+        keyFile: SSH_KEY_FILE,
+        host: SSH_HOST,
+        port: SSH_PORT,
+        user: SSH_USER,
+      })
+    : null;
 
 const adminPostHttp = async (body) => {
   const res = await fetch(`${BASE}/api/admin/news-images`, {
@@ -79,24 +95,7 @@ const adminPostSsh = (body) => {
     `-d ${shellQuote(payload)}`,
   ].join(" ");
 
-  const result = spawnSync(
-    "ssh",
-    [
-      "-i",
-      SSH_KEY_FILE,
-      "-p",
-      String(SSH_PORT),
-      "-o",
-      "BatchMode=yes",
-      "-o",
-      "StrictHostKeyChecking=accept-new",
-      "-o",
-      "ConnectTimeout=15",
-      `${SSH_USER}@${SSH_HOST}`,
-      remote,
-    ],
-    { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
-  );
+  const result = ssh.call(remote);
 
   if (result.error) throw result.error;
   const out = (result.stdout || "").trim();
@@ -132,7 +131,12 @@ const extractOgImage = (html, baseUrl) => {
     try {
       const abs = new URL(raw.trim(), baseUrl).toString();
       if (!/^https?:\/\//i.test(abs)) continue;
-      if (/logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking/i.test(abs)) continue;
+      if (
+        /logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking/i.test(
+          abs,
+        )
+      )
+        continue;
       return abs;
     } catch {
       /* next */
@@ -162,65 +166,82 @@ const main = async () => {
   let failed = 0;
   let skipped = 0;
 
-  for (let round = 1; round <= ROUNDS; round += 1) {
-    const { json: listed } = await adminPost({ listMissing: true, limit: LIMIT });
-    if (!listed.ok) {
-      console.error("list failed", listed);
-      process.exit(1);
-    }
-    const items = listed.items || [];
-    console.log(`round ${round}: listed ${items.length}`);
-    if (items.length === 0) break;
-
-    let roundAssigned = 0;
-    for (const item of items) {
-      if (!item?.canonical_url || /news\.google\.com/i.test(item.canonical_url)) {
-        skipped += 1;
-        continue;
+  try {
+    for (let round = 1; round <= ROUNDS; round += 1) {
+      const { json: listed } = await adminPost({
+        listMissing: true,
+        limit: LIMIT,
+      });
+      if (!listed.ok) {
+        console.error("list failed", listed);
+        process.exitCode = 1;
+        return;
       }
+      const items = listed.items || [];
+      console.log(`round ${round}: listed ${items.length}`);
+      if (items.length === 0) break;
 
-      try {
-        const page = await fetchHtml(item.canonical_url);
-        if (!page.ok) {
-          failed += 1;
-          console.log(`fail id=${item.id} http=${page.status} src=${item.source_name}`);
-          continue;
-        }
-        const og = extractOgImage(page.html, item.canonical_url);
-        if (!og) {
-          failed += 1;
-          console.log(`fail id=${item.id} no-og src=${item.source_name}`);
+      let roundAssigned = 0;
+      for (const item of items) {
+        if (
+          !item?.canonical_url ||
+          /news\.google\.com/i.test(item.canonical_url)
+        ) {
+          skipped += 1;
           continue;
         }
 
-        const { json: attached } = await adminPost({
-          attachImageUrl: true,
-          newsItemId: item.id,
-          imageUrl: og,
-          title: item.title || null,
-        });
+        try {
+          const page = await fetchHtml(item.canonical_url);
+          if (!page.ok) {
+            failed += 1;
+            console.log(
+              `fail id=${item.id} http=${page.status} src=${item.source_name}`,
+            );
+            continue;
+          }
+          const og = extractOgImage(page.html, item.canonical_url);
+          if (!og) {
+            failed += 1;
+            console.log(`fail id=${item.id} no-og src=${item.source_name}`);
+            continue;
+          }
 
-        if (attached.ok) {
-          assigned += 1;
-          roundAssigned += 1;
-          console.log(`ok id=${item.id} path=${attached.localPath}`);
-        } else {
+          const { json: attached } = await adminPost({
+            attachImageUrl: true,
+            newsItemId: item.id,
+            imageUrl: og,
+            title: item.title || null,
+          });
+
+          if (attached.ok) {
+            assigned += 1;
+            roundAssigned += 1;
+            console.log(`ok id=${item.id} path=${attached.localPath}`);
+          } else {
+            failed += 1;
+            console.log(
+              `fail id=${item.id} attach=${attached.reason || "unknown"}`,
+            );
+          }
+        } catch (err) {
           failed += 1;
-          console.log(`fail id=${item.id} attach=${attached.reason || "unknown"}`);
+          console.log(
+            `fail id=${item.id} err=${err instanceof Error ? err.message : err}`,
+          );
         }
-      } catch (err) {
-        failed += 1;
-        console.log(`fail id=${item.id} err=${err instanceof Error ? err.message : err}`);
+      }
+
+      if (roundAssigned === 0) {
+        console.log("no assignments this round — stopping");
+        break;
       }
     }
 
-    if (roundAssigned === 0) {
-      console.log("no assignments this round — stopping");
-      break;
-    }
+    console.log(JSON.stringify({ assigned, failed, skipped }));
+  } finally {
+    ssh?.close();
   }
-
-  console.log(JSON.stringify({ assigned, failed, skipped }));
 };
 
 main().catch((err) => {
