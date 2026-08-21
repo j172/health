@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { internalErrorResponse } from "@/lib/server/http/errorResponse";
-import { assignMissingNewsCardImages, clearImageProviderApiCaches, clearAllNewsCardImages } from "@/lib/server/news/cardImages";
+import {
+  assignMissingNewsCardImages,
+  clearImageProviderApiCaches,
+  clearAllNewsCardImages,
+  normalizeNewerThanHours,
+} from "@/lib/server/news/cardImages";
 import {
   attachCardImageFromUrl,
   backfillMissingImagesFromOpenGraph,
@@ -18,6 +23,12 @@ export async function POST(request: Request): Promise<NextResponse> {
   try {
     const body = (await request.json().catch(() => ({}))) as {
       limit?: unknown;
+      /**
+       * Restrict assignment to articles created in the last N hours (1-168).
+       * See docs/specs/recent-news-image-backfill.md — this is the safe operator
+       * mode that cannot fall through to the historical backlog.
+       */
+      newerThanHours?: unknown;
       clearCache?: unknown;
       clearCardImages?: unknown;
       /** Server-side og:image pull (shared-host egress; some publishers 403). */
@@ -68,8 +79,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       return NextResponse.json({ ok: true, mode: "og", summary });
     }
 
-    const summary = await assignMissingNewsCardImages(limit);
-    return NextResponse.json({ ok: true, mode: "stock-photo", summary });
+    const newerThanHours = normalizeNewerThanHours(body.newerThanHours);
+    if (body.newerThanHours !== undefined && newerThanHours === null) {
+      return NextResponse.json(
+        { ok: false, error: "newerThanHours must be a whole number of hours between 1 and 168." },
+        { status: 400 },
+      );
+    }
+
+    const summary = await assignMissingNewsCardImages(limit, newerThanHours);
+    return NextResponse.json({ ok: true, mode: "stock-photo", newerThanHours, summary });
   } catch (error) {
     return internalErrorResponse(error, "Unknown card image assignment error");
   }

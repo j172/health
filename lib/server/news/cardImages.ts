@@ -88,6 +88,8 @@ export interface CardImageAssignmentSummary {
   rateLimited: boolean;
   reason: string | null;
   errors: string[];
+  /** Recency boundary actually applied, echoed back for auditability. */
+  newerThanHours?: number | null;
 }
 
 const shuffled = <T>(values: T[]): T[] => {
@@ -121,10 +123,27 @@ const loadCandidatesForProviderTerm = async (
   return shuffled(candidates);
 };
 
+/**
+ * Narrows assignment to articles created within the last N hours.
+ *
+ * docs/specs/recent-news-image-backfill.md: an operator tool for improving
+ * images on newly-ingested articles "without touching the historical backlog".
+ * Accepts only finite whole numbers in the inclusive range 1-168; anything else
+ * is treated as absent.
+ */
+export const normalizeNewerThanHours = (value: unknown): number | null => {
+  const hours = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(hours) || !Number.isInteger(hours)) return null;
+  if (hours < 1 || hours > 168) return null;
+  return hours;
+};
+
 export const assignMissingNewsCardImages = async (
   requestedLimit = 10,
+  requestedNewerThanHours: number | null = null,
 ): Promise<CardImageAssignmentSummary> => {
   const limit = Math.min(50, Math.max(1, Math.trunc(requestedLimit)));
+  const newerThanHours = normalizeNewerThanHours(requestedNewerThanHours);
   const summary: CardImageAssignmentSummary = {
     assigned: 0,
     skipped: 0,
@@ -133,6 +152,7 @@ export const assignMissingNewsCardImages = async (
     rateLimited: false,
     reason: null,
     errors: [],
+    newerThanHours,
   };
 
   await ensureSchema();
@@ -151,20 +171,26 @@ export const assignMissingNewsCardImages = async (
       return summary;
     }
 
+    // The recency restriction is part of the WHERE clause, so it applies before
+    // ORDER BY and LIMIT — the endpoint can never fall through to backlog rows.
     const [missingRows] = await conn.execute<MissingNewsRow[]>(
       `
       SELECT n.id, n.title, n.lat, n.lng, n.location_name, n.description_text, n.detail_text
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
+        ${newerThanHours === null ? "" : "AND n.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)"}
       ORDER BY n.image_backfill_attempts ASC, COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
       LIMIT ?
       `,
-      [limit],
+      newerThanHours === null ? [limit] : [newerThanHours, limit],
     );
 
     if (missingRows.length === 0) {
-      summary.reason = "No news items are missing card images.";
+      summary.reason =
+        newerThanHours === null
+          ? "No news items are missing card images."
+          : `No news items created in the last ${newerThanHours}h are missing card images.`;
       return summary;
     }
 
