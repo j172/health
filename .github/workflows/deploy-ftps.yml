@@ -150,6 +150,20 @@ jobs:
             --upload-file "ecosystem.config.cjs" \
             --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/ecosystem.config.cjs"
 
+          # `next start` reads next.config.js fresh from the app root's CWD at
+          # boot — it does NOT use the copy baked into .prebuilt-next3.tgz's
+          # required-server-files.json. Before this, next.config.js was never
+          # part of this pipeline at all, so the server just kept running
+          # whatever was last hand-FTP'd (found 2026-08-21: production was
+          # silently 27 days stale, missing every images/headers config
+          # change since — including dangerouslyAllowSVG, which broke every
+          # local SVG <Image> that isn't explicitly `unoptimized`, e.g. the
+          # dark/light theme toggler icons).
+          curl --fail --show-error --ssl-reqd --ftp-pasv --insecure \
+            --user "${FTP_USERNAME_CLEAN}:${FTP_PASSWORD_CLEAN}" \
+            --upload-file "next.config.js" \
+            --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/next.config.js"
+
           for HANDLER_URL in \
             "ftp://${FTP_SERVER_CLEAN}:21/index.php" \
             "ftp://${FTP_SERVER_CLEAN}:21/health.j172.tw/index.php"
