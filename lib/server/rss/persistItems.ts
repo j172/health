@@ -1,6 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import type { EnrichedRssItem } from "@/types/rss";
 import { utcNowSql, withTransaction } from "@/lib/server/db/mysql";
+import { extractLocationFromText } from "@/lib/server/news/geoExtractor";
 
 export interface PersistStats {
   inserted: number;
@@ -39,6 +40,8 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
 
     for (const item of items) {
       const now = utcNowSql();
+      const loc = await extractLocationFromText(item.title, item.detailText || item.descriptionText, false).catch(() => null);
+
       const [existingRows] = await conn.execute<RowDataPacket[]>(
         `
         SELECT id, payload_hash
@@ -66,8 +69,9 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
           dept_name, category_raw, display_type, published_at_utc,
           public_begin_at_taipei, public_end_at_taipei,
           meta_title, meta_description, keywords, geo_summary,
+          lat, lng, location_name, facility_id,
           payload_hash, first_seen_at_utc, last_seen_at_utc, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           id = LAST_INSERT_ID(id),
           feed_name = VALUES(feed_name),
@@ -88,6 +92,10 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
           meta_description = VALUES(meta_description),
           keywords = VALUES(keywords),
           geo_summary = VALUES(geo_summary),
+          lat = COALESCE(news_items.lat, VALUES(lat)),
+          lng = COALESCE(news_items.lng, VALUES(lng)),
+          location_name = COALESCE(news_items.location_name, VALUES(location_name)),
+          facility_id = COALESCE(news_items.facility_id, VALUES(facility_id)),
           payload_hash = VALUES(payload_hash),
           last_seen_at_utc = VALUES(last_seen_at_utc),
           updated_at = VALUES(updated_at)
@@ -114,6 +122,10 @@ export const persistItems = async (items: EnrichedRssItem[]): Promise<PersistSta
           item.metaDescription,
           item.keywords,
           item.geoSummary,
+          loc?.lat ?? null,
+          loc?.lng ?? null,
+          loc?.locationName ?? null,
+          loc?.facilityId ?? null,
           item.payloadHash,
           now,
           now,

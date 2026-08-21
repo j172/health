@@ -12,9 +12,13 @@ export interface NewsListItem {
   canonical_url: string;
   description_html: string | null;
   card_image_url: string | null;
-  card_image_source: "rss" | "pixabay" | "pexels" | "unsplash" | null;
+  card_image_source: "rss" | "pixabay" | "pexels" | "unsplash" | "static_map" | "og_image" | string | null;
   card_image_source_page_url: string | null;
   card_image_contributor: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  location_name?: string | null;
+  facility_id?: number | null;
 }
 
 export interface NewsDetailItem extends NewsListItem {
@@ -173,7 +177,7 @@ const CARD_IMAGE_SELECT_SQL = `
 
 const NEWS_LIST_SELECT_SQL = `
   n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
-  n.canonical_url, n.description_html,
+  n.canonical_url, n.description_html, n.lat, n.lng, n.location_name, n.facility_id,
   ${CARD_IMAGE_SELECT_SQL}
 `;
 
@@ -256,6 +260,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
              n.canonical_url, n.description_html, n.detail_html, n.detail_text,
              n.meta_title, n.meta_description, n.keywords, n.geo_summary,
+             n.lat, n.lng, n.location_name, n.facility_id,
              ${CARD_IMAGE_SELECT_SQL}
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
@@ -268,6 +273,24 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
     if (!rows[0]) return null;
     return rows[0] as unknown as NewsDetailItem;
   });
+
+export const listNewsWithLocation = async (limit = 30): Promise<NewsListItem[]> =>
+  memoizeQuery(`news_with_location_${limit}`, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT ${NEWS_LIST_SELECT_SQL}
+        FROM news_items n
+        LEFT JOIN news_card_images c ON c.news_item_id = n.id
+        WHERE n.lat IS NOT NULL AND n.lng IS NOT NULL
+        ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+        LIMIT ?
+        `,
+        [limit],
+      );
+      return rows as unknown as NewsListItem[];
+    }),
+  );
 
 export const listNewsAssetsByNewsId = async (newsId: number): Promise<NewsAssetItem[]> =>
   withConnectionFallback([], async (conn) => {
