@@ -13,14 +13,17 @@
  *   SSH_HOST SSH_PORT SSH_USER SSH_KEY_FILE
  *   GEOCODE_BATCH_ROUNDS (default 30)
  */
-import { spawnSync } from "node:child_process";
+import { createSshLoopback, shellQuote } from "./lib/ssh-loopback.mjs";
 
 const SECRET = process.env.RSS_SYNC_ADMIN_SECRET || "";
 const SSH_HOST = process.env.SSH_HOST || "";
 const SSH_PORT = process.env.SSH_PORT || "22";
 const SSH_USER = process.env.SSH_USER || "";
 const SSH_KEY_FILE = process.env.SSH_KEY_FILE || "";
-const ROUNDS = Math.min(100, Math.max(1, Number(process.env.GEOCODE_BATCH_ROUNDS || 30)));
+const ROUNDS = Math.min(
+  100,
+  Math.max(1, Number(process.env.GEOCODE_BATCH_ROUNDS || 30)),
+);
 
 if (!SECRET) {
   console.error("Missing RSS_SYNC_ADMIN_SECRET");
@@ -31,7 +34,12 @@ if (!SSH_HOST || !SSH_USER || !SSH_KEY_FILE) {
   process.exit(1);
 }
 
-const shellQuote = (s) => `'${String(s).replace(/'/g, `'\\''`)}'`;
+const ssh = createSshLoopback({
+  keyFile: SSH_KEY_FILE,
+  host: SSH_HOST,
+  port: SSH_PORT,
+  user: SSH_USER,
+});
 
 const callBatch = () => {
   const remote = [
@@ -42,24 +50,7 @@ const callBatch = () => {
     "-d {}",
   ].join(" ");
 
-  const result = spawnSync(
-    "ssh",
-    [
-      "-i",
-      SSH_KEY_FILE,
-      "-p",
-      String(SSH_PORT),
-      "-o",
-      "BatchMode=yes",
-      "-o",
-      "StrictHostKeyChecking=accept-new",
-      "-o",
-      "ConnectTimeout=15",
-      `${SSH_USER}@${SSH_HOST}`,
-      remote,
-    ],
-    { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
-  );
+  const result = ssh.call(remote);
 
   if (result.error) throw result.error;
   const out = (result.stdout || "").trim();
@@ -69,7 +60,9 @@ const callBatch = () => {
   try {
     json = JSON.parse(text);
   } catch {
-    throw new Error(`ssh curl non-json exit=${result.status}: ${(result.stderr || "").slice(0, 200)} | ${text.slice(0, 200)}`);
+    throw new Error(
+      `ssh curl non-json exit=${result.status}: ${(result.stderr || "").slice(0, 200)} | ${text.slice(0, 200)}`,
+    );
   }
   return json;
 };
@@ -78,34 +71,41 @@ const main = async () => {
   let totalGeocoded = 0;
   let totalFailed = 0;
 
-  for (let round = 1; round <= ROUNDS; round += 1) {
-    const response = callBatch();
-    if (!response.ok) {
-      console.error(`round ${round}: API error`, response);
-      process.exit(1);
-    }
-    const s = response.summary;
-    console.log(
-      `round ${round}: attempted=${s.totalAttempted} geocoded=${s.totalGeocoded} failed=${s.totalFailed} locked=${s.locked} reset=${s.resetPerformed} opencage_exhausted=${s.budgetExhausted?.opencage} nominatim_exhausted=${s.budgetExhausted?.nominatim} reason=${s.reason ?? ""}`,
-    );
-    totalGeocoded += s.totalGeocoded ?? 0;
-    totalFailed += s.totalFailed ?? 0;
+  try {
+    for (let round = 1; round <= ROUNDS; round += 1) {
+      const response = callBatch();
+      if (!response.ok) {
+        console.error(`round ${round}: API error`, response);
+        process.exitCode = 1;
+        return;
+      }
+      const s = response.summary;
+      console.log(
+        `round ${round}: attempted=${s.totalAttempted} geocoded=${s.totalGeocoded} failed=${s.totalFailed} locked=${s.locked} reset=${s.resetPerformed} opencage_exhausted=${s.budgetExhausted?.opencage} nominatim_exhausted=${s.budgetExhausted?.nominatim} reason=${s.reason ?? ""}`,
+      );
+      totalGeocoded += s.totalGeocoded ?? 0;
+      totalFailed += s.totalFailed ?? 0;
 
-    if (s.locked) {
-      console.log("another run holds the lock — stopping this invocation");
-      break;
+      if (s.locked) {
+        console.log("another run holds the lock — stopping this invocation");
+        break;
+      }
+      if (s.budgetExhausted?.opencage && s.budgetExhausted?.nominatim) {
+        console.log(
+          "both providers' daily budget exhausted — stopping until tomorrow",
+        );
+        break;
+      }
+      if ((s.totalAttempted ?? 0) === 0) {
+        console.log("nothing left to geocode — stopping");
+        break;
+      }
     }
-    if (s.budgetExhausted?.opencage && s.budgetExhausted?.nominatim) {
-      console.log("both providers' daily budget exhausted — stopping until tomorrow");
-      break;
-    }
-    if ((s.totalAttempted ?? 0) === 0) {
-      console.log("nothing left to geocode — stopping");
-      break;
-    }
+
+    console.log(JSON.stringify({ totalGeocoded, totalFailed }));
+  } finally {
+    ssh.close();
   }
-
-  console.log(JSON.stringify({ totalGeocoded, totalFailed }));
 };
 
 main().catch((err) => {
