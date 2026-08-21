@@ -91,7 +91,17 @@ export const ensureSchema = async (): Promise<void> => {
   // one stuck article alone absorbed 70+ consecutive batch rounds).
   await p.query(`
     ALTER TABLE news_items
-      ADD COLUMN IF NOT EXISTS image_backfill_attempts INT UNSIGNED NOT NULL DEFAULT 0 AFTER views
+      ADD COLUMN IF NOT EXISTS image_backfill_attempts INT UNSIGNED NOT NULL DEFAULT 0 AFTER views,
+      ADD COLUMN IF NOT EXISTS lat DECIMAL(10,7) NULL AFTER image_backfill_attempts,
+      ADD COLUMN IF NOT EXISTS lng DECIMAL(10,7) NULL AFTER lat,
+      ADD COLUMN IF NOT EXISTS location_name VARCHAR(255) NULL AFTER lng,
+      ADD COLUMN IF NOT EXISTS facility_id BIGINT NULL AFTER location_name,
+      ADD COLUMN IF NOT EXISTS geocode_attempts INT UNSIGNED NOT NULL DEFAULT 0 AFTER facility_id
+  `);
+  await p.query(`
+    ALTER TABLE news_items
+      ADD INDEX IF NOT EXISTS idx_news_geo (lat, lng),
+      ADD INDEX IF NOT EXISTS idx_news_facility (facility_id)
   `);
   // news_card_images was originally Pixabay-only (pixabay_id BIGINT NOT NULL
   // UNIQUE, see TABLE_DDL.newsCardImages above, deliberately left as-is).

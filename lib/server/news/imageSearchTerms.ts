@@ -1,7 +1,7 @@
-import { Segment, useDefault } from "segmentit";
+import { Segment, useDefault as initDefaultSegmentit } from "segmentit";
 import { lookupChineseWord } from "@/lib/server/news/cedict";
 
-const segmentit = useDefault(new Segment());
+const segmentit = initDefaultSegmentit(new Segment());
 
 // Common function words segmentit can still emit as standalone tokens (particles,
 // conjunctions, pronouns) — never useful as an image search term on their own.

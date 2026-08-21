@@ -55,9 +55,16 @@ export default function NewsCard({
       </Link>
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${badgeStyle.bg} ${badgeStyle.text}`}>
-            {item.feed_name}
-          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${badgeStyle.bg} ${badgeStyle.text}`}>
+              {item.feed_name}
+            </span>
+            {item.location_name ? (
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                📍 {item.location_name}
+              </span>
+            ) : null}
+          </div>
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
             <span>{toTaipei(item.published_at_utc)}</span>
             <span aria-hidden="true">•</span>

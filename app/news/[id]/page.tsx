@@ -12,6 +12,7 @@ import ArticleReaderToolbar from "@/components/News/ArticleReaderToolbar";
 import ArticleViewTracker from "@/components/News/ArticleViewTracker";
 import NewsCard from "@/components/News/NewsCard";
 import HeroImage from "@/components/News/HeroImage";
+import NewsMapCard from "@/components/News/NewsMapCard";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
@@ -105,10 +106,15 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
           <article className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-10 lg:p-12">
             {/* Header */}
             <header className="text-center">
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider ${badgeStyle.bg} ${badgeStyle.text}`}>
                   {news.feed_name}
                 </span>
+                {news.location_name ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                    📍 {news.location_name}
+                  </span>
+                ) : null}
               </div>
               <h1 className="mt-5 text-2xl font-extrabold leading-snug tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl lg:text-4xl">
                 {news.title}
@@ -159,6 +165,16 @@ export default async function NewsDetailPage({ params }: { params: Promise<{ id:
             <div className="mt-8 pt-4 border-t border-slate-100 dark:border-slate-800">
               <NewsArticleBody html={articleHtml} title={news.title} sourceUrl={news.canonical_url} />
             </div>
+
+            {/* Interactive Map Card (when coordinates are available) */}
+            {news.lat != null && news.lng != null ? (
+              <NewsMapCard
+                lat={Number(news.lat)}
+                lng={Number(news.lng)}
+                locationName={news.location_name || "相關位置"}
+                facilityId={news.facility_id}
+              />
+            ) : null}
 
             {/* Keywords / Tags */}
             {keywords.length > 0 ? (

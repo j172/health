@@ -17,22 +17,21 @@ import {
   recordProviderSuccess,
 } from "@/lib/server/news/providerCooldown";
 
+import { assignStaticMapImage } from "@/lib/server/news/staticMap";
+import { extractLocationFromText } from "@/lib/server/news/geoExtractor";
+
 const LOCK_NAME = "news_card_image_assignment_lock";
-// Pixabay reports up to 500 retrievable hits per term (see
-// lib/server/pixabay/client.ts), but this only ever looked at the first 3
-// pages (90 results) — for the handful of generic fallback terms
-// (health/life/nature) that most unmatched titles route to, that shallow
-// top-90-by-popularity pool gets fully claimed over heavy backfill. 16 pages
-// reaches 480 of Pixabay's ~500-hit cap per term; applied uniformly to
-// Pexels/Unsplash too even though their own pool depths aren't documented as
-// precisely, since MAX_CANDIDATE_ATTEMPTS_PER_NEWS below still bounds actual
-// download attempts regardless.
 const MAX_API_PAGES = 16;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 
 interface MissingNewsRow extends RowDataPacket {
   id: number;
   title: string;
+  lat: number | null;
+  lng: number | null;
+  location_name: string | null;
+  description_text: string | null;
+  detail_text: string | null;
 }
 
 interface UsedProviderImageRow extends RowDataPacket {
@@ -128,7 +127,7 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
 
     const [missingRows] = await conn.execute<MissingNewsRow[]>(
       `
-      SELECT n.id, n.title
+      SELECT n.id, n.title, n.lat, n.lng, n.location_name, n.description_text, n.detail_text
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
@@ -295,6 +294,38 @@ export const assignMissingNewsCardImages = async (requestedLimit = 10): Promise<
           if (outcome === "assigned") {
             assignedThisNews = true;
             break termLoop;
+          }
+        }
+      }
+
+      if (!assignedThisNews) {
+        let lat = news.lat != null ? Number(news.lat) : null;
+        let lng = news.lng != null ? Number(news.lng) : null;
+        let locName = news.location_name;
+
+        if ((lat == null || lng == null) && (news.title || news.detail_text || news.description_text)) {
+          const extracted = await extractLocationFromText(news.title, news.detail_text || news.description_text);
+          if (extracted) {
+            lat = extracted.lat;
+            lng = extracted.lng;
+            locName = extracted.locationName;
+            await conn.execute(
+              "UPDATE news_items SET lat = ?, lng = ?, location_name = ?, facility_id = ? WHERE id = ?",
+              [lat, lng, locName, extracted.facilityId, news.id],
+            );
+          }
+        }
+
+        if (lat != null && lng != null && locName) {
+          try {
+            const mapAssigned = await assignStaticMapImage(conn, news.id, lat, lng, locName);
+            if (mapAssigned) {
+              assignedThisNews = true;
+              summary.assigned += 1;
+            }
+          } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            if (summary.errors.length < 10) summary.errors.push(`news ${news.id} [static_map]: ${msg}`);
           }
         }
       }

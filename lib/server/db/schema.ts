@@ -20,6 +20,11 @@ export const TABLE_DDL = {
       meta_description VARCHAR(500) NULL,
       keywords VARCHAR(500) NULL,
       geo_summary TEXT NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      location_name VARCHAR(255) NULL,
+      facility_id BIGINT NULL,
+      geocode_attempts INT UNSIGNED NOT NULL DEFAULT 0,
       published_at_utc DATETIME NULL,
       public_begin_at_taipei DATETIME NULL,
       public_end_at_taipei DATETIME NULL,
@@ -33,7 +38,9 @@ export const TABLE_DDL = {
       UNIQUE KEY uq_news_url (source_name, canonical_url(255)),
       KEY idx_news_feed_published (feed_code, published_at_utc),
       KEY idx_news_dept_published (dept_name, published_at_utc),
-      KEY idx_news_last_seen (last_seen_at_utc)
+      KEY idx_news_last_seen (last_seen_at_utc),
+      KEY idx_news_geo (lat, lng),
+      KEY idx_news_facility (facility_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   newsAssets: `
@@ -57,7 +64,9 @@ export const TABLE_DDL = {
     CREATE TABLE IF NOT EXISTS news_card_images (
       id BIGINT NOT NULL AUTO_INCREMENT,
       news_item_id BIGINT NOT NULL,
-      pixabay_id BIGINT NOT NULL,
+      provider VARCHAR(30) NOT NULL DEFAULT 'pixabay',
+      provider_image_id VARCHAR(64) NULL,
+      pixabay_id BIGINT NULL,
       local_path VARCHAR(500) NOT NULL,
       source_page_url VARCHAR(1000) NOT NULL,
       contributor_name VARCHAR(255) NULL,
