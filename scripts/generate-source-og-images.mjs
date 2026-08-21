@@ -55,6 +55,7 @@ const SOURCE_LABELS = {
   healthnews: "健康醫療網",
   fiftyplus: "50+（橘世代）",
   yahoo_health: "Yahoo奇摩新聞健康",
+  healthbw: "良醫健康網",
 };
 
 const GOV_SOURCE_NAMES = new Set(["mohw", "hpa", "cdc", "tfda", "nhi", "moenv", "cwa"]);

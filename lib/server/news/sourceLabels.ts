@@ -28,6 +28,7 @@ const SOURCE_LABELS: Record<string, string> = {
   healthnews: "健康醫療網",
   fiftyplus: "50+（橘世代）",
   yahoo_health: "Yahoo奇摩新聞健康",
+  healthbw: "良醫健康網",
 };
 
 export interface SourceLabelInput {

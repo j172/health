@@ -35,7 +35,8 @@ export type FeedCode =
   | "setn_health"
   | "ettoday_health"
   | "healthnews_tw"
-  | "fiftyplus_health";
+  | "fiftyplus_health"
+  | "businessweekly_health";
 
 export interface FeedConfig {
   code: FeedCode;
