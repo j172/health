@@ -25,11 +25,14 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     locale: "zh_TW",
+    alternateLocale: ["zh_CN", "en_US"],
+    images: [{ url: `${getBaseUrl()}/images/og/home.png`, width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
+    images: [`${getBaseUrl()}/images/og/home.png`],
   },
 };
 
@@ -48,6 +51,8 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} - 最新公衛與健康新聞 (RSS 2.0)`} href="/feed.xml" />
+        <link rel="alternate" type="text/plain" title={`${SITE_NAME} - LLM / AI Index (llms.txt)`} href="/llms.txt" />
       </head>
       <body className={`dark:bg-black ${inter.className}`}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />

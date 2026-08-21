@@ -14,25 +14,27 @@ const formatDate = (value: Date | null): string | null => {
 };
 
 /**
- * llms-full.txt (https://llmstxt.org/) — Extended full plain-text index for
+ * llms-full.txt (https://llmstxt.org/) — Extended full plain-text knowledge base for
  * AI assistants, LLMs, and Generative Engine Optimization (GEO) agents.
- * Inlines detailed summaries and full metadata across all tools and recent news.
+ * Inlines detailed formulas, standards, reference tables, FAQs, and extensive news summaries.
  */
 export async function GET(): Promise<Response> {
   const baseUrl = getBaseUrl();
   const items = await listRecentNewsForLlms(MAX_ITEMS);
 
   const lines: string[] = [
-    `# ${SITE_NAME} - Full LLMs Knowledge Base`,
+    `# ${SITE_NAME} - Full LLMs Knowledge Base & Public Health Index`,
     "",
     `> ${SITE_DESCRIPTION}`,
     "",
-    `Canonical Base URL: ${baseUrl}`,
-    `LLM Short Index: ${baseUrl}/llms.txt`,
-    `Sitemap: ${baseUrl}/sitemap.xml`,
-    `News Sitemap: ${baseUrl}/news-sitemap.xml`,
+    "## 系統核心資訊與端點 (System Overview & Endpoints)",
+    `- Canonical Base URL: ${baseUrl}`,
+    `- Short AI Index: ${baseUrl}/llms.txt`,
+    `- RSS 2.0 Feed: ${baseUrl}/feed.xml`,
+    `- XML Sitemap: ${baseUrl}/sitemap.xml`,
+    `- Google News Sitemap: ${baseUrl}/news-sitemap.xml`,
     "",
-    "## 系統工具目錄",
+    "## 30+ 款健康計算工具、評估量表與公衛資料庫完整規格",
     "",
   ];
 
@@ -41,8 +43,25 @@ export async function GET(): Promise<Response> {
     lines.push(`- URL: ${baseUrl}/tools/${tool.slug}`);
     lines.push(`- 分類: ${tool.group}`);
     lines.push(`- 說明: ${tool.description}`);
+    lines.push(`- 核心定義 (Direct Answer): ${tool.directAnswer}`);
+    if (tool.formula) {
+      lines.push(`- 計算公式: ${tool.formula}`);
+    }
+    if (tool.scientificBasis.length > 0) {
+      lines.push(`- 官方權威依據:`);
+      for (const basis of tool.scientificBasis) {
+        lines.push(`  * ${basis.title} | ${basis.authority}${basis.url ? ` (${basis.url})` : ""}`);
+      }
+    }
+    if (tool.referenceTable) {
+      lines.push(`- 參考標準對照表: ${tool.referenceTable.title || ""}`);
+      lines.push(`  * 表頭: ${tool.referenceTable.headers.join(" | ")}`);
+      for (const row of tool.referenceTable.rows) {
+        lines.push(`  * 資料: ${row.join(" | ")}`);
+      }
+    }
     if (tool.faqs.length > 0) {
-      lines.push("- 常見問題解答:");
+      lines.push("- 常見問題解答 (FAQ):");
       for (const faq of tool.faqs) {
         lines.push(`  * Q: ${faq.question}`);
         lines.push(`    A: ${faq.answer}`);
@@ -51,18 +70,19 @@ export async function GET(): Promise<Response> {
     lines.push("");
   }
 
-  lines.push("## 最新公衛與健康報導摘要庫", "");
+  lines.push("## 最新台灣公衛與官方健康報導知識庫 (Public Health News Archive)", "");
 
   for (const item of items) {
     const label = resolveAuthorLabel({ dept_name: item.dept_name, source_name: item.source_name, feed_name: item.feed_name });
     const date = formatDate(item.published_at_utc);
     const summary = item.geo_summary?.trim() || item.meta_description?.trim() || "";
     lines.push(`### ${item.title}`);
-    lines.push(`- 連結: ${baseUrl}/news/${item.id}`);
+    lines.push(`- 網址: ${baseUrl}/news/${item.id}`);
     lines.push(`- 發布單位: ${label}`);
+    lines.push(`- 頻道類別: ${item.feed_name}`);
     lines.push(`- 發布日期: ${date ?? "最新"}`);
     if (summary) {
-      lines.push(`- AI 核心摘要: ${summary}`);
+      lines.push(`- AI 核心重點 (GEO Summary): ${summary}`);
     }
     lines.push("");
   }

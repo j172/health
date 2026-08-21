@@ -2,23 +2,14 @@ import { load } from "cheerio";
 import type { Metadata } from "next";
 import type { NewsListItem, NewsDetailItem } from "./queries";
 import { resolveAuthorLabel, hasSourceLabel } from "./sourceLabels";
+import type { ToolCatalogEntry } from "@/lib/server/tools/catalog";
 
 /**
  * og:image resolution for an article. Falls back to a source-branded
  * placeholder when card_image_url is null, using a **static PNG generated
  * at deploy time** (scripts/generate-source-og-images.mjs, run as a
  * deploy-ftps.yml step on the GitHub Actions runner) rather than rendered
- * on demand — a first attempt at a *dynamic* og:image route
- * (app/api/og/news/[sourceName], next/og's ImageResponse) crash-looped
- * production with `RangeError: WebAssembly.instantiate(): Out of memory`
- * and was reverted the same day: ImageResponse renders via WASM
- * internally, and this host's V8 heap is capped at 768MB
- * (ecosystem.config.cjs, see the 2026-08-02 LVE memory-limit incident) —
- * WASM instantiation doesn't fit inside that budget on the production
- * process. Pre-generating at build time sidesteps this entirely: the
- * WASM rendering happens once per deploy on the GHA runner (ample RAM),
- * and the production host only ever serves the resulting plain PNG files.
- * See ops_health_502_watchdog memory for the full incident writeup.
+ * on demand.
  */
 const resolveArticleImageUrl = (news: NewsDetailItem, baseUrl: string): string =>
   toAbsoluteUrl(news.card_image_url, baseUrl) ??
@@ -56,7 +47,7 @@ export const buildArticleMetadata = (news: NewsDetailItem): Metadata => {
   const publishedTime = news.published_at_utc ? new Date(news.published_at_utc).toISOString() : undefined;
   const keywords = news.keywords?.trim()
     ? news.keywords.split(",").map((value) => value.trim()).filter(Boolean)
-    : [news.feed_name, news.dept_name ?? undefined, "健康新聞", "衛生福利部"].filter((value): value is string => Boolean(value));
+    : [news.feed_name, news.dept_name ?? undefined, "健康新聞", "衛生福利部", "疾病管制署", "國民健康署"].filter((value): value is string => Boolean(value));
 
   return {
     title: news.meta_title?.trim() || `${news.title} | ${SITE_NAME}`,
@@ -71,6 +62,7 @@ export const buildArticleMetadata = (news: NewsDetailItem): Metadata => {
       url,
       siteName: SITE_NAME,
       locale: "zh_TW",
+      alternateLocale: ["zh_CN", "en_US"],
       publishedTime,
       modifiedTime: publishedTime,
       authors: news.dept_name ? [news.dept_name] : undefined,
@@ -98,9 +90,6 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
     "@type": "NewsArticle",
     headline: news.title,
     description,
-    // A self-contained, citable factual summary for AI search engines/LLMs
-    // (Generative Engine Optimization) — generated once at ingestion time,
-    // distinct from `description`'s job of enticing a human click.
     abstract: news.geo_summary?.trim() || description,
     datePublished: publishedTime,
     dateModified: publishedTime,
@@ -115,9 +104,6 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
       logo: { "@type": "ImageObject", url: `${baseUrl}/images/favicon.ico` },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    // "#geo-summary" is the visible TL;DR box rendered on the article page
-    // (app/news/[id]/page.tsx) when geo_summary is present — falls back to
-    // the whole article for the (currently rare) item that has none.
     speakable: { "@type": "SpeakableSpecification", cssSelector: news.geo_summary?.trim() ? ["h1", "#geo-summary"] : ["h1", "article"] },
   };
   if (imageUrl) {
@@ -137,10 +123,7 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
   return [article, breadcrumbs];
 };
 
-/** Site-wide Organization schema — establishes publisher identity for both
- * classic SEO (Google's publisher/knowledge-panel signals) and GEO (lets an
- * AI search engine attribute a citation to a named, described entity rather
- * than a bare domain). Emit once per HTML document (root layout). */
+/** Site-wide Organization schema — establishes publisher identity and E-E-A-T trust signals */
 export const buildOrganizationJsonLd = (): Record<string, unknown> => {
   const baseUrl = getBaseUrl();
   return {
@@ -150,13 +133,14 @@ export const buildOrganizationJsonLd = (): Record<string, unknown> => {
     url: baseUrl,
     logo: `${baseUrl}/images/favicon.ico`,
     description: SITE_DESCRIPTION,
-    knowsAbout: ["公共衛生", "醫療院所", "長期照顧", "空氣品質", "食品安全", "健康新聞", "傳染病防治"],
+    inLanguage: "zh-TW",
+    knowsAbout: ["公共衛生", "醫療院所", "長期照顧", "空氣品質", "食品安全", "健康新聞", "傳染病防治", "健康計算評估"],
+    publishingPrinciples: `${baseUrl}/privacy`,
     sameAs: [baseUrl],
   };
 };
 
-/** Site-wide WebSite schema with a SearchAction, so search engines can offer
- * a sitelinks searchbox — emit alongside Organization in the root layout. */
+/** Site-wide WebSite schema with a SearchAction */
 export const buildWebsiteJsonLd = (): Record<string, unknown> => {
   const baseUrl = getBaseUrl();
   return {
@@ -174,7 +158,7 @@ export const buildWebsiteJsonLd = (): Record<string, unknown> => {
   };
 };
 
-/** Generic BreadcrumbList schema for non-article pages (e.g. /tools/*). */
+/** Generic BreadcrumbList schema */
 export const buildBreadcrumbJsonLd = (items: { name: string; url: string }[]): Record<string, unknown> => ({
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -186,9 +170,23 @@ export const buildBreadcrumbJsonLd = (items: { name: string; url: string }[]): R
   })),
 });
 
-/** ItemList schema for a news listing page (home or /news archive), so
- * crawlers and AI agents can enumerate the current batch of articles as
- * structured data rather than only inferring it from card markup. */
+/** ItemList schema for tool catalog or news listing page */
+export const buildItemListJsonLd = (listName: string, items: { name: string; url: string; description?: string }[]): Record<string, unknown> => {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: listName,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: item.url,
+      description: item.description,
+    })),
+  };
+};
+
+/** News listing ItemList schema */
 export const buildNewsListJsonLd = (items: NewsListItem[], listName: string): Record<string, unknown> => {
   const baseUrl = getBaseUrl();
   return {
@@ -202,4 +200,71 @@ export const buildNewsListJsonLd = (items: NewsListItem[], listName: string): Re
       name: item.title,
     })),
   };
+};
+
+/**
+ * Composite JSON-LD for /tools/<slug> pages.
+ * Combines BreadcrumbList + MedicalWebPage/WebPage + WebApplication + FAQPage + Citations.
+ */
+export const buildToolPageJsonLd = (tool: ToolCatalogEntry): Record<string, unknown>[] => {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/tools/${tool.slug}`;
+
+  const breadcrumbs = buildBreadcrumbJsonLd([
+    { name: "首頁", url: baseUrl },
+    { name: "健康工具", url: `${baseUrl}/tools` },
+    { name: tool.title, url: canonical },
+  ]);
+
+  const citations = tool.scientificBasis.map((ref) => ({
+    "@type": "CreativeWork",
+    name: ref.title,
+    author: { "@type": "Organization", name: ref.authority },
+    url: ref.url ?? undefined,
+  }));
+
+  const webApp: Record<string, unknown> = {
+    "@type": "WebApplication",
+    name: tool.title,
+    url: canonical,
+    description: tool.description,
+    inLanguage: "zh-TW",
+    applicationCategory: "HealthApplication",
+    operatingSystem: "Any",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "TWD" },
+  };
+
+  const medicalPage: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "MedicalWebPage",
+    name: tool.title,
+    url: canonical,
+    description: tool.description,
+    abstract: tool.directAnswer,
+    inLanguage: ["zh-TW", "zh-Hant"],
+    medicalAudience: { "@type": "MedicalAudience", audienceType: "Patient" },
+    citation: citations,
+    mainEntity: webApp,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "#aeo-direct-answer", "#tool-faq-heading"],
+    },
+  };
+
+  const schemas: Record<string, unknown>[] = [breadcrumbs, medicalPage];
+
+  if (tool.faqs.length > 0) {
+    schemas.push({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: tool.faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: { "@type": "Answer", text: faq.answer },
+      })),
+    });
+  }
+
+  return schemas;
 };
