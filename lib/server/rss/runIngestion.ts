@@ -12,6 +12,7 @@ import { fetchSetnHealthNews } from "@/lib/server/rss/fetchSetnHealthNews";
 import { fetchEttodayHealthNews } from "@/lib/server/rss/fetchEttodayHealthNews";
 import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
+import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import { getExistingPayloadHashes, itemKey } from "@/lib/server/rss/existingHashes";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
@@ -350,6 +351,18 @@ export const runRssIngestion = async (trigger: "internal-cron" | "admin-manual")
       specialSourceCtx,
     );
     skippedUnchanged += fiftyplusResult.skippedUnchanged;
+
+    const businessweeklyResult = await processSpecialSource(
+      {
+        code: "businessweekly_health",
+        name: "良醫健康網",
+        url: "https://health.businessweekly.com.tw/",
+        sourceName: "healthbw",
+      },
+      fetchBusinessweeklyHealthNews,
+      specialSourceCtx,
+    );
+    skippedUnchanged += businessweeklyResult.skippedUnchanged;
 
     const persisted = await persistItems(enrichedItems);
     persisted.unchanged += skippedUnchanged;
