@@ -134,6 +134,13 @@ jobs:
           FTP_URL="ftp://${FTP_SERVER_CLEAN}:21/health_app/.prebuilt-next3.tgz"
           echo "Uploading prebuilt bundle to FTP host ${FTP_SERVER_CLEAN} as ${FTP_USERNAME_CLEAN}"
 
+          # --insecure is deliberate and load-bearing here, not an oversight.
+          # The cPanel FTPS endpoint presents a certificate for the shared hostname
+          # rather than for the configured FTP host, so verification fails against any
+          # trust store. --ssl-reqd still forces the control channel to be encrypted;
+          # what is skipped is peer identity, not the TLS itself.
+          # To remove it: export the host's real certificate and pass --cacert. Do not
+          # drop the flag alone - the upload starts failing and every deploy with it.
           CURL_FTPS_OPTS=(
             --fail --show-error --ssl-reqd --ftp-pasv --insecure
             --connect-timeout 30 --retry 5 --retry-delay 3 --retry-all-errors
@@ -271,6 +278,11 @@ jobs:
           OPS_KEY: ${{ secrets.OPS_KEY }}
         run: |
           OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
+          # --resolve pins to the origin IP to bypass Cloudflare, which challenges these
+          # requests. The origin then serves the shared-host certificate rather than one
+          # matching health.j172.tw, hence --insecure. The exposure is a MITM between this
+          # runner and the origin IP; removing the flag safely means pinning the origin
+          # certificate with --cacert, not simply deleting it.
           curl --fail --show-error --silent --insecure \
             --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
             --retry 3 \
