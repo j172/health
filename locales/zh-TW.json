@@ -57,5 +57,27 @@
   "tts_resume": "繼續",
   "tts_pause": "暫停",
   "tts_stop": "停止",
-  "immersive_reader": "沉浸式閱讀模式"
+  "immersive_reader": "沉浸式閱讀模式",
+  "search": {
+    "placeholder": "搜尋健康新聞、疫苗、疾病防制、藥品...",
+    "clear": "清除",
+    "close": "關閉搜尋",
+    "escHint": "Esc 關閉搜尋",
+    "viewAll": "檢視所有符合結果"
+  },
+  "reader": {
+    "close": "離開沉浸模式",
+    "themeLight": "純白主題",
+    "themeSepia": "米色護眼",
+    "themeDark": "深色主題",
+    "fontSmaller": "縮小字級",
+    "fontLarger": "放大字級",
+    "fontSize": "字級",
+    "lineSpacing": "行距",
+    "lineTight": "緊密",
+    "lineNormal": "標準",
+    "lineLoose": "寬鬆",
+    "dialogLabel": "沉浸閱讀模式",
+    "summary": "核心摘要"
+  }
 }

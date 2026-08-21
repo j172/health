@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import ImmersiveReaderModal from "./ImmersiveReaderModal";
 
@@ -43,7 +48,9 @@ export default function ArticleReaderToolbar({
 
   const getFullText = (): string => {
     const cleanBody = extractCleanText(articleHtml);
-    const summaryText = geoSummary?.trim() ? `AI摘要：${geoSummary.trim()}。` : "";
+    const summaryText = geoSummary?.trim()
+      ? `AI摘要：${geoSummary.trim()}。`
+      : "";
     return `${title}。發布單位：${authorLabel}。發布時間：${publishDateStr}。${summaryText}${cleanBody}`;
   };
 
@@ -59,11 +66,16 @@ export default function ArticleReaderToolbar({
     };
   }, []);
 
-  const selectBestVoice = (voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null => {
+  const selectBestVoice = (
+    voices: SpeechSynthesisVoice[],
+  ): SpeechSynthesisVoice | null => {
     const targetLang = locale === "en" ? "en" : "zh-TW";
 
     // 1. Exact locale match
-    let voice = voices.find((v) => v.lang.toLowerCase().replace("_", "-") === targetLang.toLowerCase());
+    let voice = voices.find(
+      (v) =>
+        v.lang.toLowerCase().replace("_", "-") === targetLang.toLowerCase(),
+    );
     if (voice) return voice;
 
     // 2. Language prefix match (e.g. zh, en)
@@ -72,7 +84,10 @@ export default function ArticleReaderToolbar({
     return voice || voices[0] || null;
   };
 
-  const handlePlay = () => {
+  // Takes the rate explicitly so a restart can use the rate the reader just
+  // picked. Reading it from state here made handleRateChange restart at the
+  // PREVIOUS speed: setRate() had not been applied to this closure yet.
+  const handlePlay = (rateOverride?: number) => {
     if (!synthRef.current) return;
 
     if (isPaused) {
@@ -88,7 +103,7 @@ export default function ArticleReaderToolbar({
     const utterance = new SpeechSynthesisUtterance(textToRead);
     utteranceRef.current = utterance;
 
-    utterance.rate = rate;
+    utterance.rate = rateOverride ?? rate;
 
     // Set voice according to locale
     const voices = synthRef.current.getVoices();
@@ -131,17 +146,17 @@ export default function ArticleReaderToolbar({
     setRate(newRate);
     if (isPlaying) {
       handleStop();
-      setTimeout(() => handlePlay(), 100);
+      setTimeout(() => handlePlay(newRate), 100);
     }
   };
 
   return (
     <>
-      <div className="my-6 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 dark:border-indigo-950 dark:bg-indigo-950/20 sm:p-5">
+      <div className="my-6 rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 sm:p-5 dark:border-indigo-950 dark:bg-indigo-950/20">
         <div className="flex flex-wrap items-center justify-between gap-4">
           {/* Left: TTS Speech Controls */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5 mr-1">
+            <span className="mr-1 flex items-center gap-1.5 text-xs font-bold text-indigo-700 dark:text-indigo-300">
               <span>🔊</span>
               <span>{t("tts_title", "語音朗讀")}</span>
             </span>
@@ -150,16 +165,20 @@ export default function ArticleReaderToolbar({
               <>
                 {!isPlaying ? (
                   <button
-                    onClick={handlePlay}
-                    className="btn-press inline-flex items-center gap-1.5 rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 cursor-pointer"
+                    onClick={() => handlePlay()}
+                    className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700"
                   >
                     <span>▶</span>
-                    <span>{isPaused ? t("tts_resume", "繼續") : t("tts_play", "朗讀文章")}</span>
+                    <span>
+                      {isPaused
+                        ? t("tts_resume", "繼續")
+                        : t("tts_play", "朗讀文章")}
+                    </span>
                   </button>
                 ) : (
                   <button
                     onClick={handlePause}
-                    className="btn-press inline-flex items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600 cursor-pointer"
+                    className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-amber-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-600"
                   >
                     <span>⏸</span>
                     <span>{t("tts_pause", "暫停")}</span>
@@ -169,7 +188,7 @@ export default function ArticleReaderToolbar({
                 {(isPlaying || isPaused) && (
                   <button
                     onClick={handleStop}
-                    className="btn-press inline-flex items-center gap-1.5 rounded-full bg-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 cursor-pointer"
+                    className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                   >
                     <span>⏹</span>
                     <span>{t("tts_stop", "停止")}</span>
@@ -178,11 +197,15 @@ export default function ArticleReaderToolbar({
 
                 {/* Speed selector */}
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="text-slate-400 font-medium hidden sm:inline">語速:</span>
+                  <span className="hidden font-medium text-slate-400 sm:inline">
+                    語速:
+                  </span>
                   <select
                     value={rate}
-                    onChange={(e) => handleRateChange(parseFloat(e.target.value))}
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 cursor-pointer"
+                    onChange={(e) =>
+                      handleRateChange(parseFloat(e.target.value))
+                    }
+                    className="cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                   >
                     <option value={0.8}>0.8x</option>
                     <option value={1.0}>1.0x</option>
@@ -193,7 +216,9 @@ export default function ArticleReaderToolbar({
                 </div>
               </>
             ) : (
-              <span className="text-xs text-slate-400">您的瀏覽器不支援語音合成</span>
+              <span className="text-xs text-slate-400">
+                您的瀏覽器不支援語音合成
+              </span>
             )}
           </div>
 
@@ -201,7 +226,7 @@ export default function ArticleReaderToolbar({
           <div>
             <button
               onClick={() => setIsImmersiveOpen(true)}
-              className="btn-press inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-xs font-bold text-indigo-600 shadow-2xs hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-400 dark:hover:bg-indigo-950/50 cursor-pointer"
+              className="btn-press inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-1.5 text-xs font-bold text-indigo-600 shadow-2xs hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-400 dark:hover:bg-indigo-950/50"
             >
               <span>📖</span>
               <span>{t("immersive_reader", "沉浸式閱讀模式")}</span>
@@ -220,7 +245,7 @@ export default function ArticleReaderToolbar({
           articleHtml={articleHtml}
           isPlaying={isPlaying}
           isPaused={isPaused}
-          onPlay={handlePlay}
+          onPlay={() => handlePlay()}
           onPause={handlePause}
           onStop={handleStop}
           onClose={() => setIsImmersiveOpen(false)}

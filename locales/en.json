@@ -90,5 +90,27 @@
   "tts_resume": "Resume",
   "tts_pause": "Pause",
   "tts_stop": "Stop",
-  "immersive_reader": "Immersive Reader"
+  "immersive_reader": "Immersive Reader",
+  "search": {
+    "placeholder": "Search health news, vaccines, disease control, medicines...",
+    "clear": "Clear",
+    "close": "Close search",
+    "escHint": "Esc to close",
+    "viewAll": "View all matching results"
+  },
+  "reader": {
+    "close": "Exit immersive mode",
+    "themeLight": "Pure white",
+    "themeSepia": "Sepia warm",
+    "themeDark": "Deep dark",
+    "fontSmaller": "Smaller text",
+    "fontLarger": "Larger text",
+    "fontSize": "Text size",
+    "lineSpacing": "Line spacing",
+    "lineTight": "Tight",
+    "lineNormal": "Normal",
+    "lineLoose": "Loose",
+    "dialogLabel": "Immersive reading mode",
+    "summary": "Key summary"
+  }
 }
