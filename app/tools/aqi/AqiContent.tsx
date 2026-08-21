@@ -3,25 +3,55 @@
 import { useEffect, useState } from "react";
 import type { AqiSite } from "@/lib/server/aqi/types";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const COUNTIES = [
-  "臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市",
-  "基隆市", "新竹市", "新竹縣", "苗栗縣", "彰化縣", "南投縣",
-  "雲林縣", "嘉義市", "嘉義縣", "屏東縣", "宜蘭縣", "花蓮縣",
-  "臺東縣", "澎湖縣", "金門縣", "連江縣",
+  "臺北市",
+  "新北市",
+  "桃園市",
+  "臺中市",
+  "臺南市",
+  "高雄市",
+  "基隆市",
+  "新竹市",
+  "新竹縣",
+  "苗栗縣",
+  "彰化縣",
+  "南投縣",
+  "雲林縣",
+  "嘉義市",
+  "嘉義縣",
+  "屏東縣",
+  "宜蘭縣",
+  "花蓮縣",
+  "臺東縣",
+  "澎湖縣",
+  "金門縣",
+  "連江縣",
 ];
 
-function AqiPollutant({ label, value, unit }: { label: string; value: number | null; unit: string }) {
+function AqiPollutant({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: number | null;
+  unit: string;
+}) {
   return (
     <div className="rounded-lg bg-slate-50 p-2 text-center dark:bg-slate-800/60">
       <p className="text-[11px] font-semibold text-slate-400">{label}</p>
-      <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200">{value !== null ? value : "—"}</p>
+      <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+        {value !== null ? value : "—"}
+      </p>
       <p className="text-[10px] text-slate-400">{unit}</p>
     </div>
   );
 }
 
 export default function AqiContent() {
+  const { tDynamic } = useLanguage();
   const [county, setCounty] = useState("");
   const [stations, setStations] = useState<AqiSite[] | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -60,27 +90,27 @@ export default function AqiContent() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+      <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-xl dark:bg-indigo-950">
             🌬️
           </span>
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 sm:text-2xl">
+            <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl dark:text-slate-100">
               全台 AQI 空氣品質即時監測 Dashboard
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
               環境部開放資料 · 每 30 分鐘自動同步更新
             </p>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4 dark:border-slate-800">
           <div className="flex items-center gap-3">
             <select
               value={county}
               onChange={(e) => setCounty(e.target.value)}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 outline-none"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
               <option value="">全台 22 縣市測站</option>
               {COUNTIES.map((c) => (
@@ -117,7 +147,9 @@ export default function AqiContent() {
       )}
 
       {!loading && !error && stations && stations.length === 0 && (
-        <div className="py-12 text-center text-sm text-slate-400">目前無符合條件的 AQI 測站資料。</div>
+        <div className="py-12 text-center text-sm text-slate-400">
+          目前無符合條件的 AQI 測站資料。
+        </div>
       )}
 
       {!loading && stations && stations.length > 0 && (
@@ -130,20 +162,25 @@ export default function AqiContent() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-extrabold text-slate-900 dark:text-slate-100 text-base">
-                    {site.siteName}
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                    {tDynamic(site.siteName)}
                   </h3>
-                  <p className="text-xs text-slate-400 font-medium">{site.county}</p>
+                  <p className="text-xs font-medium text-slate-400">
+                    {tDynamic(site.county)}
+                  </p>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-black" style={{ color: site.aqiColor }}>
+                  <div
+                    className="text-2xl font-black"
+                    style={{ color: site.aqiColor }}
+                  >
                     {site.aqiValue ?? "—"}
                   </div>
                   <span
                     className="inline-block rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
                     style={{ backgroundColor: site.aqiColor }}
                   >
-                    {site.aqiStatus}
+                    {tDynamic(site.aqiStatus)}
                   </span>
                 </div>
               </div>
