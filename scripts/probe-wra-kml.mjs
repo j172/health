@@ -20,12 +20,38 @@ const RESOURCES = {
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-const get = async (url, timeoutMs = 40000) =>
-  fetch(url, {
-    headers: { "User-Agent": UA },
-    redirect: "follow",
-    signal: AbortSignal.timeout(timeoutMs),
-  });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const isChallenge = (body) => /^\s*<(!doctype|html)/i.test(body);
+
+/**
+ * WRA's bot wall is intermittent even from a runner — the same URL that returned
+ * 581 rows an hour ago can answer the challenge page now. Retry rather than
+ * concluding from one attempt.
+ */
+const getText = async (url, attempts = 5, timeoutMs = 40000) => {
+  let last = "";
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": UA },
+        redirect: "follow",
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const body = await res.text();
+      if (!isChallenge(body)) {
+        return { ok: true, status: res.status, contentType: res.headers.get("content-type"), body };
+      }
+      last = "challenge";
+      console.log(`    attempt ${attempt}/${attempts}: bot challenge, retrying`);
+    } catch (error) {
+      last = error instanceof Error ? error.message : String(error);
+      console.log(`    attempt ${attempt}/${attempts}: ${last}`);
+    }
+    await sleep(4000 * attempt);
+  }
+  return { ok: false, reason: last };
+};
 
 const countTag = (body, tag) => {
   const re = new RegExp("<" + tag + "[ >]", "g");
@@ -47,16 +73,14 @@ const main = async () => {
   for (const [label, id] of Object.entries(RESOURCES)) {
     console.log("\n=== " + label + " ===");
     try {
-      const catalogue = await get(
+      const catalogue = await getText(
         `https://opendata.wra.gov.tw/api/v2/${id}?sort=_importdate%20asc&format=JSON`,
-        30000,
       );
-      const catalogueBody = await catalogue.text();
-      if (/^\s*<(!doctype|html)/i.test(catalogueBody)) {
-        console.log("  bot challenge on the catalogue request");
+      if (!catalogue.ok) {
+        console.log("  catalogue unreachable:", catalogue.reason);
         continue;
       }
-      const parsed = JSON.parse(catalogueBody);
+      const parsed = JSON.parse(catalogue.body);
       const row = Array.isArray(parsed) ? parsed[0] : null;
       if (!row) {
         console.log("  catalogue row missing");
@@ -72,15 +96,13 @@ const main = async () => {
         continue;
       }
 
-      const res = await get(target);
-      const body = await res.text();
-      console.log(
-        "  fetched:",
-        res.status,
-        res.headers.get("content-type"),
-        body.length,
-        "bytes",
-      );
+      const fetched = await getText(target);
+      if (!fetched.ok) {
+        console.log("  resource unreachable:", fetched.reason);
+        continue;
+      }
+      const body = fetched.body;
+      console.log("  fetched:", fetched.status, fetched.contentType, body.length, "bytes");
 
       // Does it carry human-readable labels, or only coordinates?
       console.log("  <Placemark> count:", countTag(body, "Placemark"));
