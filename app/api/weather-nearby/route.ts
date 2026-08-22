@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getNearestAqiReading } from "@/lib/server/aqi/queries";
 import { getAqiStatusAndColor } from "@/lib/server/aqi/status";
 import { getNearestPm25Reading } from "@/lib/server/aqi/pm25Queries";
-import { zoneForCounty, getForecastForZone } from "@/lib/server/aqi/forecastQueries";
-import { getNearestUvReading } from "@/lib/server/cwa/queries";
+import {
+  zoneForCounty,
+  getForecastForZone,
+} from "@/lib/server/aqi/forecastQueries";
+import {
+  getNearestUvReading,
+  getNearestRainfallReading,
+} from "@/lib/server/cwa/queries";
 import { getUvCategory } from "@/lib/server/cwa/uvStatus";
 
 export const runtime = "nodejs";
@@ -16,11 +22,19 @@ export async function GET(request: NextRequest) {
   const lng = Number(request.nextUrl.searchParams.get("lng"));
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-    return NextResponse.json({ error: "Missing or invalid lat/lng" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing or invalid lat/lng" },
+      { status: 400 },
+    );
   }
 
   try {
-    const [aqi, pm25, uv] = await Promise.all([getNearestAqiReading(lat, lng), getNearestPm25Reading(lat, lng), getNearestUvReading(lat, lng)]);
+    const [aqi, pm25, uv, rainfall] = await Promise.all([
+      getNearestAqiReading(lat, lng),
+      getNearestPm25Reading(lat, lng),
+      getNearestUvReading(lat, lng),
+      getNearestRainfallReading(lat, lng),
+    ]);
 
     const aqiResult = aqi
       ? {
@@ -51,6 +65,26 @@ export async function GET(request: NextRequest) {
         }
       : null;
 
+    // 1,331 CWA rain gauges, refreshed every 30 minutes. The accumulation ladder
+    // is the useful part: "is it raining right now" and "how much has fallen
+    // today" are different questions and the dataset answers both.
+    const rainfallResult = rainfall
+      ? {
+          stationName: rainfall.station_name,
+          county: rainfall.county_name,
+          town: rainfall.town_name,
+          observedAt: rainfall.obs_time,
+          now: rainfall.precip_now,
+          past10Min: rainfall.precip_10min,
+          past1hr: rainfall.precip_1hr,
+          past3hr: rainfall.precip_3hr,
+          past6hr: rainfall.precip_6hr,
+          past12hr: rainfall.precip_12hr,
+          past24hr: rainfall.precip_24hr,
+          distanceKm: Math.round(rainfall.distance_km * 10) / 10,
+        }
+      : null;
+
     // The forecast is zone-based (空品區), not station-based — resolve the
     // zone from whichever nearest station (AQI or UV) actually has a county.
     const county = aqi?.county ?? uv?.county_name ?? null;
@@ -66,9 +100,18 @@ export async function GET(request: NextRequest) {
         }
       : null;
 
-    return NextResponse.json({ aqi: aqiResult, pm25: pm25Result, uv: uvResult, forecast: forecastResult });
+    return NextResponse.json({
+      aqi: aqiResult,
+      pm25: pm25Result,
+      uv: uvResult,
+      rainfall: rainfallResult,
+      forecast: forecastResult,
+    });
   } catch (error) {
     console.error("GET /api/weather-nearby failed:", error);
-    return NextResponse.json({ error: "查詢附近氣象資料失敗" }, { status: 502 });
+    return NextResponse.json(
+      { error: "查詢附近氣象資料失敗" },
+      { status: 502 },
+    );
   }
 }

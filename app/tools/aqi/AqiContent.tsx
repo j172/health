@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { AqiSite } from "@/lib/server/aqi/types";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import NearbyRainfallCard from "@/components/Tools/NearbyRainfallCard";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 const COUNTIES = [
@@ -133,6 +134,11 @@ export default function AqiContent() {
           )}
         </div>
       </div>
+
+      {/* 即時雨量 sits directly under the AQI dashboard: both answer "what are
+          the air and the weather doing where I am right now", and both resolve
+          from the same geolocation. */}
+      <NearbyRainfallCard />
 
       {loading && (
         <div className="flex justify-center py-12">

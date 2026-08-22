@@ -551,3 +551,68 @@ export const listActiveCwaAlerts = async (
       return rows as unknown as CwaAlertItem[];
     }),
   );
+
+// ---------------------------------------------------------------------------
+// Nearest rainfall station (cwa_rainfall)
+// ---------------------------------------------------------------------------
+
+export interface NearestRainfallReading {
+  station_id: string;
+  station_name: string | null;
+  county_name: string | null;
+  town_name: string | null;
+  obs_time: Date;
+  precip_now: string | null;
+  precip_10min: string | null;
+  precip_1hr: string | null;
+  precip_3hr: string | null;
+  precip_6hr: string | null;
+  precip_12hr: string | null;
+  precip_24hr: string | null;
+  precip_2days: string | null;
+  precip_3days: string | null;
+  distance_km: number;
+}
+
+/**
+ * The closest rainfall station's latest observation.
+ *
+ * cwa_rainfall holds 1,331 stations refreshed every 30 minutes, with the full
+ * accumulation ladder from the last ten minutes out to three days — and it has
+ * been read by nothing since it was added. The table even carries
+ * idx_cwa_rainfall_geo (lat, lng), an index that exists for exactly this query,
+ * which was never written.
+ *
+ * Scoped to observations from the last three hours so a station that stopped
+ * reporting shows as absent rather than silently serving yesterday's rain as if
+ * it were current.
+ */
+export const getNearestRainfallReading = async (
+  lat: number,
+  lng: number,
+): Promise<NearestRainfallReading | null> =>
+  withConnectionFallback(null, async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT r.station_id, r.station_name, r.county_name, r.town_name, r.obs_time,
+             r.precip_now, r.precip_10min, r.precip_1hr, r.precip_3hr, r.precip_6hr,
+             r.precip_12hr, r.precip_24hr, r.precip_2days, r.precip_3days,
+        (6371 * acos(
+          LEAST(1, cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
+          sin(radians(?)) * sin(radians(r.lat)))
+        )) AS distance_km
+      FROM cwa_rainfall r
+      INNER JOIN (
+        SELECT station_id, MAX(obs_time) AS max_obs
+        FROM cwa_rainfall
+        WHERE obs_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 3 HOUR)
+        GROUP BY station_id
+      ) latest ON latest.station_id = r.station_id AND latest.max_obs = r.obs_time
+      WHERE r.lat IS NOT NULL AND r.lng IS NOT NULL
+      ORDER BY distance_km ASC
+      LIMIT 1
+      `,
+      [lat, lng, lat],
+    );
+    return (rows[0] as unknown as NearestRainfallReading) ?? null;
+  });

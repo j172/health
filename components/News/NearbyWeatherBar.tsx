@@ -4,10 +4,45 @@ import { useEffect, useState } from "react";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 
 interface NearbyWeatherResponse {
-  aqi: { siteName: string; county: string; aqiValue: number | null; status: string; color: string; distanceKm: number } | null;
-  pm25: { siteName: string; county: string; pm25: number | null; distanceKm: number } | null;
-  uv: { stationName: string | null; county: string | null; uvIndex: number; label: string; color: string; distanceKm: number } | null;
-  forecast: { zone: string; forecastDate: string; aqiValue: number | null; majorPollutant: string | null; status: string; color: string } | null;
+  aqi: {
+    siteName: string;
+    county: string;
+    aqiValue: number | null;
+    status: string;
+    color: string;
+    distanceKm: number;
+  } | null;
+  pm25: {
+    siteName: string;
+    county: string;
+    pm25: number | null;
+    distanceKm: number;
+  } | null;
+  uv: {
+    stationName: string | null;
+    county: string | null;
+    uvIndex: number;
+    label: string;
+    color: string;
+    distanceKm: number;
+  } | null;
+  rainfall: {
+    stationName: string | null;
+    county: string | null;
+    town: string | null;
+    now: string | null;
+    past1hr: string | null;
+    past24hr: string | null;
+    distanceKm: number;
+  } | null;
+  forecast: {
+    zone: string;
+    forecastDate: string;
+    aqiValue: number | null;
+    majorPollutant: string | null;
+    status: string;
+    color: string;
+  } | null;
 }
 
 const formatForecastDate = (isoDate: string): string => {
@@ -45,11 +80,15 @@ export default function NearbyWeatherBar() {
     };
   }, [location.loading, location.lat, location.lng]);
 
-  if (!data || (!data.aqi && !data.pm25 && !data.uv && !data.forecast)) return null;
+  if (
+    !data ||
+    (!data.aqi && !data.pm25 && !data.uv && !data.rainfall && !data.forecast)
+  )
+    return null;
 
   return (
     <div className="border-b border-sky-200 bg-sky-50 dark:border-sky-900/50 dark:bg-sky-950/60">
-      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-sky-900 dark:text-sky-200 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-5xl items-center gap-2 overflow-x-auto px-4 py-1.5 text-xs font-medium text-sky-900 sm:px-6 lg:px-8 dark:text-sky-200">
         <span aria-hidden="true">📍</span>
         <span className="shrink-0">附近測站：</span>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -57,7 +96,10 @@ export default function NearbyWeatherBar() {
             <span className="whitespace-nowrap">
               {data.aqi.county}
               {data.aqi.siteName} AQI {data.aqi.aqiValue ?? "–"}
-              <span style={{ color: data.aqi.color }} className="ml-1 font-semibold">
+              <span
+                style={{ color: data.aqi.color }}
+                className="ml-1 font-semibold"
+              >
                 ({data.aqi.status})
               </span>
             </span>
@@ -72,15 +114,33 @@ export default function NearbyWeatherBar() {
             <span className="whitespace-nowrap">
               {data.uv.county}
               {data.uv.stationName} UV {data.uv.uvIndex}
-              <span style={{ color: data.uv.color }} className="ml-1 font-semibold">
+              <span
+                style={{ color: data.uv.color }}
+                className="ml-1 font-semibold"
+              >
                 ({data.uv.label})
+              </span>
+            </span>
+          ) : null}
+          {data.rainfall ? (
+            <span className="whitespace-nowrap">
+              🌧️{data.rainfall.county}
+              {data.rainfall.stationName} 時雨量 {data.rainfall.past1hr ?? "–"}
+              mm
+              <span className="ml-1 text-slate-400">
+                （今累積 {data.rainfall.past24hr ?? "–"}mm）
               </span>
             </span>
           ) : null}
           {data.forecast ? (
             <span className="whitespace-nowrap">
-              🔮{data.forecast.zone}空品區（{formatForecastDate(data.forecast.forecastDate)}）AQI {data.forecast.aqiValue ?? "–"}
-              <span style={{ color: data.forecast.color }} className="ml-1 font-semibold">
+              🔮{data.forecast.zone}空品區（
+              {formatForecastDate(data.forecast.forecastDate)}）AQI{" "}
+              {data.forecast.aqiValue ?? "–"}
+              <span
+                style={{ color: data.forecast.color }}
+                className="ml-1 font-semibold"
+              >
                 ({data.forecast.status})
               </span>
             </span>
