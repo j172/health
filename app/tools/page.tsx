@@ -151,12 +151,16 @@ const CATEGORIES = [
     id: "food",
     title: "食品營養與綠色生活",
     description: "衛福部食藥署食品營養成分、食品業者登錄與環境部認證綠色商店",
-    slugs: [
-      "food-nutrition",
-      "food-operators",
-      "green-shops",
-      "public-toilets",
-    ],
+    slugs: ["food-nutrition", "food-operators", "green-shops"],
+  },
+  {
+    // Its own category, matching the public-facility ToolGroup and the footer
+    // column. It was appended to the food list, which put one tool in two
+    // different places depending on where you looked.
+    id: "public-facility",
+    title: "公共設施",
+    description: "全國公廁位置、無障礙與親子設施查詢",
+    slugs: ["public-toilets"],
   },
 ];
 

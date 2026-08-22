@@ -523,6 +523,15 @@ export interface CwaAlertItem {
  * "Still in force" prefers the alert's own `expires`. Only when CWA omits it does
  * the seven-day fallback apply, so a bulletin with no stated end cannot sit on
  * the page indefinitely.
+ *
+ * One row per (event, area) — the newest. alert_key hashes `effective` into the
+ * identity, so re-issuing the same 大雨特報 for the same area writes a NEW row
+ * each time, and every one of them stays "in force" until its own expiry passes.
+ * That is why the block filled with near-identical rainfall warnings: CWA was
+ * publishing six alerts in total while the widget displayed ten. Deduplicating
+ * here rather than dropping the noisy dataset keeps 降雨特報 — the most
+ * frequently issued warning in Taiwan — without letting one event occupy five of
+ * the ten slots.
  */
 export const listActiveCwaAlerts = async (
   limit = 10,
@@ -533,12 +542,22 @@ export const listActiveCwaAlerts = async (
         `
         SELECT id, dataset_id, event, headline, description, instruction,
                severity, urgency, certainty, area_desc, effective, expires, web
-        FROM cwa_alerts
-        WHERE
-          CASE
-            WHEN expires IS NOT NULL THEN expires > UTC_TIMESTAMP()
-            ELSE COALESCE(effective, synced_at) >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
-          END
+        FROM (
+          SELECT id, dataset_id, event, headline, description, instruction,
+                 severity, urgency, certainty, area_desc, effective, expires, web,
+                 synced_at,
+                 ROW_NUMBER() OVER (
+                   PARTITION BY event, area_desc
+                   ORDER BY COALESCE(effective, synced_at) DESC, id DESC
+                 ) AS rn
+          FROM cwa_alerts
+          WHERE
+            CASE
+              WHEN expires IS NOT NULL THEN expires > UTC_TIMESTAMP()
+              ELSE COALESCE(effective, synced_at) >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
+            END
+        ) ranked
+        WHERE rn = 1
         ORDER BY
           -- CAP severity, most urgent first; anything unrecognised sorts last.
           FIELD(severity, 'Extreme', 'Severe', 'Moderate', 'Minor') = 0,
