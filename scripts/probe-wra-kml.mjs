@@ -48,10 +48,15 @@ const main = async () => {
     console.log("\n=== " + label + " ===");
     try {
       const catalogue = await get(
-        `https://opendata.wra.gov.tw/api/v2/${id}?format=JSON`,
+        `https://opendata.wra.gov.tw/api/v2/${id}?sort=_importdate%20asc&format=JSON`,
         30000,
       );
-      const parsed = JSON.parse(await catalogue.text());
+      const catalogueBody = await catalogue.text();
+      if (/^\s*<(!doctype|html)/i.test(catalogueBody)) {
+        console.log("  bot challenge on the catalogue request");
+        continue;
+      }
+      const parsed = JSON.parse(catalogueBody);
       const row = Array.isArray(parsed) ? parsed[0] : null;
       if (!row) {
         console.log("  catalogue row missing");
