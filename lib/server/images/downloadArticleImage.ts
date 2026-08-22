@@ -103,7 +103,10 @@ export const downloadArticleImageDetailed = async (
     response = await httpRequest(sourceUrl, {
       timeoutMs: DOWNLOAD_TIMEOUT_MS,
       headers: {
-        Accept: "image/avif,image/webp,image/png,image/jpeg,image/gif,*/*",
+        // Deliberately does NOT advertise avif: MIME_EXTENSIONS cannot store it,
+        // so asking for it only invites a response we then reject. Omitting it
+        // makes content-negotiating CDNs fall back to webp/jpeg, which we keep.
+        Accept: "image/webp,image/png,image/jpeg,image/gif,*/*",
       },
     });
   } catch (error) {
@@ -125,11 +128,16 @@ export const downloadArticleImageDetailed = async (
   }
 
   const contentType = response.headers["content-type"];
-  const mime =
+  const rawMime =
     (Array.isArray(contentType) ? contentType[0] : contentType)
       ?.split(";", 1)[0]
       ?.trim()
       .toLowerCase() || "";
+  // Some origins send a bare subtype ("png") instead of a full media type
+  // ("image/png"). Observed live: five backfill items were rejected as
+  // unsupported-mime "png" while serving perfectly valid PNGs.
+  const mime =
+    rawMime !== "" && !rawMime.includes("/") ? `image/${rawMime}` : rawMime;
   const extension = MIME_EXTENSIONS.get(mime);
   if (!extension) {
     return { ok: false, failure: { kind: "unsupported-mime", mime } };

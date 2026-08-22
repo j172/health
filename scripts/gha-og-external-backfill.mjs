@@ -221,7 +221,7 @@ const main = async () => {
           } else {
             failed += 1;
             console.log(
-              `fail id=${item.id} attach=${attached.reason || "unknown"}`,
+              `fail id=${item.id} src=${item.source_name} attach=${attached.reason || "unknown"}`,
             );
           }
         } catch (err) {

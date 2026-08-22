@@ -210,13 +210,14 @@ if (str_starts_with($path, '/__ops/')) {
             // every OG image backfill failed with EACCES for months while reporting
             // the useless string "download failed validation".
             //
-            // 0777 rather than u+rwx because, as the comment above says, this script
-            // and the Node app run as DIFFERENT users: `chmod u+rwx` only ever grants
-            // the directory's owner, which is whichever of the two created it first.
-            // These hold nothing but publicly served cached images, inside the account
-            // home, so the loose mode buys correctness at no meaningful cost.
+            // An explicit mode, not u+rwx. The `ls -ld` logged below confirmed both
+            // this script and the Node app run as the same uid (tw123457) — the
+            // comment above claiming "a different user context" is wrong — and that
+            // articles/ had simply lost its owner write bit. 0755 restores it and
+            // states the intended mode outright instead of adding bits to whatever
+            // the directory happened to have.
             . "&& { mkdir -p public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash "
-            . "&& chmod 0777 public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash || true; } >> .apply-prebuilt.log 2>&1 "
+            . "&& chmod 0755 public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash || true; } >> .apply-prebuilt.log 2>&1 "
             // Record who actually owns these afterwards. chmod only succeeds for the
             // owner, so if the EACCES persists this line is what tells us whether the
             // chmod was refused and a manual chown is required.
