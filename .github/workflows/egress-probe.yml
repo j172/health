@@ -40,6 +40,26 @@ jobs:
           probe "mohw.gov.tw rss (control, OK)"   "https://www.mohw.gov.tw/rss-16-1.html"
 
           echo
+          echo "=== nhi.gov.tw header variants — is the 403 really about the IP? ==="
+          NHI="https://www.nhi.gov.tw/ch/rss-3255-1.xml"
+
+          variant() {
+            local label="$1"; shift
+            local code
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 25 "$@" "$NHI" 2>/dev/null || echo "000")"
+            printf '%-32s %s\n' "$label" "$code"
+          }
+
+          variant "browser UA"           -A "$UA"
+          variant "browser UA + lang"    -A "$UA" -H "Accept-Language: zh-TW,zh;q=0.9"
+          variant "browser UA + referer" -A "$UA" -e "https://www.nhi.gov.tw/ch/"
+          variant "full browser headers" -A "$UA" -H "Accept-Language: zh-TW,zh;q=0.9" -H "Accept: application/xml,text/xml,*/*" -e "https://www.nhi.gov.tw/ch/"
+          variant "no UA header at all"  -H "User-Agent;"
+          variant "curl default UA"
+          variant "forced HTTP/1.1"      -A "$UA" --http1.1
+          variant "IPv4 only"            -A "$UA" -4
+
+          echo
           echo "200 here + 403 on the host means the host's IP is the problem and"
           echo "moving that fetch to the runner will fix it. 403 in both places means"
           echo "it will not, and something else is required."
