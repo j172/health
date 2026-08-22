@@ -136,6 +136,7 @@ export default function SiteFooter() {
   const disabilityTools = toolsInGroup("disability", localizeTitle);
   const childWelfareTools = toolsInGroup("child-welfare", localizeTitle);
   const greenShopTools = toolsInGroup("green-shop", localizeTitle);
+  const publicFacilityTools = toolsInGroup("public-facility", localizeTitle);
   const foodTools = toolsInGroup("food", localizeTitle);
 
   return (
@@ -201,7 +202,7 @@ export default function SiteFooter() {
         </div>
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 dark:border-slate-900">
+        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 dark:border-slate-900">
           <FooterColumn label={t("footer.overview", "全站總覽")}>
             {overviewLinks.map((item) => (
               <FooterLink key={item.href} href={item.href}>
@@ -244,6 +245,14 @@ export default function SiteFooter() {
 
           <FooterColumn label={t("nav.greenShops", "綠色商店")}>
             {greenShopTools.map((tool) => (
+              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                {localizeTitle(tool)}
+              </FooterLink>
+            ))}
+          </FooterColumn>
+
+          <FooterColumn label={t("nav.publicFacilities", "公共設施")}>
+            {publicFacilityTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
                 {localizeTitle(tool)}
               </FooterLink>
