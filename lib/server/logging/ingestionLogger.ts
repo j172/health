@@ -9,6 +9,40 @@ import {
   utcNowSql,
 } from "@/lib/server/db/mysql";
 
+/**
+ * A run older than this that is still marked `running` cannot be running.
+ * Real runs take about eight minutes; the ceiling is generous on purpose.
+ */
+const ORPHAN_RUN_AFTER_MINUTES = 45;
+
+/**
+ * Marks abandoned runs as aborted.
+ *
+ * finishIngestionRun() is the only thing that moves a row off `running`, so any
+ * run whose process died first — a PM2 restart mid-deploy is the usual way —
+ * stays `running` forever and quietly poisons the history: three such rows
+ * accumulated in one afternoon of deploys, and each one makes the run list look
+ * like ingestion is currently in flight when nothing is.
+ */
+const reapOrphanedRuns = async (
+  conn: PoolConnection,
+  currentRunId: number,
+): Promise<void> => {
+  await conn.execute(
+    `
+    UPDATE ingest_runs
+    SET status = 'failed',
+        error_message = COALESCE(error_message, 'Abandoned — process exited before the run finished (usually a deploy restart).'),
+        ended_at = UTC_TIMESTAMP(),
+        updated_at = UTC_TIMESTAMP()
+    WHERE status = 'running'
+      AND id <> ?
+      AND started_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? MINUTE)
+    `,
+    [currentRunId, ORPHAN_RUN_AFTER_MINUTES],
+  );
+};
+
 export const createIngestionRun = async (
   triggerType: string,
 ): Promise<number> =>
@@ -21,6 +55,7 @@ export const createIngestionRun = async (
       `,
       [triggerType, now, now, now],
     );
+    await reapOrphanedRuns(conn, result.insertId);
     return result.insertId;
   });
 
