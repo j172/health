@@ -11,6 +11,12 @@ export interface PersistStats {
   inserted: number;
   updated: number;
   unchanged: number;
+  /**
+   * Items whose external_id was not found but whose INSERT still did not create
+   * a row — i.e. they collided on the canonical_url unique key instead. A high
+   * number means the feed is handing out unstable external_ids.
+   */
+  externalIdDrift: number;
 }
 
 const dateToSql = (value: Date | null): string | null => {
@@ -50,13 +56,14 @@ export const persistItems = async (
   items: EnrichedRssItem[],
 ): Promise<PersistStats> => {
   if (items.length === 0) {
-    return { inserted: 0, updated: 0, unchanged: 0 };
+    return { inserted: 0, updated: 0, unchanged: 0, externalIdDrift: 0 };
   }
 
   return withTransaction(async (conn) => {
     let inserted = 0;
     let updated = 0;
     let unchanged = 0;
+    let externalIdDrift = 0;
 
     for (const item of items) {
       const now = utcNowSql();
@@ -163,15 +170,42 @@ export const persistItems = async (
 
       await clearAndInsertAssets(upsertResult.insertId, item.assets, now, conn);
 
-      if (!existing) {
-        inserted += 1;
-      } else if (existing.payload_hash !== item.payloadHash) {
-        updated += 1;
-      } else {
-        unchanged += 1;
+      // Classify on what the database actually did, not on what the pre-SELECT
+      // predicted. MySQL's convention for INSERT .. ON DUPLICATE KEY UPDATE is
+      // affectedRows 1 = inserted, 2 = updated, 0 = matched but unchanged.
+      //
+      // The old code counted `!existing` — a miss on the pre-SELECT, which looks
+      // up (source_name, feed_code, external_id) only. news_items has a SECOND
+      // unique key on (source_name, canonical_url), so a row can be absent under
+      // the external_id the feed reports now and still collide on its URL, taking
+      // the UPDATE branch. Production was reporting ~1374 "inserted" every single
+      // run while the row count barely moved, and inserted+updated+unchanged
+      // (1374+1+436=1811) did not even equal fetched (1470).
+      switch (upsertResult.affectedRows) {
+        case 1:
+          inserted += 1;
+          break;
+        case 2:
+          updated += 1;
+          break;
+        default:
+          unchanged += 1;
+          break;
+      }
+
+      // Counted separately so the divergence is visible rather than inferred:
+      // the feed changed this article's external_id while its URL stayed put.
+      if (!existing && upsertResult.affectedRows !== 1) {
+        externalIdDrift += 1;
       }
     }
 
-    return { inserted, updated, unchanged };
+    if (externalIdDrift > 0) {
+      console.warn(
+        `[persistItems] ${externalIdDrift}/${items.length} items missed the external_id lookup but collided on canonical_url — the feed is reissuing unstable external_ids.`,
+      );
+    }
+
+    return { inserted, updated, unchanged, externalIdDrift };
   });
 };

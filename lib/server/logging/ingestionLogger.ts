@@ -102,7 +102,7 @@ export const getRecentRuns = async (limit = 20): Promise<RowDataPacket[]> =>
       `
       SELECT id, trigger_type, status, started_at, ended_at, duration_ms,
              fetched_count, inserted_count, updated_count, unchanged_count, failed_feeds_count,
-             error_message
+             error_message, summary_json
       FROM ingest_runs
       ORDER BY id DESC
       LIMIT ?

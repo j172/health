@@ -381,6 +381,7 @@ export const runRssIngestion = async (
         inserted: persisted.inserted,
         updated: persisted.updated,
         unchanged: persisted.unchanged,
+        externalIdDrift: persisted.externalIdDrift,
         failedFeeds: feedResults.filter((f) => !f.ok).length,
         feedResults,
       };
@@ -418,6 +419,7 @@ export const runRssIngestion = async (
         inserted: 0,
         updated: 0,
         unchanged: 0,
+        externalIdDrift: 0,
         failedFeeds: Math.max(1, feedResults.filter((f) => !f.ok).length),
         feedResults,
       };
@@ -451,6 +453,7 @@ export const runRssIngestion = async (
       inserted: 0,
       updated: 0,
       unchanged: 0,
+      externalIdDrift: 0,
       failedFeeds: 1,
       feedResults: [],
     };

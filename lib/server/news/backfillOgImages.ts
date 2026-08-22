@@ -11,7 +11,10 @@ import {
   withConnection,
 } from "@/lib/server/db/mysql";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
-import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
+import {
+  downloadArticleImageDetailed,
+  describeArticleImageFailure,
+} from "@/lib/server/images/downloadArticleImage";
 
 const LOCK_NAME = "news_og_image_backfill_lock";
 
@@ -100,8 +103,16 @@ export const attachCardImageFromUrl = async (
       return { ok: false, reason: "already has image" };
     }
 
-    const localPath = await downloadArticleImage(imageUrl);
-    if (!localPath) return { ok: false, reason: "download failed validation" };
+    const download = await downloadArticleImageDetailed(imageUrl);
+    if (!download.ok) {
+      // Name the actual check that rejected it. "download failed validation"
+      // covered four unrelated causes and made a 100% failure rate undiagnosable.
+      return {
+        ok: false,
+        reason: `download rejected: ${describeArticleImageFailure(download.failure)}`,
+      };
+    }
+    const localPath = download.localPath;
 
     const now = utcNowSql();
     const [insertResult] = await conn.execute<ResultSetHeader>(

@@ -101,6 +101,13 @@ export interface IngestionSummary {
   inserted: number;
   updated: number;
   unchanged: number;
+  /**
+   * Items that missed the external_id lookup but still did not create a row —
+   * they collided on the canonical_url unique key instead. Non-zero means a feed
+   * is reissuing unstable external_ids, which is what made `inserted` read as
+   * ~1374 per run while almost no new articles appeared.
+   */
+  externalIdDrift: number;
   failedFeeds: number;
   feedResults: FeedFetchResult[];
 }
