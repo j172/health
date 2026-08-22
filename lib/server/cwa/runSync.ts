@@ -8,6 +8,7 @@ import { fetchCwaTownshipHazards } from "@/lib/server/cwa/sources/townshipHazard
 import { fetchCwaStationWeather } from "@/lib/server/cwa/sources/stationWeather";
 import { fetchCwaRainfall } from "@/lib/server/cwa/sources/rainfall";
 import { fetchCwaUvIndex } from "@/lib/server/cwa/sources/uvIndex";
+import { fetchCwaDailyRainfall } from "@/lib/server/cwa/sources/dailyRainfall";
 import {
   upsertCwaForecasts,
   upsertCwaEarthquakes,
@@ -17,6 +18,7 @@ import {
   upsertCwaStationWeather,
   upsertCwaRainfall,
   upsertCwaUvIndex,
+  upsertCwaDailyRainfall,
 } from "@/lib/server/cwa/queries";
 import { runSource } from "@/lib/server/sync/runSource";
 
@@ -124,6 +126,19 @@ export async function runCwaSync(): Promise<CwaSyncResult[]> {
       async () => {
         const records = await fetchCwaRainfall();
         const { inserted, updated } = await upsertCwaRainfall(records);
+        return { fetched: records.length, inserted, updated };
+      },
+      CWA_ERROR_FALLBACK,
+    ),
+    // The accumulation history behind cwa_rainfall's live gauge readings. A
+    // separate station network — 38 staffed stations against 1,331 automatic
+    // gauges — so it resolves its own nearest station rather than borrowing.
+    await runSource(
+      "cwa_daily_rainfall",
+      ZERO_COUNTS,
+      async () => {
+        const records = await fetchCwaDailyRainfall();
+        const { inserted, updated } = await upsertCwaDailyRainfall(records);
         return { fetched: records.length, inserted, updated };
       },
       CWA_ERROR_FALLBACK,

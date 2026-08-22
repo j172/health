@@ -1,8 +1,12 @@
 "use client";
 
-import { useNearestStation } from "@/components/Tools/useNearestStation";
+import { useEffect, useState } from "react";
+import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import LoadingOrb from "@/components/ui/LoadingOrb";
-import { type NearestRainfallStation } from "@/app/api/rainfall/nearest/route";
+import {
+  type NearestRainfallStation,
+  type RainfallAccumulationSummary,
+} from "@/app/api/rainfall/nearest/route";
 
 /**
  * Rainfall at the reader's nearest CWA rain gauge.
@@ -41,8 +45,41 @@ const LADDER: { key: keyof NearestRainfallStation; label: string }[] = [
 ];
 
 export default function NearbyRainfallCard() {
-  const { station, showSpinner, isRefreshing, isDefault, refresh } =
-    useNearestStation<NearestRainfallStation>("/api/rainfall/nearest");
+  // Both halves arrive in one response, so this resolves geolocation itself
+  // rather than going through useNearestStation, which only surfaces `station`.
+  const location = useGeolocation();
+  const [data, setData] = useState<{
+    station: NearestRainfallStation | null;
+    totals: RainfallAccumulationSummary | null;
+  } | null>(null);
+
+  useEffect(() => {
+    if (location.loading) return;
+    let active = true;
+    fetch(`/api/rainfall/nearest?lat=${location.lat}&lng=${location.lng}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body) => {
+        if (active)
+          setData({
+            station: body?.station ?? null,
+            totals: body?.totals ?? null,
+          });
+      })
+      .catch((error) => {
+        console.error("Nearest rainfall fetch failed:", error);
+        if (active) setData({ station: null, totals: null });
+      });
+    return () => {
+      active = false;
+    };
+  }, [location.loading, location.lat, location.lng]);
+
+  const station = data?.station ?? null;
+  const totals = data?.totals ?? null;
+  const showSpinner = (location.loading || data === null) && !station;
+  const isRefreshing = location.refreshing;
+  const isDefault = location.isDefault;
+  const refresh = location.refresh;
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
@@ -117,6 +154,45 @@ export default function NearbyRainfallCard() {
               );
             })}
           </div>
+
+          {totals && (totals.monthMm !== null || totals.yearMm !== null) ? (
+            <div className="mt-4 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
+              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                累積雨量
+                <span className="ml-1 font-normal text-slate-400">
+                  （{totals.stationName ?? "最近測站"} 署屬站 ·{" "}
+                  {totals.distanceKm} 公里）
+                </span>
+              </p>
+              <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs">
+                <span className="text-slate-600 dark:text-slate-300">
+                  本月{" "}
+                  <span className="font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
+                    {totals.monthMm ?? "–"}
+                  </span>
+                  <span className="ml-0.5 text-[10px] text-slate-400">mm</span>
+                </span>
+                <span className="text-slate-600 dark:text-slate-300">
+                  今年{" "}
+                  <span className="font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
+                    {totals.yearMm ?? "–"}
+                  </span>
+                  <span className="ml-0.5 text-[10px] text-slate-400">mm</span>
+                </span>
+                {totals.wetDays30 !== null ? (
+                  <span className="text-slate-600 dark:text-slate-300">
+                    近 30 天{" "}
+                    <span className="font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
+                      {totals.wetDays30}
+                    </span>
+                    <span className="ml-0.5 text-[10px] text-slate-400">
+                      天有雨
+                    </span>
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           {station.observedAt ? (
             <p className="mt-4 text-xs text-slate-400">

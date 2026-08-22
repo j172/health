@@ -656,3 +656,91 @@ export const getNearestRainfallReading = async (
     );
     return (rows[0] as unknown as NearestRainfallReading) ?? null;
   });
+
+// ---------------------------------------------------------------------------
+// Daily rainfall history (cwa_daily_rainfall)
+// ---------------------------------------------------------------------------
+
+export const upsertCwaDailyRainfall = (
+  records: {
+    stationId: string;
+    stationName: string | null;
+    obsDate: string;
+    precipitation: number | null;
+  }[],
+) =>
+  chunkedUpsert(
+    records,
+    `INSERT INTO cwa_daily_rainfall
+       (station_id, station_name, obs_date, precipitation, synced_at, created_at, updated_at)
+     VALUES ?
+     ON DUPLICATE KEY UPDATE
+       station_name = VALUES(station_name),
+       precipitation = VALUES(precipitation),
+       synced_at = VALUES(synced_at),
+       updated_at = VALUES(updated_at)`,
+    (r, now) => [
+      r.stationId,
+      r.stationName,
+      r.obsDate,
+      r.precipitation,
+      now,
+      now,
+      now,
+    ],
+  );
+
+export interface RainfallAccumulation {
+  station_id: string;
+  station_name: string | null;
+  month_mm: number | null;
+  year_mm: number | null;
+  wet_days_30: number | null;
+  distance_km: number;
+}
+
+/**
+ * Month-to-date and year-to-date rainfall at the station nearest a point.
+ *
+ * Pairs with getNearestRainfallReading: that one answers "is it raining right
+ * now", this one answers "has this been a wet month". The two datasets come
+ * from different CWA station networks — 1,331 automatic gauges versus 38 staffed
+ * stations — so this deliberately resolves its own nearest station rather than
+ * reusing the other's, and reports the distance so a reader can see when the
+ * nearest staffed station is far away.
+ *
+ * Coordinates come from cwa_station_weather, which is the only table carrying
+ * them for these station IDs.
+ */
+export const getNearestRainfallAccumulation = async (
+  lat: number,
+  lng: number,
+): Promise<RainfallAccumulation | null> =>
+  withConnectionFallback(null, async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT d.station_id,
+             MAX(d.station_name) AS station_name,
+             SUM(CASE WHEN d.obs_date >= DATE_FORMAT(CURDATE(), '%Y-%m-01') THEN d.precipitation END) AS month_mm,
+             SUM(CASE WHEN d.obs_date >= MAKEDATE(YEAR(CURDATE()), 1) THEN d.precipitation END) AS year_mm,
+             SUM(CASE WHEN d.obs_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY) AND d.precipitation > 0 THEN 1 END) AS wet_days_30,
+             MIN(s.distance_km) AS distance_km
+      FROM cwa_daily_rainfall d
+      INNER JOIN (
+        SELECT station_id,
+               MIN(6371 * acos(
+                 LEAST(1, cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) +
+                 sin(radians(?)) * sin(radians(lat)))
+               )) AS distance_km
+        FROM cwa_station_weather
+        WHERE lat IS NOT NULL AND lng IS NOT NULL
+        GROUP BY station_id
+      ) s ON s.station_id = d.station_id
+      GROUP BY d.station_id
+      ORDER BY distance_km ASC
+      LIMIT 1
+      `,
+      [lat, lng, lat],
+    );
+    return (rows[0] as unknown as RainfallAccumulation) ?? null;
+  });

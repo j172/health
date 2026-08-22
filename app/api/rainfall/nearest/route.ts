@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getNearestRainfallReading } from "@/lib/server/cwa/queries";
+import {
+  getNearestRainfallReading,
+  getNearestRainfallAccumulation,
+} from "@/lib/server/cwa/queries";
 
 export const runtime = "nodejs";
 
@@ -16,6 +19,21 @@ export interface NearestRainfallStation {
   past6hr: string | null;
   past12hr: string | null;
   past24hr: string | null;
+  distanceKm: number;
+}
+
+/**
+ * Month- and year-to-date totals.
+ *
+ * These come from CWA's 38 staffed stations, not the 1,331 automatic gauges the
+ * live reading uses, so they carry their own station name and distance — the
+ * nearest staffed station can be considerably further away.
+ */
+export interface RainfallAccumulationSummary {
+  stationName: string | null;
+  monthMm: number | null;
+  yearMm: number | null;
+  wetDays30: number | null;
   distanceKm: number;
 }
 
@@ -47,8 +65,11 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const reading = await getNearestRainfallReading(lat, lng);
-    if (!reading) return NextResponse.json({ station: null });
+    const [reading, accumulation] = await Promise.all([
+      getNearestRainfallReading(lat, lng),
+      getNearestRainfallAccumulation(lat, lng),
+    ]);
+    if (!reading) return NextResponse.json({ station: null, totals: null });
 
     const station: NearestRainfallStation = {
       stationName: reading.station_name,
@@ -67,7 +88,17 @@ export async function GET(request: NextRequest) {
       distanceKm: Math.round(reading.distance_km * 10) / 10,
     };
 
-    return NextResponse.json({ station });
+    const totals: RainfallAccumulationSummary | null = accumulation
+      ? {
+          stationName: accumulation.station_name,
+          monthMm: accumulation.month_mm,
+          yearMm: accumulation.year_mm,
+          wetDays30: accumulation.wet_days_30,
+          distanceKm: Math.round(accumulation.distance_km * 10) / 10,
+        }
+      : null;
+
+    return NextResponse.json({ station, totals });
   } catch (error) {
     console.error("GET /api/rainfall/nearest failed:", error);
     return NextResponse.json(

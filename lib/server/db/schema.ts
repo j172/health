@@ -490,6 +490,21 @@ export const TABLE_DDL = {
       KEY idx_cwa_station_weather_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  cwaDailyRainfall: `
+    CREATE TABLE IF NOT EXISTS cwa_daily_rainfall (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(20) NOT NULL,
+      station_name VARCHAR(100) NULL,
+      obs_date DATE NOT NULL,
+      precipitation DECIMAL(8,2) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cwa_daily_rainfall (station_id, obs_date),
+      KEY idx_cwa_daily_rainfall_date (obs_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   cwaRainfall: `
     CREATE TABLE IF NOT EXISTS cwa_rainfall (
       id BIGINT NOT NULL AUTO_INCREMENT,
