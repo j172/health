@@ -94,6 +94,10 @@ const COMMON_HOSPITAL_PATTERNS: { regex: RegExp; searchName: string }[] = [
   { regex: /部立台東醫院|衛福部台東醫院/, searchName: "衛生福利部臺東醫院" },
   { regex: /部立基隆醫院|衛福部基隆醫院/, searchName: "衛生福利部基隆醫院" },
   { regex: /部立台北醫院|衛福部台北醫院/, searchName: "衛生福利部臺北醫院" },
+  { regex: /中國醫藥大學附設醫院|中國附醫/, searchName: "中國醫藥大學附設醫院" },
+  { regex: /中山醫學大學附設醫院|中山附醫/, searchName: "中山醫學大學附設醫院" },
+  { regex: /高雄醫學大學附設中和紀念醫院|高醫附醫|高醫/, searchName: "高雄醫學大學附設中和紀念醫院" },
+  { regex: /義大醫院/, searchName: "義大醫療財團法人義大醫院" },
 ];
 
 /**

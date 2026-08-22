@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
+import { populateCoordinatesFromCache, triggerBackgroundGeocode } from "@/lib/server/facilities/autoGeocode";
 
 export interface FacilityRecord {
   facilityType: string;
@@ -33,8 +34,22 @@ export interface FacilityListItem {
 }
 
 /** Upserts a batch of facility records for one source, keyed by (source_key, source_id). Chunks into multi-row INSERTs — sources like NHI's clinic tier run to tens of thousands of rows, and one round-trip per row doesn't scale. */
-export const upsertFacilities = (records: FacilityRecord[]): Promise<{ inserted: number; updated: number }> =>
-  chunkedUpsert(
+export const upsertFacilities = async (records: FacilityRecord[]): Promise<{ inserted: number; updated: number }> => {
+  if (records.length === 0) return { inserted: 0, updated: 0 };
+
+  // Step 1 (方案 A): Pre-populate coordinates from existing known addresses in DB
+  let remainingMissing = 0;
+  try {
+    const res = await withConnection(async (conn) => {
+      return await populateCoordinatesFromCache(conn, records);
+    });
+    remainingMissing = res.remainingMissing;
+  } catch (err) {
+    console.error("populateCoordinatesFromCache error:", err);
+  }
+
+  // Step 2: Upsert records with filled coordinates
+  const result = await chunkedUpsert(
     records,
     `
     INSERT INTO facilities
@@ -76,6 +91,14 @@ export const upsertFacilities = (records: FacilityRecord[]): Promise<{ inserted:
       now,
     ],
   );
+
+  // Step 3 (方案 B + 方案 I): If any facilities are still missing coordinates, trigger debounced background geocoding
+  if (remainingMissing > 0) {
+    triggerBackgroundGeocode();
+  }
+
+  return result;
+};
 
 export interface FacilityMissingCoords {
   id: number;

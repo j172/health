@@ -21,6 +21,7 @@
 /.codex/
 /.agents/
 /.claude/
+/.scratch/
 tsconfig.tsbuildinfo
 
 # contentlayer

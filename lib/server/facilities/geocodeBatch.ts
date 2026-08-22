@@ -3,6 +3,7 @@ import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { MAX_GEOCODE_ATTEMPTS } from "@/lib/server/facilities/queries";
 import { buildQueryCandidates } from "@/lib/server/facilities/addressNormalize";
+import { resolveRoadLevelFallback } from "@/lib/server/facilities/autoGeocode";
 import { queryOpenCage, queryNominatim, type LatLng } from "@/lib/server/facilities/geocodeProviders";
 import { loadGeocodeBudgetState, isBudgetExhausted, recordGeocodeRequest, tripCircuitBreaker, type GeocodeBudgetState, type GeocodeProvider } from "@/lib/server/facilities/geocodeBudget";
 
@@ -210,7 +211,11 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
       for (const { ids, candidates } of groupsByAddress.values()) {
         if (isBudgetExhausted(budgetState, "opencage") && isBudgetExhausted(budgetState, "nominatim")) break;
 
-        const coords = await geocodeOneAddress(conn, budgetState, candidates);
+        let coords = await geocodeOneAddress(conn, budgetState, candidates);
+        if (!coords && candidates.length > 0) {
+          coords = await resolveRoadLevelFallback(conn, candidates[0]);
+        }
+
         if (coords) {
           await conn.query("UPDATE facilities SET lat = ?, lng = ?, updated_at = ? WHERE id IN (?)", [coords.lat, coords.lng, utcNowSql(), ids]);
           sourceSummary.geocoded += ids.length;

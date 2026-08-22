@@ -33,7 +33,47 @@ const VARIANT_REPLACEMENTS = [
   [/　/g, " "],
   [/[，,]/g, "，"],
 ];
-const PARENTHETICAL_PATTERN = /[（(][^）)]*[）)]/g;
+const CHINESE_DIGIT_MAP = {
+  零: "0",
+  "〇": "0",
+  一: "1",
+  二: "2",
+  三: "3",
+  四: "4",
+  五: "5",
+  六: "6",
+  七: "7",
+  八: "8",
+  九: "9",
+};
+function parseChineseNumber(str) {
+  if (!/[十百千]/.test(str)) {
+    return str
+      .split("")
+      .map((c) => (CHINESE_DIGIT_MAP[c] !== undefined ? CHINESE_DIGIT_MAP[c] : c))
+      .join("");
+  }
+  let total = 0;
+  let current = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if (char === "千") {
+      total += (current || 1) * 1000;
+      current = 0;
+    } else if (char === "百") {
+      total += (current || 1) * 100;
+      current = 0;
+    } else if (char === "十") {
+      total += (current || 1) * 10;
+      current = 0;
+    } else if (CHINESE_DIGIT_MAP[char] !== undefined) {
+      current = parseInt(CHINESE_DIGIT_MAP[char]);
+    }
+  }
+  total += current;
+  return String(total);
+}
+const PARENTHETICAL_PATTERN = /[（(【\[][^）)】\]]*[）)】\]]/g;
 const appendCountry = (address) => (address.includes("台灣") ? address : `${address}, 台灣`);
 function cleanAddress(rawAddress) {
   let cleaned = rawAddress.trim();
@@ -41,7 +81,11 @@ function cleanAddress(rawAddress) {
   for (const [pattern, replacement] of VARIANT_REPLACEMENTS) {
     cleaned = cleaned.replace(pattern, replacement);
   }
+  cleaned = cleaned.replace(/[０-９]/g, (m) => String.fromCharCode(m.charCodeAt(0) - 0xfee0));
   cleaned = cleaned.replace(PARENTHETICAL_PATTERN, " ");
+  cleaned = cleaned.replace(/([零〇一二三四五六七八九十百千]+)(號|樓|巷|弄|段)/g, (_m, p1, p2) => {
+    return parseChineseNumber(p1) + p2;
+  });
   cleaned = cleaned.replace(/\s+/g, " ").replace(/，+/g, "，").trim();
   cleaned = cleaned.replace(/^[，,]+|[，,]+$/g, "").trim();
   return cleaned;
@@ -52,16 +96,21 @@ function normalizeAddressForQuery(rawAddress) {
 }
 
 test("normalizeAddressForQuery: 臺 -> 台, appends 台灣", () => {
-  assert.equal(normalizeAddressForQuery("臺北市信義區信義路五段7號"), "台北市信義區信義路五段7號, 台灣");
+  assert.equal(normalizeAddressForQuery("臺北市信義區信義路五段7號"), "台北市信義區信義路5段7號, 台灣");
 });
 
 test("normalizeAddressForQuery: strips parenthetical notes", () => {
-  assert.equal(normalizeAddressForQuery("台北市大安區忠孝東路四段1號（近捷運忠孝敦化站）"), "台北市大安區忠孝東路四段1號, 台灣");
+  assert.equal(normalizeAddressForQuery("台北市大安區忠孝東路四段1號（近捷運忠孝敦化站）"), "台北市大安區忠孝東路4段1號, 台灣");
   assert.equal(normalizeAddressForQuery("台中市西區英才路100號(1樓)"), "台中市西區英才路100號, 台灣");
 });
 
+test("normalizeAddressForQuery: converts Chinese numbers & full-width digits", () => {
+  assert.equal(normalizeAddressForQuery("臺北市中正區汀州路二段二一二號"), "台北市中正區汀州路2段212號, 台灣");
+  assert.equal(normalizeAddressForQuery("高雄市苓雅區四維三路４３號"), "高雄市苓雅區四維三路43號, 台灣");
+});
+
 test("normalizeAddressForQuery: already contains 台灣 -> not duplicated", () => {
-  assert.equal(normalizeAddressForQuery("台灣台北市中正區重慶南路一段122號"), "台灣台北市中正區重慶南路一段122號");
+  assert.equal(normalizeAddressForQuery("台灣台北市中正區重慶南路一段122號"), "台灣台北市中正區重慶南路1段122號");
 });
 
 test("normalizeAddressForQuery: empty/whitespace-only -> empty string", () => {
@@ -75,7 +124,11 @@ test("normalizeAddressForQuery: full-width space and comma variants collapse", (
 });
 
 // ─── buildQueryCandidates (progressive address-simplification cascade) ────
-const FALLBACK_STRIPS = [/\d+號.*$/, /(\d+巷|\d+弄).*$/];
+const FALLBACK_STRIPS = [
+  /(\d+樓|\d+F|B\d+|地下.*|之\d+號|附\d+號).*$/i,
+  /\d+號.*$/,
+  /(\d+巷|\d+弄).*$/,
+];
 function buildQueryCandidates(rawAddress) {
   const base = cleanAddress(rawAddress);
   if (!base) return [];
@@ -93,18 +146,18 @@ function buildQueryCandidates(rawAddress) {
   return candidates;
 }
 
-test("buildQueryCandidates: full address with 巷/號 -> 3 progressively-simplified candidates", () => {
+test("buildQueryCandidates: full address with 巷/號 -> progressively-simplified candidates", () => {
   const candidates = buildQueryCandidates("台北市信義區信義路二段79巷15號之8");
   assert.deepEqual(candidates, [
-    "台北市信義區信義路二段79巷15號之8, 台灣",
-    "台北市信義區信義路二段79巷, 台灣",
-    "台北市信義區信義路二段, 台灣",
+    "台北市信義區信義路2段79巷15號之8, 台灣",
+    "台北市信義區信義路2段79巷, 台灣",
+    "台北市信義區信義路2段, 台灣",
   ]);
 });
 
-test("buildQueryCandidates: address with only 號, no 巷/弄 -> 2 candidates (dedup drops the no-op 3rd strip)", () => {
+test("buildQueryCandidates: address with only 號, no 巷/弄 -> simplified candidates", () => {
   const candidates = buildQueryCandidates("台北市信義路五段7號");
-  assert.deepEqual(candidates, ["台北市信義路五段7號, 台灣", "台北市信義路五段, 台灣"]);
+  assert.deepEqual(candidates, ["台北市信義路5段7號, 台灣", "台北市信義路5段, 台灣"]);
 });
 
 test("buildQueryCandidates: empty address -> empty array", () => {
@@ -195,7 +248,7 @@ test("dedupByNormalizedAddress: identical addresses (incl. 臺/台 variant) coll
   ];
   const grouped = dedupByNormalizedAddress(rows);
   assert.equal(grouped.size, 2);
-  assert.deepEqual(grouped.get("台北市中山區南京東路一段1號, 台灣"), [1, 2]);
+  assert.deepEqual(grouped.get("台北市中山區南京東路1段1號, 台灣"), [1, 2]);
   assert.deepEqual(grouped.get("高雄市前鎮區中山二路2號, 台灣"), [3]);
 });
 
