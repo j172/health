@@ -23,7 +23,10 @@ function safeToFixed(val: unknown, digits = 1): string {
 }
 
 const getMagBadge = (magInput: unknown) => {
-  const parsed = typeof magInput === "number" ? magInput : parseFloat(String(magInput ?? ""));
+  const parsed =
+    typeof magInput === "number"
+      ? magInput
+      : parseFloat(String(magInput ?? ""));
   const mag = isNaN(parsed) ? 0 : parsed;
   if (mag <= 0) {
     return {
@@ -49,28 +52,36 @@ const getMagBadge = (magInput: unknown) => {
   };
 };
 
-export default function EarthquakeContent({ earthquakes }: { earthquakes: SignificantEarthquake[] }) {
+export default function EarthquakeContent({
+  earthquakes,
+}: {
+  earthquakes: SignificantEarthquake[];
+}) {
   const [filterMinMag, setFilterMinMag] = useState<number>(4.0);
-  const { locale } = useLanguage();
+  const { locale, tDynamic } = useLanguage();
 
   const filtered = earthquakes.filter((e) => {
-    const mag = typeof e.magnitude === "number" ? e.magnitude : parseFloat(String(e.magnitude ?? ""));
+    const mag =
+      typeof e.magnitude === "number"
+        ? e.magnitude
+        : parseFloat(String(e.magnitude ?? ""));
     return !isNaN(mag) && mag >= filterMinMag;
   });
 
   return (
     <div className="space-y-8">
       {/* Header & Filter Controls */}
-      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-3 w-3 rounded-full bg-amber-500 animate-ping" />
+            <span className="flex h-3 w-3 animate-ping rounded-full bg-amber-500" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
               全台與全球顯著地震動態
             </h2>
           </div>
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            資料來源：中央氣象署 (CWA，全台 M4.0+) · 美國地質調查局 (USGS，全球 M6.0+)
+            資料來源：中央氣象署 (CWA，全台 M4.0+) · 美國地質調查局 (USGS，全球
+            M6.0+)
           </p>
         </div>
 
@@ -89,7 +100,7 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
               onClick={() => setFilterMinMag(opt.val)}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-colors ${
                 filterMinMag === opt.val
-                  ? "bg-indigo-600 text-white dark:bg-indigo-500 shadow-xs"
+                  ? "bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               }`}
             >
@@ -108,8 +119,13 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
         <div className="grid gap-4 sm:grid-cols-2">
           {filtered.map((item) => {
             const badge = getMagBadge(item.magnitude);
-            const rawLoc = locale === "en" ? (item.place?.trim() || item.place_zh?.trim()) : (item.place_zh?.trim() || item.place?.trim());
-            const location = rawLoc || "未具名震央區域";
+            const rawLoc =
+              locale === "en"
+                ? item.place?.trim() || item.place_zh?.trim()
+                : item.place_zh?.trim() || item.place?.trim();
+            // SPECIFICATION.md 4.3 — live API strings run through OpenCC for zh-CN.
+            // The English branch above already prefers USGS's native item.place.
+            const location = tDynamic(rawLoc) || "未具名震央區域";
 
             return (
               <div
@@ -118,14 +134,16 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-extrabold shadow-2xs ${badge.bg}`}>
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-0.5 text-xs font-extrabold shadow-2xs ${badge.bg}`}
+                    >
                       {badge.label}
                     </span>
 
                     {item.tsunami_warning === 1 && (
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-bold text-red-600 dark:bg-red-950 dark:text-red-300">
                         <span className="relative flex h-2 w-2 items-center justify-center">
-                          <span className="absolute inline-flex h-full w-full rounded-full bg-red-500 animate-alert-ripple" />
+                          <span className="animate-alert-ripple absolute inline-flex h-full w-full rounded-full bg-red-500" />
                           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600" />
                         </span>
                         🌊 海嘯警報
@@ -137,24 +155,29 @@ export default function EarthquakeContent({ earthquakes }: { earthquakes: Signif
                     </span>
                   </div>
 
-                  <h3 className="mt-3 text-base font-bold leading-snug text-slate-900 dark:text-slate-100 line-clamp-2">
+                  <h3 className="mt-3 line-clamp-2 text-base leading-snug font-bold text-slate-900 dark:text-slate-100">
                     📍 {location}
                   </h3>
 
                   {item.place && item.place_zh && (
-                    <p className="mt-1 text-xs text-slate-400 font-mono line-clamp-1">
+                    <p className="mt-1 line-clamp-1 font-mono text-xs text-slate-400">
                       {item.place}
                     </p>
                   )}
                 </div>
 
-                <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 text-xs dark:border-slate-800">
+                <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
                   <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
                     {item.depth_km != null && (
-                      <span>深度: <strong className="text-slate-700 dark:text-slate-200">{item.depth_km} km</strong></span>
+                      <span>
+                        深度:{" "}
+                        <strong className="text-slate-700 dark:text-slate-200">
+                          {item.depth_km} km
+                        </strong>
+                      </span>
                     )}
                     {item.primary_source && (
-                      <span className="uppercase text-[10px] font-bold bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-300">
+                      <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 uppercase dark:bg-slate-800 dark:text-slate-300">
                         {item.primary_source}
                       </span>
                     )}

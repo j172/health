@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { type NewsListItem, type WeatherWarningItem } from "@/lib/server/news/queries";
+import {
+  type NewsListItem,
+  type WeatherWarningItem,
+} from "@/lib/server/news/queries";
 import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
@@ -22,7 +25,7 @@ export default function NewsSidebar({
   earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
 }) {
-  const { t, locale } = useLanguage();
+  const { t, locale, tDynamic } = useLanguage();
 
   return (
     <aside className="space-y-6" aria-label="側邊資訊欄">
@@ -40,7 +43,7 @@ export default function NewsSidebar({
 
       {/* 4. Source Categories Cloud */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-3.5">
+        <h3 className="mb-3.5 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {t("categories.sourcesHeading", "公衛與新聞來源")}
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -64,7 +67,9 @@ export default function NewsSidebar({
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
               }`}
             >
-              {locale === "en" ? t(`categories.${cat.key}`, cat.label) : cat.label}
+              {locale === "en"
+                ? t(`categories.${cat.key}`, cat.label)
+                : cat.label}
             </Link>
           ))}
         </div>
@@ -73,21 +78,24 @@ export default function NewsSidebar({
       {/* 5. Trending News List (by real view count — see getTopViewedNews) */}
       {trendingNews.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-4">
+          <h3 className="mb-4 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
             {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
           </h3>
           <div className="space-y-4">
             {trendingNews.slice(0, 10).map((item, idx) => (
-              <article key={item.id} className="group flex gap-3 items-start">
+              <article key={item.id} className="group flex items-start gap-3">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
                   {idx + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h4 className="line-clamp-2 text-xs font-semibold text-slate-800 leading-snug group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400 transition-colors">
-                    <Link href={`/news/${item.id}`}>{item.title}</Link>
+                  <h4 className="line-clamp-2 text-xs leading-snug font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
+                    <Link href={`/news/${item.id}`}>
+                      {tDynamic(item.title)}
+                    </Link>
                   </h4>
                   <p className="mt-1 text-[11px] text-slate-400">
-                    {item.feed_name} · {toTaipei(item.published_at_utc, "short")}
+                    {item.feed_name} ·{" "}
+                    {toTaipei(item.published_at_utc, "short")}
                   </p>
                 </div>
               </article>

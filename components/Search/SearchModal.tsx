@@ -15,7 +15,7 @@ export default function SearchModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const { t } = useLanguage();
+  const { t, tDynamic } = useLanguage();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<NewsListItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -210,7 +210,7 @@ export default function SearchModal({
                         </span>
                       </div>
                       <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-slate-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                        {item.title}
+                        {tDynamic(item.title)}
                       </h4>
                       <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
                         {stripHtml(item.description_html)}
