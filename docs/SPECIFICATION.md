@@ -1,9 +1,9 @@
 # Full System Technical Specification (j172tw Healthz)
 
-> **Document Version**: 2.1.0  
-> **Last Updated**: 2026-08-22  
+> **Document Version**: 2.2.0  
+> **Last Updated**: 2026-08-23  
 > **Status**: Production Specification  
-> **Target Environment**: Next.js 16 (App Router) + Node 20 + MySQL 8.0 + cPanel PM2 Hosting
+> **Target Environment**: Next.js 16 (App Router) + Node 20 + MySQL 8.0 + cPanel PM2 Hosting + Cloudflare Edge CDN & Security
 
 ---
 
@@ -19,9 +19,13 @@
                           ┌───────────────────────────┐
                           │   Client Browser / Mobile │
                           └─────────────┬─────────────┘
-                                        │ HTTPS / Reverse Proxy
+                                        │ HTTPS (HTTP/3, 0-RTT, Brotli)
                           ┌─────────────▼─────────────┐
-                          │   PHP Handler Index Proxy │  <-- Serves Static Assets & Caching
+                          │  Cloudflare Edge CDN / WAF │ <-- Smart Tiered Cache, Transform Rules,
+                          └─────────────┬─────────────┘     Rate Limiting & Managed Challenge
+                                        │ Origin SSL Full (Strict)
+                          ┌─────────────▼─────────────┐
+                          │   PHP Handler Index Proxy │  <-- Serves Static Assets & Local Proxy
                           └─────────────┬─────────────┘
                                         │ (127.0.0.1:3000)
                           ┌─────────────▼─────────────┐
@@ -212,3 +216,53 @@ absence:
 - Outbound HTTP goes through `lib/server/net/httpClient.ts`, which now enforces
   `maxResponseBytes` (24MB default) both from `Content-Length` and while
   streaming, destroying the socket on breach.
+
+---
+
+## 9. Edge Architecture & Cloudflare Optimization Specification
+
+All public HTTP traffic to `health.j172.tw` routes through Cloudflare Edge (Free Tier) acting as the Anycast CDN, WAF, and Reverse Proxy layer.
+
+### 9.1 Network & SSL/TLS Configuration
+- **Proxy Status**: DNS Proxied (Orange Cloud) for all web endpoints.
+- **SSL/TLS Encryption Mode**: `Full (Strict)` with 15-year Cloudflare Origin CA certificate installed on origin.
+- **Protocol Settings**:
+  - `HTTP/3 (QUIC)` & `0-RTT Connection Resumption` enabled.
+  - `Brotli` compression enabled (`content-encoding: br`).
+  - `Early Hints (103)` enabled.
+  - `Minimum TLS Version`: `1.2` (with TLS 1.3 0-RTT support).
+  - `Rocket Loader`: **Disabled** (strictly avoided to eliminate React 19 hydration mismatch risks).
+  - `Auto Minify`: **Disabled** (delegated exclusively to Next.js build-time minification).
+
+### 9.2 Edge Cache Rules (`http_request_cache_settings`)
+- **Smart Tiered Cache Topology**: Enabled globally to consolidate edge requests and minimize direct origin load.
+- **Rule 1 (Admin Bypass)**:
+  - Match: `(http.host eq "health.j172.tw" and (starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/api/admin")))`
+  - Action: `Bypass cache`.
+- **Rule 2 (Static Assets)**:
+  - Match: `(http.host eq "health.j172.tw" and (starts_with(http.request.uri.path, "/_next/static/") or starts_with(http.request.uri.path, "/images/") or http.request.uri.path eq "/favicon.ico"))`
+  - Action: `Eligible for cache` with `edge_ttl: respect_origin`, `browser_ttl: respect_origin` (`max-age=31536000, immutable`).
+- **Rule 3 (Public HTML & SWR)**:
+  - Match: `(http.host eq "health.j172.tw" and not (starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/api/admin")))`
+  - Action: `Eligible for cache` with `edge_ttl: respect_origin` (leverages Next.js `s-maxage=60, stale-while-revalidate=600`).
+
+### 9.3 Security & WAF Protection (`http_request_firewall_custom` & `http_ratelimit`)
+- **Bot Fight Mode**: Active against malicious automated scrapers.
+- **Custom WAF Rule (Admin Protection)**:
+  - Match: `(http.host eq "health.j172.tw" and (starts_with(http.request.uri.path, "/admin") or starts_with(http.request.uri.path, "/api/admin"))) and (cf.threat_score gt 0 or not ip.geoip.country in {"TW"})`
+  - Action: `Managed Challenge`.
+- **Custom WAF Rule (Threat Score Mitigation)**:
+  - Match: `(http.host eq "health.j172.tw" and cf.threat_score ge 15)`
+  - Action: `Block`.
+- **Rate Limiting Rule**:
+  - Match: `(http.host eq "health.j172.tw" and (starts_with(http.request.uri.path, "/api/") or starts_with(http.request.uri.path, "/admin")))`
+  - Limit: Single IP exceeding 30 requests per 10 seconds -> Block for 10 seconds.
+
+### 9.4 Edge Transform Rules (`http_response_headers_transform`)
+- Injects standard security headers and scrubs origin fingerprinting at the edge:
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: SAMEORIGIN`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=(self)`
+  - `X-Powered-By` header stripped.
+
