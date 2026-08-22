@@ -15,6 +15,8 @@
  *   RSS_SYNC_ADMIN_SECRET=<secret> node scripts/gha-wra-drought-sync.mjs
  */
 
+import { createSshLoopback, shellQuote } from "./lib/ssh-loopback.mjs";
+
 const RESOURCE_ID = "51ea7202-18fd-46e3-adae-4d05bc827a28";
 const FEED_URL = `https://opendata.wra.gov.tw/api/v2/${RESOURCE_ID}?sort=_importdate%20asc&format=JSON`;
 
@@ -27,6 +29,12 @@ const SECRET =
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
+
+const SSH_HOST = process.env.SSH_HOST || "";
+const SSH_PORT = process.env.SSH_PORT || "22";
+const SSH_USER = process.env.SSH_USER || "";
+const SSH_KEY_FILE = process.env.SSH_KEY_FILE || "";
+
 
 if (!SECRET) {
   console.error("Missing RSS_SYNC_ADMIN_SECRET.");
@@ -86,21 +94,67 @@ const main = async () => {
     process.exit(1);
   }
 
-  const post = await fetch(`${BASE}/api/admin/wra-sync`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-rss-sync-admin-secret": SECRET,
-    },
-    body: JSON.stringify({ records: rows }),
+  // Reduce to the latest bulletin per reservoir here rather than shipping the
+  // whole 2012-onwards log across the wire. The app reduces again on receipt —
+  // doing it twice is a no-op — so this is purely about payload size.
+  const latest = new Map();
+  const sortKey = (r) => String(r["通報日期"] ?? r.reportDate ?? "").replace(/\//g, "-");
+  for (const row of rows) {
+    const name = String(row["水庫名稱"] ?? row.reservoirName ?? "").trim();
+    if (!name || !sortKey(row)) continue;
+    const existing = latest.get(name);
+    if (!existing || sortKey(row) > sortKey(existing)) latest.set(name, row);
+  }
+  const records = [...latest.values()];
+  console.log(`reduced to ${records.length} active reservoirs`);
+
+  // Posted over SSH to the app's own loopback, not to the public hostname:
+  // Cloudflare bot protection answers a GitHub runner with a "Just a moment..."
+  // challenge (HTTP 403), which is exactly what the OG backfill workflow hit and
+  // why it uses this same transport.
+  if (!SSH_HOST || !SSH_KEY_FILE) {
+    console.error("Missing SSH_HOST/SSH_KEY_FILE — the public hostname is Cloudflare-challenged for runners.");
+    process.exit(1);
+  }
+
+  const ssh = createSshLoopback({
+    keyFile: SSH_KEY_FILE,
+    host: SSH_HOST,
+    port: SSH_PORT,
+    user: SSH_USER,
   });
 
-  const text = await post.text();
+  const payload = JSON.stringify({ records });
+  const remote = [
+    "curl -sS --max-time 120",
+    "-X POST http://127.0.0.1:3000/api/admin/wra-sync",
+    '-H "content-type: application/json"',
+    `-H ${shellQuote(`x-rss-sync-admin-secret: ${SECRET}`)}`,
+    "--data-binary @-",
+  ].join(" ");
+
+  const result = ssh.call(remote, { input: payload });
+  ssh.close();
+
+  if (result.error) {
+    console.error("ssh call failed:", result.error.message);
+    process.exit(1);
+  }
+
+  const out = (result.stdout || "").trim();
+  // ssh can prepend a banner, so take the last line that looks like a JSON object.
+  const NEWLINE = String.fromCharCode(10);
+  const jsonLine =
+    out
+      .split(NEWLINE)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith("{"))
+      .pop() || out;
   let json;
   try {
-    json = JSON.parse(text);
+    json = JSON.parse(jsonLine);
   } catch {
-    console.error(`admin endpoint returned non-JSON (HTTP ${post.status}): ${text.slice(0, 300)}`);
+    console.error(`admin endpoint returned non-JSON: ${(result.stderr || "").slice(0, 200)} | ${jsonLine.slice(0, 300)}`);
     process.exit(1);
   }
 

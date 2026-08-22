@@ -32,8 +32,35 @@ jobs:
         with:
           node-version: 20
 
-      - name: Fetch WRA bulletins and post them to the app
+      # The fetch has to happen here — WRA's bot wall blocks the host — but the
+      # POST cannot go to the public hostname either: Cloudflare answers a GitHub
+      # runner with a "Just a moment..." challenge (HTTP 403), measured live. Same
+      # reason news-og-backfill.yml talks to the app over an SSH loopback.
+      - name: Fetch WRA bulletins and post them over the SSH loopback
         env:
           RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          APP_BASE_URL: https://health.j172.tw
-        run: node scripts/gha-wra-drought-sync.mjs
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
+
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
+            node scripts/gha-wra-drought-sync.mjs
