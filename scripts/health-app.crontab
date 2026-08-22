@@ -1,43 +1,8 @@
-# Managed by deploy-ftps.yml — do not edit this block directly with `crontab -e`
-# on the server, edit this file and redeploy instead (a manual edit gets
-# overwritten on the next deploy). Everything else in the server's crontab
-# (other apps on this shared account, e.g. the blog's wp-cron.php and
-# bid.j172.tw's pm2 watchdog) is left untouched — only the lines between the
-# BEGIN/END markers below are replaced.
-#
-# rss-sync/aqi-sync/cwa-sync/earthquakes-sync used to be curl-driven lines
-# here; they now run as an in-process node-cron scheduler started from
-# instrumentation.ts (see docs/specs/in-app-cron-scheduler.md), so only the
-# pm2-ensure-running self-heal watchdog remains below — it can't move
-# in-process since its entire purpose is reviving this same process after
-# the host's CloudLinux LVE kills it.
-#
-# __OPS_KEY__ and __HEALTHCHECKS_URL__ are placeholders substituted with the
-# real secret values at deploy time — this file itself never contains a live
-# secret.
 # BEGIN health-app managed cron
-# /__ops/pm2-ensure-running is PHP-layer, not a Next.js route, so unlike the
-# app's own sync jobs (now in-process node-cron) it can't be reached via
-# 127.0.0.1:3000 loopback — it only exists behind the public vhost.
-# --resolve pins straight to the origin IP
-# (same one deploy-ftps.yml already uses for /__ops/ calls) so this never
-# depends on DNS or round-trips through Cloudflare in front of the domain.
-# This host kills the health-web process roughly once a day (see the
-# pm2-ensure-running handler's own comments); this is the self-heal trigger
-# that used to be missing, so 502s from that no longer wait for a human.
+# Managed by deploy-crontab.sh — all health-app entries must reside within BEGIN/END markers.
+# Self-heal watchdog trigger for health-web (Next.js)
 */5 * * * * curl -s --max-time 90 --insecure --resolve "health.j172.tw:443:103.21.221.12" "https://health.j172.tw/__ops/pm2-ensure-running?key=__OPS_KEY__&cb=$(date +\%s)" >> /home/tw123457/health_app/logs/pm2-watchdog-cron.log 2>&1
 #
-# Independent dead-man's-switch liveness ping (healthchecks.io) — added
-# 2026-08-16 after a 502 outage went unnoticed for hours because nothing
-# external was watching. Deliberately does NOT read pm2-ensure-running's own
-# verdict above: that endpoint can go silent by omission (PHP itself
-# unreachable, this whole cron entry lost from a bad crontab sync, the
-# account fully wedged like the 2026-08-10 escalation) in ways it can never
-# self-report. Instead this does its own real end-to-end page fetch and only
-# pings healthchecks.io on genuine success, so "site broken" and "nothing
-# checked at all" both surface the same way to healthchecks: silence past the
-# expected window. __HEALTHCHECKS_URL__ is substituted empty (harmless
-# curl no-op) when HEALTHCHECKS_URL isn't set in CI secrets — opt-in, not
-# required.
+# Independent dead-man's-switch liveness ping (healthchecks.io)
 */5 * * * * curl -fsS --max-time 15 --insecure --resolve "health.j172.tw:443:103.21.221.12" "https://health.j172.tw/news" >/dev/null 2>&1 && curl -fsS --max-time 10 "__HEALTHCHECKS_URL__" >> /home/tw123457/health_app/logs/healthchecks-ping-cron.log 2>&1
 # END health-app managed cron

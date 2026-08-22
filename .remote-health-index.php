@@ -932,6 +932,10 @@ while ($attempt < $maxAttempts) {
         CURLOPT_POSTFIELDS => in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']) ? $body : null,
         CURLOPT_ENCODING => '',
         CURLOPT_TIMEOUT => $isLongRunningApi ? 280 : 30,
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TCP_KEEPALIVE => 1,
+        CURLOPT_TCP_KEEPIDLE => 30,
+        CURLOPT_TCP_KEEPINTVL => 15,
     ]);
 
     $response = curl_exec($ch);

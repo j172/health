@@ -137,6 +137,17 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的長照機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
   },
+  "public-toilets": {
+    facilityType: "public_toilet",
+    emoji: "🚻",
+    title: "全國公廁查詢",
+    description:
+      "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部。",
+    searchPlaceholder: "輸入地點名稱或縣市關鍵字",
+    errorText: "查詢公廁資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的公廁，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的公廁。",
+  },
   "green-shops": {
     facilityType: "green_shop",
     emoji: "🌱",

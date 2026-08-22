@@ -22,7 +22,8 @@ export type ToolGroup =
   | "ltc"
   | "disability"
   | "green-shop"
-  | "child-welfare";
+  | "child-welfare"
+  | "public-facility";
 
 export interface ToolCatalogEntry {
   slug: string;
@@ -1242,6 +1243,34 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "客庄社區發展協會提供哪些服務？",
         answer:
           "客庄社區發展協會多承辦社區照顧關懷據點等在地服務，實際服務項目（如共餐、關懷訪視）依各協會而定，建議直接與協會聯繫確認。",
+      },
+    ],
+  },
+  {
+    slug: "public-toilets",
+    group: "public-facility",
+    title: "全國公廁查詢",
+    description: "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部。",
+    directAnswer:
+      "查詢環境部列管之全國公廁，可依無障礙廁所、親子廁所、性別友善廁所與尿布台設置情形篩選，並顯示清潔等級與所在位置。",
+    scientificBasis: [
+      {
+        title: "環境部環境資料開放平臺 - 公廁基本資料",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-shops", "disability-atm"],
+    faqs: [
+      {
+        question: "這裡的公廁資料包含哪些類型？",
+        answer:
+          "涵蓋男廁所、女廁所、混合廁所、無障礙廁所、性別友善廁所與親子廁所，並標示是否設有尿布台。同一處場所的不同廁所會分開列出，因為無障礙與親子設施的有無各自不同。",
+      },
+      {
+        question: "清潔等級是誰評定的？",
+        answer:
+          "由環境部依公廁管理維護計畫評定，分為特優級與優等級，資料隨環境部開放資料同步更新。",
       },
     ],
   },
