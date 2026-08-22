@@ -70,24 +70,41 @@ export const persistItems = async (
 
       // Identity check first, before any of the expensive work below.
       //
-      // Matches BOTH of news_items' unique keys, because the INSERT can collide
-      // on either: uq_news_external (source_name, feed_code, external_id) and
-      // uq_news_url (source_name, canonical_url). Looking up only the first one
-      // is what made production report ~1374 "inserted" every run while barely
-      // any rows were actually created — the feeds reissue external_ids, so the
-      // lookup missed and the INSERT then collided on the URL instead.
-      const [existingRows] = await conn.execute<RowDataPacket[]>(
+      // The INSERT can collide on either of news_items' unique keys —
+      // uq_news_external (source_name, feed_code, external_id) and uq_news_url
+      // (source_name, canonical_url) — so both have to be checked. Matching only
+      // the first is what made production report ~1374 "inserted" every run while
+      // barely any rows were created: the feeds reissue external_ids, so the
+      // lookup missed and the INSERT collided on the URL instead.
+      //
+      // Two separate statements rather than one `OR`, deliberately. uq_news_url
+      // is a PREFIX index on canonical_url(255), and MySQL will not index_merge
+      // an OR across it — the combined query degrades to a full scan per item,
+      // which doubled a 1,470-item run's wall time when it was written that way.
+      // Each of these is a single-row index lookup.
+      const [byExternalId] = await conn.execute<RowDataPacket[]>(
         `
         SELECT id, payload_hash
         FROM news_items
-        WHERE source_name = ?
-          AND ((feed_code = ? AND external_id = ?) OR canonical_url = ?)
+        WHERE source_name = ? AND feed_code = ? AND external_id = ?
         LIMIT 1
         `,
-        [item.sourceName, item.feedCode, item.externalId, item.canonicalUrl],
+        [item.sourceName, item.feedCode, item.externalId],
       );
 
-      const existing = existingRows[0];
+      let existing = byExternalId[0];
+      if (!existing) {
+        const [byUrl] = await conn.execute<RowDataPacket[]>(
+          `
+          SELECT id, payload_hash
+          FROM news_items
+          WHERE source_name = ? AND canonical_url = ?
+          LIMIT 1
+          `,
+          [item.sourceName, item.canonicalUrl],
+        );
+        existing = byUrl[0];
+      }
 
       // Nothing about this article has changed since we last saw it. Skip the
       // geo extraction, the 30-column upsert, and the delete-and-reinsert of its
