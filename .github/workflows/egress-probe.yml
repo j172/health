@@ -1,0 +1,45 @@
+name: Egress probe
+
+# Answers one question: which upstreams refuse the production host but allow a
+# GitHub runner? Several Taiwanese sites 403 the shared host's IP while returning
+# 200 from anywhere else, and that decides whether moving a fetch to the runner
+# is worth building. Run it before assuming either way.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: egress-probe
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe upstreams from the runner
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+          probe() {
+            local label="$1"; shift
+            local url="$1"; shift
+            local code
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 25 -A "$UA" "$url" 2>/dev/null || echo "000")"
+            printf '%-34s %s\n' "$label" "$code"
+          }
+
+          echo "=== from a GitHub Actions runner ==="
+          probe "nhi.gov.tw rss (403 on host)"    "https://www.nhi.gov.tw/ch/rss-3255-1.xml"
+          probe "pgw.udn.com.tw image (403)"      "https://pgw.udn.com.tw/gw/photo.php?u=/photo/t3/2026/08/10/35215805.jpg&x=0&y=0&sw=1022&sh=682&s=Y&w=1200&h=800"
+          probe "mirrormedia category health"     "https://www.mirrormedia.mg/category/health"
+          probe "opendata.wra.gov.tw (bot wall)"  "https://opendata.wra.gov.tw/api/v2/51ea7202-18fd-46e3-adae-4d05bc827a28?format=JSON"
+          probe "mohw.gov.tw rss (control, OK)"   "https://www.mohw.gov.tw/rss-16-1.html"
+
+          echo
+          echo "200 here + 403 on the host means the host's IP is the problem and"
+          echo "moving that fetch to the runner will fix it. 403 in both places means"
+          echo "it will not, and something else is required."
