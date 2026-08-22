@@ -74,6 +74,13 @@ jobs:
           # production, so fetchMoenvNews has thrown "MOENV_NEWS_API_KEY is not
           # configured" on every ingestion run since it landed.
           MOENV_NEWS_API_KEY_SECRET: ${{ secrets.MOENV_NEWS_API_KEY }}
+          MOENV_GP_API_KEY_SECRET: ${{ secrets.MOENV_GP_API_KEY }}
+          # Delivered to the host .env like every other credential. Previously it
+          # was not: the workflow used this secret only as a request header, so the
+          # value the app actually validates against lived in a hand-edited .env on
+          # the server and could not be rotated from here at all. That is why the
+          # value leaked in scripts/geocode-all-facilities.mjs stayed live.
+          RSS_SYNC_ADMIN_SECRET_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           OPS_KEY_SECRET: ${{ secrets.OPS_KEY }}
           GOOGLE_MAPS_API_KEY_SECRET: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           OPENCAGE_API_KEY_SECRET: ${{ secrets.OPENCAGE_API_KEY }}
@@ -96,6 +103,8 @@ jobs:
           CLOUDFLARE_API_TOKEN_CLEAN="$(clean "${CLOUDFLARE_API_TOKEN_SECRET:-}")"
           MOENV_PM25_API_KEY_CLEAN="$(clean "${MOENV_PM25_API_KEY_SECRET:-}")"
           MOENV_NEWS_API_KEY_CLEAN="$(clean "${MOENV_NEWS_API_KEY_SECRET:-}")"
+          MOENV_GP_API_KEY_CLEAN="$(clean "${MOENV_GP_API_KEY_SECRET:-}")"
+          RSS_SYNC_ADMIN_SECRET_CLEAN="$(clean "${RSS_SYNC_ADMIN_SECRET_SECRET:-}")"
           MOENV_AQI_FORECAST_API_KEY_CLEAN="$(clean "${MOENV_AQI_FORECAST_API_KEY_SECRET:-}")"
           OPS_KEY_CLEAN="$(clean "${OPS_KEY_SECRET:-}")"
           GOOGLE_MAPS_API_KEY_CLEAN="$(clean "${GOOGLE_MAPS_API_KEY_SECRET:-}")"
@@ -124,6 +133,8 @@ jobs:
             "MOENV_PM25_API_KEY:$MOENV_PM25_API_KEY_CLEAN"
             "MOENV_AQI_FORECAST_API_KEY:$MOENV_AQI_FORECAST_API_KEY_CLEAN"
             "MOENV_NEWS_API_KEY:$MOENV_NEWS_API_KEY_CLEAN"
+            "MOENV_GP_API_KEY:$MOENV_GP_API_KEY_CLEAN"
+            "RSS_SYNC_ADMIN_SECRET:$RSS_SYNC_ADMIN_SECRET_CLEAN"
             "OPS_KEY:$OPS_KEY_CLEAN"
             "GOOGLE_MAPS_API_KEY:$GOOGLE_MAPS_API_KEY_CLEAN"
             "OPENCAGE_API_KEY:$OPENCAGE_API_KEY_CLEAN"

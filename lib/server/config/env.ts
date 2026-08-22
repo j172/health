@@ -34,7 +34,20 @@ export const env = {
     secretKey: process.env.UNSPLASH_SECRET_KEY?.trim() || null,
     applicationId: process.env.UNSPLASH_APPLICATION_ID?.trim() || null,
   },
-  moenvNewsApiKey: process.env.MOENV_NEWS_API_KEY?.trim() || null,
+  // data.moenv.gov.tw issues ONE API key per account that works across every
+  // dataset — verified live: the PM25 key returns HTTP 200 with real articles
+  // from mnews_p_01. This codebase happens to hold that same value under three
+  // names for historical reasons (news / general-purpose / pm25).
+  //
+  // The fallback is not tidiness, it is the fix: MOENV_NEWS_API_KEY was never
+  // plumbed into deploy-ftps.yml, so Phase 6 threw "MOENV_NEWS_API_KEY is not
+  // configured" on every ingestion run since it shipped, while a working key for
+  // the very same account sat in the host's .env under a different name.
+  moenvNewsApiKey:
+    process.env.MOENV_NEWS_API_KEY?.trim() ||
+    process.env.MOENV_GP_API_KEY?.trim() ||
+    process.env.MOENV_PM25_API_KEY?.trim() ||
+    null,
   // 綠色商店基本資料 (gp_p_01) — consumed by scripts/import-moenv-green-shops.mjs,
   // a standalone script (like the MOHW import-*.mjs scripts) rather than an
   // in-app fetch, so this field mainly documents/types the var for
