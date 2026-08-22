@@ -119,6 +119,11 @@ export default function WeatherAlertSidebarWidget({
                   {alert.area_desc ? (
                     <p className="mt-1.5 line-clamp-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
                       📍 {alert.area_desc}
+                      {alert.area_count && alert.area_count > 1 ? (
+                        <span className="ml-1 font-semibold text-slate-500 dark:text-slate-500">
+                          （共 {alert.area_count} 個地區）
+                        </span>
+                      ) : null}
                     </p>
                   ) : null}
 
