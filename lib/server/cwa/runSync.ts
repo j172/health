@@ -2,6 +2,8 @@ import { fetchCwaForecasts } from "@/lib/server/cwa/sources/forecast";
 import { fetchCwaEarthquakes } from "@/lib/server/cwa/sources/earthquake";
 import { fetchCwaTsunamis } from "@/lib/server/cwa/sources/tsunami";
 import { fetchCwaAlerts } from "@/lib/server/cwa/sources/alerts";
+import { fetchCwaTyphoons } from "@/lib/server/cwa/sources/typhoon";
+import { fetchMoenvDustStorms } from "@/lib/server/moenv/dustStorm";
 import { fetchCwaTownshipHazards } from "@/lib/server/cwa/sources/townshipHazards";
 import { fetchCwaStationWeather } from "@/lib/server/cwa/sources/stationWeather";
 import { fetchCwaRainfall } from "@/lib/server/cwa/sources/rainfall";
@@ -66,6 +68,31 @@ export async function runCwaSync(): Promise<CwaSyncResult[]> {
       ZERO_COUNTS,
       async () => {
         const records = await fetchCwaAlerts();
+        const { inserted, updated } = await upsertCwaAlerts(records);
+        return { fetched: records.length, inserted, updated };
+      },
+      CWA_ERROR_FALLBACK,
+    ),
+    // Typhoons and dust storms land in cwa_alerts too, so the 即時氣象警報 block
+    // stays one query and one render path. They are registered as separate
+    // sources because one is CWA track data and the other a MOENV bulletin —
+    // runSource's per-source isolation means a failure in either cannot take
+    // the CAP alerts down with it.
+    await runSource(
+      "cwa_typhoons",
+      ZERO_COUNTS,
+      async () => {
+        const records = await fetchCwaTyphoons();
+        const { inserted, updated } = await upsertCwaAlerts(records);
+        return { fetched: records.length, inserted, updated };
+      },
+      CWA_ERROR_FALLBACK,
+    ),
+    await runSource(
+      "moenv_dust_storms",
+      ZERO_COUNTS,
+      async () => {
+        const records = await fetchMoenvDustStorms();
         const { inserted, updated } = await upsertCwaAlerts(records);
         return { fetched: records.length, inserted, updated };
       },
