@@ -67,6 +67,45 @@ export const persistItems = async (
 
     for (const item of items) {
       const now = utcNowSql();
+
+      // Identity check first, before any of the expensive work below.
+      //
+      // Matches BOTH of news_items' unique keys, because the INSERT can collide
+      // on either: uq_news_external (source_name, feed_code, external_id) and
+      // uq_news_url (source_name, canonical_url). Looking up only the first one
+      // is what made production report ~1374 "inserted" every run while barely
+      // any rows were actually created — the feeds reissue external_ids, so the
+      // lookup missed and the INSERT then collided on the URL instead.
+      const [existingRows] = await conn.execute<RowDataPacket[]>(
+        `
+        SELECT id, payload_hash
+        FROM news_items
+        WHERE source_name = ?
+          AND ((feed_code = ? AND external_id = ?) OR canonical_url = ?)
+        LIMIT 1
+        `,
+        [item.sourceName, item.feedCode, item.externalId, item.canonicalUrl],
+      );
+
+      const existing = existingRows[0];
+
+      // Nothing about this article has changed since we last saw it. Skip the
+      // geo extraction, the 30-column upsert, and the delete-and-reinsert of its
+      // assets — all three were running for roughly 1,500 unchanged articles on
+      // every 30-minute tick, which is the overwhelming majority of the run's
+      // work, purely to set last_seen_at_utc and updated_at to `now`.
+      //
+      // Nothing reads last_seen_at_utc, but it is cheap to keep honest with a
+      // two-column touch.
+      if (existing && existing.payload_hash === item.payloadHash) {
+        await conn.execute(
+          "UPDATE news_items SET last_seen_at_utc = ?, updated_at = ? WHERE id = ?",
+          [now, now, existing.id],
+        );
+        unchanged += 1;
+        continue;
+      }
+
       // Reuse the transaction's own connection — opening a second one here would
       // deadlock the 8-slot pool once enough transactions run concurrently.
       const loc = await extractLocationFromText(
@@ -75,18 +114,6 @@ export const persistItems = async (
         false,
         conn,
       ).catch(() => null);
-
-      const [existingRows] = await conn.execute<RowDataPacket[]>(
-        `
-        SELECT id, payload_hash
-        FROM news_items
-        WHERE source_name = ? AND feed_code = ? AND external_id = ?
-        LIMIT 1
-        `,
-        [item.sourceName, item.feedCode, item.externalId],
-      );
-
-      const existing = existingRows[0];
 
       // INSERT .. ON DUPLICATE KEY UPDATE rather than a separate SELECT-then-
       // branch, so a duplicate (source_name, feed_code, external_id) within
@@ -181,28 +208,30 @@ export const persistItems = async (
       // the UPDATE branch. Production was reporting ~1374 "inserted" every single
       // run while the row count barely moved, and inserted+updated+unchanged
       // (1374+1+436=1811) did not even equal fetched (1470).
-      switch (upsertResult.affectedRows) {
-        case 1:
-          inserted += 1;
-          break;
-        case 2:
-          updated += 1;
-          break;
-        default:
-          unchanged += 1;
-          break;
+      //
+      // Note affectedRows alone cannot mean "unchanged" here: last_seen_at_utc
+      // and updated_at are set to `now` on every upsert, so an existing row
+      // always reports 2. Genuinely-unchanged items took the early `continue`
+      // above, on a payload_hash comparison, before reaching this statement.
+      if (upsertResult.affectedRows === 1) {
+        inserted += 1;
+      } else {
+        updated += 1;
       }
 
-      // Counted separately so the divergence is visible rather than inferred:
-      // the feed changed this article's external_id while its URL stayed put.
-      if (!existing && upsertResult.affectedRows !== 1) {
+      // The feed handed us an external_id that does not match the row already
+      // stored under this URL. The upsert deliberately does not rewrite
+      // external_id — that could collide with uq_news_external for a different
+      // row — so the stored id stays put and this same item drifts again on
+      // every future run. Counted rather than inferred.
+      if (!existing) {
         externalIdDrift += 1;
       }
     }
 
     if (externalIdDrift > 0) {
       console.warn(
-        `[persistItems] ${externalIdDrift}/${items.length} items missed the external_id lookup but collided on canonical_url — the feed is reissuing unstable external_ids.`,
+        `[persistItems] ${externalIdDrift}/${items.length} items were not found by either unique key yet still did not insert — worth checking for a third identity path.`,
       );
     }
 
