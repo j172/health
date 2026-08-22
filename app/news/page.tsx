@@ -54,7 +54,20 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     // thousands) rather than the fixed curated source list, so keep those
     // out of the index entirely to avoid a flood of thin near-duplicate
     // pages.
-    robots: keyword || currentPage > 1 || pageSize !== DEFAULT_NEWS_PAGE_SIZE ? { index: false, follow: true } : { index: true, follow: true },
+    robots:
+      keyword || currentPage > 1 || pageSize !== DEFAULT_NEWS_PAGE_SIZE
+        ? { index: false, follow: true }
+        : {
+            index: true,
+            follow: true,
+            googleBot: {
+              index: true,
+              follow: true,
+              "max-video-preview": -1,
+              "max-image-preview": "large",
+              "max-snippet": -1,
+            },
+          },
     openGraph: {
       type: "website",
       title: `${title} | ${SITE_NAME}`,

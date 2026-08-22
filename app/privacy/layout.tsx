@@ -20,7 +20,17 @@ export const metadata: Metadata = {
   description: PRIVACY_DESCRIPTION,
   icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
   appleWebApp: { capable: true, title: "j172tw Healthz", statusBarStyle: "default" },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -37,7 +47,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-Hant">
+    <html lang="zh-Hant-TW">
       <body className={inter.className}>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />

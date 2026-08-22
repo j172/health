@@ -90,6 +90,8 @@ export const listRecentNewsForLlms = async (
 export interface NewsSitemapItem {
   id: number;
   title: string;
+  source_name: string;
+  card_image_url: string | null;
   published_at_utc: Date | null;
 }
 
@@ -102,10 +104,12 @@ export const listRecentNewsForNewsSitemap = async (
   withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT id, title, published_at_utc
-      FROM news_items
-      WHERE published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
-      ORDER BY published_at_utc DESC
+      SELECT n.id, n.title, n.source_name, n.published_at_utc,
+             ${CARD_IMAGE_SELECT_SQL}
+      FROM news_items n
+      LEFT JOIN news_card_images c ON c.news_item_id = n.id
+      WHERE n.published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+      ORDER BY n.published_at_utc DESC
       `,
       [hours],
     );

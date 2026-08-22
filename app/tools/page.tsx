@@ -29,6 +29,17 @@ export const metadata: Metadata = {
     "食品營養成分",
   ],
   alternates: { canonical: `${baseUrl}/tools` },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
     title: `健康工具與公衛資料庫總覽 | ${SITE_NAME}`,

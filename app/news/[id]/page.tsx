@@ -276,8 +276,19 @@ export default async function NewsDetailPage({
               </div>
             ) : null}
 
+            {/* YMYL E-E-A-T Medical & Health Information Disclaimer */}
+            <div className="mt-8 rounded-2xl border border-amber-200/80 bg-amber-50/60 p-4.5 text-xs leading-relaxed text-amber-900 shadow-2xs dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-200/90">
+              <p className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
+                <span>🛡️</span>
+                <span>公衛與醫療資訊免責聲明 (E-E-A-T)</span>
+              </p>
+              <p className="mt-1.5">
+                本平台公衛與健康新聞均自動彙整自衛生福利部等官方機關及具公信力媒體公開資訊，僅供公共衛生知識宣導與生活知能參考，不可作為個人臨床醫療診斷或替代專業醫師診療處方。如有身體不適或醫療需求，請務必親自就醫並諮詢合格醫療專業人員。
+              </p>
+            </div>
+
             {/* Article Footer Navigation & Original Link */}
-            <div className="mt-10 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6 text-xs dark:border-slate-800">
+            <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-6 text-xs dark:border-slate-800">
               <Link
                 href="/news"
                 className="font-bold text-slate-700 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"

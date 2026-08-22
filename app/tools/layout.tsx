@@ -20,7 +20,17 @@ export const metadata: Metadata = {
   description: TOOLS_DESCRIPTION,
   icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
   appleWebApp: { capable: true, title: "j172tw Healthz", statusBarStyle: "default" },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -40,7 +50,7 @@ export const metadata: Metadata = {
 
 export default function ToolsRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-Hant">
+    <html lang="zh-Hant-TW">
       <head>
         <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} - 最新公衛新聞 (RSS 2.0)`} href="/feed.xml" />
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt Index" />

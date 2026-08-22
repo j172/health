@@ -25,7 +25,7 @@ const POPULAR_TOOLS = [
 
 export default function NotFound() {
   return (
-    <html lang="zh-Hant">
+    <html lang="zh-Hant-TW">
       <body className={`dark:bg-black ${inter.className}`}>
         <Provider>
           <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 flex flex-col justify-between">

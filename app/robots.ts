@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
+        disallow: ["/admin/", "/api/admin/", "/api/internal/"],
       },
       // Explicit allow for AI answer-engine/training crawlers — GEO goal is to
       // be citable, so these are deliberately not more restrictive than "*".

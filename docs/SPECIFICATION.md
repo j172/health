@@ -161,6 +161,19 @@ Total: 31 tools across 7 groups. (Listed here in codepoint order for readability
 - **`ArticleReaderToolbar.tsx`**: Uses Web Speech API (`window.speechSynthesis`) to read news articles (Title ➔ Author ➔ AI Summary ➔ Article Body). Supports Play/Pause/Resume/Stop, speed adjustment (0.8x - 2.0x), and automatic voice language selection based on active locale (`zh-TW`, `zh-CN`, `en`).
 - **`ImmersiveReaderModal.tsx`**: Provides a fullscreen, distraction-free reading experience with customizable font sizes (A- / A / A+ / A++), an independent line-spacing control (緊密 / 標準 / 寬鬆), and a theme palette (Pure White, Sepia Warm, Deep Dark) that drives the modal's own chrome rather than following the site-wide theme. Both modals expose `role="dialog"`/`aria-modal`, trap Tab, restore focus to the opener on close, and lock background scroll via `components/ui/useModalA11y`.
 
+### 7.5 Google Search Central, E-E-A-T & Google Discover/News Standards
+
+- **Googlebot Directives**: All layout metadata configures `googleBot: { index: true, follow: true, "max-video-preview": -1, "max-image-preview": "large", "max-snippet": -1 }`, enabling high-res image cards for Google Discover and full-fidelity snippet extraction.
+- **Search & Pagination Crawl Protection**: Paginated news archives (`page > 1`), keyword search query pages, and non-default page sizes enforce `robots: { index: false, follow: true }` to preserve crawl budget and prevent duplicate content dilution.
+- **YMYL & E-E-A-T Schema Standards**:
+  - `publisher.logo` uses `/images/icon/pwa-512.png` (512×512 PNG) meeting Google's high-resolution rectangular/square logo requirement.
+  - `NewsArticle` schemas declare `author: { "@type": "NewsMediaOrganization", name, url }` with `isBasedOn` linking to original upstream government/media sources.
+  - `Organization` schema includes `publishingPrinciples`, `ethicsPolicy`, `correctionsPolicy`, and `knowsAbout` domain signals.
+  - Visible E-E-A-T Medical & Health Information Disclaimer is presented on all news detail and tool pages.
+- **Google News & Image Sitemap**: `app/news-sitemap.xml/route.ts` limits items to 48 hours and embeds `<image:image>` (`<image:loc>`, `<image:title>`) tags via Google Image Sitemap extension namespace.
+- **Multi-regional & Canonical Authority**: Single canonical URL structure anchored on `lang="zh-Hant-TW"` to concentrate PageRank and avoid thin machine-translated page penalties.
+- **Core Web Vitals**: Unused external CDN preconnects pruned from `<head>` to minimize TLS handshake latency and accelerate LCP.
+
 ---
 
 ## 8. Subsystems Beyond Sections 1–7

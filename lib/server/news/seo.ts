@@ -11,9 +11,12 @@ import type { ToolCatalogEntry } from "@/lib/server/tools/catalog";
  * deploy-ftps.yml step on the GitHub Actions runner) rather than rendered
  * on demand.
  */
-const resolveArticleImageUrl = (news: NewsDetailItem, baseUrl: string): string =>
-  toAbsoluteUrl(news.card_image_url, baseUrl) ??
-  `${baseUrl}/images/og/source/${hasSourceLabel(news.source_name) ? encodeURIComponent(news.source_name) : "_default"}.png`;
+export const resolveArticleImageUrl = (
+  news: { card_image_url?: string | null; source_name?: string | null },
+  baseUrl: string,
+): string =>
+  toAbsoluteUrl(news.card_image_url ?? null, baseUrl) ??
+  `${baseUrl}/images/og/source/${news.source_name && hasSourceLabel(news.source_name) ? encodeURIComponent(news.source_name) : "_default"}.png`;
 
 export const SITE_NAME = "j172tw Healthz";
 export const SITE_DESCRIPTION = "彙整台灣官方機構健康新聞、ESG永續發展與企業社會責任報導，以及中央氣象署即時警報，提供繁體中文公共資訊總覽。";
@@ -54,7 +57,17 @@ export const buildArticleMetadata = (news: NewsDetailItem): Metadata => {
     description,
     keywords,
     alternates: { canonical: url },
-    robots: { index: true, follow: true },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
+    },
     openGraph: {
       type: "article",
       title: news.title,
@@ -66,7 +79,7 @@ export const buildArticleMetadata = (news: NewsDetailItem): Metadata => {
       publishedTime,
       modifiedTime: publishedTime,
       authors: news.dept_name ? [news.dept_name] : undefined,
-      images: imageUrl ? [{ url: imageUrl, alt: news.title }] : undefined,
+      images: imageUrl ? [{ url: imageUrl, alt: news.title, width: 1200, height: 630 }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
@@ -97,12 +110,23 @@ export const buildArticleJsonLd = (news: NewsDetailItem): Record<string, unknown
     isAccessibleForFree: true,
     articleSection: news.feed_name,
     url,
-    author: { "@type": "Organization", name: authorName },
+    author: {
+      "@type": "NewsMediaOrganization",
+      name: authorName,
+      ...(news.canonical_url ? { url: news.canonical_url } : {}),
+    },
     publisher: {
       "@type": "Organization",
       name: SITE_NAME,
-      logo: { "@type": "ImageObject", url: `${baseUrl}/images/favicon.ico` },
+      url: baseUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${baseUrl}/images/icon/pwa-512.png`,
+        width: 512,
+        height: 512,
+      },
     },
+    ...(news.canonical_url ? { isBasedOn: news.canonical_url } : {}),
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     speakable: { "@type": "SpeakableSpecification", cssSelector: news.geo_summary?.trim() ? ["h1", "#geo-summary"] : ["h1", "article"] },
   };
@@ -131,11 +155,18 @@ export const buildOrganizationJsonLd = (): Record<string, unknown> => {
     "@type": "Organization",
     name: SITE_NAME,
     url: baseUrl,
-    logo: `${baseUrl}/images/favicon.ico`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/images/icon/pwa-512.png`,
+      width: 512,
+      height: 512,
+    },
     description: SITE_DESCRIPTION,
     inLanguage: "zh-TW",
     knowsAbout: ["公共衛生", "醫療院所", "長期照顧", "空氣品質", "食品安全", "健康新聞", "傳染病防治", "健康計算評估"],
     publishingPrinciples: `${baseUrl}/privacy`,
+    ethicsPolicy: `${baseUrl}/privacy`,
+    correctionsPolicy: `${baseUrl}/privacy`,
     sameAs: [baseUrl],
   };
 };
