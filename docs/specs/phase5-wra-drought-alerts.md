@@ -51,7 +51,7 @@ effect" mechanism — not a stored `expires` timestamp.
 - New sync job (own cadence — daily is plenty; this bulletin doesn't update
   hourly) determines the **latest `通報日期` row per `水庫名稱`**.
 - For each reservoir's latest row, upsert a `news_items` row: `source_name =
-  'wra'`, `title` = the record's `標題`, `published_at_utc` = **now** (the
+'wra'`, `title` = the record's `標題`, `published_at_utc` = **now** (the
   sync run time, not `通報日期` — same "keep refreshing while still
   current" mechanism as CWA, not a literal timestamp of the original
   bulletin).
@@ -136,7 +136,21 @@ daily cron logs an accurate reason instead of an opaque JSON parse failure, and
 Nothing else in the app is affected: the widget query already tolerates zero WRA
 rows, and CWA warnings are unchanged.
 
-Unblocking it needs one of:
+### Resolved 2026-08-22 — the fetch moved to a GitHub runner
+
+Measured with `.github/workflows/egress-probe.yml`: the same URL returns **200
+with real data from a GitHub Actions runner** while the production host gets the
+challenge page. The block is on the host's address, not on server-side clients
+generally.
+
+So the daily job now lives in `.github/workflows/wra-drought-sync.yml`:
+`scripts/gha-wra-drought-sync.mjs` fetches on the runner and POSTs the rows to
+`/api/admin/wra-sync`, which re-normalizes and re-filters them before upserting —
+the runner is a transport, not a trusted source. The in-app cron entry was
+removed, since it could only ever log a daily failure; `runWraDroughtSync()`
+still fetches for itself when called with no records, for the day the block lifts.
+
+The original options, kept for the record:
 
 1. an allowlisted source address for the production host with WRA,
 2. a credentialed WRA API route, if one exists for this dataset, or

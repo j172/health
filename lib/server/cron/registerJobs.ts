@@ -8,7 +8,6 @@ import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
-import { runWraDroughtSync } from "@/lib/server/wra/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -88,14 +87,13 @@ export const registerCronJobs = (): void => {
     "0 8 * * *",
     runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()),
   );
-  // Once daily at 7am — the WRA drought bulletin is a slow-moving feed (it does
-  // not update hourly), and listActiveWeatherWarnings gives 'wra' a 48h window
-  // precisely so one missed run cannot flap the widget.
-  // See docs/specs/phase5-wra-drought-alerts.md section 5.
-  cron.schedule(
-    "0 7 * * *",
-    runGuarded("wra-drought-sync-cron.log", () => runWraDroughtSync()),
-  );
+  // WRA drought bulletins are NOT scheduled here. opendata.wra.gov.tw answers
+  // this host with an F5 Shape JavaScript challenge rather than JSON, so an
+  // in-process fetch can only ever fail — a guaranteed daily error in the cron
+  // log for a job that cannot succeed. .github/workflows/wra-drought-sync.yml
+  // runs it from a GitHub runner instead, which that source does return 200 to,
+  // and posts the rows to /api/admin/wra-sync.
+  // See docs/specs/phase5-wra-drought-alerts.md section 7.
   // Weekly on Sunday at 4am — NHI updates clinic/pharmacy weekly service hours data weekly
   cron.schedule(
     "0 4 * * 0",

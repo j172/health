@@ -1,0 +1,39 @@
+name: WRA drought sync
+
+# Phase 5 (docs/specs/phase5-wra-drought-alerts.md) runs here rather than in the
+# app's own cron, because opendata.wra.gov.tw answers the production host with an
+# F5 Shape JavaScript challenge instead of JSON. A GitHub runner gets 200 from
+# the same URL — measured via egress-probe.yml — so the fetch happens here and
+# the rows are posted to the app.
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily. The bulletin does not update hourly, and listActiveWeatherWarnings
+    # gives 'wra' a 48h window precisely so one missed run cannot flap the widget.
+    - cron: "10 23 * * *" # 07:10 Taipei
+
+concurrency:
+  group: wra-drought-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: FTP_SERVER
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Fetch WRA bulletins and post them to the app
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          APP_BASE_URL: https://health.j172.tw
+        run: node scripts/gha-wra-drought-sync.mjs
