@@ -204,8 +204,23 @@ if (str_starts_with($path, '/__ops/')) {
             // lib/server/pexels/download.ts, lib/server/unsplash/download.ts,
             // both of which already do their own `mkdir(..., { recursive: true })`
             // before writing) creates these directories itself on first use.
-            . "&& { mkdir -p public/images/news/pexels public/images/news/unsplash "
-            . "&& chmod u+rwx public/images/news/pexels public/images/news/unsplash || true; } >> .apply-prebuilt.log 2>&1 "
+            // All five runtime-written image directories, not just two. Only pexels
+            // and unsplash were listed here, so `articles` kept whatever ownership it
+            // was first created with and the Node process could not write into it —
+            // every OG image backfill failed with EACCES for months while reporting
+            // the useless string "download failed validation".
+            //
+            // 0777 rather than u+rwx because, as the comment above says, this script
+            // and the Node app run as DIFFERENT users: `chmod u+rwx` only ever grants
+            // the directory's owner, which is whichever of the two created it first.
+            // These hold nothing but publicly served cached images, inside the account
+            // home, so the loose mode buys correctness at no meaningful cost.
+            . "&& { mkdir -p public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash "
+            . "&& chmod 0777 public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash || true; } >> .apply-prebuilt.log 2>&1 "
+            // Record who actually owns these afterwards. chmod only succeeds for the
+            // owner, so if the EACCES persists this line is what tells us whether the
+            // chmod was refused and a manual chown is required.
+            . "&& { echo \"--- runtime image dir ownership ---\"; id; ls -ld public/images/news/*/ ; } >> .apply-prebuilt.log 2>&1 || true "
             // Best-effort: extracts INTO the existing public/ dir (no wipe first), so
             // runtime-generated subdirs like images/news/pixabay, images/news/pexels,
             // images/news/unsplash, and images/news/articles are left untouched — only
