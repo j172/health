@@ -1,10 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  type NewsListItem,
-  type WeatherWarningItem,
-} from "@/lib/server/news/queries";
+import { type NewsListItem } from "@/lib/server/news/queries";
 import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
@@ -13,15 +10,16 @@ import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWid
 import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { toTaipei } from "@/lib/format/news";
+import { type CwaAlertItem } from "@/lib/server/cwa/queries";
 
 export default function NewsSidebar({
   trendingNews = [],
-  weatherWarnings = [],
+  cwaAlerts = [],
   earthquakes = [],
   activeGroupKey,
 }: {
   trendingNews?: NewsListItem[];
-  weatherWarnings?: WeatherWarningItem[];
+  cwaAlerts?: CwaAlertItem[];
   earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
 }) {
@@ -33,7 +31,7 @@ export default function NewsSidebar({
       <AqiSidebarWidget />
 
       {/* 2. Weather Alert Card Widget */}
-      <WeatherAlertSidebarWidget warnings={weatherWarnings} />
+      <WeatherAlertSidebarWidget alerts={cwaAlerts} />
 
       {/* 2.5. Instant UV Index Widget */}
       <UvSidebarWidget />

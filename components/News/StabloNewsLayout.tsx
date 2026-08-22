@@ -1,4 +1,5 @@
-import { getTopViewedNews, listActiveWeatherWarnings, type NewsListItem } from "@/lib/server/news/queries";
+import { getTopViewedNews, type NewsListItem } from "@/lib/server/news/queries";
+import { listActiveCwaAlerts } from "@/lib/server/cwa/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
 import SiteNav from "@/components/News/SiteNav";
@@ -8,10 +9,15 @@ import HeroPost from "@/components/News/HeroPost";
 import NewsSidebar from "@/components/News/NewsSidebar";
 import HomeCategoryNewsSection from "@/components/News/HomeCategoryNewsSection";
 import GroupTabs from "@/components/News/GroupTabs";
-import PaginationBar, { type Pagination } from "@/components/News/PaginationBar";
+import PaginationBar, {
+  type Pagination,
+} from "@/components/News/PaginationBar";
 
 export { default as StabloFooter } from "@/components/News/SiteFooter";
-export { NEWS_PAGE_SIZE_OPTIONS, DEFAULT_NEWS_PAGE_SIZE } from "@/components/News/PaginationBar";
+export {
+  NEWS_PAGE_SIZE_OPTIONS,
+  DEFAULT_NEWS_PAGE_SIZE,
+} from "@/components/News/PaginationBar";
 
 type Variant = "home" | "archive";
 
@@ -42,25 +48,29 @@ export default async function StabloNewsLayout({
   const homeSourceCategories = SOURCE_CATEGORIES.map((cat) => ({
     key: cat.key,
     label: cat.label,
-    sourceNames: cat.key === "gov" ? [...cat.sources.map((s) => s.sourceName), "cwa"] : cat.sources.map((s) => s.sourceName),
+    sourceNames:
+      cat.key === "gov"
+        ? [...cat.sources.map((s) => s.sourceName), "cwa"]
+        : cat.sources.map((s) => s.sourceName),
   }));
 
   // Fetch Weather Warnings, Earthquakes & Trending News for Sidebar Card Widgets
-  const [weatherWarnings, earthquakes, topViewedNews] = await Promise.all([
-    listActiveWeatherWarnings(3),
+  const [cwaAlerts, earthquakes, topViewedNews] = await Promise.all([
+    listActiveCwaAlerts(10),
     getTieredEarthquakes(168, 20),
     getTopViewedNews(10),
   ]);
   // Falls back to the recency list until real view data accumulates (e.g.
   // right after this feature ships) — otherwise the widget would render
   // empty for every article that hasn't been viewed yet.
-  const trendingNews = topViewedNews.length > 0 ? topViewedNews : items.slice(0, 10);
+  const trendingNews =
+    topViewedNews.length > 0 ? topViewedNews : items.slice(0, 10);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
       <StabloHeader />
 
-      <main className="mx-auto max-w-7xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pt-8 pb-20 sm:px-6 lg:px-8">
         {variant === "home" && hero ? (
           <>
             {/* NextBlog Hero Section */}
@@ -71,15 +81,18 @@ export default async function StabloNewsLayout({
             {/* Main Content Grid + NextBlog Sidebar */}
             <div className="grid gap-10 lg:grid-cols-3">
               {/* Left News Grid (2 columns on lg) */}
-              <div className="lg:col-span-2 space-y-8">
-                <HomeCategoryNewsSection items={homeNewsPool} categories={homeSourceCategories} />
+              <div className="space-y-8 lg:col-span-2">
+                <HomeCategoryNewsSection
+                  items={homeNewsPool}
+                  categories={homeSourceCategories}
+                />
               </div>
 
               {/* Right Sidebar (1 column on lg) */}
               <div className="lg:col-span-1">
                 <NewsSidebar
                   trendingNews={trendingNews}
-                  weatherWarnings={weatherWarnings}
+                  cwaAlerts={cwaAlerts}
                   earthquakes={earthquakes}
                   activeGroupKey={activeGroupKey}
                 />
@@ -92,11 +105,13 @@ export default async function StabloNewsLayout({
             <GroupTabs activeGroupKey={activeGroupKey} />
 
             <div className="mb-8">
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
                 {archiveTitle ?? "最新新聞列表"}
               </h1>
               {archiveDescription && (
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{archiveDescription}</p>
+                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                  {archiveDescription}
+                </p>
               )}
             </div>
 
@@ -120,7 +135,7 @@ export default async function StabloNewsLayout({
               <div className="lg:col-span-1">
                 <NewsSidebar
                   trendingNews={trendingNews}
-                  weatherWarnings={weatherWarnings}
+                  cwaAlerts={cwaAlerts}
                   earthquakes={earthquakes}
                   activeGroupKey={activeGroupKey}
                 />

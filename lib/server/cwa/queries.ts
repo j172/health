@@ -1,5 +1,5 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection } from "@/lib/server/db/mysql";
+import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import { memoizeQuery } from "@/lib/server/cache/memo";
 
@@ -491,3 +491,63 @@ export const listAllLatestUvReadings = async (): Promise<UvStationItem[]> => {
     return [];
   }
 };
+
+// ---------------------------------------------------------------------------
+// Active weather alerts (cwa_alerts)
+// ---------------------------------------------------------------------------
+
+export interface CwaAlertItem {
+  id: number;
+  dataset_id: string;
+  event: string | null;
+  headline: string | null;
+  description: string | null;
+  instruction: string | null;
+  severity: string | null;
+  urgency: string | null;
+  certainty: string | null;
+  area_desc: string | null;
+  effective: Date | null;
+  expires: Date | null;
+  web: string | null;
+}
+
+/**
+ * Alerts still in force, most severe first.
+ *
+ * `cwa_alerts` has been written on every sync since it was added and read by
+ * nothing — the weather widget reads `news_items` filled from CWA's much thinner
+ * RSS feed instead, which is why severity, urgency and affected areas never
+ * appeared anywhere on the site.
+ *
+ * "Still in force" prefers the alert's own `expires`. Only when CWA omits it does
+ * the seven-day fallback apply, so a bulletin with no stated end cannot sit on
+ * the page indefinitely.
+ */
+export const listActiveCwaAlerts = async (
+  limit = 10,
+): Promise<CwaAlertItem[]> =>
+  memoizeQuery(`cwa_active_alerts_${limit}`, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT id, dataset_id, event, headline, description, instruction,
+               severity, urgency, certainty, area_desc, effective, expires, web
+        FROM cwa_alerts
+        WHERE
+          CASE
+            WHEN expires IS NOT NULL THEN expires > UTC_TIMESTAMP()
+            ELSE COALESCE(effective, synced_at) >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
+          END
+        ORDER BY
+          -- CAP severity, most urgent first; anything unrecognised sorts last.
+          FIELD(severity, 'Extreme', 'Severe', 'Moderate', 'Minor') = 0,
+          FIELD(severity, 'Extreme', 'Severe', 'Moderate', 'Minor'),
+          COALESCE(effective, synced_at) DESC
+        LIMIT ?
+        `,
+        [limit],
+      );
+      return rows as unknown as CwaAlertItem[];
+    }),
+  );

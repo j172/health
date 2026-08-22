@@ -1,5 +1,6 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
+import { memoizeQuery } from "@/lib/server/cache/memo";
 
 export interface NewsListItem {
   id: number;
@@ -76,61 +77,15 @@ export const listRecentNewsForLlms = async (
     return rows as unknown as NewsGeoSummaryItem[];
   });
 
-export interface WeatherWarningItem {
-  id: number;
-  title: string;
-  published_at_utc: Date | null;
-}
-
-// CWA re-publishes an item while a warning stays in effect and stops once
-// it's lifted, but the feed carries no explicit expiry — treat anything
-// published in the last few hours as still current, everything older as
-// stale/likely superseded.
-const ACTIVE_WARNING_WINDOW_HOURS = 6;
-
-/** Recent items from the CWA warnings/advisories feed, for a navbar alert
- * strip — deliberately not grouped into the source-archive nav dropdowns,
- * since these are transient alerts rather than browsable news coverage. */
-import { memoizeQuery } from "@/lib/server/cache/memo";
-
 /**
- * Freshness window per source, in hours.
+ * Weather alerts are no longer read out of news_items.
  *
- * Deliberately not one shared constant. Neither source stores an expiry — a
- * bulletin counts as active for as long as its sync job keeps re-publishing it —
- * so the window has to be sized against each job's cadence. CWA syncs twice an
- * hour, so 6h is generous. WRA syncs once a day (docs/specs/phase5-wra-drought-alerts.md
- * section 3), so a 6h window would flap the widget on and off between runs; 48h
- * comfortably survives one missed sync.
+ * listActiveWeatherWarnings used to power the 即時氣象警報 widget from CWA's RSS
+ * items, which carry no severity, urgency or affected area. The widget reads
+ * cwa_alerts directly now — see listActiveCwaAlerts in lib/server/cwa/queries.ts
+ * — and WRA drought bulletins stay ordinary news items rather than alerts, so
+ * this query and its per-source window table had no callers left.
  */
-const WARNING_WINDOW_HOURS_BY_SOURCE = {
-  cwa: ACTIVE_WARNING_WINDOW_HOURS,
-  wra: 48,
-} as const;
-
-export const listActiveWeatherWarnings = async (
-  limit = 5,
-): Promise<WeatherWarningItem[]> =>
-  memoizeQuery(`active_weather_warnings_${limit}`, async () =>
-    withConnectionFallback([], async (conn) => {
-      const [rows] = await conn.query<RowDataPacket[]>(
-        `
-        SELECT id, title, published_at_utc
-        FROM news_items
-        WHERE (source_name = 'cwa' AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR))
-           OR (source_name = 'wra' AND published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR))
-        ORDER BY published_at_utc DESC
-        LIMIT ?
-        `,
-        [
-          WARNING_WINDOW_HOURS_BY_SOURCE.cwa,
-          WARNING_WINDOW_HOURS_BY_SOURCE.wra,
-          limit,
-        ],
-      );
-      return rows as unknown as WeatherWarningItem[];
-    }),
-  );
 
 export interface NewsSitemapItem {
   id: number;
