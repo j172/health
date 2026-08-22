@@ -133,17 +133,36 @@ export const downloadArticleImageDetailed = async (
       ?.split(";", 1)[0]
       ?.trim()
       .toLowerCase() || "";
+
+  return storeArticleImageBuffer(response.buffer, rawMime);
+};
+
+/**
+ * Validates raw image bytes and stores them under public/images/news/articles/.
+ *
+ * Split out from the download path so bytes fetched somewhere *else* can reuse
+ * exactly the same checks. That matters because this host's IP is refused by
+ * several Taiwanese CDNs (33 backfill items in one run were `http-status 403`
+ * from pgw.udn.com.tw), while the GitHub runner that already scrapes the article
+ * HTML can fetch the same image fine — see attachCardImageFromBytes.
+ */
+export const storeArticleImageBuffer = async (
+  buffer: Buffer,
+  declaredMime: string,
+): Promise<ArticleImageResult> => {
   // Some origins send a bare subtype ("png") instead of a full media type
   // ("image/png"). Observed live: five backfill items were rejected as
   // unsupported-mime "png" while serving perfectly valid PNGs.
+  const normalized = declaredMime.trim().toLowerCase();
   const mime =
-    rawMime !== "" && !rawMime.includes("/") ? `image/${rawMime}` : rawMime;
+    normalized !== "" && !normalized.includes("/")
+      ? `image/${normalized}`
+      : normalized;
   const extension = MIME_EXTENSIONS.get(mime);
   if (!extension) {
     return { ok: false, failure: { kind: "unsupported-mime", mime } };
   }
 
-  const buffer = response.buffer;
   if (buffer.length === 0) {
     return { ok: false, failure: { kind: "empty-body" } };
   }

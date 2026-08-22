@@ -14,6 +14,8 @@ import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImag
 import {
   downloadArticleImageDetailed,
   describeArticleImageFailure,
+  storeArticleImageBuffer,
+  type ArticleImageResult,
 } from "@/lib/server/images/downloadArticleImage";
 
 const LOCK_NAME = "news_og_image_backfill_lock";
@@ -97,22 +99,41 @@ export const attachCardImageFromUrl = async (
     return { ok: false, reason: "google news url not allowed" };
 
   await ensureSchema();
+  return attachStoredImage(id, title, "download", () =>
+    downloadArticleImageDetailed(imageUrl),
+  );
+};
+
+/**
+ * Shared tail for both attach paths: skip if the article already has an image,
+ * run the caller's store step, then record the asset.
+ *
+ * `stage` only names the step in the failure string ("download rejected" vs
+ * "runner bytes rejected") so a log line still says which path produced it.
+ */
+const attachStoredImage = async (
+  id: number,
+  title: string | null,
+  stage: "download" | "runner bytes",
+  store: () => Promise<ArticleImageResult>,
+): Promise<{ ok: boolean; localPath?: string; reason?: string }> => {
+  await ensureSchema();
   const conn = await getMysqlPool().getConnection();
   try {
     if (await alreadyHasImage(conn, id)) {
       return { ok: false, reason: "already has image" };
     }
 
-    const download = await downloadArticleImageDetailed(imageUrl);
-    if (!download.ok) {
+    const stored = await store();
+    if (!stored.ok) {
       // Name the actual check that rejected it. "download failed validation"
       // covered four unrelated causes and made a 100% failure rate undiagnosable.
       return {
         ok: false,
-        reason: `download rejected: ${describeArticleImageFailure(download.failure)}`,
+        reason: `${stage} rejected: ${describeArticleImageFailure(stored.failure)}`,
       };
     }
-    const localPath = download.localPath;
+    const localPath = stored.localPath;
 
     const now = utcNowSql();
     const [insertResult] = await conn.execute<ResultSetHeader>(
@@ -134,6 +155,43 @@ export const attachCardImageFromUrl = async (
   } finally {
     conn.release();
   }
+};
+
+/** Hard ceiling on a runner-supplied payload, before base64 expansion. */
+export const MAX_RUNNER_IMAGE_BYTES = 8 * 1024 * 1024;
+
+/**
+ * Attaches image bytes fetched by the GitHub runner rather than by this host.
+ *
+ * This exists because the host's IP is refused by several Taiwanese CDNs — one
+ * backfill run logged 33 items as `http-status 403` from pgw.udn.com.tw, while
+ * the same URLs return 200 from anywhere else, with or without a Referer. The
+ * runner already fetches each article's HTML to find the og:image, so having it
+ * fetch the image too costs one extra request and sidesteps the block entirely.
+ * That is what the workflow's name, "runner egress + SSH attach", always implied.
+ *
+ * Bytes still go through exactly the same size/MIME/signature validation as a
+ * host-side download — the runner is a transport, not a trusted source.
+ */
+export const attachCardImageFromBytes = async (
+  newsItemId: number,
+  contentBase64: string,
+  contentType: string,
+  title: string | null = null,
+): Promise<{ ok: boolean; localPath?: string; reason?: string }> => {
+  const id = Math.trunc(newsItemId);
+  if (!Number.isFinite(id) || id < 1)
+    return { ok: false, reason: "invalid newsItemId" };
+  if (typeof contentBase64 !== "string" || contentBase64.length === 0)
+    return { ok: false, reason: "missing contentBase64" };
+  // 4/3 expansion plus padding; reject before allocating the buffer.
+  if (contentBase64.length > Math.ceil((MAX_RUNNER_IMAGE_BYTES * 4) / 3) + 16)
+    return { ok: false, reason: "runner payload too large" };
+
+  const buffer = Buffer.from(contentBase64, "base64");
+  return attachStoredImage(id, title, "runner bytes", () =>
+    storeArticleImageBuffer(buffer, contentType),
+  );
 };
 
 /**

@@ -68,7 +68,7 @@ export function createSshLoopback({ keyFile, host, port = "22", user }) {
     );
   }
 
-  const runOnce = (remoteCmd) => {
+  const runOnce = (remoteCmd, input) => {
     const args = multiplexed
       ? [
           ...baseArgs(["-o", "ControlMaster=auto"]),
@@ -78,14 +78,21 @@ export function createSshLoopback({ keyFile, host, port = "22", user }) {
       : [...baseArgs([]), `${user}@${host}`, remoteCmd];
     return spawnSync("ssh", args, {
       encoding: "utf8",
-      maxBuffer: 8 * 1024 * 1024,
+      maxBuffer: 32 * 1024 * 1024,
+      // Piped to the remote command's stdin. Anything large — an image payload,
+      // say — has to travel this way: putting it in the command string instead
+      // blows past ARG_MAX a couple of megabytes in.
+      ...(input === undefined ? {} : { input }),
     });
   };
 
-  const call = (remoteCmd, { retries = 2, retryDelayMs = 3000 } = {}) => {
+  const call = (
+    remoteCmd,
+    { retries = 2, retryDelayMs = 3000, input } = {},
+  ) => {
     let result;
     for (let attempt = 0; attempt <= retries; attempt += 1) {
-      result = runOnce(remoteCmd);
+      result = runOnce(remoteCmd, input);
       if (result.status === 0) return result;
       if (attempt < retries) {
         const reason =

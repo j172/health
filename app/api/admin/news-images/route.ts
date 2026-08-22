@@ -9,6 +9,7 @@ import {
 } from "@/lib/server/news/cardImages";
 import {
   attachCardImageFromUrl,
+  attachCardImageFromBytes,
   backfillMissingImagesFromOpenGraph,
   listMissingCardImageTargets,
 } from "@/lib/server/news/backfillOgImages";
@@ -40,6 +41,13 @@ export async function POST(request: Request): Promise<NextResponse> {
        * Body: { attachImageUrl: true, newsItemId: number, imageUrl: string, title?: string }
        */
       attachImageUrl?: unknown;
+      /**
+       * Attach bytes the *runner* fetched, for CDNs that refuse this host's IP.
+       * Body: { attachImageBytes: true, newsItemId, contentBase64, contentType }
+       */
+      attachImageBytes?: unknown;
+      contentBase64?: unknown;
+      contentType?: unknown;
       newsItemId?: unknown;
       imageUrl?: unknown;
       title?: unknown;
@@ -61,6 +69,33 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (body.listMissing === true) {
       const items = await listMissingCardImageTargets(limit);
       return NextResponse.json({ ok: true, mode: "list-missing", items });
+    }
+
+    if (body.attachImageBytes === true) {
+      const newsItemId =
+        typeof body.newsItemId === "number"
+          ? body.newsItemId
+          : Number(body.newsItemId);
+      const contentBase64 =
+        typeof body.contentBase64 === "string" ? body.contentBase64 : "";
+      const contentType =
+        typeof body.contentType === "string" ? body.contentType : "";
+      const title = typeof body.title === "string" ? body.title : null;
+      const result = await attachCardImageFromBytes(
+        newsItemId,
+        contentBase64,
+        contentType,
+        title,
+      );
+      return NextResponse.json(
+        {
+          ok: result.ok,
+          mode: "attach-image-bytes",
+          localPath: result.localPath,
+          reason: result.reason,
+        },
+        { status: result.ok ? 200 : 422 },
+      );
     }
 
     if (body.attachImageUrl === true) {

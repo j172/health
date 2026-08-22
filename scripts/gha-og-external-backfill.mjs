@@ -92,10 +92,13 @@ const adminPostSsh = (body) => {
     "-X POST http://127.0.0.1:3000/api/admin/news-images",
     '-H "content-type: application/json"',
     `-H ${shellQuote(`x-rss-sync-admin-secret: ${SECRET}`)}`,
-    `-d ${shellQuote(payload)}`,
+    // Body arrives on stdin. It used to be interpolated into the command string,
+    // which caps the payload at ARG_MAX — fine for a URL, impossible for image
+    // bytes.
+    "--data-binary @-",
   ].join(" ");
 
-  const result = ssh.call(remote);
+  const result = ssh.call(remote, { input: payload });
 
   if (result.error) throw result.error;
   const out = (result.stdout || "").trim();
@@ -160,6 +163,54 @@ const fetchHtml = async (url) => {
   return { ok: true, status: res.status, html };
 };
 
+/** Runner-side ceiling; the server enforces its own as well. */
+const MAX_RUNNER_IMAGE_BYTES = 8 * 1024 * 1024;
+
+/**
+ * Fetches the image from the runner rather than letting the host do it.
+ *
+ * Several Taiwanese CDNs refuse the shared host's IP — one run logged 33 items
+ * as `http-status 403` from pgw.udn.com.tw — while the runner, which already
+ * fetched the article HTML from the same site, gets 200. Returns null on any
+ * problem so the caller can fall back to asking the host to fetch the URL.
+ */
+const fetchImageBytes = async (imageUrl, refererUrl) => {
+  try {
+    const res = await fetch(imageUrl, {
+      headers: {
+        "User-Agent": UA,
+        Accept: "image/webp,image/png,image/jpeg,image/gif,*/*",
+        Referer: refererUrl,
+      },
+      redirect: "follow",
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok)
+      return { ok: false, reason: `runner fetch http ${res.status}` };
+
+    const contentType = (res.headers.get("content-type") || "")
+      .split(";")[0]
+      .trim()
+      .toLowerCase();
+    const declared = Number(res.headers.get("content-length"));
+    if (Number.isFinite(declared) && declared > MAX_RUNNER_IMAGE_BYTES) {
+      return { ok: false, reason: `runner fetch too large (${declared}B)` };
+    }
+
+    const buf = Buffer.from(await res.arrayBuffer());
+    if (buf.length === 0) return { ok: false, reason: "runner fetch empty" };
+    if (buf.length > MAX_RUNNER_IMAGE_BYTES) {
+      return { ok: false, reason: `runner fetch too large (${buf.length}B)` };
+    }
+    return { ok: true, base64: buf.toString("base64"), contentType };
+  } catch (err) {
+    return {
+      ok: false,
+      reason: `runner fetch failed: ${err instanceof Error ? err.message : err}`,
+    };
+  }
+};
+
 const main = async () => {
   console.log(`transport=${TRANSPORT}`);
   let assigned = 0;
@@ -207,12 +258,23 @@ const main = async () => {
             continue;
           }
 
-          const { json: attached } = await adminPost({
-            attachImageUrl: true,
-            newsItemId: item.id,
-            imageUrl: og,
-            title: item.title || null,
-          });
+          // Prefer runner egress; fall back to asking the host to fetch the
+          // URL itself, which still works for CDNs that do not block it.
+          const bytes = await fetchImageBytes(og, item.canonical_url);
+          const { json: attached } = bytes.ok
+            ? await adminPost({
+                attachImageBytes: true,
+                newsItemId: item.id,
+                contentBase64: bytes.base64,
+                contentType: bytes.contentType,
+                title: item.title || null,
+              })
+            : await adminPost({
+                attachImageUrl: true,
+                newsItemId: item.id,
+                imageUrl: og,
+                title: item.title || null,
+              });
 
           if (attached.ok) {
             assigned += 1;
