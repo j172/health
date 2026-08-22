@@ -27,6 +27,7 @@ import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
   itemKey,
+  isUnchanged,
 } from "@/lib/server/rss/existingHashes";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
@@ -164,7 +165,7 @@ const processSpecialSource = async (
   const hashes = await getExistingPayloadHashes(result.items);
   let skippedUnchanged = 0;
   for (const item of result.items) {
-    if (hashes.get(itemKey(item)) === item.payloadHash) {
+    if (isUnchanged(hashes, item)) {
       skippedUnchanged += 1;
       continue;
     }
@@ -239,7 +240,7 @@ export const runRssIngestion = async (
 
       const enrichedItems: EnrichedRssItem[] = [];
       for (const item of normalizedItems) {
-        if (existingHashes.get(itemKey(item)) === item.payloadHash) {
+        if (isUnchanged(existingHashes, item)) {
           // Already stored with an identical payload — skip the expensive detail-page
           // fetch/parse entirely instead of redoing it on every run just to no-op.
           skippedUnchanged += 1;
