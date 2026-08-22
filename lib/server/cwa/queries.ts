@@ -506,7 +506,10 @@ export interface CwaAlertItem {
   severity: string | null;
   urgency: string | null;
   certainty: string | null;
+  /** Every affected area for this event, joined — CWA issues one bulletin per county. */
   area_desc: string | null;
+  /** How many distinct areas that covers, so the widget can say 共 N 個地區. */
+  area_count: number | null;
   effective: Date | null;
   expires: Date | null;
   web: string | null;
