@@ -45,6 +45,16 @@ export interface FeedConfig {
   sourceName: string;
   /** Skip fetching/parsing the linked article page (e.g. aggregator links that redirect through an interstitial page instead of the real article). */
   skipDetailFetch?: boolean;
+  /**
+   * Treat an outright refusal (401/403) as "nothing new today" rather than a
+   * failed feed.
+   *
+   * For a publisher that blocks this host's entire IP range there is nothing to
+   * fix and nothing to alert on — counting it in failed_feeds every 30 minutes
+   * only teaches the reader to ignore that number. Anything already ingested
+   * stays, and the feed resumes on its own if the block is ever lifted.
+   */
+  tolerateForbidden?: boolean;
 }
 
 export interface NormalizedRssItem {

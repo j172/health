@@ -218,6 +218,23 @@ export const runRssIngestion = async (
         } catch (error) {
           const message =
             error instanceof Error ? error.message : "Unknown feed error";
+
+          // A publisher that blocks this host's whole IP range is not a failure
+          // anyone can act on. Reporting it every 30 minutes only teaches the
+          // reader to ignore failed_feeds — which is exactly what happened here:
+          // three feeds were failing for months and nobody could tell which,
+          // because the count was permanently non-zero.
+          if (feed.tolerateForbidden && /\bHTTP (401|403)\b/.test(message)) {
+            feedResults.push({
+              feed,
+              ok: true,
+              httpStatus: null,
+              itemCount: 0,
+              errorMessage: `${message} — tolerated, this source blocks datacentre addresses`,
+            });
+            continue;
+          }
+
           feedResults.push({
             feed,
             ok: false,

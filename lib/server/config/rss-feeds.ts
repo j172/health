@@ -97,6 +97,15 @@ export const RSS_FEEDS: FeedConfig[] = [
     name: "中央健康保險署－新聞發布",
     url: "https://www.nhi.gov.tw/ch/rss-3255-1.xml",
     sourceName: "nhi",
+    // nhi.gov.tw refuses datacentre addresses as a class: 403 from this host and
+    // from GitHub runners alike, across eight header variants (UA, Referer,
+    // Accept-Language, HTTP/1.1, IPv4), while the same URL returns 200 from a
+    // residential connection. Measured, not assumed — .github/workflows/egress-probe.yml.
+    //
+    // Nothing in this codebase can fix that, so it stops counting as a failure.
+    // The articles ingested before the block remain, and the feed resumes by
+    // itself if 健保署 ever allows the range.
+    tolerateForbidden: true,
   },
   {
     code: "top1health",
