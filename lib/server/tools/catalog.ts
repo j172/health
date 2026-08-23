@@ -23,7 +23,8 @@ export type ToolGroup =
   | "disability"
   | "green-shop"
   | "child-welfare"
-  | "public-facility";
+  | "public-facility"
+  | "weather";
 
 export interface ToolCatalogEntry {
   slug: string;
@@ -51,7 +52,7 @@ export interface ToolCatalogEntry {
 export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "uv",
-    group: "calculator",
+    group: "weather",
     title: "全台即時紫外線指數 (UV)",
     description:
       "即時查詢全台各縣市氣象站紫外線指數 (UV Index)，提供紫外線曝曬防護分級（低量、中量、高量、過量、極高量）與專業防曬係數與配件建議。",
@@ -136,7 +137,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "earthquakes",
-    group: "calculator",
+    group: "weather",
     title: "台灣與全球顯著地震查詢",
     description:
       "即時查詢近 7 天全台 M4.0+ 與全球 M6.0+ 顯著地震動態資訊，包含震央地點、規模大小、震源深度與海嘯警報提示，整合中央氣象署 (CWA) 與美國地質調查局 (USGS) 測報數據。",
@@ -832,7 +833,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aqi",
-    group: "calculator",
+    group: "weather",
     title: "AQI 空氣品質即時查詢",
     description:
       "即時顯示全台環境部監測站 AQI 空氣品質指標，包含 PM2.5、PM10 等污染物濃度。",
@@ -1276,7 +1277,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "green-shops",
-    group: "green-shop",
+    group: "public-facility",
     title: "綠色商店查詢",
     description: "查詢環境部認證綠色商店。資料來源：環境部。",
     directAnswer:
@@ -1355,6 +1356,55 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "weather-alerts",
+    group: "weather",
+    title: "即時氣象警報與降雨資訊",
+    description:
+      "即時查詢全台氣象警報（強風、濃霧、豪大雨、颱風警報及鄉鎮劇烈天氣特報），並依 GPS 定位查詢最近測站即時與月累積降雨量。",
+    directAnswer:
+      "本站即時連線中央氣象署 (CWA) 5 大警報與測站資料庫，提供陸上強風、濃霧、豪大雨、颱風路徑警報及全台雨量測站即時觀測。",
+    scientificBasis: [
+      {
+        title: "氣象警報與豪大雨特報作業標準",
+        authority: "交通部中央氣象署 (CWA)",
+        url: "https://www.cwa.gov.tw",
+      },
+      {
+        title: "災害防救應變作業指引與防汛須知",
+        authority: "內政部消防署",
+        url: "https://www.nfa.gov.tw",
+      },
+    ],
+    referenceTable: {
+      title: "中央氣象署降雨特報分級標準對照表",
+      headers: ["警報分級", "24小時累積雨量", "3小時累積雨量", "代表燈號", "防災因應指引"],
+      rows: [
+        ["大雨 (Heavy Rain)", "≥ 80 mm", "或 ≥ 40 mm", "黃色 🟡", "低窪地區慎防積淹水，山區防落石"],
+        ["豪雨 (Extremely Heavy Rain)", "≥ 200 mm", "或 ≥ 100 mm", "橘色 🟠", "防範淹水、土石流與溪水暴漲"],
+        ["大豪雨 (Torrential Rain)", "≥ 350 mm", "或 ≥ 200 mm", "紅色 🔴", "高度危險，避免進入山區或溪流活動"],
+        ["超大豪雨 (Extremely Torrential Rain)", "≥ 500 mm", "—", "紫色 🟣", "重大致災降雨，配合預警性撤離與避難"],
+      ],
+    },
+    relatedSlugs: ["aqi", "uv", "earthquakes", "water"],
+    faqs: [
+      {
+        question: "氣象警報多久更新一次？",
+        answer:
+          "本站氣象警報資料每 5 至 10 分鐘自動同步中央氣象署最新發布之 CAP 警報、颱風消息及鄉鎮災害特報。",
+      },
+      {
+        question: "如何查詢我所在位置的最近雨量站？",
+        answer:
+          "開啟瀏覽器 GPS 定位權限後，系統會自動比對全台 1,300+ 座雨量站並計算最短距離，顯示該測站的 10 分鐘、1 小時與 24 小時累積雨量；亦可手動選擇縣市行政區查詢。",
+      },
+      {
+        question: "豪雨與大雨的分級標準為何？",
+        answer:
+          "依氣象署標準：大雨為 24 小時累積 ≥80mm 或 3 小時 ≥40mm；豪雨為 24 小時 ≥200mm 或 3 小時 ≥100mm；大豪雨為 24 小時 ≥350mm 或 3 小時 ≥200mm；超大豪雨為 24 小時 ≥500mm。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -1387,7 +1437,7 @@ TOOL_CATALOG.sort((a, b) => compareToolTitles(a.title, b.title));
  * URLs that then told it not to index them. The calculators are the indexable set.
  */
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>
-  tool.group === "calculator";
+  tool.group === "calculator" || tool.group === "weather";
 
 export function toolsInGroup(
   group: ToolGroup,

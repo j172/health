@@ -30,6 +30,12 @@ const CHILD_WELFARE_TOOLS = TOOL_CATALOG.filter(
 const DISABILITY_TOOLS = TOOL_CATALOG.filter(
   (t) => t.group === "disability",
 ).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const PUBLIC_FACILITY_TOOLS = TOOL_CATALOG.filter(
+  (t) => t.group === "public-facility",
+).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const WEATHER_TOOLS = TOOL_CATALOG.filter(
+  (t) => t.group === "weather",
+).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
 
 interface NavLinkItem {
   href: string;
@@ -140,6 +146,8 @@ export default function SiteNav() {
   const ltcItems = localizeItems(LTC_TOOLS);
   const childWelfareItems = localizeItems(CHILD_WELFARE_TOOLS);
   const disabilityItems = localizeItems(DISABILITY_TOOLS);
+  const publicFacilityItems = localizeItems(PUBLIC_FACILITY_TOOLS);
+  const weatherItems = localizeItems(WEATHER_TOOLS);
   const calculatorItems = localizeItems(CALCULATOR_TOOLS);
 
   useEffect(() => {
@@ -219,12 +227,14 @@ export default function SiteNav() {
                 label={t("nav.disability", "身心障礙")}
                 items={disabilityItems}
               />
-              <Link
-                href="/tools/green-shops"
-                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
-              >
-                {t("nav.greenShops", "綠色商店")}
-              </Link>
+              <NavDropdown
+                label={t("nav.publicFacilities", "公共設施")}
+                items={publicFacilityItems}
+              />
+              <NavDropdown
+                label={t("nav.weather", "氣象觀測")}
+                items={weatherItems}
+              />
               <NavDropdown
                 label={t("nav.healthTools", "健康工具")}
                 items={calculatorItems}
@@ -319,13 +329,6 @@ export default function SiteNav() {
               >
                 {t("nav.news", "最新新聞")}
               </Link>
-              <Link
-                href="/tools/green-shops"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg p-2 text-slate-700 dark:text-slate-200"
-              >
-                {t("nav.greenShops", "綠色商店")}
-              </Link>
             </div>
 
             {[
@@ -341,6 +344,14 @@ export default function SiteNav() {
               {
                 heading: t("nav.disability", "身心障礙"),
                 items: disabilityItems,
+              },
+              {
+                heading: t("nav.publicFacilities", "公共設施"),
+                items: publicFacilityItems,
+              },
+              {
+                heading: t("nav.weather", "氣象觀測"),
+                items: weatherItems,
               },
               {
                 heading: t("nav.healthTools", "健康工具"),

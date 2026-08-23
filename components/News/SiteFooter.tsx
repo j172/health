@@ -135,8 +135,8 @@ export default function SiteFooter() {
   const ltcTools = toolsInGroup("ltc", localizeTitle);
   const disabilityTools = toolsInGroup("disability", localizeTitle);
   const childWelfareTools = toolsInGroup("child-welfare", localizeTitle);
-  const greenShopTools = toolsInGroup("green-shop", localizeTitle);
   const publicFacilityTools = toolsInGroup("public-facility", localizeTitle);
+  const weatherTools = toolsInGroup("weather", localizeTitle);
   const foodTools = toolsInGroup("food", localizeTitle);
 
   return (
@@ -243,16 +243,16 @@ export default function SiteFooter() {
             ))}
           </FooterColumn>
 
-          <FooterColumn label={t("nav.greenShops", "綠色商店")}>
-            {greenShopTools.map((tool) => (
+          <FooterColumn label={t("nav.publicFacilities", "公共設施")}>
+            {publicFacilityTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
                 {localizeTitle(tool)}
               </FooterLink>
             ))}
           </FooterColumn>
 
-          <FooterColumn label={t("nav.publicFacilities", "公共設施")}>
-            {publicFacilityTools.map((tool) => (
+          <FooterColumn label={t("nav.weather", "氣象觀測")}>
+            {weatherTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
                 {localizeTitle(tool)}
               </FooterLink>

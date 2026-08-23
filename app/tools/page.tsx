@@ -94,6 +94,7 @@ const TOOL_ICONS: Record<string, string> = {
   "green-shops": "🌿",
   "child-welfare-nurseries": "👶",
   "child-welfare-centers": "🎈",
+  "weather-alerts": "⛈️",
 };
 
 const CATEGORIES = [
@@ -121,10 +122,10 @@ const CATEGORIES = [
   },
   {
     id: "environment",
-    title: "即時環境與防災觀測",
+    title: "即時氣象與環境觀測",
     description:
-      "中央氣象署、環境部、USGS 即時連線紫外線、AQI 空氣品質與顯著地震監測",
-    slugs: ["uv", "aqi", "earthquakes"],
+      "中央氣象署、環境部、USGS 即時連線氣象警報、紫外線、AQI 空氣品質與顯著地震監測",
+    slugs: ["weather-alerts", "uv", "aqi", "earthquakes"],
   },
   {
     id: "facility",
@@ -149,18 +150,15 @@ const CATEGORIES = [
   },
   {
     id: "food",
-    title: "食品營養與綠色生活",
-    description: "衛福部食藥署食品營養成分、食品業者登錄與環境部認證綠色商店",
-    slugs: ["food-nutrition", "food-operators", "green-shops"],
+    title: "食品營養與業者登錄",
+    description: "衛福部食藥署食品營養成分分析與食品業者合法登錄資料庫",
+    slugs: ["food-nutrition", "food-operators"],
   },
   {
-    // Its own category, matching the public-facility ToolGroup and the footer
-    // column. It was appended to the food list, which put one tool in two
-    // different places depending on where you looked.
     id: "public-facility",
-    title: "公共設施",
-    description: "全國公廁位置、無障礙與親子設施查詢",
-    slugs: ["public-toilets"],
+    title: "公共設施與綠色生活",
+    description: "環境部認證綠色商店名冊與全國公廁位置、無障礙設施查詢",
+    slugs: ["green-shops", "public-toilets"],
   },
 ];
 

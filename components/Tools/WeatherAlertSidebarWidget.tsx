@@ -98,21 +98,40 @@ export default function WeatherAlertSidebarWidget({
             {alerts.map((alert) => {
               const style = styleFor(alert.severity);
               const until = formatUntil(alert.expires);
+              const isTsunami = alert.dataset_id === "E-A0014-001";
+              const isTownshipHazard = alert.dataset_id === "W-C0033-001";
+              const isTyphoon =
+                alert.dataset_id === "W-C0034-001" ||
+                alert.dataset_id === "W-C0034-005";
+
               return (
                 <li
-                  key={alert.id}
-                  className={`rounded-xl border p-3 ${style.card}`}
+                  key={`${alert.dataset_id}-${alert.id}-${alert.event}`}
+                  className={`rounded-xl border p-3 ${
+                    isTsunami
+                      ? "border-red-500/80 bg-red-100/90 dark:border-red-700 dark:bg-red-950/70"
+                      : style.card
+                  }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <span
-                      className={`text-xs leading-snug font-bold ${style.text}`}
+                      className={`text-xs leading-snug font-bold ${
+                        isTsunami
+                          ? "text-red-900 dark:text-red-100"
+                          : style.text
+                      }`}
                     >
+                      {isTsunami && "🌊 "}
+                      {isTyphoon && "🌀 "}
+                      {isTownshipHazard && "⚡ "}
                       {alert.event || alert.headline || "氣象警報"}
                     </span>
                     <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${style.chip}`}
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                        isTsunami ? "bg-red-600 text-white animate-pulse" : style.chip
+                      }`}
                     >
-                      {style.label}
+                      {isTsunami ? "海嘯警報" : style.label}
                     </span>
                   </div>
 
@@ -157,10 +176,10 @@ export default function WeatherAlertSidebarWidget({
 
       <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
         <Link
-          href="/news?source=cwa"
+          href="/tools/weather-alerts"
           className="flex items-center justify-between text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
         >
-          <span>查看所有氣象警報報導</span>
+          <span>查看即時氣象警報與雨量站</span>
           <span>→</span>
         </Link>
       </div>

@@ -14,6 +14,7 @@
     "childWelfare": "Child & Youth Welfare",
     "greenShops": "Green Shops",
     "healthTools": "Health Tools",
+    "weather": "Weather & Hazards",
     "searchPlaceholder": "Search news...",
     "publicFacilities": "Public Facilities"
   },
@@ -30,6 +31,7 @@
   "catalog": {
     "uv": "Taiwan Real-Time UV Index",
     "earthquakes": "Taiwan & Global Significant Earthquakes",
+    "weather-alerts": "Real-Time Weather Alerts & Rainfall",
     "bmi": "BMI Calculator",
     "calories": "Calorie Needs Calculator",
     "nutrition": "Daily Nutrient Recommendation Calculator",

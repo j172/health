@@ -543,7 +543,52 @@ export const listActiveCwaAlerts = async (
     withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
         `
-        WITH active AS (
+        WITH tsunamis AS (
+          SELECT
+            id,
+            'E-A0014-001' AS dataset_id,
+            CONCAT('海嘯警報', IF(report_type IS NOT NULL AND report_type != '', CONCAT(' (', report_type, ')'), '')) AS event,
+            report_type AS headline,
+            report_content AS description,
+            NULL AS instruction,
+            'Extreme' AS severity,
+            'Immediate' AS urgency,
+            'Observed' AS certainty,
+            '台灣沿岸及鄰近海域' AS area_desc,
+            1 AS area_count,
+            issue_time AS effective,
+            end_time AS expires,
+            web,
+            synced_at
+          FROM cwa_tsunamis
+          WHERE
+            (end_time IS NOT NULL AND end_time > UTC_TIMESTAMP())
+            OR (end_time IS NULL AND issue_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 24 HOUR))
+        ),
+        township_hazards AS (
+          SELECT
+            MIN(id) AS id,
+            'W-C0033-001' AS dataset_id,
+            phenomena AS event,
+            significance AS headline,
+            CONCAT(phenomena, IF(significance IS NOT NULL, CONCAT('（', significance, '）'), '')) AS description,
+            NULL AS instruction,
+            'Severe' AS severity,
+            'Immediate' AS urgency,
+            'Observed' AS certainty,
+            GROUP_CONCAT(DISTINCT location_name ORDER BY location_name SEPARATOR '、') AS area_desc,
+            COUNT(DISTINCT location_name) AS area_count,
+            MIN(start_time) AS effective,
+            MAX(end_time) AS expires,
+            'https://www.cwa.gov.tw' AS web,
+            MAX(synced_at) AS synced_at
+          FROM cwa_township_hazards
+          WHERE
+            (end_time IS NOT NULL AND end_time > UTC_TIMESTAMP())
+            OR (end_time IS NULL AND start_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 24 HOUR))
+          GROUP BY phenomena, significance
+        ),
+        active_general AS (
           SELECT * FROM cwa_alerts
           WHERE
             CASE
@@ -555,10 +600,10 @@ export const listActiveCwaAlerts = async (
           SELECT event,
                  GROUP_CONCAT(DISTINCT NULLIF(area_desc, '') ORDER BY area_desc SEPARATOR '、') AS area_list,
                  COUNT(DISTINCT NULLIF(area_desc, '')) AS area_count
-          FROM active
+          FROM active_general
           GROUP BY event
         ),
-        ranked AS (
+        ranked_general AS (
           SELECT a.*,
                  ROW_NUMBER() OVER (
                    PARTITION BY a.event
@@ -568,17 +613,27 @@ export const listActiveCwaAlerts = async (
                      COALESCE(a.effective, a.synced_at) DESC,
                      a.id DESC
                  ) AS rn
-          FROM active a
+          FROM active_general a
+        ),
+        combined AS (
+          SELECT id, dataset_id, event, headline, description, instruction, severity, urgency, certainty, area_desc, area_count, effective, expires, web, synced_at
+          FROM tsunamis
+          UNION ALL
+          SELECT id, dataset_id, event, headline, description, instruction, severity, urgency, certainty, area_desc, area_count, effective, expires, web, synced_at
+          FROM township_hazards
+          UNION ALL
+          SELECT r.id, r.dataset_id, r.event, r.headline, r.description, r.instruction,
+                 r.severity, r.urgency, r.certainty,
+                 COALESCE(areas.area_list, r.area_desc) AS area_desc,
+                 areas.area_count,
+                 r.effective, r.expires, r.web,
+                 r.synced_at
+          FROM ranked_general r
+          INNER JOIN areas ON areas.event <=> r.event
+          WHERE r.rn = 1
         )
-        SELECT r.id, r.dataset_id, r.event, r.headline, r.description, r.instruction,
-               r.severity, r.urgency, r.certainty,
-               COALESCE(areas.area_list, r.area_desc) AS area_desc,
-               areas.area_count,
-               r.effective, r.expires, r.web,
-               r.synced_at
-        FROM ranked r
-        INNER JOIN areas ON areas.event <=> r.event
-        WHERE r.rn = 1
+        SELECT *
+        FROM combined
         ORDER BY
           -- CAP severity, most urgent first; anything unrecognised sorts last.
           FIELD(severity, 'Extreme', 'Severe', 'Moderate', 'Minor') = 0,
@@ -656,6 +711,66 @@ export const getNearestRainfallReading = async (
     );
     return (rows[0] as unknown as NearestRainfallReading) ?? null;
   });
+
+export interface TopRainfallStation {
+  station_id: string;
+  station_name: string | null;
+  county_name: string | null;
+  town_name: string | null;
+  precip_now: string | null;
+  precip_1hr: string | null;
+  precip_24hr: string | null;
+  obs_time: Date;
+}
+
+/**
+ * Top stations in Taiwan with highest 24hr rainfall accumulation today.
+ */
+export const listTopRainfallStations = async (
+  limit = 5,
+): Promise<TopRainfallStation[]> =>
+  memoizeQuery(`cwa_top_rainfall_${limit}`, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT r.station_id, r.station_name, r.county_name, r.town_name,
+               r.precip_now, r.precip_1hr, r.precip_24hr, r.obs_time
+        FROM cwa_rainfall r
+        INNER JOIN (
+          SELECT station_id, MAX(obs_time) AS max_obs
+          FROM cwa_rainfall
+          WHERE obs_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 3 HOUR)
+          GROUP BY station_id
+        ) latest ON latest.station_id = r.station_id AND latest.max_obs = r.obs_time
+        WHERE r.precip_24hr IS NOT NULL AND CAST(r.precip_24hr AS DECIMAL(10,2)) > 0
+        ORDER BY CAST(r.precip_24hr AS DECIMAL(10,2)) DESC, CAST(r.precip_1hr AS DECIMAL(10,2)) DESC
+        LIMIT ?
+        `,
+        [limit],
+      );
+      return rows as unknown as TopRainfallStation[];
+    }),
+  );
+
+export interface NearestRainfallOverview {
+  realtime: NearestRainfallReading | null;
+  accumulation: RainfallAccumulation | null;
+}
+
+/**
+ * Combined helper returning nearest real-time rain gauge observation
+ * and nearest staffed station historical accumulation statistics (C-B0025-001).
+ */
+export const getNearestRainfallOverview = async (
+  lat: number,
+  lng: number,
+): Promise<NearestRainfallOverview> => {
+  const [realtime, accumulation] = await Promise.all([
+    getNearestRainfallReading(lat, lng),
+    getNearestRainfallAccumulation(lat, lng),
+  ]);
+  return { realtime, accumulation };
+};
 
 // ---------------------------------------------------------------------------
 // Daily rainfall history (cwa_daily_rainfall)
