@@ -16,7 +16,8 @@
     "healthTools": "健康工具",
     "weather": "氣象觀測",
     "searchPlaceholder": "搜尋新聞...",
-    "publicFacilities": "公共設施"
+    "publicFacilities": "便民服務",
+    "publicServices": "便民服務"
   },
   "categories": {
     "allNews": "全部新聞",

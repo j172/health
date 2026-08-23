@@ -1357,6 +1357,184 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "kindergartens",
+    group: "child-welfare",
+    title: "全國幼兒園查詢",
+    description:
+      "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航。資料來源：教育部開放資料。",
+    directAnswer:
+      "查詢全國公私立幼兒園名錄，涵蓋幼兒園設立別、核定人數、電話與所在地址。",
+    scientificBasis: [
+      {
+        title: "全國幼兒園名錄 (k1_new.json)",
+        authority: "教育部統計處 (MOE)",
+        url: "https://stats.moe.gov.tw",
+      },
+    ],
+    relatedSlugs: ["cram-schools", "child-welfare-nurseries", "child-welfare-centers"],
+    faqs: [
+      {
+        question: "如何查詢附近的公立或私立幼兒園？",
+        answer:
+          "開啟定位或在搜尋框輸入縣市與幼兒園名稱，可依公立、私立、非營利進行篩選並在地圖上查看位置。",
+      },
+      {
+        question: "資料來源與更新頻率？",
+        answer: "資料來源為教育部統計處公開之全國幼兒園名錄開放資料。",
+      },
+    ],
+  },
+  {
+    slug: "cram-schools",
+    group: "child-welfare",
+    title: "全國短期補習班查詢",
+    description:
+      "查詢全台 22 縣市立案短期補習班名冊，涵蓋文理類、外語類、技藝類補習班地址、電話與立案狀態。資料來源：教育部短期補習班資訊管理系統。",
+    directAnswer:
+      "整合全台 22 縣市短期補習班開放資料，提供合法立案補習班類科、地址與聯絡資訊地圖檢索。",
+    scientificBasis: [
+      {
+        title: "全國短期補習班資訊管理系統開放資料",
+        authority: "教育部 (MOE)",
+        url: "https://bsb.kh.edu.tw",
+      },
+    ],
+    relatedSlugs: ["kindergartens", "child-welfare-centers", "child-safety-spots"],
+    faqs: [
+      {
+        question: "短期補習班包含哪些類科？",
+        answer:
+          "涵蓋文理類（升學、課輔）、外語類（英語、日語等）、技藝類（音樂、美術、舞蹈、電腦、珠心算等）合法立案之短期補習班。",
+      },
+      {
+        question: "如何確認補習班是否合法立案？",
+        answer:
+          "本站收錄教育部補習班資訊管理系統公開之合法立案名冊，可查驗立案日期與主管教育局處單位代碼。",
+      },
+    ],
+  },
+  {
+    slug: "child-safety-spots",
+    group: "child-welfare",
+    title: "婦幼安全警示地點查詢",
+    description:
+      "查詢內政部警政署公告之全國婦幼安全警示地點與加強維安路段，提供管轄警察分局及聯繫窗口資訊，提醒家長與婦幼留意環境安全。資料來源：內政部警政署開放資料。",
+    directAnswer:
+      "查詢警政署公告之婦幼安全警示地點，提供管轄警察局、分局、專人聯繫窗口與位置地圖。",
+    scientificBasis: [
+      {
+        title: "婦幼安全警示地點開放資料集",
+        authority: "內政部警政署 (NPA)",
+        url: "https://data.gov.tw",
+      },
+    ],
+    relatedSlugs: ["child-welfare-centers", "cram-schools", "kindergartens"],
+    faqs: [
+      {
+        question: "什麼是婦幼安全警示地點？",
+        answer:
+          "指經各縣市警察局評估需加強巡邏維護治安或提醒民眾提高警覺之公共場所、暗巷、陸橋涵洞或易聚集路段。",
+      },
+      {
+        question: "如果發現安全疑慮該如何反映？",
+        answer:
+          "各警示點均附有管轄警察局分局與專人聯繫電話，遇緊急狀況請立即撥打 110 報案。",
+      },
+    ],
+  },
+  {
+    slug: "family-cultural-activities",
+    group: "child-welfare",
+    title: "全國親子藝文活動查詢",
+    description:
+      "即時連線文化部全國親子及兒童藝文展演活動資料庫，提供近期演出檔期、場次時間表、演出場館地圖、票價與購票連結。資料來源：文化部全國藝文活動開放資料。",
+    directAnswer:
+      "即時查詢文化部親子類別藝文展演、兒童劇團、音樂會與展覽活動時間表與場館地圖導航。",
+    scientificBasis: [
+      {
+        title: "文化部全國藝文活動資訊系統 (SearchShowAction Category 4)",
+        authority: "文化部 (MOC)",
+        url: "https://cloud.culture.tw",
+      },
+    ],
+    relatedSlugs: ["child-welfare-nurseries", "kindergartens", "child-welfare-centers"],
+    faqs: [
+      {
+        question: "收錄哪些親子藝文活動？",
+        answer:
+          "收錄文化部全國藝文活動平台中分類為「親子/兒童」之音樂會、戲劇演出、舞蹈、偶戲、親子工作坊及展覽。",
+      },
+      {
+        question: "如何購買活動門票？",
+        answer:
+          "活動卡片提供官方售票平台（如 OPENTIX 兩廳院文化生活）或主辦單位連結，點擊即可直接前往購票。",
+      },
+    ],
+  },
+  {
+    slug: "tax-organizations",
+    group: "public-facility",
+    title: "機關團體與扣繳單位查詢",
+    description:
+      "查詢財政部全國非營利事業扣繳單位（機關團體、同業公會、財團法人、學校與公寓大廈管委會）統一編號與稅籍登記狀態。資料來源：財政部財政資訊中心開放資料。",
+    directAnswer:
+      "查詢全國機關團體與非營利扣繳單位統一編號、登記縣市與最新異動事由。",
+    scientificBasis: [
+      {
+        title: "機關團體扣繳單位基本資料 (BGMOPEN99)",
+        authority: "財政部財政資訊中心 (FIA)",
+        url: "https://eip.fia.gov.tw",
+      },
+    ],
+    relatedSlugs: ["food-operators", "green-shops", "public-toilets"],
+    faqs: [
+      {
+        question: "BGMOPEN99 包含哪些單位？",
+        answer:
+          "包含同業公會、學術社團、宗教團體、財團法人、公益協會、各級公私立學校及報備立案之公寓大廈管理委員會等扣繳單位。",
+      },
+      {
+        question: "如何查驗統一編號是否有效？",
+        answer:
+          "可在搜尋框輸入 8 碼統一編號或機關名稱，點擊卡片可複製統編並外連至財政部稅籍公示系統查驗。",
+      },
+    ],
+  },
+  {
+    slug: "travel-epidemic-alerts",
+    group: "public-facility",
+    title: "國際旅遊疫情與即時情報地圖",
+    description:
+      "即時連線疾管署國際旅遊疫情建議等級與全球重要疫情快訊，提供各國警戒等級（注意/警示/警告）地圖視覺化、疾病快搜與最新流行病學情報。資料來源：衛生福利部疾病管制署。",
+    directAnswer:
+      "即時查詢疾管署全球旅遊疫情建議等級與各國爆發疾病通報，掌握最新出國防疫衛教與警示範圍。",
+    scientificBasis: [
+      {
+        title: "國際間旅遊疫情建議等級資料集 (TCDCTravelAlert)",
+        authority: "衛生福利部疾病管制署 (Taiwan CDC)",
+        url: "https://www.cdc.gov.tw",
+      },
+      {
+        title: "國際重要疫情資訊 (TCDCIntlEpidAll)",
+        authority: "衛生福利部疾病管制署 (Taiwan CDC)",
+        url: "https://www.cdc.gov.tw",
+      },
+    ],
+    relatedSlugs: ["aqi", "uv", "weather-alerts"],
+    faqs: [
+      {
+        question: "國際旅遊疫情建議等級如何劃分？",
+        answer:
+          "疾管署分為三級：第一級「注意 (Watch)」提醒遵守當地一般預防措施；第二級「警示 (Alert)」對當地採取加強防護；第三級「警告 (Warning)」避免至當地所有非必要旅遊。",
+      },
+      {
+        question: "出國前該如何做好健康防護？",
+        answer:
+          "建議出國前 2 至 4 週至旅遊醫學門診諮詢疫苗接種或預防用藥，並於旅途中落實手部衛生、防蚊措施與飲食衛生。",
+      },
+    ],
+  },
+  {
     slug: "weather-alerts",
     group: "weather",
     title: "即時氣象警報與降雨資訊",

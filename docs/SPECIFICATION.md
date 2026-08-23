@@ -118,12 +118,13 @@ Eight footer columns: 全站總覽 (static links) plus one per `ToolGroup`. Orde
 2. **醫療院所 (Medical Facilities)** (5): 健康檢查機構查詢 ➔ 居家醫療查詢 ➔ 藥品查詢 ➔ 藥局查詢 ➔ 醫療院所查詢
 3. **長照機構 (LTC Facilities)** (4): 客家委員會「伯公照護站」查詢 ➔ 老人福利機構查詢 ➔ 長照機構查詢 ➔ 長照特約服務機構查詢
 4. **身心障礙 (Disability Services)** (2): 信用合作社無障礙ATM查詢 ➔ 身心障礙福利機構查詢
-5. **兒少福利 (Child & Youth Welfare)** (2): 兒少福利中心查詢 ➔ 全國親子館查詢
-6. **綠色商店 (Green Shops)** (1): 綠色商店查詢
-7. **食品營養 (Food & Nutrition)** (2): 食品業者登錄查詢 ➔ 食品營養成分查詢
-8. **健康算盤與工具 (Health Tools)** (15): AQI 空氣品質即時查詢 ➔ BMI 計算器 ➔ VO2Max 估算器 ➔ 全台即時紫外線指數 (UV) ➔ 卡路里需求計算器 ➔ 去脂體重 (LBM) 計算器 ➔ 台灣與全球顯著地震查詢 ➔ 壓力評估測驗 ➔ 每日營養素建議計算器 ➔ 目標心率計算器 ➔ 睡眠品質評估 ➔ 腰臀比計算器 ➔ 血壓分析器 ➔ 飲水量計算器 ➔ 體脂率計算器
+5. **兒少福利 (Child & Youth Welfare)** (6): 兒少福利中心查詢 ➔ 全國幼兒園查詢 ➔ 全國短期補習班查詢 ➔ 全國親子館查詢 ➔ 全國親子藝文活動查詢 ➔ 婦幼安全警示地點查詢
+6. **便民服務 (Public Services)** (5): 全國公廁查詢 ➔ 信用合作社無障礙ATM查詢 ➔ 國際旅遊疫情與即時情報地圖 ➔ 機關團體與扣繳單位查詢 ➔ 綠色商店查詢
+7. **氣象觀測 (Weather & Hazards)** (3): 全台即時紫外線指數 (UV) ➔ 台灣與全球顯著地震查詢 ➔ 即時氣象警報與降雨資訊
+8. **食品營養 (Food & Nutrition)** (2): 食品業者登錄查詢 ➔ 食品營養成分查詢
+9. **健康算盤與工具 (Health Tools)** (14): AQI 空氣品質即時查詢 ➔ BMI 計算器 ➔ VO2Max 估算器 ➔ 卡路里需求計算器 ➔ 去脂體重 (LBM) 計算器 ➔ 壓力評估測驗 ➔ 每日營養素建議計算器 ➔ 目標心率計算器 ➔ 睡眠品質評估 ➔ 腰臀比計算器 ➔ 血壓分析器 ➔ 飲水量計算器 ➔ 體脂率計算器
 
-Total: 31 tools across 7 groups. (Listed here in codepoint order for readability; the exact runtime order is whatever `localeCompare(…, "zh-Hant", { numeric: true })` yields.)
+Total: 37 tools across 8 groups. (Listed here in codepoint order for readability; the exact runtime order is whatever `localeCompare(…, "zh-Hant", { numeric: true })` yields.)
 
 ---
 

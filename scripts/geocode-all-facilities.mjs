@@ -21,9 +21,12 @@ if (!ADMIN_SECRET) {
 }
 
 const SOURCES_IN_PRIORITY = [
-  // Priority 1: 兒少福利 (剛新增)
+  // Priority 1: 兒少福利與婦幼安全 (優先定位)
+  { facilityType: "child_safety_spot", sourceKey: "npa_child_safety_spot", label: "婦幼安全警示地點" },
   { facilityType: "child_welfare_nursery", sourceKey: "mohw_child_welfare_nursery", label: "全國親子館" },
   { facilityType: "child_welfare_center", sourceKey: "mohw_child_welfare_center", label: "兒少福利中心" },
+  { facilityType: "kindergarten", sourceKey: "moe_kindergarten", label: "全國幼兒園" },
+  { facilityType: "cram_school", sourceKey: "moe_cram_school", label: "全國短期補習班" },
 
   // Priority 2: 長照與福利機構
   { facilityType: "elder_welfare", sourceKey: "mohw_elder_welfare", label: "老人福利機構" },

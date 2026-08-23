@@ -16,7 +16,8 @@
     "healthTools": "Health Tools",
     "weather": "Weather & Hazards",
     "searchPlaceholder": "Search news...",
-    "publicFacilities": "Public Facilities"
+    "publicFacilities": "Public Services",
+    "publicServices": "Public Services"
   },
   "tools": {
     "water": "Water Intake Calculator",
@@ -59,7 +60,15 @@
     "ltc-contracted": "Long-Term Care 2.0 Contracted Service Finder",
     "hakka-bogong": "Hakka Affairs Council Bo-Gong Care Station Finder",
     "green-shops": "Green Shop Finder",
-    "public-toilets": "Public Toilet Finder"
+    "public-toilets": "Public Toilet Finder",
+    "child-welfare-centers": "Child & Youth Welfare Center Finder",
+    "child-welfare-nurseries": "Parent-Child Center Finder",
+    "kindergartens": "Kindergarten Directory Finder",
+    "cram-schools": "Cram School Directory Finder",
+    "child-safety-spots": "Child & Women Safety Alert Spot Finder",
+    "family-cultural-activities": "Family Cultural Activities Finder",
+    "tax-organizations": "Institutions & Tax Deductible Entities Finder",
+    "travel-epidemic-alerts": "International Travel Epidemic & Outbreak Alerts"
   },
   "categories": {
     "gov": "Government Agencies",

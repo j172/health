@@ -228,7 +228,7 @@ export default function SiteNav() {
                 items={disabilityItems}
               />
               <NavDropdown
-                label={t("nav.publicFacilities", "公共設施")}
+                label={t("nav.publicServices", "便民服務")}
                 items={publicFacilityItems}
               />
               <NavDropdown
@@ -346,7 +346,7 @@ export default function SiteNav() {
                 items: disabilityItems,
               },
               {
-                heading: t("nav.publicFacilities", "公共設施"),
+                heading: t("nav.publicServices", "便民服務"),
                 items: publicFacilityItems,
               },
               {

@@ -190,4 +190,62 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的兒少福利中心，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的中心。",
   },
+  kindergartens: {
+    facilityType: "kindergarten",
+    emoji: "🏫",
+    title: "全國幼兒園查詢",
+    description:
+      "查詢全國公立、私立、準公共與非營利幼兒園名錄。資料來源：教育部開放資料。",
+    searchPlaceholder: "輸入幼兒園名稱或縣市關鍵字",
+    errorText: "查詢幼兒園資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的幼兒園，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的幼兒園。",
+    serviceItem: { label: "設立別與核定人數：" },
+    categories: [
+      { value: "公立", label: "公立幼兒園" },
+      { value: "私立", label: "私立幼兒園" },
+      { value: "非營利", label: "非營利幼兒園" },
+    ],
+  },
+  "cram-schools": {
+    facilityType: "cram_school",
+    emoji: "📚",
+    title: "全國短期補習班查詢",
+    description:
+      "查詢全台 22 縣市立案短期補習班名冊。資料來源：教育部短期補習班資訊管理系統。",
+    searchPlaceholder: "輸入補習班名稱、類科或縣市關鍵字",
+    errorText: "查詢補習班資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的補習班，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的補習班。",
+    serviceItem: { label: "補習班類科：" },
+    categories: [
+      { value: "文理", label: "文理類" },
+      { value: "外語", label: "外語類" },
+      { value: "技藝", label: "技藝類" },
+    ],
+  },
+  "child-safety-spots": {
+    facilityType: "child_safety_spot",
+    emoji: "🛡️",
+    title: "婦幼安全警示地點查詢",
+    description:
+      "查詢內政部警政署公告之全國婦幼安全警示地點與路段。資料來源：內政部警政署開放資料。",
+    searchPlaceholder: "輸入路段、地點或分局關鍵字",
+    errorText: "查詢警示地點資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的警示地點，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的警示地點。",
+    serviceItem: { label: "管轄單位與窗口：" },
+  },
+  "tax-organizations": {
+    facilityType: "tax_organization",
+    emoji: "🏢",
+    title: "機關團體與扣繳單位查詢",
+    description:
+      "查詢財政部全國非營利扣繳單位（機關團體、協會、財團法人與管委會）。資料來源：財政部財政資訊中心開放資料。",
+    searchPlaceholder: "輸入 8 碼統一編號、機關名稱或所在縣市",
+    errorText: "查詢扣繳單位資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "可輸入統一編號、機關團體名稱或縣市進行搜尋。",
+    emptyStateWithKeyword: "查無符合的扣繳單位。",
+    serviceItem: { label: "異動狀態與事由：" },
+  },
 } satisfies Record<string, FacilitySearchConfig>;

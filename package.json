@@ -7,7 +7,12 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "import:cram-schools": "node scripts/import-moe-cram-schools.mjs",
+    "import:kindergartens": "node scripts/import-moe-kindergartens.mjs",
+    "import:child-safety-spots": "node scripts/import-npa-child-safety-spots.mjs",
+    "import:tax-organizations": "node scripts/import-fia-tax-organizations.mjs",
+    "geocode:facilities": "node scripts/geocode-all-facilities.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.6.0",

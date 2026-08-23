@@ -243,7 +243,7 @@ export default function SiteFooter() {
             ))}
           </FooterColumn>
 
-          <FooterColumn label={t("nav.publicFacilities", "公共設施")}>
+          <FooterColumn label={t("nav.publicServices", "便民服務")}>
             {publicFacilityTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
                 {localizeTitle(tool)}

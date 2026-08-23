@@ -45,8 +45,11 @@ export interface FacilitySourceSpec {
 // consumed by the Next.js server bundle. Confirmed against production's
 // actual (facility_type, source_key) pairs 2026-08-20.
 export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
+  { facilityType: "child_safety_spot", sourceKey: "npa_child_safety_spot", label: "婦幼安全警示地點" },
   { facilityType: "child_welfare_nursery", sourceKey: "mohw_child_welfare_nursery", label: "全國親子館" },
   { facilityType: "child_welfare_center", sourceKey: "mohw_child_welfare_center", label: "兒少福利中心" },
+  { facilityType: "kindergarten", sourceKey: "moe_kindergarten", label: "全國幼兒園" },
+  { facilityType: "cram_school", sourceKey: "moe_cram_school", label: "全國短期補習班" },
   { facilityType: "elder_welfare", sourceKey: "mohw_elder_welfare", label: "老人福利機構" },
   { facilityType: "disability_welfare", sourceKey: "mohw_disability_welfare", label: "身障福利機構" },
   { facilityType: "ltc_contracted", sourceKey: "mohw_ltc_contracted", label: "長照特約機構" },
