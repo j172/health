@@ -23,6 +23,7 @@ import { fetchEttodayHealthNews } from "@/lib/server/rss/fetchEttodayHealthNews"
 import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
+import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -385,6 +386,23 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += businessweeklyResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // 早安健康（edh.tw）— Phase 11: a Nuxt 3 __NUXT_DATA__ payload parse
+      // rather than an HTML scrape (the rendered DOM carries no publish dates
+      // at all). Same special-source treatment as the scrapers above.
+      // -----------------------------------------------------------------------
+      const edhResult = await processSpecialSource(
+        {
+          code: "edh_health",
+          name: "早安健康",
+          url: "https://edh.tw/article-list",
+          sourceName: "edh",
+        },
+        fetchEdhNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += edhResult.skippedUnchanged;
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;

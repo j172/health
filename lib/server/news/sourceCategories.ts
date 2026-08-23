@@ -51,6 +51,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "fiftyplus", label: "50+（橘世代）" },
       { sourceName: "yahoo_health", label: "Yahoo奇摩新聞健康" },
       { sourceName: "healthbw", label: "良醫健康網" },
+      { sourceName: "edh", label: "早安健康" },
     ],
   },
 ];

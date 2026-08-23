@@ -29,6 +29,7 @@ const SOURCE_LABELS: Record<string, string> = {
   fiftyplus: "50+（橘世代）",
   yahoo_health: "Yahoo奇摩新聞健康",
   healthbw: "良醫健康網",
+  edh: "早安健康",
   blog_j172: "j172tw Blogz",
 };
 
