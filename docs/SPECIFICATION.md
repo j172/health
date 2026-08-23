@@ -1,6 +1,6 @@
 # Full System Technical Specification (j172tw Healthz)
 
-> **Document Version**: 2.3.0  
+> **Document Version**: 2.4.0  
 > **Last Updated**: 2026-08-23  
 > **Status**: Production Specification  
 > **Target Environment**: Next.js 16 (App Router) + Node 20 + MySQL 8.0 + cPanel PM2 Hosting + Cloudflare Edge CDN & Security
@@ -228,7 +228,14 @@ absence:
   `--cacert`, not deleting the flag.
 - Outbound HTTP goes through `lib/server/net/httpClient.ts`, which now enforces
   `maxResponseBytes` (24MB default) both from `Content-Length` and while
-  streaming, destroying the socket on breach.
+### 8.3 Home News Grid Blog Post Integration Slot (j172tw Blogz)
+
+- **Purpose & Scope**: Ingests the latest post from `https://blog.j172.tw/feed/` and places it as the 24th card in the home page "All" category news grid (`HomeCategoryNewsSection`), achieving exact visual parity with regular news cards while routing clicks directly to the destination post (`target="_blank" rel="noopener noreferrer"`).
+- **Architecture & Ingestion (`lib/server/blog/queries.ts`)**:
+  - Fetches the RSS feed with an ISR 1-hour cache (`revalidate: 3600`) and a 6-second `AbortController` timeout guard.
+  - Automatically fetches and extracts the WordPress featured image (`wp-post-image` / `og:image`) with a 24-hour cache. If no image is present, gracefully falls back to the source-branded `j172tw Blogz` gradient card.
+  - On network timeout or upstream feed failure, gracefully returns `null`, causing the grid to seamlessly fall back to the 24th standard news article without layout degradation.
+- **RWD Grid Guarantee**: Fixed 24 cards (23 health news + 1 blog post) on the "All" tab guarantees 8 complete rows on 3-column desktop (`lg:grid-cols-3`) and 12 complete rows on 2-column tablet (`sm:grid-cols-2`), eliminating awkward trailing card voids.
 
 ---
 
