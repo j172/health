@@ -21,7 +21,6 @@ export type ToolGroup =
   | "food"
   | "ltc"
   | "disability"
-  | "green-shop"
   | "child-welfare"
   | "public-facility"
   | "weather";
@@ -41,7 +40,10 @@ export interface ToolCatalogEntry {
   /** Related tool slugs for internal linking and topic clusters */
   relatedSlugs: string[];
   faqs: ToolFaq[];
-  /** "calculator" → 健康工具 nav dropdown; "facility" → 醫療院所 nav dropdown; "food" → 食品營養 nav dropdown; "ltc" → 長照機構 nav dropdown; "disability" → 身心障礙 nav dropdown; "green-shop" → 綠色商店 direct nav link; "child-welfare" → 兒少福利 nav dropdown. */
+  /** Drives the nav dropdowns, the footer columns and the /tools index sections
+   * from one place: "calculator" → 健康工具; "facility" → 醫療院所; "food" → 食品營養;
+   * "ltc" → 長照機構; "disability" → 身心障礙; "child-welfare" → 兒少福利;
+   * "public-facility" → 便民服務; "weather" → 環境監測. */
   group: ToolGroup;
 }
 

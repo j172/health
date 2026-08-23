@@ -12,11 +12,10 @@
     "ltc": "Long-Term Care",
     "disability": "Disability Services",
     "childWelfare": "Child & Youth Welfare",
-    "greenShops": "Green Shops",
+    "food": "Food & Nutrition",
     "healthTools": "Health Tools",
-    "weather": "Weather & Hazards",
+    "weather": "Environmental Monitoring",
     "searchPlaceholder": "Search news...",
-    "publicFacilities": "Public Services",
     "publicServices": "Public Services"
   },
   "tools": {
