@@ -320,19 +320,24 @@ jobs:
             source scripts/lib/ssh-key-stage.sh
             stage_ssh_key
             echo "Triggering apply over SSH (host-originated request)."
-            ssh -i "$KEY_FILE" -p "${SSH_PORT:-22}" \
+            # Captured rather than piped straight to tail: the body has to be
+            # inspected below, not just displayed.
+            RESPONSE="$(ssh -i "$KEY_FILE" -p "${SSH_PORT:-22}" \
               -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
               -o BatchMode=yes -o ConnectTimeout=20 \
               "$SSH_USER@$SSH_HOST" \
-              "curl -sS --max-time 120 --insecure --resolve 'health.j172.tw:443:103.21.221.12' '$OPS_URL'" \
-              | tail -20
+              "curl -sS --max-time 120 --insecure --resolve 'health.j172.tw:443:103.21.221.12' '$OPS_URL'")"
+            printf '%s\n' "$RESPONSE" | tail -20
           else
             echo "No SSH secrets — falling back to the runner's HTTPS path."
             # --resolve pins the origin IP to bypass Cloudflare; the origin then
             # serves a shared-host certificate, hence --insecure.
-            RESPONSE="$(curl --fail --show-error --silent --insecure \
+            # --fail-with-body, not --fail: a refusal is a 503 whose body says
+            # why, and --fail throws that body away.
+            CURL_RC=0
+            RESPONSE="$(curl --fail-with-body --show-error --silent --insecure \
               --user-agent "$UA" --retry 3 --retry-delay 2 --retry-all-errors \
-              --resolve "health.j172.tw:443:103.21.221.12" "$OPS_URL")"
+              --resolve "health.j172.tw:443:103.21.221.12" "$OPS_URL")" || CURL_RC=$?
             printf '%s\n' "$RESPONSE" | tail -20
             # An interstitial arrives as HTTP 200 with HTML, which --fail cannot
             # catch. Refuse here rather than waiting out the poll below.
@@ -340,6 +345,23 @@ jobs:
               echo "Apply trigger was answered with a bot-protection page, not the handler."
               exit 1
             fi
+            # Any non-zero curl exit that is not the refusal handled below.
+            if [ "$CURL_RC" -ne 0 ] && ! printf '%s' "$RESPONSE" | grep -q 'Apply prebuilt REFUSED'; then
+              echo "Apply trigger request failed (curl exit $CURL_RC)."
+              exit 1
+            fi
+          fi
+
+          # apply-prebuilt-force can now decline: it refuses when it cannot
+          # verify that it killed the previous run, which is what happens once
+          # the account is out of process slots and exec() has quietly become a
+          # no-op. Without this check the refusal reads as a successful trigger,
+          # and the poll below then watches the *previous* run's log — which is
+          # exactly how a dead deploy used to stay green the whole way through.
+          if printf '%s' "$RESPONSE" | grep -q 'Apply prebuilt REFUSED'; then
+            echo "The server refused to start an apply — see the message above."
+            echo "Free process slots on the host first, then re-run this workflow."
+            exit 1
           fi
 
       - name: Read apply status

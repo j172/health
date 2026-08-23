@@ -96,9 +96,26 @@ if (str_starts_with($path, '/__ops/')) {
     // the "pm2 start" line inside the script runs under its own `setsid`
     // specifically so the app survives even when this wrapper gets killed;
     // only the wrapper and its transient helpers die.
-    $killPrebuiltRun = static function (int $pid): void {
+    // Returns whether the wrapper is actually gone.
+    //
+    // Both kills go through exec(), and exec() cannot spawn anything once the
+    // account is at its Entry Process ceiling — it fails silently and returns
+    // nothing. That is not hypothetical: on 2026-08-23 it left two
+    // [START-FORCE-V4] wrappers alive at once, because three stacked deploys
+    // each "killed" the previous run without the kill ever running, then
+    // spawned a replacement anyway. An unverified force is a process
+    // amplifier at the exact moment the account can least afford one, so the
+    // caller has to be told whether the kill landed instead of assuming it.
+    $killPrebuiltRun = static function (int $pid): bool {
         @exec('pkill -9 -P ' . $pid . ' 2>&1');
         @exec('kill -9 ' . $pid . ' 2>&1');
+        // SIGKILL is delivered synchronously but reaping is not — give the
+        // kernel a moment before reading /proc/<pid>'s absence as proof.
+        // (This also preserves the settle time the old call site had, so a
+        // replacement still never races the dying wrapper for the same log
+        // and pid files.)
+        usleep(300000);
+        return !is_dir("/proc/{$pid}");
     };
 
     // Single choke point for starting an apply-prebuilt run, used by all
@@ -109,10 +126,13 @@ if (str_starts_with($path, '/__ops/')) {
     // sequence, not just the check, so two requests landing at the same
     // instant can't both see "nothing running" and both spawn — the second
     // one blocks on flock() until the first has recorded its new PID.
-    // $force=false: refuse (return null) if a run is genuinely still alive.
-    // $force=true: kill the still-alive run first, then always proceeds —
-    // "force" now actually means "make sure exactly one instance ends up
-    // running", not "ignore whether one already is".
+    // Returns null when a run was spawned, or the PID of the run that blocked
+    // it. $force=false: refuse if a run is genuinely still alive. $force=true:
+    // kill the still-alive run first and proceed — but only if the kill can be
+    // *verified*; if it could not (the account is out of process slots, so
+    // exec() is a silent no-op) force refuses too and returns that PID. So
+    // "force" means "make sure exactly one instance ends up running", never
+    // "spawn regardless".
     $triggerPrebuiltRun = static function (bool $force, string $cmd) use (
         $prebuiltLockFile,
         $isPrebuiltRunning,
@@ -132,8 +152,15 @@ if (str_starts_with($path, '/__ops/')) {
                 if (!$force) {
                     return $runningPid;
                 }
-                $killPrebuiltRun($runningPid);
-                usleep(300000); // let the kill land before the replacement starts writing the same log/pid files
+                if (!$killPrebuiltRun($runningPid)) {
+                    // Kill did not land — almost certainly because exec()
+                    // itself could not spawn. Refuse rather than add another
+                    // wrapper to a process table that is already full. The
+                    // caller reports this the same way it reports an ordinary
+                    // "one is already running", which is the honest answer:
+                    // one still is.
+                    return $runningPid;
+                }
             }
             @exec($cmd);
             return null;
@@ -373,9 +400,21 @@ if (str_starts_with($path, '/__ops/')) {
         // exactly one instance ends up running", not "ignore whether one
         // already is" (the latter is what stacked concurrent runs and
         // exhausted the host on 2026-08-10).
-        $triggerPrebuiltRun(true, $buildPrebuiltCommand(true));
+        $refusedPid = $triggerPrebuiltRun(true, $buildPrebuiltCommand(true));
 
         header('Content-Type: text/plain; charset=utf-8');
+        if ($refusedPid !== null) {
+            // force can now decline — see $killPrebuiltRun. Say so plainly:
+            // the deploy workflow reads this body, and reporting a trigger
+            // that did not happen is how a failed apply used to look green
+            // all the way through.
+            http_response_code(503);
+            echo "Apply prebuilt REFUSED: pid {$refusedPid} is still running and could not be killed.\n";
+            echo "The account is out of process slots (exec() cannot spawn), so starting another run\n";
+            echo "would only deepen the problem. Free process slots first.\n";
+            exit;
+        }
+
         echo "Apply prebuilt force-triggered-v4. Check /__ops/apply-prebuilt-status?key=...\n";
         exit;
     }
@@ -395,6 +434,50 @@ if (str_starts_with($path, '/__ops/')) {
         // then went completely silent once the pm2 daemon itself died.
         // `timeout 5` turns that hang into a fast, detectable failure
         // (exit 124) instead of a silent no-op.
+        // Fast path first, and it spawns nothing.
+        //
+        // `pm2 jlist` is a full Node process. This endpoint runs from cron
+        // every 5 minutes, and bid.j172.tw's handler does the same thing on
+        // the same account, so the old unconditional jlist cost ~24 process
+        // spawns an hour purely to be told everything was fine. On a 20
+        // Entry Process account that is most of the budget; worse, when the
+        // host is busy `timeout 5` kills the wrapper while the Node children
+        // it already spawned survive as orphans. On 2026-08-23 the account
+        // filled up with exactly those idle pm2 helpers and wedged so hard
+        // that this watchdog could no longer spawn the process it needed to
+        // fix things — a deadlock that took host-side intervention to break.
+        //
+        // fsockopen costs zero processes, so the healthy case — which is
+        // almost every tick — now runs entirely inside PHP.
+        //
+        // This is a fast path, NOT a replacement for the pm2 check. Anything
+        // other than a clean HTTP response falls through to the original
+        // logic below, so a slow-but-healthy app costs exactly what it used
+        // to and still cannot trigger a spurious restart: the jlist path will
+        // see health-web online and take no action.
+        //
+        // Deliberate trade-off: while the app answers on :3000 this no longer
+        // notices a dead pm2 daemon. That is the right call — a dead daemon
+        // with a healthy app is not an outage, and the escalation below still
+        // rebuilds the daemon the moment the app actually stops answering.
+        $probe = @fsockopen('127.0.0.1', 3000, $probeErrno, $probeErrstr, 2);
+        if ($probe !== false) {
+            // A connect alone only proves something holds the port; ask for a
+            // status line so a wedged listener still escalates.
+            $servingHttp = false;
+            @stream_set_timeout($probe, 5);
+            if (@fwrite($probe, "HEAD / HTTP/1.0\r\nHost: health.j172.tw\r\nConnection: close\r\n\r\n")) {
+                $statusLine = (string) @fgets($probe, 128);
+                $servingHttp = (stripos($statusLine, 'HTTP/') === 0);
+            }
+            @fclose($probe);
+
+            if ($servingHttp) {
+                echo "[{$now}] health-web is online (socket probe, no process spawned). No action taken.\n";
+                exit;
+            }
+        }
+
         exec('timeout 5 ' . $pm2Bin . ' jlist 2>/dev/null', $jlistOutput, $jlistExit);
         $daemonResponsive = ($jlistExit === 0);
 
