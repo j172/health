@@ -40,7 +40,12 @@ interface FacilityItem {
   lat: number | null;
   lng: number | null;
   service_item: string | null;
-  extra_json: { weeklyHours?: Record<string, string[]>; weeklyHoursNote?: string } | null;
+  extra_json: {
+    weeklyHours?: Record<string, string[]>;
+    weeklyHoursNote?: string;
+    charityUrl?: string;
+    charityName?: string;
+  } | null;
 }
 
 /**
@@ -132,7 +137,16 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   };
 
   const geocoded = (facilities ?? []).filter((f): f is FacilityItem & { lat: number; lng: number } => f.lat !== null && f.lng !== null);
-  const markers: MapMarker[] = geocoded.map((f) => ({ id: String(f.id), lat: f.lat, lng: f.lng, name: f.name, address: f.address, phone: f.phone }));
+  const markers: MapMarker[] = geocoded.map((f) => ({
+    id: String(f.id),
+    lat: f.lat,
+    lng: f.lng,
+    name: f.name,
+    address: f.address,
+    phone: f.phone,
+    charityUrl: f.extra_json?.charityUrl,
+    charityName: f.extra_json?.charityName,
+  }));
 
   return (
     <div className="space-y-6">
@@ -221,14 +235,26 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
               <p className="text-xs text-neutral-500 dark:text-slate-400">共 {facilities.length} 筆</p>
               {facilities.map((f) => (
                 <div key={f.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-                  {serviceItem === "badge" ? (
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
-                      {f.service_item && <span className="shrink-0 rounded-full bg-zumthor px-2 py-0.5 text-xs text-primary dark:bg-primary/20">{f.service_item}</span>}
-                    </div>
-                  ) : (
+                  <div className="flex items-start justify-between gap-3">
                     <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
-                  )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {serviceItem === "badge" && f.service_item && (
+                        <span className="rounded-full bg-zumthor px-2 py-0.5 text-xs text-primary dark:bg-primary/20">{f.service_item}</span>
+                      )}
+                      {f.extra_json?.charityUrl && (
+                        <a
+                          href={f.extra_json.charityUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 border border-rose-200 shadow-sm transition-all hover:bg-rose-100 hover:border-rose-300 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 dark:hover:bg-rose-900/60"
+                        >
+                          <span>🛍️</span>
+                          <span>{f.extra_json.charityName || "愛心義賣"}</span>
+                          <span className="text-[10px]">↗</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
                   {f.address && <p className="mt-1 text-sm text-neutral-600 dark:text-slate-300">{f.address}</p>}
                   {f.phone && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">📞 {f.phone}</p>}
                   {typeof serviceItem === "object" && f.service_item && (

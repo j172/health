@@ -27,6 +27,8 @@ export interface MapMarker {
   name: string;
   address?: string | null;
   phone?: string | null;
+  charityUrl?: string | null;
+  charityName?: string | null;
 }
 
 export interface FacilityMapProps {
@@ -54,9 +56,23 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
         <Marker key={m.id} position={[m.lat, m.lng]}>
           <Popup>
             <div className="text-sm leading-relaxed">
-              <p className="font-semibold">{m.name}</p>
+              <p className="font-semibold text-neutral-900">{m.name}</p>
               {m.address && <p className="text-neutral-600">{m.address}</p>}
               {m.phone && <p className="text-blue-600">{m.phone}</p>}
+              {m.charityUrl && (
+                <div className="mt-2 pt-1.5 border-t border-neutral-100">
+                  <a
+                    href={m.charityUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded bg-rose-500 px-2.5 py-1 text-xs font-semibold !text-white hover:bg-rose-600 transition-colors shadow-sm"
+                  >
+                    <span>🛍️</span>
+                    <span>{m.charityName || "愛心義賣"}</span>
+                    <span className="text-[10px]">↗</span>
+                  </a>
+                </div>
+              )}
             </div>
           </Popup>
         </Marker>

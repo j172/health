@@ -1,6 +1,6 @@
 # Full System Technical Specification (j172tw Healthz)
 
-> **Document Version**: 2.2.0  
+> **Document Version**: 2.3.0  
 > **Last Updated**: 2026-08-23  
 > **Status**: Production Specification  
 > **Target Environment**: Next.js 16 (App Router) + Node 20 + MySQL 8.0 + cPanel PM2 Hosting + Cloudflare Edge CDN & Security
@@ -192,6 +192,7 @@ absence:
 | Card-image pipeline, 3 providers + OG scraping                | `lib/server/news/cardImages.ts`, `imageProviders.ts`, `backfillOgImages.ts`, `lib/server/{pixabay,pexels,unsplash,images}/` |
 | Article geocoding & static maps                               | `lib/server/news/geoExtractor.ts`, `staticMap.ts`, `newsGeocodeBatch.ts`                                                    |
 | Facilities registry across 16 sources, budget-aware geocoding | `lib/server/facilities/`                                                                                                    |
+| Disability welfare charity sales & sheltered workshops        | `scripts/enrich-disability-charity-sales.mjs`, `components/Facilities/FacilitySearchContent.tsx`, `FacilityMap.tsx`         |
 | TFDA drugs & food ingestion                                   | `lib/server/drugs/`, `lib/server/food/`                                                                                     |
 | WRA drought bulletins                                         | `lib/server/wra/` (see `docs/specs/phase5-wra-drought-alerts.md`)                                                           |
 | Social post draft queue                                       | `lib/server/social/`, `app/admin/social-queue/`                                                                             |
@@ -199,7 +200,19 @@ absence:
 | ~20 admin mutation endpoints                                  | `app/api/admin/*` — all gated by the timing-safe `requireAdminSecret`                                                       |
 | ~29 database tables                                           | `lib/server/db/schema.ts` (`ensureSchema()` is the only schema authority; there is no DDL file)                             |
 
-### 8.1 Operational constraints that behave as standards
+### 8.1 Disability Welfare Charity Sales Subsystem (愛心義賣)
+
+- **Data Model & Schema**:
+  - `facility_type = 'disability_welfare'`
+  - **Government Registry vs. Custom Workshop Partitioning**: Official MOHW records retain `source_key = 'mohw_disability_welfare'`, enriched via `extra_json.charityUrl` and `extra_json.charityName: "愛心義賣"`. Standalone sheltered workshops, charity bakeries, and foundation shops missing from the government open dataset are ingested under `source_key = 'charity_sales'`, safeguarding them from overwrite during periodic MOHW CSV sync runs.
+  - **Geocoding Guarantee**: 100% of charity sales facilities carry high-precision `lat` and `lng` coordinates for Haversine nearby search and interactive map rendering.
+- **Frontend & Map UX**:
+  - `FacilitySearchContent.tsx` checks `extra_json.charityUrl` and displays a prominent, accessible `🛍️ 愛心義賣 ↗` badge/button in the card header.
+  - `FacilityMap.tsx` markers pass `charityUrl` and `charityName` to Leaflet `Popup` overlays, allowing direct outbound navigation (`target="_blank" rel="noopener noreferrer"`).
+- **Maintenance & Ingestion**:
+  - `scripts/enrich-disability-charity-sales.mjs` provides an idempotent batch migration runner with automatic HTTP redirect resolution for shortlinks (`pse.is`, `reurl.cc`, `forms.gle`).
+
+### 8.2 Operational constraints that behave as standards
 
 - The production host caps V8 at roughly 768MB. **No WASM-based rendering at
   request time** — `next/og` crash-looped production once for exactly this reason.
