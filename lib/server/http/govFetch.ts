@@ -47,8 +47,8 @@ export function fetchGovData(url: string, headers?: Record<string, string>): Pro
       reject(err);
     });
 
-    req.setTimeout(15000, () => {
-      req.destroy(new Error(`Request timed out after 15s: ${url}`));
+    req.setTimeout(30000, () => {
+      req.destroy(new Error(`Request timed out after 30s: ${url}`));
     });
   });
 }

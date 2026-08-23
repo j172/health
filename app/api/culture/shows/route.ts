@@ -29,6 +29,16 @@ export interface CulturalActivityItem {
   shows: CulturalShowInfo[];
 }
 
+function toSafeString(v: any): string {
+  if (!v) return "";
+  if (Array.isArray(v)) return v.map(toSafeString).filter(Boolean).join("、");
+  if (typeof v === "string") return v.trim();
+  return String(v).trim();
+}
+
+let cachedShows: { timestamp: number; items: CulturalActivityItem[] } | null = null;
+const CACHE_TTL_MS = 3600 * 1000; // 1 hour
+
 const CULTURE_API_URL =
   "https://cloud.culture.tw/frontsite/trans/SearchShowAction.do?method=doFindTypeJ&category=4";
 
@@ -38,51 +48,63 @@ export async function GET(request: Request) {
     const keyword = (searchParams.get("keyword") || "").trim().toLowerCase();
     const city = (searchParams.get("city") || "").trim();
 
-    const res = await fetchGovData(CULTURE_API_URL);
+    const now = Date.now();
+    let rawList: any[] = [];
 
-    if (!res.ok) {
-      throw new Error(`Culture API error: HTTP ${res.status}`);
+    if (!cachedShows || now - cachedShows.timestamp > CACHE_TTL_MS) {
+      try {
+        const res = await fetchGovData(CULTURE_API_URL);
+        if (res.ok) {
+          rawList = await res.json();
+        }
+      } catch (fetchErr) {
+        console.warn("Culture API fetch error, checking cache fallback:", fetchErr);
+      }
     }
 
-    const rawList = await res.json();
-    if (!Array.isArray(rawList)) {
-      return NextResponse.json({ ok: true, count: 0, items: [] });
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "/");
+      const parsedItems: CulturalActivityItem[] = rawList
+        .filter((item) => {
+          const title = toSafeString(item.title);
+          const endDate = toSafeString(item.endDate);
+          if (!title) return false;
+          if (endDate && endDate < todayStr) return false;
+          return true;
+        })
+        .map((item) => {
+          const shows: CulturalShowInfo[] = (item.showInfo || []).map((s: any) => ({
+            time: toSafeString(s.time),
+            location: toSafeString(s.location),
+            locationName: toSafeString(s.locationName),
+            onSales: toSafeString(s.onSales) || "N",
+            price: toSafeString(s.price),
+            latitude: s.latitude ? parseFloat(String(s.latitude)) : null,
+            longitude: s.longitude ? parseFloat(String(s.longitude)) : null,
+            endTime: toSafeString(s.endTime),
+          }));
+
+          const master = toSafeString(item.masterUnit || item.showUnit);
+
+          return {
+            id: toSafeString(item.UID) || String(Math.random()),
+            title: toSafeString(item.title),
+            category: toSafeString(item.category) || "4",
+            description: toSafeString(item.descriptionFilterHtml || item.comment),
+            imageUrl: toSafeString(item.imageUrl) || null,
+            masterUnit: master || null,
+            startDate: toSafeString(item.startDate),
+            endDate: toSafeString(item.endDate),
+            sourceWebPromote: toSafeString(item.sourceWebPromote) || null,
+            webSales: toSafeString(item.webSales) || null,
+            shows,
+          };
+        });
+
+      cachedShows = { timestamp: now, items: parsedItems };
     }
 
-    const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, "/");
-
-    let items: CulturalActivityItem[] = rawList
-      .filter((item) => {
-        if (!item.title) return false;
-        if (item.endDate && item.endDate < todayStr) return false;
-        return true;
-      })
-      .map((item) => {
-        const shows: CulturalShowInfo[] = (item.showInfo || []).map((s: any) => ({
-          time: s.time || "",
-          location: s.location || "",
-          locationName: s.locationName || "",
-          onSales: s.onSales || "N",
-          price: s.price || "",
-          latitude: s.latitude ? parseFloat(s.latitude) : null,
-          longitude: s.longitude ? parseFloat(s.longitude) : null,
-          endTime: s.endTime || "",
-        }));
-
-        return {
-          id: item.UID || String(Math.random()),
-          title: (item.title || "").trim(),
-          category: item.category || "4",
-          description: (item.descriptionFilterHtml || item.comment || "").trim(),
-          imageUrl: item.imageUrl || null,
-          masterUnit: (item.masterUnit || item.showUnit || "").trim() || null,
-          startDate: item.startDate || "",
-          endDate: item.endDate || "",
-          sourceWebPromote: item.sourceWebPromote || null,
-          webSales: item.webSales || null,
-          shows,
-        };
-      });
+    let items = cachedShows ? [...cachedShows.items] : [];
 
     if (keyword) {
       items = items.filter(

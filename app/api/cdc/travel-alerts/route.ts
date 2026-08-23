@@ -99,70 +99,127 @@ function parseSeverityLevelCode(levelStr: string): 1 | 2 | 3 | 0 {
   return 0;
 }
 
+import fs from "node:fs";
+import path from "node:path";
+
+let cachedCdcData: {
+  timestamp: number;
+  alerts: CDCTravelAlertItem[];
+  news: CDCEpidemicNewsItem[];
+} | null = null;
+const CACHE_TTL_MS = 1800 * 1000; // 30 mins
+
+function loadLocalBaselineCsv(filename: string): string {
+  try {
+    const filePath = path.join(process.cwd(), "data", filename);
+    if (fs.existsSync(filePath)) {
+      return fs.readFileSync(filePath, "utf-8");
+    }
+  } catch (err) {
+    console.warn(`Failed to read local baseline ${filename}:`, err);
+  }
+  return "";
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const keyword = (searchParams.get("keyword") || "").trim().toLowerCase();
     const levelFilter = searchParams.get("level");
 
-    // Fetch both CDC CSVs in parallel (handling government certificate trust)
-    const [alertRes, epidRes] = await Promise.all([
-      fetchGovData("https://od.cdc.gov.tw/cdc/TCDCTravelAlert.csv"),
-      fetchGovData("https://od.cdc.gov.tw/cdc/TCDCIntlEpidAll.csv"),
-    ]);
+    const now = Date.now();
 
-    let alerts: CDCTravelAlertItem[] = [];
-    let news: CDCEpidemicNewsItem[] = [];
+    if (!cachedCdcData || now - cachedCdcData.timestamp > CACHE_TTL_MS) {
+      let alertCsvText = "";
+      let epidCsvText = "";
 
-    if (alertRes.ok) {
-      const text = await alertRes.text();
-      const rows = parseCsv(text);
-      alerts = rows
-        .filter((r) => r.areaDesc || r.alert_disease)
-        .map((r, idx) => {
-          const { lat, lng } = extractCoordinates(r.circle || "");
-          const severityLevel = r.severity_level || "";
-          return {
-            id: `alert_${r.ISO3166 || ""}_${r.alert_disease || ""}_${idx}`,
-            effective: r.effective || "",
-            alertTitle: r.alert_title || "國際間旅遊疫情建議",
-            severityLevel,
-            levelCode: parseSeverityLevelCode(severityLevel),
-            disease: r.alert_disease || "",
-            country: r.areaDesc || "",
-            countryEn: r.areaDesc_EN || "",
-            instruction: r.instruction || "",
-            web: r.web || "https://www.cdc.gov.tw",
-            lat,
-            lng,
-            iso: r.ISO3166 || "",
-          };
-        });
+      // Try fetching live from CDC
+      try {
+        const [alertRes, epidRes] = await Promise.allSettled([
+          fetchGovData("https://od.cdc.gov.tw/cdc/TCDCTravelAlert.csv"),
+          fetchGovData("https://od.cdc.gov.tw/cdc/TCDCIntlEpidAll.csv"),
+        ]);
+
+        if (alertRes.status === "fulfilled" && alertRes.value.ok) {
+          alertCsvText = await alertRes.value.text();
+        }
+        if (epidRes.status === "fulfilled" && epidRes.value.ok) {
+          epidCsvText = await epidRes.value.text();
+        }
+      } catch (fetchErr) {
+        console.warn("CDC live fetch failed, falling back:", fetchErr);
+      }
+
+      // Fallback to local baseline if remote fetch was empty
+      if (!alertCsvText) {
+        alertCsvText = loadLocalBaselineCsv("cdc-travel-alert.csv");
+      }
+      if (!epidCsvText) {
+        epidCsvText = loadLocalBaselineCsv("cdc-intl-epid.csv");
+      }
+
+      let parsedAlerts: CDCTravelAlertItem[] = [];
+      let parsedNews: CDCEpidemicNewsItem[] = [];
+
+      if (alertCsvText) {
+        const rows = parseCsv(alertCsvText);
+        parsedAlerts = rows
+          .filter((r) => r.areaDesc || r.alert_disease)
+          .map((r, idx) => {
+            const { lat, lng } = extractCoordinates(r.circle || "");
+            const severityLevel = r.severity_level || "";
+            return {
+              id: `alert_${r.ISO3166 || ""}_${r.alert_disease || ""}_${idx}`,
+              effective: r.effective || "",
+              alertTitle: r.alert_title || "國際間旅遊疫情建議",
+              severityLevel,
+              levelCode: parseSeverityLevelCode(severityLevel),
+              disease: r.alert_disease || "",
+              country: r.areaDesc || "",
+              countryEn: r.areaDesc_EN || "",
+              instruction: r.instruction || "",
+              web: r.web || "https://www.cdc.gov.tw",
+              lat,
+              lng,
+              iso: r.ISO3166 || "",
+            };
+          });
+      }
+
+      if (epidCsvText) {
+        const rows = parseCsv(epidCsvText);
+        parsedNews = rows
+          .filter((r) => r.headline || r.description)
+          .map((r, idx) => {
+            const { lat, lng } = extractCoordinates(r.circle || "");
+            return {
+              id: `epid_${r.ISO3166 || ""}_${idx}`,
+              sent: r.sent || "",
+              effective: r.effective || "",
+              headline: r.headline || "",
+              description: r.description || "",
+              disease: r.alert_disease || "",
+              country: r.areaDesc || "",
+              countryEn: r.areaDesc_EN || "",
+              web: r.web || "https://www.cdc.gov.tw",
+              lat,
+              lng,
+              iso: r.ISO3166 || "",
+            };
+          });
+      }
+
+      if (parsedAlerts.length > 0 || parsedNews.length > 0) {
+        cachedCdcData = {
+          timestamp: now,
+          alerts: parsedAlerts,
+          news: parsedNews,
+        };
+      }
     }
 
-    if (epidRes.ok) {
-      const text = await epidRes.text();
-      const rows = parseCsv(text);
-      news = rows
-        .filter((r) => r.headline || r.description)
-        .map((r, idx) => {
-          const { lat, lng } = extractCoordinates(r.circle || "");
-          return {
-            id: `epid_${r.ISO3166 || ""}_${idx}`,
-            sent: r.sent || "",
-            effective: r.effective || "",
-            headline: r.headline || "",
-            description: r.description || "",
-            disease: r.alert_disease || "",
-            country: r.areaDesc || "",
-            countryEn: r.areaDesc_EN || "",
-            web: r.web || "https://www.cdc.gov.tw",
-            lat,
-            lng,
-            iso: r.ISO3166 || "",
-          };
-        });
-    }
+    let alerts = cachedCdcData ? [...cachedCdcData.alerts] : [];
+    let news = cachedCdcData ? [...cachedCdcData.news] : [];
 
     if (keyword) {
       alerts = alerts.filter(
