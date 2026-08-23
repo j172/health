@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchGovData } from "@/lib/server/http/govFetch";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800; // 30 mins cache
@@ -106,14 +107,8 @@ export async function GET(request: Request) {
 
     // Fetch both CDC CSVs in parallel (handling government certificate trust)
     const [alertRes, epidRes] = await Promise.all([
-      fetch("https://od.cdc.gov.tw/cdc/TCDCTravelAlert.csv", {
-        next: { revalidate: 1800 },
-        headers: { "User-Agent": "j172-health-cdc/1.0" },
-      }),
-      fetch("https://od.cdc.gov.tw/cdc/TCDCIntlEpidAll.csv", {
-        next: { revalidate: 1800 },
-        headers: { "User-Agent": "j172-health-cdc/1.0" },
-      }),
+      fetchGovData("https://od.cdc.gov.tw/cdc/TCDCTravelAlert.csv"),
+      fetchGovData("https://od.cdc.gov.tw/cdc/TCDCIntlEpidAll.csv"),
     ]);
 
     let alerts: CDCTravelAlertItem[] = [];

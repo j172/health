@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetchGovData } from "@/lib/server/http/govFetch";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 3600; // 1 hour cache
@@ -37,10 +38,7 @@ export async function GET(request: Request) {
     const keyword = (searchParams.get("keyword") || "").trim().toLowerCase();
     const city = (searchParams.get("city") || "").trim();
 
-    const res = await fetch(CULTURE_API_URL, {
-      next: { revalidate: 3600 },
-      headers: { "User-Agent": "j172-health-shows/1.0" },
-    });
+    const res = await fetchGovData(CULTURE_API_URL);
 
     if (!res.ok) {
       throw new Error(`Culture API error: HTTP ${res.status}`);
