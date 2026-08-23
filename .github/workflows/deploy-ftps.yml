@@ -290,50 +290,106 @@ jobs:
           echo "Timed out waiting for node_modules sync to finish (it may have been OOM-killed before writing a status file — check the server manually)."
           exit 1
 
+      # Both of these used to talk to /__ops/* from the runner over HTTPS. That
+      # path fails silently: the host's LiteSpeed bot protection answers a runner
+      # with an interstitial page carrying HTTP 200, so `curl --fail` reports
+      # success, the apply never starts, and the poll then spends ten minutes
+      # timing out. That is how the 2026-08-22 deploy failed with every step
+      # before it showing green.
+      #
+      # SSH is the primary path now. The same request issued *from the host* is
+      # not the blocked party — the pm2 watchdog in the crontab has been doing
+      # exactly this every five minutes without trouble — and the status read
+      # skips HTTP altogether by tailing the log file. The HTTPS path stays as a
+      # fallback for when SSH secrets are absent, so this cannot become a single
+      # point of failure on the only route to production.
       - name: Trigger apply-prebuilt force
         env:
           OPS_KEY: ${{ secrets.OPS_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          set -euo pipefail
           OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
-          # --resolve pins to the origin IP to bypass Cloudflare, which challenges these
-          # requests. The origin then serves the shared-host certificate rather than one
-          # matching health.j172.tw, hence --insecure. The exposure is a MITM between this
-          # runner and the origin IP; removing the flag safely means pinning the origin
-          # certificate with --cacert, not simply deleting it.
-          curl --fail --show-error --silent --insecure \
-            --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            --retry 3 \
-            --retry-delay 2 \
-            --retry-all-errors \
-            --resolve "health.j172.tw:443:103.21.221.12" \
-            "https://health.j172.tw/__ops/apply-prebuilt-force?key=$OPS_KEY_CLEAN&cb=$(date +%s)"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+          OPS_URL="https://health.j172.tw/__ops/apply-prebuilt-force?key=$OPS_KEY_CLEAN&cb=$(date +%s)"
+
+          if [ -n "$SSH_HOST" ] && [ -n "$SSH_PRIVATE_KEY" ]; then
+            source scripts/lib/ssh-key-stage.sh
+            stage_ssh_key
+            echo "Triggering apply over SSH (host-originated request)."
+            ssh -i "$KEY_FILE" -p "${SSH_PORT:-22}" \
+              -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              -o BatchMode=yes -o ConnectTimeout=20 \
+              "$SSH_USER@$SSH_HOST" \
+              "curl -sS --max-time 120 --insecure --resolve 'health.j172.tw:443:103.21.221.12' '$OPS_URL'" \
+              | tail -20
+          else
+            echo "No SSH secrets — falling back to the runner's HTTPS path."
+            # --resolve pins the origin IP to bypass Cloudflare; the origin then
+            # serves a shared-host certificate, hence --insecure.
+            RESPONSE="$(curl --fail --show-error --silent --insecure \
+              --user-agent "$UA" --retry 3 --retry-delay 2 --retry-all-errors \
+              --resolve "health.j172.tw:443:103.21.221.12" "$OPS_URL")"
+            printf '%s\n' "$RESPONSE" | tail -20
+            # An interstitial arrives as HTTP 200 with HTML, which --fail cannot
+            # catch. Refuse here rather than waiting out the poll below.
+            if printf '%s' "$RESPONSE" | grep -qiE '<!doctype html|being verified'; then
+              echo "Apply trigger was answered with a bot-protection page, not the handler."
+              exit 1
+            fi
+          fi
 
       - name: Read apply status
         env:
           OPS_KEY: ${{ secrets.OPS_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
           OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
-          # The server-side probe this polls for (.remote-health-index.php's
-          # buildPrebuiltCommand) budgets 60 one-second attempts, but each
-          # attempt can itself take up to ~20s if curl hangs instead of
-          # refusing outright — so its real-world worst case is far longer
-          # than 60s, and has been observed taking 80-100s+ under host load.
-          # This loop must comfortably outlast that, or it reports a false
-          # failure (and skips every later step, incl. the crontab sync)
-          # while the server-side apply is actually still in progress or
-          # about to succeed — confirmed happening twice on 2026-08-02 at
-          # the old 30-attempt/~60-80s budget.
+          USE_SSH=0
+          if [ -n "$SSH_HOST" ] && [ -n "$SSH_PRIVATE_KEY" ]; then
+            source scripts/lib/ssh-key-stage.sh
+            stage_ssh_key
+            USE_SSH=1
+            echo "Reading apply status over SSH (tailing the log directly)."
+          else
+            echo "No SSH secrets — polling apply status over HTTPS."
+          fi
+
+          read_status() {
+            if [ "$USE_SSH" = "1" ]; then
+              ssh -i "$KEY_FILE" -p "${SSH_PORT:-22}" \
+                -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+                -o BatchMode=yes -o ConnectTimeout=20 \
+                "$SSH_USER@$SSH_HOST" \
+                'tail -c 8000 ~/health_app/.apply-prebuilt.log 2>/dev/null || true'
+            else
+              curl --fail --show-error --silent --insecure \
+                --user-agent "$UA" \
+                --resolve "health.j172.tw:443:103.21.221.12" \
+                "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY_CLEAN&cb=$(date +%s)"
+            fi
+          }
+
+          # The server-side probe budgets 60 one-second attempts, but a single
+          # attempt can hang for ~20s rather than refuse outright, so its real
+          # worst case runs well past 60s — 80-100s observed under host load.
+          # This loop must outlast that or it reports a false failure and skips
+          # every later step, including the crontab sync.
           for ATTEMPT in $(seq 1 150); do
-            STATUS="$(curl --fail --show-error --silent --insecure \
-              --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              --resolve "health.j172.tw:443:103.21.221.12" \
-              "https://health.j172.tw/__ops/apply-prebuilt-status?key=$OPS_KEY_CLEAN&cb=$(date +%s)")"
-
-            echo "$STATUS"
+            STATUS="$(read_status || true)"
+            printf '%s\n' "$STATUS" | tail -5
 
             if printf '%s' "$STATUS" | grep -Fq '[DONE-FORCE-V4]'; then
+              echo "Apply completed."
               exit 0
             fi
 
