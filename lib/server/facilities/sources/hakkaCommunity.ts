@@ -2,7 +2,7 @@ import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { normalizeAddress } from "@/lib/server/facilities/csv";
 
-// 客家委員會「客庄社區發展協會」名冊 — single national JSON file, no
+// 客家委員會「伯公照護站」名冊 — single national JSON file, no
 // coordinates (geocoded via the usual facilities-geocode backfill) and no
 // stable per-row ID ("No" is just a sequence number within this export, not
 // a government-issued code), so sourceId is derived from name+address like
@@ -19,7 +19,7 @@ export async function fetchHakkaCommunity(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
   // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
   const { status, text } = await httpGetText(SOURCE_URL);
-  if (status < 200 || status >= 300) throw new Error(`Hakka Affairs Council community association request failed: HTTP ${status}`);
+  if (status < 200 || status >= 300) throw new Error(`Hakka Affairs Council Bo-Gong care station request failed: HTTP ${status}`);
 
   const rows: HakkaCommunityRow[] = JSON.parse(text.replace(/^﻿/, ""));
 

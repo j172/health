@@ -31,7 +31,7 @@ const SOURCES_IN_PRIORITY = [
   { facilityType: "ltc_contracted", sourceKey: "mohw_ltc_contracted", label: "長照特約機構" },
   { facilityType: "long_term_care", sourceKey: "mohw_ltc_full", label: "長照機構" },
   { facilityType: "disability_atm", sourceKey: "nfcc_accessible_atm", label: "無障礙ATM" },
-  { facilityType: "hakka_community", sourceKey: "hakka_dtst20230600002", label: "客庄社區發展協會" },
+  { facilityType: "hakka_community", sourceKey: "hakka_dtst20230600002", label: "客委會伯公照護站" },
 
   // Priority 3: 藥局與健檢機構
   { facilityType: "pharmacy", sourceKey: "nhi_pharmacy", label: "健保特約藥局" },

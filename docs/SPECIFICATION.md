@@ -116,7 +116,7 @@ Eight footer columns: 全站總覽 (static links) plus one per `ToolGroup`. Orde
 
 1. **全站總覽 (Overview)**: 首頁 ➔ 健康新聞列表 ➔ 隱私權政策
 2. **醫療院所 (Medical Facilities)** (5): 健康檢查機構查詢 ➔ 居家醫療查詢 ➔ 藥品查詢 ➔ 藥局查詢 ➔ 醫療院所查詢
-3. **長照機構 (LTC Facilities)** (4): 客庄社區發展協會查詢 ➔ 老人福利機構查詢 ➔ 長照機構查詢 ➔ 長照特約服務機構查詢
+3. **長照機構 (LTC Facilities)** (4): 客家委員會「伯公照護站」查詢 ➔ 老人福利機構查詢 ➔ 長照機構查詢 ➔ 長照特約服務機構查詢
 4. **身心障礙 (Disability Services)** (2): 信用合作社無障礙ATM查詢 ➔ 身心障礙福利機構查詢
 5. **兒少福利 (Child & Youth Welfare)** (2): 兒少福利中心查詢 ➔ 全國親子館查詢
 6. **綠色商店 (Green Shops)** (1): 綠色商店查詢

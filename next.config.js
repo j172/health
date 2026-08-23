@@ -56,6 +56,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/tools/hakka-community",
+        destination: "/tools/hakka-bogong",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

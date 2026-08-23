@@ -48,16 +48,16 @@ export const facilitySearchConfigs = {
       { value: "一般藥局", label: "一般藥局" },
     ],
   },
-  "hakka-community": {
+  "hakka-bogong": {
     facilityType: "hakka_community",
-    emoji: "🏘️",
-    title: "客庄社區發展協會查詢",
+    emoji: "🧓",
+    title: "客家委員會「伯公照護站」查詢",
     description:
-      "查詢客家委員會客庄社區發展協會名冊。資料來源：客家委員會開放資料。",
-    searchPlaceholder: "輸入協會名稱或縣市關鍵字",
-    errorText: "查詢協會資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無收錄的客庄社區發展協會，可改用關鍵字搜尋。",
-    emptyStateWithKeyword: "查無符合的協會。",
+      "查詢客家委員會「伯公照護站」名冊。資料來源：客家委員會開放資料。",
+    searchPlaceholder: "輸入站點名稱、協會或縣市關鍵字",
+    errorText: "查詢伯公照護站資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的伯公照護站，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的伯公照護站。",
   },
   "ltc-contracted": {
     facilityType: "ltc_contracted",

@@ -1167,7 +1167,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.cusa.org.tw",
       },
     ],
-    relatedSlugs: ["disability-welfare", "hakka-community"],
+    relatedSlugs: ["disability-welfare", "hakka-bogong"],
     faqs: [
       {
         question: "資料涵蓋哪些無障礙ATM？",
@@ -1224,26 +1224,26 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "hakka-community",
+    slug: "hakka-bogong",
     group: "ltc",
-    title: "客庄社區發展協會查詢",
+    title: "客家委員會「伯公照護站」查詢",
     description:
-      "查詢客家委員會客庄社區發展協會名冊，支援關鍵字搜尋與附近定位。",
+      "查詢客家委員會「伯公照護站」名冊，支援關鍵字搜尋與附近定位。",
     directAnswer:
-      "查詢客家委員會核准之客庄社區發展協會名冊，提供在地客庄社區營造與關懷據點資訊。",
+      "查詢客家委員會核准設立之伯公照護站名冊，提供客庄長者客語溝通、文化傳承、健康促進與長照關懷據點資訊。",
     scientificBasis: [
       {
-        title: "客庄社區發展協會名冊",
+        title: "客家委員會開放資料 - 伯公照護站名冊",
         authority: "客家委員會 (HAC)",
-        url: "https://www.hakka.gov.tw",
+        url: "https://cloud.hakka.gov.tw/Pub/Opendata/DTST20230600002.json",
       },
     ],
-    relatedSlugs: ["elder-welfare", "green-shops"],
+    relatedSlugs: ["ltc-contracted", "elder-welfare"],
     faqs: [
       {
-        question: "客庄社區發展協會提供哪些服務？",
+        question: "什麼是「伯公照護站」？提供哪些服務？",
         answer:
-          "客庄社區發展協會多承辦社區照顧關懷據點等在地服務，實際服務項目（如共餐、關懷訪視）依各協會而定，建議直接與協會聯繫確認。",
+          "「伯公照護站」為客家委員會配合衛生福利部長照 2.0 政策，結合客庄在地資源（如社區發展協會、C 級巷弄長照站）推動之據點。除了提供共餐、關懷訪視與延緩失能課程外，特別融入客語環境、客家歌謠與文化健康活動，提供貼近客庄長者生活背景的在地照顧。",
       },
     ],
   },
