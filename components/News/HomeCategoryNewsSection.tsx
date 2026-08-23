@@ -11,33 +11,39 @@ interface HomeSourceCategory {
   sourceNames: string[];
 }
 
+const ALL_CATEGORY_CARD_COUNT = 24;
 const HOME_CARD_LIMIT = 50;
 
 export default function HomeCategoryNewsSection({
   items,
   categories,
+  blogItem,
 }: {
   items: NewsListItem[];
   categories: HomeSourceCategory[];
+  blogItem?: NewsListItem | null;
 }) {
   const [activeCategoryKey, setActiveCategoryKey] = useState<string>("all");
 
   const countByCategory = useMemo(() => {
-    const counts: Record<string, number> = { all: items.length };
+    const counts: Record<string, number> = { all: items.length + (blogItem ? 1 : 0) };
     for (const cat of categories) {
       counts[cat.key] = items.filter((item) => cat.sourceNames.includes(item.source_name)).length;
     }
     return counts;
-  }, [items, categories]);
+  }, [items, categories, blogItem]);
 
   const visibleItems = useMemo(() => {
     if (activeCategoryKey === "all") {
-      return items.slice(0, HOME_CARD_LIMIT);
+      if (blogItem) {
+        return [...items.slice(0, ALL_CATEGORY_CARD_COUNT - 1), blogItem];
+      }
+      return items.slice(0, ALL_CATEGORY_CARD_COUNT);
     }
     const active = categories.find((cat) => cat.key === activeCategoryKey);
     if (!active) return items.slice(0, HOME_CARD_LIMIT);
     return items.filter((item) => active.sourceNames.includes(item.source_name)).slice(0, HOME_CARD_LIMIT);
-  }, [items, categories, activeCategoryKey]);
+  }, [items, categories, activeCategoryKey, blogItem]);
 
   const viewAllHref = activeCategoryKey === "all" ? "/news" : `/news?group=${activeCategoryKey}`;
 

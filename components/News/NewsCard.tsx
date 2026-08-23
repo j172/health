@@ -11,30 +11,40 @@ export default function NewsCard({
   horizontal = false,
   compact = false,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
+  isExternal = false,
 }: {
   item: NewsListItem;
   featured?: boolean;
   horizontal?: boolean;
   compact?: boolean;
   sizes?: string;
+  isExternal?: boolean;
 }) {
   const authorLabel = resolveAuthorLabel(item);
   const badgeStyle = getSourceBadgeStyle(item.source_name);
+  const isExternalLink =
+    isExternal ||
+    item.id < 0 ||
+    item.source_name === "blog_j172" ||
+    Boolean(item.canonical_url && /^https?:\/\//i.test(item.canonical_url) && item.id < 0);
+  const href = isExternalLink && item.canonical_url ? item.canonical_url : `/news/${item.id}`;
+  const externalProps = isExternalLink ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
   if (horizontal) {
     return (
       <article className="group btn-press flex items-center gap-3.5 rounded-xl p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50">
         <Link
-          href={`/news/${item.id}`}
+          href={href}
           className="relative h-16 w-20 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800"
           tabIndex={-1}
           aria-hidden="true"
+          {...externalProps}
         >
           <CardThumb item={item} sizes="80px" />
         </Link>
         <div className="min-w-0 flex-1">
           <h3 className="line-clamp-2 text-xs leading-snug font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
-            <Link href={`/news/${item.id}`}>
+            <Link href={href} {...externalProps}>
               <LocalizedText>{item.title}</LocalizedText>
             </Link>
           </h3>
@@ -49,10 +59,11 @@ export default function NewsCard({
   return (
     <article className="group btn-press flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-slate-950/40">
       <Link
-        href={`/news/${item.id}`}
+        href={href}
         className="block flex-shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-800"
         tabIndex={-1}
         aria-hidden="true"
+        {...externalProps}
       >
         <div className="relative aspect-[16/10] overflow-hidden">
           <CardThumb item={item} sizes={sizes} />
@@ -92,7 +103,7 @@ export default function NewsCard({
         </div>
 
         <h2 className="mt-3 line-clamp-2 text-base leading-snug font-bold tracking-tight text-slate-900 transition-colors duration-200 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-          <Link href={`/news/${item.id}`}>
+          <Link href={href} {...externalProps}>
             <LocalizedText>{item.title}</LocalizedText>
           </Link>
         </h2>
@@ -110,8 +121,9 @@ export default function NewsCard({
             {authorLabel}
           </span>
           <Link
-            href={`/news/${item.id}`}
+            href={href}
             className="font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            {...externalProps}
           >
             閱讀全文 →
           </Link>
