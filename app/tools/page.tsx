@@ -6,7 +6,12 @@ import {
   getBaseUrl,
   SITE_NAME,
 } from "@/lib/server/news/seo";
-import { TOOL_CATALOG, compareToolTitles } from "@/lib/server/tools/catalog";
+import {
+  TOOL_CATALOG,
+  compareToolTitles,
+  type ToolCatalogEntry,
+  type ToolGroup,
+} from "@/lib/server/tools/catalog";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
 export const dynamic = "force-dynamic";
@@ -95,9 +100,33 @@ const TOOL_ICONS: Record<string, string> = {
   "child-welfare-nurseries": "👶",
   "child-welfare-centers": "🎈",
   "weather-alerts": "⛈️",
+  "public-toilets": "🚻",
+  kindergartens: "🧩",
+  "cram-schools": "📚",
+  "child-safety-spots": "🛟",
+  "family-cultural-activities": "🎭",
+  "tax-organizations": "🧾",
+  "travel-epidemic-alerts": "🌍",
 };
 
-const CATEGORIES = [
+interface ToolCategory {
+  id: string;
+  title: string;
+  description: string;
+  /**
+   * Membership comes from ToolGroup, so this page cannot drift away from the
+   * nav dropdowns and the footer columns. It had drifted twice already: tools
+   * were added to the catalog, wired into a group, and stayed invisible here
+   * because nobody remembered to append the slug by hand.
+   *
+   * `slugs` is the single exception — the twelve calculators are split into two
+   * curated sections, a distinction no group boundary expresses.
+   */
+  groups?: ToolGroup[];
+  slugs?: string[];
+}
+
+const CATEGORIES: ToolCategory[] = [
   {
     id: "body",
     title: "身體組成與代謝評估",
@@ -122,45 +151,83 @@ const CATEGORIES = [
   },
   {
     id: "environment",
-    title: "即時氣象與環境觀測",
+    title: "即時環境監測",
     description:
-      "中央氣象署、環境部、USGS 即時連線氣象警報、紫外線、AQI 空氣品質與顯著地震監測",
-    slugs: ["weather-alerts", "uv", "aqi", "earthquakes"],
+      "中央氣象署、環境部、USGS 即時連線氣象與海嘯警報、紫外線、AQI 空氣品質與顯著地震監測",
+    groups: ["weather"],
   },
   {
     id: "facility",
     title: "醫療院所與長照福利資源",
     description:
-      "全台健保特約醫院、診所、藥局、長照 2.0、居家醫療與福利機構檢索",
-    slugs: [
-      "clinics",
-      "pharmacies",
-      "drugs",
-      "health-checks",
-      "home-healthcare",
-      "long-term-care",
-      "ltc-contracted",
-      "elder-welfare",
-      "disability-welfare",
-      "disability-atm",
-      "hakka-bogong",
-      "child-welfare-nurseries",
-      "child-welfare-centers",
-    ],
+      "全台健保特約醫院、診所、藥局、長照 2.0、居家醫療與身心障礙福利機構檢索",
+    groups: ["facility", "ltc", "disability"],
+  },
+  {
+    id: "child-welfare",
+    title: "兒少福利與教育資源",
+    description:
+      "全國親子館、兒少福利中心、幼兒園、短期補習班、婦幼安全警示地點與親子藝文活動",
+    groups: ["child-welfare"],
   },
   {
     id: "food",
     title: "食品營養與業者登錄",
     description: "衛福部食藥署食品營養成分分析與食品業者合法登錄資料庫",
-    slugs: ["food-nutrition", "food-operators"],
+    groups: ["food"],
   },
   {
     id: "public-facility",
-    title: "公共設施與綠色生活",
-    description: "環境部認證綠色商店名冊與全國公廁位置、無障礙設施查詢",
-    slugs: ["green-shops", "public-toilets"],
+    title: "便民服務",
+    description:
+      "全國公廁、環境部認證綠色商店、機關團體扣繳單位與國際旅遊疫情警示查詢",
+    groups: ["public-facility"],
   },
 ];
+
+const byTitle = (a: ToolCatalogEntry, b: ToolCatalogEntry) =>
+  compareToolTitles(a.title, b.title);
+
+/**
+ * Categories resolved to their tools, plus a catch-all.
+ *
+ * Collated per SPECIFICATION.md 5.1 rather than left in catalog order — this is
+ * the page where readers actually browse. Anything a category does not claim
+ * lands in 其他工具 rather than vanishing, so the next un-categorised group is
+ * visible on the page instead of silently missing from it.
+ */
+const SECTIONS = (() => {
+  const claimed = new Set<string>();
+  const sections = CATEGORIES.map((category) => {
+    const tools = (
+      category.groups
+        ? TOOL_CATALOG.filter((tool) => category.groups!.includes(tool.group))
+        : (category.slugs ?? [])
+            .map((slug) => TOOL_CATALOG.find((tool) => tool.slug === slug))
+            .filter((tool): tool is ToolCatalogEntry => Boolean(tool))
+    )
+      .slice()
+      .sort(byTitle);
+    tools.forEach((tool) => claimed.add(tool.slug));
+    return { ...category, tools };
+  }).filter((section) => section.tools.length > 0);
+
+  const leftover = TOOL_CATALOG.filter(
+    (tool) => !claimed.has(tool.slug),
+  ).sort(byTitle);
+
+  return leftover.length > 0
+    ? [
+        ...sections,
+        {
+          id: "other",
+          title: "其他工具",
+          description: "尚未歸入上列主題的工具",
+          tools: leftover,
+        },
+      ]
+    : sections;
+})();
 
 export default function ToolsIndexPage() {
   const breadcrumb = buildBreadcrumbJsonLd([
@@ -205,16 +272,8 @@ export default function ToolsIndexPage() {
 
           {/* Categorized Tool Sections (Topic Silos) */}
           <div className="space-y-12">
-            {CATEGORIES.map((category) => {
-              // Collated per SPECIFICATION.md 5.1 rather than left in the order the
-              // slugs happen to appear in CATEGORIES — this is the page where
-              // readers actually browse the catalog.
-              const categoryTools = category.slugs
-                .map((slug) => TOOL_CATALOG.find((t) => t.slug === slug))
-                .filter((t): t is NonNullable<typeof t> => Boolean(t))
-                .sort((a, b) => compareToolTitles(a.title, b.title));
-
-              if (categoryTools.length === 0) return null;
+            {SECTIONS.map((category) => {
+              const categoryTools = category.tools;
 
               return (
                 <section
