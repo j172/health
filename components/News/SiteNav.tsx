@@ -36,6 +36,11 @@ const PUBLIC_FACILITY_TOOLS = TOOL_CATALOG.filter(
 const WEATHER_TOOLS = TOOL_CATALOG.filter(
   (t) => t.group === "weather",
 ).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
+const FOOD_TOOLS = TOOL_CATALOG.filter((t) => t.group === "food").map((t) => ({
+  href: `/tools/${t.slug}`,
+  slug: t.slug,
+  title: t.title,
+}));
 
 interface NavLinkItem {
   href: string;
@@ -148,6 +153,7 @@ export default function SiteNav() {
   const disabilityItems = localizeItems(DISABILITY_TOOLS);
   const publicFacilityItems = localizeItems(PUBLIC_FACILITY_TOOLS);
   const weatherItems = localizeItems(WEATHER_TOOLS);
+  const foodItems = localizeItems(FOOD_TOOLS);
   const calculatorItems = localizeItems(CALCULATOR_TOOLS);
 
   useEffect(() => {
@@ -197,10 +203,13 @@ export default function SiteNav() {
               </span>
             </Link>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Navigation. It unfolds at xl, not md: ten top-level
+                items cannot share a 768px row with the logo, the search field
+                and three toggles. Below 1280px the hamburger drawer carries
+                the same groups, so nothing is lost. */}
             <nav
               aria-label="主要導覽"
-              className="hidden items-center gap-1.5 md:flex"
+              className="hidden items-center gap-1.5 xl:flex"
             >
               <Link
                 href="/"
@@ -232,7 +241,11 @@ export default function SiteNav() {
                 items={publicFacilityItems}
               />
               <NavDropdown
-                label={t("nav.weather", "氣象觀測")}
+                label={t("nav.food", "食品營養")}
+                items={foodItems}
+              />
+              <NavDropdown
+                label={t("nav.weather", "環境監測")}
                 items={weatherItems}
               />
               <NavDropdown
@@ -280,7 +293,7 @@ export default function SiteNav() {
                 aria-expanded={mobileOpen}
                 aria-controls={mobilePanelId}
                 onClick={() => setMobileOpen((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 md:hidden dark:border-slate-800 dark:text-slate-300"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 xl:hidden dark:border-slate-800 dark:text-slate-300"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -312,7 +325,7 @@ export default function SiteNav() {
         {mobileOpen && (
           <div
             id={mobilePanelId}
-            className="max-h-[75vh] overflow-y-auto border-t border-slate-100 bg-white p-4 md:hidden dark:border-slate-800 dark:bg-slate-950"
+            className="max-h-[75vh] overflow-y-auto border-t border-slate-100 bg-white p-4 xl:hidden dark:border-slate-800 dark:bg-slate-950"
           >
             <div className="flex flex-col gap-2 text-sm font-semibold">
               <Link
@@ -350,7 +363,11 @@ export default function SiteNav() {
                 items: publicFacilityItems,
               },
               {
-                heading: t("nav.weather", "氣象觀測"),
+                heading: t("nav.food", "食品營養"),
+                items: foodItems,
+              },
+              {
+                heading: t("nav.weather", "環境監測"),
                 items: weatherItems,
               },
               {

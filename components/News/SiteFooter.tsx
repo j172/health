@@ -251,7 +251,7 @@ export default function SiteFooter() {
             ))}
           </FooterColumn>
 
-          <FooterColumn label={t("nav.weather", "氣象觀測")}>
+          <FooterColumn label={t("nav.weather", "環境監測")}>
             {weatherTools.map((tool) => (
               <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
                 {localizeTitle(tool)}
