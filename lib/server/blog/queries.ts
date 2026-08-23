@@ -1,4 +1,5 @@
 import { type NewsListItem } from "@/lib/server/news/queries";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 function decodeHtmlEntities(text: string): string {
   if (!text) return "";
@@ -56,36 +57,36 @@ function extractFeaturedImage(html: string): string | null {
 }
 
 const FEED_URL = "https://blog.j172.tw/feed/";
-const REVALIDATE_SECONDS = 3600; // 1 hour cache
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour in-memory cache
+
+let cachedBlogItem: { item: NewsListItem; expiresAt: number } | null = null;
 
 /**
  * Fetches the latest post from https://blog.j172.tw/feed/ and maps it to a NewsListItem.
+ * Uses native httpGetText to safely execute within Linux shared-hosting ulimit memory constraints.
  * Returns null if the feed is unavailable or parsing fails, enabling seamless fallback.
  */
 export async function getLatestBlogPost(): Promise<NewsListItem | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+  const now = Date.now();
+  if (cachedBlogItem && now < cachedBlogItem.expiresAt) {
+    return cachedBlogItem.item;
+  }
 
-    const res = await fetch(FEED_URL, {
-      signal: controller.signal,
-      next: { revalidate: REVALIDATE_SECONDS },
+  try {
+    const { status, text: xml } = await httpGetText(FEED_URL, {
+      timeoutMs: 8000,
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 (Healthz/1.0)",
         Accept: "application/rss+xml, application/xml, text/xml, */*",
       },
     });
-    clearTimeout(timeout);
 
-    if (!res.ok) {
-      console.warn(`[getLatestBlogPost] Feed responded with status ${res.status}`);
-      return null;
+    if (status < 200 || status >= 300 || !xml) {
+      console.warn(`[getLatestBlogPost] Feed responded with status ${status}`);
+      return cachedBlogItem ? cachedBlogItem.item : null;
     }
 
-    const xml = await res.text();
     const itemMatch = xml.match(/<item>([\s\S]*?)<\/item>/);
-    if (!itemMatch) return null;
+    if (!itemMatch) return cachedBlogItem ? cachedBlogItem.item : null;
 
     const itemXml = itemMatch[1];
     const titleMatch = itemXml.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
@@ -101,31 +102,20 @@ export async function getLatestBlogPost(): Promise<NewsListItem | null> {
     const creator = creatorMatch ? creatorMatch[1].trim() : "Jay Fan-Chiang";
     const description = decodeHtmlEntities(descMatch ? descMatch[1].trim() : "");
 
-    if (!title || !link) return null;
+    if (!title || !link) return cachedBlogItem ? cachedBlogItem.item : null;
 
-    // Fetch featured image from the post page with 24-hour cache
+    // Fetch featured image from the post page
     let cardImageUrl: string | null = null;
     try {
-      const pageController = new AbortController();
-      const pageTimeout = setTimeout(() => pageController.abort(), 4000);
-      const pageRes = await fetch(link, {
-        signal: pageController.signal,
-        next: { revalidate: 86400 },
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 (Healthz/1.0)",
-        },
-      });
-      clearTimeout(pageTimeout);
-      if (pageRes.ok) {
-        const html = await pageRes.text();
-        cardImageUrl = extractFeaturedImage(html);
+      const pageRes = await httpGetText(link, { timeoutMs: 5000 });
+      if (pageRes.status >= 200 && pageRes.status < 300 && pageRes.text) {
+        cardImageUrl = extractFeaturedImage(pageRes.text);
       }
     } catch {
       // Ignore image fetch errors; CardThumb will render graceful brand gradient
     }
 
-    return {
+    const item: NewsListItem = {
       id: -1,
       source_name: "blog_j172",
       feed_code: "blog_j172",
@@ -141,8 +131,11 @@ export async function getLatestBlogPost(): Promise<NewsListItem | null> {
       card_image_contributor: creator || "Jay Fan-Chiang",
       location_name: null,
     };
+
+    cachedBlogItem = { item, expiresAt: now + CACHE_TTL_MS };
+    return item;
   } catch (err) {
     console.error("[getLatestBlogPost] Failed to fetch or parse blog RSS:", err);
-    return null;
+    return cachedBlogItem ? cachedBlogItem.item : null;
   }
 }

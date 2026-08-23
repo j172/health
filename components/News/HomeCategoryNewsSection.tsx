@@ -35,10 +35,11 @@ export default function HomeCategoryNewsSection({
 
   const visibleItems = useMemo(() => {
     if (activeCategoryKey === "all") {
-      if (blogItem) {
-        return [...items.slice(0, ALL_CATEGORY_CARD_COUNT - 1), blogItem];
+      const limit = Math.min(items.length, HOME_CARD_LIMIT);
+      if (blogItem && limit > 0) {
+        return [...items.slice(0, limit - 1), blogItem];
       }
-      return items.slice(0, ALL_CATEGORY_CARD_COUNT);
+      return items.slice(0, HOME_CARD_LIMIT);
     }
     const active = categories.find((cat) => cat.key === activeCategoryKey);
     if (!active) return items.slice(0, HOME_CARD_LIMIT);
