@@ -46,7 +46,29 @@ interface FacilityItem {
     charityUrl?: string;
     charityName?: string;
   } | null;
+  /** Only present on GPS searches — the Haversine distance the API sorted the list by. */
+  distance_km?: number;
 }
+
+/**
+ * Radius used to re-run a nearby search that came back empty. 500km covers Taiwan
+ * end to end, so the widened query is effectively "the whole dataset, still ordered
+ * by how far away it is from you".
+ */
+const NEARBY_FALLBACK_RADIUS_METERS = 500000;
+
+/**
+ * Pulls the tool's own noun out of copy it already carries, so the nearby-fallback
+ * notice can name what it is listing ("附近查無收錄的伯公照護站，可改用關鍵字搜尋。"
+ * → "伯公照護站"). Every config phrases `emptyStateNoKeyword` the same way, and the
+ * ones that don't still end their `title` in 查詢 — reusing those beats adding an
+ * 18th place where each tool's noun has to be spelled out and kept in sync.
+ */
+const facilityNoun = (emptyStateNoKeyword: string, title: string): string => {
+  const fromEmptyState = emptyStateNoKeyword.match(/查無(?:已定位的|收錄的)?(.+?)[，,。]/);
+  if (fromEmptyState) return fromEmptyState[1];
+  return title.replace(/查詢$/, "") || "資料";
+};
 
 /**
  * Shared search/map/list UI for the government facility lookups under /tools.
@@ -79,6 +101,10 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   const [category, setCategory] = useState("");
   const [sort, setSort] = useState<"distance" | "name" | "category">("distance");
   const [facilities, setFacilities] = useState<FacilityItem[] | null>(null);
+  /** Size of the whole dataset for this facility type, independent of the current filters. */
+  const [total, setTotal] = useState<number | null>(null);
+  /** True when the rendered list came from the widened fallback radius rather than the configured one. */
+  const [widenedRadius, setWidenedRadius] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -90,37 +116,61 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     if (location.loading) return;
     let cancelled = false;
 
-    const params = new URLSearchParams({ type: facilityType });
-    if (keyword) {
-      // Keyword search browses by name/address regardless of geocoding status.
-      params.set("keyword", keyword);
-    } else {
-      // No keyword — fall back to GPS-nearby (only surfaces already-geocoded rows).
-      params.set("lat", String(location.lat));
-      params.set("lng", String(location.lng));
-      params.set("radius", String(radiusMeters));
-    }
-    if (category) params.set("category", category);
-    if (effectiveSort) params.set("sort", effectiveSort);
+    const load = async (radius: number): Promise<{ facilities: FacilityItem[]; total?: number }> => {
+      const params = new URLSearchParams({ type: facilityType });
+      if (keyword) {
+        // Keyword search browses by name/address regardless of geocoding status.
+        params.set("keyword", keyword);
+      } else {
+        // No keyword — fall back to GPS-nearby (only surfaces already-geocoded rows).
+        params.set("lat", String(location.lat));
+        params.set("lng", String(location.lng));
+        params.set("radius", String(radius));
+      }
+      if (category) params.set("category", category);
+      if (effectiveSort) params.set("sort", effectiveSort);
 
-    fetch(`/api/facilities?${params.toString()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
+      const res = await fetch(`/api/facilities?${params.toString()}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    };
+
+    (async () => {
+      try {
+        let data = await load(radiusMeters);
+        let widened = false;
+
+        // A dataset can be nationally large and locally empty at the same time — 伯公照護站
+        // holds ~611 rows but almost none within 10km of Taipei. An empty page there reads as
+        // "this tool has no data", so re-run the same query at a 500km radius and show the
+        // nearest rows instead.
+        //
+        // The re-run keeps lat/lng deliberately: that is what makes the server keep
+        // ORDER BY distance_km, so the widened list is genuinely "the closest ones, however
+        // far that is". Dropping the coordinates instead would silently switch the server to
+        // ORDER BY name and hand a Taipei reader 200 alphabetically-first rows from Miaoli.
+        if (!keyword && data.facilities.length === 0) {
+          const widenedData = await load(NEARBY_FALLBACK_RADIUS_METERS);
+          if (widenedData.facilities.length > 0) {
+            data = widenedData;
+            widened = true;
+          }
+        }
+
         if (!cancelled) {
           setFacilities(data.facilities);
+          setTotal(typeof data.total === "number" ? data.total : null);
+          setWidenedRadius(widened);
           setError(false);
           setLoading(false);
         }
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) {
           setError(true);
           setLoading(false);
         }
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -147,6 +197,14 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     charityUrl: f.extra_json?.charityUrl,
     charityName: f.extra_json?.charityName,
   }));
+
+  // The fallback list is still distance-sorted, so row 0 is the nearest hit anywhere in the
+  // country. Naming both numbers — the radius that found nothing and how far the closest row
+  // actually is — is what turns "we found nothing near you" into useful information.
+  const noun = facilityNoun(emptyStateNoKeyword, title);
+  const nearestKm = Number(facilities?.[0]?.distance_km);
+  const nearestText = Number.isFinite(nearestKm) ? `（最近一處約 ${Math.round(nearestKm)} 公里）` : "";
+  const fallbackNotice = widenedRadius ? `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。` : null;
 
   return (
     <div className="space-y-6">
@@ -224,15 +282,25 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         <>
           {markers.length > 0 && (
             <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200 dark:border-slate-800">
-              <FacilityMap userLocation={location} markers={markers} radiusMeters={radiusMeters} showRadius={!keyword} />
+              {/* Don't draw the configured radius circle once the fallback widened past it — the
+                  circle would sit empty while every marker on the map lies outside it. */}
+              <FacilityMap userLocation={location} markers={markers} radiusMeters={radiusMeters} showRadius={!keyword && !widenedRadius} />
             </div>
           )}
 
+          {fallbackNotice && (
+            <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">{fallbackNotice}</p>
+          )}
+
           {facilities.length === 0 ? (
+            // Reached only when the widened fallback also came back empty, so this now means
+            // "nothing anywhere in the dataset" rather than "nothing within the radius".
             <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword ? emptyStateWithKeyword : emptyStateNoKeyword}</p>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-neutral-500 dark:text-slate-400">共 {facilities.length} 筆</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400">
+                顯示 {facilities.length} 筆{total !== null && `／全台共 ${total} 筆`}
+              </p>
               {facilities.map((f) => (
                 <div key={f.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   <div className="flex items-start justify-between gap-3">

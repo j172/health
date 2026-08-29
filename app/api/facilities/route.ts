@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchFacilities } from "@/lib/server/facilities/queries";
+import { countFacilities, searchFacilities } from "@/lib/server/facilities/queries";
 
 export const runtime = "nodejs";
 
@@ -19,8 +19,17 @@ export async function GET(request: NextRequest) {
   const sort = sortParam === "distance" || sortParam === "name" || sortParam === "category" ? sortParam : undefined;
 
   try {
-    const facilities = await searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, sort });
-    return NextResponse.json({ facilities });
+    // `total` deliberately takes nothing but `facilityType` — it is the size of the whole
+    // dataset, not of this result set. The list UI prints the two side by side
+    // (顯示 N 筆／全台共 M 筆) so that a nearby search returning a handful of rows, which is
+    // normal for a geographically concentrated dataset, can't be misread as the dataset
+    // itself being nearly empty. Passing keyword/radius/category in here would collapse
+    // `total` back onto `facilities.length` and destroy the only comparison that matters.
+    const [facilities, total] = await Promise.all([
+      searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, sort }),
+      countFacilities(facilityType),
+    ]);
+    return NextResponse.json({ facilities, total });
   } catch (error) {
     console.error("GET /api/facilities failed:", error);
     return NextResponse.json({ error: "查詢機構資料失敗" }, { status: 502 });
