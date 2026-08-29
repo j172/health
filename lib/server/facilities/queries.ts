@@ -31,6 +31,15 @@ export interface FacilityListItem {
   service_time: string | null;
   data_org: string | null;
   extra_json: { weeklyHours?: Record<string, string[]> } | null;
+  /**
+   * Only selected on a GPS search (lat/lng supplied) — the Haversine distance the rows were ordered by.
+   *
+   * A number, not a string: MySQL types `6371 * acos(...)` as DOUBLE (acos() returns DOUBLE), and
+   * mysql2 hands DOUBLE back as a JS number. That is worth stating because the neighbouring
+   * lat/lng columns are DECIMAL, which mysql2 delivers as *strings* — verified against the live
+   * endpoint, whose JSON carries `"lat":"22.9749544"` beside `"distance_km":250.86525190106215`.
+   */
+  distance_km?: number;
 }
 
 /** Upserts a batch of facility records for one source, keyed by (source_key, source_id). Chunks into multi-row INSERTs — sources like NHI's clinic tier run to tens of thousands of rows, and one round-trip per row doesn't scale. */
@@ -285,4 +294,25 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
 
     const [rows] = await conn.query<RowDataPacket[]>(query, params);
     return rows as unknown as FacilityListItem[];
+  });
+
+/**
+ * Total number of rows held for a facility type, deliberately ignoring every
+ * search filter (keyword, lat/lng, radius, category, sort).
+ *
+ * The list UI pairs this with the filtered result count. That pairing is the
+ * whole point: a nearby search can return 4 rows out of a 611-row dataset
+ * simply because the reader is standing outside the data's geographic
+ * concentration, and a lone "共 4 筆" reads as "this dataset is empty". If this
+ * count took the search filters it would just restate the result length and
+ * tell the reader nothing new.
+ *
+ * Cheap enough to run on every request: `WHERE facility_type = ?` against
+ * `idx_facility_type` (lib/server/db/schema.ts) is an index-only range count,
+ * it never touches the row data.
+ */
+export const countFacilities = async (facilityType: string): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>("SELECT COUNT(*) AS total FROM facilities WHERE facility_type = ?", [facilityType]);
+    return Number(rows[0]?.total ?? 0);
   });
