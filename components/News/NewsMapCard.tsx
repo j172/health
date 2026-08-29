@@ -8,9 +8,24 @@ interface NewsMapCardProps {
   lng: number;
   locationName: string;
   facilityId?: number | null;
+  /**
+   * Set when the coordinates are a district centroid rather than a real address.
+   * The marker is then only good to within a kilometre or so, so the card drops
+   * the 4-decimal coordinate readout (which asserts ~11m precision it does not
+   * have) and re-labels itself 約略位置 instead of 相關地理位置. The map itself
+   * still renders — a district-level pin is genuinely useful, it just must not
+   * present itself as a survey point.
+   */
+  approximate?: boolean;
 }
 
-export default function NewsMapCard({ lat, lng, locationName, facilityId }: NewsMapCardProps) {
+export default function NewsMapCard({
+  lat,
+  lng,
+  locationName,
+  facilityId,
+  approximate = false,
+}: NewsMapCardProps) {
   const [showInteractive, setShowInteractive] = useState(false);
 
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
@@ -26,14 +41,16 @@ export default function NewsMapCard({ lat, lng, locationName, facilityId }: News
           </span>
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-              <span>相關地理位置</span>
+              <span>{approximate ? "約略位置" : "相關地理位置"}</span>
               <span className="rounded-full bg-emerald-100 px-2 py-0.2 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
                 {locationName}
               </span>
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
-              {lat.toFixed(4)}°N, {lng.toFixed(4)}°E
-            </p>
+            {approximate ? null : (
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                {lat.toFixed(4)}°N, {lng.toFixed(4)}°E
+              </p>
+            )}
           </div>
         </div>
 

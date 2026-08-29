@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"lib/**/*.test.mjs\"",
     "import:cram-schools": "node scripts/import-moe-cram-schools.mjs",
     "import:kindergartens": "node scripts/import-moe-kindergartens.mjs",
     "import:child-safety-spots": "node scripts/import-npa-child-safety-spots.mjs",

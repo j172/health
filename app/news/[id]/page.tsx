@@ -12,6 +12,7 @@ import {
 } from "@/lib/server/news/seo";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { resolveHeroImage } from "@/lib/server/news/heroImage";
+import { classifyLocationPrecision } from "@/lib/server/news/geoExtractor";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
@@ -80,6 +81,15 @@ export default async function NewsDetailPage({
   ]);
 
   const hero = resolveHeroImage(news, assets);
+  // Which extraction tier produced news.location_name decides how honest the map
+  // below is allowed to be. A county row's coordinates are the county hall, which
+  // is routinely tens of kilometres from the subject of the article (a 豪雨特報
+  // about 屏東縣 pinned in 中正區), so it gets the 📍 badge and no map at all. A
+  // district row keeps its map but loses the coordinate readout — see NewsMapCard.
+  const locationPrecision = classifyLocationPrecision(
+    news.location_name ?? null,
+    news.facility_id ?? null,
+  );
   const attachments = assets.filter(
     (asset) =>
       asset.asset_type === "attachment" && /^https?:\/\//i.test(asset.url),
@@ -228,13 +238,16 @@ export default async function NewsDetailPage({
               />
             </div>
 
-            {/* Interactive Map Card (when coordinates are available) */}
-            {news.lat != null && news.lng != null ? (
+            {/* Interactive Map Card (coordinates available and precise enough to draw) */}
+            {news.lat != null &&
+            news.lng != null &&
+            locationPrecision !== "county" ? (
               <NewsMapCard
                 lat={Number(news.lat)}
                 lng={Number(news.lng)}
                 locationName={news.location_name || "相關位置"}
                 facilityId={news.facility_id}
+                approximate={locationPrecision === "district"}
               />
             ) : null}
 

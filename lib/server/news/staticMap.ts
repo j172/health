@@ -109,9 +109,33 @@ export async function assignStaticMapImage(
 
   await fs.writeFile(absolutePath, svgContent, "utf-8");
 
-  const sha256 = crypto.createHash("sha256").update(svgContent).digest("hex");
+  // newsId is mixed into the digest deliberately. generateStaticMapSvg is a pure
+  // function of (lat, lng, locationName) — no id, no timestamp — so two articles
+  // that resolved to the same place produced byte-identical SVG and therefore an
+  // identical content_sha256. The second one then collided with
+  // `UNIQUE KEY uq_card_image_hash`, was silently swallowed by INSERT IGNORE, and
+  // made this function return false: the article stayed imageless, was re-picked
+  // on the next run (cardImages.ts orders by image_backfill_attempts ASC), and
+  // wrote another orphan SVG to disk every single time.
+  //
+  // uq_card_image_hash is not being weakened here. Its job is to stop one Unsplash
+  // photo being reused across articles, and that path still hashes raw downloaded
+  // image bytes (see cardImages.ts). Static maps are generated per article, so
+  // "same bytes" carries no meaning for them — there is nothing to de-duplicate.
+  const sha256 = crypto
+    .createHash("sha256")
+    .update(`${svgContent}${newsId}`)
+    .digest("hex");
   const now = utcNowSql();
-  const providerImageId = `map_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+  // newsId belongs here for the same reason it belongs in the digest above, and
+  // this half is not optional: ensureSchema() also creates
+  // `UNIQUE KEY uq_card_image_provider_image (provider, provider_image_id)` (see
+  // lib/server/db/mysql.ts). Without the id, every article resolved to the same
+  // centroid shares one provider_image_id, so de-duplicating the hash alone would
+  // just move the silent INSERT IGNORE drop from one unique key to the other.
+  // That key exists to stop one *provider* photo being handed to two articles;
+  // static maps are minted per article and have no such identity to share.
+  const providerImageId = `map_${newsId}_${lat.toFixed(4)}_${lng.toFixed(4)}`;
   const sourcePageUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`;
 
   const [insertResult] = await conn.execute<ResultSetHeader>(
