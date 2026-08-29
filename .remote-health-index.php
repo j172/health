@@ -90,25 +90,85 @@ if (str_starts_with($path, '/__ops/')) {
         return ($pid > 0 && is_dir("/proc/{$pid}")) ? $pid : 0;
     };
 
-    // Kills a still-running apply-prebuilt instance's direct children (tar,
-    // curl, the `pm2 delete`/`pm2 start` invocations at the moment of kill)
-    // then the wrapper shell itself. Deliberately does NOT touch pm2/node —
+    // Kills a still-running apply-prebuilt instance's descendants (tar, curl,
+    // the `pm2 delete`/`pm2 start` invocations at the moment of kill) then the
+    // wrapper shell itself. Deliberately does NOT touch pm2/node —
     // the "pm2 start" line inside the script runs under its own `setsid`
     // specifically so the app survives even when this wrapper gets killed;
     // only the wrapper and its transient helpers die.
     // Returns whether the wrapper is actually gone.
     //
-    // Both kills go through exec(), and exec() cannot spawn anything once the
-    // account is at its Entry Process ceiling — it fails silently and returns
-    // nothing. That is not hypothetical: on 2026-08-23 it left two
+    // This used to kill only through exec(), and exec() cannot spawn anything
+    // once the account is at its Entry Process ceiling — it fails silently and
+    // returns nothing. That is not hypothetical: on 2026-08-23 it left two
     // [START-FORCE-V4] wrappers alive at once, because three stacked deploys
     // each "killed" the previous run without the kill ever running, then
     // spawned a replacement anyway. An unverified force is a process
     // amplifier at the exact moment the account can least afford one, so the
     // caller has to be told whether the kill landed instead of assuming it.
+    //
+    // Reporting the failure honestly was only half the problem. On 2026-08-29 a
+    // wrapper wedged at 06:15 UTC and could not be killed *at all*: every path
+    // that could have killed it needed to fork, and the wrapper was holding the
+    // slots that forking required. force refused (correctly), the app stayed
+    // down, and it took a hosting-support ticket ~4 hours later to break the
+    // deadlock. A recovery mechanism that only works while the host is healthy
+    // is not a recovery mechanism.
+    //
+    // So the signals now go through posix_kill(), which is a bare syscall and
+    // spawns nothing, and the child list comes from reading /proc rather than
+    // from pkill. Both work at the ceiling. exec() survives only as a fallback
+    // for a host without ext-posix, where it is no worse than what it replaced.
     $killPrebuiltRun = static function (int $pid): bool {
-        @exec('pkill -9 -P ' . $pid . ' 2>&1');
-        @exec('kill -9 ' . $pid . ' 2>&1');
+        $canSignal = function_exists('posix_kill');
+
+        // Descendants, newest-generation-first, resolved entirely from /proc —
+        // a directory read, so it costs no processes. pkill -9 -P only ever
+        // reached direct children; a tar spawned inside one of the script's
+        // `{ ...; }` groups is a grandchild and used to survive.
+        $descendants = [];
+        if ($canSignal) {
+            $childrenOf = [];
+            foreach (@glob('/proc/[0-9]*/stat') ?: [] as $statFile) {
+                $raw = @file_get_contents($statFile);
+                if ($raw === false) {
+                    continue; // process exited between the glob and the read
+                }
+                // Field 2 is the executable name in parentheses and may itself
+                // contain spaces or parentheses, so parse after the LAST ')'.
+                $close = strrpos($raw, ')');
+                if ($close === false) {
+                    continue;
+                }
+                $fields = explode(' ', trim(substr($raw, $close + 1)));
+                $ppid = (int) ($fields[1] ?? 0); // [0] is state, [1] is ppid
+                $self = (int) basename(dirname($statFile));
+                if ($ppid > 0 && $self > 0) {
+                    $childrenOf[$ppid][] = $self;
+                }
+            }
+            for ($queue = [$pid]; $queue !== []; ) {
+                $current = array_shift($queue);
+                foreach ($childrenOf[$current] ?? [] as $child) {
+                    $descendants[] = $child;
+                    $queue[] = $child;
+                }
+            }
+            // Deepest first, so a parent cannot fork a replacement child in the
+            // window between its own death and its children being signalled.
+            foreach (array_reverse($descendants) as $descendant) {
+                @posix_kill($descendant, 9);
+            }
+            // 9 as a literal, not the SIGKILL constant: that constant comes from
+            // ext-pcntl, not the ext-posix that provides posix_kill(), and an
+            // undefined constant is a fatal Error in PHP 8 — which would take
+            // this whole ops endpoint down exactly when it is needed most.
+            @posix_kill($pid, 9);
+        } else {
+            @exec('pkill -9 -P ' . $pid . ' 2>&1');
+            @exec('kill -9 ' . $pid . ' 2>&1');
+        }
+
         // SIGKILL is delivered synchronously but reaping is not — give the
         // kernel a moment before reading /proc/<pid>'s absence as proof.
         // (This also preserves the settle time the old call site had, so a
