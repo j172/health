@@ -1,0 +1,92 @@
+<!--
+  Excerpt of https://twstreetcorner.org/2026/08/29/yung-chen-yuan-and-hsiang-ming-kung/
+  saved 2026-08-29.
+
+  Trimmed to one <article>: the WordPress entry header, the text-to-speech
+  control panel that opens .entry-content, two of the post's paragraphs (one
+  carrying the post's illustration), one PDF link, and the Jetpack sharing /
+  likes / related-posts widgets that close it. Every element is copied verbatim
+  from that response; only unrelated prose, the theme's sidebar and the other
+  share buttons were removed.
+
+  What matters about it: the TTS panel and the Jetpack widgets are interactive
+  chrome that lives INSIDE <article>, so header/nav/footer removal does not
+  reach them, and .text() flattens their button labels into detail_text — at the
+  head and tail of the article, the two positions imageSearchTerms and the SEO
+  summary read first. The <img> and the PDF link are here so the test can prove
+  the `without` rule leaves detailHtml and the asset scan untouched.
+-->
+<html lang="zh-TW">
+  <head>
+    <title>結婚？不結婚？大哉問！ | 巷仔口社會學</title>
+    <meta property="og:image" content="https://twstreetcorner.org/wp-content/uploads/2026/08/cover.jpg" />
+  </head>
+  <body>
+    <header class="custom-header"><a href="https://twstreetcorner.org/">巷仔口社會學</a></header>
+    <div id="content" class="site-content">
+      <main id="main" class="site-main" role="main">
+        <article id="post-15794" class="post-15794 post type-post status-publish format-standard hentry category-paper">
+          <header class="entry-header">
+            <h1 class="entry-title">結婚？不結婚？大哉問！</h1>
+            <div class="entry-meta">
+              <span class="posted-on">發佈日期: <time class="entry-date published" datetime="2026-08-29T11:15:00+08:00">2026/08/29</time></span>
+            </div>
+          </header>
+          <div class="entry-content">
+            <div class="streetcorner-tts-player" data-streetcorner-tts>
+              <div class="streetcorner-tts-title">
+                <span>聆聽本文 <span class="streetcorner-tts-beta">測試版</span></span>
+                <span class="streetcorner-tts-estimate" aria-live="polite"></span>
+              </div>
+              <div class="streetcorner-tts-controls">
+                <button type="button" class="streetcorner-tts-prev" aria-label="上一段">⏮ 上一段</button>
+                <button type="button" class="streetcorner-tts-play" aria-label="播放">▶ 朗讀</button>
+                <button type="button" class="streetcorner-tts-pause" aria-label="暫停">⏸ 暫停</button>
+                <button type="button" class="streetcorner-tts-next" aria-label="下一段">⏭ 下一段</button>
+                <button type="button" class="streetcorner-tts-stop" aria-label="停止">■ 停止</button>
+                <label class="streetcorner-tts-rate-label">
+                  速度
+                  <select class="streetcorner-tts-rate" aria-label="朗讀速度">
+                    <option value="0.8">0.8×</option>
+                    <option value="1" selected>1×</option>
+                    <option value="2">2×</option>
+                  </select>
+                </label>
+              </div>
+              <div class="streetcorner-tts-status" aria-live="polite">使用裝置內建語音，不會將文章傳送到外部語音服務</div>
+            </div>
+            <div class="streetcorner-tts-content">
+              <p class="has-medium-font-size wp-block-paragraph"><strong>袁詠蓁／國科會人文及社會科學研究發展處、孔祥明／世新大學社會心理學系</strong></p>
+              <p class="wp-block-paragraph">少子化是近年來臺灣社會重大的課題。由於臺灣社會普遍遵循「先結婚、後生育」的順序，許多學者、社會輿論或媒體將問題的根源指向晚婚甚或不婚。</p>
+              <figure class="wp-block-image size-large">
+                <img decoding="async" src="https://twstreetcorner.org/wp-content/uploads/2026/08/figure-1.png" alt="臺灣適婚年齡者的婚姻狀態分布" width="1024" height="576" />
+              </figure>
+              <p class="wp-block-paragraph">完整統計表請見<a href="https://twstreetcorner.org/wp-content/uploads/2026/08/appendix.pdf">附錄</a>。</p>
+            </div>
+            <div class="sharedaddy sd-sharing-enabled">
+              <div class="robots-nocontent sd-block sd-social sd-social-icon sd-sharing">
+                <h3 class="sd-title">分享</h3>
+                <div class="sd-content">
+                  <ul>
+                    <li class="share-facebook"><a rel="nofollow noopener noreferrer" class="share-facebook sd-button share-icon no-text" href="https://twstreetcorner.org/2026/08/29/yung-chen-yuan-and-hsiang-ming-kung/?share=facebook" target="_blank" aria-labelledby="sharing-facebook-15794"><span id="sharing-facebook-15794" hidden>分享到 Facebook(在新視窗中開啟)</span><span>Facebook</span></a></li>
+                    <li class="share-email"><a rel="nofollow noopener noreferrer" class="share-email sd-button share-icon no-text" href="mailto:?subject=%E7%B5%90%E5%A9%9A" target="_blank" aria-labelledby="sharing-email-15794"><span id="sharing-email-15794" hidden>以電子郵件將連結傳送給朋友(在新視窗中開啟)</span><span>電子郵件</span></a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="sharedaddy sd-block sd-like jetpack-likes-widget-wrapper">
+              <h3 class="sd-title">請按讚：</h3>
+              <div class="likes-widget-placeholder post-likes-widget-placeholder"><span class="button"><span>喜歡</span></span><span class="loading">正在載入...</span></div>
+            </div>
+            <div id="jp-relatedposts" class="jp-relatedposts">
+              <h3 class="jp-relatedposts-headline"><em>相關</em></h3>
+            </div>
+          </div>
+          <footer class="entry-footer">
+            <span class="tags-links">標籤: <a href="https://twstreetcorner.org/tag/single/" rel="tag">單身</a></span>
+          </footer>
+        </article>
+      </main>
+    </div>
+  </body>
+</html>
