@@ -1,0 +1,97 @@
+<!--
+  Excerpt of https://www.cwa.gov.tw/V8/C/P/Warning/W29.html?T=202608291137
+  saved 2026-08-29 (the detail page behind /news/863122, 08/29 高溫資訊).
+
+  The live page is 595 KB, almost all of it an inline SVG map of Taiwan and a
+  temperature-chart widget. Everything not needed to reproduce the bug is
+  removed; every element that IS here is copied verbatim from that response,
+  including the `<span id="TownName">臺北市中正區</span>` inside `h3.sm_subtitle`
+  and the surrounding `div.other` / `form.townBody` / `div.warn-list` chrome.
+
+  What matters about it: the toolbar, the colour legend and the location picker
+  all sit INSIDE `<main>`, so the generic article/main/#maincontent scoping and
+  the header/nav/footer strip in fetchDetailPage.ts do not reach them — and the
+  bulletin prose ("天氣高溫炎熱，明(30)日中午前後桃園市為橙色燈號…") appears nowhere
+  in the page at all. It arrives only in the feed's own <description>.
+-->
+<html lang="zh-Hant">
+  <head>
+    <title>高溫資訊 | 交通部中央氣象署</title>
+    <meta property="og:image" content="https://www.cwa.gov.tw/Data/warning/W29_C.png?" />
+  </head>
+  <body>
+    <header id="MainHeader">
+      <a href="/V8/C/">中央氣象署</a>
+    </header>
+    <main>
+      <div class="row">
+        <div class="col-md-12">
+          <span class="date">發佈時間：</span>
+          <span class="date">有效時間：</span>
+          <h2>高溫資訊</h2>
+          <a href="/V8/C/P/Warning/W29.html" title="回全縣市">回全縣市</a>
+          <label class="label" for="CID">地點切換</label>
+        </div>
+      </div>
+      <div class="other margin-bottom-20">
+        <ul class="list-unstyled">
+          <li class="datalink">
+            <div class="warn-list">
+              <div>
+                <div class="warn-status">
+                  <i class="icon-warn_tem_hight03" aria-hidden="true"></i>
+                  <span>紅色燈號</span>
+                  <span>氣溫達38&deg;C以上且<br class="hidden visible-xs" />持續3日以上</span>
+                </div>
+              </div>
+              <div>
+                <div class="warn-status">
+                  <i class="icon-warn_tem_hight02" aria-hidden="true"></i>
+                  <span>橙色燈號</span>
+                  <span>氣溫達38&deg;C以上或氣溫達36&deg;C以上且持續3日以上</span>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="datalink"><a href="/Data/warning/W29_C.png" title="檔案 W29_C.png 點此另開新視窗檢視" target="_blank" rel="noreferrer noopener"><i class="fa fa-download" aria-hidden="true"></i>另存圖片檔</a></li>
+          <li class="datalink"><a href="/V8/assets/pdf/HeatInformation_ProductDescription.pdf" title="檔案 HeatInformation_ProductDescription.pdf 點此另開新視窗檢視" target="_blank" rel="noreferrer noopener"><i class="icon-open" aria-hidden="true"></i>產品說明文件(PDF)</a></li>
+        </ul>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <h3 class="sm_subtitle">
+            <i class="icon-cwb-temperature" aria-hidden="true"></i>鄉鎮預報 - <span id="TownName">臺北市中正區</span>
+            <a class="pull-right" id="GoTown" href="/V8/C/W/Town/Town.html?TID=6300500" target="_self" title="前往鄉鎮預報頁面">
+              看更多 <i class="fa fa-plus-square" aria-hidden="true"></i>
+            </a>
+          </h3>
+          <form name="form1" action="Town.html" class="townBody">
+            <fieldset>
+              <legend class="sr-only">快速地點搜尋</legend>
+              <div class="area_search-v9">
+                <div class="area_search_item-v9">
+                  <div class="countryselect-title">
+                    <label class="label" for="CountySelect">選擇</label>
+                  </div>
+                  <label class="select col mx-1">
+                    <select name="CountySelect" id="CountySelect" class="form-control">
+                      <option value="">選擇縣市</option>
+                    </select>
+                  </label>
+                  <label class="select col mx-1">
+                    <select name="TownSelect" id="TownSelect" class="form-control">
+                      <option value="">選擇鄉鎮</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            </fieldset>
+          </form>
+        </div>
+      </div>
+    </main>
+    <footer id="MainFooter">
+      <p>交通部中央氣象署</p>
+    </footer>
+  </body>
+</html>
