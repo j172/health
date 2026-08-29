@@ -28,11 +28,26 @@ export async function GET(request: NextRequest) {
 
   try {
     const [aqi, pm25, uv, rainfall, stationWeather] = await Promise.all([
-      getNearestAqiReading(lat, lng),
-      getNearestPm25Reading(lat, lng),
-      getNearestUvReading(lat, lng),
-      getNearestRainfallReading(lat, lng),
-      getNearestStationWeather(lat, lng),
+      getNearestAqiReading(lat, lng).catch((e) => {
+        console.warn("getNearestAqiReading fallback:", e);
+        return null;
+      }),
+      getNearestPm25Reading(lat, lng).catch((e) => {
+        console.warn("getNearestPm25Reading fallback:", e);
+        return null;
+      }),
+      getNearestUvReading(lat, lng).catch((e) => {
+        console.warn("getNearestUvReading fallback:", e);
+        return null;
+      }),
+      getNearestRainfallReading(lat, lng).catch((e) => {
+        console.warn("getNearestRainfallReading fallback:", e);
+        return null;
+      }),
+      getNearestStationWeather(lat, lng).catch((e) => {
+        console.warn("getNearestStationWeather fallback:", e);
+        return null;
+      }),
     ]);
 
     const aqiResult = aqi

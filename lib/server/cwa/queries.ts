@@ -334,40 +334,45 @@ export interface NearestStationWeatherRecord {
 export const getNearestStationWeather = async (
   lat: number,
   lng: number,
-): Promise<NearestStationWeatherRecord | null> =>
-  withConnectionFallback(null, async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT s.station_id, s.station_name, s.county_name, s.town_name, s.obs_time,
-             s.weather, s.precipitation, s.wind_speed, s.air_temperature, s.relative_humidity,
-             (6371 * acos(
-               LEAST(1, cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
-               sin(radians(?)) * sin(radians(s.lat)))
-             )) AS distance_km
-      FROM cwa_station_weather s
-      WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
-        AND s.obs_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 6 HOUR)
-      ORDER BY distance_km ASC
-      LIMIT 1
-      `,
-      [lat, lng, lat],
-    );
-    const row = rows[0];
-    if (!row) return null;
-    return {
-      station_id: String(row.station_id),
-      station_name: row.station_name ?? null,
-      county_name: row.county_name ?? null,
-      town_name: row.town_name ?? null,
-      obs_time: String(row.obs_time),
-      weather: row.weather ?? null,
-      precipitation: row.precipitation ?? null,
-      wind_speed: row.wind_speed ?? null,
-      air_temperature: row.air_temperature ?? null,
-      relative_humidity: row.relative_humidity ?? null,
-      distance_km: Number(row.distance_km),
-    };
-  });
+): Promise<NearestStationWeatherRecord | null> => {
+  try {
+    return await withConnectionFallback(null, async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT s.station_id, s.station_name, s.county_name, s.town_name, s.obs_time,
+               s.weather, s.precipitation, s.wind_speed, s.air_temperature, s.relative_humidity,
+               (6371 * acos(
+                 LEAST(1, GREATEST(-1, cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
+                 sin(radians(?)) * sin(radians(s.lat))))
+               )) AS distance_km
+        FROM cwa_station_weather s
+        WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
+        ORDER BY distance_km ASC
+        LIMIT 1
+        `,
+        [lat, lng, lat],
+      );
+      const row = rows[0];
+      if (!row) return null;
+      return {
+        station_id: String(row.station_id),
+        station_name: row.station_name ? String(row.station_name) : null,
+        county_name: row.county_name ? String(row.county_name) : null,
+        town_name: row.town_name ? String(row.town_name) : null,
+        obs_time: row.obs_time instanceof Date ? row.obs_time.toISOString() : String(row.obs_time || ""),
+        weather: row.weather ? String(row.weather) : null,
+        precipitation: row.precipitation != null ? String(row.precipitation) : null,
+        wind_speed: row.wind_speed != null ? String(row.wind_speed) : null,
+        air_temperature: row.air_temperature != null ? String(row.air_temperature) : null,
+        relative_humidity: row.relative_humidity != null ? String(row.relative_humidity) : null,
+        distance_km: Number(row.distance_km || 0),
+      };
+    });
+  } catch (err) {
+    console.warn("getNearestStationWeather error:", err);
+    return null;
+  }
+};
 
 export interface CwaRainfallRecord {
   stationId: string;
