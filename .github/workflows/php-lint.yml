@@ -1,0 +1,47 @@
+name: PHP lint
+
+# .remote-health-index.php is the production host's front controller and its
+# only recovery mechanism — /__ops/apply-prebuilt-force, the pm2 watchdog and
+# every status endpoint live in it. It is uploaded verbatim by deploy-ftps.yml
+# and never imported by the Node build, so `npm run build`, `tsc` and eslint all
+# pass happily with a parse error in it. The failure mode is not a degraded
+# site; it is losing the endpoints you would use to bring the site back.
+#
+# deploy-ftps.yml lints it too, but that workflow is workflow_dispatch-only, so
+# it never runs on a pull request. This one does, which is the point: catching a
+# typo at review time rather than at the moment of deploy.
+on:
+  pull_request:
+    paths:
+      - "**.php"
+      - ".github/workflows/php-lint.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**.php"
+      - ".github/workflows/php-lint.yml"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Every .php file, not just the front controller, so a new one can never
+      # be added without this covering it. -d display_errors=0 keeps the output
+      # to `php -l`'s own verdict line.
+      - name: php -l every PHP file
+        run: |
+          set -euo pipefail
+          php --version
+          FOUND=0
+          while IFS= read -r -d '' file; do
+            FOUND=1
+            echo "linting $file"
+            php -d display_errors=0 -l "$file"
+          done < <(find . -name '*.php' -not -path './node_modules/*' -not -path './.git/*' -print0)
+          if [ "$FOUND" = 0 ]; then
+            echo "No PHP files found — the path filter and this job disagree."
+            exit 1
+          fi
