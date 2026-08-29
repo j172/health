@@ -274,12 +274,12 @@ jobs:
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
 
-          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
 
           # Skip path usually writes status 0 within a second (no install).
           # Real installs still poll via short SSH calls rather than one long session.
           for ATTEMPT in $(seq 1 90); do
-            STATUS="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cat /home/tw123457/health_app/.npm-ci-status 2>/dev/null || echo PENDING')"
+            STATUS="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cat /home/tw123457/health_app/.npm-ci-status 2>/dev/null || echo PENDING' 2>/dev/null || echo PENDING)"
 
             if [ "$STATUS" = "PENDING" ]; then
               echo "node_modules sync still running on server ($ATTEMPT/90)..."
