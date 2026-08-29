@@ -103,7 +103,21 @@ export const fetchDetailPage = async (
   const detailContainer = scopedContainer ?? $("body");
 
   const detailHtml = detailContainer.html()?.trim() || null;
-  const detailText = detailContainer.text().replace(/\s+/g, " ").trim() || null;
+
+  // cheerio's .text() concatenates EVERY descendant text node, including markup
+  // whose text is metadata rather than prose. CWA 特報 bulletins embed an inline
+  // SVG map of Taiwan in which each township is a <path> carrying a <desc> with
+  // its name, so detail_text ended up containing all 368 township names — which
+  // made the landmark extractor badge a 臺南/屏東 rainfall warning 台北市中正區
+  // (issue #65). <script>/<style> are already gone document-wide above, but they
+  // are listed here too so this stays correct if that earlier strip ever moves.
+  //
+  // Done on a CLONE: detailHtml is captured above from the live container, and
+  // the asset scan below still walks scopedContainer, so the rendered article
+  // keeps its map and its images. Only the text projection loses the metadata.
+  const proseContainer = detailContainer.clone();
+  proseContainer.find("desc,title,script,style").remove();
+  const detailText = proseContainer.text().replace(/\s+/g, " ").trim() || null;
 
   const assets: NewsAsset[] = [];
   let idx = 0;
