@@ -19,6 +19,22 @@ if (!ADMIN_SECRET) {
   process.exit(1);
 }
 
+// One known defect in the published CSV, keyed on the exact raw 地點位置 string.
+// Row No.160 (澎湖縣政府警察局 / 馬公分局) reads "?裡海水浴場"; the real place is
+// 澎湖縣馬公市嵵裡海水浴場 — the rare CJK character 嵵 was lost by the publisher's
+// own pipeline, not by our decoding (the download is UTF-8 and res.text() reads it
+// correctly). Deliberately a lookup on the literal string rather than a general
+// mojibake repair: a broad "?"-replacement rule would have to guess, and the rest of
+// this dataset legitimately contains punctuation we must not rewrite.
+//
+// NOTE: the correction is applied to the DISPLAY fields (name, address) only.
+// sourceId must keep deriving from the UNCORRECTED address — upsertFacilities keys on
+// UNIQUE KEY uq_facility_source (source_key, source_id), so folding the fix into the
+// key would INSERT a 187th row and orphan the existing "?裡海水浴場" one. Because
+// ON DUPLICATE KEY UPDATE already refreshes name and address, keeping the key stable
+// lets the next import correct the row in place.
+const RAW_ADDRESS_CORRECTIONS = new Map([["?裡海水浴場", "嵵裡海水浴場"]]);
+
 function extractCityFromDept(deptNm) {
   if (!deptNm) return "";
   const match = deptNm.match(/^([^\s市縣]+[市縣])/);
@@ -57,15 +73,20 @@ async function main() {
     const contact = (r.Contact || "").trim();
     const phone = (r.ContactNumber || "").trim();
 
+    const correctedAddr = RAW_ADDRESS_CORRECTIONS.get(rawAddr) ?? rawAddr;
+
     const city = extractCityFromDept(dept);
-    const rawAddress = city && !rawAddr.startsWith(city) ? `${city}${rawAddr}` : rawAddr;
-    const address = normalizeAddress(rawAddress);
-    const displayName = `${rawAddr} (${branch || dept})`;
+    const withCity = (addr) => (city && !addr.startsWith(city) ? `${city}${addr}` : addr);
+    // Identity key: built from the raw, uncorrected address so it stays byte-identical
+    // to what is already stored. Display fields below use the corrected one.
+    const sourceAddress = normalizeAddress(withCity(rawAddr));
+    const address = normalizeAddress(withCity(correctedAddr));
+    const displayName = `${correctedAddr} (${branch || dept})`;
 
     return {
       facilityType: "child_safety_spot",
       sourceKey: "npa_child_safety_spot",
-      sourceId: `npa_${rawNo}_${address}`.slice(0, 100),
+      sourceId: `npa_${rawNo}_${sourceAddress}`.slice(0, 100),
       name: displayName,
       address,
       phone: phone ? toHalfwidthDigits(phone) : null,

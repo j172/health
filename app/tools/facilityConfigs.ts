@@ -228,13 +228,19 @@ export const facilitySearchConfigs = {
     facilityType: "child_safety_spot",
     emoji: "🛡️",
     title: "婦幼安全警示地點查詢",
+    // This source's 地點位置 column describes an alert road segment or landmark, not a
+    // street address (only 4% carry a 門牌號碼), so most rows cannot be resolved to a
+    // single coordinate and never appear in the nearby search. The description says so
+    // outright and showGeocodeNote marks each un-geocoded row, rather than letting 87%
+    // of the dataset disappear silently.
     description:
-      "查詢內政部警政署公告之全國婦幼安全警示地點與路段。資料來源：內政部警政署開放資料。",
+      "查詢內政部警政署公告之全國婦幼安全警示地點與路段。本表為警示路段與地點描述，多數非門牌地址（如捷運站、公園、路口周邊），約 87% 尚未完成地理定位，未定位者不會出現在附近搜尋結果中，請改用關鍵字搜尋。資料來源：內政部警政署開放資料。",
     searchPlaceholder: "輸入路段、地點或分局關鍵字",
     errorText: "查詢警示地點資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的警示地點，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的警示地點。",
     serviceItem: { label: "管轄單位與窗口：" },
+    showGeocodeNote: true,
   },
   "tax-organizations": {
     facilityType: "tax_organization",
