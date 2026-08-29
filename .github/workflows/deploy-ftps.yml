@@ -24,6 +24,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # .remote-health-index.php is the host's front controller AND its only
+      # recovery mechanism — /__ops/apply-prebuilt-force, the pm2 watchdog and
+      # the status endpoints all live in it. A parse error there does not
+      # degrade the site, it removes the thing you would use to fix the site,
+      # and nothing else in this pipeline would notice: the file is uploaded
+      # verbatim, never imported by the Node build. Lint it before the build so
+      # a typo costs 5 seconds here instead of an outage with no way back in.
+      # Runs first because it is the cheapest step that can fail.
+      - name: Lint host PHP front controller
+        run: php -l .remote-health-index.php
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
