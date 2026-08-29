@@ -18,33 +18,42 @@ export default function HomeCategoryNewsSection({
   items,
   categories,
   blogItem,
+  blogItems,
 }: {
   items: NewsListItem[];
   categories: HomeSourceCategory[];
   blogItem?: NewsListItem | null;
+  blogItems?: NewsListItem[];
 }) {
   const [activeCategoryKey, setActiveCategoryKey] = useState<string>("all");
 
+  const effectiveBlogItems = useMemo(() => {
+    if (blogItems && blogItems.length > 0) return blogItems;
+    if (blogItem) return [blogItem];
+    return [];
+  }, [blogItems, blogItem]);
+
   const countByCategory = useMemo(() => {
-    const counts: Record<string, number> = { all: items.length + (blogItem ? 1 : 0) };
+    const counts: Record<string, number> = { all: items.length + effectiveBlogItems.length };
     for (const cat of categories) {
       counts[cat.key] = items.filter((item) => cat.sourceNames.includes(item.source_name)).length;
     }
     return counts;
-  }, [items, categories, blogItem]);
+  }, [items, categories, effectiveBlogItems]);
 
   const visibleItems = useMemo(() => {
     if (activeCategoryKey === "all") {
       const limit = Math.min(items.length, HOME_CARD_LIMIT);
-      if (blogItem && limit > 0) {
-        return [...items.slice(0, limit - 1), blogItem];
+      if (effectiveBlogItems.length > 0 && limit > 0) {
+        const takeNewsCount = Math.max(0, limit - effectiveBlogItems.length);
+        return [...items.slice(0, takeNewsCount), ...effectiveBlogItems];
       }
       return items.slice(0, HOME_CARD_LIMIT);
     }
     const active = categories.find((cat) => cat.key === activeCategoryKey);
     if (!active) return items.slice(0, HOME_CARD_LIMIT);
     return items.filter((item) => active.sourceNames.includes(item.source_name)).slice(0, HOME_CARD_LIMIT);
-  }, [items, categories, activeCategoryKey, blogItem]);
+  }, [items, categories, activeCategoryKey, effectiveBlogItems]);
 
   const viewAllHref = activeCategoryKey === "all" ? "/news" : `/news?group=${activeCategoryKey}`;
 

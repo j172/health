@@ -8,22 +8,23 @@ import { facilitySearchConfigs } from "../facilityConfigs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/tax-organizations`;
-const catalogEntry = getToolCatalogEntry("tax-organizations");
+const canonical = `${getBaseUrl()}/tools/green-hotels`;
+const catalogEntry = getToolCatalogEntry("green-hotels");
 
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["非營利組織", "NPO", "統一編號", "扣繳單位", "機關團體", "財團法人", "公益協會", "管委會統編"],
+  keywords: ["環保標章旅館", "綠色旅店", "低碳旅遊", "環境部", "金級環保旅館", "綠色住宿"],
   alternates: { canonical },
   robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 
-export default function TaxOrganizationsPage() {
+export default function GreenHotelsPage() {
   return (
-    <ToolPageShell slug="tax-organizations" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs["tax-organizations"]} />
+    <ToolPageShell slug="green-hotels" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <FacilitySearchContent config={facilitySearchConfigs["green-hotels"]} />
     </ToolPageShell>
   );
 }
+

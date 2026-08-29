@@ -8,19 +8,10 @@ import { searchPexelsImages, type PexelsImage } from "@/lib/server/pexels/client
 import { downloadPexelsImage, removeDownloadedImage as removePexelsImage, PexelsRateLimitError } from "@/lib/server/pexels/download";
 import { searchUnsplashImages, type UnsplashImage } from "@/lib/server/unsplash/client";
 import { downloadUnsplashImage, removeDownloadedImage as removeUnsplashImage, UnsplashRateLimitError } from "@/lib/server/unsplash/download";
+import { searchFlickrImages, type FlickrImage, FlickrRateLimitError } from "@/lib/server/flickr/client";
+import { downloadFlickrImage, removeDownloadedImage as removeFlickrImage } from "@/lib/server/flickr/download";
 
-/**
- * Provider abstraction so lib/server/news/cardImages.ts's orchestration loop
- * doesn't need per-provider branching logic — see
- * docs/specs/news-card-image-multi-provider-fallback.md section 1. Each
- * concrete adapter below wraps that provider's own client/download modules
- * (kept separate and mirroring Pixabay's existing shape/error handling — see
- * lib/server/{pixabay,pexels,unsplash}/{client,download}.ts) and normalizes
- * just enough surface area (search + download + remove + isConfigured) for
- * cardImages.ts to drive all three identically.
- */
-
-export type ProviderName = "pixabay" | "pexels" | "unsplash";
+export type ProviderName = "pixabay" | "pexels" | "unsplash" | "flickr";
 
 // Shared per-page size for search pagination math in cardImages.ts. Each
 // provider's own client clamps this down further to its own API max
@@ -312,5 +303,90 @@ const unsplashAdapter: ImageProvider = {
   remove: removeUnsplashImage,
 };
 
-/** Fixed fallback order per docs/specs/news-card-image-multi-provider-fallback.md section 1. */
-export const IMAGE_PROVIDERS: ImageProvider[] = [pixabayAdapter, pexelsAdapter, unsplashAdapter];
+// ─── Flickr adapter ─────────────────────────────────────────────────────────
+
+const flickrSearch = async (
+  conn: PoolConnection,
+  term: string,
+  page: number,
+): Promise<{ candidates: ProviderImage[]; totalHits: number }> => {
+  const cacheKey = `flickr-health-v1-${term}-per-${SEARCH_RESULTS_PER_PAGE}-page-${page}`;
+  const [cachedRows] = await conn.execute<CacheRow[]>(
+    `
+    SELECT response_json
+    FROM provider_api_cache
+    WHERE cache_key = ?
+      AND fetched_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+    LIMIT 1
+    `,
+    [cacheKey, CACHE_TTL_HOURS],
+  );
+
+  let hits: FlickrImage[];
+  let totalHits: number;
+  if (cachedRows[0]) {
+    try {
+      const parsed = JSON.parse(cachedRows[0].response_json) as { hits: FlickrImage[]; totalHits: number };
+      hits = parsed.hits;
+      totalHits = parsed.totalHits;
+    } catch {
+      await conn.execute("DELETE FROM provider_api_cache WHERE cache_key = ?", [cacheKey]);
+      const fresh = await searchFlickrImages(term, page, SEARCH_RESULTS_PER_PAGE);
+      hits = fresh.hits;
+      totalHits = fresh.totalHits;
+      await conn.execute(
+        "INSERT INTO provider_api_cache (cache_key, response_json, fetched_at_utc) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE response_json = VALUES(response_json), fetched_at_utc = VALUES(fetched_at_utc)",
+        [cacheKey, JSON.stringify(fresh), utcNowSql()],
+      );
+    }
+  } else {
+    const fresh = await searchFlickrImages(term, page, SEARCH_RESULTS_PER_PAGE);
+    hits = fresh.hits;
+    totalHits = fresh.totalHits;
+    await conn.execute(
+      "INSERT INTO provider_api_cache (cache_key, response_json, fetched_at_utc) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE response_json = VALUES(response_json), fetched_at_utc = VALUES(fetched_at_utc)",
+      [cacheKey, JSON.stringify({ total: totalHits, totalHits, hits }), utcNowSql()],
+    );
+  }
+
+  const candidates: ProviderImage[] = hits.map((hit) => ({
+    provider: "flickr",
+    id: hit.id,
+    pageURL: hit.link,
+    contributorName: hit.author || null,
+    width: hit.width || 1024,
+    height: hit.height || 680,
+    raw: hit,
+  }));
+  return { candidates, totalHits };
+};
+
+const flickrAdapter: ImageProvider = {
+  name: "flickr",
+  isConfigured: () => true,
+  search: async (conn, term, page) => {
+    try {
+      return await flickrSearch(conn, term, page);
+    } catch (error) {
+      if (error instanceof FlickrRateLimitError) throw new ProviderRateLimitError("flickr");
+      throw error;
+    }
+  },
+  download: async (candidate) => {
+    try {
+      return await downloadFlickrImage(candidate.raw as FlickrImage);
+    } catch (error) {
+      if (error instanceof FlickrRateLimitError) throw new ProviderRateLimitError("flickr");
+      throw error;
+    }
+  },
+  remove: removeFlickrImage,
+};
+
+/** Fixed fallback order: Pixabay -> Pexels -> Unsplash -> Flickr */
+export const IMAGE_PROVIDERS: ImageProvider[] = [
+  pixabayAdapter,
+  pexelsAdapter,
+  unsplashAdapter,
+  flickrAdapter,
+];

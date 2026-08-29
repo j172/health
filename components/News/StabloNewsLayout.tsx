@@ -2,7 +2,7 @@ import { getTopViewedNews, type NewsListItem } from "@/lib/server/news/queries";
 import { listActiveCwaAlerts } from "@/lib/server/cwa/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
-import { getLatestBlogPost } from "@/lib/server/blog/queries";
+import { getLatestBlogPosts } from "@/lib/server/blog/queries";
 import SiteNav from "@/components/News/SiteNav";
 import SiteFooter from "@/components/News/SiteFooter";
 import NewsCard from "@/components/News/NewsCard";
@@ -36,6 +36,7 @@ export default async function StabloNewsLayout({
   archiveDescription,
   activeGroupKey,
   blogItem,
+  blogItems,
 }: {
   items: NewsListItem[];
   variant: Variant;
@@ -44,6 +45,7 @@ export default async function StabloNewsLayout({
   archiveDescription?: string;
   activeGroupKey?: string;
   blogItem?: NewsListItem | null;
+  blogItems?: NewsListItem[];
 }) {
   const hero = items[0];
   const secondary = items.slice(1, 3);
@@ -57,12 +59,18 @@ export default async function StabloNewsLayout({
         : cat.sources.map((s) => s.sourceName),
   }));
 
-  // Fetch Weather Warnings, Earthquakes, Trending News & Latest Blog Post
-  const [cwaAlerts, earthquakes, topViewedNews, latestBlogPost] = await Promise.all([
+  // Fetch Weather Warnings, Earthquakes, Trending News & Latest Blog Posts
+  const [cwaAlerts, earthquakes, topViewedNews, latestBlogPosts] = await Promise.all([
     listActiveCwaAlerts(10),
     getTieredEarthquakes(168, 20),
     getTopViewedNews(10),
-    blogItem !== undefined ? Promise.resolve(blogItem) : variant === "home" ? getLatestBlogPost() : Promise.resolve(null),
+    blogItems !== undefined
+      ? Promise.resolve(blogItems)
+      : blogItem !== undefined
+        ? Promise.resolve(blogItem ? [blogItem] : [])
+        : variant === "home"
+          ? getLatestBlogPosts(2)
+          : Promise.resolve([]),
   ]);
   // Falls back to the recency list until real view data accumulates (e.g.
   // right after this feature ships) — otherwise the widget would render
@@ -89,7 +97,7 @@ export default async function StabloNewsLayout({
                 <HomeCategoryNewsSection
                   items={homeNewsPool}
                   categories={homeSourceCategories}
-                  blogItem={latestBlogPost}
+                  blogItems={latestBlogPosts}
                 />
               </div>
 

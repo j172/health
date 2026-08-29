@@ -19,45 +19,60 @@ const getAckSnapshot = (): boolean => {
   }
 };
 
-/**
- * Notice-and-acknowledge banner, not a granular cookie-consent gate — this
- * site sets no advertising/analytics cookies to gate in the first place (see
- * /privacy). Its job is the GDPR/CCPA-CPRA/APPI/CBPR/台灣個資法 baseline: tell
- * visitors what's processed (geolocation, if they grant it) before they hit
- * a feature that requests it, and link to the full policy.
- */
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
 export default function PrivacyConsentBanner() {
   const [dismissed, setDismissed] = useState(false);
   const isAcked = useSyncExternalStore(subscribeToStorage, getAckSnapshot, () => true);
 
-  const acknowledge = () => {
+  const handleConsent = (grantAnalytics: boolean) => {
     setDismissed(true);
     try {
       window.localStorage.setItem(STORAGE_KEY, "1");
+      window.localStorage.setItem("j172-consent-analytics", grantAnalytics ? "granted" : "denied");
     } catch {
-      // localStorage unavailable (e.g. private mode) — banner will just reappear next visit.
+      // localStorage unavailable (e.g. private mode)
+    }
+
+    if (typeof window.gtag === "function") {
+      window.gtag("consent", "update", {
+        analytics_storage: grantAnalytics ? "granted" : "denied",
+      });
     }
   };
 
   if (isAcked || dismissed) return null;
 
   return (
-    <div role="region" aria-label="隱私權提示" className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 px-4 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 sm:px-6">
-      <div className="mx-auto flex max-w-5xl flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div role="region" aria-label="隱私權與 Cookie 同意提示" className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 px-4 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 sm:px-6">
+      <div className="mx-auto flex max-w-5xl flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-300 sm:text-sm">
-          本站部分功能（如附近空氣品質／醫療院所查詢）會於您授權後使用瀏覽器定位資訊，僅用於即時查詢、不會儲存於伺服器；本站不使用廣告追蹤 Cookie。詳見{" "}
+          本站使用必要 Cookie 與 Google Analytics 分析網站流量以改善服務體驗。地理定位僅於您授權後即時查詢，不儲存於伺服器。詳見{" "}
           <Link href="/privacy" className="text-primary underline hover:no-underline dark:text-primary">
-            隱私權政策
+            隱私權政策與同意聲明
           </Link>
-          （符合 GDPR、CCPA/CPRA、APPI、CBPR 與臺灣個資法之揭露規範）。
+          （符合 GDPR、CCPA/CPRA 與臺灣個資法）。
         </p>
-        <button
-          type="button"
-          onClick={acknowledge}
-          className="shrink-0 rounded-lg bg-primary px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-primaryho"
-        >
-          我知道了
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handleConsent(false)}
+            className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800 sm:text-sm"
+          >
+            僅必要功能
+          </button>
+          <button
+            type="button"
+            onClick={() => handleConsent(true)}
+            className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primaryho sm:text-sm"
+          >
+            同意並接受
+          </button>
+        </div>
       </div>
     </div>
   );

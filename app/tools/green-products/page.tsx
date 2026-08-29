@@ -8,22 +8,23 @@ import { facilitySearchConfigs } from "../facilityConfigs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/tax-organizations`;
-const catalogEntry = getToolCatalogEntry("tax-organizations");
+const canonical = `${getBaseUrl()}/tools/green-products`;
+const catalogEntry = getToolCatalogEntry("green-products");
 
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["非營利組織", "NPO", "統一編號", "扣繳單位", "機關團體", "財團法人", "公益協會", "管委會統編"],
+  keywords: ["環保標章產品", "綠色商品", "節能標章", "環境部", "減碳", "環保採購"],
   alternates: { canonical },
   robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 
-export default function TaxOrganizationsPage() {
+export default function GreenProductsPage() {
   return (
-    <ToolPageShell slug="tax-organizations" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs["tax-organizations"]} />
+    <ToolPageShell slug="green-products" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <FacilitySearchContent config={facilitySearchConfigs["green-products"]} />
     </ToolPageShell>
   );
 }
+

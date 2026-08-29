@@ -9,14 +9,12 @@ import {
 import {
   getNearestUvReading,
   getNearestRainfallReading,
+  getNearestStationWeather,
 } from "@/lib/server/cwa/queries";
 import { getUvCategory } from "@/lib/server/cwa/uvStatus";
 
 export const runtime = "nodejs";
 
-// Nearest AQI station + nearest UV reading to a given point — powers the
-// location-based header bar (replaces the earlier "top 5 nationwide" design,
-// which didn't tell a reader anything about their own area).
 export async function GET(request: NextRequest) {
   const lat = Number(request.nextUrl.searchParams.get("lat"));
   const lng = Number(request.nextUrl.searchParams.get("lng"));
@@ -29,11 +27,12 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [aqi, pm25, uv, rainfall] = await Promise.all([
+    const [aqi, pm25, uv, rainfall, stationWeather] = await Promise.all([
       getNearestAqiReading(lat, lng),
       getNearestPm25Reading(lat, lng),
       getNearestUvReading(lat, lng),
       getNearestRainfallReading(lat, lng),
+      getNearestStationWeather(lat, lng),
     ]);
 
     const aqiResult = aqi
@@ -101,6 +100,7 @@ export async function GET(request: NextRequest) {
       : null;
 
     return NextResponse.json({
+      stationWeather,
       aqi: aqiResult,
       pm25: pm25Result,
       uv: uvResult,

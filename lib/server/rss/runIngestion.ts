@@ -24,6 +24,8 @@ import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
+import { fetchNhiNewsHtml } from "@/lib/server/rss/fetchNhiNews";
+import { fetchCultureNews } from "@/lib/server/rss/fetchCultureNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -403,6 +405,30 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += edhResult.skippedUnchanged;
+
+      const nhiHtmlResult = await processSpecialSource(
+        {
+          code: "nhi_web" as FeedCode,
+          name: "中央健康保險署－新聞發布",
+          url: "https://www.nhi.gov.tw/ch/lp-3255-1.html",
+          sourceName: "nhi",
+        },
+        fetchNhiNewsHtml,
+        specialSourceCtx,
+      );
+      skippedUnchanged += nhiHtmlResult.skippedUnchanged;
+
+      const cultureResult = await processSpecialSource(
+        {
+          code: "moc_shows" as FeedCode,
+          name: "文化部－藝文展覽與活動",
+          url: "https://cloud.culture.tw/frontsite/trans/SearchShowAction.do",
+          sourceName: "culture_tw",
+        },
+        fetchCultureNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += cultureResult.skippedUnchanged;
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;

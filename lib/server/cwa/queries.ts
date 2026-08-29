@@ -314,6 +314,61 @@ export const upsertCwaStationWeather = (records: CwaStationWeatherRecord[]) =>
     ],
   );
 
+export interface NearestStationWeatherRecord {
+  station_id: string;
+  station_name: string | null;
+  county_name: string | null;
+  town_name: string | null;
+  obs_time: string;
+  weather: string | null;
+  precipitation: string | null;
+  wind_speed: string | null;
+  air_temperature: string | null;
+  relative_humidity: string | null;
+  distance_km: number;
+}
+
+/**
+ * Queries nearest CWA weather station (O-A0001-001) to given coordinates.
+ */
+export const getNearestStationWeather = async (
+  lat: number,
+  lng: number,
+): Promise<NearestStationWeatherRecord | null> =>
+  withConnectionFallback(null, async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `
+      SELECT s.station_id, s.station_name, s.county_name, s.town_name, s.obs_time,
+             s.weather, s.precipitation, s.wind_speed, s.air_temperature, s.relative_humidity,
+             (6371 * acos(
+               LEAST(1, cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
+               sin(radians(?)) * sin(radians(s.lat)))
+             )) AS distance_km
+      FROM cwa_station_weather s
+      WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
+        AND s.obs_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 6 HOUR)
+      ORDER BY distance_km ASC
+      LIMIT 1
+      `,
+      [lat, lng, lat],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      station_id: String(row.station_id),
+      station_name: row.station_name ?? null,
+      county_name: row.county_name ?? null,
+      town_name: row.town_name ?? null,
+      obs_time: String(row.obs_time),
+      weather: row.weather ?? null,
+      precipitation: row.precipitation ?? null,
+      wind_speed: row.wind_speed ?? null,
+      air_temperature: row.air_temperature ?? null,
+      relative_humidity: row.relative_humidity ?? null,
+      distance_km: Number(row.distance_km),
+    };
+  });
+
 export interface CwaRainfallRecord {
   stationId: string;
   stationName: string | null;

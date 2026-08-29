@@ -8,22 +8,23 @@ import { facilitySearchConfigs } from "../facilityConfigs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/tax-organizations`;
-const catalogEntry = getToolCatalogEntry("tax-organizations");
+const canonical = `${getBaseUrl()}/tools/cultural-events`;
+const catalogEntry = getToolCatalogEntry("cultural-events");
 
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["非營利組織", "NPO", "統一編號", "扣繳單位", "機關團體", "財團法人", "公益協會", "管委會統編"],
+  keywords: ["藝文展覽", "文化部", "展覽查詢", "親子活動", "音樂會", "戲劇表演", "講座"],
   alternates: { canonical },
   robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 
-export default function TaxOrganizationsPage() {
+export default function CulturalEventsPage() {
   return (
-    <ToolPageShell slug="tax-organizations" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs["tax-organizations"]} />
+    <ToolPageShell slug="cultural-events" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <FacilitySearchContent config={facilitySearchConfigs["cultural-events"]} />
     </ToolPageShell>
   );
 }
+

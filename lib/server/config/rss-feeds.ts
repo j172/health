@@ -225,13 +225,41 @@ export const RSS_FEEDS: FeedConfig[] = [
     // have no RSS and are handled as special sources in runIngestion.ts.
     url: "https://tw.news.yahoo.com/rss/health",
     sourceName: "yahoo_health",
-    // Yahoo健康 is a syndication aggregator (frequently reprints
-    // SETN/ETtoday/etc. content under its own URLs) — never store full
-    // body, same as every other commercial media source here. Also skips
-    // the detail-page fetch entirely; the odd bare-URL <content:encoded>
-    // this feed uses for its thumbnail isn't parsed specially, so
-    // enrichItem's og:image fallback in runIngestion.ts supplies the card
-    // thumbnail instead.
+    skipDetailFetch: true,
+  },
+  {
+    code: "gnews_topic",
+    name: "Google 新聞－健康專區",
+    url: "https://news.google.com/rss/topics/CAAqJQgKIh9DQkFTRVFvSUwyMHZNR3QwTlRFU0JYcG9MVlJYS0FBUAE?hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "google_news",
+    skipDetailFetch: true,
+  },
+  {
+    code: "worldpeace",
+    name: "世界和平會",
+    url: "https://news.google.com/rss/search?q=site:worldpeace.org.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "worldpeace",
+    skipDetailFetch: true,
+  },
+  {
+    code: "greenpeace",
+    name: "綠色和平",
+    url: "https://news.google.com/rss/search?q=site:greenpeace.org/taiwan&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "greenpeace",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ibt",
+    name: "盲人重建院",
+    url: "https://news.google.com/rss/search?q=site:ibt.org.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "ibt",
+    skipDetailFetch: true,
+  },
+  {
+    code: "love_newlife",
+    name: "癌友新生命協會",
+    url: "https://news.google.com/rss/search?q=site:love-newlife.org&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "love_newlife",
     skipDetailFetch: true,
   },
 ];

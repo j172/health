@@ -27,7 +27,8 @@ import { env } from "@/lib/server/config/env";
 const FEED_CODE = "moenv_mnews" as const;
 const SOURCE_NAME = "moenv";
 const FEED_NAME = "環境部";
-const API_URL = "https://data.moenv.gov.tw/api/v2/mnews_p_01";
+const API_URL_MNEWS = "https://data.moenv.gov.tw/api/v2/mnews_p_01";
+const API_URL_INEWS = "https://data.moenv.gov.tw/api/v2/inews_s_01";
 
 // relativeurl values observed in this dataset are paths like
 // "/Page/3B3C62C78849F32F/<uuid>" on the 環境部新聞專區 site — resolve
@@ -68,6 +69,11 @@ interface MoenvNewsRecord {
   relativeurl?: string;
   attachurl?: string;
   deletemark?: string;
+  // inews specific fields
+  titleno?: string;
+  title?: string;
+  content?: string;
+  pubdate?: string;
 }
 
 export interface MoenvNewsFetchResult {
@@ -87,33 +93,36 @@ export const fetchMoenvNews = async (): Promise<MoenvNewsFetchResult> => {
       throw new Error("MOENV_NEWS_API_KEY is not configured");
     }
 
-    const url = `${API_URL}?api_key=${encodeURIComponent(apiKey)}&limit=1000&sort=ImportDate%20desc&format=JSON`;
+    const endpoints = [
+      { url: `${API_URL_MNEWS}?api_key=${encodeURIComponent(apiKey)}&limit=1000&sort=ImportDate%20desc&format=JSON`, type: "mnews" },
+      { url: `${API_URL_INEWS}?api_key=${encodeURIComponent(apiKey)}&limit=1000&sort=ImportDate%20desc&format=JSON`, type: "inews" },
+    ];
 
-    const response = await httpGetText(url, {
-      headers: {
-        "User-Agent": "health.j172.tw-rss-ingestor/1.0",
-        Accept: "application/json",
-      },
-      timeoutMs: 15_000,
-    });
+    const rawItems: MoenvNewsRecord[] = [];
 
-    httpStatus = response.status;
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(`MOENV news API HTTP ${response.status}`);
+    for (const ep of endpoints) {
+      try {
+        const response = await httpGetText(ep.url, {
+          headers: {
+            "User-Agent": "health.j172.tw-rss-ingestor/1.0",
+            Accept: "application/json",
+          },
+          timeoutMs: 15_000,
+        });
+        httpStatus = response.status;
+        if (response.status >= 200 && response.status < 300 && response.text) {
+          const parsed = JSON.parse(response.text);
+          const records = Array.isArray(parsed)
+            ? (parsed as MoenvNewsRecord[])
+            : Array.isArray((parsed as { records?: unknown } | null)?.records)
+              ? (parsed as { records: MoenvNewsRecord[] }).records
+              : [];
+          rawItems.push(...records);
+        }
+      } catch (err) {
+        console.warn(`[fetchMoenvNews] Endpoint ${ep.type} fetch warning:`, err);
+      }
     }
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(response.text);
-    } catch {
-      throw new Error("MOENV news API returned non-JSON response");
-    }
-
-    const rawItems: MoenvNewsRecord[] = Array.isArray(parsed)
-      ? (parsed as MoenvNewsRecord[])
-      : Array.isArray((parsed as { records?: unknown } | null)?.records)
-        ? (parsed as { records: MoenvNewsRecord[] }).records
-        : [];
 
     const cutoffMs = Date.now() - RECENCY_WINDOW_MS;
     const items: EnrichedRssItem[] = [];

@@ -66,7 +66,11 @@
     "cram-schools": "Cram School Directory Finder",
     "child-safety-spots": "Child & Women Safety Alert Spot Finder",
     "family-cultural-activities": "Family Cultural Activities Finder",
-    "tax-organizations": "Institutions & Tax Deductible Entities Finder",
+    "tax-organizations": "Non-Profit Organizations (NPO) Directory",
+    "green-hotels": "Green Mark Hotels & Lodging Finder",
+    "green-products": "Green Mark Products Directory",
+    "cultural-events": "National Cultural & Exhibition Events Finder",
+    "public-art": "National Public Art Map & Directory",
     "travel-epidemic-alerts": "International Travel Epidemic & Outbreak Alerts"
   },
   "categories": {

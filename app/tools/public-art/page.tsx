@@ -8,22 +8,23 @@ import { facilitySearchConfigs } from "../facilityConfigs";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/tax-organizations`;
-const catalogEntry = getToolCatalogEntry("tax-organizations");
+const canonical = `${getBaseUrl()}/tools/public-art`;
+const catalogEntry = getToolCatalogEntry("public-art");
 
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["非營利組織", "NPO", "統一編號", "扣繳單位", "機關團體", "財團法人", "公益協會", "管委會統編"],
+  keywords: ["公共藝術", "文化部", "藝術地圖", "裝置藝術", "雕塑", "公共設施地標"],
   alternates: { canonical },
   robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 
-export default function TaxOrganizationsPage() {
+export default function PublicArtPage() {
   return (
-    <ToolPageShell slug="tax-organizations" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs["tax-organizations"]} />
+    <ToolPageShell slug="public-art" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <FacilitySearchContent config={facilitySearchConfigs["public-art"]} />
     </ToolPageShell>
   );
 }
+

@@ -37,7 +37,15 @@ export type FeedCode =
   | "healthnews_tw"
   | "fiftyplus_health"
   | "businessweekly_health"
-  | "edh_health";
+  | "edh_health"
+  | "gnews_topic"
+  | "worldpeace"
+  | "greenpeace"
+  | "ibt"
+  | "love_newlife"
+  | "nhi_web"
+  | "moc_shows"
+  | "blog_j172";
 
 export interface FeedConfig {
   code: FeedCode;

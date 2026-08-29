@@ -5,7 +5,7 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const LAST_UPDATED = "2026-08-02";
+const LAST_UPDATED = "2026-08-29";
 
 export default function PrivacyPage() {
   const baseUrl = getBaseUrl();
@@ -33,13 +33,13 @@ export default function PrivacyPage() {
 
           <div className="space-y-8 text-sm leading-relaxed text-neutral-700 dark:text-slate-300">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">隱私權政策</h1>
+              <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">隱私權政策與同意聲明</h1>
               <p className="text-neutral-500 dark:text-slate-400">最後更新日期：{LAST_UPDATED}</p>
             </div>
 
             <p>
               j172tw Healthz（health.j172.tw，以下稱「本站」）重視您的隱私權。本政策說明本站蒐集哪些資料、如何使用，以及您依歐盟《一般資料保護規則》（GDPR）、美國加州《消費者隱私法》與《加州隱私權法》（CCPA/CPRA）、日本《個人資訊保護法》（APPI）、APEC
-              跨境隱私保護規則（CBPR）與臺灣《個人資料保護法》所享有的權利。本站以「盡量不蒐集個人資料」為原則設計，以下逐項說明實際資料處理方式。
+              跨境隱私保護規則（CBPR）與臺灣《個人資料保護法》所享有的權利。本站遵循「最小化資料蒐集」原則，並全面支援 Google 同意聲明模式（Consent Mode v2）。
             </p>
 
             <section className="space-y-2">
@@ -47,11 +47,15 @@ export default function PrivacyPage() {
               <ul className="list-inside list-disc space-y-2">
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">地理位置資訊：</span>
-                  部分功能（如附近空氣品質／紫外線指數、鄰近醫療院所查詢）會請求您瀏覽器的定位權限。這項授權由您的瀏覽器直接管理，本站僅在您同意後取得當下的經緯度，用於即時查詢「離您最近」的結果，查詢後不會將座標與任何足以識別您身分的資訊一併儲存於本站伺服器資料庫。
+                  部分功能（如附近空氣品質／紫外線指數、鄰近醫療院所查詢、在地區域天氣）會請求您瀏覽器的定位權限。這項授權由您的瀏覽器直接管理，本站僅在您同意後取得當下的經緯度，用於即時查詢「離您最近」的結果，查詢後不會將座標與任何足以識別您身分的資訊一併儲存於本站伺服器資料庫。
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">健康小工具的輸入內容：</span>
                   BMI、卡路里、體脂率、血壓、睡眠品質評估等計算機工具，所有輸入數值僅在您的瀏覽器內計算，不會傳送或儲存到本站伺服器。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">網站流量分析（Google Analytics 4 與 Consent Mode v2）：</span>
+                  本站使用 Google Analytics (ID: G-V0CTGFQXW2) 協助了解網站使用情況與改進服務體驗。本站預設啟用 Google Consent Mode v2（將分析與廣告儲存預設為拒絕 denied）。僅於您在同意橫幅中點擊「同意並接受」後，系統才會啟用分析儲存權限。您可以隨時透過清除瀏覽器 Cookie 或本機儲存來重設同意狀態。
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">一般網站存取紀錄：</span>
@@ -59,7 +63,7 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">本機儲存（localStorage）：</span>
-                  本站僅使用瀏覽器本機儲存記住您是否已閱讀本頁的隱私權提示橫幅，不會用於追蹤或廣告目的。
+                  本站使用瀏覽器本機儲存記住您的隱私與 Cookie 同意偏好，不作為第三方追蹤用途。
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">文章瀏覽計數 Cookie：</span>
@@ -70,11 +74,11 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-100">二、本站不會做的事</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-100">二、本站承諾與合規原則</h2>
               <ul className="list-inside list-disc space-y-2">
-                <li>不需要註冊帳號即可使用本站所有健康工具與新聞閱讀功能，本站目前未提供任何會員登入機制。</li>
-                <li>不使用廣告追蹤 Cookie 或第三方廣告像素（如 Google Analytics、Meta Pixel 等）。</li>
-                <li>不會將您的個人資料出售、出租或提供給第三方作行銷用途。</li>
+                <li>不需要註冊帳號即可使用本站所有健康工具與新聞閱讀功能，本站未提供任何強制會員登入機制。</li>
+                <li>不使用第三方再行銷廣告追蹤像素（如 Meta Pixel、TikTok Pixel 等）。</li>
+                <li>不會將您的個人資料出售、出租或提供給第三方作商業行銷用途。</li>
               </ul>
             </section>
 

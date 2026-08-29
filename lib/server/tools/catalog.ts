@@ -1476,11 +1476,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "tax-organizations",
     group: "public-facility",
-    title: "機關團體與扣繳單位查詢",
+    title: "非營利組織(NPO)查詢",
     description:
-      "查詢財政部全國非營利事業扣繳單位（機關團體、同業公會、財團法人、學校與公寓大廈管委會）統一編號與稅籍登記狀態。資料來源：財政部財政資訊中心開放資料。",
+      "查詢全國非營利組織（NPO）、機關團體、同業公會、社會福利慈善財團法人、公益協會與公寓大廈管委會統一編號、登記地址與稅籍狀態。資料來源：財政部財政資訊中心開放資料。",
     directAnswer:
-      "查詢全國機關團體與非營利扣繳單位統一編號、登記縣市與最新異動事由。",
+      "查詢全國非營利組織（NPO）、機關團體與扣繳單位統一編號、登記地址、地理座標與最新異動事由。",
     scientificBasis: [
       {
         title: "機關團體扣繳單位基本資料 (BGMOPEN99)",
@@ -1491,14 +1491,110 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     relatedSlugs: ["food-operators", "green-shops", "public-toilets"],
     faqs: [
       {
-        question: "BGMOPEN99 包含哪些單位？",
+        question: "BGMOPEN99 包含哪些非營利組織？",
         answer:
-          "包含同業公會、學術社團、宗教團體、財團法人、公益協會、各級公私立學校及報備立案之公寓大廈管理委員會等扣繳單位。",
+          "包含非營利機構 (NPO)、同業公會、學術社團、宗教團體、慈善財團法人、公益協會、各級公私立學校及公寓大廈管委會等扣繳單位。",
       },
       {
         question: "如何查驗統一編號是否有效？",
         answer:
           "可在搜尋框輸入 8 碼統一編號或機關名稱，點擊卡片可複製統編並外連至財政部稅籍公示系統查驗。",
+      },
+    ],
+  },
+  {
+    slug: "green-hotels",
+    group: "public-facility",
+    title: "環保標章旅館與綠色住宿查詢",
+    description:
+      "查詢環境部認證之全國金級、銀級、銅級環保標章旅館及綠色旅店名冊。資料來源：環境部開放資料（gp_p_42, gp_p_43）與台北市觀光傳播局。",
+    directAnswer:
+      "即時查詢全國獲得環境部金級、銀級、銅級環保標章之綠色旅宿與飯店資訊。",
+    scientificBasis: [
+      {
+        title: "環保標章旅館認證作業規範 (gp_p_42, gp_p_43)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-shops", "green-products", "public-toilets"],
+    faqs: [
+      {
+        question: "環保標章旅館的分級標準？",
+        answer:
+          "環境部依節能、省水、減廢、綠色採購等面向，評定為金級、銀級與銅級環保標章旅館。",
+      },
+    ],
+  },
+  {
+    slug: "green-products",
+    group: "public-facility",
+    title: "環保標章產品查詢",
+    description:
+      "查詢環境部認證之各類綠色環保標章產品（低污染、省能資源、可回收）。資料來源：環境部開放資料（gp_p_02）。",
+    directAnswer:
+      "查詢全國取得政府環保標章認證之綠色產品、型號與生產廠商。",
+    scientificBasis: [
+      {
+        title: "環保標章資訊開放資料 (gp_p_02)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-shops", "green-hotels"],
+    faqs: [
+      {
+        question: "什麼是環保標章產品？",
+        answer:
+          "經過環境部審查通過「低污染、省資源、可回收」之優良環境品質產品。",
+      },
+    ],
+  },
+  {
+    slug: "cultural-events",
+    group: "public-facility",
+    title: "全國藝文展覽與活動查詢",
+    description:
+      "查詢全國展覽、音樂、戲劇、講座與親子藝文活動。資料來源：文化部開放資料。",
+    directAnswer:
+      "即時連線文化部藝文活動資訊系統，查詢全國展演、音樂會與親子藝文活動。",
+    scientificBasis: [
+      {
+        title: "文化部全國藝文活動資訊系統開放資料 (SearchShowAction)",
+        authority: "文化部 (MOC)",
+        url: "https://cloud.culture.tw",
+      },
+    ],
+    relatedSlugs: ["public-art", "child-welfare-nurseries"],
+    faqs: [
+      {
+        question: "活動資訊包含哪些類別？",
+        answer:
+          "涵蓋視覺藝術展覽、音樂會、戲劇舞蹈表演、專題講座以及全國親子藝文活動。",
+      },
+    ],
+  },
+  {
+    slug: "public-art",
+    group: "public-facility",
+    title: "全國公共藝術地圖查詢",
+    description:
+      "查詢全台設置之公共藝術作品、作者與設置地點。資料來源：文化部公共藝術資料庫開放資料。",
+    directAnswer:
+      "即時探索全台灣各縣市設置之公共藝術作品、地標裝置與創作者資料。",
+    scientificBasis: [
+      {
+        title: "公共藝術官方資料庫 (artWork/openData)",
+        authority: "文化部 (MOC)",
+        url: "https://publicartap.moc.gov.tw",
+      },
+    ],
+    relatedSlugs: ["cultural-events"],
+    faqs: [
+      {
+        question: "如何查找身邊的公共藝術作品？",
+        answer:
+          "開啟定位或輸入行政區關鍵字，即可列出周遭公共設施、捷運站與公園設置的公共藝術地標。",
       },
     ],
   },

@@ -31,6 +31,13 @@ const SOURCE_LABELS: Record<string, string> = {
   healthbw: "良醫健康網",
   edh: "早安健康",
   blog_j172: "j172tw Blogz",
+  worldpeace: "世界和平會",
+  greenpeace: "綠色和平",
+  ibt: "盲人重建院",
+  love_newlife: "癌友新生命協會",
+  water_gov: "台灣自來水公司",
+  culture_tw: "文化部",
+  public_art: "公共藝術",
 };
 
 export interface SourceLabelInput {

@@ -152,7 +152,7 @@ export const facilitySearchConfigs = {
     facilityType: "public_toilet",
     emoji: "🚻",
     title: "全國公廁查詢",
-    description: "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部。",
+    description: "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部全國公廁建檔資料（fac_p_07）。",
     searchPlaceholder: "輸入地點名稱或縣市關鍵字",
     errorText: "查詢公廁資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的公廁，可改用關鍵字搜尋。",
@@ -162,11 +162,64 @@ export const facilitySearchConfigs = {
     facilityType: "green_shop",
     emoji: "🌱",
     title: "綠色商店查詢",
-    description: "查詢環境部認證綠色商店。資料來源：環境部。",
+    description: "查詢環境部認證綠色商店。資料來源：環境部綠色商店基本資料（gp_p_01）。",
     searchPlaceholder: "輸入商店名稱或縣市關鍵字",
     errorText: "查詢商店資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的綠色商店，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的商店。",
+  },
+  "green-hotels": {
+    facilityType: "green_hotel",
+    emoji: "🏨",
+    title: "環保標章旅館與綠色住宿查詢",
+    description:
+      "查詢環境部認證之全國金級、銀級、銅級環保標章旅館及綠色旅店名冊。資料來源：環境部開放資料（gp_p_42, gp_p_43）與台北市政府觀傳局。",
+    searchPlaceholder: "輸入旅館名稱、飯店或縣市關鍵字",
+    errorText: "查詢環保旅館資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的環保旅館，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的環保旅館。",
+    serviceItem: { label: "標章等級：" },
+    categories: [
+      { value: "金級", label: "金級環保旅館" },
+      { value: "銀級", label: "銀級環保旅館" },
+      { value: "銅級", label: "銅級環保旅館" },
+    ],
+  },
+  "green-products": {
+    facilityType: "green_product",
+    emoji: "🏷️",
+    title: "環保標章產品查詢",
+    description:
+      "查詢環境部認證之各類綠色環保標章產品（低污染、省能資源、可回收）。資料來源：環境部開放資料（gp_p_02）。",
+    searchPlaceholder: "輸入產品名稱、型號、廠商或類別關鍵字",
+    errorText: "查詢環保產品資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "可輸入產品名稱、型號或廠商名稱進行搜尋。",
+    emptyStateWithKeyword: "查無符合的環保產品。",
+    serviceItem: { label: "產品類別與廠商：" },
+  },
+  "cultural-events": {
+    facilityType: "cultural_event",
+    emoji: "🎨",
+    title: "全國藝文展覽與活動查詢",
+    description:
+      "查詢全國展覽、音樂、戲劇、講座與親子藝文活動。資料來源：文化部開放資料（包含各類別與全國親子藝文活動）。",
+    searchPlaceholder: "輸入活動名稱、展館或縣市關鍵字",
+    errorText: "查詢藝文活動資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的藝文活動，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的藝文活動。",
+    serviceItem: { label: "活動類別與主辦：" },
+  },
+  "public-art": {
+    facilityType: "public_art",
+    emoji: "🗿",
+    title: "全國公共藝術地圖查詢",
+    description:
+      "查詢全台設置之公共藝術作品、作者與設置地點。資料來源：文化部公共藝術資料庫開放資料。",
+    searchPlaceholder: "輸入作品名稱、作者、設置地點或縣市",
+    errorText: "查詢公共藝術資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的公共藝術作品，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的公共藝術作品。",
+    serviceItem: { label: "創作者與設置單位：" },
   },
   "child-welfare-nurseries": {
     facilityType: "child_welfare_nursery",
@@ -228,11 +281,6 @@ export const facilitySearchConfigs = {
     facilityType: "child_safety_spot",
     emoji: "🛡️",
     title: "婦幼安全警示地點查詢",
-    // This source's 地點位置 column describes an alert road segment or landmark, not a
-    // street address (only 4% carry a 門牌號碼), so most rows cannot be resolved to a
-    // single coordinate and never appear in the nearby search. The description says so
-    // outright and showGeocodeNote marks each un-geocoded row, rather than letting 87%
-    // of the dataset disappear silently.
     description:
       "查詢內政部警政署公告之全國婦幼安全警示地點與路段。本表為警示路段與地點描述，多數非門牌地址（如捷運站、公園、路口周邊），約 87% 尚未完成地理定位，未定位者不會出現在附近搜尋結果中，請改用關鍵字搜尋。資料來源：內政部警政署開放資料。",
     searchPlaceholder: "輸入路段、地點或分局關鍵字",
@@ -245,13 +293,14 @@ export const facilitySearchConfigs = {
   "tax-organizations": {
     facilityType: "tax_organization",
     emoji: "🏢",
-    title: "機關團體與扣繳單位查詢",
+    title: "非營利組織(NPO)查詢",
     description:
-      "查詢財政部全國非營利扣繳單位（機關團體、協會、財團法人與管委會）。資料來源：財政部財政資訊中心開放資料。",
-    searchPlaceholder: "輸入 8 碼統一編號、機關名稱或所在縣市",
-    errorText: "查詢扣繳單位資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "可輸入統一編號、機關團體名稱或縣市進行搜尋。",
-    emptyStateWithKeyword: "查無符合的扣繳單位。",
+      "查詢全國非營利組織（NPO）、機關團體、協會、社會福利慈善財團法人與管委會名冊。資料來源：財政部財政資訊中心開放資料。本表已支援地址自動地理定位與附近搜尋。",
+    searchPlaceholder: "輸入 8 碼統一編號、組織名稱或所在縣市",
+    errorText: "查詢非營利組織資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無已收錄的非營利組織，可輸入統一編號、機構團體名稱或縣市關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的非營利組織。",
     serviceItem: { label: "異動狀態與事由：" },
+    showGeocodeNote: true,
   },
 } satisfies Record<string, FacilitySearchConfig>;

@@ -59,17 +59,16 @@ function extractFeaturedImage(html: string): string | null {
 const FEED_URL = "https://blog.j172.tw/feed/";
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour in-memory cache
 
-let cachedBlogItem: { item: NewsListItem; expiresAt: number } | null = null;
+let cachedBlogItems: { items: NewsListItem[]; expiresAt: number } | null = null;
 
 /**
- * Fetches the latest post from https://blog.j172.tw/feed/ and maps it to a NewsListItem.
+ * Fetches the latest N posts from https://blog.j172.tw/feed/ and maps them to NewsListItems.
  * Uses native httpGetText to safely execute within Linux shared-hosting ulimit memory constraints.
- * Returns null if the feed is unavailable or parsing fails, enabling seamless fallback.
  */
-export async function getLatestBlogPost(): Promise<NewsListItem | null> {
+export async function getLatestBlogPosts(limit = 2): Promise<NewsListItem[]> {
   const now = Date.now();
-  if (cachedBlogItem && now < cachedBlogItem.expiresAt) {
-    return cachedBlogItem.item;
+  if (cachedBlogItems && now < cachedBlogItems.expiresAt) {
+    return cachedBlogItems.items.slice(0, limit);
   }
 
   try {
@@ -81,61 +80,74 @@ export async function getLatestBlogPost(): Promise<NewsListItem | null> {
     });
 
     if (status < 200 || status >= 300 || !xml) {
-      console.warn(`[getLatestBlogPost] Feed responded with status ${status}`);
-      return cachedBlogItem ? cachedBlogItem.item : null;
+      console.warn(`[getLatestBlogPosts] Feed responded with status ${status}`);
+      return cachedBlogItems ? cachedBlogItems.items.slice(0, limit) : [];
     }
 
-    const itemMatch = xml.match(/<item>([\s\S]*?)<\/item>/);
-    if (!itemMatch) return cachedBlogItem ? cachedBlogItem.item : null;
+    const itemMatches = Array.from(xml.matchAll(/<item>([\s\S]*?)<\/item>/g));
+    if (itemMatches.length === 0) {
+      return cachedBlogItems ? cachedBlogItems.items.slice(0, limit) : [];
+    }
 
-    const itemXml = itemMatch[1];
-    const titleMatch = itemXml.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
-    const linkMatch = itemXml.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/);
-    const pubDateMatch = itemXml.match(/<pubDate>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/pubDate>/);
-    const creatorMatch = itemXml.match(/<dc:creator>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/dc:creator>/);
-    const descMatch = itemXml.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
+    const results: NewsListItem[] = [];
 
-    const title = decodeHtmlEntities(titleMatch ? titleMatch[1].trim() : "");
-    const link = linkMatch ? linkMatch[1].trim() : "";
-    const pubDateRaw = pubDateMatch ? pubDateMatch[1].trim() : "";
-    const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
-    const creator = creatorMatch ? creatorMatch[1].trim() : "Jay Fan-Chiang";
-    const description = decodeHtmlEntities(descMatch ? descMatch[1].trim() : "");
+    for (let i = 0; i < Math.min(itemMatches.length, limit); i++) {
+      const itemXml = itemMatches[i][1];
+      const titleMatch = itemXml.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/);
+      const linkMatch = itemXml.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/);
+      const pubDateMatch = itemXml.match(/<pubDate>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/pubDate>/);
+      const creatorMatch = itemXml.match(/<dc:creator>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/dc:creator>/);
+      const descMatch = itemXml.match(/<description>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/description>/);
 
-    if (!title || !link) return cachedBlogItem ? cachedBlogItem.item : null;
+      const title = decodeHtmlEntities(titleMatch ? titleMatch[1].trim() : "");
+      const link = linkMatch ? linkMatch[1].trim() : "";
+      const pubDateRaw = pubDateMatch ? pubDateMatch[1].trim() : "";
+      const pubDate = pubDateRaw ? new Date(pubDateRaw) : new Date();
+      const creator = creatorMatch ? creatorMatch[1].trim() : "Jay Fan-Chiang";
+      const description = decodeHtmlEntities(descMatch ? descMatch[1].trim() : "");
 
-    // Fetch featured image from the post page
-    let cardImageUrl: string | null = null;
-    try {
-      const pageRes = await httpGetText(link, { timeoutMs: 5000 });
-      if (pageRes.status >= 200 && pageRes.status < 300 && pageRes.text) {
-        cardImageUrl = extractFeaturedImage(pageRes.text);
+      if (!title || !link) continue;
+
+      let cardImageUrl: string | null = null;
+      try {
+        const pageRes = await httpGetText(link, { timeoutMs: 4000 });
+        if (pageRes.status >= 200 && pageRes.status < 300 && pageRes.text) {
+          cardImageUrl = extractFeaturedImage(pageRes.text);
+        }
+      } catch {
+        // graceful brand gradient fallback
       }
-    } catch {
-      // Ignore image fetch errors; CardThumb will render graceful brand gradient
+
+      results.push({
+        id: -(i + 1),
+        source_name: "blog_j172",
+        feed_code: "blog_j172",
+        feed_name: "j172tw Blogz",
+        dept_name: creator || "Jay Fan-Chiang",
+        title,
+        canonical_url: link,
+        published_at_utc: isNaN(pubDate.getTime()) ? new Date() : pubDate,
+        description_html: description,
+        card_image_url: cardImageUrl,
+        card_image_source: "og_image",
+        card_image_source_page_url: link,
+        card_image_contributor: creator || "Jay Fan-Chiang",
+        location_name: null,
+      });
     }
 
-    const item: NewsListItem = {
-      id: -1,
-      source_name: "blog_j172",
-      feed_code: "blog_j172",
-      feed_name: "j172tw Blogz",
-      dept_name: creator || "Jay Fan-Chiang",
-      title,
-      canonical_url: link,
-      published_at_utc: isNaN(pubDate.getTime()) ? new Date() : pubDate,
-      description_html: description,
-      card_image_url: cardImageUrl,
-      card_image_source: "og_image",
-      card_image_source_page_url: link,
-      card_image_contributor: creator || "Jay Fan-Chiang",
-      location_name: null,
-    };
+    if (results.length > 0) {
+      cachedBlogItems = { items: results, expiresAt: now + CACHE_TTL_MS };
+    }
 
-    cachedBlogItem = { item, expiresAt: now + CACHE_TTL_MS };
-    return item;
+    return results;
   } catch (err) {
-    console.error("[getLatestBlogPost] Failed to fetch or parse blog RSS:", err);
-    return cachedBlogItem ? cachedBlogItem.item : null;
+    console.error("[getLatestBlogPosts] Failed to fetch or parse blog RSS:", err);
+    return cachedBlogItems ? cachedBlogItems.items.slice(0, limit) : [];
   }
+}
+
+export async function getLatestBlogPost(): Promise<NewsListItem | null> {
+  const posts = await getLatestBlogPosts(1);
+  return posts[0] || null;
 }

@@ -8,6 +8,9 @@ import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
 import UvSidebarWidget from "@/components/Tools/UvSidebarWidget";
 import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWidget";
 import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget";
+import LocalWeatherSvgWidget from "@/components/Tools/LocalWeatherSvgWidget";
+import WaterOutageSidebarWidget from "@/components/Tools/WaterOutageSidebarWidget";
+import CdcAlertSidebarWidget from "@/components/Tools/CdcAlertSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { toTaipei } from "@/lib/format/news";
 import { type CwaAlertItem } from "@/lib/server/cwa/queries";
@@ -27,16 +30,23 @@ export default function NewsSidebar({
 
   return (
     <aside className="space-y-6" aria-label="側邊資訊欄">
-      {/* 1. Instant AQI Widget */}
-      <AqiSidebarWidget />
+      {/* 1. Instant Location Weather with SVG Icon (CWA O-A0001-001) */}
+      <LocalWeatherSvgWidget />
 
       {/* 2. Weather Alert Card Widget */}
       <WeatherAlertSidebarWidget alerts={cwaAlerts} />
 
-      {/* 2.5. Instant UV Index Widget */}
+      {/* 3. Instant UV Index Widget & AQI */}
       <UvSidebarWidget />
+      <AqiSidebarWidget />
 
-      {/* 3. Earthquake Card Widget */}
+      {/* 4. Water Outage Information (Within 1 week + See More) */}
+      <WaterOutageSidebarWidget />
+
+      {/* 5. CDC Public Health & Travel Alerts (Top 5 + See More) */}
+      <CdcAlertSidebarWidget />
+
+      {/* 6. Earthquake Card Widget */}
       <EarthquakeSidebarWidget earthquakes={earthquakes} />
 
       {/* 4. Source Categories Cloud */}

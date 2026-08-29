@@ -5,6 +5,7 @@ import Provider from "./Provider";
 import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
+import GoogleTag from "@/components/Analytics/GoogleTag";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", fallback: ["system-ui", "sans-serif"] });
 
@@ -58,6 +59,7 @@ export default function RootLayout({
         <link rel="alternate" type="text/plain" title={`${SITE_NAME} - LLM / AI Index (llms.txt)`} href="/llms.txt" />
       </head>
       <body className={`dark:bg-black ${inter.className}`}>
+        <GoogleTag />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
         <Provider>{children}</Provider>

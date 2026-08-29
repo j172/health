@@ -4,6 +4,7 @@ import "../globals.css";
 import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
+import GoogleTag from "@/components/Analytics/GoogleTag";
 import Provider from "../(site)/Provider";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -57,6 +58,7 @@ export default function ToolsRootLayout({ children }: Readonly<{ children: React
         <link rel="alternate" type="text/plain" href="/llms-full.txt" title="LLMs Full Knowledge Base" />
       </head>
       <body className={inter.className}>
+        <GoogleTag />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
         <Provider>{children}</Provider>

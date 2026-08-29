@@ -94,7 +94,7 @@ async function main() {
     .map((r) => {
       const name = (r["短期補習班名稱"] || "").trim();
       const rawAddr = (r["地址"] || "").trim();
-      const city = (r["地區縣市"] || r._cityName || "").trim();
+      const city = (r._cityName || r["地區縣市"] || "").replace(/政府$/, "").trim();
       const rawAddress = city && !rawAddr.startsWith(city) ? `${city}${rawAddr}` : rawAddr;
       const address = normalizeAddress(rawAddress);
       const phone = r["電話"] || r["連絡電話"] || null;
