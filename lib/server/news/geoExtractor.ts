@@ -2,10 +2,7 @@ import "server-only";
 import type { PoolConnection } from "mysql2/promise";
 import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import type { RowDataPacket } from "mysql2/promise";
-import {
-  TAIWAN_DISTRICT_COORDINATES,
-  TAIWAN_COUNTY_CENTROIDS,
-} from "./data/taiwanDistricts";
+import { resolveAdministrativeArea } from "./administrativeArea";
 import {
   queryOpenCage,
   queryNominatim,
@@ -154,13 +151,6 @@ async function findFacilityInDb(
 }
 
 /**
- * Normalizes 臺/台 across text.
- */
-function normalizeTai(text: string): string {
-  return text.replace(/臺/g, "台");
-}
-
-/**
  * Extracts coordinates and location metadata from news title and body text.
  */
 export async function extractLocationFromText(
@@ -188,49 +178,32 @@ export async function extractLocationFromText(
     }
   }
 
-  // 2. Specific District Match (e.g. 台北市大安區, 台中市西屯區, 花蓮縣玉里鎮)
-  const normalized = normalizeTai(combinedText);
-  for (const item of TAIWAN_DISTRICT_COORDINATES) {
-    const fullNameNorm = normalizeTai(item.fullName);
-    const countyNorm = normalizeTai(item.county);
-    const districtNorm = normalizeTai(item.district);
-
-    // Full match: "台北市大安區"
-    if (normalized.includes(fullNameNorm)) {
-      return {
-        lat: item.lat,
-        lng: item.lng,
-        locationName: item.fullName,
-        facilityId: null,
-        matchType: "district",
-      };
-    }
-
-    // Contextual match: Title or text contains county AND district nearby
-    if (normalized.includes(countyNorm) && normalized.includes(districtNorm)) {
-      return {
-        lat: item.lat,
-        lng: item.lng,
-        locationName: item.fullName,
-        facilityId: null,
-        matchType: "district",
-      };
-    }
+  // 2 + 3. Administrative Area Match (district, else county)
+  //
+  // The rules live in ./administrativeArea.ts so they can be unit-tested without
+  // this module's "server-only"/mysql2/geocode-provider graph. Both tiers now
+  // require an UNAMBIGUOUS match: the old code returned the first table row that
+  // matched, so an article carrying the CWA's inline SVG map of Taiwan (every
+  // township name present, see fetchDetailPage.ts) was always badged
+  // TAIWAN_DISTRICT_COORDINATES[0] = 台北市中正區 — 5 of 7 district badges in a
+  // 51-badge live sample. See docs/specs/news-landmark-saturation-guard.md.
+  const area = resolveAdministrativeArea(combinedText);
+  if (area.kind === "match") {
+    return {
+      lat: area.match.lat,
+      lng: area.match.lng,
+      locationName: area.match.locationName,
+      facilityId: null,
+      matchType: area.match.matchType,
+    };
   }
-
-  // 3. County Centroid Match (e.g. 台北市, 高雄市, 花蓮縣, 澎湖縣)
-  for (const countyItem of TAIWAN_COUNTY_CENTROIDS) {
-    const countyNorm = normalizeTai(countyItem.name);
-    if (normalized.includes(countyNorm)) {
-      return {
-        lat: countyItem.lat,
-        lng: countyItem.lng,
-        locationName: countyItem.name,
-        facilityId: null,
-        matchType: "county",
-      };
-    }
-  }
+  // Several counties named and no single district: a 豪雨特報 covering 臺南市,
+  // 屏東縣 and 嘉義縣 has no one landmark. Stop here rather than let tier 4
+  // resolve whichever street address happens to appear first — that would just
+  // move the arbitrary-first-hit defect down a tier. Under the old code such an
+  // article always stopped at the county tier too, so tier 4 loses no input it
+  // used to receive.
+  if (area.kind === "ambiguous") return null;
 
   // 4. External Geocoding API Fallback (Controlled rate & daily budget)
   if (allowExternalGeocode) {
