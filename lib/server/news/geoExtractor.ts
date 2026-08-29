@@ -19,6 +19,16 @@ import {
 } from "@/lib/server/facilities/geocodeBudget";
 import { normalizeAddressForQuery } from "@/lib/server/facilities/addressNormalize";
 
+// The classifier lives in its own module so it can be unit-tested without
+// dragging in "server-only", mysql2 and the geocode providers that the rest of
+// this file needs. It is re-exported here because callers reason about it as
+// "the inverse of the extraction waterfall below", and that is the file they
+// look in.
+export {
+  classifyLocationPrecision,
+  type LocationPrecision,
+} from "./locationPrecision";
+
 export interface ExtractedLocation {
   lat: number;
   lng: number;

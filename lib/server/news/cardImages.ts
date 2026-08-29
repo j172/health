@@ -27,7 +27,10 @@ import {
 } from "@/lib/server/news/providerCooldown";
 
 import { assignStaticMapImage } from "@/lib/server/news/staticMap";
-import { extractLocationFromText } from "@/lib/server/news/geoExtractor";
+import {
+  classifyLocationPrecision,
+  extractLocationFromText,
+} from "@/lib/server/news/geoExtractor";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
 const MAX_API_PAGES = 16;
@@ -41,6 +44,7 @@ interface MissingNewsRow extends RowDataPacket {
   lat: number | null;
   lng: number | null;
   location_name: string | null;
+  facility_id: number | null;
   description_text: string | null;
   detail_text: string | null;
 }
@@ -175,7 +179,7 @@ export const assignMissingNewsCardImages = async (
     // ORDER BY and LIMIT — the endpoint can never fall through to backlog rows.
     const [missingRows] = await conn.execute<MissingNewsRow[]>(
       `
-      SELECT n.id, n.title, n.lat, n.lng, n.location_name, n.description_text, n.detail_text
+      SELECT n.id, n.title, n.lat, n.lng, n.location_name, n.facility_id, n.description_text, n.detail_text
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
@@ -387,6 +391,7 @@ export const assignMissingNewsCardImages = async (
         let lat = news.lat != null ? Number(news.lat) : null;
         let lng = news.lng != null ? Number(news.lng) : null;
         let locName = news.location_name;
+        let facilityId = news.facility_id != null ? Number(news.facility_id) : null;
 
         if (
           (lat == null || lng == null) &&
@@ -400,6 +405,7 @@ export const assignMissingNewsCardImages = async (
             lat = extracted.lat;
             lng = extracted.lng;
             locName = extracted.locationName;
+            facilityId = extracted.facilityId;
             await conn.execute(
               "UPDATE news_items SET lat = ?, lng = ?, location_name = ?, facility_id = ? WHERE id = ?",
               [lat, lng, locName, extracted.facilityId, news.id],
@@ -407,7 +413,15 @@ export const assignMissingNewsCardImages = async (
           }
         }
 
-        if (lat != null && lng != null && locName) {
+        // A county-tier location is a city-hall centroid, so a static map drawn
+        // from it pins the article somewhere it never happened. That is the same
+        // falsehood the article-page map card now refuses to draw — putting it in
+        // the cover image instead would just relocate it somewhere more prominent.
+        // Better to leave the article imageless: it falls through to the
+        // image_backfill_attempts bump below and can still pick up a real photo on
+        // a later run, once a provider's cooldown clears or new candidates appear.
+        const mapPrecision = classifyLocationPrecision(locName, facilityId);
+        if (lat != null && lng != null && locName && mapPrecision !== "county") {
           try {
             const mapAssigned = await assignStaticMapImage(
               conn,
