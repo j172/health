@@ -252,22 +252,44 @@ jobs:
           SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
 
+          # Both loops below exit non-zero when every attempt fails, instead of
+          # falling through. They used to just run out of retries and continue:
+          # the wait step then polled 90 times, over SSH, for a script that had
+          # never been launched — the exact eleven-minute burn seen on
+          # 2026-08-29, against a host that was already out of process slots.
+          # A trigger that did not happen must not look like one that did.
+          SCP_OK=0
           for retry in 1 2 3; do
             if scp "${SCP_OPTS[@]}" package.json package-lock.json scripts/server-npm-ci.sh "$SSH_USER@$SSH_HOST:/home/tw123457/health_app/"; then
+              SCP_OK=1
               break
             fi
             echo "scp failed, retrying in 5s (attempt $retry/3)..."
             sleep 5
           done
+          if [ "$SCP_OK" != 1 ]; then
+            echo "Could not upload the sync script after 3 attempts. A connection reset here usually means the account is out of Entry Processes; retrying harder makes that worse, so stopping."
+            exit 1
+          fi
 
+          # .npm-ci-pid is cleared alongside .npm-ci-status. server-npm-ci.sh
+          # removes its own pid file on every normal exit, so one surviving here
+          # means the previous run was killed — and the poller would read that
+          # dead pid during the new run's launch window and call it a failure.
+          TRIGGER_OK=0
           for retry in 1 2 3; do
             if ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              'cd /home/tw123457/health_app && rm -f .npm-ci-status && chmod +x server-npm-ci.sh && (nohup bash server-npm-ci.sh > /tmp/npm-ci.log 2>&1 < /dev/null &); echo triggered'; then
+              'cd /home/tw123457/health_app && rm -f .npm-ci-status .npm-ci-pid && chmod +x server-npm-ci.sh && (nohup bash server-npm-ci.sh > /tmp/npm-ci.log 2>&1 < /dev/null &); echo triggered'; then
+              TRIGGER_OK=1
               break
             fi
             echo "ssh trigger failed, retrying in 5s (attempt $retry/3)..."
             sleep 5
           done
+          if [ "$TRIGGER_OK" != 1 ]; then
+            echo "Could not start the node_modules sync after 3 attempts. Stopping rather than polling for a process that was never launched."
+            exit 1
+          fi
 
       - name: Wait for node_modules sync
         env:
@@ -289,11 +311,42 @@ jobs:
 
           # Skip path usually writes status 0 within a second (no install).
           # Real installs still poll via short SSH calls rather than one long session.
+          #
+          # Each poll asks for the status AND whether the worker is still alive,
+          # in one connection — server-npm-ci.sh is SIGKILLed by CloudLinux and
+          # the OOM killer under memory pressure, and SIGKILL runs no handler, so
+          # "PENDING" alone cannot distinguish "installing" from "already dead".
+          # On 2026-08-29 that ambiguity spent the full 90 attempts, eleven
+          # minutes of SSH connections, waiting on a process that no longer
+          # existed — while the host was down precisely because it had no
+          # process slots left. Reading /proc/<pid> forks nothing, so this check
+          # still works in exactly the conditions that caused the incident.
+          NOPID=0
           for ATTEMPT in $(seq 1 90); do
-            STATUS="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cat /home/tw123457/health_app/.npm-ci-status 2>/dev/null || echo PENDING' 2>/dev/null || echo PENDING)"
+            REPLY="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cd /home/tw123457/health_app 2>/dev/null || exit 0; S=$(cat .npm-ci-status 2>/dev/null || echo PENDING); P=$(cat .npm-ci-pid 2>/dev/null || echo 0); if [ "$P" != 0 ] && [ -d "/proc/$P" ]; then L=alive; elif [ "$P" != 0 ]; then L=gone; else L=nopid; fi; echo "$S|$L"' 2>/dev/null || echo 'PENDING|unknown')"
+            STATUS="${REPLY%%|*}"
+            LIVENESS="${REPLY##*|}"
 
             if [ "$STATUS" = "PENDING" ]; then
-              echo "node_modules sync still running on server ($ATTEMPT/90)..."
+              # The worker published a pid and that pid is gone, yet no status
+              # was ever written: it was killed. Nothing will ever write one, so
+              # spending the rest of the budget is pure waste.
+              if [ "$LIVENESS" = "gone" ]; then
+                echo "node_modules sync died without writing a status (killed, most likely OOM or a CloudLinux resource limit). Server-side log tail:"
+                ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'tail -n 50 /tmp/npm-ci.log' || true
+                exit 1
+              fi
+              # No pid file yet is normal for the first seconds after launch, but
+              # not for half a minute — the pid is written before any real work.
+              if [ "$LIVENESS" = "nopid" ]; then
+                NOPID=$((NOPID + 1))
+                if [ "$NOPID" -ge 6 ]; then
+                  echo "node_modules sync never published a pid after 30s — it did not start. Server-side log tail:"
+                  ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'tail -n 50 /tmp/npm-ci.log' || true
+                  exit 1
+                fi
+              fi
+              echo "node_modules sync still running on server ($ATTEMPT/90, worker $LIVENESS)..."
               sleep 5
               continue
             fi

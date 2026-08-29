@@ -36,10 +36,25 @@ LOCK_FILE=package-lock.json
 LOCK_HASH_FILE=.package-lock.sha256
 NEXT_BIN=node_modules/next/dist/bin/next
 STATUS_FILE=.npm-ci-status
+PID_FILE=.npm-ci-pid
 
 write_status() {
   echo "$1" > "$STATUS_FILE"
+  rm -f "$PID_FILE"
 }
+
+# Published before any real work, so the poller can tell "still installing"
+# apart from "died without writing a status". write_status() is only reachable
+# from this script's own success and failure branches, and SIGKILL — which is
+# what CloudLinux and the OOM killer send, and what actually happens here under
+# memory pressure — reaches neither, so a `trap` would not help. On 2026-08-29
+# that gap cost the deploy its full 90-attempt budget: eleven minutes of SSH
+# connections polling for a process that had already been killed, against a host
+# that was out of process slots precisely because of connections like those.
+#
+# /proc/<pid> is a directory read on the far side, so the liveness check the
+# poller does with this costs no processes either.
+echo $$ > "$PID_FILE"
 
 if [ ! -f "$LOCK_FILE" ]; then
   echo "missing $LOCK_FILE"
