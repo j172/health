@@ -46,7 +46,11 @@ interface FacilityItem {
     charityUrl?: string;
     charityName?: string;
   } | null;
-  /** Only present on GPS searches — the Haversine distance the API sorted the list by. */
+  /**
+   * Only present on GPS searches — the Haversine distance the API sorted the list by.
+   * Genuinely a number over the wire (MySQL DOUBLE), unlike the DECIMAL lat/lng columns,
+   * which arrive as strings; see the field's note in lib/server/facilities/queries.ts.
+   */
   distance_km?: number;
 }
 
@@ -198,11 +202,21 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     charityName: f.extra_json?.charityName,
   }));
 
-  // The fallback list is still distance-sorted, so row 0 is the nearest hit anywhere in the
-  // country. Naming both numbers — the radius that found nothing and how far the closest row
-  // actually is — is what turns "we found nothing near you" into useful information.
+  // Naming both numbers — the radius that found nothing and how far the closest row actually
+  // is — is what turns "we found nothing near you" into useful information.
+  //
+  // Scan the whole list for the minimum rather than reading row 0. Row 0 is only the nearest
+  // hit while the server ordered by distance, and the sort dropdown can select 名稱 or 類別
+  // with no keyword active — `effectiveSort` only rewrites `distance` away when a keyword is
+  // set — which leaves the rows GPS-filtered and carrying a distance_km, but ordered by name.
+  // Row 0 would then hold a real distance that simply isn't the smallest one, and this notice
+  // must not print a confidently wrong number. The list is capped at 200, so the scan is free.
   const noun = facilityNoun(emptyStateNoKeyword, title);
-  const nearestKm = Number(facilities?.[0]?.distance_km);
+  const nearestKm = (facilities ?? []).reduce((min, f) => {
+    const km = Number(f.distance_km);
+    return Number.isFinite(km) && km < min ? km : min;
+  }, Infinity);
+  // Infinity when no row carried a distance (a non-GPS list) — drop the clause rather than guess.
   const nearestText = Number.isFinite(nearestKm) ? `（最近一處約 ${Math.round(nearestKm)} 公里）` : "";
   const fallbackNotice = widenedRadius ? `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。` : null;
 

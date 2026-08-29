@@ -31,7 +31,14 @@ export interface FacilityListItem {
   service_time: string | null;
   data_org: string | null;
   extra_json: { weeklyHours?: Record<string, string[]> } | null;
-  /** Only selected on a GPS search (lat/lng supplied) — the Haversine distance the rows were ordered by. */
+  /**
+   * Only selected on a GPS search (lat/lng supplied) — the Haversine distance the rows were ordered by.
+   *
+   * A number, not a string: MySQL types `6371 * acos(...)` as DOUBLE (acos() returns DOUBLE), and
+   * mysql2 hands DOUBLE back as a JS number. That is worth stating because the neighbouring
+   * lat/lng columns are DECIMAL, which mysql2 delivers as *strings* — verified against the live
+   * endpoint, whose JSON carries `"lat":"22.9749544"` beside `"distance_km":250.86525190106215`.
+   */
   distance_km?: number;
 }
 
