@@ -238,12 +238,25 @@ jobs:
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
 
-          SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
-          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10)
+          SCP_OPTS=(-i "$KEY_FILE" -P "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=3)
 
-          scp "${SCP_OPTS[@]}" package.json package-lock.json scripts/server-npm-ci.sh "$SSH_USER@$SSH_HOST:/home/tw123457/health_app/"
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            'cd /home/tw123457/health_app && rm -f .npm-ci-status && chmod +x server-npm-ci.sh && (nohup bash server-npm-ci.sh > /tmp/npm-ci.log 2>&1 < /dev/null &); echo triggered'
+          for retry in 1 2 3; do
+            if scp "${SCP_OPTS[@]}" package.json package-lock.json scripts/server-npm-ci.sh "$SSH_USER@$SSH_HOST:/home/tw123457/health_app/"; then
+              break
+            fi
+            echo "scp failed, retrying in 5s (attempt $retry/3)..."
+            sleep 5
+          done
+
+          for retry in 1 2 3; do
+            if ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              'cd /home/tw123457/health_app && rm -f .npm-ci-status && chmod +x server-npm-ci.sh && (nohup bash server-npm-ci.sh > /tmp/npm-ci.log 2>&1 < /dev/null &); echo triggered'; then
+              break
+            fi
+            echo "ssh trigger failed, retrying in 5s (attempt $retry/3)..."
+            sleep 5
+          done
 
       - name: Wait for node_modules sync
         env:
