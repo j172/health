@@ -18,6 +18,7 @@ import { normalizeAddressForQuery } from "@/lib/server/facilities/addressNormali
 import {
   COMMON_HOSPITAL_PATTERNS,
   selectFacilityMatch,
+  selectUniqueInstitution,
 } from "./facilityMatch";
 
 // The classifier lives in its own module so it can be unit-tested without
@@ -103,6 +104,44 @@ async function findFacilityInDb(
   return withConnectionFallback(null, run);
 }
 
+type FacilityRow = NonNullable<Awaited<ReturnType<typeof findFacilityInDb>>>;
+
+/**
+ * Tier 1: the one hospital this text names, or null when it names none or
+ * several.
+ *
+ * Every alias whose regex matches is resolved, not just the first (issue #87).
+ * The loop this replaced returned on the first hit, so an article naming three
+ * hospitals was landmarked by whichever of them sat highest in a hand-written
+ * table. Collecting them all lets selectUniqueInstitution apply the same
+ * uniqueness rule #65 gave the district tier: identify one place or decline.
+ *
+ * Cost: one query per DISTINCT matching alias instead of one query total. In
+ * the 89-article live sample 57 articles match exactly one alias and pay
+ * nothing extra; the 10 that match several pay at most two more queries, and
+ * they are the articles this whole function exists to stop guessing about.
+ */
+async function resolveFacilityMatch(
+  combinedText: string,
+  existingConn?: PoolConnection,
+): Promise<FacilityRow | null> {
+  const searchNames = new Set<string>();
+  for (const { regex, searchName } of COMMON_HOSPITAL_PATTERNS) {
+    if (regex.test(combinedText)) searchNames.add(searchName);
+  }
+  if (searchNames.size === 0) return null;
+
+  const resolved: FacilityRow[] = [];
+  for (const searchName of searchNames) {
+    const facility = await findFacilityInDb(searchName, existingConn);
+    // A row without coordinates cannot be a landmark, so it is not evidence of
+    // a second institution either — same as the old loop, which walked past it.
+    if (facility && facility.lat && facility.lng) resolved.push(facility);
+  }
+
+  return selectUniqueInstitution(resolved);
+}
+
 /**
  * Extracts coordinates and location metadata from news title and body text.
  */
@@ -116,19 +155,20 @@ export async function extractLocationFromText(
   if (!combinedText) return null;
 
   // 1. Facility Database Match (Zero API Cost)
-  for (const { regex, searchName } of COMMON_HOSPITAL_PATTERNS) {
-    if (regex.test(combinedText)) {
-      const facility = await findFacilityInDb(searchName, existingConn);
-      if (facility && facility.lat && facility.lng) {
-        return {
-          lat: facility.lat,
-          lng: facility.lng,
-          locationName: facility.name,
-          facilityId: facility.id,
-          matchType: "facility",
-        };
-      }
-    }
+  //
+  // Declines rather than picking a favourite when the text names several
+  // different hospitals; the waterfall then falls through to the district and
+  // county tiers below, which is the right altitude for a story about three
+  // hospitals in three cities. See resolveFacilityMatch.
+  const facility = await resolveFacilityMatch(combinedText, existingConn);
+  if (facility && facility.lat && facility.lng) {
+    return {
+      lat: facility.lat,
+      lng: facility.lng,
+      locationName: facility.name,
+      facilityId: facility.id,
+      matchType: "facility",
+    };
   }
 
   // 2 + 3. Administrative Area Match (district, else county)
