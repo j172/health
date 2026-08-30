@@ -186,6 +186,11 @@ export const ensureSchema = async (): Promise<void> => {
   } catch {
     // Index already exists or non-supported storage engine
   }
+  // Clean up legacy non-health news sources (culture_tw, public_art)
+  await p.query(`
+    DELETE FROM news_items
+    WHERE source_name IN ('culture_tw', 'public_art')
+  `);
   schemaReady = true;
 };
 

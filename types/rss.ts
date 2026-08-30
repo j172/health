@@ -44,7 +44,6 @@ export type FeedCode =
   | "ibt"
   | "love_newlife"
   | "nhi_web"
-  | "moc_shows"
   | "blog_j172";
 
 export interface FeedConfig {
