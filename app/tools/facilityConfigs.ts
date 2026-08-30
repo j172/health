@@ -197,30 +197,6 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的環保產品。",
     serviceItem: { label: "產品類別與廠商：" },
   },
-  "cultural-events": {
-    facilityType: "cultural_event",
-    emoji: "🎨",
-    title: "全國藝文展覽與活動查詢",
-    description:
-      "查詢全國展覽、音樂、戲劇、講座與親子藝文活動。資料來源：文化部開放資料（包含各類別與全國親子藝文活動）。",
-    searchPlaceholder: "輸入活動名稱、展館或縣市關鍵字",
-    errorText: "查詢藝文活動資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無收錄的藝文活動，可改用關鍵字搜尋。",
-    emptyStateWithKeyword: "查無符合的藝文活動。",
-    serviceItem: { label: "活動類別與主辦：" },
-  },
-  "public-art": {
-    facilityType: "public_art",
-    emoji: "🗿",
-    title: "全國公共藝術地圖查詢",
-    description:
-      "查詢全台設置之公共藝術作品、作者與設置地點。資料來源：文化部公共藝術資料庫開放資料。",
-    searchPlaceholder: "輸入作品名稱、作者、設置地點或縣市",
-    errorText: "查詢公共藝術資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無收錄的公共藝術作品，可改用關鍵字搜尋。",
-    emptyStateWithKeyword: "查無符合的公共藝術作品。",
-    serviceItem: { label: "創作者與設置單位：" },
-  },
   "child-welfare-nurseries": {
     facilityType: "child_welfare_nursery",
     emoji: "🧸",
