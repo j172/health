@@ -54,7 +54,11 @@ export const env = {
   // consistency; the script itself reads process.env.MOENV_GP_API_KEY
   // directly since it runs outside the Next.js server (no MYSQL_* etc.
   // configured in that context).
-  moenvGpApiKey: process.env.MOENV_GP_API_KEY?.trim() || null,
+  moenvGpApiKey:
+    process.env.MOENV_GP_API_KEY?.trim() ||
+    process.env.MOENV_AQI_API_KEY?.trim() ||
+    process.env.MOENV_PM25_API_KEY?.trim() ||
+    null,
   cloudflare: {
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || null,
     apiToken: process.env.CLOUDFLARE_API_TOKEN?.trim() || null,

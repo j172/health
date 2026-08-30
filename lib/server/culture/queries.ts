@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import type { RowDataPacket } from "mysql2/promise";
 import type {
@@ -9,25 +7,6 @@ import type {
 } from "./types";
 import { runCulturalShowsSync } from "./ingestShows";
 import { runPublicArtSync } from "./ingestPublicArt";
-
-let cachedLocalPublicArt: PublicArtItem[] | null = null;
-
-function getLocalPublicArt(): PublicArtItem[] {
-  if (cachedLocalPublicArt) return cachedLocalPublicArt;
-  try {
-    const filePath = path.join(process.cwd(), "data", "public-art.json");
-    if (fs.existsSync(filePath)) {
-      const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-      if (Array.isArray(data)) {
-        cachedLocalPublicArt = data;
-        return cachedLocalPublicArt;
-      }
-    }
-  } catch (err) {
-    console.error("[Culture Queries] Failed to load local public-art.json:", err);
-  }
-  return [];
-}
 
 let isSeedingShows = false;
 let isSeedingPublicArt = false;
@@ -323,61 +302,6 @@ export async function searchPublicArt({
           ? Math.round(Number(r.distance_km) * 10) / 10
           : undefined,
     }));
-
-    if (items.length === 0) {
-      const fallbackList = getLocalPublicArt();
-      if (fallbackList.length > 0) {
-        let filtered = [...fallbackList];
-        if (keyword) {
-          const kw = keyword.toLowerCase();
-          filtered = filtered.filter(
-            (i) =>
-              i.title.toLowerCase().includes(kw) ||
-              i.artist.toLowerCase().includes(kw) ||
-              i.location.toLowerCase().includes(kw) ||
-              (i.description && i.description.toLowerCase().includes(kw)) ||
-              (i.fieldType && i.fieldType.toLowerCase().includes(kw)) ||
-              (i.agency && i.agency.toLowerCase().includes(kw))
-          );
-        }
-        if (city && city !== "全部縣市") {
-          filtered = filtered.filter(
-            (i) => i.city.includes(city) || i.location.includes(city)
-          );
-        }
-        if (hasGps && lat !== null && lng !== null) {
-          filtered = filtered
-            .map((i) => {
-              if (i.lat !== null && i.lng !== null) {
-                const dist =
-                  6371 *
-                  Math.acos(
-                    Math.min(
-                      1.0,
-                      Math.max(
-                        -1.0,
-                        Math.cos((lat * Math.PI) / 180) *
-                          Math.cos((i.lat * Math.PI) / 180) *
-                          Math.cos(((i.lng - lng) * Math.PI) / 180) +
-                          Math.sin((lat * Math.PI) / 180) *
-                            Math.sin((i.lat * Math.PI) / 180)
-                      )
-                    )
-                  );
-                return { ...i, distanceKm: Math.round(dist * 10) / 10 };
-              }
-              return i;
-            })
-            .filter((i) => i.distanceKm === undefined || i.distanceKm <= radiusKm)
-            .sort((a, b) => (a.distanceKm ?? 99999) - (b.distanceKm ?? 99999));
-        }
-        return {
-          items: filtered.slice(0, limit),
-          totalMatched: filtered.length,
-          updatedAt: new Date().toISOString(),
-        };
-      }
-    }
 
     return {
       items,

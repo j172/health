@@ -13,6 +13,9 @@
     "import:kindergartens": "node scripts/import-moe-kindergartens.mjs",
     "import:child-safety-spots": "node scripts/import-npa-child-safety-spots.mjs",
     "import:tax-organizations": "node scripts/import-fia-tax-organizations.mjs",
+    "import:public-art": "node scripts/import-public-art.mjs",
+    "import:green-hotels": "node scripts/import-moenv-green-hotels.mjs",
+    "import:green-products": "node scripts/import-moenv-green-products.mjs",
     "geocode:facilities": "node scripts/geocode-all-facilities.mjs"
   },
   "dependencies": {

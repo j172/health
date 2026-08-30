@@ -20,18 +20,25 @@ export interface IngestPublicArtResult {
   insertedOrUpdated: number;
 }
 
-export async function runPublicArtSync(): Promise<IngestPublicArtResult> {
+export async function runPublicArtSync(
+  suppliedRecords?: any[]
+): Promise<IngestPublicArtResult> {
   let rawList: any[] = [];
-  try {
-    const res = await fetchGovData(PUBLIC_ART_API_URL);
-    if (res.ok) {
-      const json = await res.json();
-      if (Array.isArray(json) && json.length > 0) {
-        rawList = json;
+
+  if (Array.isArray(suppliedRecords) && suppliedRecords.length > 0) {
+    rawList = suppliedRecords;
+  } else {
+    try {
+      const res = await fetchGovData(PUBLIC_ART_API_URL);
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json) && json.length > 0) {
+          rawList = json;
+        }
       }
+    } catch (err) {
+      console.warn("[Public Art Ingest] Remote fetch failed, falling back to local data/public-art.json:", err);
     }
-  } catch (err) {
-    console.warn("[Public Art Ingest] Remote fetch failed, falling back to local data/public-art.json:", err);
   }
 
   if (!rawList || rawList.length === 0) {

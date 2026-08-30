@@ -69,7 +69,7 @@ export default async function StabloNewsLayout({
       : blogItem !== undefined
         ? Promise.resolve(blogItem ? [blogItem] : [])
         : variant === "home"
-          ? getLatestBlogPosts(2)
+          ? getLatestBlogPosts(3)
           : Promise.resolve([]),
   ]);
   // Falls back to the recency list until real view data accumulates (e.g.

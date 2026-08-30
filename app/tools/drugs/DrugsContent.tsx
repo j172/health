@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 
 interface DrugItem {
@@ -31,13 +31,33 @@ interface DrugIngredient {
 export default function DrugsContent() {
   const [searchInput, setSearchInput] = useState("");
   const [drugs, setDrugs] = useState<DrugItem[] | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [searchedFor, setSearchedFor] = useState("");
 
   const [expandedLicense, setExpandedLicense] = useState<string | null>(null);
   const [ingredients, setIngredients] = useState<DrugIngredient[] | null>(null);
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
+
+  const fetchDrugs = async (keyword?: string) => {
+    setLoading(true);
+    setError(false);
+    try {
+      const url = keyword ? `/api/drugs?keyword=${encodeURIComponent(keyword)}` : "/api/drugs";
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setDrugs(data.drugs || []);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrugs();
+  }, []);
 
   const toggleIngredients = async (licenseNo: string) => {
     if (expandedLicense === licenseNo) {
@@ -64,22 +84,19 @@ export default function DrugsContent() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     const keyword = searchInput.trim();
-    if (!keyword) return;
-
-    setLoading(true);
-    setError(false);
-    setSearchedFor(keyword);
-
-    try {
-      const res = await fetch(`/api/drugs?keyword=${encodeURIComponent(keyword)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setDrugs(data.drugs);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
+    if (!keyword) {
+      handleClear();
+      return;
     }
+
+    setSearchedFor(keyword);
+    await fetchDrugs(keyword);
+  };
+
+  const handleClear = () => {
+    setSearchInput("");
+    setSearchedFor("");
+    fetchDrugs();
   };
 
   return (
@@ -101,6 +118,15 @@ export default function DrugsContent() {
         <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
           搜尋
         </button>
+        {searchedFor && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            清除
+          </button>
+        )}
       </form>
 
       {loading && (
@@ -114,7 +140,9 @@ export default function DrugsContent() {
       {!loading && !error && drugs && (
         <>
           <p className="text-xs text-neutral-500 dark:text-slate-400">
-            「{searchedFor}」共 {drugs.length} 筆結果{drugs.length >= 50 && "（僅顯示前50筆，請縮小關鍵字範圍）"}
+            {searchedFor
+              ? `「${searchedFor}」共 ${drugs.length} 筆結果${drugs.length >= 50 ? "（僅顯示前50筆，請縮小關鍵字範圍）" : ""}`
+              : `最新收錄藥品（顯示前 ${drugs.length} 筆）`}
           </p>
 
           {drugs.length === 0 ? (

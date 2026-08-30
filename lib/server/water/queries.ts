@@ -80,3 +80,4 @@ export async function getWaterOutages(limit = 50): Promise<{
     };
   });
 }
+

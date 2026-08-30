@@ -798,4 +798,25 @@ export const TABLE_DDL = {
       KEY idx_water_start_time (start_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 環境部 (MOENV) 環保標章產品 — data.moenv.gov.tw GP_P_02
+  greenProducts: `
+    CREATE TABLE IF NOT EXISTS green_products (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      flag_no VARCHAR(50) NOT NULL,
+      product_name VARCHAR(500) NOT NULL,
+      class_type VARCHAR(100) NULL,
+      sign_date VARCHAR(50) NULL,
+      expire_date VARCHAR(50) NULL,
+      date_extend_date VARCHAR(50) NULL,
+      is_expire VARCHAR(10) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_green_product_flag (flag_no),
+      KEY idx_green_product_name (product_name(100)),
+      KEY idx_green_product_class (class_type),
+      KEY idx_green_product_sign (sign_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

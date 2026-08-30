@@ -148,3 +148,4 @@ export async function runWaterOutagesSync(): Promise<{
 
   return { totalFetched: records.length, insertedOrUpdated: processedCount };
 }
+

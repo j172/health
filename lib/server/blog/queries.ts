@@ -20,37 +20,58 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&#8230;/g, "…");
 }
 
-function extractFeaturedImage(html: string): string | null {
+function extractUrlFromImgTag(imgTag: string): string | null {
+  const dataSrcMatch = imgTag.match(/(?:data-src|data-orig-file)=["']([^"']+)["']/i);
+  if (dataSrcMatch && dataSrcMatch[1] && !dataSrcMatch[1].startsWith("data:")) {
+    return dataSrcMatch[1].replace(/&amp;/g, "&");
+  }
+  const srcMatch = imgTag.match(/src=["']([^"']+)["']/i);
+  if (srcMatch && srcMatch[1] && !srcMatch[1].startsWith("data:")) {
+    return srcMatch[1].replace(/&amp;/g, "&");
+  }
+  return null;
+}
+
+export function extractFeaturedImage(html: string): string | null {
   if (!html) return null;
 
-  // 1. Check og:image or twitter:image
+  // 1. Check inside <article> or <main> container first (prevents picking up header/nav/sidebar recent posts)
+  const articleMatch =
+    html.match(/<article[\s\S]*?<\/article>/i) || html.match(/<main[\s\S]*?<\/main>/i);
+  if (articleMatch) {
+    const articleHtml = articleMatch[0];
+
+    // 1a. Check WordPress wp-post-image (Featured Image) inside article
+    const wpPostImgMatch = articleHtml.match(
+      /<img[^>]+class=["'][^"']*wp-post-image[^"']*["'][^>]*>/i
+    );
+    if (wpPostImgMatch) {
+      const url = extractUrlFromImgTag(wpPostImgMatch[0]);
+      if (url) return url;
+    }
+
+    // 1b. Check first content image inside article
+    const allImgs = articleHtml.match(/<img[^>]+>/gi) || [];
+    for (const img of allImgs) {
+      if (/custom-logo|avatar|gravatar/i.test(img)) continue;
+      const url = extractUrlFromImgTag(img);
+      if (url) return url;
+    }
+  }
+
+  // 2. Check og:image or twitter:image meta tags
   const ogMatch =
     html.match(/<meta\s+(?:property|name)=["'](?:og:image|twitter:image)["']\s+content=["']([^"']+)["']/i) ||
     html.match(/<meta\s+content=["']([^"']+)["']\s+(?:property|name)=["'](?:og:image|twitter:image)["']/i);
-  if (ogMatch && ogMatch[1]) {
+  if (ogMatch && ogMatch[1] && !ogMatch[1].startsWith("data:")) {
     return ogMatch[1].replace(/&amp;/g, "&");
   }
 
-  // 2. Check WordPress wp-post-image (Featured Image)
-  const wpPostImgMatch = html.match(/<img[^>]+class=["'][^"']*wp-post-image[^"']*["'][^>]*>/i);
-  if (wpPostImgMatch) {
-    const tag = wpPostImgMatch[0];
-    const srcMatch = tag.match(/src=["']([^"']+)["']/i);
-    if (srcMatch && srcMatch[1]) {
-      return srcMatch[1].replace(/&amp;/g, "&");
-    }
-  }
-
-  // 3. Check first content image
-  const articleMatch = html.match(/<article[\s\S]*?<\/article>/i);
-  const searchArea = articleMatch ? articleMatch[0] : html;
-  const allImgs = searchArea.match(/<img[^>]+>/gi) || [];
-  for (const img of allImgs) {
-    if (/custom-logo|avatar|gravatar/i.test(img)) continue;
-    const srcMatch = img.match(/src=["']([^"']+)["']/i);
-    if (srcMatch && srcMatch[1] && !srcMatch[1].startsWith("data:")) {
-      return srcMatch[1].replace(/&amp;/g, "&");
-    }
+  // 3. Fallback to global wp-post-image if not found inside article
+  const globalWpPostImgMatch = html.match(/<img[^>]+class=["'][^"']*wp-post-image[^"']*["'][^>]*>/i);
+  if (globalWpPostImgMatch) {
+    const url = extractUrlFromImgTag(globalWpPostImgMatch[0]);
+    if (url) return url;
   }
 
   return null;
@@ -65,7 +86,7 @@ let cachedBlogItems: { items: NewsListItem[]; expiresAt: number } | null = null;
  * Fetches the latest N posts from https://blog.j172.tw/feed/ and maps them to NewsListItems.
  * Uses native httpGetText to safely execute within Linux shared-hosting ulimit memory constraints.
  */
-export async function getLatestBlogPosts(limit = 2): Promise<NewsListItem[]> {
+export async function getLatestBlogPosts(limit = 3): Promise<NewsListItem[]> {
   const now = Date.now();
   if (cachedBlogItems && now < cachedBlogItems.expiresAt) {
     return cachedBlogItems.items.slice(0, limit);

@@ -185,18 +185,6 @@ export const facilitySearchConfigs = {
       { value: "銅級", label: "銅級環保旅館" },
     ],
   },
-  "green-products": {
-    facilityType: "green_product",
-    emoji: "🏷️",
-    title: "環保標章產品查詢",
-    description:
-      "查詢環境部認證之各類綠色環保標章產品（低污染、省能資源、可回收）。資料來源：環境部開放資料（gp_p_02）。",
-    searchPlaceholder: "輸入產品名稱、型號、廠商或類別關鍵字",
-    errorText: "查詢環保產品資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "可輸入產品名稱、型號或廠商名稱進行搜尋。",
-    emptyStateWithKeyword: "查無符合的環保產品。",
-    serviceItem: { label: "產品類別與廠商：" },
-  },
   "child-welfare-nurseries": {
     facilityType: "child_welfare_nursery",
     emoji: "🧸",

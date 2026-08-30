@@ -12,6 +12,7 @@ import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
+import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -134,5 +135,10 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "25 * * * *",
     runGuarded("water-outages-cron.log", () => runWaterOutagesSync()),
+  );
+  // Green products sync daily at 4:30am
+  cron.schedule(
+    "30 4 * * *",
+    runGuarded("green-products-cron.log", () => runGreenProductsSync()),
   );
 };

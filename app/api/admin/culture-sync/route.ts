@@ -13,6 +13,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") || "all";
 
+    const body = (await request.json().catch(() => ({}))) as {
+      publicArtRecords?: any[];
+      records?: any[];
+      showsRecords?: any[];
+    };
+
     let showsResult: any = null;
     let publicArtResult: any = null;
 
@@ -21,7 +27,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     if (type === "public-art" || type === "all") {
-      publicArtResult = await runPublicArtSync();
+      const supplied = body.publicArtRecords || body.records;
+      publicArtResult = await runPublicArtSync(supplied);
     }
 
     return NextResponse.json({

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchDrugs } from "@/lib/server/drugs/queries";
+import { searchDrugs, getRecentDrugs } from "@/lib/server/drugs/queries";
 import { getIngredientsByLicenseNo } from "@/lib/server/drugs/ingredientsQueries";
 
 export const runtime = "nodejs";
@@ -17,12 +17,9 @@ export async function GET(request: NextRequest) {
   }
 
   const keyword = request.nextUrl.searchParams.get("keyword")?.trim();
-  if (!keyword) {
-    return NextResponse.json({ error: "Missing required 'keyword' or 'licenseNo' query param" }, { status: 400 });
-  }
 
   try {
-    const drugs = await searchDrugs(keyword);
+    const drugs = keyword ? await searchDrugs(keyword) : await getRecentDrugs(30);
     return NextResponse.json({ drugs });
   } catch (error) {
     console.error("GET /api/drugs failed:", error);

@@ -242,3 +242,4 @@ export async function runCdcAlertsSync(): Promise<{
 
   return { travelAlerts: alertCount, epidemicNews: newsCount };
 }
+

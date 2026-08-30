@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const items = await listLatestNews(53);
+  const items = await listLatestNews(54);
   const jsonLd = buildNewsListJsonLd(items, "最新新聞");
 
   return (
