@@ -68,6 +68,12 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "letsharu", label: "HARU" },
       { sourceName: "uniqman", label: "UNIQMAN" },
       { sourceName: "sfunhk", label: "潮性辦公室" },
+      { sourceName: "ankemedia", label: "AnkeMedia 安可人生" },
+      { sourceName: "commonhealth_club", label: "康健大人社團" },
+      { sourceName: "health_gvm", label: "健康遠見" },
+      { sourceName: "istyle_lovesex", label: "iStyle 兩性情愛" },
+      { sourceName: "tvbs_health", label: "TVBS 健康2.0" },
+      { sourceName: "uho", label: "優活健康網" },
     ],
   },
 ];

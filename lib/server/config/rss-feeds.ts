@@ -302,4 +302,25 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "durex",
     skipDetailFetch: true,
   },
+  {
+    code: "ankemedia_rss",
+    name: "AnkeMedia 安可人生",
+    url: "https://ankemedia.com/feed",
+    sourceName: "ankemedia",
+    skipDetailFetch: true,
+  },
+  {
+    code: "commonhealth_club",
+    name: "康健大人社團",
+    url: "https://news.google.com/rss/search?q=site:club.commonhealth.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "commonhealth_club",
+    skipDetailFetch: true,
+  },
+  {
+    code: "gvm_health_rss",
+    name: "健康遠見",
+    url: "https://health.gvm.com.tw/rss",
+    sourceName: "health_gvm",
+    skipDetailFetch: true,
+  },
 ];

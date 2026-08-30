@@ -57,7 +57,13 @@ export type FeedCode =
   | "uniqman_blog"
   | "sfunhk_blog"
   | "letsharu_article"
-  | "femh_research";
+  | "femh_research"
+  | "ankemedia_rss"
+  | "commonhealth_club"
+  | "gvm_health_rss"
+  | "istyle_lovesex"
+  | "tvbs_health"
+  | "uho_health";
 
 export interface FeedConfig {
   code: FeedCode;

@@ -32,6 +32,9 @@ import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
 import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
 import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
 import { fetchFemhResearchNews } from "@/lib/server/rss/fetchFemhResearchNews";
+import { fetchIstyleLoveSexNews } from "@/lib/server/rss/fetchIstyleLoveSexNews";
+import { fetchTvbsHealthNews } from "@/lib/server/rss/fetchTvbsHealthNews";
+import { fetchUhoNews } from "@/lib/server/rss/fetchUhoNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -510,6 +513,45 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += femhResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // Phase 13: Expanded Media & Lifestyle Health Special Sources
+      // -----------------------------------------------------------------------
+      const istyleResult = await processSpecialSource(
+        {
+          code: "istyle_lovesex",
+          name: "iStyle 兩性情愛",
+          url: "https://istyle.ltn.com.tw/love-sex",
+          sourceName: "istyle_lovesex",
+        },
+        fetchIstyleLoveSexNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += istyleResult.skippedUnchanged;
+
+      const tvbsResult = await processSpecialSource(
+        {
+          code: "tvbs_health",
+          name: "TVBS 健康2.0",
+          url: "https://health.tvbs.com.tw/",
+          sourceName: "tvbs_health",
+        },
+        fetchTvbsHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += tvbsResult.skippedUnchanged;
+
+      const uhoResult = await processSpecialSource(
+        {
+          code: "uho_health",
+          name: "優活健康網",
+          url: "https://www.uho.com.tw/index.asp",
+          sourceName: "uho",
+        },
+        fetchUhoNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += uhoResult.skippedUnchanged;
 
 
       const persisted = await persistItems(enrichedItems);

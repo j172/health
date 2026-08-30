@@ -47,6 +47,12 @@ const SOURCE_LABELS: Record<string, string> = {
   sfunhk: "潮性辦公室",
   letsharu: "HARU",
   femh: "亞東紀念醫院",
+  ankemedia: "AnkeMedia 安可人生",
+  commonhealth_club: "康健大人社團",
+  health_gvm: "健康遠見",
+  istyle_lovesex: "iStyle 兩性情愛",
+  tvbs_health: "TVBS 健康2.0",
+  uho: "優活健康網",
 };
 
 export interface SourceLabelInput {
