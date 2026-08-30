@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import mysql, {
   type Pool,
   type PoolConnection,
@@ -194,6 +196,57 @@ export const ensureSchema = async (): Promise<void> => {
     DELETE FROM news_items
     WHERE source_name IN ('culture_tw', 'public_art')
   `);
+
+  // Auto-seed public_arts table from bundled data/public-art.json if empty
+  try {
+    const [paCountRows] = await p.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS cnt FROM public_arts"
+    );
+    if ((paCountRows[0]?.cnt ?? 0) === 0) {
+      const filePath = path.join(process.cwd(), "data", "public-art.json");
+      if (fs.existsSync(filePath)) {
+        const rawJson = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        if (Array.isArray(rawJson) && rawJson.length > 0) {
+          const now = toSqlDateTime(new Date());
+          const BATCH_SIZE = 250;
+          for (let i = 0; i < rawJson.length; i += BATCH_SIZE) {
+            const chunk = rawJson.slice(i, i + BATCH_SIZE);
+            const values = chunk.map((a: any) => [
+              a.artNo || a.id,
+              a.title,
+              a.artist || null,
+              a.dimensions || null,
+              a.material || null,
+              a.city || null,
+              a.location || null,
+              a.lat ?? null,
+              a.lng ?? null,
+              a.fieldType || null,
+              a.description || null,
+              a.imageUrl || null,
+              a.year || null,
+              a.sourceUrl || null,
+              a.agency || null,
+              now,
+              now,
+            ]);
+            await p.query(
+              `INSERT IGNORE INTO public_arts (
+                 art_no, title, artist, dimensions, material, city, location,
+                 lat, lng, field_type, description, image_url, year, source_url,
+                 agency, created_at, updated_at
+               ) VALUES ?`,
+              [values]
+            );
+          }
+          console.log(`[ensureSchema] Successfully seeded ${rawJson.length} public art items into MySQL`);
+        }
+      }
+    }
+  } catch (seedErr) {
+    console.warn("[ensureSchema] public_arts seed warning:", seedErr);
+  }
+
   schemaReady = true;
 };
 
