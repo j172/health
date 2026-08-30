@@ -15,6 +15,10 @@ import {
   type GeocodeProvider,
 } from "@/lib/server/facilities/geocodeBudget";
 import { normalizeAddressForQuery } from "@/lib/server/facilities/addressNormalize";
+import {
+  COMMON_HOSPITAL_PATTERNS,
+  selectFacilityMatch,
+} from "./facilityMatch";
 
 // The classifier lives in its own module so it can be unit-tested without
 // dragging in "server-only", mysql2 and the geocode providers that the rest of
@@ -34,81 +38,27 @@ export interface ExtractedLocation {
   matchType: "facility" | "district" | "county" | "geocoded";
 }
 
-// Prominent medical centers and regional hospital keywords with known aliases
-const COMMON_HOSPITAL_PATTERNS: { regex: RegExp; searchName: string }[] = [
-  {
-    regex: /台大醫院|臺大醫院|臺灣大學醫學院附設醫院/,
-    searchName: "國立臺灣大學醫學院附設醫院",
-  },
-  { regex: /台北榮總|臺北榮總|榮民總醫院|中榮|高榮/, searchName: "榮民總醫院" },
-  {
-    regex: /林口長庚|高雄長庚|基隆長庚|長庚醫院|長庚紀念醫院/,
-    searchName: "長庚醫療財團法人",
-  },
-  {
-    regex: /成大醫院|成功大學醫學院附設醫院/,
-    searchName: "國立成功大學醫學院附設醫院",
-  },
-  { regex: /三軍總醫院|三總/, searchName: "三軍總醫院" },
-  { regex: /馬偕醫院|馬偕紀念醫院/, searchName: "馬偕紀念醫院" },
-  {
-    regex: /新光醫院|新光吳火獅紀念醫院/,
-    searchName: "新光醫療財團法人新光吳火獅紀念醫院",
-  },
-  {
-    regex: /國泰醫院|國泰綜合醫院/,
-    searchName: "國泰醫療財團法人國泰綜合醫院",
-  },
-  {
-    regex: /亞東醫院|亞東紀念醫院/,
-    searchName: "醫療財團法人徐元智先生醫藥基金會亞東紀念醫院",
-  },
-  { regex: /雙和醫院|雙和/, searchName: "衛生福利部雙和醫院" },
-  { regex: /慈濟醫院|慈濟綜合醫院/, searchName: "佛教慈濟醫療財團法人" },
-  {
-    regex: /彰基|彰化基督教醫院/,
-    searchName: "彰化基督教醫療財團法人彰化基督教醫院",
-  },
-  { regex: /奇美醫院|奇美醫療/, searchName: "奇美醫療財團法人奇美醫院" },
-  { regex: /振興醫院/, searchName: "振興醫療財團法人振興醫院" },
-  { regex: /萬芳醫院/, searchName: "臺北市立萬芳醫院" },
-  {
-    regex: /和平醫院|聯合醫院和平院區/,
-    searchName: "臺北市立聯合醫院和平院區",
-  },
-  {
-    regex: /仁愛醫院|聯合醫院仁愛院區/,
-    searchName: "臺北市立聯合醫院仁愛院區",
-  },
-  {
-    regex: /中興醫院|聯合醫院中興院區/,
-    searchName: "臺北市立聯合醫院中興院區",
-  },
-  {
-    regex: /陽明醫院|聯合醫院陽明院區/,
-    searchName: "臺北市立聯合醫院陽明院區",
-  },
-  {
-    regex: /忠孝醫院|聯合醫院忠孝院區/,
-    searchName: "臺北市立聯合醫院忠孝院區",
-  },
-  { regex: /童綜合醫院/, searchName: "童綜合醫療社團法人童綜合醫院" },
-  { regex: /秀傳醫院/, searchName: "秀傳醫療社團法人秀傳紀念醫院" },
-  { regex: /部立桃園醫院|衛福部桃園醫院/, searchName: "衛生福利部桃園醫院" },
-  { regex: /部立台中醫院|衛福部台中醫院/, searchName: "衛生福利部臺中醫院" },
-  { regex: /部立台南醫院|衛福部台南醫院/, searchName: "衛生福利部臺南醫院" },
-  { regex: /部立花蓮醫院|衛福部花蓮醫院/, searchName: "衛生福利部花蓮醫院" },
-  { regex: /部立台東醫院|衛福部台東醫院/, searchName: "衛生福利部臺東醫院" },
-  { regex: /部立基隆醫院|衛福部基隆醫院/, searchName: "衛生福利部基隆醫院" },
-  { regex: /部立台北醫院|衛福部台北醫院/, searchName: "衛生福利部臺北醫院" },
-  { regex: /中國醫藥大學附設醫院|中國附醫/, searchName: "中國醫藥大學附設醫院" },
-  { regex: /中山醫學大學附設醫院|中山附醫/, searchName: "中山醫學大學附設醫院" },
-  { regex: /高雄醫學大學附設中和紀念醫院|高醫附醫|高醫/, searchName: "高雄醫學大學附設中和紀念醫院" },
-  { regex: /義大醫院/, searchName: "義大醫療財團法人義大醫院" },
-];
+/**
+ * Upper bound on candidate rows pulled back for ranking. The widest searchName
+ * in the table (`臺北市立聯合醫院`) matches 13 clinic rows, so this is roomy;
+ * it exists only so a future over-broad searchName can't drag the whole table
+ * into memory. Hitting it would mean the searchName names a family rather than
+ * an institution, which selectFacilityMatch declines anyway.
+ */
+const FACILITY_CANDIDATE_LIMIT = 50;
 
 /**
- * Searches local facilities database for a matching medical/welfare facility by name.
+ * Searches the facilities table for the one hospital a searchName identifies.
+ *
+ * Restricted to `facility_type = 'clinic'` — the hospital/clinic registry. The
+ * other five types that contain hospital names (ltc_contracted, home_healthcare,
+ * long_term_care, health_check, disability_welfare) are contract and service
+ * listings that happen to carry a hospital's name; they are not the hospital an
+ * article is about, and before #84 they outnumbered the real rows ten to one.
+ *
+ * Ranking is deliberately NOT done in SQL: `ORDER BY … LIMIT 1` can only ever
+ * produce a winner, and the thing this lookup most needs to be able to do is
+ * decline. See selectFacilityMatch.
  */
 async function findFacilityInDb(
   searchName: string,
@@ -129,21 +79,24 @@ async function findFacilityInDb(
       `
       SELECT id, name, lat, lng, address
       FROM facilities
-      WHERE name LIKE ? AND lat IS NOT NULL AND lng IS NOT NULL
-      ORDER BY (CASE WHEN name = ? THEN 0 ELSE 1 END), id ASC
-      LIMIT 1
+      WHERE facility_type = 'clinic'
+        AND name LIKE ?
+        AND lat IS NOT NULL AND lng IS NOT NULL
+      ORDER BY id ASC
+      LIMIT ${FACILITY_CANDIDATE_LIMIT}
       `,
-      [pattern, searchName],
+      [pattern],
     );
 
-    if (!rows[0]) return null;
-    return {
-      id: Number(rows[0].id),
-      name: String(rows[0].name),
-      lat: rows[0].lat != null ? Number(rows[0].lat) : null,
-      lng: rows[0].lng != null ? Number(rows[0].lng) : null,
-      address: rows[0].address ? String(rows[0].address) : null,
-    };
+    const candidates = rows.map((row) => ({
+      id: Number(row.id),
+      name: String(row.name),
+      lat: row.lat != null ? Number(row.lat) : null,
+      lng: row.lng != null ? Number(row.lng) : null,
+      address: row.address ? String(row.address) : null,
+    }));
+
+    return selectFacilityMatch(candidates, searchName);
   };
 
   if (existingConn) return run(existingConn);
