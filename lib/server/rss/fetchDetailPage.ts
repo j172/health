@@ -84,6 +84,123 @@ const DETAIL_TEXT_SCOPING: Record<string, DetailTextScoping> = {
     selector:
       "div.streetcorner-tts-player, div.sharedaddy, div.jp-relatedposts",
   },
+
+  // 2026-08-30 (#89) — hpa.gov.tw's Detail.aspx has no <article>/<main>/
+  // #maincontent at all, so the projection falls back to <body> and takes the
+  // whole page. 1771 chars for /Pages/Detail.aspx?nodeid=5020&pid=20299, of
+  // which the bulletin is 1125: the rest is div#contentLeft (a 25-entry year
+  // menu, 「新聞 115年 114年 … 91年」), div.contentTop (breadcrumb + share buttons +
+  // 「點閱次數：351 更新日期：2026/08/27」), div.listWrap (a 「您可能會喜歡」 rail
+  // listing five OTHER articles by headline and date) and div.surveyItem (a
+  // 「看完本篇主題後，您的感覺如何？」 poll). The rail is the dangerous one: it puts
+  // five unrelated headlines into the text the landmark extractor and
+  // imageSearchTerms read, which is the #65 failure mode with a different
+  // source. `only`, not `without`: the page's one prose block is cleanly
+  // named, so allow-listing it is both shorter and robust to hpa adding a
+  // sixth widget. Verified across all five hpa feeds (nodeid 124/126/127/128/
+  // 129) — every article page carries exactly one div.contentBlock.
+  "hpa.gov.tw": { mode: "only", selector: "div.contentBlock" },
+
+  // 2026-08-30 (#89) — cdc.gov.tw/Bulletin/Detail likewise has no
+  // <article>/<main>/#maincontent, so <body> is taken whole: 1620 chars for
+  // the 8/27 登革熱 release, of which 742 — nearly half — is the site footer.
+  // It survives the document-wide header/nav/footer strip because it is a
+  // <div id="footer">, not a <footer>, and it is a full sitemap: 「網站導覽 關於
+  // CDC 署長簡介 … 傳染病介紹 … 預防接種 流感新冠肺鏈疫苗…」, i.e. the name of every
+  // disease and every section CDC publishes, appended to every single press
+  // release. div.news-v3-in is the article card itself; allow-listing its
+  // headline and its body keeps the whole release and drops the footer plus the
+  // 「首頁 新聞稿」 breadcrumb, while `> div:not(.social-all)` also excludes the
+  // 「取得短網址 回上一頁 取得短網址 關閉 複製」 share modal that sits beside the release
+  // inside that same card. 1620 → 847 chars, with the release intact (the feed
+  // description's shingles still score 100%). Verified on both cdc feeds that
+  // resolve to a Bulletin/Detail URL (新聞稿 typeId=9 and 疫情訊息), three items
+  // each.
+  "cdc.gov.tw": {
+    mode: "only",
+    selector:
+      "div.news-v3-in > h2.con-title, div.news-v3-in > div:not(.social-all)",
+  },
+
+  // 2026-08-30 (#89) — fda.gov.tw/tc/newsContent.aspx, same <body> fallback.
+  // The announcements themselves are short (the 8/26 河豚毒素 notice is 94
+  // chars of 主旨/依據/公告事項), so the chrome dominates: of 450 chars, 108 are
+  // div#contentLeft's section menu, 25 the 「目前位置：首頁 > 公告資訊 > 本署公告」
+  // breadcrumb, 72 the div.score rating form — 「資訊內容對您是否有幫助 … 驗證碼：
+  // 寄發驗證碼至信箱：(每次寄發驗證碼需間隔60秒) 送出評分」, 8 the a#gotocenter
+  // 「跳到主要內容區塊」 skip link and 4 the 回上頁 button.
+  // `without` rather than `only`: unlike hpa and cdc, the content here is
+  // spread over several sibling panels (h3.dataTitle, div.edit, div.moreFile's
+  // attachment list) with no single wrapper, so naming the five chrome blocks
+  // is the accurate description. 450 → 237 chars. The 檔案下載 list is kept — those
+  // links are the announcement's actual payload and already become attachment
+  // assets.
+  "fda.gov.tw": {
+    mode: "without",
+    selector: "a#gotocenter, div#contentLeft, div.path, div.score, a.backBtn",
+  },
+
+  // 2026-08-30 (#89) — mamaclub.com (WordPress/Divi) closes every <article>
+  // with div#extra_article_content: an author box, a 「我要回應 我要留言 X點此登入
+  // 來回應」 comment prompt, and a section#similar-post 「推薦閱讀」 rail carrying
+  // SIX other articles as nested <article> teasers, headline plus a truncated
+  // first paragraph each. That is ~700 of ~2100–3600 chars, and it is other
+  // articles' prose — 「家扶籲關注能源平權 跨國共議弱勢家庭生活用能保障 … 面對全球能源
+  // 轉型與…」 — landing in this article's detail_text. div.meta-author (「發表於
+  // 2026-08-27 看留言討論」) and span.wpfp-span (「收藏文章」, WP Favorite Posts)
+  // are the matching head-of-text chrome. Verified against all 10 items in
+  // https://mamaclub.com/feed/ on 2026-08-30: every one shrinks (2168→1407,
+  // 3598→2876, 4081→3383, …), every one ends on genuine article prose, and
+  // detailHtml and the image/link asset lists are byte-identical in all ten.
+  //
+  // NB: #89 opened reporting mamaclub as projecting 0 characters. It does not,
+  // through the code path that matters. Fetched with the repo's own
+  // httpGetText (node:http) every article returns 200 and a full body; fetched
+  // with global fetch()/undici the same URLs return 403 with
+  // `cf-mitigated: challenge`. Whatever produced the original reading, it was
+  // not this client — which is the argument for measuring through
+  // extractDetailContent rather than through a convenience fetch.
+  "mamaclub.com": {
+    mode: "without",
+    selector: "div.meta-author, span.wpfp-span, div#extra_article_content",
+  },
+
+  // 2026-08-30 (#89) — ilady.life (WordPress/PenciDesign) closes its <article>
+  // with div.post-pagination (previous/next post) and div.post-related, a
+  // 「Related Posts」 carousel of six other headlines — 「夏日亮白你挑對了嗎？…」,
+  // 「磷蝦油比魚油好嗎？…」 — which is ~200 of ~1000 chars and, again, other
+  // articles. It also OPENS with
+  // <i class="penci-post-countview-number-check" style="display:none">3</i>,
+  // a hidden view counter. Hidden to a browser is not hidden to .text(): that
+  // bare digit was literally the first character of every ilady detail_text,
+  // ahead of the first sentence — the part imageSearchTerms and the SEO summary
+  // weight most. Verified on four items from https://ilady.life/feed/
+  // (1013→771, 1017→763, 1253→969, 1372→1074), detailHtml and the asset lists
+  // identical in all four.
+  "ilady.life": {
+    mode: "without",
+    selector:
+      "i.penci-post-countview-number-check, div.post-pagination, div.post-related",
+  },
+
+  // 2026-08-30 (#89) — lianhonghong.com (臉紅紅, 吾思傳媒) wraps the post in an
+  // <article> whose prose is section.article-body and whose other four sections
+  // are all furniture: section.article-header (title, 「by 讀者創作 2024/07/12
+  // 1.9K 1」 — author, date, view count, comment count), aside.article-actions
+  // (「收藏文章」), div.related-articles-structure (an in-body 「你可能想知道更多：」
+  // link list) and section.article-meta, which carries the 執行編輯／核稿編輯
+  // credits, the 吾思傳媒股份有限公司 disclaimer, the author bio, a five-headline
+  // 「現代愛情，多元樣態」 rail — and unrendered Mustache template source,
+  // 「{{#items.0}} {{/items.0}} {{^items}} {{/items}}」, which the client-side
+  // renderer never filled in and .text() copies out verbatim. 350–490 of
+  // 1800–3900 chars. Verified on four items from
+  // https://feeds.feedburner.com/lianhonghong (1778→1431, 3855→3368,
+  // 1380→826, 1937→1465), detailHtml and the asset lists identical in all four.
+  "lianhonghong.com": {
+    mode: "without",
+    selector:
+      "section.article-header, section.article-meta, aside.article-actions, div.related-articles-structure",
+  },
 };
 
 /**

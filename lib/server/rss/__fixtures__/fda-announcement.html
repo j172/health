@@ -1,0 +1,104 @@
+<!--
+  Excerpt of http://www.fda.gov.tw/tc/newsContent.aspx?cid=3&id=31713
+  ("廢止「食品中海洋生物毒素之檢驗方法－河豚毒素之檢驗(一)」…") saved 2026-08-30
+  for issue #89.
+
+  Trimmed to the page skeleton: the a#gotocenter skip link, the div#contentLeft
+  section menu cut from 16 entries to four, the div.path breadcrumb, the four
+  content panels the announcement is spread across (h3.dataTitle, div.edit,
+  div.moreFile's two attachment links, div.score's rating form cut from five
+  radio buttons to two) and the 回上一頁 button. Every element is copied verbatim
+  from that response; only the other menu entries, the other radio buttons and
+  the inline <script> blocks were removed.
+
+  What matters about it: fda.gov.tw ships no <article>, no <main> and no
+  #maincontent, so the projection falls back to <body>, and the announcements
+  are short enough (94 chars here) that the chrome outweighs them — 208 of the
+  live page's 450 characters. Unlike hpa and cdc there is no single wrapper
+  holding the content, which is why the entry is a `without` naming the five
+  chrome blocks rather than an `only`. The attachment links are here so the test
+  can prove the rule leaves detailHtml and the asset scan untouched, and that
+  the 檔案下載 list — which becomes attachment assets — stays in the text.
+-->
+<html lang="zh-TW">
+  <head>
+    <title>廢止「食品中海洋生物毒素之檢驗方法－河豚毒素之檢驗(一)」 - 衛生福利部食品藥物管理署</title>
+    <meta property="og:image" content="https://www.fda.gov.tw/TC/includes/images/fda-og.png" />
+  </head>
+  <body id="zone" class="content">
+    <a href="#mainContent" id="gotocenter" title="跳到主要內容區塊" tabindex="1">跳到主要內容區塊</a>
+    <form id="form1">
+      <div id="mp-pusher" class="mp-pusher">
+        <div class="webWrap inner">
+          <div id="ContentPlaceHolder1_LeftMenuBox_Menu1_Panel">
+            <div id="contentLeft" class="leftBlock">
+              <a id="left" title="左邊選單內容區 (Alt+L)" accesskey="L" href="#left" class="sgAccesskey">:::</a>
+              <h2 class="leftTitle">公告資訊</h2>
+              <ul class="leftMenuList">
+                <li><a title="本署公告" href="news.aspx?cid=3" class="current">本署公告</a></li>
+                <li><a title="本署新聞" href="news.aspx?cid=4">本署新聞</a></li>
+                <li><a title="食藥闢謠專區" href="news.aspx?cid=5049">食藥闢謠專區</a></li>
+                <li><a title="國外消費紅綠燈" href="csmLight.aspx">國外消費紅綠燈</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mainContentWrap withLeft">
+            <div class="path">
+              <a id="mainContent" title="中間主要內容區 (Alt+C)" accesskey="C" href="#content">:::</a>
+              目前位置：<a href="index.aspx">首頁</a> &gt; <a href="news.aspx">公告資訊</a> &gt; <a href="news.aspx?cid=3">本署公告</a>
+            </div>
+            <div id="ContentPlaceHolder1_PageContentUC_TitlePanel">
+              <h3 class="dataTitle">
+                <span class="fdtitle">廢止「食品中海洋生物毒素之檢驗方法－河豚毒素之檢驗(一)」，並自即日生效。</span><br>
+                <span class="orangeText">| 發布日期：2026-08-26　| 維護日期：2026-08-26</span>
+                <span class="whiteText">發布單位：研究檢驗組</span>
+              </h3>
+            </div>
+            <div id="ContentPlaceHolder1_PageContentUC_PnlCms">
+              <div class="edit marginBot">
+                <div id="pastingspan1">主旨：廢止「食品中海洋生物毒素之檢驗方法－河豚毒素之檢驗(一)」，並自即日生效。</div><div id="pastingspan1">依據：中央法規標準法第二十一條第二款。</div><div id="pastingspan1">公告事項：廢止「食品中海洋生物毒素之檢驗方法－河豚毒素之檢驗(一)」。</div>
+              </div>
+            </div>
+            <div id="ContentPlaceHolder1_PageContentUC_LoadStrPanel">
+              <div class="moreFile">
+                <div class="moreFileTT file">檔案下載</div>
+                <ul class="moreFileList">
+                  <li><a href="/tc/includes/GetFile.ashx?id=f639233364970371569" target="_blank" rel="noopener noreferrer" title="衛授食字第1151901380號公告.pdf(另開新視窗)">衛授食字第1151901380號公告</a></li>
+                  <li><a href="/tc/includes/GetFile.ashx?id=f639233364973052919" target="_blank" rel="noopener noreferrer" title="衛授食字第1151901380號附件(廢止理由).pdf(另開新視窗)">衛授食字第1151901380號附件(廢止理由)</a></li>
+                </ul>
+              </div>
+            </div>
+            <div id="ContentPlaceHolder1_PageContentUC_ScoreStrPanel">
+              <div class="score">
+                <div class="scoreTT">資訊內容對您是否有幫助：</div>
+                <div class="scoreContent">
+                  <div class="scoreVote">
+                    <span id="ContentPlaceHolder1_PageContentUC_rblList">
+                      <input id="ContentPlaceHolder1_PageContentUC_rblList_0" type="radio" name="rblList" value="1"><label for="ContentPlaceHolder1_PageContentUC_rblList_0">極其有幫助</label>
+                      <input id="ContentPlaceHolder1_PageContentUC_rblList_4" type="radio" name="rblList" value="5"><label for="ContentPlaceHolder1_PageContentUC_rblList_4">沒有幫助</label>
+                    </span>
+                  </div>
+                  <div class="scoreInner">
+                    <label for="ContentPlaceHolder1_PageContentUC_GoogleReCAPTCHA_VCodeKey">驗證碼：</label>
+                    <input name="VCodeKey" type="text" maxlength="6" id="ContentPlaceHolder1_PageContentUC_GoogleReCAPTCHA_VCodeKey" class="shortInput" title="重新產生驗證碼">
+                    <div id="divSendCode" style="display: none;">
+                      <label for="SendCodemailbox">寄發驗證碼至信箱：</label>
+                      <input type="text" id="SendCodemailbox" name="SendCodemailbox">
+                      <span>(每次寄發驗證碼需間隔60秒)</span>
+                    </div>
+                    <div id="ScoreSendLink" style="display:none;">
+                      <a id="ContentPlaceHolder1_PageContentUC_ScoreSendLinkButton" class="blackBtn" role="button" href="javascript:void(0);">送出評分</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="alignRightT">
+              <a href="news.aspx?cid=3" title="回上一頁" class="backBtn">回上一頁</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </body>
+</html>
