@@ -9,7 +9,23 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (unauthorized) return unauthorized;
 
   try {
-    const result = await runCdcAlertsSync();
+    let payload: { travelAlertCsv?: string; intlEpidCsv?: string } | undefined;
+    const contentType = request.headers.get("content-type") || "";
+    if (contentType.includes("application/json")) {
+      try {
+        const body = await request.json();
+        if (body && (body.travelAlertCsv || body.intlEpidCsv)) {
+          payload = {
+            travelAlertCsv: body.travelAlertCsv,
+            intlEpidCsv: body.intlEpidCsv,
+          };
+        }
+      } catch {
+        // Non-JSON or empty body is handled gracefully
+      }
+    }
+
+    const result = await runCdcAlertsSync(payload);
     return NextResponse.json({
       ok: true,
       result,

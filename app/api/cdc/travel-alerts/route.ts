@@ -24,6 +24,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       ok: true,
       alerts: data.alerts,
+      news: data.epidemicNews,
       epidemicNews: data.epidemicNews,
       stats: data.stats,
       updatedAt: data.updatedAt,
@@ -35,6 +36,7 @@ export async function GET(request: Request) {
         ok: false,
         error: error.message || "Failed to load CDC alerts from database",
         alerts: [],
+        news: [],
         epidemicNews: [],
         stats: { level3Count: 0, level2Count: 0, level1Count: 0, totalCountries: 0 },
       },

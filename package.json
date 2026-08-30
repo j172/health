@@ -16,7 +16,8 @@
     "import:public-art": "node scripts/import-public-art.mjs",
     "import:green-hotels": "node scripts/import-moenv-green-hotels.mjs",
     "import:green-products": "node scripts/import-moenv-green-products.mjs",
-    "geocode:facilities": "node scripts/geocode-all-facilities.mjs"
+    "geocode:facilities": "node scripts/geocode-all-facilities.mjs",
+    "sync:cdc": "node scripts/sync-cdc-alerts.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.6.0",
