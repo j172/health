@@ -1,0 +1,136 @@
+<!--
+  Excerpt of https://www.cdc.gov.tw/Bulletin/Detail/8eAEgrTiTtn8vAijonSNLw?typeId=9
+  ("高雄市新增3例本土登革熱病例…") saved 2026-08-30 for issue #89.
+
+  Trimmed to the page skeleton: the 首頁 / 新聞稿 breadcrumb, the .news-v3-in
+  article card (headline, the .social-all share block with its short-url modal,
+  and two of the release's four paragraphs), and the <div id="footer"> sitemap
+  cut down from ~740 characters to two of its columns. Every element is copied
+  verbatim from that response; only the remaining prose, the other footer
+  columns and the inline <script> blocks were removed.
+
+  What matters about it: cdc.gov.tw ships no <article>, no <main> and no
+  #maincontent, so the projection falls back to <body>. The footer is a
+  <div id="footer">, NOT a <footer>, so the document-wide header/nav/footer
+  strip never reaches it — and it is a full sitemap naming every disease and
+  section CDC publishes, appended to the text of every single press release.
+  The <img> and the PDF link are here so the test can prove the `only` rule
+  leaves detailHtml and the asset scan untouched.
+-->
+<html lang="zh-Hant-TW">
+  <head>
+    <title>高雄市新增3例本土登革熱病例 - 衛生福利部疾病管制署</title>
+    <meta property="og:image" content="https://www.cdc.gov.tw/Uploads/2026/dengue-cover.jpg" />
+  </head>
+  <body class="header-fixed horizontal-menu page-type_green2">
+    <div class="wrapper">
+      <section class="RWDTop">
+        <div class="container">
+          <ol class="cd-breadcrumb custom-separator">
+            <li><img class="location_home" src="/Images/home.svg" alt=""><a href="/" title="首頁">首頁</a></li>
+            <li><a href="/Bulletin/List/MmgtpeidAR5Ooai4-fgHzQ" title="新聞稿">新聞稿</a></li>
+          </ol>
+        </div>
+        <div class="container">
+          <div class="news-v3 bg-color-white m-b-30">
+            <div class="news-v3-in">
+              <h2 class="con-title">
+                高雄市新增3例本土登革熱病例，請民眾落實「巡、倒、清、刷」，出現疑似症狀儘速就醫
+              </h2>
+              <div class="social-all pull-right">
+                <ul>
+                  <li>
+                    <div class="a2a_kit a2a_kit_size_32 a2a_default_style">
+                      <a class="a2a_button_facebook" title="Facebook(新視窗開啟)"></a>
+                      <a class="a2a_button_line" title="Line(新視窗開啟)"></a>
+                      <a class="a2a_button_print" title="列印(新視窗開啟)"></a>
+                    </div>
+                  </li>
+                  <li>
+                    <a href="#" onclick="getShortUrl();" title="取得短網址" class="return-page" data-bs-toggle="modal" data-bs-target="#LinkModal">
+                      <div class="LinkIcon"><img src="/Images/icons/link.png" alt="連結"></div>
+                      <span class="sr-only">取得短網址</span>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="javascript:history.back();" title="回上一頁" class="return-page">
+                      <span class="return-page-span"><i class="fa fa-arrow-left" aria-hidden="true"></i></span>
+                      <span class="sr-only">回上一頁</span>
+                    </a>
+                  </li>
+                </ul>
+                <div class="modal fade" id="LinkModal" tabindex="-1" role="dialog" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">取得短網址</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body"><div class="LinkModalDiv"><a id="myText"></a></div></div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
+                        <button type="button" class="btn btn-primary" id="copyBtn" name="myText">複製</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="clearfix"></div>
+              <hr>
+              <div>
+                <div class="text-right">發佈日期：2026-08-27</div>
+                疾病管制署今(27)日公布新增3例登革熱本土病例，為一起家庭群聚。指標個案為高雄市岡山區60多歲男性，8月26日出現發燒、肌肉痠痛、關節痛及噁心等症狀至診所就醫，因症狀未改善，同日再至醫院求治，經通報採檢送驗後確診登革熱，檢出登革病毒第二型。<br>
+                <br>
+                疾管署表示，3名個案潛伏期無國外旅遊史，主要活動地點為住家附近。為找出隱藏個案，衛生單位已於社區進行擴大疫調，並針對確診個案居住地周邊進行緊急防治工作。<br>
+                <br>
+                <img src="/Uploads/2026/dengue-figure.png" alt="登革熱病例趨勢圖">
+                <a href="/File/Get/dengue-guideline.pdf">登革熱臨床處置指引</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div id="footer" class="d-print-none">
+        <div class="footer-v4">
+          <a accesskey="B" href="#accesskeyB" id="accesskeyB" title="下方功能區"><span>:::</span></a>
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12">
+                <a class="JQfootermap footermap" title="網站導覽" role="button" href="javascript:void(0);">網站導覽</a>
+              </div>
+            </div>
+          </div>
+          <div class="footer JQfootermapbox" style="display: none;">
+            <div class="container">
+              <div class="row">
+                <div class="col-md-3 md-margin-bottom-40">
+                  <div class="posts">
+                    <div class="headline"><h2>關於CDC</h2></div>
+                    <ul class="list-unstyled latest-list">
+                      <li><a href="/About/Index">署長簡介</a></li>
+                      <li><a href="/About/History">沿革與成果</a></li>
+                      <li><a href="/About/Org">組織與職掌</a></li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="col-md-3 md-margin-bottom-40">
+                  <div class="posts">
+                    <div class="headline"><h2>傳染病與防疫專題</h2></div>
+                    <ul class="list-unstyled latest-list">
+                      <li><a href="/Disease/Index">傳染病介紹</a></li>
+                      <li><a href="/Vaccine/Index">預防接種</a></li>
+                      <li><a href="/Vaccine/Flu">流感新冠肺鏈疫苗</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="copyright">
+            <div class="container">衛生福利部疾病管制署 版權所有</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

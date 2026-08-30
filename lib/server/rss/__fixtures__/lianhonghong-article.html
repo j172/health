@@ -1,0 +1,103 @@
+<!--
+  Excerpt of https://lianhonghong.com/read/article/33384 (臉紅紅, 吾思傳媒)
+  saved 2026-08-30 for issue #89.
+
+  Trimmed to one <article>, keeping all five of its sections: the
+  section.article-header with its aside.article-actions.top (author, date, view
+  count, favourite count), the section.article-body prose cut to its prologue
+  and two paragraphs, and the whole of section.article-meta — the
+  div.related-articles-structure link list cut from three entries to two, the
+  tag rail cut from ten to two, the 執行編輯 credit, the 吾思傳媒 disclaimer, the
+  author card and the bottom aside.article-actions. The Mustache template
+  source in the meta section is copied from the sibling article 33157, where it
+  appears in the same position. Every element is copied verbatim from those
+  responses; only the remaining prose, the other links and tags, and the
+  <amp-social-share> buttons were removed.
+
+  What matters about it: the meta section is a grab-bag of everything that is
+  not the article — other articles' headlines, an editorial credit, a corporate
+  disclaimer, an author bio, a 收藏文章 button — and it also contains Mustache
+  template source that the client-side renderer never filled in, so .text()
+  copies 「{{#items.0}} {{/items.0}} {{^items}} {{/items}}」 straight into
+  detail_text. The <img>/<amp-img> elements are here so the test can prove the
+  `without` rule leaves detailHtml and the asset scan untouched.
+-->
+<html lang="zh-TW">
+  <head>
+    <title>情人節不只送巧克力！Smile Makers Gift Guide 打造「親密感」的新儀式感 | 臉紅紅</title>
+    <meta property="og:image" content="https://castle.womany.net/images/articles/33384/cover.jpg" />
+  </head>
+  <body>
+    <main>
+      <article id="article33384" class="amp article-root ad_restricted">
+        <section class="article-header">
+          <nav class="interests"><ul></ul></nav>
+          <a href="https://lianhonghong.com/read/article/33384" class="article-title">
+            <h1>情人節不只送巧克力！Smile Makers Gift Guide 打造「親密感」的新儀式感</h1>
+          </a>
+          <aside class="article-actions top">
+            <span class="author-name meta-span">by <a href="/authors/whatshappening?ref=s_a_author">品牌生活快訊</a></span>
+            <time class="meta-span" datetime="2025-08-27"> 2025/08/27 </time>
+            <span class="article-count meta-span"><i class="fad fa-eye"></i>864</span>
+            <span class="meta-span article-favorite"><i class="fad fa-heart"></i>1</span>
+          </aside>
+        </section>
+        <div class="article-main">
+          <section class="article-body">
+            <div class="prologue">
+              <p>瑞典女性情趣品牌 Smile Makers 正式登台，以「身心健康 × 美學」為核心，將情趣用品化為日常自我照顧。更在情人節推出禮物指南，精選三款按摩器，搭配專家觀點與用戶體驗，重塑親密新儀式！</p>
+            </div>
+            <p>來自瑞典、風靡全球超過 30 國的女性情趣品牌 Smile Makers，正式以全新姿態進駐台灣！品牌以「身心健康 × 美學」為核心價值，致力於將情趣用品轉化為女性自我照顧與伴侶親密連結的日常選擇。</p>
+            <p class="with_img"><img src="https://castle.womany.net/images/articles/33384/figure-1.jpg" alt="Smile Makers 產品">圖片來源｜Smile Makers</p>
+            <h2 id="eb421d">同場加映：Smile Makers 私密潤滑液</h2>
+            <p>添加日本萃取甘草精華，具抗發炎與舒緩功效，亦為 Kosé、資生堂等高級保養品牌採用成分。配方溫和、不刺激且具保濕效果，為親密體驗增添安心與呵護。</p>
+          </section>
+          <section class="article-meta">
+            <p><span class="nextpage"></span></p>
+            <div class="related-articles-structure">
+              <p class="preface">你可能想知道更多：</p>
+              <ul>
+                <li>
+                  <a target="_blank" class="article-block" href="https://lianhonghong.com/read/article/32184?ref=s_a_relarticles" title="情趣玩具怎麼挑？專屬貓女的選購指南：前戲幫手、初學友善，這裡買不怕被發現" data-id="32184">情趣玩具怎麼挑？專屬貓女的選購指南：前戲幫手、初學友善，這裡買不怕被發現</a>
+                </li>
+                <li>
+                  <a target="_blank" class="article-block" href="https://lianhonghong.com/read/article/29202?ref=s_a_relarticles" title="每個女人都該有，情趣用品挑選建議" data-id="29202">每個女人都該有，情趣用品挑選建議</a>
+                </li>
+              </ul>
+            </div>
+            <nav class="tags">
+              <ul>
+                <li class="tag"><a href="/topics/talk-sex?ref=wa-bottom">談性說愛好自在</a></li>
+                <li class="tag"><a href="/topics/sextoys?ref=wa-bottom">情趣用品</a></li>
+              </ul>
+            </nav>
+            {{#items.0}} {{/items.0}} {{^items}} {{/items}}
+            <div class="editor-info">
+              <p class="liability_editor">執行編輯　<a href="https://womany.net/authors/hazelhsu?ref=s_a_editor" target="_blank"><span>Hazel Hsu</span></a></p>
+            </div>
+            <aside class="disclaimer">
+              <p>吾思傳媒股份有限公司（統一編號 53099678）致力提供公開平台，提供多元與共融視角，本文代表創作者觀點，幫助更多人成為自己。</p>
+            </aside>
+            <section class="article-author">
+              <span>
+                <a class="author" href="https://womany.net/authors/whatshappening?ref=wa-card">
+                  <img src="https://castle.womany.net/images/users/358452/avatar.png" class="author-icon" alt="" height="100" width="100">
+                  <span class="type">作者</span>
+                  <h3>品牌生活快訊</h3>
+                  <div class="desc">品牌生活快訊，替你特搜第一手新鮮事，所有你想知道的，我們都想告訴你！ d(d＇∀＇) 吃喝玩樂/展覽活動/美妝保養相關新聞稿請來信 news@womany.net</div>
+                </a>
+              </span>
+            </section>
+            <aside class="article-actions bottom">
+              <span class="article-favorite">
+                <i class="fad fa-heart"></i>
+                <span class="num">1</span>
+                <span class="text">收藏文章</span>
+              </span>
+            </aside>
+          </section>
+        </div>
+      </article>
+    </main>
+  </body>
+</html>

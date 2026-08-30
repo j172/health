@@ -1,0 +1,113 @@
+<!--
+  Excerpt of https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=5020&pid=20299
+  ("試管嬰兒補助再加碼…") saved 2026-08-30 for issue #89.
+
+  Trimmed to the page skeleton: the left year menu, the .contentTop block
+  (breadcrumb, share/print/short-url buttons, 點閱次數/更新日期/發布日期), the
+  .contentBlock the release actually lives in — two of its nine paragraphs and
+  its 延伸閱讀 link — the 「您可能會喜歡」 rail with two of its five entries, and the
+  feedback poll. Every element is copied verbatim from that response; only the
+  remaining prose, the other menu years, the other rail entries and the inline
+  <script> blocks were removed.
+
+  What matters about it: hpa.gov.tw ships no <article>, no <main> and no
+  #maincontent, so the projection falls back to <body> and takes the whole page.
+  The rail is the dangerous part — it puts five OTHER articles' headlines into
+  this article's detail_text, where the landmark extractor and imageSearchTerms
+  read them. The <img> in .contentBlock and the PDF link are here so the test
+  can prove the `only` rule leaves detailHtml and the asset scan untouched.
+-->
+<html lang="zh-Hant-TW">
+  <head>
+    <title>試管嬰兒補助再加碼 支持不孕夫妻圓生育夢 - 衛生福利部國民健康署</title>
+    <meta property="og:image" content="https://www.hpa.gov.tw/File/Attach/20299/File_24001.jpg" />
+  </head>
+  <body id="page-top" class="resizeWrap innerPage layout-green">
+    <div>
+      <form id="aspnetForm">
+        <div class="mainWrap innerWrap">
+          <div class="leftMenu" id="contentLeft">
+            <div class="LM-top">
+              <a id="left" title="左邊選單內容區 (Alt+L)" accesskey="L" href="#contentLeft" class="sgAccesskey">:::</a>
+              <h2 class="leftTitle"><a href="/Pages/List.aspx?nodeid=124" title="新聞">新聞</a></h2>
+            </div>
+            <section>
+              <ul class="sidebar-menu">
+                <li class="keep"><a href="/Pages/TopicList.aspx?nodeid=5020" title="115年"><span>115年</span></a></li>
+                <li><a href="/Pages/TopicList.aspx?nodeid=4886" title="114年"><span>114年</span></a></li>
+                <li><a href="/Pages/TopicList.aspx?nodeid=4750" title="113年"><span>113年</span></a></li>
+              </ul>
+            </section>
+          </div>
+          <div class="ContentWrap">
+            <div class="contentTop">
+              <a class="anchor-fix" id="main-content" title="定位點 中間主要內容區 (Alt+C)" accesskey="C" href="#main-content">定位點</a>
+              <div class="path">
+                <a href="#c" title="頁面內容" accesskey="c" id="c">:::</a><a href="/" title="回首頁"><img class="svg icon" alt="" src="/NewPageStyle/TW/images/icon/home.svg"> 首頁</a> &gt;<a href="javascript:void(0);"><i class="active" aria-hidden="true"></i>服務園地</a> &gt;<a href="/Pages/List.aspx?nodeid=69"><i class="active" aria-hidden="true"></i>本署新聞</a> &gt;<a href="/Pages/List.aspx?nodeid=124"><i class="active" aria-hidden="true"></i>新聞</a> &gt;<a href="/Pages/List.aspx?nodeid=5020"><i class="active" aria-hidden="true"></i>115年</a>
+              </div>
+              <div class="RLbox">
+                <h3 class="pageTitle">試管嬰兒補助再加碼 支持不孕夫妻圓生育夢 第2、3次療程每次最高多5萬元 9月1日起申請適用</h3>
+                <ul class="innerSocialList">
+                  <li><a class="ISL-facebook" href="http://www.facebook.com/sharer.php?u=https%3a%2f%2fwww.hpa.gov.tw%2f%2fPages%2fDetail.aspx%3fnodeid%3d5020%26pid%3d20299" target="_blank" title="facebook(另開視窗)" rel="noopener noreferrer">facebook</a></li>
+                  <li><a class="ISL-line" href="https://lineit.line.me/share/ui?url=https%3a%2f%2fwww.hpa.gov.tw%2f%2fPages%2fDetail.aspx%3fnodeid%3d5020%26pid%3d20299" target="_blank" title="line(另開視窗)" rel="noopener noreferrer">line</a></li>
+                  <li><a class="ISL-send" href="mailto:?subject=國民健康署文章分享" title="轉寄">轉寄</a></li>
+                  <li><a class="ISL-print" href="javascript:void(0);" title="列印">列印</a></li>
+                  <li><a class="icon-ShtURL" href="javascript:GetShortUrl();" title="縮短網址">縮短網址</a></li>
+                </ul>
+              </div>
+              <ul class="pageInfo">
+                <li><img class="svg icon" alt="" src="/NewPageStyle/TW/images/icon/eye.svg"><span class="sr-only">點閱次數：</span>點閱次數：351</li>
+                <li><img class="svg icon" alt="" src="/NewPageStyle/TW/images/icon/pen.svg"><span class="sr-only">更新日期：</span>更新日期：2026/08/27</li>
+                <li><img class="svg icon" alt="" src="/NewPageStyle/TW/images/icon/clock.svg"><span class="sr-only">發布日期：</span>發布日期：2026/08/27</li>
+              </ul>
+            </div>
+            <div class="contentBlock">
+              <div class="htmlBlock">
+                <div>
+                  <p>　　為減輕不孕夫妻接受試管嬰兒療程的經濟負擔，落實行政院「台灣人口對策新戰略－家庭支持篇」方針，國民健康署宣布加碼「不孕症試管嬰兒補助3.0方案」，提高第2、3次療程補助額度，自115年9月1日起提出申請者，每次最高增加5萬元，讓有需要接受多次療程的不孕夫妻，獲得更實質的支持。</p>
+                  <p><img src="/File/Attach/20299/File_24001.jpg" alt="試管嬰兒補助3.0方案補助額度表" /></p>
+                  <p>　　國民健康署沈靜芬署長指出，試管嬰兒療程包括取卵、受精、胚胎培養及植入等過程，並非每次療程都能順利成功，部分夫妻需要歷經多次療程才能成功懷孕並迎接寶寶。</p>
+                  <p>延伸閱讀:</p>
+                  <p>【試管嬰兒專區】（<a href="/File/Attach/20299/File_24002.pdf">補助方案說明</a>）</p>
+                </div>
+              </div>
+            </div>
+            <div class="listWrap">
+              <h4 class="subTitle">您可能會喜歡</h4>
+              <div class="subList">
+                <div class="themeBox">
+                  <ul>
+                    <li><div class="listBox">
+                      <a href="/Pages/Detail.aspx?nodeid=5020&amp;pid=19765&amp;sid=20299" title="守護油症患者健康不間斷　115年專屬健檢已啟動">守護油症患者健康不間斷　115年專屬健檢已啟動</a>
+                      <div class="dateBox">
+                        <span class="dateStyle">發布日期：2026-01-16</span>
+                        <span class="dateStyle dateStyle2">更新日期：2026-01-16</span>
+                      </div>
+                    </div></li>
+                    <li><div class="listBox">
+                      <a href="/Pages/Detail.aspx?nodeid=5020&amp;pid=19751&amp;sid=20299" title="揭穿新興菸品減害迷思　實際危害不容忽視">揭穿新興菸品減害迷思　實際危害不容忽視</a>
+                      <div class="dateBox">
+                        <span class="dateStyle">發布日期：2026-01-08</span>
+                        <span class="dateStyle dateStyle2">更新日期：2026-01-08</span>
+                      </div>
+                    </div></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="surveyItem contentVote">
+              <fieldset>
+                <legend class="Qtitle">看完本篇主題後，您的感覺如何？</legend>
+                <ul class="starList">
+                  <li><label><input type="radio" name="score" value="1" id="RadioGroup1_0"><label for="RadioGroup1_0">非常實用</label></label></li>
+                  <li><label><input type="radio" name="score" value="5" id="RadioGroup1_4"><label for="RadioGroup1_4">非常不實用</label></label></li>
+                </ul>
+                <input type="submit" value="送出" />
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
