@@ -23,7 +23,7 @@ export default function TravelEpidemicAlertsContent() {
         if (!json.ok) throw new Error(json.error || "載入失敗");
         if (!ignore) {
           setAlerts(json.alerts || []);
-          setNews(json.news || []);
+          setNews(json.news || json.epidemicNews || []);
           setError(null);
         }
       } catch (err: any) {
@@ -50,7 +50,7 @@ export default function TravelEpidemicAlertsContent() {
       .then((json) => {
         if (!json.ok) throw new Error(json.error || "載入失敗");
         setAlerts(json.alerts || []);
-        setNews(json.news || []);
+        setNews(json.news || json.epidemicNews || []);
       })
       .catch((err) => setError(err.message || "載入失敗"))
       .finally(() => setLoading(false));

@@ -95,17 +95,9 @@ export const RSS_FEEDS: FeedConfig[] = [
   {
     code: "nhi",
     name: "中央健康保險署－新聞發布",
-    url: "https://www.nhi.gov.tw/ch/rss-3255-1.xml",
+    url: "https://news.google.com/rss/search?q=site:nhi.gov.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
     sourceName: "nhi",
-    // nhi.gov.tw refuses datacentre addresses as a class: 403 from this host and
-    // from GitHub runners alike, across eight header variants (UA, Referer,
-    // Accept-Language, HTTP/1.1, IPv4), while the same URL returns 200 from a
-    // residential connection. Measured, not assumed — .github/workflows/egress-probe.yml.
-    //
-    // Nothing in this codebase can fix that, so it stops counting as a failure.
-    // The articles ingested before the block remain, and the feed resumes by
-    // itself if 健保署 ever allows the range.
-    tolerateForbidden: true,
+    skipDetailFetch: true,
   },
   {
     code: "top1health",
@@ -261,5 +253,92 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://news.google.com/rss/search?q=site:love-newlife.org&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
     sourceName: "love_newlife",
     skipDetailFetch: true,
+  },
+  {
+    code: "cdc_outbreak",
+    name: "疾病管制署－疫情訊息",
+    url: "https://www.cdc.gov.tw/RSS/RssXml/khD5i5xbqmYc8zCDhJimNg?type=1",
+    sourceName: "cdc",
+  },
+  {
+    code: "cdc_letters",
+    name: "疾病管制署－致醫界通函",
+    url: "https://www.cdc.gov.tw/RSS/RssXml/VYgwM0EtOqAhCmd0iJrhfg?type=4",
+    sourceName: "cdc",
+  },
+  {
+    code: "womenshealth_tw",
+    name: "Women's Health 美力圈",
+    url: "https://www.womenshealthmag.com/tw/rss/default.xml",
+    sourceName: "womenshealth",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ntuh_news",
+    name: "臺大醫院",
+    url: "https://news.google.com/rss/search?q=site:ntuh.gov.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "ntuh",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ntuh_ifc_news",
+    name: "臺大整合醫療",
+    url: "https://news.google.com/rss/search?q=site:ntuh.gov.tw/ifc&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "ntuh_ifc",
+    skipDetailFetch: true,
+  },
+  {
+    code: "durex_article",
+    name: "杜蕾斯",
+    url: "https://news.google.com/rss/search?q=site:durex-store.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "durex",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ankemedia_rss",
+    name: "AnkeMedia 安可人生",
+    url: "https://ankemedia.com/feed",
+    sourceName: "ankemedia",
+    skipDetailFetch: true,
+  },
+  {
+    code: "commonhealth_club",
+    name: "康健大人社團",
+    url: "https://news.google.com/rss/search?q=site:club.commonhealth.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "commonhealth_club",
+    skipDetailFetch: true,
+  },
+  {
+    code: "gvm_health_rss",
+    name: "健康遠見",
+    url: "https://health.gvm.com.tw/rss",
+    sourceName: "health_gvm",
+    skipDetailFetch: true,
+  },
+  {
+    code: "vghtpe_news",
+    name: "臺北榮總",
+    url: "https://news.google.com/rss/search?q=site:vghtpe.gov.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "vghtpe",
+    skipDetailFetch: true,
+  },
+  {
+    code: "udn_woman",
+    name: "udn 女子漾",
+    url: "https://woman.udn.com/woman/rssfeed/123166",
+    sourceName: "udn_woman",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ilady_life",
+    name: "iLady 愛女也",
+    url: "https://ilady.life/feed/",
+    sourceName: "ilady",
+  },
+  {
+    code: "lianhonghong",
+    name: "臉紅紅",
+    url: "https://feeds.feedburner.com/lianhonghong",
+    sourceName: "lianhonghong",
   },
 ];

@@ -689,3 +689,20 @@ jobs:
             grep -Eiq '^content-type: image/(jpeg|png|webp)' "$TMP_DIR/image-headers.txt"
             test -s "$TMP_DIR/card-image"
           done < "$TMP_DIR/card-images.txt"
+
+      - name: Seed culture shows, public art, green hotels and green products data
+        continue-on-error: true
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: |
+          set -euo pipefail
+          echo "Syncing culture shows..."
+          curl -fsS -X POST "https://health.j172.tw/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET" || true
+          echo "Importing public art..."
+          node scripts/import-public-art.mjs || true
+          echo "Importing green hotels..."
+          node scripts/import-moenv-green-hotels.mjs || true
+          echo "Importing green products..."
+          node scripts/import-moenv-green-products.mjs || true

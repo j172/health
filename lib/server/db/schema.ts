@@ -656,4 +656,167 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Cultural events main table (文化部藝文活動)
+  culturalEvents: `
+    CREATE TABLE IF NOT EXISTS cultural_events (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      uid VARCHAR(100) NOT NULL,
+      title VARCHAR(500) NOT NULL,
+      category VARCHAR(20) NOT NULL,
+      category_label VARCHAR(100) NOT NULL,
+      description LONGTEXT NULL,
+      image_url VARCHAR(1000) NULL,
+      master_unit VARCHAR(500) NULL,
+      start_date VARCHAR(30) NULL,
+      end_date VARCHAR(30) NULL,
+      source_web_promote VARCHAR(1000) NULL,
+      web_sales VARCHAR(1000) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cultural_event_uid (uid),
+      KEY idx_cultural_event_category (category),
+      KEY idx_cultural_event_dates (start_date, end_date),
+      KEY idx_cultural_event_updated (updated_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Cultural event shows sub-table (文化部藝文活動場次)
+  culturalEventShows: `
+    CREATE TABLE IF NOT EXISTS cultural_event_shows (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      event_id BIGINT NOT NULL,
+      show_time VARCHAR(100) NULL,
+      location VARCHAR(500) NULL,
+      location_name VARCHAR(500) NULL,
+      city VARCHAR(50) NULL,
+      on_sales VARCHAR(20) NULL,
+      price VARCHAR(500) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      end_time VARCHAR(100) NULL,
+      created_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_cultural_show_event (event_id),
+      KEY idx_cultural_show_city (city),
+      KEY idx_cultural_show_geo (lat, lng),
+      CONSTRAINT fk_cultural_show_event FOREIGN KEY (event_id)
+        REFERENCES cultural_events(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Public art installations (公共藝術資料)
+  publicArts: `
+    CREATE TABLE IF NOT EXISTS public_arts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      art_no VARCHAR(100) NOT NULL,
+      title VARCHAR(500) NOT NULL,
+      artist VARCHAR(500) NULL,
+      dimensions VARCHAR(500) NULL,
+      material VARCHAR(500) NULL,
+      city VARCHAR(50) NULL,
+      location VARCHAR(500) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      field_type VARCHAR(200) NULL,
+      description LONGTEXT NULL,
+      image_url VARCHAR(1000) NULL,
+      year VARCHAR(50) NULL,
+      source_url VARCHAR(1000) NULL,
+      agency VARCHAR(500) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_public_art_no (art_no),
+      KEY idx_public_art_city (city),
+      KEY idx_public_art_geo (lat, lng),
+      KEY idx_public_art_artist (artist(100))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // CDC travel epidemic alerts (疾管署國際旅遊疫情建議)
+  cdcTravelAlerts: `
+    CREATE TABLE IF NOT EXISTS cdc_travel_alerts (
+      id VARCHAR(100) NOT NULL,
+      alert_title VARCHAR(500) NOT NULL,
+      severity_level VARCHAR(100) NOT NULL,
+      level_code TINYINT NOT NULL DEFAULT 0,
+      disease VARCHAR(200) NOT NULL,
+      country VARCHAR(100) NOT NULL,
+      country_en VARCHAR(100) NULL,
+      instruction TEXT NULL,
+      web VARCHAR(1000) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      iso VARCHAR(10) NULL,
+      effective_at DATETIME NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_cdc_alert_level (level_code),
+      KEY idx_cdc_alert_country (country)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // CDC international epidemic news (疾管署國際重要疫情資訊)
+  cdcEpidemicNews: `
+    CREATE TABLE IF NOT EXISTS cdc_epidemic_news (
+      id VARCHAR(100) NOT NULL,
+      sent_at DATETIME NULL,
+      effective_at DATETIME NULL,
+      headline VARCHAR(500) NOT NULL,
+      description LONGTEXT NULL,
+      disease VARCHAR(200) NOT NULL,
+      country VARCHAR(100) NOT NULL,
+      country_en VARCHAR(100) NULL,
+      web VARCHAR(1000) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      iso VARCHAR(10) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_cdc_news_sent (sent_at),
+      KEY idx_cdc_news_country (country)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Taiwan Water outages (自來水停水通知)
+  waterOutages: `
+    CREATE TABLE IF NOT EXISTS water_outages (
+      id VARCHAR(100) NOT NULL,
+      publish_time VARCHAR(100) NULL,
+      start_time DATETIME NULL,
+      end_time DATETIME NULL,
+      outage_type VARCHAR(100) NOT NULL,
+      county VARCHAR(50) NOT NULL,
+      districts VARCHAR(255) NULL,
+      reason TEXT NULL,
+      influence_area TEXT NULL,
+      supply_station VARCHAR(255) NULL,
+      is_within_one_week TINYINT(1) NOT NULL DEFAULT 1,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_water_county (county),
+      KEY idx_water_start_time (start_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 環境部 (MOENV) 環保標章產品 — data.moenv.gov.tw GP_P_02
+  greenProducts: `
+    CREATE TABLE IF NOT EXISTS green_products (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      flag_no VARCHAR(50) NOT NULL,
+      product_name VARCHAR(500) NOT NULL,
+      class_type VARCHAR(100) NULL,
+      sign_date VARCHAR(50) NULL,
+      expire_date VARCHAR(50) NULL,
+      date_extend_date VARCHAR(50) NULL,
+      is_expire VARCHAR(10) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_green_product_flag (flag_no),
+      KEY idx_green_product_name (product_name(100)),
+      KEY idx_green_product_class (class_type),
+      KEY idx_green_product_sign (sign_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

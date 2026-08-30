@@ -8,6 +8,11 @@ import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
+import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
+import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
+import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
+import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
+import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -110,5 +115,30 @@ export const registerCronJobs = (): void => {
     runGuarded("news-card-images-cron.log", () =>
       assignMissingNewsCardImages(15),
     ),
+  );
+  // Cultural events sync every 6 hours (at :10 past)
+  cron.schedule(
+    "10 0,6,12,18 * * *",
+    runGuarded("culture-shows-cron.log", () => runCulturalShowsSync()),
+  );
+  // Public art sync daily at 3am
+  cron.schedule(
+    "0 3 * * *",
+    runGuarded("public-art-cron.log", () => runPublicArtSync()),
+  );
+  // CDC international travel epidemic alerts sync every 12 hours (at 02:15 & 14:15)
+  cron.schedule(
+    "15 2,14 * * *",
+    runGuarded("cdc-alerts-cron.log", () => runCdcAlertsSync()),
+  );
+  // Water outages sync every hour (at :25 past)
+  cron.schedule(
+    "25 * * * *",
+    runGuarded("water-outages-cron.log", () => runWaterOutagesSync()),
+  );
+  // Green products sync daily at 4:30am
+  cron.schedule(
+    "30 4 * * *",
+    runGuarded("green-products-cron.log", () => runGreenProductsSync()),
   );
 };

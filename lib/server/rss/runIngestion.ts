@@ -25,7 +25,22 @@ import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthN
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
 import { fetchNhiNewsHtml } from "@/lib/server/rss/fetchNhiNews";
-import { fetchCultureNews } from "@/lib/server/rss/fetchCultureNews";
+import { fetchHelloYishiNews } from "@/lib/server/rss/fetchHelloYishiNews";
+import { fetchMababyNews } from "@/lib/server/rss/fetchMababyNews";
+import { fetchWeGetCareNews } from "@/lib/server/rss/fetchWeGetCareNews";
+import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
+import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
+import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
+import { fetchFemhResearchNews } from "@/lib/server/rss/fetchFemhResearchNews";
+import { fetchIstyleLoveSexNews } from "@/lib/server/rss/fetchIstyleLoveSexNews";
+import { fetchTvbsHealthNews } from "@/lib/server/rss/fetchTvbsHealthNews";
+import { fetchUhoNews } from "@/lib/server/rss/fetchUhoNews";
+import { fetchCgmhNews } from "@/lib/server/rss/fetchCgmhNews";
+import { fetchCgmhPressNews } from "@/lib/server/rss/fetchCgmhPressNews";
+import { fetchSungfulKnowledge } from "@/lib/server/rss/fetchSungfulKnowledge";
+import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
+import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
+import { fetchTaseNews } from "@/lib/server/rss/fetchTaseNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -418,17 +433,209 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += nhiHtmlResult.skippedUnchanged;
 
-      const cultureResult = await processSpecialSource(
+      // -----------------------------------------------------------------------
+      // Phase 12: Expanded Media and Health News Special Sources
+      // -----------------------------------------------------------------------
+      const helloyishiResult = await processSpecialSource(
         {
-          code: "moc_shows" as FeedCode,
-          name: "文化部－藝文展覽與活動",
-          url: "https://cloud.culture.tw/frontsite/trans/SearchShowAction.do",
-          sourceName: "culture_tw",
+          code: "helloyishi_news",
+          name: "Hello 醫師",
+          url: "https://helloyishi.com.tw/",
+          sourceName: "helloyishi",
         },
-        fetchCultureNews,
+        fetchHelloYishiNews,
         specialSourceCtx,
       );
-      skippedUnchanged += cultureResult.skippedUnchanged;
+      skippedUnchanged += helloyishiResult.skippedUnchanged;
+
+      const mababyResult = await processSpecialSource(
+        {
+          code: "mababy_news",
+          name: "嬰兒與母親",
+          url: "https://www.mababy.com/",
+          sourceName: "mababy",
+        },
+        fetchMababyNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += mababyResult.skippedUnchanged;
+
+      const wegetcareResult = await processSpecialSource(
+        {
+          code: "wegetcare_blog",
+          name: "醫聯網",
+          url: "https://www.wegetcare.tw/blogpost",
+          sourceName: "wegetcare",
+        },
+        fetchWeGetCareNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += wegetcareResult.skippedUnchanged;
+
+      const uniqmanResult = await processSpecialSource(
+        {
+          code: "uniqman_blog",
+          name: "UNIQMAN",
+          url: "https://www.uniqman.com.tw/blogs",
+          sourceName: "uniqman",
+        },
+        fetchUniqmanBlogs,
+        specialSourceCtx,
+      );
+      skippedUnchanged += uniqmanResult.skippedUnchanged;
+
+      const sfunhkResult = await processSpecialSource(
+        {
+          code: "sfunhk_blog",
+          name: "潮性辦公室",
+          url: "https://www.sfunhk.com/blog/posts",
+          sourceName: "sfunhk",
+        },
+        fetchSfunhkPosts,
+        specialSourceCtx,
+      );
+      skippedUnchanged += sfunhkResult.skippedUnchanged;
+
+      const haruResult = await processSpecialSource(
+        {
+          code: "letsharu_article",
+          name: "HARU",
+          url: "https://letsharu.com/haruarticle/",
+          sourceName: "letsharu",
+        },
+        fetchHaruArticles,
+        specialSourceCtx,
+      );
+      skippedUnchanged += haruResult.skippedUnchanged;
+
+      const femhResult = await processSpecialSource(
+        {
+          code: "femh_research",
+          name: "亞東紀念醫院",
+          url: "https://www.femh.org.tw/research/news?class=1",
+          sourceName: "femh",
+        },
+        fetchFemhResearchNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += femhResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // Phase 13: Expanded Media & Lifestyle Health Special Sources
+      // -----------------------------------------------------------------------
+      const istyleResult = await processSpecialSource(
+        {
+          code: "istyle_lovesex",
+          name: "iStyle 兩性情愛",
+          url: "https://istyle.ltn.com.tw/love-sex",
+          sourceName: "istyle_lovesex",
+        },
+        fetchIstyleLoveSexNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += istyleResult.skippedUnchanged;
+
+      const tvbsResult = await processSpecialSource(
+        {
+          code: "tvbs_health",
+          name: "TVBS 健康2.0",
+          url: "https://health.tvbs.com.tw/",
+          sourceName: "tvbs_health",
+        },
+        fetchTvbsHealthNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += tvbsResult.skippedUnchanged;
+
+      const uhoResult = await processSpecialSource(
+        {
+          code: "uho_health",
+          name: "優活健康網",
+          url: "https://www.uho.com.tw/index.asp",
+          sourceName: "uho",
+        },
+        fetchUhoNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += uhoResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // Phase 14: Major Medical Centers (CGMH)
+      // -----------------------------------------------------------------------
+      const cgmhNewsResult = await processSpecialSource(
+        {
+          code: "cgmh_news",
+          name: "長庚紀念醫院－活動與衛教",
+          url: "https://www.cgmh.org.tw/tw/News/List/B",
+          sourceName: "cgmh",
+        },
+        fetchCgmhNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += cgmhNewsResult.skippedUnchanged;
+
+      const cgmhPressResult = await processSpecialSource(
+        {
+          code: "cgmh_press",
+          name: "長庚紀念醫院－新聞稿",
+          url: "https://www.cgmh.org.tw/tw/News/PressNewsList",
+          sourceName: "cgmh",
+        },
+        fetchCgmhPressNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += cgmhPressResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // Phase 15: Expanded Sexology, Family & Community Health Special Sources
+      // -----------------------------------------------------------------------
+      const sungfulResult = await processSpecialSource(
+        {
+          code: "sungful_knowledge",
+          name: "嵩馥性健康管理中心",
+          url: "https://www.sungful.com/knowledge",
+          sourceName: "sungful",
+        },
+        fetchSungfulKnowledge,
+        specialSourceCtx,
+      );
+      skippedUnchanged += sungfulResult.skippedUnchanged;
+
+      const mamibuyResult = await processSpecialSource(
+        {
+          code: "mamibuy_talk",
+          name: "媽咪拜",
+          url: "https://mamibuy.com.tw/talk/article/",
+          sourceName: "mamibuy",
+        },
+        fetchMamibuyArticles,
+        specialSourceCtx,
+      );
+      skippedUnchanged += mamibuyResult.skippedUnchanged;
+
+      const tascResult = await processSpecialSource(
+        {
+          code: "tasctaiwan_news",
+          name: "台灣性諮商學會",
+          url: "https://tasctaiwan.weebly.com/35506312432084421578.html",
+          sourceName: "tasctaiwan",
+        },
+        fetchTascTaiwanNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += tascResult.skippedUnchanged;
+
+      const taseResult = await processSpecialSource(
+        {
+          code: "tase_news",
+          name: "台灣性教育學會",
+          url: "https://tase.tw/news.php",
+          sourceName: "tase",
+        },
+        fetchTaseNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += taseResult.skippedUnchanged;
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;

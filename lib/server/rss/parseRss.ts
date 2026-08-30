@@ -17,9 +17,7 @@ export const parseFeedXml = (
 ): NormalizedRssItem[] => {
   const parsed = parser.parse(xml);
   const channel = parsed?.rss?.channel;
-  if (!channel) return [];
-
-  const rawItems = channel.item;
+  const rawItems = channel?.item ?? parsed?.feed?.entry;
   if (!rawItems) return [];
 
   const items = Array.isArray(rawItems) ? rawItems : [rawItems];

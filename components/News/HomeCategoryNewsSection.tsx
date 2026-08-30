@@ -12,7 +12,7 @@ interface HomeSourceCategory {
 }
 
 const ALL_CATEGORY_CARD_COUNT = 24;
-const HOME_CARD_LIMIT = 50;
+const HOME_CARD_LIMIT = 51;
 
 export default function HomeCategoryNewsSection({
   items,

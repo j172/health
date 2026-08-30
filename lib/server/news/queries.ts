@@ -59,6 +59,8 @@ export interface NewsGeoSummaryItem {
   meta_description: string | null;
 }
 
+const EXCLUDED_SOURCES = ["culture_tw", "public_art"];
+
 /** Recent items with their AI-generated GEO summaries, for llms.txt — a
  * lighter projection than NewsDetailItem since it skips html/detail text. */
 export const listRecentNewsForLlms = async (
@@ -69,6 +71,7 @@ export const listRecentNewsForLlms = async (
       `
       SELECT id, title, source_name, feed_name, dept_name, published_at_utc, geo_summary, meta_description
       FROM news_items
+      WHERE source_name NOT IN ('culture_tw', 'public_art')
       ORDER BY COALESCE(published_at_utc, created_at) DESC
       LIMIT ?
       `,
@@ -109,6 +112,7 @@ export const listRecentNewsForNewsSitemap = async (
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE n.published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+        AND n.source_name NOT IN ('culture_tw', 'public_art')
       ORDER BY n.published_at_utc DESC
       `,
       [hours],
@@ -137,6 +141,12 @@ const buildNewsFilter = (
       `n.source_name IN (${sourceNames.map(() => "?").join(", ")})`,
     );
     params.push(...sourceNames);
+  } else {
+    // When no specific source or group is requested, exclude deprecated / removed sources
+    conditions.push(
+      `n.source_name NOT IN (${EXCLUDED_SOURCES.map(() => "?").join(", ")})`,
+    );
+    params.push(...EXCLUDED_SOURCES);
   }
   if (keyword) {
     conditions.push(KEYWORD_MATCH_SQL);
@@ -236,6 +246,7 @@ export const getTopViewedNews = async (
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE n.views > 0
+          AND n.source_name NOT IN ('culture_tw', 'public_art')
           AND COALESCE(n.published_at_utc, n.created_at) >= (UTC_TIMESTAMP() - INTERVAL ? DAY)
         ORDER BY n.views DESC
         LIMIT ?
@@ -301,6 +312,7 @@ export const listNewsWithLocation = async (
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE n.lat IS NOT NULL AND n.lng IS NOT NULL
+          AND n.source_name NOT IN ('culture_tw', 'public_art')
         ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
         LIMIT ?
         `,
@@ -362,6 +374,7 @@ export const searchNewsItems = async (
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE MATCH(n.title, n.description_html, n.keywords) AGAINST(? IN BOOLEAN MODE)
+          AND n.source_name NOT IN ('culture_tw', 'public_art')
         ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
         LIMIT ?
         `,
@@ -381,7 +394,8 @@ export const searchNewsItems = async (
       SELECT ${NEWS_LIST_SELECT_SQL}
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
-      WHERE n.title LIKE ? OR n.description_html LIKE ? OR n.keywords LIKE ?
+      WHERE (n.title LIKE ? OR n.description_html LIKE ? OR n.keywords LIKE ?)
+        AND n.source_name NOT IN ('culture_tw', 'public_art')
       ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
       LIMIT ?
       `,
