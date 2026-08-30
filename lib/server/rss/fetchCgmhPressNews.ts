@@ -135,3 +135,4 @@ export const fetchCgmhPressNews = async (): Promise<CgmhPressFetchResult> => {
     };
   }
 };
+
