@@ -656,4 +656,80 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Cultural events main table (文化部藝文活動)
+  culturalEvents: `
+    CREATE TABLE IF NOT EXISTS cultural_events (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      uid VARCHAR(100) NOT NULL,
+      title VARCHAR(500) NOT NULL,
+      category VARCHAR(20) NOT NULL,
+      category_label VARCHAR(100) NOT NULL,
+      description LONGTEXT NULL,
+      image_url VARCHAR(1000) NULL,
+      master_unit VARCHAR(500) NULL,
+      start_date VARCHAR(30) NULL,
+      end_date VARCHAR(30) NULL,
+      source_web_promote VARCHAR(1000) NULL,
+      web_sales VARCHAR(1000) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cultural_event_uid (uid),
+      KEY idx_cultural_event_category (category),
+      KEY idx_cultural_event_dates (start_date, end_date),
+      KEY idx_cultural_event_updated (updated_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Cultural event shows sub-table (文化部藝文活動場次)
+  culturalEventShows: `
+    CREATE TABLE IF NOT EXISTS cultural_event_shows (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      event_id BIGINT NOT NULL,
+      show_time VARCHAR(100) NULL,
+      location VARCHAR(500) NULL,
+      location_name VARCHAR(500) NULL,
+      city VARCHAR(50) NULL,
+      on_sales VARCHAR(20) NULL,
+      price VARCHAR(500) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      end_time VARCHAR(100) NULL,
+      created_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_cultural_show_event (event_id),
+      KEY idx_cultural_show_city (city),
+      KEY idx_cultural_show_geo (lat, lng),
+      CONSTRAINT fk_cultural_show_event FOREIGN KEY (event_id)
+        REFERENCES cultural_events(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Public art installations (公共藝術資料)
+  publicArts: `
+    CREATE TABLE IF NOT EXISTS public_arts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      art_no VARCHAR(100) NOT NULL,
+      title VARCHAR(500) NOT NULL,
+      artist VARCHAR(500) NULL,
+      dimensions VARCHAR(500) NULL,
+      material VARCHAR(500) NULL,
+      city VARCHAR(50) NULL,
+      location VARCHAR(500) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      field_type VARCHAR(200) NULL,
+      description LONGTEXT NULL,
+      image_url VARCHAR(1000) NULL,
+      year VARCHAR(50) NULL,
+      source_url VARCHAR(1000) NULL,
+      agency VARCHAR(500) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_public_art_no (art_no),
+      KEY idx_public_art_city (city),
+      KEY idx_public_art_geo (lat, lng),
+      KEY idx_public_art_artist (artist(100))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

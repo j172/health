@@ -350,3 +350,4 @@ export default function CulturalEventsContent() {
     </div>
   );
 }
+

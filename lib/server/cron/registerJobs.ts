@@ -8,6 +8,8 @@ import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
+import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
+import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -110,5 +112,15 @@ export const registerCronJobs = (): void => {
     runGuarded("news-card-images-cron.log", () =>
       assignMissingNewsCardImages(15),
     ),
+  );
+  // Cultural events sync every 6 hours (at :10 past)
+  cron.schedule(
+    "10 0,6,12,18 * * *",
+    runGuarded("culture-shows-cron.log", () => runCulturalShowsSync()),
+  );
+  // Public art sync daily at 3am
+  cron.schedule(
+    "0 3 * * *",
+    runGuarded("public-art-cron.log", () => runPublicArtSync()),
   );
 };
