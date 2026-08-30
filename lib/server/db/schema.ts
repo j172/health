@@ -732,4 +732,70 @@ export const TABLE_DDL = {
       KEY idx_public_art_artist (artist(100))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // CDC travel epidemic alerts (疾管署國際旅遊疫情建議)
+  cdcTravelAlerts: `
+    CREATE TABLE IF NOT EXISTS cdc_travel_alerts (
+      id VARCHAR(100) NOT NULL,
+      alert_title VARCHAR(500) NOT NULL,
+      severity_level VARCHAR(100) NOT NULL,
+      level_code TINYINT NOT NULL DEFAULT 0,
+      disease VARCHAR(200) NOT NULL,
+      country VARCHAR(100) NOT NULL,
+      country_en VARCHAR(100) NULL,
+      instruction TEXT NULL,
+      web VARCHAR(1000) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      iso VARCHAR(10) NULL,
+      effective_at DATETIME NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_cdc_alert_level (level_code),
+      KEY idx_cdc_alert_country (country)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // CDC international epidemic news (疾管署國際重要疫情資訊)
+  cdcEpidemicNews: `
+    CREATE TABLE IF NOT EXISTS cdc_epidemic_news (
+      id VARCHAR(100) NOT NULL,
+      sent_at DATETIME NULL,
+      effective_at DATETIME NULL,
+      headline VARCHAR(500) NOT NULL,
+      description LONGTEXT NULL,
+      disease VARCHAR(200) NOT NULL,
+      country VARCHAR(100) NOT NULL,
+      country_en VARCHAR(100) NULL,
+      web VARCHAR(1000) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      iso VARCHAR(10) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_cdc_news_sent (sent_at),
+      KEY idx_cdc_news_country (country)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // Taiwan Water outages (自來水停水通知)
+  waterOutages: `
+    CREATE TABLE IF NOT EXISTS water_outages (
+      id VARCHAR(100) NOT NULL,
+      publish_time VARCHAR(100) NULL,
+      start_time DATETIME NULL,
+      end_time DATETIME NULL,
+      outage_type VARCHAR(100) NOT NULL,
+      county VARCHAR(50) NOT NULL,
+      districts VARCHAR(255) NULL,
+      reason TEXT NULL,
+      influence_area TEXT NULL,
+      supply_station VARCHAR(255) NULL,
+      is_within_one_week TINYINT(1) NOT NULL DEFAULT 1,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_water_county (county),
+      KEY idx_water_start_time (start_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

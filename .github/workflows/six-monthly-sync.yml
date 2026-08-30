@@ -106,6 +106,14 @@ jobs:
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: curl -fsS -X POST "http://127.0.0.1:18080/api/admin/culture-sync?type=all" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 
+      - name: Sync CDC Alerts and Water Outages
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: |
+          curl -fsS -X POST "http://127.0.0.1:18080/api/admin/cdc-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
+          curl -fsS -X POST "http://127.0.0.1:18080/api/admin/water-sync" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
+
       - name: Close SSH tunnel
         if: always()
         run: |
