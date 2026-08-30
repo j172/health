@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
-import { toTaipei, stripHtml } from "@/lib/format/news";
+import { toTaipei, stripHtml, displayDate } from "@/lib/format/news";
 import { useModalA11y } from "@/components/ui/useModalA11y";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -206,7 +206,7 @@ export default function SearchModal({
                           {item.feed_name}
                         </span>
                         <span className="text-[11px] text-slate-400">
-                          {toTaipei(item.published_at_utc)}
+                          {toTaipei(displayDate(item))}
                         </span>
                       </div>
                       <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-slate-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">

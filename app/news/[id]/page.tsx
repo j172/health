@@ -22,6 +22,7 @@ import NewsCard from "@/components/News/NewsCard";
 import HeroImage from "@/components/News/HeroImage";
 import NewsMapCard from "@/components/News/NewsMapCard";
 import LocalizedText from "@/components/ui/LocalizedText";
+import { displayDate } from "@/lib/format/news";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
@@ -45,7 +46,7 @@ export async function generateMetadata({
   return buildArticleMetadata(news);
 }
 
-const toTaipei = (value: Date | null): string => {
+const toTaipei = (value: Date | string | null): string => {
   if (!value) return "-";
   return new Intl.DateTimeFormat("zh-TW", {
     dateStyle: "full",
@@ -181,7 +182,7 @@ export default async function NewsDetailPage({
                   {authorLabel}
                 </span>
                 <span aria-hidden="true">•</span>
-                <time>{toTaipei(news.published_at_utc)}</time>
+                <time>{toTaipei(displayDate(news))}</time>
                 <span aria-hidden="true">•</span>
                 <span>{readingTime(news.detail_text)} 分鐘閱讀</span>
               </div>
@@ -191,7 +192,7 @@ export default async function NewsDetailPage({
             <ArticleReaderToolbar
               title={news.title}
               authorLabel={authorLabel}
-              publishDateStr={toTaipei(news.published_at_utc)}
+              publishDateStr={toTaipei(displayDate(news))}
               geoSummary={news.geo_summary}
               articleHtml={articleHtml}
             />

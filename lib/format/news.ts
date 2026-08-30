@@ -24,6 +24,24 @@ export const toTaipei = (
   );
 };
 
+/**
+ * The date to show on a card, and the one the list is ordered by:
+ * `COALESCE(published_at_utc, first_seen_at_utc)` (issue #92).
+ *
+ * Eight fetchers hardcode `publishedAtUtc: null`, so their cards used to carry
+ * no date at all while still sitting in a list sorted as if they did. Falling
+ * back to when the pipeline first saw the item is both the honest answer for
+ * those sources and the value the ingestion freshness gate judges age on, so
+ * display, sort order and the gate all agree.
+ *
+ * `display_at_utc` is selected by the news queries; the fallback covers rows
+ * built outside them (the blog feed, for one).
+ */
+export const displayDate = (item: {
+  display_at_utc?: Date | string | null;
+  published_at_utc?: Date | string | null;
+}): Date | string | null => item.display_at_utc ?? item.published_at_utc ?? null;
+
 /** Estimated reading time (minutes) for an HTML article body, based on plain-text length. */
 export const calcReadingTime = (html: string | null | undefined): number => {
   const plain = stripHtml(html);

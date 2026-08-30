@@ -1,5 +1,24 @@
 import type { FeedConfig } from "@/types/rss";
 
+/**
+ * Retired 2026-08-31 (issue #92): `love_newlife`, `greenpeace`, `healthforall`,
+ * `worldpeace`, `commonhealth_club`, `twhealth`, `durex_article`.
+ *
+ * All seven were Google News `site:` searches — a site index, not a news feed —
+ * and each returned 100 items per run of which at most 2 were published in the
+ * last 90 days; medians ran 4 to 8 years. With the freshness gate in place they
+ * would cost a fetch and a parse every 30 minutes to contribute nothing, so
+ * they are gone rather than merely filtered. The other eleven `site:` feeds stay
+ * (`ubrand_udn` alone yields 27 fresh per 100) and the gate handles their noise.
+ *
+ * Their rows in news_items are deliberately NOT deleted, so their entries in
+ * sourceLabels.ts and sourceCategories.ts stay too — the stored source_name
+ * values still need a zh-Hant label, and /news?source=twhealth still has
+ * articles to show. That is the opposite of `culture_tw`/`public_art`, which
+ * were purged from the table (see ensureSchema) and so could lose their labels
+ * as well. `types/rss.ts` keeps the FeedCode literals for the same reason: the
+ * codes persist in news_items.feed_code.
+ */
 export const RSS_FEEDS: FeedConfig[] = [
   {
     code: "16",
@@ -175,30 +194,12 @@ export const RSS_FEEDS: FeedConfig[] = [
     skipDetailFetch: true,
   },
   {
-    code: "healthforall",
-    name: "大家健康雜誌",
-    // healthforall.com.tw (董氏基金會) has no RSS feed of its own; Google
-    // News site-search fallback confirmed clean (no spam pollution, unlike edh.tw).
-    url: "https://news.google.com/rss/search?q=site:healthforall.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "healthforall",
-    skipDetailFetch: true,
-  },
-  {
     code: "ttvc",
     name: "常春月刊",
     // ttvc.com.tw has no RSS feed of its own; Google News site-search
     // fallback confirmed clean.
     url: "https://news.google.com/rss/search?q=site:ttvc.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
     sourceName: "ttvc",
-    skipDetailFetch: true,
-  },
-  {
-    code: "twhealth",
-    name: "好健康（全民健康基金會）",
-    // twhealth.org.tw has no RSS feed of its own; Google News site-search
-    // fallback confirmed clean.
-    url: "https://news.google.com/rss/search?q=site:twhealth.org.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "twhealth",
     skipDetailFetch: true,
   },
   {
@@ -227,31 +228,10 @@ export const RSS_FEEDS: FeedConfig[] = [
     skipDetailFetch: true,
   },
   {
-    code: "worldpeace",
-    name: "世界和平會",
-    url: "https://news.google.com/rss/search?q=site:worldpeace.org.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "worldpeace",
-    skipDetailFetch: true,
-  },
-  {
-    code: "greenpeace",
-    name: "綠色和平",
-    url: "https://news.google.com/rss/search?q=site:greenpeace.org/taiwan&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "greenpeace",
-    skipDetailFetch: true,
-  },
-  {
     code: "ibt",
     name: "盲人重建院",
     url: "https://news.google.com/rss/search?q=site:ibt.org.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
     sourceName: "ibt",
-    skipDetailFetch: true,
-  },
-  {
-    code: "love_newlife",
-    name: "癌友新生命協會",
-    url: "https://news.google.com/rss/search?q=site:love-newlife.org&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "love_newlife",
     skipDetailFetch: true,
   },
   {
@@ -288,24 +268,10 @@ export const RSS_FEEDS: FeedConfig[] = [
     skipDetailFetch: true,
   },
   {
-    code: "durex_article",
-    name: "杜蕾斯",
-    url: "https://news.google.com/rss/search?q=site:durex-store.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "durex",
-    skipDetailFetch: true,
-  },
-  {
     code: "ankemedia_rss",
     name: "AnkeMedia 安可人生",
     url: "https://ankemedia.com/feed",
     sourceName: "ankemedia",
-    skipDetailFetch: true,
-  },
-  {
-    code: "commonhealth_club",
-    name: "康健大人社團",
-    url: "https://news.google.com/rss/search?q=site:club.commonhealth.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "commonhealth_club",
     skipDetailFetch: true,
   },
   {

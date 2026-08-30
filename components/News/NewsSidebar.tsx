@@ -12,7 +12,7 @@ import LocalWeatherSvgWidget from "@/components/Tools/LocalWeatherSvgWidget";
 import WaterOutageSidebarWidget from "@/components/Tools/WaterOutageSidebarWidget";
 import CdcAlertSidebarWidget from "@/components/Tools/CdcAlertSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { toTaipei } from "@/lib/format/news";
+import { toTaipei, displayDate } from "@/lib/format/news";
 import { type CwaAlertItem } from "@/lib/server/cwa/queries";
 
 export default function NewsSidebar({
@@ -103,7 +103,7 @@ export default function NewsSidebar({
                   </h4>
                   <p className="mt-1 text-[11px] text-slate-400">
                     {item.feed_name} ·{" "}
-                    {toTaipei(item.published_at_utc, "short")}
+                    {toTaipei(displayDate(item), "short")}
                   </p>
                 </div>
               </article>

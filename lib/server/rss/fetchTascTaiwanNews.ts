@@ -4,6 +4,7 @@ import { httpGetText } from "@/lib/server/net/httpClient";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
 import { sha256, toAbsoluteUrl } from "@/lib/server/rss/scraperUtils";
 import { parseTaipeiDateToUtc } from "@/lib/server/rss/time";
+import { isFresh } from "@/lib/server/rss/freshness";
 
 // ---------------------------------------------------------------------------
 // 台灣性諮商學會 (tasctaiwan.weebly.com) — Professional sex counseling courses,
@@ -34,13 +35,36 @@ export interface TascTaiwanFetchResult {
   errorMessage: string | null;
 }
 
-const parseDateFromTitle = (title: string): Date | null => {
+/**
+ * Pull a date out of a title like 「2026.09.05(六)《當身體遇見社會…》」.
+ *
+ * These are course announcements, so the date in the title is the date the
+ * course *runs*, not the date the announcement went up — and this site carries
+ * no real publish date anywhere (no `<time>`, no date class, no ISO date), so
+ * there is nothing better to fall back to. The title date is therefore only
+ * usable when it is already in the past, where "the course happened on" and
+ * "this was announced by" at least point the same way.
+ *
+ * A future date is discarded rather than stored (issue #92): with the list
+ * sorted newest-first, an event date days or months ahead pins the card to the
+ * top of /news until that day passes. Returning null hands the item to
+ * `COALESCE(published_at_utc, first_seen_at_utc)`, which dates it by when we
+ * first saw it — which is exactly what an announcement's publish date is.
+ *
+ * Exported for freshness.test.mjs; not part of the fetcher's public contract.
+ */
+export const parseDateFromTitle = (
+  title: string,
+  now: Date = new Date(),
+): Date | null => {
   const match = title.match(/(\d{4})[./-](\d{1,2})[./-](\d{1,2})/);
   if (!match) return null;
   const year = match[1];
   const month = match[2].padStart(2, "0");
   const day = match[3].padStart(2, "0");
-  return parseTaipeiDateToUtc(`${year}-${month}-${day} 09:00:00`);
+  const parsed = parseTaipeiDateToUtc(`${year}-${month}-${day} 09:00:00`);
+  if (!parsed) return null;
+  return parsed.getTime() > now.getTime() ? null : parsed;
 };
 
 export const fetchTascTaiwanNews = async (): Promise<TascTaiwanFetchResult> => {
@@ -96,6 +120,13 @@ export const fetchTascTaiwanNews = async (): Promise<TascTaiwanFetchResult> => {
         const canonicalUrl = `${pageUrl}#${externalId}`;
         const sourceUrl = regLink || pageUrl;
 
+        // Dated and gated before the image download, not after. This page lists
+        // years of past 課程報導, and downloading a picture for an announcement
+        // that will be discarded seconds later is exactly the per-item load the
+        // gate exists to avoid.
+        const publishedAtUtc = parseDateFromTitle(title);
+        if (!isFresh({ publishedAtUtc })) continue;
+
         const rawImg =
           section.find("img[src*='/uploads/']").first().attr("src") ||
           section.find("img").first().attr("src") ||
@@ -116,14 +147,19 @@ export const fetchTascTaiwanNews = async (): Promise<TascTaiwanFetchResult> => {
           }
         }
 
-        const publishedAtUtc = parseDateFromTitle(title);
-
+        // publishedAtUtc is part of the hash, as it is in normalizeItem. It was
+        // left out here, which meant a stored item's date could never be
+        // corrected: the row for a course announcement dated into the future
+        // matched on hash every run and took the "unchanged" early-out, so it
+        // kept its bogus date and stayed pinned to the top of /news. Including
+        // it costs one re-persist of this source's rows, once.
         const payloadHash = sha256(
           JSON.stringify({
             title,
             canonicalUrl,
             descriptionText,
             imgSrc,
+            publishedAtUtc: publishedAtUtc?.toISOString() ?? null,
           }),
         );
 
