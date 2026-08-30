@@ -3,7 +3,7 @@ import LocalizedText from "@/components/ui/LocalizedText";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
-import { toTaipei, excerpt, calcReadingTime } from "@/lib/format/news";
+import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
 
 export default function HeroPost({
   hero,
@@ -67,7 +67,7 @@ export default function HeroPost({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-white">{authorLabel}</span>
                 <span>·</span>
-                <span>{toTaipei(hero.published_at_utc)}</span>
+                <span>{toTaipei(displayDate(hero))}</span>
                 <span>·</span>
                 <span className="inline-flex items-center gap-1">
                   <svg
@@ -112,7 +112,7 @@ export default function HeroPost({
                     {item.feed_name}
                   </span>
                   <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
-                    <span>{toTaipei(item.published_at_utc)}</span>
+                    <span>{toTaipei(displayDate(item))}</span>
                     <span aria-hidden="true">•</span>
                     <span className="inline-flex items-center gap-1">
                       <svg

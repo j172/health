@@ -10,6 +10,13 @@ export interface NewsListItem {
   title: string;
   dept_name: string | null;
   published_at_utc: Date | null;
+  /**
+   * `COALESCE(published_at_utc, first_seen_at_utc)` — the date cards display and
+   * lists sort by (issue #92). Optional because rows assembled outside these
+   * queries (the blog feed) supply `published_at_utc` only; read it through
+   * `displayDate()` in lib/format/news.ts rather than directly.
+   */
+  display_at_utc?: Date | null;
   canonical_url: string;
   description_html: string | null;
   card_image_url: string | null;
@@ -55,6 +62,8 @@ export interface NewsGeoSummaryItem {
   feed_name: string;
   dept_name: string | null;
   published_at_utc: Date | null;
+  /** See NewsListItem.display_at_utc. */
+  display_at_utc?: Date | null;
   geo_summary: string | null;
   meta_description: string | null;
 }
@@ -69,10 +78,12 @@ export const listRecentNewsForLlms = async (
   withConnectionFallback([], async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT id, title, source_name, feed_name, dept_name, published_at_utc, geo_summary, meta_description
+      SELECT id, title, source_name, feed_name, dept_name, published_at_utc,
+             COALESCE(published_at_utc, first_seen_at_utc) AS display_at_utc,
+             geo_summary, meta_description
       FROM news_items
       WHERE source_name NOT IN ('culture_tw', 'public_art')
-      ORDER BY COALESCE(published_at_utc, created_at) DESC
+      ORDER BY COALESCE(published_at_utc, first_seen_at_utc) DESC
       LIMIT ?
       `,
       [limit],
@@ -185,6 +196,7 @@ const CARD_IMAGE_SELECT_SQL = `
 
 const NEWS_LIST_SELECT_SQL = `
   n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+  COALESCE(n.published_at_utc, n.first_seen_at_utc) AS display_at_utc,
   n.canonical_url, n.description_html, n.lat, n.lng, n.location_name, n.facility_id,
   ${CARD_IMAGE_SELECT_SQL}
 `;
@@ -210,7 +222,7 @@ export const listLatestNews = async (
         FROM news_items n
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         ${whereClause}
-        ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+        ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
         LIMIT ? OFFSET ?
         `,
         [...params, limit, offset],
@@ -247,7 +259,7 @@ export const getTopViewedNews = async (
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE n.views > 0
           AND n.source_name NOT IN ('culture_tw', 'public_art')
-          AND COALESCE(n.published_at_utc, n.created_at) >= (UTC_TIMESTAMP() - INTERVAL ? DAY)
+          AND COALESCE(n.published_at_utc, n.first_seen_at_utc) >= (UTC_TIMESTAMP() - INTERVAL ? DAY)
         ORDER BY n.views DESC
         LIMIT ?
         `,
@@ -285,6 +297,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT n.id, n.source_name, n.feed_code, n.feed_name, n.title, n.dept_name, n.published_at_utc,
+             COALESCE(n.published_at_utc, n.first_seen_at_utc) AS display_at_utc,
              n.canonical_url, n.description_html, n.detail_html, n.detail_text,
              n.meta_title, n.meta_description, n.keywords, n.geo_summary,
              n.lat, n.lng, n.location_name, n.facility_id,
@@ -313,7 +326,7 @@ export const listNewsWithLocation = async (
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE n.lat IS NOT NULL AND n.lng IS NOT NULL
           AND n.source_name NOT IN ('culture_tw', 'public_art')
-        ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+        ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
         LIMIT ?
         `,
         [limit],
@@ -351,7 +364,7 @@ export const listRelatedNews = async (
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE n.source_name = ? AND n.id != ?
-      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+      ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
       LIMIT ?
       `,
       [sourceName, excludeId, limit],
@@ -375,7 +388,7 @@ export const searchNewsItems = async (
         LEFT JOIN news_card_images c ON c.news_item_id = n.id
         WHERE MATCH(n.title, n.description_html, n.keywords) AGAINST(? IN BOOLEAN MODE)
           AND n.source_name NOT IN ('culture_tw', 'public_art')
-        ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+        ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
         LIMIT ?
         `,
         [trimmed, limit],
@@ -396,7 +409,7 @@ export const searchNewsItems = async (
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE (n.title LIKE ? OR n.description_html LIKE ? OR n.keywords LIKE ?)
         AND n.source_name NOT IN ('culture_tw', 'public_art')
-      ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+      ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
       LIMIT ?
       `,
       [pattern, pattern, pattern, limit],

@@ -1,3 +1,10 @@
+// Keyed by news_items.source_name, so this table covers every source that has
+// ever been stored — not just the ones still being fetched. Seven feeds were
+// retired in issue #92 (healthforall, twhealth, worldpeace, greenpeace,
+// love_newlife, durex, commonhealth_club) and their labels stay: their articles
+// were not deleted, so those rows still need a name on the card. Contrast
+// culture_tw/public_art, whose rows ensureSchema deletes outright and which
+// therefore appear nowhere here.
 const SOURCE_LABELS: Record<string, string> = {
   mohw: "衛生福利部",
   google_news: "Google 新聞",

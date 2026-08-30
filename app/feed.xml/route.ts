@@ -1,6 +1,7 @@
 import { listRecentNewsForLlms } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import { displayDate } from "@/lib/format/news";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,7 +25,11 @@ export async function GET(): Promise<Response> {
 
   const itemsXml = items
     .map((item) => {
-      const pubDate = item.published_at_utc ? new Date(item.published_at_utc).toUTCString() : new Date().toUTCString();
+      // COALESCE(published_at_utc, first_seen_at_utc), same as the list order
+      // and the cards (issue #92). The old `?? new Date()` restamped every
+      // undated item with the current time on every request, so a reader's
+      // feed client saw the same articles arrive again and again.
+      const pubDate = new Date(displayDate(item) ?? Date.now()).toUTCString();
       const authorLabel = resolveAuthorLabel({ dept_name: item.dept_name, source_name: item.source_name, feed_name: item.feed_name });
       const summary = item.geo_summary?.trim() || item.meta_description?.trim() || item.title;
       const articleUrl = `${baseUrl}/news/${item.id}`;

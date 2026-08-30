@@ -43,6 +43,10 @@ import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
 import { fetchTaseNews } from "@/lib/server/rss/fetchTaseNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
+  FRESHNESS_WINDOW_DAYS,
+  partitionByFreshness,
+} from "@/lib/server/rss/freshness";
+import {
   getExistingPayloadHashes,
   itemKey,
   isUnchanged,
@@ -135,13 +139,15 @@ interface SpecialSourceContext {
   runId: number;
   feedResults: FeedFetchResult[];
   enrichedItems: EnrichedRssItem[];
+  /** Fixed for the whole run so every feed is judged against the same clock. */
+  now: Date;
 }
 
 const processSpecialSource = async (
   meta: SpecialSourceMeta,
   fetchFn: () => Promise<SpecialSourceFetchResult>,
   ctx: SpecialSourceContext,
-): Promise<{ skippedUnchanged: number }> => {
+): Promise<{ skippedUnchanged: number; staleRejected: number }> => {
   const result = await fetchFn();
   const feedConfig = {
     code: meta.code,
@@ -165,14 +171,22 @@ const processSpecialSource = async (
       message: result.errorMessage ?? `Unknown ${meta.name} fetch error`,
       detail: {},
     });
-    return { skippedUnchanged: 0 };
+    return { skippedUnchanged: 0, staleRejected: 0 };
   }
+
+  // Freshness gate, special-source half. These fetchers scrape their own
+  // listing pages, so their network cost is already sunk by the time we see
+  // the items — but the AI SEO call, the geo extraction and the row itself are
+  // not, and those are per-item. Gating here keeps every rejected item out of
+  // the database, which is the requirement.
+  const { fresh, rejected } = partitionByFreshness(result.items, ctx.now);
 
   ctx.feedResults.push({
     feed: feedConfig,
     ok: true,
     httpStatus: result.httpStatus,
     itemCount: result.itemCount,
+    staleRejectedCount: rejected.length,
     errorMessage: null,
   });
 
@@ -180,9 +194,9 @@ const processSpecialSource = async (
   // summary-only payload, per source) — check hashes and skip unchanged
   // items, then enrich only the new/changed ones with AI SEO, same as every
   // RSS feed item above.
-  const hashes = await getExistingPayloadHashes(result.items);
+  const hashes = await getExistingPayloadHashes(fresh);
   let skippedUnchanged = 0;
-  for (const item of result.items) {
+  for (const item of fresh) {
     if (isUnchanged(hashes, item)) {
       skippedUnchanged += 1;
       continue;
@@ -206,7 +220,7 @@ const processSpecialSource = async (
     });
   }
 
-  return { skippedUnchanged };
+  return { skippedUnchanged, staleRejected: rejected.length };
 };
 
 export const runRssIngestion = async (
@@ -218,19 +232,38 @@ export const runRssIngestion = async (
   const lockResult = await withAdvisoryLock(LOCK_NAME, 1, async () => {
     const feedResults: FeedFetchResult[] = [];
     const normalizedItems: NormalizedRssItem[] = [];
+    let staleRejected = 0;
+
+    // Everything every feed and special source handed us, before the freshness
+    // gate. `fetched` used to read normalizedItems.length, which the gate now
+    // shrinks — and which never counted the special sources in the first place,
+    // so `inserted` could exceed it. Summing feedResults covers both paths and
+    // keeps `fetched - staleRejected` equal to what the run actually processed.
+    const totalFetched = () =>
+      feedResults.reduce((sum, result) => sum + result.itemCount, 0);
 
     try {
       for (const feed of RSS_FEEDS) {
         try {
           const response = await fetchFeedXml(feed);
           const items = parseFeedXml(feed, response.xml);
-          normalizedItems.push(...items);
+
+          // Freshness gate, RSS half — the earliest point at which an item
+          // exists in a form we can judge. Everything downstream of this line
+          // is per-item and expensive: the payload-hash lookup, the
+          // detail-page fetch, the og:image download, the AI SEO call, the geo
+          // extraction and the upsert. A stale item now costs one XML parse
+          // and nothing else.
+          const { fresh, rejected } = partitionByFreshness(items, started);
+          normalizedItems.push(...fresh);
+          staleRejected += rejected.length;
 
           feedResults.push({
             feed,
             ok: true,
             httpStatus: response.status,
             itemCount: items.length,
+            staleRejectedCount: rejected.length,
             errorMessage: null,
           });
         } catch (error) {
@@ -290,6 +323,7 @@ export const runRssIngestion = async (
         runId,
         feedResults,
         enrichedItems,
+        now: started,
       };
 
       // -----------------------------------------------------------------------
@@ -306,6 +340,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += mirrorResult.skippedUnchanged;
+      staleRejected += mirrorResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // 元氣網（health.udn.com/health）— HTML ranking page (no RSS feed of its
@@ -322,6 +357,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += udnResult.skippedUnchanged;
+      staleRejected += udnResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // 環境部（MOENV）新聞專區 — JSON open-data API (not RSS/XML; handled
@@ -338,6 +374,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += moenvResult.skippedUnchanged;
+      staleRejected += moenvResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // 祝你健康（SETN）/ ETtoday健康雲 / 健康醫療網 / 50+（橘世代）— Phase 8:
@@ -355,6 +392,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += setnResult.skippedUnchanged;
+      staleRejected += setnResult.staleRejected;
 
       const ettodayResult = await processSpecialSource(
         {
@@ -367,6 +405,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += ettodayResult.skippedUnchanged;
+      staleRejected += ettodayResult.staleRejected;
 
       const healthnewsResult = await processSpecialSource(
         {
@@ -379,6 +418,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += healthnewsResult.skippedUnchanged;
+      staleRejected += healthnewsResult.staleRejected;
 
       const fiftyplusResult = await processSpecialSource(
         {
@@ -391,6 +431,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += fiftyplusResult.skippedUnchanged;
+      staleRejected += fiftyplusResult.staleRejected;
 
       const businessweeklyResult = await processSpecialSource(
         {
@@ -403,6 +444,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += businessweeklyResult.skippedUnchanged;
+      staleRejected += businessweeklyResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // 早安健康（edh.tw）— Phase 11: a Nuxt 3 __NUXT_DATA__ payload parse
@@ -420,6 +462,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += edhResult.skippedUnchanged;
+      staleRejected += edhResult.staleRejected;
 
       const nhiHtmlResult = await processSpecialSource(
         {
@@ -432,6 +475,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += nhiHtmlResult.skippedUnchanged;
+      staleRejected += nhiHtmlResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // Phase 12: Expanded Media and Health News Special Sources
@@ -447,6 +491,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += helloyishiResult.skippedUnchanged;
+      staleRejected += helloyishiResult.staleRejected;
 
       const mababyResult = await processSpecialSource(
         {
@@ -459,6 +504,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += mababyResult.skippedUnchanged;
+      staleRejected += mababyResult.staleRejected;
 
       const wegetcareResult = await processSpecialSource(
         {
@@ -471,6 +517,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += wegetcareResult.skippedUnchanged;
+      staleRejected += wegetcareResult.staleRejected;
 
       const uniqmanResult = await processSpecialSource(
         {
@@ -483,6 +530,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += uniqmanResult.skippedUnchanged;
+      staleRejected += uniqmanResult.staleRejected;
 
       const sfunhkResult = await processSpecialSource(
         {
@@ -495,6 +543,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += sfunhkResult.skippedUnchanged;
+      staleRejected += sfunhkResult.staleRejected;
 
       const haruResult = await processSpecialSource(
         {
@@ -507,6 +556,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += haruResult.skippedUnchanged;
+      staleRejected += haruResult.staleRejected;
 
       const femhResult = await processSpecialSource(
         {
@@ -519,6 +569,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += femhResult.skippedUnchanged;
+      staleRejected += femhResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // Phase 13: Expanded Media & Lifestyle Health Special Sources
@@ -534,6 +585,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += istyleResult.skippedUnchanged;
+      staleRejected += istyleResult.staleRejected;
 
       const tvbsResult = await processSpecialSource(
         {
@@ -546,6 +598,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += tvbsResult.skippedUnchanged;
+      staleRejected += tvbsResult.staleRejected;
 
       const uhoResult = await processSpecialSource(
         {
@@ -558,6 +611,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += uhoResult.skippedUnchanged;
+      staleRejected += uhoResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // Phase 14: Major Medical Centers (CGMH)
@@ -573,6 +627,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += cgmhNewsResult.skippedUnchanged;
+      staleRejected += cgmhNewsResult.staleRejected;
 
       const cgmhPressResult = await processSpecialSource(
         {
@@ -585,6 +640,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += cgmhPressResult.skippedUnchanged;
+      staleRejected += cgmhPressResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // Phase 15: Expanded Sexology, Family & Community Health Special Sources
@@ -600,6 +656,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += sungfulResult.skippedUnchanged;
+      staleRejected += sungfulResult.staleRejected;
 
       const mamibuyResult = await processSpecialSource(
         {
@@ -612,6 +669,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += mamibuyResult.skippedUnchanged;
+      staleRejected += mamibuyResult.staleRejected;
 
       const tascResult = await processSpecialSource(
         {
@@ -624,6 +682,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += tascResult.skippedUnchanged;
+      staleRejected += tascResult.staleRejected;
 
       const taseResult = await processSpecialSource(
         {
@@ -636,6 +695,7 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += taseResult.skippedUnchanged;
+      staleRejected += taseResult.staleRejected;
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;
@@ -646,14 +706,33 @@ export const runRssIngestion = async (
         startedAt: started.toISOString(),
         endedAt: ended.toISOString(),
         durationMs: ended.getTime() - started.getTime(),
-        fetched: normalizedItems.length,
+        fetched: totalFetched(),
         inserted: persisted.inserted,
         updated: persisted.updated,
         unchanged: persisted.unchanged,
         externalIdDrift: persisted.externalIdDrift,
+        staleRejected,
         failedFeeds: feedResults.filter((f) => !f.ok).length,
         feedResults,
       };
+
+      if (staleRejected > 0) {
+        // Logged rather than left in the JSON blob alone: this number is the
+        // running answer to "what is each feed actually worth?", and the feeds
+        // whose whole yield is stale are the ones to retire next.
+        const worst = [...feedResults]
+          .filter((f) => (f.staleRejectedCount ?? 0) > 0)
+          .sort((a, b) => (b.staleRejectedCount ?? 0) - (a.staleRejectedCount ?? 0))
+          .slice(0, 5)
+          .map(
+            (f) =>
+              `${f.feed.code} ${f.itemCount - (f.staleRejectedCount ?? 0)}/${f.itemCount}`,
+          )
+          .join(", ");
+        console.info(
+          `[runIngestion] freshness gate (${FRESHNESS_WINDOW_DAYS}d) rejected ${staleRejected}/${totalFetched()} items before enrichment; least productive feeds (kept/fetched): ${worst}`,
+        );
+      }
 
       await finishIngestionRun({
         runId,
@@ -684,11 +763,12 @@ export const runRssIngestion = async (
         startedAt: started.toISOString(),
         endedAt: ended.toISOString(),
         durationMs: ended.getTime() - started.getTime(),
-        fetched: normalizedItems.length,
+        fetched: totalFetched(),
         inserted: 0,
         updated: 0,
         unchanged: 0,
         externalIdDrift: 0,
+        staleRejected,
         failedFeeds: Math.max(1, feedResults.filter((f) => !f.ok).length),
         feedResults,
       };
@@ -723,6 +803,7 @@ export const runRssIngestion = async (
       updated: 0,
       unchanged: 0,
       externalIdDrift: 0,
+      staleRejected: 0,
       failedFeeds: 1,
       feedResults: [],
     };

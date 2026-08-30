@@ -3,7 +3,7 @@ import LocalizedText from "@/components/ui/LocalizedText";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
-import { toTaipei, excerpt, calcReadingTime } from "@/lib/format/news";
+import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
 import CardThumb from "@/components/News/CardThumb";
 
 export default function NewsCard({
@@ -49,7 +49,7 @@ export default function NewsCard({
             </Link>
           </h3>
           <p className="mt-1 text-[11px] text-slate-400">
-            {toTaipei(item.published_at_utc)}
+            {toTaipei(displayDate(item))}
           </p>
         </div>
       </article>
@@ -84,7 +84,7 @@ export default function NewsCard({
             ) : null}
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
-            <span>{toTaipei(item.published_at_utc)}</span>
+            <span>{toTaipei(displayDate(item))}</span>
             <span aria-hidden="true">•</span>
             <span className="inline-flex items-center gap-1">
               <svg

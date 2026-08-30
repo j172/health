@@ -2,13 +2,14 @@ import { listRecentNewsForLlms } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { displayDate } from "@/lib/format/news";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_ITEMS = 100;
 
-const formatDate = (value: Date | null): string | null => {
+const formatDate = (value: Date | string | null): string | null => {
   if (!value) return null;
   return new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium", timeZone: "Asia/Taipei" }).format(new Date(value));
 };
@@ -60,7 +61,7 @@ export async function GET(): Promise<Response> {
 
   for (const item of items) {
     const label = resolveAuthorLabel({ dept_name: item.dept_name, source_name: item.source_name, feed_name: item.feed_name });
-    const date = formatDate(item.published_at_utc);
+    const date = formatDate(displayDate(item));
     const summary = item.geo_summary?.trim() || item.meta_description?.trim() || "";
     lines.push(`### ${item.title}`);
     lines.push(`- 網址: ${baseUrl}/news/${item.id}`);

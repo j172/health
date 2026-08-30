@@ -1,3 +1,10 @@
+/**
+ * Every feed_code that can appear in news_items, including seven no longer
+ * fetched — `healthforall`, `twhealth`, `worldpeace`, `greenpeace`,
+ * `love_newlife`, `durex_article`, `commonhealth_club` — retired from
+ * RSS_FEEDS in issue #92. Their rows stay in the table, so their codes stay in
+ * the union; see the comment above RSS_FEEDS.
+ */
 export type FeedCode =
   | "16"
   | "17"
@@ -134,7 +141,15 @@ export interface FeedFetchResult {
   feed: FeedConfig;
   ok: boolean;
   httpStatus: number | null;
+  /** Items the feed handed us, before the freshness gate. */
   itemCount: number;
+  /**
+   * How many of `itemCount` the freshness gate discarded. Recorded per feed so
+   * the run summary shows what each feed actually contributes rather than what
+   * it returns — the difference is the whole case against the Google `site:`
+   * search feeds, and nothing was counting it before.
+   */
+  staleRejectedCount?: number;
   errorMessage: string | null;
 }
 
@@ -155,6 +170,12 @@ export interface IngestionSummary {
    * ~1374 per run while almost no new articles appeared.
    */
   externalIdDrift: number;
+  /**
+   * Items the freshness gate discarded before any detail fetch, image download,
+   * AI SEO call or database write. `fetched` still counts everything the feeds
+   * handed us, so `fetched - staleRejected` is what the run actually processed.
+   */
+  staleRejected: number;
   failedFeeds: number;
   feedResults: FeedFetchResult[];
 }

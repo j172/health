@@ -10,7 +10,16 @@ export interface SourceCategory {
   sources: SourceLink[];
 }
 
-/** Groups source_name values for the nav dropdowns and the /news?group= archive filter; labels match lib/server/news/sourceLabels.ts. */
+/**
+ * Groups source_name values for the nav dropdowns and the /news?group= archive
+ * filter; labels match lib/server/news/sourceLabels.ts.
+ *
+ * healthforall, twhealth, worldpeace, greenpeace, love_newlife, durex and
+ * commonhealth_club are no longer fetched (seven dead Google `site:` feeds
+ * retired in issue #92) but stay listed: this is an archive filter over
+ * news_items, their rows were not deleted, and dropping them from the nav would
+ * leave those articles reachable only by search.
+ */
 export const SOURCE_CATEGORIES: SourceCategory[] = [
   {
     key: "gov",
