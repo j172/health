@@ -322,4 +322,23 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "vghtpe",
     skipDetailFetch: true,
   },
+  {
+    code: "udn_woman",
+    name: "udn 女子漾",
+    url: "https://woman.udn.com/woman/rssfeed/123166",
+    sourceName: "udn_woman",
+    skipDetailFetch: true,
+  },
+  {
+    code: "ilady_life",
+    name: "iLady 愛女也",
+    url: "https://ilady.life/feed/",
+    sourceName: "ilady",
+  },
+  {
+    code: "lianhonghong",
+    name: "臉紅紅",
+    url: "https://feeds.feedburner.com/lianhonghong",
+    sourceName: "lianhonghong",
+  },
 ];

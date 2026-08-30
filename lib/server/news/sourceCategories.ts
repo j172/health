@@ -76,6 +76,13 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "istyle_lovesex", label: "iStyle 兩性情愛" },
       { sourceName: "tvbs_health", label: "TVBS 健康2.0" },
       { sourceName: "uho", label: "優活健康網" },
+      { sourceName: "udn_woman", label: "udn 女子漾" },
+      { sourceName: "ilady", label: "iLady 愛女也" },
+      { sourceName: "lianhonghong", label: "臉紅紅" },
+      { sourceName: "sungful", label: "嵩馥性健康管理中心" },
+      { sourceName: "mamibuy", label: "媽咪拜" },
+      { sourceName: "tasctaiwan", label: "台灣性諮商學會" },
+      { sourceName: "tase", label: "台灣性教育學會" },
     ],
   },
 ];

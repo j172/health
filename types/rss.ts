@@ -66,7 +66,14 @@ export type FeedCode =
   | "uho_health"
   | "cgmh_news"
   | "cgmh_press"
-  | "vghtpe_news";
+  | "vghtpe_news"
+  | "udn_woman"
+  | "ilady_life"
+  | "lianhonghong"
+  | "sungful_knowledge"
+  | "mamibuy_talk"
+  | "tasctaiwan_news"
+  | "tase_news";
 
 export interface FeedConfig {
   code: FeedCode;

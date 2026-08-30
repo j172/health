@@ -55,6 +55,13 @@ const SOURCE_LABELS: Record<string, string> = {
   uho: "優活健康網",
   cgmh: "長庚紀念醫院",
   vghtpe: "臺北榮總",
+  udn_woman: "udn 女子漾",
+  ilady: "iLady 愛女也",
+  lianhonghong: "臉紅紅",
+  sungful: "嵩馥性健康管理中心",
+  mamibuy: "媽咪拜",
+  tasctaiwan: "台灣性諮商學會",
+  tase: "台灣性教育學會",
 };
 
 export interface SourceLabelInput {

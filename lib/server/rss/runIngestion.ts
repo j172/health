@@ -37,6 +37,10 @@ import { fetchTvbsHealthNews } from "@/lib/server/rss/fetchTvbsHealthNews";
 import { fetchUhoNews } from "@/lib/server/rss/fetchUhoNews";
 import { fetchCgmhNews } from "@/lib/server/rss/fetchCgmhNews";
 import { fetchCgmhPressNews } from "@/lib/server/rss/fetchCgmhPressNews";
+import { fetchSungfulKnowledge } from "@/lib/server/rss/fetchSungfulKnowledge";
+import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
+import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
+import { fetchTaseNews } from "@/lib/server/rss/fetchTaseNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -582,6 +586,56 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += cgmhPressResult.skippedUnchanged;
 
+      // -----------------------------------------------------------------------
+      // Phase 15: Expanded Sexology, Family & Community Health Special Sources
+      // -----------------------------------------------------------------------
+      const sungfulResult = await processSpecialSource(
+        {
+          code: "sungful_knowledge",
+          name: "嵩馥性健康管理中心",
+          url: "https://www.sungful.com/knowledge",
+          sourceName: "sungful",
+        },
+        fetchSungfulKnowledge,
+        specialSourceCtx,
+      );
+      skippedUnchanged += sungfulResult.skippedUnchanged;
+
+      const mamibuyResult = await processSpecialSource(
+        {
+          code: "mamibuy_talk",
+          name: "媽咪拜",
+          url: "https://mamibuy.com.tw/talk/article/",
+          sourceName: "mamibuy",
+        },
+        fetchMamibuyArticles,
+        specialSourceCtx,
+      );
+      skippedUnchanged += mamibuyResult.skippedUnchanged;
+
+      const tascResult = await processSpecialSource(
+        {
+          code: "tasctaiwan_news",
+          name: "台灣性諮商學會",
+          url: "https://tasctaiwan.weebly.com/35506312432084421578.html",
+          sourceName: "tasctaiwan",
+        },
+        fetchTascTaiwanNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += tascResult.skippedUnchanged;
+
+      const taseResult = await processSpecialSource(
+        {
+          code: "tase_news",
+          name: "台灣性教育學會",
+          url: "https://tase.tw/news.php",
+          sourceName: "tase",
+        },
+        fetchTaseNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += taseResult.skippedUnchanged;
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;
