@@ -44,7 +44,20 @@ export type FeedCode =
   | "ibt"
   | "love_newlife"
   | "nhi_web"
-  | "blog_j172";
+  | "blog_j172"
+  | "cdc_outbreak"
+  | "cdc_letters"
+  | "womenshealth_tw"
+  | "ntuh_news"
+  | "ntuh_ifc_news"
+  | "durex_article"
+  | "helloyishi_news"
+  | "mababy_news"
+  | "wegetcare_blog"
+  | "uniqman_blog"
+  | "sfunhk_blog"
+  | "letsharu_article"
+  | "femh_research";
 
 export interface FeedConfig {
   code: FeedCode;

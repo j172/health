@@ -25,6 +25,13 @@ import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthN
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
 import { fetchNhiNewsHtml } from "@/lib/server/rss/fetchNhiNews";
+import { fetchHelloYishiNews } from "@/lib/server/rss/fetchHelloYishiNews";
+import { fetchMababyNews } from "@/lib/server/rss/fetchMababyNews";
+import { fetchWeGetCareNews } from "@/lib/server/rss/fetchWeGetCareNews";
+import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
+import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
+import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
+import { fetchFemhResearchNews } from "@/lib/server/rss/fetchFemhResearchNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -416,6 +423,93 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += nhiHtmlResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // Phase 12: Expanded Media and Health News Special Sources
+      // -----------------------------------------------------------------------
+      const helloyishiResult = await processSpecialSource(
+        {
+          code: "helloyishi_news",
+          name: "Hello 醫師",
+          url: "https://helloyishi.com.tw/",
+          sourceName: "helloyishi",
+        },
+        fetchHelloYishiNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += helloyishiResult.skippedUnchanged;
+
+      const mababyResult = await processSpecialSource(
+        {
+          code: "mababy_news",
+          name: "嬰兒與母親",
+          url: "https://www.mababy.com/",
+          sourceName: "mababy",
+        },
+        fetchMababyNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += mababyResult.skippedUnchanged;
+
+      const wegetcareResult = await processSpecialSource(
+        {
+          code: "wegetcare_blog",
+          name: "醫聯網",
+          url: "https://www.wegetcare.tw/blogpost",
+          sourceName: "wegetcare",
+        },
+        fetchWeGetCareNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += wegetcareResult.skippedUnchanged;
+
+      const uniqmanResult = await processSpecialSource(
+        {
+          code: "uniqman_blog",
+          name: "UNIQMAN",
+          url: "https://www.uniqman.com.tw/blogs",
+          sourceName: "uniqman",
+        },
+        fetchUniqmanBlogs,
+        specialSourceCtx,
+      );
+      skippedUnchanged += uniqmanResult.skippedUnchanged;
+
+      const sfunhkResult = await processSpecialSource(
+        {
+          code: "sfunhk_blog",
+          name: "潮性辦公室",
+          url: "https://www.sfunhk.com/blog/posts",
+          sourceName: "sfunhk",
+        },
+        fetchSfunhkPosts,
+        specialSourceCtx,
+      );
+      skippedUnchanged += sfunhkResult.skippedUnchanged;
+
+      const haruResult = await processSpecialSource(
+        {
+          code: "letsharu_article",
+          name: "HARU",
+          url: "https://letsharu.com/haruarticle/",
+          sourceName: "letsharu",
+        },
+        fetchHaruArticles,
+        specialSourceCtx,
+      );
+      skippedUnchanged += haruResult.skippedUnchanged;
+
+      const femhResult = await processSpecialSource(
+        {
+          code: "femh_research",
+          name: "亞東紀念醫院",
+          url: "https://www.femh.org.tw/research/news?class=1",
+          sourceName: "femh",
+        },
+        fetchFemhResearchNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += femhResult.skippedUnchanged;
 
 
       const persisted = await persistItems(enrichedItems);

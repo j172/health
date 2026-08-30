@@ -36,6 +36,17 @@ const SOURCE_LABELS: Record<string, string> = {
   ibt: "盲人重建院",
   love_newlife: "癌友新生命協會",
   water_gov: "台灣自來水公司",
+  womenshealth: "Women's Health 美力圈",
+  ntuh: "臺大醫院",
+  ntuh_ifc: "臺大整合醫療",
+  durex: "杜蕾斯",
+  helloyishi: "Hello 醫師",
+  mababy: "嬰兒與母親",
+  wegetcare: "醫聯網",
+  uniqman: "UNIQMAN",
+  sfunhk: "潮性辦公室",
+  letsharu: "HARU",
+  femh: "亞東紀念醫院",
 };
 
 export interface SourceLabelInput {
