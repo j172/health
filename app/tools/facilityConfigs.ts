@@ -254,17 +254,4 @@ export const facilitySearchConfigs = {
     serviceItem: { label: "管轄單位與窗口：" },
     showGeocodeNote: true,
   },
-  "tax-organizations": {
-    facilityType: "tax_organization",
-    emoji: "🏢",
-    title: "非營利組織(NPO)查詢",
-    description:
-      "查詢全國非營利組織（NPO）、機關團體、協會、社會福利慈善財團法人與管委會名冊。資料來源：財政部財政資訊中心開放資料。本表已支援地址自動地理定位與附近搜尋。",
-    searchPlaceholder: "輸入 8 碼統一編號、組織名稱或所在縣市",
-    errorText: "查詢非營利組織資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無已收錄的非營利組織，可輸入統一編號、機構團體名稱或縣市關鍵字搜尋。",
-    emptyStateWithKeyword: "查無符合的非營利組織。",
-    serviceItem: { label: "異動狀態與事由：" },
-    showGeocodeNote: true,
-  },
 } satisfies Record<string, FacilitySearchConfig>;

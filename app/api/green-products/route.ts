@@ -5,7 +5,14 @@ import {
   getGreenProductCategories,
 } from "@/lib/server/greenProducts/queries";
 
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+const NO_CACHE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
@@ -13,12 +20,12 @@ export async function GET(request: NextRequest) {
   if (params.get("categories") === "true") {
     try {
       const categories = await getGreenProductCategories();
-      return NextResponse.json({ categories });
+      return NextResponse.json({ categories }, { headers: NO_CACHE_HEADERS });
     } catch (error) {
       console.error("GET /api/green-products?categories=true failed:", error);
       return NextResponse.json(
         { error: "查詢產品類別失敗" },
-        { status: 502 },
+        { status: 502, headers: NO_CACHE_HEADERS },
       );
     }
   }
@@ -32,12 +39,12 @@ export async function GET(request: NextRequest) {
         ? await searchGreenProducts({ keyword, classType: category, limit: 50 })
         : await getRecentGreenProducts(30);
 
-    return NextResponse.json({ products });
+    return NextResponse.json({ products }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error("GET /api/green-products failed:", error);
     return NextResponse.json(
       { error: "查詢環保產品資料失敗" },
-      { status: 502 },
+      { status: 502, headers: NO_CACHE_HEADERS },
     );
   }
 }

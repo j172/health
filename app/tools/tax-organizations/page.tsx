@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
-import { facilitySearchConfigs } from "../facilityConfigs";
+import TaxOrganizationsContent from "./TaxOrganizationsContent";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -22,8 +21,8 @@ export const metadata: Metadata = {
 
 export default function TaxOrganizationsPage() {
   return (
-    <ToolPageShell slug="tax-organizations" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs["tax-organizations"]} />
+    <ToolPageShell slug="tax-organizations" title={catalogEntry.title} maxWidthClassName="max-w-4xl">
+      <TaxOrganizationsContent />
     </ToolPageShell>
   );
 }
