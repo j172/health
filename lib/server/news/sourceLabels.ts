@@ -53,6 +53,8 @@ const SOURCE_LABELS: Record<string, string> = {
   istyle_lovesex: "iStyle 兩性情愛",
   tvbs_health: "TVBS 健康2.0",
   uho: "優活健康網",
+  cgmh: "長庚紀念醫院",
+  vghtpe: "臺北榮總",
 };
 
 export interface SourceLabelInput {

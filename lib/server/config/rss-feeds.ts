@@ -323,4 +323,11 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "health_gvm",
     skipDetailFetch: true,
   },
+  {
+    code: "vghtpe_news",
+    name: "臺北榮總",
+    url: "https://news.google.com/rss/search?q=site:vghtpe.gov.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "vghtpe",
+    skipDetailFetch: true,
+  },
 ];

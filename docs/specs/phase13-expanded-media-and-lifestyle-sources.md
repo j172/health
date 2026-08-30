@@ -38,3 +38,4 @@ Adds 6 additional high-impact media and lifestyle health sources to the platform
 - `fetchIstyleLoveSexNews.ts`: Parses `article/{id}` links from `https://istyle.ltn.com.tw/love-sex`.
 - `fetchTvbsHealthNews.ts`: Parses `/medical/`, `/nutrition/`, `/regimen/` links from `https://health.tvbs.com.tw/`.
 - `fetchUhoNews.ts`: Parses `article-{id}.html` links from `https://www.uho.com.tw/index.asp`.
+

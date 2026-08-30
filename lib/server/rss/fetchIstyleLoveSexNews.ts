@@ -143,3 +143,4 @@ export const fetchIstyleLoveSexNews = async (): Promise<IstyleLoveSexFetchResult
     };
   }
 };
+

@@ -26,6 +26,8 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "ntuh", label: "臺大醫院" },
       { sourceName: "ntuh_ifc", label: "臺大整合醫療" },
       { sourceName: "femh", label: "亞東紀念醫院" },
+      { sourceName: "cgmh", label: "長庚紀念醫院" },
+      { sourceName: "vghtpe", label: "臺北榮總" },
     ],
   },
   {

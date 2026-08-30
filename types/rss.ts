@@ -63,7 +63,10 @@ export type FeedCode =
   | "gvm_health_rss"
   | "istyle_lovesex"
   | "tvbs_health"
-  | "uho_health";
+  | "uho_health"
+  | "cgmh_news"
+  | "cgmh_press"
+  | "vghtpe_news";
 
 export interface FeedConfig {
   code: FeedCode;

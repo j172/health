@@ -35,6 +35,8 @@ import { fetchFemhResearchNews } from "@/lib/server/rss/fetchFemhResearchNews";
 import { fetchIstyleLoveSexNews } from "@/lib/server/rss/fetchIstyleLoveSexNews";
 import { fetchTvbsHealthNews } from "@/lib/server/rss/fetchTvbsHealthNews";
 import { fetchUhoNews } from "@/lib/server/rss/fetchUhoNews";
+import { fetchCgmhNews } from "@/lib/server/rss/fetchCgmhNews";
+import { fetchCgmhPressNews } from "@/lib/server/rss/fetchCgmhPressNews";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   getExistingPayloadHashes,
@@ -552,6 +554,33 @@ export const runRssIngestion = async (
         specialSourceCtx,
       );
       skippedUnchanged += uhoResult.skippedUnchanged;
+
+      // -----------------------------------------------------------------------
+      // Phase 14: Major Medical Centers (CGMH)
+      // -----------------------------------------------------------------------
+      const cgmhNewsResult = await processSpecialSource(
+        {
+          code: "cgmh_news",
+          name: "長庚紀念醫院－活動與衛教",
+          url: "https://www.cgmh.org.tw/tw/News/List/B",
+          sourceName: "cgmh",
+        },
+        fetchCgmhNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += cgmhNewsResult.skippedUnchanged;
+
+      const cgmhPressResult = await processSpecialSource(
+        {
+          code: "cgmh_press",
+          name: "長庚紀念醫院－新聞稿",
+          url: "https://www.cgmh.org.tw/tw/News/PressNewsList",
+          sourceName: "cgmh",
+        },
+        fetchCgmhPressNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += cgmhPressResult.skippedUnchanged;
 
 
       const persisted = await persistItems(enrichedItems);
