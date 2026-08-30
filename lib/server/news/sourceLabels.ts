@@ -36,8 +36,6 @@ const SOURCE_LABELS: Record<string, string> = {
   ibt: "盲人重建院",
   love_newlife: "癌友新生命協會",
   water_gov: "台灣自來水公司",
-  culture_tw: "文化部",
-  public_art: "公共藝術",
 };
 
 export interface SourceLabelInput {

@@ -23,7 +23,6 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "nhi", label: "中央健康保險署" },
       { sourceName: "moenv", label: "環境部" },
       { sourceName: "water_gov", label: "台灣自來水公司" },
-      { sourceName: "culture_tw", label: "文化部" },
     ],
   },
   {
@@ -58,7 +57,6 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "greenpeace", label: "綠色和平" },
       { sourceName: "ibt", label: "盲人重建院" },
       { sourceName: "love_newlife", label: "癌友新生命協會" },
-      { sourceName: "public_art", label: "公共藝術" },
     ],
   },
 ];
