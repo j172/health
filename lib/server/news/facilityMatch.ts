@@ -64,6 +64,91 @@ function shortestNamed<T extends FacilityNameRow>(
 }
 
 /**
+ * True when `general` is the less specific way of naming `specific` — every
+ * character of the shorter name appears, in order, inside the longer one.
+ *
+ * This is what distinguishes 「一家醫院，兩條 regex」 from 「兩家醫院」. The alias
+ * table deliberately carries both a branch entry and a bare family entry for
+ * two families, and both fire on the same words:
+ *
+ *   「淡水馬偕紀念醫院」  → /淡水馬偕/            and /馬偕醫院|馬偕紀念醫院/
+ *   「三軍總醫院北投分院」 → /三總北投|三軍總醫院北投/ and /三軍總醫院|三總/
+ *
+ * Substring containment is not enough to see it, because the registry names
+ * these rows carry interleave the distinguishing word rather than prefixing it:
+ * `台灣基督長老教會馬偕醫療財團法人馬偕紀念醫院` is not a substring of
+ * `…財團法人淡水馬偕紀念醫院` (the 淡水 lands mid-string), and
+ * `三軍總醫院附設民眾診療服務處` is not a substring of
+ * `三軍總醫院北投分院附設民眾診療服務處` (分院 splits it). Subsequence sees both.
+ *
+ * The looseness is bounded and measured: across the 53 alias entries this
+ * relation holds for exactly seven pairs — the four 三軍總醫院 branches and the
+ * three city-prefixed 馬偕 branches, each against its own family's bare entry —
+ * and for no pair of genuinely different institutions. 臺北 vs 臺中榮民總醫院,
+ * 衛生福利部臺中醫院 vs 臺中榮民總醫院 and every 長庚/慈濟 sibling pair are all
+ * correctly unrelated.
+ */
+function isMoreSpecificThan(specific: string, general: string): boolean {
+  if (general.length >= specific.length) return false;
+  let cursor = 0;
+  for (const char of specific) {
+    if (char === general[cursor]) cursor += 1;
+    if (cursor === general.length) return true;
+  }
+  return false;
+}
+
+/**
+ * Reduces every tier-1 hit found in one article to the single institution that
+ * article identifies, or null when it identifies several (issue #87).
+ *
+ * `extractLocationFromText` used to walk the alias table and return on the
+ * FIRST regex that matched, so an article naming 臺中榮總, 高雄長庚 and 部立桃園
+ * was sent to 臺中榮總 for no better reason than that 臺中榮民總醫院 sits at
+ * entry 3 and the other two further down. Position in a hand-written table is
+ * not relevance.
+ *
+ * The rule, applied to the resolved rows rather than to the regexes:
+ *
+ *  1. Drop any institution that another, more specific one subsumes. Two
+ *     patterns firing on the same words (see isMoreSpecificThan) is one
+ *     hospital, not two, and the specific name is the one the article says.
+ *  2. If exactly one distinct institution survives, use it.
+ *  3. If several survive, decline. Same uniqueness principle #65 established
+ *     for districts and #84 for rows within one searchName: a tier is used only
+ *     when it identifies one place. The caller falls through to the
+ *     district/county tiers rather than guessing.
+ *
+ * Deliberately NOT a frequency or position heuristic. With three hospitals
+ * named side by side, mention count does not track which one the article is
+ * about, and it would make the landmark flip on trivial rewording.
+ *
+ * Deliberately NOT a collapse-siblings-to-the-parent rule either: #84 measured
+ * that no exact-name row exists for 佛教慈濟醫療財團法人, 長庚醫療財團法人 or
+ * 三軍總醫院, so an article on 大林慈濟 and 斗六慈濟 has no parent row to be
+ * redirected to and declines like any other multi-institution article.
+ */
+export function selectUniqueInstitution<T extends FacilityNameRow>(
+  resolved: readonly T[],
+): T | null {
+  if (resolved.length === 0) return null;
+
+  // Same institution reached through two aliases is one institution.
+  const byName = new Map<string, T>();
+  for (const row of resolved) {
+    if (!byName.has(row.name)) byName.set(row.name, row);
+  }
+  const names = [...byName.keys()];
+
+  const survivors = names.filter(
+    (name) => !names.some((other) => isMoreSpecificThan(other, name)),
+  );
+
+  if (survivors.length !== 1) return null;
+  return byName.get(survivors[0]) ?? null;
+}
+
+/**
  * Prominent hospitals and their aliases as they appear in news copy.
  *
  * Two rules hold for every entry, and both were violated before #84:
@@ -80,8 +165,11 @@ function shortestNamed<T extends FacilityNameRow>(
  *    does not (a bare 長庚醫院) there is deliberately no entry, and the
  *    waterfall falls through rather than guessing.
  *
- * Order matters: the first matching regex wins, so branch entries precede the
- * parent ones. A lookup that finds nothing falls through to the next entry.
+ * Order no longer decides anything (#87). Every matching entry is collected and
+ * handed to selectUniqueInstitution, which keeps the specific branch over the
+ * bare family entry and declines when two genuinely different hospitals are
+ * named. Branch entries are still listed before their family's bare entry, but
+ * now only for readability. A lookup that finds no row contributes nothing.
  */
 export const COMMON_HOSPITAL_PATTERNS: {
   regex: RegExp;
