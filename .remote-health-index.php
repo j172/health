@@ -46,6 +46,179 @@ $opsKey = $readEnvVar('OPS_KEY');
 // erroring — this endpoint's core self-heal job must never depend on
 // notification config being present.
 $ntfyUrl = ($ntfyTopic = $readEnvVar('NTFY_TOPIC')) !== '' ? 'https://ntfy.sh/' . rawurlencode($ntfyTopic) : '';
+
+// ---------------------------------------------------------------------------
+// NPROC gate — issue #98 / SPEC-HEALTH-20260831-PM2-PROLIFERATION
+//
+// The account's NPROC limit is 100 (hosting support, in writing; the "20 Entry
+// Processes" figure in older notes is a *different* CloudLinux limit and is not
+// the one that blows). Every pm2 CLI call that cannot reach the live daemon
+// starts another daemon, and the watchdog's failure path made five such calls
+// every five minutes for as long as the app stayed down. Over the 4h39m outage
+// of 2026-08-31 that is ~56 escalations x 5 spawns: the daemons then held the
+// slots the next escalation needed, so the recovery mechanism became the load.
+//
+// So: before anything that spawns a process, count this account's processes and
+// refuse to spawn when the table is already crowded. The count MUST be readable
+// when nothing can fork — that is the only condition it exists for — so it comes
+// from listing /proc and reading /proc/<pid>/status, which are a directory read
+// and a file read. Nothing here shells out to ps, wc, pgrep or anything else.
+//
+// This is deliberately NOT a "give up after N failures" cap (explicitly rejected
+// in the spec): the gate closes only while the process table is actually full
+// and reopens by itself the moment the count drops, so a recoverable app whose
+// process table is healthy is never abandoned.
+$nprocLimit = 100;
+// Headroom threshold. Reasoning for 70:
+//   * The ceiling has to sit far enough below 100 that a *permitted* escalation
+//     can still complete. One escalation costs up to 5 pm2 spawns, and the
+//     apply-prebuilt run it may trigger costs a wrapper shell plus tar / node /
+//     pm2 start / curl at ~10-15 concurrent tasks at peak. 100 - 70 = 30 slots
+//     is enough for that plus the lsphp workers that must keep serving this very
+//     request; a tighter ceiling would leave a permitted escalation unable to
+//     finish, which is the failure we are removing.
+//   * It has to sit far enough ABOVE the legitimate steady state that it never
+//     blocks a healthy account. Legitimate occupants: the Next.js app and its
+//     node threads, the pm2 God Daemon, one ProcessContainerFork per app,
+//     pm2-logrotate, the second site (bid-web), the cron shells and the lsphp
+//     workers — realistically 25-40. At 70 the account is roughly twice its
+//     healthy baseline, which is accumulation, not load.
+//   * 70 is reached, in the observed incident, long before the table is full,
+//     so the gate fires while there is still room to reap and recover rather
+//     than at the point where nothing can be done at all.
+$nprocEscalationCeiling = 70;
+
+// Reads one "Key:\tvalue" line out of a /proc status-style file. A file read;
+// it spawns nothing. $maxLen keeps this cheap when it runs over every pid.
+$readProcField = static function (string $file, string $key, int $maxLen = 8192): ?string {
+    $raw = @file_get_contents($file, false, null, 0, $maxLen);
+    if (!is_string($raw) || $raw === '') {
+        return null;
+    }
+    $keyLen = strlen($key);
+    foreach (explode("\n", $raw) as $line) {
+        if (strncmp($line, $key, $keyLen) === 0) {
+            return trim(substr($line, $keyLen));
+        }
+    }
+    return null;
+};
+
+// This process's real uid, from /proc/self/status — not posix_getuid(), which
+// lives in the same ext-posix whose availability is exactly what #97 says we
+// cannot assume. getmyuid() (the owner of this script file) is only a fallback.
+$ownUid = static function () use ($readProcField): ?int {
+    static $uid = false;
+    if ($uid !== false) {
+        return $uid;
+    }
+    $uid = null;
+    $line = $readProcField('/proc/self/status', 'Uid:');
+    if ($line !== null) {
+        $parts = preg_split('/\s+/', $line) ?: [];
+        if (isset($parts[0]) && ctype_digit($parts[0])) {
+            $uid = (int) $parts[0];
+        }
+    }
+    if ($uid === null) {
+        $fallback = @getmyuid();
+        if (is_int($fallback) && $fallback >= 0) {
+            $uid = $fallback;
+        }
+    }
+    return $uid;
+};
+
+// Every process owned by this account, read straight out of /proc. Returns null
+// — never a wrong number — when the answer cannot be trusted, so every caller
+// can fail OPEN: a gate that blocks on a bad reading would keep a recoverable
+// app down, which is worse than the problem it guards against.
+//
+// 'age' comes from the mtime of /proc/<pid>, which on Linux is the process start
+// time. A stat(), so still no fork.
+$scanOwnProcesses = static function () use ($ownUid, $readProcField): ?array {
+    $uid = $ownUid();
+    if ($uid === null) {
+        return null;
+    }
+    $entries = @glob('/proc/[0-9]*', GLOB_ONLYDIR);
+    if (!is_array($entries) || $entries === []) {
+        return null;
+    }
+    if (count($entries) > 4000) {
+        // /proc is not namespaced for this account the way we assume; a count
+        // taken here would not mean what the gate thinks it means.
+        return null;
+    }
+    clearstatcache();
+    $now = time();
+    $procs = [];
+    foreach ($entries as $dir) {
+        $pid = (int) basename($dir);
+        if ($pid <= 0) {
+            continue;
+        }
+        $statusFile = $dir . '/status';
+        $uidLine = $readProcField($statusFile, 'Uid:');
+        if ($uidLine === null) {
+            continue; // exited between the glob and the read, or not ours to read
+        }
+        $uidParts = preg_split('/\s+/', $uidLine) ?: [];
+        if (!isset($uidParts[0]) || (int) $uidParts[0] !== $uid) {
+            continue;
+        }
+        $cmdRaw = @file_get_contents($dir . '/cmdline', false, null, 0, 4096);
+        $cmdline = is_string($cmdRaw) ? trim(str_replace("\0", ' ', $cmdRaw)) : '';
+        if ($cmdline === '') {
+            $name = $readProcField($statusFile, 'Name:');
+            $cmdline = '[' . ($name === null ? 'unknown' : $name) . ']';
+        }
+        $ppidLine = $readProcField($statusFile, 'PPid:');
+        $started = @filemtime($dir);
+        $procs[] = [
+            'pid' => $pid,
+            'ppid' => $ppidLine === null ? 0 : (int) $ppidLine,
+            'cmdline' => $cmdline,
+            'age' => is_int($started) ? max(0, $now - $started) : 0,
+        ];
+    }
+    return $procs;
+};
+
+// The gate itself. Memoised per request (pass true to re-read after reaping).
+// 'count' === null means "unknown", and 'blocking' is then false — fail open.
+$processGate = static function (bool $refresh = false) use ($scanOwnProcesses, $nprocLimit, $nprocEscalationCeiling): array {
+    static $cache = null;
+    if ($cache !== null && !$refresh) {
+        return $cache;
+    }
+    $procs = $scanOwnProcesses();
+    if ($procs === null) {
+        $cache = [
+            'count' => null,
+            'procs' => [],
+            'limit' => $nprocLimit,
+            'ceiling' => $nprocEscalationCeiling,
+            'blocking' => false,
+            'note' => "process count UNAVAILABLE (/proc unreadable or uid undetermined) — failing open, escalation allowed (ceiling {$nprocEscalationCeiling}, NPROC {$nprocLimit})",
+        ];
+        return $cache;
+    }
+    $count = count($procs);
+    $blocking = ($count >= $nprocEscalationCeiling);
+    $cache = [
+        'count' => $count,
+        'procs' => $procs,
+        'limit' => $nprocLimit,
+        'ceiling' => $nprocEscalationCeiling,
+        'blocking' => $blocking,
+        'note' => $blocking
+            ? "process count {$count} >= ceiling {$nprocEscalationCeiling} (NPROC {$nprocLimit}) — escalation BLOCKED; it resumes by itself once the count drops"
+            : "process count {$count} < ceiling {$nprocEscalationCeiling} (NPROC {$nprocLimit}) — escalation allowed",
+    ];
+    return $cache;
+};
+
 if (str_starts_with($path, '/__ops/')) {
     // An empty $opsKey (e.g. OPS_KEY missing from .env) must never grant
     // access — otherwise an empty ?key= would satisfy '' !== '' === false.
@@ -83,6 +256,11 @@ if (str_starts_with($path, '/__ops/')) {
     // Linux without depending on the posix/pcntl extensions (not assumed
     // enabled on this shared host, and not used anywhere else in this file).
     $isPrebuiltRunning = static function () use ($prebuiltPidFile): int {
+        // triggerPrebuiltRun() now polls this in a loop waiting for a freshly
+        // spawned run to appear, and PHP caches is_file()/is_dir() results for
+        // the whole request — without this the poll would keep re-reading its
+        // own first (negative) answer and never see the new pid.
+        clearstatcache();
         if (!is_file($prebuiltPidFile)) {
             return 0;
         }
@@ -178,6 +356,259 @@ if (str_starts_with($path, '/__ops/')) {
         return !is_dir("/proc/{$pid}");
     };
 
+    // Straggler reaper — issue #98 §2.5.
+    //
+    // The 2026-08-31 process list held six Daemon.js, four ProcessContainerFork.js,
+    // three wedged `pm2 start ecosystem.config.cjs`, and a `node /bin/timeout
+    // update` orphan that had been alive since Aug 29. Nothing ever reaped any of
+    // them, so each incident's leftovers were still holding slots during the next.
+    //
+    // Everything here is decided from /proc (no fork) and signalled with
+    // posix_kill when it exists. The exec() fallback is capped, because exec()
+    // cannot spawn at the ceiling and burning slots on kills that will not run is
+    // the exact failure mode this ticket is about.
+    //
+    // Safety: this is called only when the app is *already* confirmed not serving
+    // on :3000, or explicitly via /__ops/reap-stragglers. It refuses to guess —
+    // if the live God Daemon cannot be identified from the pid file it writes
+    // itself, no daemon is touched at all, because killing the wrong one takes
+    // health-web and bid-web down together.
+    $reapStragglers = static function (bool $apply) use ($scanOwnProcesses, $prebuiltPidFile): array {
+        $result = [
+            'ok' => false,
+            'applied' => $apply,
+            'mechanism' => function_exists('posix_kill') ? 'posix_kill (forkless)' : 'exec kill -9 (needs a fork; capped)',
+            'scanned' => 0,
+            'god_pid' => 0,
+            'candidates' => [],
+            'killed' => [],
+            'notes' => [],
+        ];
+
+        $procs = $scanOwnProcesses();
+        if ($procs === null) {
+            $result['notes'][] = '/proc not readable — nothing scanned, nothing reaped';
+            return $result;
+        }
+        $result['ok'] = true;
+        $result['scanned'] = count($procs);
+
+        $byPid = [];
+        foreach ($procs as $p) {
+            $byPid[$p['pid']] = $p;
+        }
+
+        // Never signal this request's own process or any of its ancestors — that
+        // would kill the lsphp worker currently executing this recovery code.
+        $protected = [];
+        $walk = (int) getmypid(); // int|false — a bare false would silently protect nothing
+        for ($i = 0; $i < 64 && $walk > 1; $i++) {
+            $protected[$walk] = true;
+            $walk = (int) ($byPid[$walk]['ppid'] ?? 0);
+        }
+
+        $godPid = 0;
+        $godRaw = @file_get_contents('/home/tw123457/.pm2/pm2.pid');
+        if (is_string($godRaw)) {
+            $candidatePid = (int) trim($godRaw);
+            if ($candidatePid > 0 && isset($byPid[$candidatePid]) && stripos($byPid[$candidatePid]['cmdline'], 'Daemon.js') !== false) {
+                $godPid = $candidatePid;
+            }
+        }
+        $result['god_pid'] = $godPid;
+        if ($godPid === 0) {
+            $result['notes'][] = 'live God Daemon not identifiable from ~/.pm2/pm2.pid — duplicate-daemon reaping SKIPPED (refusing to guess which daemon owns the app)';
+        }
+
+        $activeApplyPid = 0;
+        $applyRaw = @file_get_contents($prebuiltPidFile);
+        if (is_string($applyRaw)) {
+            $activeApplyPid = (int) trim($applyRaw);
+        }
+
+        $keep = static function (array $p) use ($protected, $godPid): bool {
+            if (isset($protected[$p['pid']])) {
+                return true;
+            }
+            if ($godPid > 0 && $p['pid'] === $godPid) {
+                return true;
+            }
+            foreach (['next-server', '/next/dist/bin/next', 'lsphp', 'php-fpm', 'sshd', 'systemd', 'cagefs', 'crond'] as $needle) {
+                if (stripos($p['cmdline'], $needle) !== false) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        $candidates = [];
+        $add = static function (array $p, string $reason) use (&$candidates, $keep): void {
+            if ($keep($p) || isset($candidates[$p['pid']])) {
+                return;
+            }
+            $candidates[$p['pid']] = [
+                'pid' => $p['pid'],
+                'ppid' => $p['ppid'],
+                'age' => $p['age'],
+                'cmdline' => $p['cmdline'],
+                'reason' => $reason,
+            ];
+        };
+
+        // (1) Duplicate God Daemons, and everything underneath them. A process
+        // parented by a duplicate daemon belongs to that daemon, not to the live
+        // one, so it goes with it — this is what clears the ProcessContainerFork
+        // pile-up in one pass instead of waiting for it to be reparented to init.
+        if ($godPid > 0) {
+            $childrenOf = [];
+            foreach ($procs as $p) {
+                $childrenOf[$p['ppid']][] = $p['pid'];
+            }
+            $queue = [];
+            foreach ($procs as $p) {
+                if ($p['pid'] !== $godPid && stripos($p['cmdline'], 'Daemon.js') !== false) {
+                    $add($p, "duplicate pm2 God Daemon (the live one is {$godPid})");
+                    $queue[] = $p['pid'];
+                }
+            }
+            $seen = [];
+            while ($queue !== []) {
+                $current = (int) array_shift($queue);
+                if (isset($seen[$current])) {
+                    continue;
+                }
+                $seen[$current] = true;
+                foreach ($childrenOf[$current] ?? [] as $child) {
+                    if (isset($byPid[$child]) && !isset($seen[$child])) {
+                        $add($byPid[$child], "descendant of duplicate pm2 God Daemon {$current}");
+                        $queue[] = $child;
+                    }
+                }
+            }
+        }
+
+        // (2) ProcessContainerFork workers reparented to init while a live God
+        // Daemon exists. Three conditions, and all three are load-bearing:
+        //   - a live daemon was positively identified, so the managed copies of
+        //     health-web AND bid-web are its children and are not in this set.
+        //     Without that we cannot tell a duplicate from the only worker a
+        //     site has, and killing the latter takes down the other site;
+        //   - ppid <= 1, so it is genuinely unmanaged, not merely parented by
+        //     something we did not resolve;
+        //   - six hours old, far past any restart in flight.
+        if ($godPid > 0) {
+            foreach ($procs as $p) {
+                if (stripos($p['cmdline'], 'ProcessContainerFork') === false) {
+                    continue;
+                }
+                if ($p['ppid'] > 1 || $p['age'] < 21600) {
+                    continue;
+                }
+                $add($p, "unmanaged pm2 worker (ppid {$p['ppid']}, live daemon is {$godPid}), alive {$p['age']}s");
+            }
+        }
+
+        // (3) pm2 CLI invocations that never returned. Three of these were live
+        // in the incident list. A `pm2 start` still running after 30 minutes is
+        // wedged on a socket, not working.
+        foreach ($procs as $p) {
+            $cmd = $p['cmdline'];
+            if (stripos($cmd, '/pm2/bin/pm2') === false) {
+                continue;
+            }
+            if (stripos($cmd, 'Daemon.js') !== false || stripos($cmd, 'God Daemon') !== false || stripos($cmd, 'ProcessContainerFork') !== false) {
+                continue;
+            }
+            if ($p['age'] < 1800) {
+                continue;
+            }
+            $add($p, "pm2 CLI invocation wedged for {$p['age']}s");
+        }
+
+        // (4) apply-prebuilt wrappers that are not the currently recorded run and
+        // have outlived any plausible run (the health probe budget is 150s plus
+        // extract and swap; two hours is far past it).
+        foreach ($procs as $p) {
+            if (stripos($p['cmdline'], '.apply-prebuilt') === false) {
+                continue;
+            }
+            if ($activeApplyPid > 0 && $p['pid'] === $activeApplyPid) {
+                continue;
+            }
+            if ($p['age'] < 7200) {
+                continue;
+            }
+            $add($p, "stale apply-prebuilt wrapper, alive {$p['age']}s");
+        }
+
+        // (5) The `node /bin/timeout update` class of orphan: parented by init,
+        // hours old, and not the app.
+        foreach ($procs as $p) {
+            if ($p['ppid'] > 1 || $p['age'] < 3600) {
+                continue;
+            }
+            $cmd = $p['cmdline'];
+            $isTimeoutWrapper = (stripos($cmd, '/bin/timeout') !== false);
+            $isPm2Update = (stripos($cmd, 'pm2') !== false && stripos($cmd, 'update') !== false);
+            if (!$isTimeoutWrapper && !$isPm2Update) {
+                continue;
+            }
+            $add($p, "orphaned helper, ppid {$p['ppid']}, alive {$p['age']}s");
+        }
+
+        $result['candidates'] = array_values($candidates);
+        if (!$apply || $candidates === []) {
+            return $result;
+        }
+
+        $usePosix = function_exists('posix_kill');
+        $execBudget = 8;
+        foreach ($candidates as $pid => $info) {
+            if ($usePosix) {
+                // 9 as a literal: SIGKILL comes from ext-pcntl, not ext-posix,
+                // and an undefined constant is a fatal Error in PHP 8.
+                @posix_kill((int) $pid, 9);
+                $result['killed'][] = (int) $pid;
+            } elseif ($execBudget > 0) {
+                $execBudget--;
+                @exec('kill -9 ' . (int) $pid . ' 2>&1');
+                $result['killed'][] = (int) $pid;
+            } else {
+                $result['notes'][] = "pid {$pid} not signalled — exec() kill budget exhausted (no posix_kill on this host, see #97)";
+            }
+        }
+
+        usleep(200000);
+        clearstatcache();
+        foreach ($result['killed'] as $pid) {
+            if (is_dir('/proc/' . $pid)) {
+                $result['notes'][] = "pid {$pid} STILL PRESENT after SIGKILL — the signal did not land";
+            }
+        }
+
+        return $result;
+    };
+
+    // One-line-per-candidate rendering, shared by the watchdog log and
+    // /__ops/pm2-status so both tell the same story.
+    $reapSummary = static function (array $reap): string {
+        $lines = [];
+        $lines[] = 'reap: applied=' . ($reap['applied'] ? 'yes' : 'no (dry run)')
+            . ' mechanism=' . $reap['mechanism']
+            . ' scanned=' . $reap['scanned']
+            . ' god_pid=' . ($reap['god_pid'] ?: 'unknown')
+            . ' candidates=' . count($reap['candidates'])
+            . ' signalled=' . count($reap['killed']);
+        foreach ($reap['candidates'] as $candidate) {
+            $lines[] = '  pid ' . $candidate['pid'] . ' (ppid ' . $candidate['ppid'] . ', age ' . $candidate['age'] . 's) '
+                . $candidate['reason'] . ' :: ' . substr($candidate['cmdline'], 0, 160);
+        }
+        foreach ($reap['notes'] as $note) {
+            $lines[] = '  note: ' . $note;
+        }
+        return implode("\n", $lines);
+    };
+
     // Single choke point for starting an apply-prebuilt run, used by all
     // three trigger paths (/apply-prebuilt, /apply-prebuilt-force,
     // pm2-ensure-running's escalation) so "is one already running" can never
@@ -193,16 +624,45 @@ if (str_starts_with($path, '/__ops/')) {
     // exec() is a silent no-op) force refuses too and returns that PID. So
     // "force" means "make sure exactly one instance ends up running", never
     // "spawn regardless".
-    $triggerPrebuiltRun = static function (bool $force, string $cmd) use (
+    //
+    // Returns -1 (TRIGGER_GATE_REFUSED) when the nproc gate is closed: the
+    // account already has too many processes for another apply run to be
+    // anything but more load. That is a different answer from "one is already
+    // running" (a positive pid), so callers can report it honestly instead of
+    // blaming a run that does not exist.
+    //
+    // $outcome receives the gate reading and, on a successful spawn, whether the
+    // new run's pid actually became visible. #97's lesson is that a recovery
+    // path whose failure is invisible is a recovery path nobody can trust.
+    $triggerPrebuiltRun = static function (bool $force, string $cmd, ?array &$outcome = null) use (
         $prebuiltLockFile,
         $isPrebuiltRunning,
-        $killPrebuiltRun
+        $killPrebuiltRun,
+        $processGate
     ): ?int {
+        // Re-read rather than reuse the memoised value: this is the last check
+        // before the most expensive spawn in the file, and the caller may have
+        // spent slots (jlist, pm2 kill, resurrect) since it last looked.
+        $gate = $processGate(true);
+        $outcome = [
+            'gate' => $gate,
+            'spawned' => false,
+            'observed_pid' => 0,
+            'wait_ms' => 0,
+            'locked' => true,
+        ];
+
+        if ($gate['blocking']) {
+            return -1;
+        }
+
         $fh = fopen($prebuiltLockFile, 'c');
         if ($fh === false) {
             // Can't lock — fail open (spawn anyway) rather than block all
             // deploys forever over a filesystem hiccup.
+            $outcome['locked'] = false;
             @exec($cmd);
+            $outcome['spawned'] = true;
             return null;
         }
         try {
@@ -223,6 +683,38 @@ if (str_starts_with($path, '/__ops/')) {
                 }
             }
             @exec($cmd);
+            $outcome['spawned'] = true;
+
+            // Hold the lock until the new run's pid is OBSERVABLE, not merely
+            // until exec() returned.
+            //
+            // Two apply-prebuilt shells started in the same minute on
+            // 2026-08-31 (pids 639961 and 639986) despite this flock() already
+            // spanning check -> kill -> spawn. The lock was held over the wrong
+            // interval: exec() returns the instant `nohup ... &` backgrounds the
+            // script, so the lock released while the script had not yet run its
+            // first statement — the one that writes .apply-prebuilt.pid. A
+            // second request landing in that window took the lock, saw no pid,
+            // concluded nothing was running and spawned a second run.
+            //
+            // Polling here closes that window: the next holder of the lock
+            // cannot observe the gap, because the gap is inside our critical
+            // section now. The 5s budget covers `/bin/sh -lc` sourcing the login
+            // profile on a loaded host; a run that has not recorded a pid by
+            // then almost certainly never started (exec() could not fork), which
+            // is reported rather than assumed away.
+            $waitedMs = 0;
+            $observed = 0;
+            while ($waitedMs < 5000) {
+                usleep(100000);
+                $waitedMs += 100;
+                $observed = $isPrebuiltRunning();
+                if ($observed !== 0) {
+                    break;
+                }
+            }
+            $outcome['observed_pid'] = $observed;
+            $outcome['wait_ms'] = $waitedMs;
             return null;
         } finally {
             flock($fh, LOCK_UN);
@@ -370,6 +862,18 @@ if (str_starts_with($path, '/__ops/')) {
     };
 
     if ($path === '/__ops/rebuild') {
+        // A full `next build` is the single most expensive thing this file can
+        // start. If the process table is already crowded it will not finish, it
+        // will only take the last slots with it.
+        $rebuildGate = $processGate();
+        if ($rebuildGate['blocking']) {
+            http_response_code(503);
+            header('Content-Type: text/plain; charset=utf-8');
+            echo "Rebuild REFUSED by the nproc gate.\n";
+            echo $rebuildGate['note'] . "\n";
+            exit;
+        }
+
         if (is_file($buildLockFile) && (time() - (int) @filemtime($buildLockFile)) > 1800) {
             @unlink($buildLockFile);
         }
@@ -433,7 +937,15 @@ if (str_starts_with($path, '/__ops/')) {
         }
 
         header('Content-Type: text/plain; charset=utf-8');
-        $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(false));
+        $applyOutcome = null;
+        $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(false), $applyOutcome);
+        if ($alreadyRunningPid === -1) {
+            http_response_code(503);
+            echo "Apply prebuilt REFUSED by the nproc gate.\n";
+            echo $applyOutcome['gate']['note'] . "\n";
+            echo "Nothing was spawned. Escalation resumes automatically once the count drops.\n";
+            exit;
+        }
         if ($alreadyRunningPid !== null) {
             echo "Apply already running (pid {$alreadyRunningPid}).\n";
             if (is_file($prebuiltLogFile)) {
@@ -443,6 +955,9 @@ if (str_starts_with($path, '/__ops/')) {
         }
 
         echo "Apply prebuilt triggered. Check /__ops/apply-prebuilt-status?key=...\n";
+        echo $applyOutcome['observed_pid'] !== 0
+            ? "New run pid {$applyOutcome['observed_pid']} observed after {$applyOutcome['wait_ms']}ms.\n"
+            : "WARNING: no pid appeared in /proc within {$applyOutcome['wait_ms']}ms — exec() may not have been able to fork.\n";
         exit;
     }
 
@@ -460,9 +975,20 @@ if (str_starts_with($path, '/__ops/')) {
         // exactly one instance ends up running", not "ignore whether one
         // already is" (the latter is what stacked concurrent runs and
         // exhausted the host on 2026-08-10).
-        $refusedPid = $triggerPrebuiltRun(true, $buildPrebuiltCommand(true));
+        $forceOutcome = null;
+        $refusedPid = $triggerPrebuiltRun(true, $buildPrebuiltCommand(true), $forceOutcome);
 
         header('Content-Type: text/plain; charset=utf-8');
+        if ($refusedPid === -1) {
+            // Gate refusal, not a still-running run. Said separately from the
+            // message below so the deploy log never blames a phantom pid.
+            http_response_code(503);
+            echo "Apply prebuilt REFUSED by the nproc gate.\n";
+            echo $forceOutcome['gate']['note'] . "\n";
+            echo "Nothing was spawned. Free process slots (see /__ops/reap-stragglers?key=...&apply=1)\n";
+            echo "or wait — the gate reopens by itself once the count drops below the ceiling.\n";
+            exit;
+        }
         if ($refusedPid !== null) {
             // force can now decline — see $killPrebuiltRun. Say so plainly:
             // the deploy workflow reads this body, and reporting a trigger
@@ -476,6 +1002,9 @@ if (str_starts_with($path, '/__ops/')) {
         }
 
         echo "Apply prebuilt force-triggered-v4. Check /__ops/apply-prebuilt-status?key=...\n";
+        echo $forceOutcome['observed_pid'] !== 0
+            ? "New run pid {$forceOutcome['observed_pid']} observed after {$forceOutcome['wait_ms']}ms.\n"
+            : "WARNING: no pid appeared in /proc within {$forceOutcome['wait_ms']}ms — exec() may not have been able to fork.\n";
         exit;
     }
 
@@ -536,6 +1065,58 @@ if (str_starts_with($path, '/__ops/')) {
                 echo "[{$now}] health-web is online (socket probe, no process spawned). No action taken.\n";
                 exit;
             }
+        }
+
+        // ------------------------------------------------------------------
+        // Everything from here on spawns processes. This is the failure path,
+        // which is exactly when process slots are scarcest — and, until #98, it
+        // was unconditional: five pm2 spawns per escalation, every five minutes,
+        // for as long as the app stayed down. Over the 4h39m outage of
+        // 2026-08-31 that is ~56 escalations, and the daemons they left behind
+        // held the slots the next escalation needed.
+        //
+        // So before spawning anything: survey what is already stuck, then read
+        // the process count out of /proc and refuse to escalate if the table is
+        // already crowded.
+        //
+        // OBSERVE-ONLY on this path, deliberately. The reaper signals processes
+        // on a live host, it is new, and this repo has no PHP test setup — the
+        // only automated check on this file is `php -l` in CI, which proves it
+        // parses and nothing more. One of its rules can in principle reach an
+        // unmanaged bid-web worker, i.e. the *other* site. So it runs here in
+        // dry-run and writes what it *would* have killed to the watchdog log;
+        // `/__ops/reap-stragglers?...&apply=1` remains available to act on that
+        // evidence by hand.
+        //
+        // The precedent for this caution is #97: posix_kill was shipped as a
+        // recovery path, silently fell back to exec(), and stayed a no-op for
+        // two days because nothing reported whether it was working. Reading a
+        // real incident's log before granting this kill authority is the cheap
+        // version of that lesson. Flip to true once the logged decisions have
+        // been checked against a real accumulation.
+        // ------------------------------------------------------------------
+        $reap = $reapStragglers(false);
+        @file_put_contents($watchdogLog, "[{$now}] (observe-only) " . $reapSummary($reap) . "\n", FILE_APPEND);
+
+        // Re-read after the survey. Nothing was freed — the reaper did not act —
+        // so this is simply the current count.
+        $gate = $processGate(true);
+        @file_put_contents($watchdogLog, "[{$now}] nproc-gate: " . $gate['note'] . "\n", FILE_APPEND);
+
+        if ($gate['blocking']) {
+            // No jlist, no pm2 kill, no pkill, no resurrect, no apply-prebuilt.
+            // Nothing below this point runs, so this tick costs zero spawns.
+            //
+            // Note what this is NOT: it is not "give up after N failures". The
+            // next cron tick five minutes from now re-reads the count, and the
+            // moment it is under the ceiling the full escalation runs again —
+            // no counter to reset, no state to clear, nothing to un-latch.
+            http_response_code(503);
+            echo "[{$now}] health-web is not answering, but escalation is BLOCKED by the nproc gate.\n";
+            echo $gate['note'] . "\n";
+            echo "No process was spawned this tick. Escalation resumes automatically once the count drops.\n";
+            echo $reapSummary($reap) . "\n";
+            exit;
         }
 
         exec('timeout 5 ' . $pm2Bin . ' jlist 2>/dev/null', $jlistOutput, $jlistExit);
@@ -614,7 +1195,17 @@ if (str_starts_with($path, '/__ops/')) {
         // this path fires unattended every 5 minutes, so it should never be
         // the one deciding to kill a run that might just be taking a while
         // under host load; only a human-triggered apply-prebuilt-force does that.
-        $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(true));
+        $watchdogOutcome = null;
+        $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(true), $watchdogOutcome);
+        if ($alreadyRunningPid === -1) {
+            // The gate closed between the check above and here (the jlist /
+            // resurrect calls we just made can themselves push the count over).
+            http_response_code(503);
+            @file_put_contents($watchdogLog, "[{$now}] apply-prebuilt not started: " . $watchdogOutcome['gate']['note'] . "\n", FILE_APPEND);
+            echo "[{$now}] health-web was not online, but the restart was BLOCKED by the nproc gate.\n";
+            echo $watchdogOutcome['gate']['note'] . "\n";
+            exit;
+        }
         if ($alreadyRunningPid !== null) {
             echo "[{$now}] health-web was not online, but a restart already appears to be in progress (pid {$alreadyRunningPid}) — not starting another.\n";
             if (is_file($prebuiltLogFile)) {
@@ -623,23 +1214,93 @@ if (str_starts_with($path, '/__ops/')) {
             exit;
         }
 
+        if ($watchdogOutcome['observed_pid'] === 0) {
+            // The spawn produced no observable pid within the wait. Say so in
+            // the log rather than letting it look like a successful restart —
+            // #97 spent two days looking at a fix that had silently no-opped.
+            @file_put_contents(
+                $watchdogLog,
+                "[{$now}] apply-prebuilt spawned but NO pid appeared in /proc within {$watchdogOutcome['wait_ms']}ms — exec() may not have been able to fork.\n",
+                FILE_APPEND
+            );
+        }
+
         echo "[{$now}] health-web was not online. Restart triggered — check /__ops/apply-prebuilt-status?key=...\n";
+        echo $watchdogOutcome['observed_pid'] !== 0
+            ? "New run pid {$watchdogOutcome['observed_pid']} observed after {$watchdogOutcome['wait_ms']}ms.\n"
+            : "WARNING: no pid appeared in /proc within {$watchdogOutcome['wait_ms']}ms — exec() may not have been able to fork.\n";
+        exit;
+    }
+
+    if ($path === '/__ops/reap-stragglers') {
+        // Dry run by default: it prints exactly what it would signal and why,
+        // and touches nothing. &apply=1 actually sends the signals. The watchdog
+        // calls the applying form itself on the failure path; this endpoint is
+        // for looking before an incident, and for reaping on demand during one.
+        header('Content-Type: text/plain; charset=utf-8');
+        $apply = (($_GET['apply'] ?? '') === '1');
+        $reapGate = $processGate(true);
+        echo "nproc-gate: " . $reapGate['note'] . "\n\n";
+        echo $reapSummary($reapStragglers($apply)) . "\n";
+        if (!$apply) {
+            echo "\n(dry run — add &apply=1 to actually signal these)\n";
+        }
         exit;
     }
 
     if ($path === '/__ops/pm2-status') {
         header('Content-Type: text/plain; charset=utf-8');
-        echo "==== pm2 list ====\n";
-        echo shell_exec($pm2Bin . ' list 2>&1') . "\n";
-        echo "==== pm2 describe health-web ====\n";
-        echo shell_exec($pm2Bin . ' describe health-web 2>&1') . "\n";
-        echo "==== curl -v http://127.0.0.1:3000/news ====\n";
-        echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
-        echo "==== ss -tlnp (port listeners) ====\n";
-        echo shell_exec('ss -tlnp 2>&1') . "\n";
-        echo shell_exec('netstat -tlnp 2>&1') . "\n";
-        echo "==== node/next processes (ps) ====\n";
-        echo shell_exec('ps aux 2>&1') . "\n";
+
+        // FORKLESS DIAGNOSTICS FIRST, deliberately.
+        //
+        // Every section below that calls shell_exec() needs a fork, and the
+        // condition this endpoint is most often opened in is precisely the one
+        // where forking fails. When that happens those sections come back empty
+        // with no explanation — which is itself the documented fingerprint of
+        // NPROC exhaustion, but only to someone who already knows to read it
+        // that way. The numbers that actually diagnose the outage are these, and
+        // they come from /proc and ini_get, so they print regardless.
+        $gate = $processGate(true);
+        echo "==== nproc gate (issue #98) ====\n";
+        echo "process_count = " . ($gate['count'] === null ? 'UNAVAILABLE' : $gate['count']) . "\n";
+        echo "ceiling       = {$gate['ceiling']}\n";
+        echo "nproc_limit   = {$gate['limit']}\n";
+        echo "blocking      = " . ($gate['blocking'] ? 'YES — escalation is being refused right now' : 'no') . "\n";
+        echo $gate['note'] . "\n\n";
+
+        // ---- the three facts #97 needs, settled in one request ----
+        // Support confirmed ext-posix is enabled, yet posix_kill did not work.
+        // The standing hypothesis is that posix_kill sits in disable_functions,
+        // where function_exists() returns false and killPrebuiltRun() silently
+        // falls back to exec() — the fallback that cannot spawn at the ceiling,
+        // and the reason #74 was a no-op for two days without anyone seeing it.
+        echo "==== signal capability (issue #97) ====\n";
+        echo "extension_loaded('posix')     = " . var_export(extension_loaded('posix'), true) . "\n";
+        echo "function_exists('posix_kill') = " . var_export(function_exists('posix_kill'), true) . "\n";
+        echo "ini_get('disable_functions')  = " . var_export(ini_get('disable_functions'), true) . "\n";
+        echo "function_exists('exec')       = " . var_export(function_exists('exec'), true) . "\n";
+        echo "function_exists('shell_exec') = " . var_export(function_exists('shell_exec'), true) . "\n";
+        echo "kill mechanism in use         = " . (function_exists('posix_kill') ? 'posix_kill (forkless)' : 'exec kill -9 (needs a fork)') . "\n\n";
+
+        echo "==== this account's processes (/proc, no fork) ====\n";
+        if ($gate['count'] === null) {
+            echo "unavailable — /proc unreadable or uid undetermined\n\n";
+        } else {
+            $listing = $gate['procs'];
+            usort($listing, static fn(array $a, array $b): int => $b['age'] <=> $a['age']);
+            echo str_pad('PID', 9) . str_pad('PPID', 9) . str_pad('AGE(s)', 10) . "CMDLINE\n";
+            foreach ($listing as $proc) {
+                echo str_pad((string) $proc['pid'], 9)
+                    . str_pad((string) $proc['ppid'], 9)
+                    . str_pad((string) $proc['age'], 10)
+                    . substr($proc['cmdline'], 0, 140) . "\n";
+            }
+            echo "\n";
+        }
+
+        echo "==== straggler reap (dry run, no fork) ====\n";
+        echo $reapSummary($reapStragglers(false)) . "\n\n";
+
         echo "==== /proc/net/tcp LISTEN ports (local, decoded) ====\n";
         $tcp = @file('/proc/net/tcp');
         if ($tcp) {
@@ -649,6 +1310,7 @@ if (str_starts_with($path, '/__ops/')) {
                 $localAddr = $cols[1] ?? '';
                 $state = $cols[3] ?? '';
                 if ($state !== '0A') continue;
+                if (strpos($localAddr, ':') === false) continue;
                 [$hexIp, $hexPort] = explode(':', $localAddr);
                 $port = hexdec($hexPort);
                 echo "port {$port} (state LISTEN)\n";
@@ -656,10 +1318,38 @@ if (str_starts_with($path, '/__ops/')) {
         } else {
             echo "Could not read /proc/net/tcp\n";
         }
+        echo "\n";
+
         echo "==== fsockopen 127.0.0.1:3000 from PHP ====\n";
         $fp = @fsockopen('127.0.0.1', 3000, $errno, $errstr, 3);
         echo $fp ? "connected\n" : "failed: {$errno} {$errstr}\n";
         if ($fp) fclose($fp);
+        echo "\n";
+
+        // Fork-heavy sections last, and skipped while the gate is closed: this
+        // is a diagnostic page, and running six subprocesses on an account that
+        // has none to spare would make the incident it is diagnosing worse.
+        if ($gate['blocking'] && ($_GET['full'] ?? '') !== '1') {
+            echo "==== shell diagnostics SKIPPED ====\n";
+            echo "The nproc gate is blocking, and pm2 list / describe / curl / ss / netstat / ps\n";
+            echo "each need a fork. Add &full=1 to run them anyway.\n";
+            exit;
+        }
+
+        echo "==== pm2 list ====\n";
+        echo shell_exec($pm2Bin . ' list 2>&1') . "\n";
+        echo "==== pm2 describe health-web ====\n";
+        echo shell_exec($pm2Bin . ' describe health-web 2>&1') . "\n";
+        echo "==== curl -v http://127.0.0.1:3000/news ====\n";
+        echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
+        echo "==== ss -tlnp (port listeners) ====\n";
+        echo shell_exec('ss -tlnp 2>&1') . "\n";
+        echo shell_exec('netstat -tlnp 2>&1') . "\n";
+        // `ps aux` is kept for the host-wide view, but the account's own process
+        // table is already printed above from /proc, where it prints even when
+        // this line cannot run.
+        echo "==== node/next processes (ps) ====\n";
+        echo shell_exec('ps aux 2>&1') . "\n";
         exit;
     }
 
@@ -1044,8 +1734,20 @@ $body = file_get_contents('php://input');
 $isLongRunningApi = str_starts_with($path, '/api/admin/') || str_starts_with($path, '/api/internal/');
 $isSafeMethod = in_array($method, ['GET', 'HEAD'], true);
 $allowSelfHealRetry = !$isLongRunningApi && $isSafeMethod;
-$triggerPm2Watchdog = static function () use ($opsKey): void {
+$triggerPm2Watchdog = static function () use ($opsKey, $processGate): void {
     if ($opsKey === '') {
+        return;
+    }
+
+    // Subject to the same nproc gate as the watchdog itself, and for a sharper
+    // reason: this fires once per *failed visitor request*. During the 4h39m
+    // outage, with bot traffic against a 502ing site, that is one curl spawned
+    // per request on an account that had no slots left — the single largest
+    // amplifier in this file. The 5-minute cron still calls the watchdog
+    // endpoint directly, so nothing is lost by skipping the opportunistic
+    // version while the process table is full.
+    $gate = $processGate();
+    if ($gate['blocking']) {
         return;
     }
 
