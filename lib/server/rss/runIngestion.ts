@@ -26,7 +26,6 @@ import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinesswee
 import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
 import { fetchNhiNewsHtml } from "@/lib/server/rss/fetchNhiNews";
 import { fetchHelloYishiNews } from "@/lib/server/rss/fetchHelloYishiNews";
-import { fetchMababyNews } from "@/lib/server/rss/fetchMababyNews";
 import { fetchWeGetCareNews } from "@/lib/server/rss/fetchWeGetCareNews";
 import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
 import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
@@ -492,19 +491,6 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += helloyishiResult.skippedUnchanged;
       staleRejected += helloyishiResult.staleRejected;
-
-      const mababyResult = await processSpecialSource(
-        {
-          code: "mababy_news",
-          name: "嬰兒與母親",
-          url: "https://www.mababy.com/",
-          sourceName: "mababy",
-        },
-        fetchMababyNews,
-        specialSourceCtx,
-      );
-      skippedUnchanged += mababyResult.skippedUnchanged;
-      staleRejected += mababyResult.staleRejected;
 
       const wegetcareResult = await processSpecialSource(
         {

@@ -68,7 +68,6 @@ const SOURCE_LABELS = {
   ntuh_ifc: "臺大整合醫療",
   durex: "杜蕾斯",
   helloyishi: "Hello 醫師",
-  mababy: "嬰兒與母親",
   wegetcare: "醫聯網",
   uniqman: "UNIQMAN",
   sfunhk: "潮性辦公室",

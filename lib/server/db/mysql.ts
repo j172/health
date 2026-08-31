@@ -195,10 +195,11 @@ export const ensureSchema = async (): Promise<void> => {
   } catch {
     // Index already exists or non-supported storage engine
   }
-  // Clean up legacy non-health news sources (culture_tw, public_art)
+  // Clean up legacy non-health news sources (culture_tw, public_art) and
+  // retired source names whose historical rows should be removed entirely.
   await p.query(`
     DELETE FROM news_items
-    WHERE source_name IN ('culture_tw', 'public_art')
+    WHERE source_name IN ('culture_tw', 'public_art', 'mababy')
   `);
 
   // Auto-seed public_arts table from bundled data/public-art.json if empty

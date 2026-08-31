@@ -59,7 +59,6 @@ export type FeedCode =
   | "ntuh_ifc_news"
   | "durex_article"
   | "helloyishi_news"
-  | "mababy_news"
   | "wegetcare_blog"
   | "uniqman_blog"
   | "sfunhk_blog"

@@ -73,7 +73,6 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "love_newlife", label: "癌友新生命協會" },
       { sourceName: "womenshealth", label: "Women's Health 美力圈" },
       { sourceName: "helloyishi", label: "Hello 醫師" },
-      { sourceName: "mababy", label: "嬰兒與母親" },
       { sourceName: "wegetcare", label: "醫聯網" },
       { sourceName: "durex", label: "杜蕾斯" },
       { sourceName: "letsharu", label: "HARU" },
