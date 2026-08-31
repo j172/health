@@ -69,24 +69,51 @@ $ntfyUrl = ($ntfyTopic = $readEnvVar('NTFY_TOPIC')) !== '' ? 'https://ntfy.sh/' 
 // and reopens by itself the moment the count drops, so a recoverable app whose
 // process table is healthy is never abandoned.
 $nprocLimit = 100;
-// Headroom threshold. Reasoning for 70:
-//   * The ceiling has to sit far enough below 100 that a *permitted* escalation
-//     can still complete. One escalation costs up to 5 pm2 spawns, and the
-//     apply-prebuilt run it may trigger costs a wrapper shell plus tar / node /
-//     pm2 start / curl at ~10-15 concurrent tasks at peak. 100 - 70 = 30 slots
-//     is enough for that plus the lsphp workers that must keep serving this very
-//     request; a tighter ceiling would leave a permitted escalation unable to
-//     finish, which is the failure we are removing.
-//   * It has to sit far enough ABOVE the legitimate steady state that it never
-//     blocks a healthy account. Legitimate occupants: the Next.js app and its
-//     node threads, the pm2 God Daemon, one ProcessContainerFork per app,
-//     pm2-logrotate, the second site (bid-web), the cron shells and the lsphp
-//     workers — realistically 25-40. At 70 the account is roughly twice its
-//     healthy baseline, which is accumulation, not load.
-//   * 70 is reached, in the observed incident, long before the table is full,
-//     so the gate fires while there is still room to reap and recover rather
-//     than at the point where nothing can be done at all.
-$nprocEscalationCeiling = 70;
+// Headroom threshold.
+//
+// MEASURED BASELINE = 7. This is the number the ceiling is derived from, and
+// the reason it changed. /__ops/pm2-status, first production reading, taken
+// immediately after the 2026-08-31 13:45 deploy with the site healthy:
+//
+//   process_count = 7   ceiling = 70   nproc_limit = 100   blocking = no
+//     1449687  lsphp
+//     1449721  PM2 God Daemon
+//     1449746  pm2-logrotate
+//     1452121  next-server (v16.3.0)    <- bid-web
+//     1682033  next-server (v16.2.12)   <- health-web
+//
+// The original 70 was sized against an ESTIMATED steady state of 25-40, on the
+// reasoning that a healthy account sat at roughly half the ceiling. The
+// estimate was wrong by 4-6x: the real healthy account is 7 processes, so 70
+// let it reach TEN TIMES its healthy size before declining to spawn. A gate
+// that only fires at 10x baseline fires long after the accumulation it exists
+// to stop has started, and (in the 2026-08-31 incident) after the slots a
+// permitted escalation needs are already spoken for.
+//
+// Re-derived from the measurement:
+//
+//   worst legitimate concurrent occupancy
+//     7   measured healthy baseline
+//   + 5   one watchdog escalation: pm2 jlist, pm2 kill, pkill, pm2 resurrect,
+//         a second pm2 jlist — each a node process
+//   + 15  the apply-prebuilt run it triggers, at peak: the nohup wrapper shell,
+//         tar, find/grep, pm2 delete, setsid pm2 start, the new next-server and
+//         its node threads, two curls (10-15 concurrent tasks)
+//   + 3   lsphp workers that must keep serving this very request and cron
+//   = 30  everything legitimate, all at once, worst case
+//
+//   ceiling 35  = 30 + 5 slots of slack, so the gate can never block a healthy
+//                 account even mid-escalation. 5x the measured baseline of 7
+//                 (the old 70 was 10x).
+//   100 - 35    = 65 free slots at the instant the gate closes, ~2.8x the ~23
+//                 an escalation-plus-apply needs at peak. So a PERMITTED
+//                 escalation (count just under 35) always has room to finish —
+//                 the constraint the old comment cited for keeping 70 high is
+//                 satisfied with a large margin at 35.
+//
+// If you change this number, change the measurement above it first. The last
+// time it was set from an estimate rather than a reading it was out by 10x.
+$nprocEscalationCeiling = 35;
 
 // Reads one "Key:\tvalue" line out of a /proc status-style file. A file read;
 // it spawns nothing. $maxLen keeps this cheap when it runs over every pid.
@@ -102,6 +129,91 @@ $readProcField = static function (string $file, string $key, int $maxLen = 8192)
         }
     }
     return null;
+};
+
+// ---------------------------------------------------------------------------
+// Process liveness, from /proc/<pid>/stat's STATE character — issue #97.
+//
+// `is_dir("/proc/{$pid}")` is not a liveness test. /proc/<pid> persists for a
+// process that has been killed but not yet reaped by its parent (state 'Z',
+// zombie), so a *successful* kill reads as a failure. That is not theoretical:
+// on 2026-08-31 apply-prebuilt-force refused to spawn a replacement because
+// "pid 611802 is still running and could not be killed", and hosting support's
+// process list from later in the same outage contains 639986 but not 611802.
+// The kill had landed. The account could recover and the code said it could
+// not, so the 4h39m outage continued.
+//
+// A zombie holds a slot in the process table until it is reaped, so the NPROC
+// *gate* is right to count it (see $scanOwnProcesses, which deliberately still
+// counts every /proc entry). But it will never execute another instruction, so
+// for "did my kill work" and "is a run still in flight" it is dead.
+//
+// Parsing note (this is the whole reason for reading the file by hand): field 2
+// of /proc/<pid>/stat is the executable name wrapped in parentheses, and the
+// kernel does NOT escape what is inside it. A process named `sh -c (a b)` or
+// `my )app(` produces a field 2 containing spaces AND parentheses, so splitting
+// the line on whitespace, or on the FIRST ')', puts the wrong character in
+// field 3. Everything after the LAST ')' is unambiguous — that suffix always
+// begins with " <state> <ppid> ..." — so we locate strrpos($raw, ')') and read
+// the first token after it. This mirrors the descendant scan in
+// $killPrebuiltRun, which already parsed this way.
+//
+// Returns the single state character, or null when the pid has no readable
+// stat file — i.e. the process is gone (or was never ours), which for every
+// caller here means the same thing as dead.
+$readProcState = static function (int $pid): ?string {
+    if ($pid <= 0) {
+        return null;
+    }
+    // No clearstatcache() needed, and that is a second reason to read the file
+    // rather than stat the directory: file_get_contents() is not served from
+    // PHP's stat cache, so polling this in a loop always sees the current
+    // kernel state. is_dir() in a loop would have kept returning its own first
+    // answer. comm is kernel-capped at 16 bytes, so 4096 always reaches the
+    // state character.
+    $raw = @file_get_contents("/proc/{$pid}/stat", false, null, 0, 4096);
+    if (!is_string($raw) || $raw === '') {
+        return null;
+    }
+    $close = strrpos($raw, ')');
+    if ($close === false) {
+        return null;
+    }
+    $rest = ltrim(substr($raw, $close + 1));
+    if ($rest === '') {
+        return null;
+    }
+    return $rest[0];
+};
+
+// True when $pid cannot run any more code: gone, a zombie awaiting reaping, or
+// the kernel's transient 'X'/'x' "dead" states.
+$procIsDead = static function (int $pid) use ($readProcState): bool {
+    $state = $readProcState($pid);
+    return $state === null || $state === 'Z' || $state === 'X' || $state === 'x';
+};
+
+// Human-readable state for log lines and refusal messages. #97 took two days
+// and a hosting-support process list to reconstruct what a single word here
+// would have said outright, so every path that reports "could not be killed"
+// now reports what it actually observed.
+$describeProcState = static function (int $pid) use ($readProcState): string {
+    $state = $readProcState($pid);
+    if ($state === null) {
+        return 'gone (no /proc entry)';
+    }
+    $names = [
+        'R' => 'running',
+        'S' => 'sleeping (interruptible)',
+        'D' => 'uninterruptible sleep',
+        'Z' => 'ZOMBIE — already dead, awaiting reaping',
+        'T' => 'stopped',
+        't' => 'tracing stop',
+        'X' => 'dead',
+        'x' => 'dead',
+        'I' => 'idle kernel thread',
+    ];
+    return $state . ' (' . ($names[$state] ?? 'unrecognised state') . ')';
 };
 
 // This process's real uid, from /proc/self/status — not posix_getuid(), which
@@ -252,10 +364,19 @@ if (str_starts_with($path, '/__ops/')) {
     $pm2Bin = $nodeBin . ' /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
 
     // True if the PID last recorded by a spawned apply-prebuilt run is still
-    // a live process. /proc/<pid> existing is a sufficient liveness check on
-    // Linux without depending on the posix/pcntl extensions (not assumed
-    // enabled on this shared host, and not used anywhere else in this file).
-    $isPrebuiltRunning = static function () use ($prebuiltPidFile): int {
+    // a live process. Read from /proc without depending on the posix/pcntl
+    // extensions (not assumed enabled on this shared host).
+    //
+    // This used to be `is_dir("/proc/{$pid}")`, which has the #97 zombie bug in
+    // its most damaging position: the wrapper's last statement is
+    // `rm -f .apply-prebuilt.pid`, so a wrapper that was SIGKILLed never gets
+    // to remove its own pid file. Kill it, and until init reaps it there is a
+    // live pid file pointing at a /proc entry — and every subsequent
+    // /apply-prebuilt and every 5-minute watchdog tick would answer "a restart
+    // already appears to be in progress" and decline to start the run that
+    // would have brought the site back. $procIsDead treats 'Z' as dead, so the
+    // corpse of the run we just killed can no longer block its replacement.
+    $isPrebuiltRunning = static function () use ($prebuiltPidFile, $procIsDead): int {
         // triggerPrebuiltRun() now polls this in a loop waiting for a freshly
         // spawned run to appear, and PHP caches is_file()/is_dir() results for
         // the whole request — without this the poll would keep re-reading its
@@ -265,7 +386,7 @@ if (str_starts_with($path, '/__ops/')) {
             return 0;
         }
         $pid = (int) trim((string) @file_get_contents($prebuiltPidFile));
-        return ($pid > 0 && is_dir("/proc/{$pid}")) ? $pid : 0;
+        return ($pid > 0 && !$procIsDead($pid)) ? $pid : 0;
     };
 
     // Kills a still-running apply-prebuilt instance's descendants (tar, curl,
@@ -297,7 +418,14 @@ if (str_starts_with($path, '/__ops/')) {
     // spawns nothing, and the child list comes from reading /proc rather than
     // from pkill. Both work at the ceiling. exec() survives only as a fallback
     // for a host without ext-posix, where it is no worse than what it replaced.
-    $killPrebuiltRun = static function (int $pid): bool {
+    //
+    // 2026-08-31, the third and worst failure of this function: the signal
+    // landed and the VERIFICATION said it had not. See $readProcState above.
+    // $observedState is an out-parameter carrying what the final poll actually
+    // saw, so the refusal message can say "state R (running)" or "state Z" or
+    // "gone" instead of the unfalsifiable "could not be killed".
+    $killPrebuiltRun = static function (int $pid, ?string &$observedState = null) use ($procIsDead, $describeProcState): bool {
+        $observedState = null;
         $canSignal = function_exists('posix_kill');
 
         // Descendants, newest-generation-first, resolved entirely from /proc —
@@ -347,13 +475,36 @@ if (str_starts_with($path, '/__ops/')) {
             @exec('kill -9 ' . $pid . ' 2>&1');
         }
 
-        // SIGKILL is delivered synchronously but reaping is not — give the
-        // kernel a moment before reading /proc/<pid>'s absence as proof.
-        // (This also preserves the settle time the old call site had, so a
-        // replacement still never races the dying wrapper for the same log
-        // and pid files.)
-        usleep(300000);
-        return !is_dir("/proc/{$pid}");
+        // SIGKILL is delivered synchronously but the process's teardown is not,
+        // so give the kernel a moment before reading the state as proof.
+        //
+        // The single fixed usleep(300000) is replaced by a short backoff that
+        // returns the instant the process is dead. Two reasons:
+        //
+        //   * the common case gets FASTER, not slower — a wrapper that dies
+        //     promptly is confirmed at 100ms instead of always costing 300ms;
+        //   * the pathological case gets a real budget instead of a guess. 300ms
+        //     was chosen with no measurement, on a host whose whole problem is
+        //     that it is overloaded; the schedule below waits up to 1.5s in
+        //     total before giving up, which is still nothing next to the 4h39m
+        //     outage that one premature "no" caused.
+        //
+        // The first delay is never skipped: the old call site relied on this
+        // settle time so a replacement run never races the dying wrapper for
+        // the same .apply-prebuilt.log and .apply-prebuilt.pid.
+        //
+        // 'Dead' here includes 'Z'. A zombie has already run its last
+        // instruction — it cannot touch a file, and it cannot be the thing that
+        // is "still running".
+        foreach ([100000, 100000, 200000, 300000, 400000, 400000] as $delayUs) {
+            usleep($delayUs);
+            if ($procIsDead($pid)) {
+                $observedState = $describeProcState($pid);
+                return true;
+            }
+        }
+        $observedState = $describeProcState($pid);
+        return false;
     };
 
     // Straggler reaper — issue #98 §2.5.
@@ -373,7 +524,7 @@ if (str_starts_with($path, '/__ops/')) {
     // if the live God Daemon cannot be identified from the pid file it writes
     // itself, no daemon is touched at all, because killing the wrong one takes
     // health-web and bid-web down together.
-    $reapStragglers = static function (bool $apply) use ($scanOwnProcesses, $prebuiltPidFile): array {
+    $reapStragglers = static function (bool $apply) use ($scanOwnProcesses, $prebuiltPidFile, $procIsDead, $describeProcState): array {
         $result = [
             'ok' => false,
             'applied' => $apply,
@@ -581,8 +732,14 @@ if (str_starts_with($path, '/__ops/')) {
         usleep(200000);
         clearstatcache();
         foreach ($result['killed'] as $pid) {
-            if (is_dir('/proc/' . $pid)) {
-                $result['notes'][] = "pid {$pid} STILL PRESENT after SIGKILL — the signal did not land";
+            // Same #97 correction as $killPrebuiltRun: a /proc entry is not a
+            // live process. A reaped-pending zombie here is a signal that DID
+            // land, and reporting it as "the signal did not land" is how a
+            // working recovery path gets mistaken for a broken one. (This
+            // reaper is still observe-only on the watchdog path — see #98;
+            // this changes only what it says about kills it did make.)
+            if (!$procIsDead((int) $pid)) {
+                $result['notes'][] = "pid {$pid} STILL ALIVE after SIGKILL, state " . $describeProcState((int) $pid) . " — the signal did not land";
             }
         }
 
@@ -650,6 +807,11 @@ if (str_starts_with($path, '/__ops/')) {
             'observed_pid' => 0,
             'wait_ms' => 0,
             'locked' => true,
+            // Set only when $force had to kill a live run. Carries the state
+            // $killPrebuiltRun last observed, so the caller's refusal message
+            // can name it — #97's reconstruction cost two days and a support
+            // ticket because this string did not exist.
+            'kill_state' => null,
         ];
 
         if ($gate['blocking']) {
@@ -672,13 +834,17 @@ if (str_starts_with($path, '/__ops/')) {
                 if (!$force) {
                     return $runningPid;
                 }
-                if (!$killPrebuiltRun($runningPid)) {
-                    // Kill did not land — almost certainly because exec()
-                    // itself could not spawn. Refuse rather than add another
-                    // wrapper to a process table that is already full. The
-                    // caller reports this the same way it reports an ordinary
-                    // "one is already running", which is the honest answer:
-                    // one still is.
+                $killState = null;
+                $killed = $killPrebuiltRun($runningPid, $killState);
+                $outcome['kill_state'] = $killState;
+                if (!$killed) {
+                    // The wrapper is genuinely still executing — verified
+                    // against /proc/<pid>/stat's state character, so a zombie
+                    // is no longer mistaken for it. Refuse rather than add
+                    // another wrapper to a process table that is already full.
+                    // The caller reports this the same way it reports an
+                    // ordinary "one is already running", which is the honest
+                    // answer: one still is.
                     return $runningPid;
                 }
             }
@@ -737,6 +903,49 @@ if (str_starts_with($path, '/__ops/')) {
         // blip, short enough that "found out via a human visiting the site"
         // should never happen again.
         $failAlertThreshold = 3;
+
+        // Health-probe budget, scaled by the consecutive-failure count already
+        // on record — SPEC-HEALTH-20260831-RECOVERY-LOAD §2.3.
+        //
+        // The probe was a flat 150 attempts, each attempt two `curl` forks
+        // against 127.0.0.1:3000. When the app comes up that costs a couple of
+        // seconds and nobody notices. When the app CANNOT come up it is 300
+        // curl forks (plus 150 `sleep` forks — sleep is /bin/sleep, not a shell
+        // builtin in /bin/sh) hammering a port that is refusing connections,
+        // for up to ~25 minutes. The pm2-ensure-running watchdog escalates
+        // every 5 minutes, so several of these overlap, and the account this is
+        // running on is one whose presenting symptom is that it cannot fork.
+        // The recovery mechanism becomes the load.
+        //
+        // .apply-prebuilt-fail-count already persists across runs (reset to 0
+        // on success, incremented on failure) and was read only to decide
+        // whether to send an ntfy alert. It is exactly the signal needed here:
+        // it distinguishes "first try after a healthy period, give it
+        // everything" from "the fourth consecutive attempt at something that
+        // has not worked once".
+        //
+        //   prior consecutive failures -> attempts -> curl forks -> worst case
+        //     0   150   300   full budget, unchanged: a cold start after a
+        //                     healthy period gets exactly what it gets today
+        //     1   100   200
+        //     2    60   120   60 was this probe's own budget before 2026-08-02,
+        //                     and it carried real cold starts for months
+        //     3+   30    60   evidence at this point says the app is not
+        //                     starting; each further attempt is pure load
+        //
+        // The floor is 30 rather than something smaller because a genuine cold
+        // start under host load has been observed to need tens of seconds
+        // (which is why the budget was raised 60 -> 150 on 2026-08-02), and
+        // aborting a deploy that WOULD have succeeded triggers the rollback
+        // path. 30 attempts still exceeds a normal cold start several times
+        // over. This trades an 80% cut in the failing case against no change at
+        // all in the healthy case — deliberately, because the healthy case is
+        // the one where being wrong costs a working deploy.
+        $probeMaxFresh = 150; // 0 prior consecutive failures
+        $probeMaxAfter1 = 100;
+        $probeMaxAfter2 = 60;
+        $probeMaxAfter3 = 30; // 3 or more
+
         $script = "cd {$appDir} "
             . "&& SWAPPED=0; "
             . "{ "
@@ -747,6 +956,20 @@ if (str_starts_with($path, '/__ops/')) {
             . "echo \$\$ > .apply-prebuilt.pid; "
             . "echo '{$startMarker} '$(date) > .apply-prebuilt.log; "
             . "echo '[PWD] '$(pwd) >> .apply-prebuilt.log; "
+            // Probe budget, decided here — before anything can abort — so it is
+            // always in the log even when an earlier stage fails. Read once;
+            // the success path below reuses $PREV_FAILS rather than cat-ing the
+            // file a second time. The case guard turns a truncated or garbage
+            // fail-count file into 0 (the generous budget) instead of letting
+            // `[ "$PREV_FAILS" -ge 3 ]` abort on a syntax error — failing OPEN,
+            // the same rule the nproc gate follows.
+            . "PREV_FAILS=$(cat .apply-prebuilt-fail-count 2>/dev/null || echo 0); "
+            . "case \"\$PREV_FAILS\" in ''|*[!0-9]*) PREV_FAILS=0 ;; esac; "
+            . "if [ \"\$PREV_FAILS\" -ge 3 ]; then PROBE_MAX={$probeMaxAfter3}; "
+            . "elif [ \"\$PREV_FAILS\" -ge 2 ]; then PROBE_MAX={$probeMaxAfter2}; "
+            . "elif [ \"\$PREV_FAILS\" -ge 1 ]; then PROBE_MAX={$probeMaxAfter1}; "
+            . "else PROBE_MAX={$probeMaxFresh}; fi; "
+            . "echo \"[PROBE-BUDGET] prev_consecutive_fails=\$PREV_FAILS attempts=\$PROBE_MAX\" >> .apply-prebuilt.log; "
             // Stage dir is unique per run (own PID suffix), and cleanup of
             // *previous* runs' leftovers is best-effort / non-blocking —
             // deliberately NOT part of the && chain. 2026-08-16: a
@@ -833,11 +1056,22 @@ if (str_starts_with($path, '/__ops/')) {
             // both sides share the same generous budget instead of the
             // client giving up before the thing it's waiting on could ever
             // finish.
-            . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 150); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; test \"\$PROBE_OK\" = 1; } "
+            //
+            // $PROBE_MAX, not a literal 150, since
+            // SPEC-HEALTH-20260831-RECOVERY-LOAD: 150 for a first attempt after
+            // a healthy period (unchanged), shrinking to 30 by the fourth
+            // consecutive failure. See the $probeMax* table above for the full
+            // schedule and its reasoning. Also logs what the probe actually
+            // spent, so "the app never came up" and "we gave up too early" stop
+            // being indistinguishable in the log.
+            . "&& { PROBE_OK=0; for ATTEMPT in $(seq 1 \$PROBE_MAX); do if curl -fsS --max-time 10 http://127.0.0.1:3000/news >/dev/null 2>&1 && curl -fsS --max-time 10 http://127.0.0.1:3000/news/60 >/dev/null 2>&1; then PROBE_OK=1; break; fi; sleep 1; done; echo \"[PROBE] ok=\$PROBE_OK attempts_used=\$ATTEMPT budget=\$PROBE_MAX\" >> .apply-prebuilt.log; test \"\$PROBE_OK\" = 1; } "
             . "&& STATIC_FILE=$(find .next3/static/chunks -type f -name '*.js' -print -quit) "
             . "&& STATIC_REL=\${STATIC_FILE#.next3/static/} "
             . "&& curl -fsS --max-time 10 \"http://127.0.0.1:3000/_next/static/\$STATIC_REL\" | head -c 1 | grep -vq '<' "
-            . "&& { PREV_FAILS=$(cat .apply-prebuilt-fail-count 2>/dev/null || echo 0); rm -f .apply-prebuilt-fail-count; "
+            // $PREV_FAILS was already read at the top of this script to size the
+            // probe budget, so this no longer re-cats the file — one fewer fork
+            // on the path that exists because forks are scarce.
+            . "&& { rm -f .apply-prebuilt-fail-count; "
             . (
                 $ntfyUrl !== ''
                     ? "if [ \"\$PREV_FAILS\" -ge {$failAlertThreshold} ]; then curl -fsS --max-time 8 -H 'Title: health.j172.tw self-heal recovered' -d \"apply-prebuilt-force succeeded after \$PREV_FAILS consecutive failure(s)\" " . escapeshellarg($ntfyUrl) . " >/dev/null 2>&1 || true; fi; "
@@ -996,8 +1230,21 @@ if (str_starts_with($path, '/__ops/')) {
             // all the way through.
             http_response_code(503);
             echo "Apply prebuilt REFUSED: pid {$refusedPid} is still running and could not be killed.\n";
-            echo "The account is out of process slots (exec() cannot spawn), so starting another run\n";
-            echo "would only deepen the problem. Free process slots first.\n";
+            // State the evidence, not just the verdict. On 2026-08-31 this
+            // message was printed about a pid that had in fact been killed
+            // (#97), and establishing that took a hosting-support process list
+            // captured hours later. The observed state is now in the body, so
+            // the next incident is one line of reading.
+            if (($forceOutcome['kill_state'] ?? null) !== null) {
+                echo "Observed state of pid {$refusedPid} after SIGKILL + 1.5s of backoff: {$forceOutcome['kill_state']}\n";
+                echo "(A state of Z, or a missing /proc entry, counts as DEAD and would NOT have refused.)\n";
+            } else {
+                echo "No kill was attempted — the run was not observed alive at the moment of the check.\n";
+            }
+            echo "Starting another run while the wrapper is genuinely still executing would stack two\n";
+            echo "concurrent extract+restart runs on an account that is already short of process slots.\n";
+            echo "Free process slots first (see /__ops/reap-stragglers?key=...&apply=1), or check\n";
+            echo "/__ops/pm2-status?key=... for the current process count and gate state.\n";
             exit;
         }
 
@@ -1176,8 +1423,10 @@ if (str_starts_with($path, '/__ops/')) {
 
         // A restart triggered by this endpoint, apply-prebuilt-force, or a manual
         // apply-prebuilt can take well over a minute to health-probe (worst case
-        // ~20 min if the probe curls hang instead of refusing outright) — easily
-        // longer than this endpoint's cron interval. Without this check, a cron
+        // ~52 min if the probe curls hang instead of refusing outright, now
+        // ~10 min once the fail-count has scaled the budget down to 30
+        // attempts — see $probeMax* in $buildPrebuiltCommand) — still longer
+        // than this endpoint's cron interval. Without this check, a cron
         // tick landing mid-restart would race a second concurrent extract+restart
         // against the one still running. triggerPrebuiltRun()'s /proc-based check
         // (shared with /apply-prebuilt and /apply-prebuilt-force) catches an
@@ -1268,19 +1517,35 @@ if (str_starts_with($path, '/__ops/')) {
         echo "blocking      = " . ($gate['blocking'] ? 'YES — escalation is being refused right now' : 'no') . "\n";
         echo $gate['note'] . "\n\n";
 
-        // ---- the three facts #97 needs, settled in one request ----
-        // Support confirmed ext-posix is enabled, yet posix_kill did not work.
-        // The standing hypothesis is that posix_kill sits in disable_functions,
-        // where function_exists() returns false and killPrebuiltRun() silently
-        // falls back to exec() — the fallback that cannot spawn at the ceiling,
-        // and the reason #74 was a no-op for two days without anyone seeing it.
+        // ---- the three facts #97 needed, and their answer ----
+        // SETTLED 2026-08-31: all three came back true/true/'' — posix_kill was
+        // callable the whole time and disable_functions is empty. Both earlier
+        // hypotheses (missing ext-posix; posix_kill in disable_functions) are
+        // dead. The signal was landing; the VERIFICATION was wrong, because
+        // is_dir("/proc/<pid>") is true for a killed-but-unreaped zombie. See
+        // $readProcState / $procIsDead.
+        //
+        // These lines stay because a fix whose availability cannot be observed
+        // is a fix nobody can trust — the exec() fallback is still in the code
+        // for hosts without ext-posix, and this is how you tell which branch
+        // this host is on without guessing.
         echo "==== signal capability (issue #97) ====\n";
         echo "extension_loaded('posix')     = " . var_export(extension_loaded('posix'), true) . "\n";
         echo "function_exists('posix_kill') = " . var_export(function_exists('posix_kill'), true) . "\n";
         echo "ini_get('disable_functions')  = " . var_export(ini_get('disable_functions'), true) . "\n";
         echo "function_exists('exec')       = " . var_export(function_exists('exec'), true) . "\n";
         echo "function_exists('shell_exec') = " . var_export(function_exists('shell_exec'), true) . "\n";
-        echo "kill mechanism in use         = " . (function_exists('posix_kill') ? 'posix_kill (forkless)' : 'exec kill -9 (needs a fork)') . "\n\n";
+        echo "kill mechanism in use         = " . (function_exists('posix_kill') ? 'posix_kill (forkless)' : 'exec kill -9 (needs a fork)') . "\n";
+        // Proof the liveness test works on this host, printed from a pid that is
+        // definitely alive: this very request. If the /proc/<pid>/stat parse
+        // ever silently degrades, this line says so before an outage does.
+        $selfPid = (int) getmypid();
+        echo "liveness test                 = /proc/<pid>/stat state char, 'Z' counts as DEAD\n";
+        echo "self-check (pid {$selfPid})" . str_repeat(' ', max(1, 18 - strlen((string) $selfPid))) . "= " . $describeProcState($selfPid)
+            . ' -> ' . ($procIsDead($selfPid) ? 'DEAD (WRONG — the parse is broken)' : 'alive (correct)') . "\n";
+        // And the pid the apply/force/watchdog paths actually gate on.
+        $recordedPid = is_file($prebuiltPidFile) ? (int) trim((string) @file_get_contents($prebuiltPidFile)) : 0;
+        echo "apply-prebuilt pid file       = " . ($recordedPid > 0 ? $recordedPid . ' -> ' . $describeProcState($recordedPid) : 'absent (no run recorded)') . "\n\n";
 
         echo "==== this account's processes (/proc, no fork) ====\n";
         if ($gate['count'] === null) {
