@@ -1075,14 +1075,31 @@ if (str_starts_with($path, '/__ops/')) {
         // 2026-08-31 that is ~56 escalations, and the daemons they left behind
         // held the slots the next escalation needed.
         //
-        // So before spawning anything: reap what is already stuck (forkless when
-        // posix_kill exists), then read the process count out of /proc and
-        // refuse to escalate if the table is already crowded.
+        // So before spawning anything: survey what is already stuck, then read
+        // the process count out of /proc and refuse to escalate if the table is
+        // already crowded.
+        //
+        // OBSERVE-ONLY on this path, deliberately. The reaper signals processes
+        // on a live host, it is new, and this repo has no PHP test setup — the
+        // only automated check on this file is `php -l` in CI, which proves it
+        // parses and nothing more. One of its rules can in principle reach an
+        // unmanaged bid-web worker, i.e. the *other* site. So it runs here in
+        // dry-run and writes what it *would* have killed to the watchdog log;
+        // `/__ops/reap-stragglers?...&apply=1` remains available to act on that
+        // evidence by hand.
+        //
+        // The precedent for this caution is #97: posix_kill was shipped as a
+        // recovery path, silently fell back to exec(), and stayed a no-op for
+        // two days because nothing reported whether it was working. Reading a
+        // real incident's log before granting this kill authority is the cheap
+        // version of that lesson. Flip to true once the logged decisions have
+        // been checked against a real accumulation.
         // ------------------------------------------------------------------
-        $reap = $reapStragglers(true);
-        @file_put_contents($watchdogLog, "[{$now}] " . $reapSummary($reap) . "\n", FILE_APPEND);
+        $reap = $reapStragglers(false);
+        @file_put_contents($watchdogLog, "[{$now}] (observe-only) " . $reapSummary($reap) . "\n", FILE_APPEND);
 
-        // Re-read after reaping: freed slots should count towards this decision.
+        // Re-read after the survey. Nothing was freed — the reaper did not act —
+        // so this is simply the current count.
         $gate = $processGate(true);
         @file_put_contents($watchdogLog, "[{$now}] nproc-gate: " . $gate['note'] . "\n", FILE_APPEND);
 
