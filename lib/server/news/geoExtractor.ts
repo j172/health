@@ -15,6 +15,7 @@ import {
   type GeocodeProvider,
 } from "@/lib/server/facilities/geocodeBudget";
 import { normalizeAddressForQuery } from "@/lib/server/facilities/addressNormalize";
+import { matchStreetAddress } from "./addressMatch";
 import {
   COMMON_HOSPITAL_PATTERNS,
   selectFacilityMatch,
@@ -200,12 +201,11 @@ export async function extractLocationFromText(
 
   // 4. External Geocoding API Fallback (Controlled rate & daily budget)
   if (allowExternalGeocode) {
-    // Look for address-like fragments: [縣市][區鄉鎮市][路街道巷弄號]
-    const addressMatch = combinedText.match(
-      /([台臺][北中南東]|新北|桃園|新竹|苗栗|彰化|南投|雲林|嘉義|屏東|宜蘭|花蓮|臺東|台東|澎湖|金門|連江)[縣市][^，,。\n\r ]{2,20}(?:路|街|大道|巷|弄|號)/,
-    );
-    if (addressMatch) {
-      const rawAddress = addressMatch[0];
+    // Requires a house number — see addressMatch.ts. The pattern that used to
+    // live here ended on a bare 路/街/號 and matched 「…今起上路」 as an address;
+    // over 40 live articles it found 9 "addresses" and none was one.
+    const rawAddress = matchStreetAddress(combinedText);
+    if (rawAddress) {
       const normalizedQuery = normalizeAddressForQuery(rawAddress);
 
       if (normalizedQuery) {
