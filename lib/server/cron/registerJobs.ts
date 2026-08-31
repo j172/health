@@ -92,13 +92,13 @@ export const registerCronJobs = (): void => {
     "0 8 * * *",
     runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()),
   );
-  // WRA drought bulletins are NOT scheduled here. opendata.wra.gov.tw answers
-  // this host with an F5 Shape JavaScript challenge rather than JSON, so an
-  // in-process fetch can only ever fail — a guaranteed daily error in the cron
-  // log for a job that cannot succeed. .github/workflows/wra-drought-sync.yml
-  // runs it from a GitHub runner instead, which that source does return 200 to,
-  // and posts the rows to /api/admin/wra-sync.
-  // See docs/specs/phase5-wra-drought-alerts.md section 7.
+  // The WRA drought source was removed on 2026-08-31 — see
+  // docs/specs/drop-wra-drought-source.md. It used to be excluded from this
+  // scheduler because opendata.wra.gov.tw answers this host with an F5 Shape
+  // challenge rather than JSON, so it ran from a GitHub runner instead. It was
+  // dropped for a different reason: the source is a historical bulletin log
+  // going back to 2012, and none of its 15 active records falls inside the
+  // 90-day freshness window the news pipeline now applies.
   // Weekly on Sunday at 4am — NHI updates clinic/pharmacy weekly service hours data weekly
   cron.schedule(
     "0 4 * * 0",
