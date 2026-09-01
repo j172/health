@@ -55,8 +55,6 @@ export type FeedCode =
   | "cdc_outbreak"
   | "cdc_letters"
   | "womenshealth_tw"
-  | "ntuh_news"
-  | "ntuh_ifc_news"
   | "durex_article"
   | "helloyishi_news"
   | "wegetcare_blog"

@@ -44,8 +44,6 @@ const SOURCE_LABELS: Record<string, string> = {
   love_newlife: "癌友新生命協會",
   water_gov: "台灣自來水公司",
   womenshealth: "Women's Health 美力圈",
-  ntuh: "臺大醫院",
-  ntuh_ifc: "臺大整合醫療",
   durex: "杜蕾斯",
   helloyishi: "Hello 醫師",
   wegetcare: "醫聯網",

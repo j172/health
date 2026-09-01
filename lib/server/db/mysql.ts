@@ -199,7 +199,7 @@ export const ensureSchema = async (): Promise<void> => {
   // retired source names whose historical rows should be removed entirely.
   await p.query(`
     DELETE FROM news_items
-    WHERE source_name IN ('culture_tw', 'public_art', 'mababy')
+    WHERE source_name IN ('culture_tw', 'public_art', 'mababy', 'ntuh', 'ntuh_ifc')
   `);
 
   // Auto-seed public_arts table from bundled data/public-art.json if empty
