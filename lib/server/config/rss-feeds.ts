@@ -254,20 +254,6 @@ export const RSS_FEEDS: FeedConfig[] = [
     skipDetailFetch: true,
   },
   {
-    code: "ntuh_news",
-    name: "臺大醫院",
-    url: "https://news.google.com/rss/search?q=site:ntuh.gov.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "ntuh",
-    skipDetailFetch: true,
-  },
-  {
-    code: "ntuh_ifc_news",
-    name: "臺大整合醫療",
-    url: "https://news.google.com/rss/search?q=site:ntuh.gov.tw/ifc&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
-    sourceName: "ntuh_ifc",
-    skipDetailFetch: true,
-  },
-  {
     code: "ankemedia_rss",
     name: "AnkeMedia 安可人生",
     url: "https://ankemedia.com/feed",

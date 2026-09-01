@@ -32,8 +32,6 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "nhi", label: "中央健康保險署" },
       { sourceName: "moenv", label: "環境部" },
       { sourceName: "water_gov", label: "台灣自來水公司" },
-      { sourceName: "ntuh", label: "臺大醫院" },
-      { sourceName: "ntuh_ifc", label: "臺大整合醫療" },
       { sourceName: "femh", label: "亞東紀念醫院" },
       { sourceName: "cgmh", label: "長庚紀念醫院" },
       { sourceName: "vghtpe", label: "臺北榮總" },
