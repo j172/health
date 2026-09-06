@@ -1,6 +1,7 @@
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { normalizeAddress, toHalfwidthDigits } from "@/lib/server/facilities/csv";
 import { env } from "@/lib/server/config/env";
+import { httpGetText } from "@/lib/server/net/httpClient";
 
 const API_URL = "https://data.moenv.gov.tw/api/v2/gp_p_43";
 
@@ -29,9 +30,13 @@ export async function fetchMoenvGreenHotels(): Promise<FacilityRecord[]> {
 
   while (true) {
     const url = `${API_URL}?api_key=${encodeURIComponent(apiKey)}&limit=${pageSize}&offset=${offset}&format=JSON`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`gp_p_43 fetch failed: HTTP ${res.status} (offset=${offset})`);
-    const json = await res.json();
+    // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
+    // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
+    const { status, text } = await httpGetText(url);
+    if (status < 200 || status >= 300) {
+      throw new Error(`gp_p_43 fetch failed: HTTP ${status} (offset=${offset})`);
+    }
+    const json = JSON.parse(text);
     const rows = Array.isArray(json) ? json : [];
     all.push(...rows);
     if (rows.length < pageSize) break;

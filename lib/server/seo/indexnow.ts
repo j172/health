@@ -1,6 +1,7 @@
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { listLatestNews } from "@/lib/server/news/queries";
 import { TOOL_CATALOG, isToolIndexable } from "@/lib/server/tools/catalog";
+import { httpRequest } from "@/lib/server/net/httpClient";
 
 export const DEFAULT_INDEXNOW_KEY = "c0e7b8782f9c464c8d5c414995f7c32e";
 
@@ -75,7 +76,9 @@ export async function submitToIndexNow(
     };
 
     try {
-      const response = await fetch("https://api.indexnow.org/indexnow", {
+      // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
+      // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
+      const response = await httpRequest("https://api.indexnow.org/indexnow", {
         method: "POST",
         headers: {
           "Content-Type": "application/json; charset=utf-8",
@@ -85,9 +88,12 @@ export async function submitToIndexNow(
 
       lastStatus = response.status;
       // IndexNow returns 200 OK or 202 Accepted (key validation pending)
-      if (!response.ok && response.status !== 202) {
-        const text = await response.text().catch(() => "");
-        const errorMsg = `IndexNow HTTP ${response.status}: ${text || response.statusText}`;
+      const isOk =
+        (response.status >= 200 && response.status < 300) ||
+        response.status === 202;
+      if (!isOk) {
+        const text = response.buffer.toString("utf-8");
+        const errorMsg = `IndexNow HTTP ${response.status}: ${text}`;
         console.warn(`[IndexNow] Submission warning: ${errorMsg}`);
         return {
           ok: false,

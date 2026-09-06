@@ -1,4 +1,5 @@
 import { env } from "@/lib/server/config/env";
+import { httpGetText } from "@/lib/server/net/httpClient";
 import { upsertGreenProducts, type GreenProductRecord } from "./queries";
 
 const API_URL = "https://data.moenv.gov.tw/api/v2/gp_p_02";
@@ -23,11 +24,13 @@ export async function runGreenProductsSync(): Promise<IngestGreenProductsResult>
 
   while (true) {
     const url = `${API_URL}?api_key=${encodeURIComponent(apiKey)}&limit=${PAGE_SIZE}&offset=${offset}&format=JSON`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error(`gp_p_02 fetch failed: HTTP ${res.status} (offset=${offset})`);
+    // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
+    // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
+    const { status, text } = await httpGetText(url);
+    if (status < 200 || status >= 300) {
+      throw new Error(`gp_p_02 fetch failed: HTTP ${status} (offset=${offset})`);
     }
-    const json = await res.json();
+    const json = JSON.parse(text);
     const rows = Array.isArray(json) ? json : [];
     page++;
     all.push(...rows);
