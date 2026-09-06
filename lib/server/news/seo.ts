@@ -75,7 +75,7 @@ export const buildArticleMetadata = (news: NewsDetailItem): Metadata => {
       url,
       siteName: SITE_NAME,
       locale: "zh_TW",
-      alternateLocale: ["zh_CN", "en_US"],
+      alternateLocale: ["en_US"],
       publishedTime,
       modifiedTime: publishedTime,
       authors: news.dept_name ? [news.dept_name] : undefined,

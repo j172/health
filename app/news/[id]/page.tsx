@@ -22,6 +22,7 @@ import NewsCard from "@/components/News/NewsCard";
 import HeroImage from "@/components/News/HeroImage";
 import NewsMapCard from "@/components/News/NewsMapCard";
 import LocalizedText from "@/components/ui/LocalizedText";
+import GooglePreferredSourceButton from "@/components/News/GooglePreferredSourceButton";
 import { displayDate } from "@/lib/format/news";
 
 export const runtime = "nodejs";
@@ -309,14 +310,17 @@ export default async function NewsDetailPage({
               >
                 ← 返回所有健康新聞
               </Link>
-              <a
-                href={news.canonical_url}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-700"
-              >
-                前往官方原始網頁 ↗
-              </a>
+              <div className="flex flex-wrap items-center gap-3">
+                <GooglePreferredSourceButton />
+                <a
+                  href={news.canonical_url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-700"
+                >
+                  前往官方原始網頁 ↗
+                </a>
+              </div>
             </div>
           </article>
 

@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     locale: "zh_TW",
-    alternateLocale: ["zh_CN", "en_US"],
+    alternateLocale: ["en_US"],
     images: [{ url: `${getBaseUrl()}/images/og/home.png`, width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {
