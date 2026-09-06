@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     url: `${baseUrl}/tools`,
     siteName: SITE_NAME,
     locale: "zh_TW",
-    alternateLocale: ["zh_CN", "en_US"],
+    alternateLocale: ["en_US"],
     images: [
       { url: `${baseUrl}/images/og/tools.png`, width: 1200, height: 630 },
     ],
