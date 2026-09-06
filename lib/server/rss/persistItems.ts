@@ -17,6 +17,7 @@ export interface PersistStats {
    * number means the feed is handing out unstable external_ids.
    */
   externalIdDrift: number;
+  insertedIds: number[];
 }
 
 const dateToSql = (value: Date | null): string | null => {
@@ -56,7 +57,7 @@ export const persistItems = async (
   items: EnrichedRssItem[],
 ): Promise<PersistStats> => {
   if (items.length === 0) {
-    return { inserted: 0, updated: 0, unchanged: 0, externalIdDrift: 0 };
+    return { inserted: 0, updated: 0, unchanged: 0, externalIdDrift: 0, insertedIds: [] };
   }
 
   return withTransaction(async (conn) => {
@@ -64,6 +65,7 @@ export const persistItems = async (
     let updated = 0;
     let unchanged = 0;
     let externalIdDrift = 0;
+    const insertedIds: number[] = [];
 
     for (const item of items) {
       const now = utcNowSql();
@@ -232,6 +234,9 @@ export const persistItems = async (
       // above, on a payload_hash comparison, before reaching this statement.
       if (upsertResult.affectedRows === 1) {
         inserted += 1;
+        if (upsertResult.insertId) {
+          insertedIds.push(upsertResult.insertId);
+        }
       } else {
         updated += 1;
       }
@@ -252,6 +257,6 @@ export const persistItems = async (
       );
     }
 
-    return { inserted, updated, unchanged, externalIdDrift };
+    return { inserted, updated, unchanged, externalIdDrift, insertedIds };
   });
 };
