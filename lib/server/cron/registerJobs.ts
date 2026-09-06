@@ -13,6 +13,7 @@ import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
 import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
+import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -140,5 +141,10 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "30 4 * * *",
     runGuarded("green-products-cron.log", () => runGreenProductsSync()),
+  );
+  // IndexNow daily refresh at 5:00am — submits latest 100 news articles to IndexNow / Bing
+  cron.schedule(
+    "0 5 * * *",
+    runGuarded("indexnow-sync-cron.log", () => submitRecentNewsToIndexNow(100)),
   );
 };

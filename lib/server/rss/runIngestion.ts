@@ -52,6 +52,8 @@ import {
 } from "@/lib/server/rss/existingHashes";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
+import { getBaseUrl } from "@/lib/server/news/seo";
+import { submitToIndexNow } from "@/lib/server/seo/indexnow";
 import type { NewsAsset } from "@/types/rss";
 
 const LOCK_NAME = "rss_ingestion_lock";
@@ -685,6 +687,22 @@ export const runRssIngestion = async (
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;
+
+      if (persisted.insertedIds && persisted.insertedIds.length > 0) {
+        const baseUrl = getBaseUrl();
+        const newUrls = persisted.insertedIds.map((id) => `${baseUrl}/news/${id}`);
+        submitToIndexNow(newUrls)
+          .then((res) => {
+            if (res.ok) {
+              console.info(`[runIngestion] IndexNow: submitted ${res.submittedCount} new article(s).`);
+            } else {
+              console.warn(`[runIngestion] IndexNow submission warning: ${res.error}`);
+            }
+          })
+          .catch((err) => {
+            console.error("[runIngestion] IndexNow error:", err);
+          });
+      }
       const ended = new Date();
       const summary: IngestionSummary = {
         trigger,

@@ -22,6 +22,7 @@ const getAckSnapshot = (): boolean => {
 declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void;
+    clarity?: (...args: unknown[]) => void;
   }
 }
 
@@ -42,6 +43,10 @@ export default function PrivacyConsentBanner() {
       window.gtag("consent", "update", {
         analytics_storage: grantAnalytics ? "granted" : "denied",
       });
+    }
+
+    if (typeof window.clarity === "function") {
+      window.clarity("consent", grantAnalytics);
     }
   };
 

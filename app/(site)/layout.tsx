@@ -6,6 +6,7 @@ import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_DESCRIPTI
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 import GoogleTag from "@/components/Analytics/GoogleTag";
+import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", fallback: ["system-ui", "sans-serif"] });
 
@@ -60,6 +61,7 @@ export default function RootLayout({
       </head>
       <body className={`dark:bg-black ${inter.className}`}>
         <GoogleTag />
+        <MicrosoftClarity />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
         <Provider>{children}</Provider>
