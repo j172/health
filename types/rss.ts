@@ -38,6 +38,7 @@ export type FeedCode =
   | "mirrormedia_healthnews"
   | "udn_health"
   | "moenv_mnews"
+  | "moenv_podcast"
   | "yahoo_health"
   | "setn_health"
   | "ettoday_health"
