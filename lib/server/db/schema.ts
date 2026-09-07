@@ -846,4 +846,23 @@ export const TABLE_DDL = {
       KEY idx_green_product_sign (sign_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 環境部 (MOENV) 碳足跡產品資訊 — data.moenv.gov.tw CFP_P_01
+  carbonFootprintProducts: `
+    CREATE TABLE IF NOT EXISTS carbon_footprint_products (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      cfpl_code VARCHAR(50) NOT NULL,
+      product_name VARCHAR(500) NOT NULL,
+      company_name VARCHAR(255) NULL,
+      carbon_footprint_data VARCHAR(255) NULL,
+      declared_unit VARCHAR(255) NULL,
+      expire_date VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cfp_code (cfpl_code),
+      KEY idx_cfp_product_name (product_name(100)),
+      KEY idx_cfp_company_name (company_name(100))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 /**
- * Fetches MOENV's 環保標章旅館環境即時通地圖資料 (gp_p_43) open-data API
- * and pushes the records to production's /api/admin/facilities-import endpoint.
+ * Fetches MOENV's 環保標章旅館環境即時通地圖資料 (gp_p_43) AND 環保旅館推動計畫旅館名冊
+ * (epr_p_02) open-data APIs and pushes the combined records to production's
+ * /api/admin/facilities-import endpoint. Both datasets feed the same
+ * `green_hotel` facilityType/tool page (see issue #130) — kept as separate
+ * sourceKeys ("moenv_green_hotel" / "moenv_green_hotel_epr") so their rows
+ * never collide on (source_key, source_id) and each can be re-synced
+ * independently.
  *
  * Each record from gp_p_43 contains:
  * - name: 旅館名稱
@@ -13,13 +18,25 @@
  * - county: 縣市
  * - town: 行政區
  *
+ * Each record from epr_p_02 contains (no coordinates — enters the shared
+ * address-geocode backfill, see lib/server/facilities/geocodeBatch.ts's
+ * SOURCES_IN_PRIORITY, which "moenv_green_hotel_epr" is registered in):
+ * - name: 旅館名稱
+ * - phone / mobile: 電話 / 手機
+ * - cityname: 縣市
+ * - address: 地址
+ * - level: 級別
+ * - citycode: 縣市代碼
+ * - year: 年度
+ *
  * Usage:
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> MOENV_GP_API_KEY=<key> node scripts/import-moenv-green-hotels.mjs
  */
 import { normalizeAddress, toHalfwidthDigits, submitFacilities } from "./lib/mohw-csv.mjs";
 
 const API_URL = "https://data.moenv.gov.tw/api/v2/gp_p_43";
-const BASE_URL = process.env.HEALTH_BASE_URL || "https://health.j172.tw";
+const EPR_API_URL = "https://data.moenv.gov.tw/api/v2/epr_p_02";
+const BASE_URL = (process.env.HEALTH_BASE_URL || "https://health.j172.tw").replace(/\/$/, "");
 const ADMIN_SECRET = process.env.ADMIN_SECRET || process.env.RSS_SYNC_ADMIN_SECRET;
 const MOENV_KEY = process.env.MOENV_GP_API_KEY || process.env.MOENV_AQI_API_KEY;
 const POST_BATCH_SIZE = 1000;
@@ -92,9 +109,75 @@ function toRecords(rows) {
   return records;
 }
 
+async function fetchAllEprRows() {
+  console.log("Fetching MOENV 環保旅館推動計畫旅館名冊 (epr_p_02)...");
+  const all = [];
+  let offset = 0;
+  const pageSize = 1000;
+
+  while (true) {
+    const url = `${EPR_API_URL}?api_key=${encodeURIComponent(MOENV_KEY)}&limit=${pageSize}&offset=${offset}&format=JSON`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`${EPR_API_URL} failed: HTTP ${res.status} (offset=${offset})`);
+    const json = await res.json();
+    const rows = Array.isArray(json) ? json : [];
+    all.push(...rows);
+    if (rows.length < pageSize) break;
+    offset += pageSize;
+  }
+
+  console.log(`  ${all.length} raw rows fetched`);
+  return all;
+}
+
+function toEprRecords(rows) {
+  const seenKeys = new Set();
+  const records = [];
+
+  for (const r of rows) {
+    const name = (r.name || "").trim();
+    const cityName = (r.cityname || "").trim();
+    const rawAddress = (r.address || "").trim();
+    if (!name && !rawAddress) continue;
+
+    const year = (r.year || "").trim();
+    // No natural per-row id in this feed; derive one from name+address (+ year,
+    // since this is an annual promotional-project roster and the same hotel
+    // can recur across years — keeping year in the key avoids collapsing
+    // distinct yearly designations into one overwritten row).
+    const sourceId = `${name}_${rawAddress}${year ? `_${year}` : ""}`;
+    if (seenKeys.has(sourceId)) continue;
+    seenKeys.add(sourceId);
+
+    const phone = (r.phone || r.mobile || "").trim();
+    // dedupeAddressPrefix (inside normalizeAddress) collapses the county name
+    // when `address` already repeats it, so concatenating unconditionally is safe.
+    const fullAddress = `${cityName}${rawAddress}`.trim();
+    const level = (r.level || "").trim() || null;
+
+    records.push({
+      facilityType: "green_hotel",
+      sourceKey: "moenv_green_hotel_epr",
+      sourceId,
+      name,
+      address: fullAddress ? normalizeAddress(fullAddress) : null,
+      phone: phone ? toHalfwidthDigits(phone) : null,
+      lat: null,
+      lng: null,
+      serviceItem: level,
+      serviceTime: null,
+      dataOrg: "環境部",
+    });
+  }
+
+  console.log(`  ${records.length} unique EPR green hotels prepared`);
+  return records;
+}
+
 async function main() {
   const rows = await fetchAllRows();
-  const records = toRecords(rows);
+  const eprRows = await fetchAllEprRows();
+  const records = [...toRecords(rows), ...toEprRecords(eprRows)];
 
   console.log(`Importing ${records.length} green hotels in batches of ${POST_BATCH_SIZE}...`);
   let totalInserted = 0;

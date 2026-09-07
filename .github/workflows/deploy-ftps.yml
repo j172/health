@@ -760,7 +760,15 @@ jobs:
           curl -fsS -X POST "https://health.j172.tw/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET" || true
           echo "Importing public art..."
           node scripts/import-public-art.mjs || true
-          echo "Importing green hotels..."
+          echo "Importing green hotels (gp_p_43 + epr_p_02)..."
           node scripts/import-moenv-green-hotels.mjs || true
           echo "Importing green products..."
           node scripts/import-moenv-green-products.mjs || true
+          echo "Importing carbon footprint products (cfp_p_01)..."
+          node scripts/import-moenv-carbon-footprint-products.mjs || true
+          echo "Importing cool spots (gis_p_82)..."
+          node scripts/import-moenv-cool-spots.mjs || true
+          echo "Importing indoor air quality act premises (aqx_p_23)..."
+          node scripts/import-moenv-iaq-premises.mjs || true
+          echo "Importing cleaning squads (wr_s_04)..."
+          node scripts/import-moenv-cleaning-squads.mjs || true

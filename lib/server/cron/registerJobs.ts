@@ -13,6 +13,7 @@ import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
 import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
+import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -141,6 +142,12 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "30 4 * * *",
     runGuarded("green-products-cron.log", () => runGreenProductsSync()),
+  );
+  // Carbon footprint products (cfp_p_01) sync daily at 4:45am — dataset itself
+  // updates monthly per MOENV's metadata, daily is just cheap headroom.
+  cron.schedule(
+    "45 4 * * *",
+    runGuarded("carbon-footprint-products-cron.log", () => runCarbonFootprintProductsSync()),
   );
   // IndexNow daily refresh at 5:00am — submits latest 100 news articles to IndexNow / Bing
   cron.schedule(
