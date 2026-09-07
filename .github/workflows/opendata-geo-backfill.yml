@@ -1,0 +1,79 @@
+name: Open data geo backfill
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Monthly — the source directories (MOE kindergarten roster, NHI
+    # hospital/pharmacy registries, NPA child-safety-spot dataset) do not
+    # update more often than monthly, so anything tighter would just
+    # re-download and re-diff unchanged data. Mirrors six-monthly-sync.yml's
+    # "this open dataset doesn't change often" precedent.
+    #
+    # Day 8 at 18:13 UTC (~02:13 Taipei on the 9th) is deliberately offset
+    # from two other schedules that touch adjacent infrastructure:
+    #   - facilities-geocode-batch.yml fires every 30 minutes, 24/7, always
+    #     on the :00/:30 minute boundary — picking minute 13 means this job
+    #     never lands in the same minute as that one.
+    #   - six-monthly-sync.yml runs on the 2nd of Jan/Jul — day 8 keeps this
+    #     monthly job from ever coinciding with it.
+    # The real reason an offset matters at all: backfill-child-safety-spots-geo.mjs
+    # calls OpenStreetMap's public Nominatim endpoint directly (1.1s/call,
+    # ~186 rows worst case), a separate, uncoordinated consumer of the same
+    # public geocoding service the app's own facilities-geocode-batch draws
+    # its budget from (lib/server/facilities/geocodeBudget.ts). This script
+    # does not share that budget file, so running it at an off-peak,
+    # off-boundary hour keeps this infrastructure's combined request rate to
+    # Nominatim as low as practical, even though nothing here is technically
+    # broken if the two ever do overlap (different processes, different
+    # targets).
+    - cron: "13 18 8 * *"
+
+concurrency:
+  group: opendata-geo-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Unlike facilities-geocode-batch.yml / six-monthly-sync.yml, these
+      # three scripts talk to health.j172.tw's public HTTPS admin API
+      # (POST /api/admin/facilities-import) directly — no SSH loopback
+      # tunnel needed, since there's no WAF/anti-bot challenge on this path
+      # and no extra load on the shared host beyond normal HTTP handling.
+      - name: Backfill kindergarten/clinic/pharmacy coordinates from open-data GeoJSON
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          node scripts/backfill-facilities-from-opendata-geo.mjs all
+
+      - name: Backfill NFCC accessible-ATM coordinates
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: node scripts/backfill-nfcc-accessible-atm.mjs
+
+      # Nominatim-backed lookups here are rate-limited to 1.1s/call inside
+      # the script itself — see the cron comment above for why this whole
+      # workflow is scheduled off-peak and off the :00/:30 boundary.
+      - name: Backfill child safety spot coordinates (landmark table + Nominatim fallback)
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: node scripts/backfill-child-safety-spots-geo.mjs
