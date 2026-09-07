@@ -75,7 +75,9 @@ export default function PublicArtContent() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    queueMicrotask(() => {
+      loadData();
+    });
   }, [loadData]);
 
   const handleUseGps = () => {

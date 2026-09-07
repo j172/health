@@ -43,7 +43,9 @@ export default function GreenProductsContent() {
   };
 
   useEffect(() => {
-    fetchProducts();
+    queueMicrotask(() => {
+      fetchProducts();
+    });
     fetch("/api/green-products?categories=true")
       .then((res) => (res.ok ? res.json() : { categories: [] }))
       .then((data) => {
