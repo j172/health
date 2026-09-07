@@ -77,8 +77,7 @@ export type FeedCode =
   | "sungful_knowledge"
   | "mamibuy_talk"
   | "tasctaiwan_news"
-  | "tase_news"
-  | "mababy_news";
+  | "tase_news";
 
 export interface FeedConfig {
   code: FeedCode;
