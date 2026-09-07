@@ -78,6 +78,7 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.globalEarthquakes);
   await p.query(TABLE_DDL.tfdaFoodNutrition);
   await p.query(TABLE_DDL.tfdaFoodOperators);
+  await p.query(TABLE_DDL.tfdaHealthSupplements);
   await p.query(TABLE_DDL.socialPostQueue);
   await p.query(TABLE_DDL.culturalEvents);
   await p.query(TABLE_DDL.culturalEventShows);

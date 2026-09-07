@@ -121,3 +121,141 @@ export const getNutritionBySampleId = async (sampleId: string): Promise<FoodNutr
     );
     return rows as unknown as FoodNutritionItem[];
   });
+
+/** Defensively parses a `value_per_100g`-shaped VARCHAR (source data mixes real numbers with placeholders like `Tr`/`-`). Returns `null` for anything non-numeric rather than throwing or coercing to `0`. */
+export const parseNutrientValue = (raw: string | null | undefined): number | null => {
+  if (raw == null) return null;
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+  const value = Number(trimmed);
+  return Number.isFinite(value) ? value : null;
+};
+
+export interface MealItemInput {
+  sampleId: string;
+  grams: number;
+}
+
+export interface MealNutrientAmount {
+  nutrient_category: string;
+  nutrient_item: string;
+  unit: string | null;
+  value: number | null;
+}
+
+export interface MealFoodBreakdown {
+  sample_id: string;
+  sample_name: string | null;
+  grams: number;
+  items: MealNutrientAmount[];
+}
+
+export interface MealNutrientTotal {
+  nutrient_category: string;
+  nutrient_item: string;
+  unit: string | null;
+  total_value: number;
+}
+
+export interface MealAnalysisResult {
+  foods: MealFoodBreakdown[];
+  totals: MealNutrientTotal[];
+}
+
+/** Scales each food's per-100g nutrient values by its `grams` and sums across all foods, keyed by (nutrient_category, nutrient_item). Skips rows whose value_per_100g isn't numeric rather than treating them as 0. */
+export const analyzeMealNutrition = async (items: MealItemInput[]): Promise<MealAnalysisResult> =>
+  withConnection(async (conn) => {
+    const foods: MealFoodBreakdown[] = [];
+    const totalsByKey = new Map<string, MealNutrientTotal>();
+
+    for (const item of items) {
+      const grams = Number(item.grams);
+      if (!item.sampleId || !Number.isFinite(grams) || grams <= 0) continue;
+
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `SELECT sample_name, nutrient_category, nutrient_item, unit, value_per_100g
+         FROM tfda_food_nutrition
+         WHERE sample_id = ?`,
+        [item.sampleId],
+      );
+      const nutrientRows = rows as unknown as {
+        sample_name: string | null;
+        nutrient_category: string;
+        nutrient_item: string;
+        unit: string | null;
+        value_per_100g: string | null;
+      }[];
+
+      const breakdown: MealNutrientAmount[] = nutrientRows.map((row) => {
+        const per100g = parseNutrientValue(row.value_per_100g);
+        const value = per100g === null ? null : (per100g * grams) / 100;
+
+        if (value !== null) {
+          const key = `${row.nutrient_category}\u0000${row.nutrient_item}`;
+          const existing = totalsByKey.get(key);
+          if (existing) {
+            existing.total_value += value;
+          } else {
+            totalsByKey.set(key, {
+              nutrient_category: row.nutrient_category,
+              nutrient_item: row.nutrient_item,
+              unit: row.unit,
+              total_value: value,
+            });
+          }
+        }
+
+        return { nutrient_category: row.nutrient_category, nutrient_item: row.nutrient_item, unit: row.unit, value };
+      });
+
+      foods.push({
+        sample_id: item.sampleId,
+        sample_name: nutrientRows[0]?.sample_name ?? null,
+        grams,
+        items: breakdown,
+      });
+    }
+
+    return { foods, totals: [...totalsByKey.values()] };
+  });
+
+export interface FoodNutrientRankRow {
+  sample_id: string;
+  sample_name: string | null;
+  value_per_100g: string | null;
+}
+
+/** Ranks foods by one `nutrient_item`, descending. Excludes rows whose `value_per_100g` isn't a plain non-negative decimal (via REGEXP before the CAST), rather than letting `CAST` silently coerce non-numeric placeholders to 0. */
+export const rankFoodsByNutrient = async (
+  nutrientItem: string,
+  options: { limit?: number; category?: string } = {},
+): Promise<FoodNutrientRankRow[]> =>
+  withConnection(async (conn) => {
+    const limit = Math.min(Math.max(Math.trunc(options.limit ?? 20), 1), 100);
+    const params: (string | number)[] = [nutrientItem];
+    const category = options.category?.trim();
+    const categoryClause = category ? "AND food_category = ?" : "";
+    if (category) params.push(category);
+    params.push(limit);
+
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT sample_id, sample_name, value_per_100g
+       FROM tfda_food_nutrition
+       WHERE nutrient_item = ?
+         AND value_per_100g REGEXP '^[0-9]+(\\\\.[0-9]+)?$'
+         ${categoryClause}
+       ORDER BY CAST(value_per_100g AS DECIMAL(10,2)) DESC
+       LIMIT ?`,
+      params,
+    );
+    return rows as unknown as FoodNutrientRankRow[];
+  });
+
+/** Distinct `nutrient_item` labels actually present in the table, for populating a ranking-tool dropdown (the exact Chinese labels vary and shouldn't be hardcoded). */
+export const listDistinctNutrientItems = async (): Promise<string[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT DISTINCT nutrient_item FROM tfda_food_nutrition ORDER BY nutrient_item ASC`,
+    );
+    return (rows as unknown as { nutrient_item: string }[]).map((row) => row.nutrient_item);
+  });

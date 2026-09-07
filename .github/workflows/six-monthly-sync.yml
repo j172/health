@@ -75,6 +75,12 @@ jobs:
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-food-operators.mjs
 
+      - name: Import TFDA 健康食品(健字號) registry (~400-600 rows)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-tfda-health-supplements.mjs
+
       - name: Import NFCC accessible-ATM lists (wheelchair + voice, ~150 rows)
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}

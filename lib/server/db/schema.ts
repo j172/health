@@ -629,6 +629,33 @@ export const TABLE_DDL = {
       KEY idx_food_operator_unified_no (unified_business_no)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TFDA 健康食品(健字號) 資料庫 (data.fda.gov.tw export/19) — quarterly sync.
+  // Natural unique key on 許可證字號 (license_no). Inactive (失效/註銷) rows
+  // are kept, same rationale as drugs/tfda_food_operators — filtering to
+  // active-only happens in the query layer, not at import time.
+  tfdaHealthSupplements: `
+    CREATE TABLE IF NOT EXISTS tfda_health_supplements (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      license_no VARCHAR(50) NOT NULL,
+      category VARCHAR(100) NULL,
+      name_zh VARCHAR(255) NOT NULL,
+      approved_at DATE NULL,
+      applicant VARCHAR(255) NULL,
+      status VARCHAR(50) NULL,
+      function_ingredients TEXT NULL,
+      function_text TEXT NULL,
+      claim TEXT NULL,
+      warning TEXT NULL,
+      notice TEXT NULL,
+      source_url VARCHAR(500) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_health_supplement_license (license_no),
+      KEY idx_health_supplement_name (name_zh(100))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   // Social-post draft queue (Phase 1) — see
   // docs/specs/social-icons-and-post-drafts.md section 2. Daily cron
   // (lib/server/social/buildDailyDraftQueue.ts) inserts one 'draft' row per
