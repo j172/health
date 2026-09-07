@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 import DrugsContent from "./DrugsContent";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +24,15 @@ export const metadata: Metadata = {
 export default function DrugsPage() {
   return (
     <ToolPageShell slug="drugs" title={catalogEntry.title} maxWidthClassName="max-w-4xl">
-      <DrugsContent />
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-8">
+            <LoadingOrb size={32} />
+          </div>
+        }
+      >
+        <DrugsContent />
+      </Suspense>
     </ToolPageShell>
   );
 }
