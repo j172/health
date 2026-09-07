@@ -362,7 +362,11 @@ export const runRssIngestion = async (
 
       // -----------------------------------------------------------------------
       // 環境部（MOENV）新聞專區 — JSON open-data API (not RSS/XML; handled
-      // separately just like Mirror Media and UDN above).
+      // separately just like Mirror Media and UDN above). fetchMoenvNews
+      // itself fans out to three datasets (mnews_p_01 news, inews_s_01
+      // international digest, mnews_p_10 podcast — issue #134) and tags each
+      // returned item with its own feedCode; this descriptor is only used
+      // for the aggregate feed-result log entry below.
       // -----------------------------------------------------------------------
       const moenvResult = await processSpecialSource(
         {
