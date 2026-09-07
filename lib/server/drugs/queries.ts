@@ -88,28 +88,45 @@ export const upsertDrugs = async (records: DrugRecord[]): Promise<{ inserted: nu
     return { inserted, updated };
   });
 
-export const searchDrugs = async (keyword: string, limit = 50): Promise<DrugListItem[]> =>
+export const searchDrugs = async (keyword: string, limit = 50, offset = 0): Promise<DrugListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, license_no, name_zh, name_en, shape, dosage_form, color, odor, score_mark, size_mm, imprint_1, imprint_2, image_url
        FROM drugs
        WHERE name_zh LIKE ? OR name_en LIKE ? OR license_no LIKE ?
        ORDER BY name_zh ASC
-       LIMIT ?`,
-      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, limit],
+       LIMIT ? OFFSET ?`,
+      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, limit, offset],
     );
     return rows as unknown as DrugListItem[];
   });
 
-export const getRecentDrugs = async (limit = 30): Promise<DrugListItem[]> =>
+/** Row count backing `searchDrugs`'s pagination — same WHERE clause, no LIMIT/OFFSET. */
+export const countSearchDrugs = async (keyword: string): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM drugs WHERE name_zh LIKE ? OR name_en LIKE ? OR license_no LIKE ?`,
+      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`],
+    );
+    return Number((rows[0] as { total: number }).total);
+  });
+
+export const getRecentDrugs = async (limit = 30, offset = 0): Promise<DrugListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, license_no, name_zh, name_en, shape, dosage_form, color, odor, score_mark, size_mm, imprint_1, imprint_2, image_url
        FROM drugs
        ORDER BY id DESC
-       LIMIT ?`,
-      [limit],
+       LIMIT ? OFFSET ?`,
+      [limit, offset],
     );
     return rows as unknown as DrugListItem[];
+  });
+
+/** Row count backing `getRecentDrugs`'s pagination — the whole table, unfiltered. */
+export const countDrugs = async (): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM drugs`);
+    return Number((rows[0] as { total: number }).total);
   });
 

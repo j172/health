@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 interface DrugItem {
   id: number;
@@ -31,6 +33,7 @@ interface DrugIngredient {
 export default function DrugsContent() {
   const [searchInput, setSearchInput] = useState("");
   const [drugs, setDrugs] = useState<DrugItem[] | null>(null);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [searchedFor, setSearchedFor] = useState("");
@@ -39,27 +42,42 @@ export default function DrugsContent() {
   const [ingredients, setIngredients] = useState<DrugIngredient[] | null>(null);
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
 
-  const fetchDrugs = async (keyword?: string) => {
-    setLoading(true);
-    setError(false);
-    try {
-      const url = keyword ? `/api/drugs?keyword=${encodeURIComponent(keyword)}` : "/api/drugs";
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setDrugs(data.drugs || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Pilot for issue #133's shared pagination hook: 藥品查詢 defaults to the 30 most
+  // recently-added drugs (最新30筆) and, unlike before, can now page through the rest
+  // instead of hard-stopping at 30/50 with no way to see more.
+  const { page, pageSize, setPage, setPageSize } = usePagination();
 
   useEffect(() => {
+    let cancelled = false;
+
+    // Deferred via queueMicrotask (see e4800b1 / issue #121): calling setState
+    // synchronously in an effect body trips react-hooks/set-state-in-effect.
     queueMicrotask(() => {
-      fetchDrugs();
+      (async () => {
+        if (cancelled) return;
+        setLoading(true);
+        setError(false);
+        try {
+          const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+          if (searchedFor) params.set("keyword", searchedFor);
+          const res = await fetch(`/api/drugs?${params.toString()}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (cancelled) return;
+          setDrugs(data.drugs || []);
+          setTotal(typeof data.total === "number" ? data.total : 0);
+        } catch {
+          if (!cancelled) setError(true);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
     });
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchedFor, page, pageSize]);
 
   const toggleIngredients = async (licenseNo: string) => {
     if (expandedLicense === licenseNo) {
@@ -83,7 +101,7 @@ export default function DrugsContent() {
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const keyword = searchInput.trim();
     if (!keyword) {
@@ -92,13 +110,13 @@ export default function DrugsContent() {
     }
 
     setSearchedFor(keyword);
-    await fetchDrugs(keyword);
+    setPage(1);
   };
 
   const handleClear = () => {
     setSearchInput("");
     setSearchedFor("");
-    fetchDrugs();
+    setPage(1);
   };
 
   return (
@@ -141,11 +159,7 @@ export default function DrugsContent() {
 
       {!loading && !error && drugs && (
         <>
-          <p className="text-xs text-neutral-500 dark:text-slate-400">
-            {searchedFor
-              ? `「${searchedFor}」共 ${drugs.length} 筆結果${drugs.length >= 50 ? "（僅顯示前50筆，請縮小關鍵字範圍）" : ""}`
-              : `最新收錄藥品（顯示前 ${drugs.length} 筆）`}
-          </p>
+          <p className="text-xs text-neutral-500 dark:text-slate-400">{searchedFor ? `「${searchedFor}」共 ${total} 筆結果` : `最新收錄藥品，共 ${total} 筆`}</p>
 
           {drugs.length === 0 ? (
             <p className="py-8 text-center text-neutral-500 dark:text-slate-400">查無符合的藥品。</p>
@@ -213,6 +227,8 @@ export default function DrugsContent() {
               ))}
             </div>
           )}
+
+          <Pagination page={page} pageSize={pageSize} totalItems={total} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="筆藥品" />
         </>
       )}
     </div>
