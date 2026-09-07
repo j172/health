@@ -5,7 +5,7 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const LAST_UPDATED = "2026-08-29";
+const LAST_UPDATED = "2026-09-08";
 
 export default function PrivacyPage() {
   const baseUrl = getBaseUrl();
@@ -56,6 +56,11 @@ export default function PrivacyPage() {
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">網站流量分析（Google Analytics 4 與 Consent Mode v2）：</span>
                   本站使用 Google Analytics (ID: G-V0CTGFQXW2) 協助了解網站使用情況與改進服務體驗。本站預設啟用 Google Consent Mode v2（將分析與廣告儲存預設為拒絕 denied）。僅於您在同意橫幅中點擊「同意並接受」後，系統才會啟用分析儲存權限。您可以隨時透過清除瀏覽器 Cookie 或本機儲存來重設同意狀態。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">使用者行為分析（Microsoft Clarity）：</span>
+                  本站使用 Microsoft Clarity（Project ID: ye0lvdgk17）進行工作階段錄製（session recording）與熱點圖（heatmap）分析，協助了解使用者於頁面上的互動情形以改善介面體驗。此功能同樣受本站的 Consent Mode 同意機制管控：僅於您同意分析用途的 Cookie／儲存權限後才會啟用，若您尚未同意或選擇拒絕，Clarity 將不會蒐集您的工作階段紀錄。您可透過與上述 Google Analytics
+                  相同的方式選擇退出——即不同意同意橫幅中的分析選項，或隨時清除瀏覽器 Cookie 與本機儲存以重設同意狀態。
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">一般網站存取紀錄：</span>
