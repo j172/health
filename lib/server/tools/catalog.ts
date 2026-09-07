@@ -1495,7 +1495,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     description:
       "查詢全國非營利組織（NPO）、機關團體、同業公會、社會福利慈善財團法人、公益協會與公寓大廈管委會統一編號、登記地址與稅籍狀態。資料來源：財政部財政資訊中心開放資料。",
     directAnswer:
-      "查詢全國非營利組織（NPO）、機關團體與扣繳單位統一編號、登記地址、地理座標與最新異動事由。",
+      "查詢全國非營利組織（NPO）、機關團體與扣繳單位統一編號、登記地址與最新異動事由。",
     scientificBasis: [
       {
         title: "機關團體扣繳單位基本資料 (BGMOPEN99)",
