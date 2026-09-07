@@ -7,6 +7,46 @@ import type { PublicArtItem } from "@/app/api/culture/public-art/route";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
+/**
+ * The open-data feed's `imageUrl` values all point at
+ * publicartap.moc.gov.tw, whose Cloudflare edge answers *every* cross-origin
+ * request for those paths — browser `<img>` hotlinks, a plain server-side
+ * fetch, even a request carrying Cloudflare's own "verified bot" signature —
+ * with a 403 "Just a moment..." managed-challenge page instead of the image.
+ * A bare `<img>` tag can never solve that JS challenge, so the request always
+ * fails; sampling every artwork image on the page confirmed 100% of them
+ * 403 this way. That's an access-control decision on MOC's own CDN, not
+ * something fixable from our side (same class of problem as the
+ * datacenter-IP blocks documented for nhi.gov.tw — see
+ * ops_host_ip_blocked_upstreams). What we *can* fix is the symptom: instead
+ * of leaving the browser's native broken-image icon on screen, catch the
+ * failed load and render a designed placeholder so the card still looks
+ * intentional.
+ */
+function ArtworkImage({ src, alt }: { src: string; alt: string }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+        <span className="text-2xl">🖼️</span>
+        <span className="text-[11px] font-medium">圖片來源暫無法顯示</span>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      unoptimized
+      className="object-cover transition-transform duration-300 group-hover:scale-105"
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 const TAIWAN_CITIES = [
   "全部縣市",
   "臺北市",
@@ -323,13 +363,7 @@ export default function PublicArtContent() {
                   {/* Artwork Image if available */}
                   {item.imageUrl && (
                     <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                      <Image
-                        src={item.imageUrl}
-                        alt={item.title}
-                        fill
-                        unoptimized
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
+                      <ArtworkImage src={item.imageUrl} alt={item.title} />
                     </div>
                   )}
 

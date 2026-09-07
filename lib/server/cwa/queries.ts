@@ -598,11 +598,12 @@ export interface CwaAlertItem {
  */
 export const listActiveCwaAlerts = async (
   limit = 10,
-): Promise<CwaAlertItem[]> =>
-  memoizeQuery(`cwa_active_alerts_${limit}`, async () =>
-    withConnectionFallback([], async (conn) => {
-      const [rows] = await conn.query<RowDataPacket[]>(
-        `
+): Promise<CwaAlertItem[]> => {
+  try {
+    return await memoizeQuery(`cwa_active_alerts_${limit}`, async () =>
+      withConnectionFallback([], async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
         WITH tsunamis AS (
           SELECT
             id,
@@ -701,11 +702,16 @@ export const listActiveCwaAlerts = async (
           COALESCE(effective, synced_at) DESC
         LIMIT ?
         `,
-        [limit],
-      );
-      return rows as unknown as CwaAlertItem[];
-    }),
-  );
+          [limit],
+        );
+        return rows as unknown as CwaAlertItem[];
+      }),
+    );
+  } catch (err) {
+    console.warn("listActiveCwaAlerts error:", err);
+    return [];
+  }
+};
 
 // ---------------------------------------------------------------------------
 // Nearest rainfall station (cwa_rainfall)
@@ -788,11 +794,12 @@ export interface TopRainfallStation {
  */
 export const listTopRainfallStations = async (
   limit = 5,
-): Promise<TopRainfallStation[]> =>
-  memoizeQuery(`cwa_top_rainfall_${limit}`, async () =>
-    withConnectionFallback([], async (conn) => {
-      const [rows] = await conn.query<RowDataPacket[]>(
-        `
+): Promise<TopRainfallStation[]> => {
+  try {
+    return await memoizeQuery(`cwa_top_rainfall_${limit}`, async () =>
+      withConnectionFallback([], async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
         SELECT r.station_id, r.station_name, r.county_name, r.town_name,
                r.precip_now, r.precip_1hr, r.precip_24hr, r.obs_time
         FROM cwa_rainfall r
@@ -806,11 +813,16 @@ export const listTopRainfallStations = async (
         ORDER BY CAST(r.precip_24hr AS DECIMAL(10,2)) DESC, CAST(r.precip_1hr AS DECIMAL(10,2)) DESC
         LIMIT ?
         `,
-        [limit],
-      );
-      return rows as unknown as TopRainfallStation[];
-    }),
-  );
+          [limit],
+        );
+        return rows as unknown as TopRainfallStation[];
+      }),
+    );
+  } catch (err) {
+    console.warn("listTopRainfallStations error:", err);
+    return [];
+  }
+};
 
 export interface NearestRainfallOverview {
   realtime: NearestRainfallReading | null;
