@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import { memoizeQuery } from "@/lib/server/cache/memo";
+import { coerceCoords } from "@/lib/server/db/coords";
 
 export interface NewsListItem {
   id: number;
@@ -228,7 +229,7 @@ export const listLatestNews = async (
         [...params, limit, offset],
       );
 
-      return rows as unknown as NewsListItem[];
+      return coerceCoords(rows) as unknown as NewsListItem[];
     }),
   );
 };
@@ -265,7 +266,7 @@ export const getTopViewedNews = async (
         `,
         [windowDays, limit],
       );
-      return rows as unknown as NewsListItem[];
+      return coerceCoords(rows) as unknown as NewsListItem[];
     }),
   );
 };
@@ -311,7 +312,7 @@ export const getNewsById = async (id: number): Promise<NewsDetailItem | null> =>
     );
 
     if (!rows[0]) return null;
-    return rows[0] as unknown as NewsDetailItem;
+    return coerceCoords([rows[0]])[0] as unknown as NewsDetailItem;
   });
 
 export const listNewsWithLocation = async (
@@ -331,7 +332,7 @@ export const listNewsWithLocation = async (
         `,
         [limit],
       );
-      return rows as unknown as NewsListItem[];
+      return coerceCoords(rows) as unknown as NewsListItem[];
     }),
   );
 
@@ -369,7 +370,7 @@ export const listRelatedNews = async (
       `,
       [sourceName, excludeId, limit],
     );
-    return rows as unknown as NewsListItem[];
+    return coerceCoords(rows) as unknown as NewsListItem[];
   });
 
 export const searchNewsItems = async (
@@ -395,7 +396,7 @@ export const searchNewsItems = async (
       );
 
       if (fulltextRows.length > 0) {
-        return fulltextRows as unknown as NewsListItem[];
+        return coerceCoords(fulltextRows) as unknown as NewsListItem[];
       }
     } catch {
       // Fallback to LIKE query if FULLTEXT MATCH AGAINST is not supported or index building
@@ -414,5 +415,5 @@ export const searchNewsItems = async (
       `,
       [pattern, pattern, pattern, limit],
     );
-    return likeRows as unknown as NewsListItem[];
+    return coerceCoords(likeRows) as unknown as NewsListItem[];
   });

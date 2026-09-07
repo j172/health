@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import type { Pm25SiteSnapshot } from "@/lib/server/aqi/fetchPm25";
+import { coerceCoords } from "@/lib/server/db/coords";
 
 export interface Pm25ReadingRow {
   site_name: string;
@@ -26,7 +27,7 @@ export const upsertPm25Readings = async (sites: Pm25SiteSnapshot[]): Promise<{ i
       `SELECT DISTINCT site_name, county, lat, lng FROM aqi_readings WHERE lat IS NOT NULL AND lng IS NOT NULL`,
     );
     const coordsByKey = new Map<string, { lat: number; lng: number }>();
-    for (const row of coordRows as { site_name: string; county: string; lat: number; lng: number }[]) {
+    for (const row of coerceCoords(coordRows) as { site_name: string; county: string; lat: number; lng: number }[]) {
       coordsByKey.set(`${row.site_name}|${row.county}`, { lat: row.lat, lng: row.lng });
     }
 
@@ -79,5 +80,8 @@ export const getNearestPm25Reading = async (lat: number, lng: number): Promise<(
       `,
       [lat, lng, lat],
     );
-    return (rows[0] as unknown as (Pm25ReadingRow & { distance_km: number })) ?? null;
+    if (!rows[0]) return null;
+    return coerceCoords([rows[0]])[0] as unknown as Pm25ReadingRow & {
+      distance_km: number;
+    };
   });

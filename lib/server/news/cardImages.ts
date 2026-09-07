@@ -5,6 +5,7 @@ import type {
   RowDataPacket,
 } from "mysql2/promise";
 import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
+import { coerceCoords } from "@/lib/server/db/coords";
 import {
   deriveJiebaSearchTerm,
   deriveDictionaryTerm,
@@ -189,6 +190,7 @@ export const assignMissingNewsCardImages = async (
       `,
       newerThanHours === null ? [limit] : [newerThanHours, limit],
     );
+    coerceCoords(missingRows);
 
     if (missingRows.length === 0) {
       summary.reason =
