@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import MealAnalysisTab from "./MealAnalysisTab";
+import NutrientRankingTab from "./NutrientRankingTab";
+import HealthSupplementsTab from "./HealthSupplementsTab";
 
 interface FoodSample {
   sample_id: string;
@@ -23,7 +26,18 @@ interface NutritionItem {
   value_per_unit_weight: string | null;
 }
 
+type TabKey = "search" | "meal" | "rank" | "supplements";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "search", label: "成分查詢" },
+  { key: "meal", label: "餐點分析" },
+  { key: "rank", label: "營養素排行" },
+  { key: "supplements", label: "健康食品" },
+];
+
 export default function FoodNutritionContent() {
+  const [activeTab, setActiveTab] = useState<TabKey>("search");
+
   const [searchInput, setSearchInput] = useState("");
   const [samples, setSamples] = useState<FoodSample[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -87,92 +101,118 @@ export default function FoodNutritionContent() {
         <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">⚠️ 資料為實測分析數據，同一品項不同批次可能有所差異，僅供參考。</p>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="輸入食品名稱，如：白米飯、雞胸肉"
-          className="flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-        />
-        <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
-          搜尋
-        </button>
-      </form>
+      <div className="flex flex-wrap gap-1 rounded-lg bg-neutral-100 p-1 text-sm font-semibold dark:bg-slate-800">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex-1 rounded-md px-3 py-2 transition-all ${
+              activeTab === tab.key
+                ? "bg-white text-primary shadow-xs dark:bg-slate-900 dark:text-primary"
+                : "text-neutral-600 hover:text-neutral-900 dark:text-slate-400 dark:hover:text-slate-200"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {loading && (
-        <div className="flex justify-center py-8">
-          <LoadingOrb size={32} />
+      {activeTab === "search" && (
+        <div className="space-y-6">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="輸入食品名稱，如：白米飯、雞胸肉"
+              className="flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            />
+            <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
+              搜尋
+            </button>
+          </form>
+
+          {loading && (
+            <div className="flex justify-center py-8">
+              <LoadingOrb size={32} />
+            </div>
+          )}
+
+          {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">查詢食品營養成分失敗，請稍後再試。</div>}
+
+          {!loading && !error && samples && (
+            <>
+              <p className="text-xs text-neutral-500 dark:text-slate-400">「{searchedFor}」共 {samples.length} 筆結果{samples.length >= 30 && "（僅顯示前30筆，請縮小關鍵字範圍）"}</p>
+
+              {samples.length === 0 ? (
+                <p className="py-8 text-center text-neutral-500 dark:text-slate-400">查無符合的食品。</p>
+              ) : (
+                <div className="divide-y divide-neutral-200 border border-neutral-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
+                  {samples.map((s) => (
+                    <div key={s.sample_id}>
+                      <button
+                        type="button"
+                        onClick={() => toggleSample(s.sample_id)}
+                        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-slate-800/60"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-semibold text-neutral-800 dark:text-slate-100">{s.sample_name}</p>
+                          <div className="mt-0.5 flex flex-wrap gap-2 text-xs text-neutral-500 dark:text-slate-400">
+                            {s.common_name && <span>俗名：{s.common_name}</span>}
+                            {s.food_category && <span>分類：{s.food_category}</span>}
+                          </div>
+                        </div>
+                        <span className="shrink-0 text-neutral-400 dark:text-slate-400">{expandedId === s.sample_id ? "收合 ▲" : "展開 ▼"}</span>
+                      </button>
+
+                      {expandedId === s.sample_id && (
+                        <div className="bg-neutral-50 px-4 py-3 dark:bg-slate-800/40">
+                          {itemsLoading && (
+                            <div className="flex justify-center py-4">
+                              <LoadingOrb size={24} />
+                            </div>
+                          )}
+                          {!itemsLoading && items && items.length === 0 && <p className="text-sm text-neutral-500 dark:text-slate-400">無營養成分資料。</p>}
+                          {!itemsLoading && items && items.length > 0 && (
+                            <div className="overflow-x-auto">
+                              <table className="w-full text-left text-xs">
+                                <thead>
+                                  <tr className="border-b border-neutral-300 text-neutral-500 dark:border-slate-700 dark:text-slate-400">
+                                    <th className="py-1.5 pr-3">分析項分類</th>
+                                    <th className="py-1.5 pr-3">分析項</th>
+                                    <th className="py-1.5 pr-3">每100克含量</th>
+                                    <th className="py-1.5">單位</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {items.map((item, i) => (
+                                    <tr key={i} className="border-b border-neutral-200 last:border-0 dark:border-slate-800">
+                                      <td className="py-1.5 pr-3 text-neutral-600 dark:text-slate-300">{item.nutrient_category}</td>
+                                      <td className="py-1.5 pr-3 font-medium text-neutral-800 dark:text-slate-100">{item.nutrient_item}</td>
+                                      <td className="py-1.5 pr-3 text-neutral-800 dark:text-slate-200">{item.value_per_100g ?? "-"}</td>
+                                      <td className="py-1.5 text-neutral-500 dark:text-slate-400">{item.unit ?? "-"}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
 
-      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">查詢食品營養成分失敗，請稍後再試。</div>}
-
-      {!loading && !error && samples && (
-        <>
-          <p className="text-xs text-neutral-500 dark:text-slate-400">「{searchedFor}」共 {samples.length} 筆結果{samples.length >= 30 && "（僅顯示前30筆，請縮小關鍵字範圍）"}</p>
-
-          {samples.length === 0 ? (
-            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">查無符合的食品。</p>
-          ) : (
-            <div className="divide-y divide-neutral-200 border border-neutral-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
-              {samples.map((s) => (
-                <div key={s.sample_id}>
-                  <button
-                    type="button"
-                    onClick={() => toggleSample(s.sample_id)}
-                    className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left hover:bg-neutral-50 dark:hover:bg-slate-800/60"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-semibold text-neutral-800 dark:text-slate-100">{s.sample_name}</p>
-                      <div className="mt-0.5 flex flex-wrap gap-2 text-xs text-neutral-500 dark:text-slate-400">
-                        {s.common_name && <span>俗名：{s.common_name}</span>}
-                        {s.food_category && <span>分類：{s.food_category}</span>}
-                      </div>
-                    </div>
-                    <span className="shrink-0 text-neutral-400 dark:text-slate-400">{expandedId === s.sample_id ? "收合 ▲" : "展開 ▼"}</span>
-                  </button>
-
-                  {expandedId === s.sample_id && (
-                    <div className="bg-neutral-50 px-4 py-3 dark:bg-slate-800/40">
-                      {itemsLoading && (
-                        <div className="flex justify-center py-4">
-                          <LoadingOrb size={24} />
-                        </div>
-                      )}
-                      {!itemsLoading && items && items.length === 0 && <p className="text-sm text-neutral-500 dark:text-slate-400">無營養成分資料。</p>}
-                      {!itemsLoading && items && items.length > 0 && (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-left text-xs">
-                            <thead>
-                              <tr className="border-b border-neutral-300 text-neutral-500 dark:border-slate-700 dark:text-slate-400">
-                                <th className="py-1.5 pr-3">分析項分類</th>
-                                <th className="py-1.5 pr-3">分析項</th>
-                                <th className="py-1.5 pr-3">每100克含量</th>
-                                <th className="py-1.5">單位</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {items.map((item, i) => (
-                                <tr key={i} className="border-b border-neutral-200 last:border-0 dark:border-slate-800">
-                                  <td className="py-1.5 pr-3 text-neutral-600 dark:text-slate-300">{item.nutrient_category}</td>
-                                  <td className="py-1.5 pr-3 font-medium text-neutral-800 dark:text-slate-100">{item.nutrient_item}</td>
-                                  <td className="py-1.5 pr-3 text-neutral-800 dark:text-slate-200">{item.value_per_100g ?? "-"}</td>
-                                  <td className="py-1.5 text-neutral-500 dark:text-slate-400">{item.unit ?? "-"}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      {activeTab === "meal" && <MealAnalysisTab />}
+      {activeTab === "rank" && <NutrientRankingTab />}
+      {activeTab === "supplements" && <HealthSupplementsTab />}
     </div>
   );
 }
+
