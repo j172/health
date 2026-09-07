@@ -3,15 +3,14 @@ name: Facilities geocode batch
 on:
   workflow_dispatch:
   schedule:
-    # Every 10 minutes per docs/specs/phase9-opencage-geocode-batch.md's
-    # agreed policy. A run with no pending rows (or an exhausted daily
-    # budget) exits quickly without making provider requests — see
-    # lib/server/facilities/geocodeBatch.ts.
-    - cron: "*/10 * * * *"
+    # Every 30 minutes (P2 resilience: lowered from 10m to prevent LVE process saturation).
+    # A run with no pending rows (or an exhausted daily budget) exits quickly
+    # without making provider requests — see lib/server/facilities/geocodeBatch.ts.
+    - cron: "*/30 * * * *"
 
 concurrency:
-  group: facilities-geocode-batch
-  cancel-in-progress: false
+  group: host-tw123457-server
+  cancel-in-progress: true
 
 jobs:
   geocode:

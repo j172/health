@@ -101,6 +101,17 @@ const adminPostSsh = (body) => {
   const result = ssh.call(remote, { input: payload });
 
   if (result.error) throw result.error;
+  if (result.status === 255) {
+    console.warn("Host SSH / LVE process limit saturated (exit 255) during adminPostSsh.");
+    return {
+      status: 503,
+      json: {
+        ok: false,
+        reason: "host_lve_saturated_exit_255",
+        hostLveSaturated: true,
+      },
+    };
+  }
   const out = (result.stdout || "").trim();
   const lines = out.split(/\r?\n/).filter((l) => l.trim().startsWith("{"));
   const text = lines.length ? lines[lines.length - 1] : out;
@@ -223,6 +234,12 @@ const main = async () => {
         listMissing: true,
         limit: LIMIT,
       });
+      if (listed.hostLveSaturated) {
+        console.warn(
+          "Host LVE / SSH saturated during listMissing. Exiting batch runner gracefully (exit 0) to allow host recovery.",
+        );
+        return;
+      }
       if (!listed.ok) {
         console.error("list failed", listed);
         process.exitCode = 1;
@@ -275,6 +292,13 @@ const main = async () => {
                 imageUrl: og,
                 title: item.title || null,
               });
+
+          if (attached.hostLveSaturated) {
+            console.warn(
+              "Host LVE / SSH saturated during attachImage. Exiting batch runner gracefully (exit 0) to allow host recovery.",
+            );
+            return;
+          }
 
           if (attached.ok) {
             assigned += 1;
