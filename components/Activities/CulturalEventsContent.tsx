@@ -68,7 +68,9 @@ export default function CulturalEventsContent() {
   };
 
   useEffect(() => {
-    loadData(selectedCategory);
+    queueMicrotask(() => {
+      loadData(selectedCategory);
+    });
   }, [selectedCategory]);
 
   const filteredItems = useMemo(() => {

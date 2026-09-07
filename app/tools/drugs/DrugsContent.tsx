@@ -56,7 +56,9 @@ export default function DrugsContent() {
   };
 
   useEffect(() => {
-    fetchDrugs();
+    queueMicrotask(() => {
+      fetchDrugs();
+    });
   }, []);
 
   const toggleIngredients = async (licenseNo: string) => {
