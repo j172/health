@@ -36,20 +36,20 @@ export default function NewsSidebar({
       {/* 2. Weather Alert Card Widget */}
       <WeatherAlertSidebarWidget alerts={cwaAlerts} />
 
-      {/* 3. Instant UV Index Widget & AQI */}
+      {/* 3. Instant UV Index Widget */}
       <UvSidebarWidget />
-      <AqiSidebarWidget />
 
-      {/* 4. Water Outage Information (Within 1 week + See More) */}
-      <WaterOutageSidebarWidget />
-
-      {/* 5. CDC Public Health & Travel Alerts (Top 5 + See More) */}
-      <CdcAlertSidebarWidget />
-
-      {/* 6. Earthquake Card Widget */}
+      {/* 4. Earthquake Card Widget */}
       <EarthquakeSidebarWidget earthquakes={earthquakes} />
 
-      {/* 4. Source Categories Cloud */}
+      {/* 5. "Live conditions" group (unnamed in the reorder request — kept in
+         their prior relative order, moved as a block after Earthquake and
+         before Source Categories; see issue #129) */}
+      <AqiSidebarWidget />
+      <WaterOutageSidebarWidget />
+      <CdcAlertSidebarWidget />
+
+      {/* 6. Source Categories Cloud (公衛與新聞來源) */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-3.5 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {t("categories.sourcesHeading", "公衛與新聞來源")}
@@ -83,7 +83,7 @@ export default function NewsSidebar({
         </div>
       </div>
 
-      {/* 5. Trending News List (by real view count — see getTopViewedNews) */}
+      {/* 7. Trending News List (by real view count — see getTopViewedNews) */}
       {trendingNews.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="mb-4 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
