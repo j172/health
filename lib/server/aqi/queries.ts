@@ -2,6 +2,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import type { AqiSiteSnapshot } from "@/lib/server/aqi/fetchAqi";
 import { memoizeQuery } from "@/lib/server/cache/memo";
+import { coerceCoords } from "@/lib/server/db/coords";
 
 export interface AqiReadingRow {
   site_id: string;
@@ -99,7 +100,7 @@ export const getLatestAqiReadings = async (
       `,
         [county ?? "", county ?? ""],
       );
-      return rows as unknown as AqiReadingRow[];
+      return coerceCoords(rows) as unknown as AqiReadingRow[];
     }),
   );
 
@@ -128,7 +129,8 @@ export const getNearestAqiReading = async (
       `,
       [lat, lng, lat],
     );
-    return (
-      (rows[0] as unknown as AqiReadingRow & { distance_km: number }) ?? null
-    );
+    if (!rows[0]) return null;
+    return coerceCoords([rows[0]])[0] as unknown as AqiReadingRow & {
+      distance_km: number;
+    };
   });

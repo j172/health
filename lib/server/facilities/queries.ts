@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
+import { coerceCoords } from "@/lib/server/db/coords";
 import { populateCoordinatesFromCache, triggerBackgroundGeocode } from "@/lib/server/facilities/autoGeocode";
 
 export interface FacilityRecord {
@@ -293,7 +294,7 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
     params.push(limit);
 
     const [rows] = await conn.query<RowDataPacket[]>(query, params);
-    return rows as unknown as FacilityListItem[];
+    return coerceCoords(rows) as unknown as FacilityListItem[];
   });
 
 /**

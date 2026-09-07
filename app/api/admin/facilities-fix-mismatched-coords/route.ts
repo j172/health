@@ -3,6 +3,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import { countyForAddress, isWithinCountyBounds } from "@/lib/server/facilities/countyBounds";
+import { coerceCoords } from "@/lib/server/db/coords";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -30,7 +31,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     let unrecognizedCounty = 0;
     const samples: { id: number; address: string; county: string; lat: number; lng: number }[] = [];
 
-    for (const row of rows as unknown as { id: number; address: string; lat: number; lng: number }[]) {
+    for (const row of coerceCoords(rows) as unknown as { id: number; address: string; lat: number; lng: number }[]) {
       scanned++;
       const county = countyForAddress(row.address);
       if (!county) {
