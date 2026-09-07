@@ -47,6 +47,11 @@ const SOURCES_IN_PRIORITY = [
   // Priority 4: 診所與綠色商店 (筆數最多)
   { facilityType: "clinic", sourceKey: "nhi_hospital", label: "醫療院所與診所" },
   { facilityType: "green_shop", sourceKey: "moenv_green_shop", label: "綠色商店" },
+
+  // Priority 5: 新增於 issue #130 — 這三個來源的原始資料都不含經緯度
+  { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
+  { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
+  { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

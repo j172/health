@@ -107,6 +107,10 @@ const TOOL_ICONS: Record<string, string> = {
   "family-cultural-activities": "🎭",
   "tax-organizations": "🧾",
   "travel-epidemic-alerts": "🌍",
+  "cool-spots": "🧊",
+  "iaq-premises": "💨",
+  "cleaning-squads": "🧹",
+  "carbon-footprint-products": "🌍",
 };
 
 interface ToolCategory {

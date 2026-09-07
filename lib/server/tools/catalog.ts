@@ -1522,12 +1522,17 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "public-facility",
     title: "環保標章旅館與綠色住宿查詢",
     description:
-      "查詢環境部認證之全國金級、銀級、銅級環保標章旅館及綠色旅店名冊。資料來源：環境部開放資料（gp_p_42, gp_p_43）與台北市觀光傳播局。",
+      "查詢環境部認證之全國金級、銀級、銅級環保標章旅館及綠色旅店名冊。資料來源：環境部開放資料（gp_p_42, gp_p_43, epr_p_02）與台北市觀光傳播局。",
     directAnswer:
       "即時查詢全國獲得環境部金級、銀級、銅級環保標章之綠色旅宿與飯店資訊。",
     scientificBasis: [
       {
         title: "環保標章旅館認證作業規範 (gp_p_42, gp_p_43)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "環保旅館推動計畫旅館名冊 (epr_p_02)",
         authority: "環境部 (MOENV)",
         url: "https://data.moenv.gov.tw",
       },
@@ -1693,6 +1698,112 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "豪雨與大雨的分級標準為何？",
         answer:
           "依氣象署標準：大雨為 24 小時累積 ≥80mm 或 3 小時 ≥40mm；豪雨為 24 小時 ≥200mm 或 3 小時 ≥100mm；大豪雨為 24 小時 ≥350mm 或 3 小時 ≥200mm；超大豪雨為 24 小時 ≥500mm。",
+      },
+    ],
+  },
+  {
+    slug: "cool-spots",
+    group: "public-facility",
+    title: "全國涼適點查詢",
+    description:
+      "查詢環境部「Cool Map 涼適點」名冊，提供百貨、圖書館、里民活動中心等可供民眾避暑消暑之場所位置與設施資訊。資料來源：環境部開放資料。",
+    directAnswer:
+      "查詢環境部「Cool Map」涼適點名冊，提供夏季高溫時可就近避暑消暑之室內場所位置、開放時間與冷氣、飲水機等設施資訊。",
+    scientificBasis: [
+      {
+        title: "Cool Map 涼適點點位開放資料",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["uv", "public-toilets", "green-shops"],
+    faqs: [
+      {
+        question: "什麼是「涼適點」？",
+        answer:
+          "涼適點是環境部因應高溫熱浪，盤點百貨公司、圖書館、里民活動中心等有冷氣、座位或飲水設施之室內場所，供民眾於酷暑時就近入內消暑休息的據點。",
+      },
+      {
+        question: "如何知道涼適點有沒有冷氣或無障礙設施？",
+        answer:
+          "每筆資料的「設施資訊」會列出該點位是否提供冷氣、廁所、座位、飲水機與無障礙設施等，可依需求挑選合適的地點。",
+      },
+    ],
+  },
+  {
+    slug: "iaq-premises",
+    group: "public-facility",
+    title: "室內空氣品質法公告場所查詢",
+    description:
+      "查詢應符合《室內空氣品質管理法》之公告場所名冊，如捷運站、圖書館、大型賣場等。資料來源：環境部開放資料。",
+    directAnswer:
+      "查詢環境部依《室內空氣品質管理法》公告應定期監測與管理室內空氣品質之場所名冊，涵蓋捷運站、圖書館、大型賣場等公共場所。",
+    scientificBasis: [
+      {
+        title: "應符合室內空氣品質管理法之公告場所開放資料",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["aqi", "cool-spots"],
+    faqs: [
+      {
+        question: "哪些場所需要符合室內空氣品質管理法？",
+        answer:
+          "經環境部公告之特定場所，如大眾運輸轉運站、圖書館、大型商場等，須依法定期實施室內空氣品質檢測與管理措施。",
+      },
+    ],
+  },
+  {
+    slug: "cleaning-squads",
+    group: "public-facility",
+    title: "地方清潔隊聯絡資訊查詢",
+    description:
+      "查詢全國各縣市地方清潔隊聯絡地址與電話，供民眾洽詢垃圾清運、資源回收等相關業務。資料來源：環境部開放資料。",
+    directAnswer:
+      "查詢全國各縣市地方環保局所屬清潔隊之聯絡地址與電話，供垃圾清運、資源回收、大型廢棄物申報等業務洽詢。",
+    scientificBasis: [
+      {
+        title: "地方清潔隊聯絡資訊開放資料",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-shops", "public-toilets"],
+    faqs: [
+      {
+        question: "清潔隊可以協助處理哪些業務？",
+        answer:
+          "地方清潔隊主要負責轄區垃圾清運、資源回收、大型廢棄物清運申報等業務，實際受理項目與收費依各縣市規定為準。",
+      },
+    ],
+  },
+  {
+    slug: "carbon-footprint-products",
+    group: "public-facility",
+    title: "產品碳足跡標籤查詢",
+    description:
+      "查詢環境部審查通過、碳標籤證書有效期限內之產品碳足跡數據與宣告單位。資料來源：環境部開放資料（cfp_p_01）。",
+    directAnswer:
+      "查詢通過環境部審查、取得碳足跡標籤且證書仍在有效期限內之產品碳足跡數據，包含宣告單位與有效期限。",
+    scientificBasis: [
+      {
+        title: "產品碳足跡資訊開放資料 (cfp_p_01)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-products", "green-shops"],
+    faqs: [
+      {
+        question: "什麼是產品碳足跡標籤？",
+        answer:
+          "碳足跡標籤是產品從原料取得、製造、配送銷售、使用到廢棄回收之生命週期溫室氣體排放量，經環境部審查認證後核發的標示，協助消費者辨識低碳產品。",
+      },
+      {
+        question: "碳足跡數據的單位是什麼？",
+        answer:
+          "每項產品的碳足跡數據會搭配「宣告單位」一併顯示（如每公斤、每件），代表該碳排放數值所對應的計算基準，不同產品間的宣告單位可能不同，比較時請留意單位是否一致。",
       },
     ],
   },

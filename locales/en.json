@@ -71,7 +71,11 @@
     "green-products": "Green Mark Products Directory",
     "cultural-events": "National Cultural & Exhibition Events Finder",
     "public-art": "National Public Art Map & Directory",
-    "travel-epidemic-alerts": "International Travel Epidemic & Outbreak Alerts"
+    "travel-epidemic-alerts": "International Travel Epidemic & Outbreak Alerts",
+    "cool-spots": "Cool Spot (Heat Relief) Finder",
+    "iaq-premises": "Indoor Air Quality Act Premises Finder",
+    "cleaning-squads": "Municipal Cleaning Squad Directory",
+    "carbon-footprint-products": "Carbon Footprint Label Products Directory"
   },
   "categories": {
     "gov": "Government Agencies",

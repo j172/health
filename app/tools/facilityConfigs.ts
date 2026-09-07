@@ -241,6 +241,43 @@ export const facilitySearchConfigs = {
       { value: "技藝", label: "技藝類" },
     ],
   },
+  "cool-spots": {
+    facilityType: "cool_spot",
+    emoji: "🧊",
+    title: "全國涼適點查詢",
+    description:
+      "查詢環境部「Cool Map 涼適點」名冊，提供百貨、圖書館、里民活動中心等可供民眾避暑消暑之場所。資料來源：環境部開放資料（gis_p_82）。",
+    searchPlaceholder: "輸入地點名稱或縣市關鍵字",
+    errorText: "查詢涼適點資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的涼適點，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的涼適點。",
+    serviceItem: { label: "設施資訊：" },
+  },
+  "iaq-premises": {
+    facilityType: "iaq_premise",
+    emoji: "💨",
+    title: "室內空氣品質法公告場所查詢",
+    description:
+      "查詢應符合《室內空氣品質管理法》之公告場所名冊。資料來源：環境部開放資料（aqx_p_23）。",
+    searchPlaceholder: "輸入場所名稱或縣市關鍵字",
+    errorText: "查詢場所資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的場所，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的場所。",
+    serviceItem: { label: "場所類別：" },
+    showGeocodeNote: true,
+  },
+  "cleaning-squads": {
+    facilityType: "cleaning_squad",
+    emoji: "🧹",
+    title: "地方清潔隊聯絡資訊查詢",
+    description:
+      "查詢全國各縣市地方清潔隊聯絡地址與電話。資料來源：環境部開放資料（wr_s_04）。",
+    searchPlaceholder: "輸入清潔隊名稱或縣市關鍵字",
+    errorText: "查詢清潔隊資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的清潔隊，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的清潔隊。",
+    showGeocodeNote: true,
+  },
   "child-safety-spots": {
     facilityType: "child_safety_spot",
     emoji: "🛡️",

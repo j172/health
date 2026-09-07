@@ -64,6 +64,10 @@ export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
   { facilityType: "home_healthcare", sourceKey: "nhi_home_healthcare", label: "居家醫療機構" },
   { facilityType: "clinic", sourceKey: "nhi_hospital", label: "醫療院所與診所" },
   { facilityType: "green_shop", sourceKey: "moenv_green_shop", label: "綠色商店" },
+  // Added for issue #130 — none of these three carry coordinates in their source feed.
+  { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
+  { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
+  { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
 ];
 
 export interface GeocodeBatchSourceSummary {
