@@ -53,6 +53,9 @@ const callBatch = () => {
   const result = ssh.call(remote);
 
   if (result.error) throw result.error;
+  if (result.status === 255) {
+    return { ok: false, hostLveSaturated: true, status: 255 };
+  }
   const out = (result.stdout || "").trim();
   const lines = out.split(/\r?\n/).filter((l) => l.trim().startsWith("{"));
   const text = lines.length ? lines[lines.length - 1] : out;
@@ -74,6 +77,12 @@ const main = async () => {
   try {
     for (let round = 1; round <= ROUNDS; round += 1) {
       const response = callBatch();
+      if (response.hostLveSaturated) {
+        console.warn(
+          "Host SSH / LVE process limit saturated (exit 255). Exiting batch runner gracefully (exit 0) to allow host recovery.",
+        );
+        break;
+      }
       if (!response.ok) {
         console.error(`round ${round}: API error`, response);
         process.exitCode = 1;

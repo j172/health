@@ -94,6 +94,12 @@ export function createSshLoopback({ keyFile, host, port = "22", user }) {
     for (let attempt = 0; attempt <= retries; attempt += 1) {
       result = runOnce(remoteCmd, input);
       if (result.status === 0) return result;
+      if (result.status === 255) {
+        console.error(
+          `ssh call encountered fatal connection drop / LVE saturation (exit=255) — aborting further retries to prevent compounding host load`,
+        );
+        return result;
+      }
       if (attempt < retries) {
         const reason =
           (result.stderr || result.error?.message || "")

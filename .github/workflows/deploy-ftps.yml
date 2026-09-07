@@ -2,9 +2,15 @@ name: Deploy prebuilt via FTPS
 
 on:
   workflow_dispatch:
+    inputs:
+      force_npm_sync:
+        description: 'Force server node_modules sync'
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
-  group: deploy-ftps
+  group: host-tw123457-server
   cancel-in-progress: false
 
 jobs:
@@ -23,6 +29,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 2
+
+      - name: Check dependency lockfile changes
+        id: lockfile_check
+        run: |
+          set -euo pipefail
+          FORCE_SYNC="${{ inputs.force_npm_sync || 'false' }}"
+          SYNC_NEEDED=0
+
+          if [ "$FORCE_SYNC" = "true" ]; then
+            echo "force_npm_sync input is true. Server node_modules sync forced."
+            SYNC_NEEDED=1
+          elif git rev-parse HEAD~1 >/dev/null 2>&1; then
+            if git diff --name-only HEAD~1 HEAD | grep -E '^(package\.json|package-lock\.json)$' >/dev/null 2>&1; then
+              echo "Dependencies changed in target commit (package.json / package-lock.json modified)."
+              SYNC_NEEDED=1
+            else
+              echo "No dependency lockfile changes detected between HEAD~1 and HEAD."
+            fi
+          else
+            echo "HEAD~1 not available (initial commit or shallow clone). Defaulting sync_needed=1."
+            SYNC_NEEDED=1
+          fi
+
+          echo "sync_needed=$SYNC_NEEDED" >> "$GITHUB_OUTPUT"
 
       # .remote-health-index.php is the host's front controller AND its only
       # recovery mechanism — /__ops/apply-prebuilt-force, the pm2 watchdog and
@@ -214,6 +246,7 @@ jobs:
           done
 
       - name: Trigger node_modules sync on server
+        if: steps.lockfile_check.outputs.sync_needed == '1'
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -292,6 +325,7 @@ jobs:
           fi
 
       - name: Wait for node_modules sync
+        if: steps.lockfile_check.outputs.sync_needed == '1'
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -322,8 +356,23 @@ jobs:
           # process slots left. Reading /proc/<pid> forks nothing, so this check
           # still works in exactly the conditions that caused the incident.
           NOPID=0
+          SSH_FAIL_STREAK=0
           for ATTEMPT in $(seq 1 90); do
-            REPLY="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cd /home/tw123457/health_app 2>/dev/null || exit 0; S=$(cat .npm-ci-status 2>/dev/null || echo PENDING); P=$(cat .npm-ci-pid 2>/dev/null || echo 0); if [ "$P" != 0 ] && [ -d "/proc/$P" ]; then L=alive; elif [ "$P" != 0 ]; then L=gone; else L=nopid; fi; echo "$S|$L"' 2>/dev/null || echo 'PENDING|unknown')"
+            SSH_RC=0
+            RAW_REPLY="$(ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" 'cd /home/tw123457/health_app 2>/dev/null || exit 0; S=$(cat .npm-ci-status 2>/dev/null || echo PENDING); P=$(cat .npm-ci-pid 2>/dev/null || echo 0); if [ "$P" != 0 ] && [ -d "/proc/$P" ]; then L=alive; elif [ "$P" != 0 ]; then L=gone; else L=nopid; fi; echo "$S|$L"' 2>/dev/null)" || SSH_RC=$?
+
+            if [ "$SSH_RC" -ne 0 ]; then
+              SSH_FAIL_STREAK=$((SSH_FAIL_STREAK + 1))
+              echo "ssh polling call failed (exit $SSH_RC, streak $SSH_FAIL_STREAK/3)"
+              if [ "$SSH_FAIL_STREAK" -ge 3 ]; then
+                echo "SSH connection failed 3 consecutive times (exit $SSH_RC). Remote host is likely saturating Entry Processes or refusing connections. Aborting immediately to prevent compounding host load."
+                exit 1
+              fi
+              sleep 5
+              continue
+            fi
+            SSH_FAIL_STREAK=0
+            REPLY="${RAW_REPLY:-PENDING|unknown}"
             STATUS="${REPLY%%|*}"
             LIVENESS="${REPLY##*|}"
 
@@ -478,13 +527,22 @@ jobs:
             fi
           }
 
-          # The server-side probe budgets 60 one-second attempts, but a single
-          # attempt can hang for ~20s rather than refuse outright, so its real
-          # worst case runs well past 60s — 80-100s observed under host load.
-          # This loop must outlast that or it reports a false failure and skips
-          # every later step, including the crontab sync.
+          SSH_FAIL_STREAK=0
           for ATTEMPT in $(seq 1 150); do
-            STATUS="$(read_status || true)"
+            CMD_RC=0
+            STATUS="$(read_status)" || CMD_RC=$?
+
+            if [ "$CMD_RC" -ne 0 ]; then
+              SSH_FAIL_STREAK=$((SSH_FAIL_STREAK + 1))
+              echo "read_status failed (exit $CMD_RC, streak $SSH_FAIL_STREAK/3)"
+              if [ "$SSH_FAIL_STREAK" -ge 3 ]; then
+                echo "Status polling connection failed 3 consecutive times (exit $CMD_RC). Remote host is likely refusing connections. Aborting immediately to prevent compounding host load."
+                exit 1
+              fi
+              sleep 4
+              continue
+            fi
+            SSH_FAIL_STREAK=0
             printf '%s\n' "$STATUS" | tail -5
 
             if printf '%s' "$STATUS" | grep -Fq '[DONE-FORCE-V4]'; then
