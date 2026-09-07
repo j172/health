@@ -116,7 +116,7 @@ export default function TaxOrganizationsContent() {
           </div>
           <div>
             <h1 className="text-xl font-bold text-neutral-900 dark:text-neutral-100">
-              非營利組織(NPO)與機關團體查詢
+              非營利組織(NPO)查詢
             </h1>
             <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
               收錄財政部財政資訊中心開放之全國機關團體扣繳單位名冊，包含各類非營利組織（NPO）、社會福利慈善財團法人、公會協會、管委會等。支援統一編號、組織名稱及縣市快速查詢。

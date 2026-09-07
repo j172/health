@@ -180,7 +180,7 @@ const CATEGORIES: ToolCategory[] = [
     id: "public-facility",
     title: "便民服務",
     description:
-      "全國公廁、環境部認證綠色商店、機關團體扣繳單位與國際旅遊疫情警示查詢",
+      "全國公廁、環境部認證綠色商店、非營利組織(NPO)與國際旅遊疫情警示查詢",
     groups: ["public-facility"],
   },
 ];
