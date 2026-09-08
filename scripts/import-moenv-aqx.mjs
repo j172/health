@@ -25,6 +25,12 @@
 
 const BASE_API_URL = "https://data.moenv.gov.tw/api/v2";
 const PAGE_SIZE = 1000;
+// Verified live (2026-09-08): these datasets are the full historical archive,
+// not a "today only" snapshot (offset=200000+ on aqx_p_15 alone still returned
+// full pages). Always sort newest-first and cap pages fetched per dataset —
+// see lib/server/aqx/fetchAqxWide.ts's MAX_PAGES comment for the full
+// rationale (this script mirrors that module's in-app fetch logic).
+const MAX_PAGES = 5;
 const BASE_URL = (process.env.HEALTH_BASE_URL || "https://health.j172.tw").replace(/\/$/, "");
 const ADMIN_SECRET = process.env.ADMIN_SECRET || process.env.RSS_SYNC_ADMIN_SECRET;
 const MOENV_KEY = process.env.MOENV_AQI_API_KEY || process.env.MOENV_GP_API_KEY;
@@ -66,8 +72,8 @@ async function fetchAllRows(datasetCode) {
   let offset = 0;
   let page = 0;
 
-  while (true) {
-    const url = `${BASE_API_URL}/${datasetCode}?format=JSON&limit=${PAGE_SIZE}&offset=${offset}&api_key=${encodeURIComponent(MOENV_KEY)}`;
+  while (page < MAX_PAGES) {
+    const url = `${BASE_API_URL}/${datasetCode}?format=JSON&limit=${PAGE_SIZE}&offset=${offset}&sort=${encodeURIComponent("monitordate desc")}&api_key=${encodeURIComponent(MOENV_KEY)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`${datasetCode} fetch failed: HTTP ${res.status} (offset=${offset})`);
     const json = await res.json();
