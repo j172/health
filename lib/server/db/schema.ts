@@ -865,4 +865,85 @@ export const TABLE_DDL = {
       KEY idx_cfp_company_name (company_name(100))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 環境部 (MOENV) AQX 系列「寬表」小時值 — 一列/測站/測項/日期，24 個小時值欄位
+  // (issue #131): AQX_P_15/16/17/18/25. Stored as one JSON array (index = hour
+  // 00-23) rather than 24 literal columns — matches this schema's existing use
+  // of *_json columns elsewhere (e.g. summary_json, extra_json) and keeps this
+  // one table shared across all five dataset codes via `dataset_code`.
+  aqxHourlyWide: `
+    CREATE TABLE IF NOT EXISTS aqx_hourly_wide (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      dataset_code VARCHAR(20) NOT NULL,
+      siteid VARCHAR(20) NOT NULL,
+      sitename VARCHAR(100) NULL,
+      itemid VARCHAR(20) NOT NULL,
+      itemname VARCHAR(100) NULL,
+      itemengname VARCHAR(100) NULL,
+      itemunit VARCHAR(50) NULL,
+      monitordate DATE NOT NULL,
+      hourly_values JSON NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_aqx_wide (dataset_code, siteid, itemid, monitordate),
+      KEY idx_aqx_wide_dataset (dataset_code),
+      KEY idx_aqx_wide_site (sitename),
+      KEY idx_aqx_wide_date (monitordate)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 環境部 (MOENV) AQX 系列「窄表」單筆讀值 — 一列一筆量測值 (issue #131):
+  // AQX_P_318 (CO 8hr 平均值)、AQX_P_319 (PM10 小時值)、AQX_P_35 (其它測項)。
+  // monitordate already carries the reading's own hour/timestamp, so it (plus
+  // dataset_code/siteid/itemid) is a stable natural upsert key.
+  aqxHourlyNarrow: `
+    CREATE TABLE IF NOT EXISTS aqx_hourly_narrow (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      dataset_code VARCHAR(20) NOT NULL,
+      siteid VARCHAR(20) NOT NULL,
+      sitename VARCHAR(100) NULL,
+      county VARCHAR(50) NULL,
+      itemid VARCHAR(20) NOT NULL,
+      itemname VARCHAR(100) NULL,
+      itemengname VARCHAR(100) NULL,
+      itemunit VARCHAR(50) NULL,
+      monitordate DATETIME NOT NULL,
+      concentration DECIMAL(14,4) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_aqx_narrow (dataset_code, siteid, itemid, monitordate),
+      KEY idx_aqx_narrow_dataset (dataset_code),
+      KEY idx_aqx_narrow_site (sitename),
+      KEY idx_aqx_narrow_date (monitordate)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 環境部 (MOENV) 碳足跡排放係數 — data.moenv.gov.tw CFP_P_02 (issue #131).
+  // Lives alongside carbonFootprintProducts (CFP_P_01) in the same domain
+  // module/directory per the issue's note to reuse the carbon-footprint data
+  // layer, but this is a genuinely different schema (generic emission factors,
+  // not product records) so it gets its own table rather than reusing CFP_P_01's.
+  // No natural id field is published, so department_name/announcement_year are
+  // stored as NOT NULL DEFAULT '' (never NULL) so the composite unique key can
+  // actually dedupe re-synced rows — MySQL treats NULL <> NULL, which would
+  // otherwise let every sync insert fresh duplicates for rows with no
+  // department disclosed.
+  carbonFootprintCoefficients: `
+    CREATE TABLE IF NOT EXISTS carbon_footprint_coefficients (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      coefficient_name VARCHAR(255) NOT NULL,
+      coefficient_value DECIMAL(18,6) NULL,
+      unit VARCHAR(100) NULL,
+      department_name VARCHAR(255) NOT NULL DEFAULT '',
+      announcement_year VARCHAR(20) NOT NULL DEFAULT '',
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cfp_coef (coefficient_name(150), unit(50), department_name(80), announcement_year),
+      KEY idx_cfp_coef_name (coefficient_name(100)),
+      KEY idx_cfp_coef_year (announcement_year)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

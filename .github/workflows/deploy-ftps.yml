@@ -748,7 +748,7 @@ jobs:
             test -s "$TMP_DIR/card-image"
           done < "$TMP_DIR/card-images.txt"
 
-      - name: Seed culture shows, public art, green hotels and green products data
+      - name: Seed culture shows, public art, green hotels, green products and AQX/CFP data
         continue-on-error: true
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
@@ -772,3 +772,7 @@ jobs:
           node scripts/import-moenv-iaq-premises.mjs || true
           echo "Importing cleaning squads (wr_s_04)..."
           node scripts/import-moenv-cleaning-squads.mjs || true
+          echo "Importing carbon footprint coefficients (cfp_p_02)..."
+          node scripts/import-moenv-carbon-footprint-coefficients.mjs || true
+          echo "Importing AQX series air quality data (aqx_p_15/16/17/18/25/318/319/35)..."
+          node scripts/import-moenv-aqx.mjs || true

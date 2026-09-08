@@ -1807,6 +1807,99 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "carbon-footprint-coefficients",
+    group: "public-facility",
+    title: "碳足跡排放係數查詢",
+    description:
+      "查詢環境部公告之碳足跡排放係數（原物料、製程、能源等單位活動量之溫室氣體排放量），供產品碳足跡計算參考。資料來源：環境部開放資料（cfp_p_02）。",
+    directAnswer:
+      "查詢環境部公告之碳足跡排放係數資料庫，提供原物料取得、製造、能源使用等各類活動每單位對應之溫室氣體排放量，作為計算產品碳足跡的基礎數據。",
+    scientificBasis: [
+      {
+        title: "碳足跡排放係數資料庫 (cfp_p_02)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["carbon-footprint-products", "green-products"],
+    faqs: [
+      {
+        question: "什麼是碳足跡排放係數？",
+        answer:
+          "排放係數是計算特定活動（如生產一公斤原物料、消耗一度電）所產生溫室氣體排放量的換算基準，是計算產品碳足跡時不可或缺的參考數據，由環境部審定並公告。",
+      },
+      {
+        question: "為什麼有些係數沒有標示公告部門？",
+        answer:
+          "公司/部門名稱欄位由各申報單位選擇性揭露，環境部開放資料原始欄位本身即可能為空值，此為資料來源限制，並非查詢功能異常。",
+      },
+    ],
+  },
+  {
+    slug: "aqx-monitoring",
+    group: "weather",
+    title: "空氣品質延伸監測資料查詢（AQX 系列）",
+    description:
+      "查詢環境部開放資料平臺 AQX 系列監測小時值，涵蓋一般污染物、BTEX、非甲烷碳氫化合物（NMHC）、總碳氫化合物（THC）、光化測站、CO 8小時平均值、PM10 小時值與其它測項。",
+    directAnswer:
+      "查詢環境部 AQX 系列延伸空氣品質監測資料，包含一般污染物、BTEX、NMHC、THC、光化測站小時值，以及 CO 8小時平均值、PM10 小時值、其它測項等單筆讀值資料，每筆結果均標示測項名稱、單位與更新頻率。",
+    scientificBasis: [
+      {
+        title: "空氣品質監測小時值(一般污染物) (aqx_p_15)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "BTEX監測小時值 (aqx_p_16)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "非甲烷碳氫化合物(NMHC)監測小時值 (aqx_p_17)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "總碳氫化合物(THC)監測小時值 (aqx_p_18)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "光化測站小時值資料 (aqx_p_25)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "CO_8hr平均值 (aqx_p_318)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "PM10小時值 (aqx_p_319)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "空氣品質監測小時值資料(其它測項) (aqx_p_35)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["aqi"],
+    faqs: [
+      {
+        question: "AQX 系列資料和 AQI 空氣品質指標有什麼不同？",
+        answer:
+          "AQI 是綜合多項污染物換算而成的單一指標；AQX 系列則是原始測站監測小時值，涵蓋一般污染物、BTEX、NMHC、THC、光化測站、CO 8小時平均值、PM10 小時值與其它測項，適合需要查看個別測項原始數值的進階需求。",
+      },
+      {
+        question: "每個資料集的更新頻率一樣嗎？",
+        answer:
+          "不一樣。部分資料集為每日更新一次（如一般污染物、BTEX、NMHC、THC、光化測站小時值），部分為每小時更新（如 PM10 小時值、其它測項），CO 8小時平均值則每日提供 17 筆，頁面上會於資料集選單旁標示各資料集的更新頻率。",
+      },
+    ],
+  },
 ];
 
 /**
