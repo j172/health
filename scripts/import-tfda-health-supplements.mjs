@@ -7,16 +7,35 @@
  * enough to fetch/parse/POST directly, unlike
  * scripts/import-tfda-food-nutrition.mjs which needs GitHub Actions batching.
  *
+ * Transport (TRANSPORT): "http" (default) POSTs straight to BASE_URL/HEALTH_BASE_URL.
+ * "ssh" runs curl on the app host against its own loopback instead — a
+ * GitHub Actions runner IP hitting the public hostname gets a JS anti-bot
+ * challenge page back instead of JSON (confirmed live 2026-09-08, same issue
+ * documented in scripts/gha-og-external-backfill.mjs), and HawkHost disables
+ * TCP forwarding so an `ssh -L` tunnel isn't an option either.
+ *
  * Usage:
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> node scripts/import-tfda-health-supplements.mjs
+ *   TRANSPORT=ssh SSH_HOST=... SSH_PORT=... SSH_USER=... SSH_KEY_FILE=... ADMIN_SECRET=... node scripts/import-tfda-health-supplements.mjs
  */
+import { createSshLoopback, shellQuote } from "./lib/ssh-loopback.mjs";
+
 const SOURCE_URL = "https://data.fda.gov.tw/data/opendata/export/19/json";
 const BASE_URL = process.env.HEALTH_BASE_URL || "https://health.j172.tw";
 const ADMIN_SECRET = process.env.ADMIN_SECRET;
+const TRANSPORT = (process.env.TRANSPORT || "http").toLowerCase();
 
 if (!ADMIN_SECRET) {
   console.error("Missing ADMIN_SECRET env var (the x-rss-sync-admin-secret value).");
   process.exit(1);
+}
+
+if (TRANSPORT === "ssh") {
+  const { SSH_HOST, SSH_PORT, SSH_USER, SSH_KEY_FILE } = process.env;
+  if (!SSH_HOST || !SSH_USER || !SSH_KEY_FILE) {
+    console.error("TRANSPORT=ssh requires SSH_HOST, SSH_USER, SSH_KEY_FILE.");
+    process.exit(1);
+  }
 }
 
 const nullify = (s) => (s && String(s).trim() ? String(s).trim() : null);
@@ -75,7 +94,7 @@ async function fetchRecords() {
     }));
 }
 
-async function submitBatch(records) {
+async function submitBatchHttp(records) {
   const res = await fetch(`${BASE_URL}/api/admin/health-supplements-import`, {
     method: "POST",
     headers: { "content-type": "application/json", "x-rss-sync-admin-secret": ADMIN_SECRET },
@@ -85,6 +104,39 @@ async function submitBatch(records) {
   if (!res.ok || !json.ok) throw new Error(`Import batch failed: ${JSON.stringify(json)}`);
   return json;
 }
+
+function submitBatchSsh(records) {
+  const ssh = createSshLoopback({
+    keyFile: process.env.SSH_KEY_FILE,
+    host: process.env.SSH_HOST,
+    port: process.env.SSH_PORT,
+    user: process.env.SSH_USER,
+  });
+  try {
+    const payload = JSON.stringify({ records });
+    const remote = [
+      "curl -sS --max-time 60",
+      "-X POST http://127.0.0.1:3000/api/admin/health-supplements-import",
+      '-H "content-type: application/json"',
+      `-H ${shellQuote(`x-rss-sync-admin-secret: ${ADMIN_SECRET}`)}`,
+      "--data-binary @-",
+    ].join(" ");
+    const result = ssh.call(remote, { input: payload });
+    if (result.error) throw result.error;
+    let json;
+    try {
+      json = JSON.parse(result.stdout);
+    } catch {
+      throw new Error(`ssh curl non-json exit=${result.status}: ${(result.stderr || "").slice(0, 200)} | ${(result.stdout || "").slice(0, 200)}`);
+    }
+    if (result.status !== 0 || !json.ok) throw new Error(`Import batch failed: ${JSON.stringify(json)}`);
+    return json;
+  } finally {
+    ssh.close();
+  }
+}
+
+const submitBatch = (records) => (TRANSPORT === "ssh" ? submitBatchSsh(records) : submitBatchHttp(records));
 
 async function main() {
   const records = await fetchRecords();

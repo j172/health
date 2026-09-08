@@ -32,43 +32,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Admin sync endpoints get a JS anti-bot challenge page instead of JSON
-      # when called from a GitHub Actions runner IP hitting the public
-      # domain (confirmed 2026-09-08 on this exact workflow) — tunnel to the
-      # app's own loopback instead, same as every other scheduled sync in
-      # this repo. Background process persists into the next step (same
-      # runner VM).
-      - name: Open SSH tunnel to production loopback
+      - name: Stage SSH key
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          set -euo pipefail
           KEY_FILE="$RUNNER_TEMP/deploy_key"
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
           chmod 600 "$KEY_FILE"
-          ssh -i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
-            -o ServerAliveInterval=30 -N -L 18080:127.0.0.1:3000 "$SSH_USER@$SSH_HOST" &
-          echo $! > "$RUNNER_TEMP/tunnel.pid"
-          for _ in $(seq 1 20); do
-            if curl -s -o /dev/null "http://127.0.0.1:18080/api/aqi"; then break; fi
-            sleep 0.5
-          done
-          curl -fsS -o /dev/null "http://127.0.0.1:18080/api/aqi"
-          echo "Tunnel ready on 127.0.0.1:18080."
 
+      # HawkHost disables TCP forwarding (AllowTcpForwarding no), so an
+      # `ssh -L` tunnel fails with "administratively prohibited" (confirmed
+      # live 2026-08-03 in news-og-backfill.yml, and again 2026-09-08 on this
+      # exact workflow). Runs curl on the app host against its own loopback
+      # instead -- see scripts/lib/ssh-loopback.mjs.
       - name: Import TFDA 健康食品(健字號) registry (~400-600 rows)
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: http://127.0.0.1:18080
+          TRANSPORT: ssh
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY_FILE: ${{ runner.temp }}/deploy_key
         run: node scripts/import-tfda-health-supplements.mjs
 
-      - name: Close SSH tunnel
+      - name: Clean up SSH key
         if: always()
-        run: |
-          if [ -f "$RUNNER_TEMP/tunnel.pid" ]; then
-            kill "$(cat "$RUNNER_TEMP/tunnel.pid")" 2>/dev/null || true
-          fi
-          rm -f "$RUNNER_TEMP/deploy_key"
+        run: rm -f "$RUNNER_TEMP/deploy_key"
