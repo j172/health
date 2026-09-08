@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   searchFoodSamples,
+  countSearchFoodSamples,
   getNutritionBySampleId,
   rankFoodsByNutrient,
   listDistinctNutrientItems,
@@ -9,6 +10,18 @@ import {
 } from "@/lib/server/food/nutrition";
 
 export const runtime = "nodejs";
+
+/** Mirrors PAGE_SIZE_OPTIONS in lib/hooks/usePagination.ts — kept as a literal list here so this route has no client-only import. */
+const PAGE_SIZE_OPTIONS = [30, 50, 100];
+const DEFAULT_PAGE_SIZE = 30;
+
+const resolvePaging = (searchParams: URLSearchParams): { limit: number; offset: number } => {
+  const pageSize = Number(searchParams.get("pageSize"));
+  const limit = PAGE_SIZE_OPTIONS.includes(pageSize) ? pageSize : DEFAULT_PAGE_SIZE;
+  const rawPage = Number(searchParams.get("page"));
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  return { limit, offset: (page - 1) * limit };
+};
 
 export async function GET(request: NextRequest) {
   const mode = request.nextUrl.searchParams.get("mode")?.trim();
@@ -57,9 +70,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing required 'keyword' or 'sampleId' query param" }, { status: 400 });
   }
 
+  const { limit, offset } = resolvePaging(request.nextUrl.searchParams);
+
   try {
-    const samples = await searchFoodSamples(keyword);
-    return NextResponse.json({ samples });
+    const [samples, total] = await Promise.all([searchFoodSamples(keyword, limit, offset), countSearchFoodSamples(keyword)]);
+    return NextResponse.json({ samples, total });
   } catch (error) {
     console.error("GET /api/food-nutrition failed:", error);
     return NextResponse.json({ error: "查詢食品營養成分失敗" }, { status: 502 });

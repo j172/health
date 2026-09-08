@@ -57,46 +57,70 @@ export const upsertCarbonFootprintProducts = async (
 
 export const getRecentCarbonFootprintProducts = async (
   limit = 30,
+  offset = 0,
 ): Promise<CarbonFootprintProductListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, cfpl_code, product_name, company_name, carbon_footprint_data, declared_unit, expire_date
        FROM carbon_footprint_products
        ORDER BY id DESC
-       LIMIT ?`,
-      [limit],
+       LIMIT ? OFFSET ?`,
+      [limit, offset],
     );
     return rows as unknown as CarbonFootprintProductListItem[];
+  });
+
+/** Total rows in carbon_footprint_products — pairs with getRecentCarbonFootprintProducts() for pagination (issue #157). */
+export const countCarbonFootprintProducts = async (): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM carbon_footprint_products`);
+    return Number(rows[0]?.total ?? 0);
   });
 
 export interface SearchCarbonFootprintProductsParams {
   keyword?: string;
   limit?: number;
+  offset?: number;
 }
+
+const buildSearchCarbonFootprintProductsWhere = ({ keyword }: Pick<SearchCarbonFootprintProductsParams, "keyword">) => {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (keyword) {
+    conditions.push("(product_name LIKE ? OR company_name LIKE ? OR cfpl_code LIKE ?)");
+    params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+  }
+
+  return { whereClause: conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "", params };
+};
 
 export const searchCarbonFootprintProducts = async ({
   keyword,
   limit = 50,
+  offset = 0,
 }: SearchCarbonFootprintProductsParams): Promise<CarbonFootprintProductListItem[]> =>
   withConnection(async (conn) => {
-    const conditions: string[] = [];
-    const params: unknown[] = [];
-
-    if (keyword) {
-      conditions.push("(product_name LIKE ? OR company_name LIKE ? OR cfpl_code LIKE ?)");
-      params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
-    }
-
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const { whereClause, params } = buildSearchCarbonFootprintProductsWhere({ keyword });
     const query = `
       SELECT id, cfpl_code, product_name, company_name, carbon_footprint_data, declared_unit, expire_date
       FROM carbon_footprint_products
       ${whereClause}
       ORDER BY id DESC
-      LIMIT ?
+      LIMIT ? OFFSET ?
     `;
-    params.push(limit);
+    params.push(limit, offset);
 
     const [rows] = await conn.query<RowDataPacket[]>(query, params);
     return rows as unknown as CarbonFootprintProductListItem[];
+  });
+
+/** Total rows matching the same filters as searchCarbonFootprintProducts() — pairs with it for pagination (issue #157). */
+export const countSearchCarbonFootprintProducts = async ({
+  keyword,
+}: Pick<SearchCarbonFootprintProductsParams, "keyword">): Promise<number> =>
+  withConnection(async (conn) => {
+    const { whereClause, params } = buildSearchCarbonFootprintProductsWhere({ keyword });
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM carbon_footprint_products ${whereClause}`, params);
+    return Number(rows[0]?.total ?? 0);
   });

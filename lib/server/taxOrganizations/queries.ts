@@ -52,6 +52,7 @@ const mapRowToItem = (r: RowDataPacket): TaxOrganizationItem => {
 
 export const getRecentTaxOrganizations = async (
   limit = 30,
+  offset = 0,
 ): Promise<TaxOrganizationItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
@@ -59,49 +60,75 @@ export const getRecentTaxOrganizations = async (
        FROM facilities
        WHERE facility_type = 'tax_organization'
        ORDER BY id DESC
-       LIMIT ?`,
-      [limit],
+       LIMIT ? OFFSET ?`,
+      [limit, offset],
     );
     return rows.map(mapRowToItem);
+  });
+
+/** Total tax_organization rows — pairs with getRecentTaxOrganizations() for pagination (issue #157). */
+export const countTaxOrganizations = async (): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM facilities WHERE facility_type = 'tax_organization'`,
+    );
+    return Number(rows[0]?.total ?? 0);
   });
 
 export interface SearchTaxOrganizationsParams {
   keyword?: string;
   city?: string;
   limit?: number;
+  offset?: number;
 }
+
+const buildSearchTaxOrganizationsWhere = ({ keyword, city }: Pick<SearchTaxOrganizationsParams, "keyword" | "city">) => {
+  const conditions: string[] = ["facility_type = 'tax_organization'"];
+  const params: unknown[] = [];
+
+  if (keyword) {
+    conditions.push("(name LIKE ? OR service_item LIKE ?)");
+    params.push(`%${keyword}%`, `%${keyword}%`);
+  }
+
+  if (city && city !== "全部縣市") {
+    conditions.push("address LIKE ?");
+    params.push(`%${city}%`);
+  }
+
+  return { whereClause: `WHERE ${conditions.join(" AND ")}`, params };
+};
 
 export const searchTaxOrganizations = async ({
   keyword,
   city,
   limit = 50,
+  offset = 0,
 }: SearchTaxOrganizationsParams): Promise<TaxOrganizationItem[]> =>
   withConnection(async (conn) => {
-    const conditions: string[] = ["facility_type = 'tax_organization'"];
-    const params: unknown[] = [];
-
-    if (keyword) {
-      conditions.push("(name LIKE ? OR service_item LIKE ?)");
-      params.push(`%${keyword}%`, `%${keyword}%`);
-    }
-
-    if (city && city !== "全部縣市") {
-      conditions.push("address LIKE ?");
-      params.push(`%${city}%`);
-    }
-
-    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+    const { whereClause, params } = buildSearchTaxOrganizationsWhere({ keyword, city });
     const query = `
       SELECT id, name, address, service_item, service_time, extra_json
       FROM facilities
       ${whereClause}
       ORDER BY id DESC
-      LIMIT ?
+      LIMIT ? OFFSET ?
     `;
-    params.push(limit);
+    params.push(limit, offset);
 
     const [rows] = await conn.query<RowDataPacket[]>(query, params);
     return rows.map(mapRowToItem);
+  });
+
+/** Total rows matching the same filters as searchTaxOrganizations() — pairs with it for pagination (issue #157). */
+export const countSearchTaxOrganizations = async ({
+  keyword,
+  city,
+}: Pick<SearchTaxOrganizationsParams, "keyword" | "city">): Promise<number> =>
+  withConnection(async (conn) => {
+    const { whereClause, params } = buildSearchTaxOrganizationsWhere({ keyword, city });
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM facilities ${whereClause}`, params);
+    return Number(rows[0]?.total ?? 0);
   });
 
 export const getTaxOrganizationCities = async (): Promise<string[]> =>

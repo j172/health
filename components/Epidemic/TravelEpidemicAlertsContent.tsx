@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { CDCTravelAlertItem, CDCEpidemicNewsItem } from "@/app/api/cdc/travel-alerts/route";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 export default function TravelEpidemicAlertsContent() {
   const [alerts, setAlerts] = useState<CDCTravelAlertItem[]>([]);
@@ -12,6 +14,12 @@ export default function TravelEpidemicAlertsContent() {
   const [activeTab, setActiveTab] = useState<"alerts" | "news">("alerts");
   const [keyword, setKeyword] = useState("");
   const [levelFilter, setLevelFilter] = useState<number | 0>(0); // 0 = all, 3 = warning, 2 = alert, 1 = watch
+
+  // Issue #157: both tabs are plain lists (order untouched — #155 already sorts the
+  // alerts by effective_at DESC), so 一個 usePagination instance shared between the two
+  // tabs is enough — they're never visible at the same time. Defaults to newest/first
+  // 30, switchable to 50/100, paginated client-side over whatever this already fetched.
+  const { page, pageSize, setPage, setPageSize } = usePagination();
 
   useEffect(() => {
     let ignore = false;
@@ -91,6 +99,15 @@ export default function TravelEpidemicAlertsContent() {
     });
   }, [news, keyword]);
 
+  // Clamp defensively rather than trust the URL's `page` — switching tabs or
+  // narrowing the keyword/level filter can shrink the active list out from under a
+  // page number that was valid a moment ago.
+  const activeListLength = activeTab === "alerts" ? filteredAlerts.length : filteredNews.length;
+  const totalPages = Math.max(1, Math.ceil(activeListLength / pageSize));
+  const clampedPage = Math.min(Math.max(1, page), totalPages);
+  const pagedAlerts = filteredAlerts.slice((clampedPage - 1) * pageSize, clampedPage * pageSize);
+  const pagedNews = filteredNews.slice((clampedPage - 1) * pageSize, clampedPage * pageSize);
+
   const getLevelBadge = (levelCode: number, severityLevel: string) => {
     if (levelCode === 3) {
       return (
@@ -122,6 +139,7 @@ export default function TravelEpidemicAlertsContent() {
           onClick={() => {
             setActiveTab("alerts");
             setLevelFilter(0);
+            setPage(1);
           }}
           className={`rounded-2xl border p-4 text-left transition-all ${
             levelFilter === 0 && activeTab === "alerts"
@@ -139,6 +157,7 @@ export default function TravelEpidemicAlertsContent() {
           onClick={() => {
             setActiveTab("alerts");
             setLevelFilter(3);
+            setPage(1);
           }}
           className={`rounded-2xl border p-4 text-left transition-all ${
             levelFilter === 3 && activeTab === "alerts"
@@ -156,6 +175,7 @@ export default function TravelEpidemicAlertsContent() {
           onClick={() => {
             setActiveTab("alerts");
             setLevelFilter(2);
+            setPage(1);
           }}
           className={`rounded-2xl border p-4 text-left transition-all ${
             levelFilter === 2 && activeTab === "alerts"
@@ -173,6 +193,7 @@ export default function TravelEpidemicAlertsContent() {
           onClick={() => {
             setActiveTab("alerts");
             setLevelFilter(1);
+            setPage(1);
           }}
           className={`rounded-2xl border p-4 text-left transition-all ${
             levelFilter === 1 && activeTab === "alerts"
@@ -195,7 +216,10 @@ export default function TravelEpidemicAlertsContent() {
             <div className="flex rounded-xl border border-slate-200 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-800/80">
               <button
                 type="button"
-                onClick={() => setActiveTab("alerts")}
+                onClick={() => {
+                  setActiveTab("alerts");
+                  setPage(1);
+                }}
                 className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
                   activeTab === "alerts"
                     ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-400"
@@ -206,7 +230,10 @@ export default function TravelEpidemicAlertsContent() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("news")}
+                onClick={() => {
+                  setActiveTab("news");
+                  setPage(1);
+                }}
                 className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-bold transition-all ${
                   activeTab === "news"
                     ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-400"
@@ -255,7 +282,10 @@ export default function TravelEpidemicAlertsContent() {
                   <button
                     key={btn.val}
                     type="button"
-                    onClick={() => setLevelFilter(btn.val)}
+                    onClick={() => {
+                      setLevelFilter(btn.val);
+                      setPage(1);
+                    }}
                     className={`rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
                       levelFilter === btn.val
                         ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
@@ -311,7 +341,7 @@ export default function TravelEpidemicAlertsContent() {
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredAlerts.map((item) => (
+              {pagedAlerts.map((item) => (
                 <div
                   key={item.id}
                   className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700/60"
@@ -363,6 +393,10 @@ export default function TravelEpidemicAlertsContent() {
               ))}
             </div>
           )}
+
+          {filteredAlerts.length > 0 && (
+            <Pagination page={page} pageSize={pageSize} totalItems={filteredAlerts.length} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="則警示" />
+          )}
         </>
       )}
 
@@ -377,7 +411,7 @@ export default function TravelEpidemicAlertsContent() {
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredNews.map((item) => (
+              {pagedNews.map((item) => (
                 <div
                   key={item.id}
                   className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700/60"
@@ -417,6 +451,10 @@ export default function TravelEpidemicAlertsContent() {
                 </div>
               ))}
             </div>
+          )}
+
+          {filteredNews.length > 0 && (
+            <Pagination page={page} pageSize={pageSize} totalItems={filteredNews.length} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="則快訊" />
           )}
         </>
       )}

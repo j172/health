@@ -95,7 +95,7 @@ export const upsertFoodNutrition = (records: FoodNutritionRecord[]): Promise<{ i
   );
 
 /** Distinct food samples matching a keyword — one row per sample_id, not per nutrient. */
-export const searchFoodSamples = async (keyword: string, limit = 30): Promise<FoodSampleSummary[]> =>
+export const searchFoodSamples = async (keyword: string, limit = 30, offset = 0): Promise<FoodSampleSummary[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT sample_id, MIN(sample_name) AS sample_name, MIN(common_name) AS common_name, MIN(sample_name_en) AS sample_name_en, MIN(food_category) AS food_category
@@ -103,10 +103,22 @@ export const searchFoodSamples = async (keyword: string, limit = 30): Promise<Fo
        WHERE sample_name LIKE ? OR common_name LIKE ? OR sample_name_en LIKE ?
        GROUP BY sample_id
        ORDER BY sample_name ASC
-       LIMIT ?`,
-      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, limit],
+       LIMIT ? OFFSET ?`,
+      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, limit, offset],
     );
     return rows as unknown as FoodSampleSummary[];
+  });
+
+/** Total distinct food samples matching a keyword — pairs with searchFoodSamples() for pagination (issue #157). */
+export const countSearchFoodSamples = async (keyword: string): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT COUNT(DISTINCT sample_id) AS total
+       FROM tfda_food_nutrition
+       WHERE sample_name LIKE ? OR common_name LIKE ? OR sample_name_en LIKE ?`,
+      [`%${keyword}%`, `%${keyword}%`, `%${keyword}%`],
+    );
+    return Number(rows[0]?.total ?? 0);
   });
 
 /** All analysis-item rows for one food sample. */

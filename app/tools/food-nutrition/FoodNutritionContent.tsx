@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 import MealAnalysisTab from "./MealAnalysisTab";
 import NutrientRankingTab from "./NutrientRankingTab";
 import HealthSupplementsTab from "./HealthSupplementsTab";
@@ -40,6 +42,7 @@ export default function FoodNutritionContent() {
 
   const [searchInput, setSearchInput] = useState("");
   const [samples, setSamples] = useState<FoodSample[] | null>(null);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [searchedFor, setSearchedFor] = useState("");
@@ -48,27 +51,51 @@ export default function FoodNutritionContent() {
   const [items, setItems] = useState<NutritionItem[] | null>(null);
   const [itemsLoading, setItemsLoading] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  // Issue #157: 成分查詢 defaults to 30 results per page (switchable to 50/100), fetched
+  // via /api/food-nutrition's page/pageSize params — same contract as the drugs pilot.
+  const { page, pageSize, setPage, setPageSize } = usePagination();
+
+  useEffect(() => {
+    if (!searchedFor) return;
+    let cancelled = false;
+
+    // Deferred via queueMicrotask (see e4800b1 / issue #121): calling setState
+    // synchronously in an effect body trips react-hooks/set-state-in-effect.
+    queueMicrotask(() => {
+      (async () => {
+        if (cancelled) return;
+        setLoading(true);
+        setError(false);
+        try {
+          const params = new URLSearchParams({ keyword: searchedFor, page: String(page), pageSize: String(pageSize) });
+          const res = await fetch(`/api/food-nutrition?${params.toString()}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (cancelled) return;
+          setSamples(data.samples || []);
+          setTotal(typeof data.total === "number" ? data.total : 0);
+        } catch {
+          if (!cancelled) setError(true);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [searchedFor, page, pageSize]);
+
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const keyword = searchInput.trim();
     if (!keyword) return;
 
-    setLoading(true);
-    setError(false);
     setSearchedFor(keyword);
     setExpandedId(null);
     setItems(null);
-
-    try {
-      const res = await fetch(`/api/food-nutrition?keyword=${encodeURIComponent(keyword)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setSamples(data.samples);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+    setPage(1);
   };
 
   const toggleSample = async (sampleId: string) => {
@@ -143,7 +170,7 @@ export default function FoodNutritionContent() {
 
           {!loading && !error && samples && (
             <>
-              <p className="text-xs text-neutral-500 dark:text-slate-400">「{searchedFor}」共 {samples.length} 筆結果{samples.length >= 30 && "（僅顯示前30筆，請縮小關鍵字範圍）"}</p>
+              <p className="text-xs text-neutral-500 dark:text-slate-400">「{searchedFor}」共 {total} 筆結果</p>
 
               {samples.length === 0 ? (
                 <p className="py-8 text-center text-neutral-500 dark:text-slate-400">查無符合的食品。</p>
@@ -204,6 +231,8 @@ export default function FoodNutritionContent() {
                   ))}
                 </div>
               )}
+
+              <Pagination page={page} pageSize={pageSize} totalItems={total} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="筆食品" />
             </>
           )}
         </div>
