@@ -884,3 +884,68 @@ jobs:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: https://health.j172.tw
         run: node scripts/import-wra-reservoir-status.mjs
+
+      # cool-spots/iaq-premises/cleaning-squads (issue #156) now have their
+      # own daily cron (lib/server/cron/registerJobs.ts), but that means a
+      # freshly-migrated environment (or this same day, before the first
+      # 4am tick) would otherwise sit at 0 rows until the cron fires. The
+      # "Import cool spots/iaq premises/cleaning squads" steps earlier in
+      # this workflow call this app's own public hostname and get blocked by
+      # Cloudflare bot protection like every other admin POST from this
+      # runner (see the comment above the split-step block) — so trigger the
+      # same in-process sync immediately instead, over the SSH loopback that
+      # already proved out for "Backfill missing news card images" earlier
+      # (this host disables TCP forwarding, so that step's
+      # remote-curl-over-SSH pattern is reused verbatim here, not `ssh -L`).
+      - name: Trigger cool-spots/iaq-premises/cleaning-squads sync (SSH loopback)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY — skipping (cron will still pick this up)."
+            exit 0
+          fi
+
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          ssh_admin() {
+            # $1 = route name (e.g. "cool-spots-sync"). Same -K - stdin
+            # pattern as the news-images backfill step above: the secret
+            # never touches this shared host's process argv (`ps aux`).
+            local route="$1"
+            printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+              ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+                "curl -K - -sS --max-time 120 -X POST http://127.0.0.1:3000/api/admin/$route"
+          }
+
+          FAILED=0
+          for ROUTE in cool-spots-sync iaq-premises-sync cleaning-squads-sync; do
+            echo "=== $ROUTE ==="
+            RESPONSE="$(ssh_admin "$ROUTE")" || { echo "ssh/curl call failed for $ROUTE"; FAILED=1; continue; }
+            printf '%s\n' "$RESPONSE" | jq . || printf '%s\n' "$RESPONSE"
+            OK="$(printf '%s' "$RESPONSE" | jq -r '.ok // false' 2>/dev/null || echo false)"
+            if [ "$OK" != "true" ]; then
+              echo "$ROUTE did not report ok:true"
+              FAILED=1
+            fi
+          done
+
+          if [ "$FAILED" != "0" ]; then
+            echo "One or more syncs failed — the daily cron will retry at 4:33/4:38/4:53am."
+            exit 1
+          fi
