@@ -22,6 +22,8 @@
     "import:cleaning-squads": "node scripts/import-moenv-cleaning-squads.mjs",
     "import:aqx": "node scripts/import-moenv-aqx.mjs",
     "import:carbon-footprint-coefficients": "node scripts/import-moenv-carbon-footprint-coefficients.mjs",
+    "import:wra-water-level": "node scripts/import-wra-water-level.mjs",
+    "import:wra-reservoir-status": "node scripts/import-wra-reservoir-status.mjs",
     "geocode:facilities": "node scripts/geocode-all-facilities.mjs",
     "backfill:opendata-geo": "node scripts/backfill-facilities-from-opendata-geo.mjs",
     "backfill:nfcc-atm": "node scripts/backfill-nfcc-accessible-atm.mjs",
