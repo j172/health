@@ -1,0 +1,38 @@
+name: TFDA health supplements import
+
+on:
+  workflow_dispatch:
+
+# This step also lives inside six-monthly-sync.yml (cron: Jan 1 / Jul 1), but
+# that workflow was only added 2026-07-29 -- after this half's Jan 1/Jul 1
+# window had already passed -- so tfda_health_supplements has never actually
+# been populated in production and won't be until 2027-01-01 unless run
+# manually. This standalone workflow lets it be re-run on demand without
+# re-triggering six-monthly-sync's much heavier food-nutrition (~227k rows)
+# and food-operators (~825k rows) imports. See
+# scripts/import-tfda-health-supplements.mjs for details.
+concurrency:
+  group: host-tw123457-server
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Import TFDA 健康食品(健字號) registry (~400-600 rows)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: node scripts/import-tfda-health-supplements.mjs

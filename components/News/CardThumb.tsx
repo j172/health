@@ -66,9 +66,15 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
         fill
         className={`${imgClass} ${fadeClass}`}
         sizes={sizes}
+        // Only actual SVGs (static maps) bypass the optimizer -- it rejects SVG
+        // input by default (see docs/specs/news-static-map-svg-and-image-resilience.md).
+        // Photographic thumbnails (articles/pixabay/pexels/unsplash) are plain
+        // JPEG/PNG and should go through /_next/image for resizing + WebP/AVIF;
+        // serving them `unoptimized` was sending full-original-size files (100-225KB+)
+        // for a ~400px-wide card thumbnail.
         unoptimized={
           src.endsWith(".svg") ||
-          src.startsWith("/images/news/") ||
+          src.startsWith("/images/news/maps/") ||
           src.startsWith("/uploads/maps/")
         }
         onLoad={() => setLoaded(true)}
