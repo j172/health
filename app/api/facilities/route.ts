@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
   const lng = params.get("lng") ? Number(params.get("lng")) : undefined;
   const radiusMeters = params.get("radius") ? Number(params.get("radius")) : undefined;
   const serviceItem = params.get("category")?.trim() || undefined;
+  const onlyCharity = params.get("charity") === "1" || undefined;
   const sortParam = params.get("sort");
   const sort = sortParam === "distance" || sortParam === "name" || sortParam === "category" ? sortParam : undefined;
 
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     // itself being nearly empty. Passing keyword/radius/category in here would collapse
     // `total` back onto `facilities.length` and destroy the only comparison that matters.
     const [facilities, total] = await Promise.all([
-      searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, sort }),
+      searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, onlyCharity, sort }),
       countFacilities(facilityType),
     ]);
     return NextResponse.json({ facilities, total });

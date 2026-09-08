@@ -215,6 +215,8 @@ export interface FacilitySearchParams {
   limit?: number;
   /** Substring match against the facilities.service_item column (e.g. a hospital tier, pharmacy contract type, or one badge within a combined multi-badge value). */
   serviceItem?: string;
+  /** When true, only rows whose extra_json carries a charityUrl (see scripts/enrich-disability-charity-sales.mjs). */
+  onlyCharity?: boolean;
   sort?: "distance" | "name" | "category";
 }
 
@@ -231,7 +233,7 @@ const CATEGORY_RANK_SQL = `CASE service_item
 END`;
 
 /** Haversine distance filter is applied in SQL directly (facility counts are small enough that this is fine). */
-export const searchFacilities = async ({ facilityType, keyword, lat, lng, radiusMeters = 5000, limit = 200, serviceItem, sort }: FacilitySearchParams): Promise<FacilityListItem[]> =>
+export const searchFacilities = async ({ facilityType, keyword, lat, lng, radiusMeters = 5000, limit = 200, serviceItem, onlyCharity, sort }: FacilitySearchParams): Promise<FacilityListItem[]> =>
   withConnection(async (conn) => {
     const conditions = ["facility_type = ?"];
     const params: unknown[] = [facilityType];
@@ -250,6 +252,10 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
       // category values are substrings of one another.
       conditions.push("service_item LIKE ?");
       params.push(`%${serviceItem}%`);
+    }
+
+    if (onlyCharity) {
+      conditions.push("JSON_EXTRACT(extra_json, '$.charityUrl') IS NOT NULL");
     }
 
     let distanceSelect = "";
@@ -280,12 +286,42 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
             ? "distance_km ASC"
             : "name ASC";
 
-    const query = `
+    const baseSelect = `
       SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json
         ${distanceSelect}
       FROM facilities
       WHERE ${conditions.join(" AND ")}
       ${havingClause}
+    `;
+
+    // Pharmacy rows come from two overlapping sources by design (see
+    // lib/server/facilities/sources/nhiPharmacies.ts): tfda_pharmacy is the FDA's full
+    // registry (contracted and non-contracted), nhi_pharmacy is NHI's contracted-only
+    // list — so every NHI-contracted pharmacy legitimately gets a row from *both*
+    // sources. Confirmed live (issue #132): ~50 of ~140 distinct pharmacies in one
+    // 200-row sample were an exact tfda_pharmacy/nhi_pharmacy (name, address) pair.
+    // Rather than a fuzzy cross-source dedup at ingest time (the tradeoff the source
+    // file's comment explicitly declined), collapse the pair here at query time via an
+    // exact (name, address) match, keeping the nhi_pharmacy row when both exist — it
+    // carries the richer data (weekly hours from applyWeeklyHours()). A pharmacy that
+    // only exists in one source (not contracted, or not yet matched) is untouched.
+    const query =
+      facilityType === "pharmacy"
+        ? `
+      SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json${isGpsSearch ? ", distance_km" : ""}
+      FROM (
+        SELECT base.*, ROW_NUMBER() OVER (
+          PARTITION BY base.name, COALESCE(base.address, '')
+          ORDER BY CASE WHEN base.source_key = 'nhi_pharmacy' THEN 0 ELSE 1 END, base.id
+        ) AS rn
+        FROM (${baseSelect}) base
+      ) deduped
+      WHERE deduped.rn = 1
+      ORDER BY ${orderBy}
+      LIMIT ?
+    `
+        : `
+      ${baseSelect}
       ORDER BY ${orderBy}
       LIMIT ?
     `;
@@ -311,9 +347,24 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
  * Cheap enough to run on every request: `WHERE facility_type = ?` against
  * `idx_facility_type` (lib/server/db/schema.ts) is an index-only range count,
  * it never touches the row data.
+ *
+ * Pharmacies are the one exception: this count also has to fold in the
+ * tfda_pharmacy/nhi_pharmacy dedup that searchFacilities() applies to the list
+ * (see its comment), otherwise "全台共 N 筆" would keep the inflated raw row
+ * count while the list right below it visibly stopped showing the duplicates —
+ * the exact "this data is duplicated" impression issue #132 reported. A
+ * `COUNT(DISTINCT name, address)` needs the row data (not an index-only count),
+ * but the pharmacy table is small enough (~19k rows) for that to stay cheap.
  */
 export const countFacilities = async (facilityType: string): Promise<number> =>
   withConnection(async (conn) => {
+    if (facilityType === "pharmacy") {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        "SELECT COUNT(DISTINCT name, COALESCE(address, '')) AS total FROM facilities WHERE facility_type = ?",
+        [facilityType],
+      );
+      return Number(rows[0]?.total ?? 0);
+    }
     const [rows] = await conn.query<RowDataPacket[]>("SELECT COUNT(*) AS total FROM facilities WHERE facility_type = ?", [facilityType]);
     return Number(rows[0]?.total ?? 0);
   });
