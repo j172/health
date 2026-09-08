@@ -14,6 +14,8 @@ import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
 import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
+import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
+import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -148,6 +150,20 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "45 4 * * *",
     runGuarded("carbon-footprint-products-cron.log", () => runCarbonFootprintProductsSync()),
+  );
+  // Carbon footprint coefficients (cfp_p_02) sync daily at 4:50am — same
+  // cadence rationale as cfp_p_01 above (reference data, monthly-ish churn).
+  cron.schedule(
+    "50 4 * * *",
+    runGuarded("carbon-footprint-coefficients-cron.log", () => runCarbonFootprintCoefficientsSync()),
+  );
+  // AQX_* extended air-quality datasets (issue #131) — five "wide" hourly
+  // datasets plus three "narrow" single-reading ones (see lib/server/aqx/).
+  // Some publish daily, some hourly; running every 30 minutes alongside the
+  // core AQI sync is cheap headroom rather than a precision requirement.
+  cron.schedule(
+    "10,40 * * * *",
+    runGuarded("aqx-sync-cron.log", () => runAqxSync()),
   );
   // IndexNow daily refresh at 5:00am — submits latest 100 news articles to IndexNow / Bing
   cron.schedule(

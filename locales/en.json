@@ -75,7 +75,9 @@
     "cool-spots": "Cool Spot (Heat Relief) Finder",
     "iaq-premises": "Indoor Air Quality Act Premises Finder",
     "cleaning-squads": "Municipal Cleaning Squad Directory",
-    "carbon-footprint-products": "Carbon Footprint Label Products Directory"
+    "carbon-footprint-products": "Carbon Footprint Label Products Directory",
+    "carbon-footprint-coefficients": "Carbon Footprint Emission Coefficients Lookup",
+    "aqx-monitoring": "Extended Air Quality Monitoring Data (AQX Series)"
   },
   "categories": {
     "gov": "Government Agencies",

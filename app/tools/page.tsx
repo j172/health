@@ -111,6 +111,8 @@ const TOOL_ICONS: Record<string, string> = {
   "iaq-premises": "💨",
   "cleaning-squads": "🧹",
   "carbon-footprint-products": "🌍",
+  "carbon-footprint-coefficients": "📐",
+  "aqx-monitoring": "🧪",
 };
 
 interface ToolCategory {
