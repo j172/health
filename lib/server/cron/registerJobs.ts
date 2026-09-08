@@ -16,6 +16,7 @@ import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProd
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
 import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
+import { runWraSync } from "@/lib/server/wra/runSync";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -164,6 +165,14 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "10,40 * * * *",
     runGuarded("aqx-sync-cron.log", () => runAqxSync()),
+  );
+  // WRA (經濟部水利署) 水位站監測 + 水庫即時營運狀況 (issue #135) — both are
+  // near-realtime telemetry (stations update as often as every 10 minutes),
+  // so every 30 minutes alongside aqi/cwa is the same cadence convention as
+  // the rest of this weather-group cron block.
+  cron.schedule(
+    "8,38 * * * *",
+    runGuarded("wra-sync-cron.log", () => runWraSync()),
   );
   // IndexNow daily refresh at 5:00am — submits latest 100 news articles to IndexNow / Bing
   cron.schedule(

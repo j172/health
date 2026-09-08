@@ -946,4 +946,63 @@ export const TABLE_DDL = {
       KEY idx_cfp_coef_year (announcement_year)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 經濟部水利署 (WRA) 水位站監測 — opendata.wra.gov.tw dataset
+  // 73c4c3de-4045-4765-abeb-89f9f9cd5ff0 (issue #135). Confirmed live
+  // (2026-09-08): no API key required. History kept per (station_id,
+  // recorded_at), same convention as aqi_readings, even though the source
+  // payload itself only ever carries each station's current reading — a
+  // future trend view then has data to draw from without a schema change.
+  // The source has no station-name field, only stationid/observatoryidentifier
+  // codes — see lib/server/wra/fetchWaterLevelStations.ts.
+  wraWaterLevelReadings: `
+    CREATE TABLE IF NOT EXISTS wra_water_level_readings (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(30) NOT NULL,
+      observatory_identifier VARCHAR(30) NULL,
+      check_result VARCHAR(20) NULL,
+      check_desc VARCHAR(255) NULL,
+      volt DECIMAL(8,3) NULL,
+      water_level DECIMAL(10,3) NULL,
+      recorded_at DATETIME NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_water_level (station_id, recorded_at),
+      KEY idx_wra_water_level_recorded (recorded_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 經濟部水利署 (WRA) 水庫即時營運狀況 — opendata.wra.gov.tw dataset
+  // 2be9044c-6e44-4856-aad5-dd108c2e6679 (issue #135). Confirmed live
+  // (2026-09-08): no API key required. Keyed by (reservoir_id,
+  // observation_time) — the source ships up to 24 hourly readings per
+  // reservoir for the current day. No reservoir-name field either, only the
+  // reservoiridentifier code — see lib/server/wra/fetchReservoirStatus.ts.
+  wraReservoirStatus: `
+    CREATE TABLE IF NOT EXISTS wra_reservoir_status (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      reservoir_id VARCHAR(20) NOT NULL,
+      observation_time DATETIME NOT NULL,
+      water_level DECIMAL(10,3) NULL,
+      effective_capacity DECIMAL(14,3) NULL,
+      inflow_discharge DECIMAL(12,3) NULL,
+      total_outflow DECIMAL(12,3) NULL,
+      spillway_outflow DECIMAL(12,3) NULL,
+      power_outlet_outflow DECIMAL(12,3) NULL,
+      drainage_tunnel_outflow DECIMAL(12,3) NULL,
+      desilting_tunnel_outflow DECIMAL(12,3) NULL,
+      others_outflow DECIMAL(12,3) NULL,
+      water_draw DECIMAL(12,3) NULL,
+      accumulate_rainfall DECIMAL(10,2) NULL,
+      predetermined_cross_flow DECIMAL(12,3) NULL,
+      predetermined_outflow_time VARCHAR(50) NULL,
+      status_type VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_reservoir_status (reservoir_id, observation_time),
+      KEY idx_wra_reservoir_status_time (observation_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

@@ -1929,6 +1929,76 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "water-level-stations",
+    group: "weather",
+    schemaType: "WebPage",
+    title: "全台水位站即時水位查詢",
+    description:
+      "即時查詢經濟部水利署全台河川與地下水位站監測資料，涵蓋測站代碼、即時水位（公尺）與資料品質檢核結果。資料來源：經濟部水利署開放資料平臺。",
+    directAnswer:
+      "即時查詢經濟部水利署全台約 370 個河川與地下水位站的最新監測水位（公尺），並顯示各測站資料品質檢核結果與觀測時間，資料每 30 分鐘自動更新。",
+    scientificBasis: [
+      {
+        title: "水位站監測資料",
+        authority: "經濟部水利署 (WRA)",
+        url: "https://opendata.wra.gov.tw",
+      },
+    ],
+    relatedSlugs: ["reservoir-status", "weather-alerts", "earthquakes"],
+    faqs: [
+      {
+        question: "這份水位資料涵蓋哪些測站？",
+        answer:
+          "涵蓋經濟部水利署全台河川與地下水位監測站，不限水庫集水區，測站以代碼（如 1010H006）標示，資料來源未提供測站中文名稱。",
+      },
+      {
+        question: "水位資料多久更新一次？",
+        answer:
+          "本站每 30 分鐘自動同步一次經濟部水利署開放資料平臺的最新監測結果；部分測站本身回報頻率可達每 10 分鐘一次，實際更新頻率以各測站狀況為準。",
+      },
+      {
+        question: "「資料檢核」欄位代表什麼？",
+        answer:
+          "水利署會針對每筆水位觀測值進行合理性檢核（如是否符合近期水位變化趨勢），檢核結果與說明會一併顯示，供使用者評估資料可信度。",
+      },
+    ],
+  },
+  {
+    slug: "reservoir-status",
+    group: "weather",
+    schemaType: "WebPage",
+    title: "全台水庫即時營運狀況查詢",
+    description:
+      "即時查詢經濟部水利署全台水庫營運狀況，涵蓋水位、有效蓄水量、進出流量與集水區降雨量等監測數據。資料來源：經濟部水利署開放資料平臺。",
+    directAnswer:
+      "即時查詢經濟部水利署全台 61 座水庫的最新營運狀況，包含水位（公尺）、有效蓄水量（萬立方公尺）、進流量與出流量（CMS）、集水區累積降雨量等監測數據，資料每 30 分鐘自動更新。",
+    scientificBasis: [
+      {
+        title: "水庫即時營運狀況資料",
+        authority: "經濟部水利署 (WRA)",
+        url: "https://opendata.wra.gov.tw",
+      },
+    ],
+    relatedSlugs: ["water-level-stations", "weather-alerts", "earthquakes"],
+    faqs: [
+      {
+        question: "這份資料涵蓋哪些水庫？",
+        answer:
+          "涵蓋經濟部水利署列管之全台主要水庫，以水庫代碼（如 50303）標示，資料來源未提供水庫中文名稱；水庫代碼前兩碼代表區域（10北部、20中部、30南部、40東部、50離島）。",
+      },
+      {
+        question: "「有效蓄水量」與「進出流量」的單位是什麼？",
+        answer:
+          "有效蓄水量單位為萬立方公尺，進流量、出流量（含溢洪道、發電放水、排砂隧道等各類出流）單位為 CMS（每秒立方公尺），欄位無資料時顯示「—」。",
+      },
+      {
+        question: "資料多久更新一次？",
+        answer:
+          "本站每 30 分鐘自動同步一次經濟部水利署開放資料平臺的最新營運狀況；來源資料本身以逐時（每小時）為主要更新頻率。",
+      },
+    ],
+  },
 ];
 
 /**

@@ -776,3 +776,7 @@ jobs:
           node scripts/import-moenv-carbon-footprint-coefficients.mjs || true
           echo "Importing AQX series air quality data (aqx_p_15/16/17/18/25/318/319/35)..."
           node scripts/import-moenv-aqx.mjs || true
+          echo "Importing WRA water level stations (73c4c3de-...)..."
+          node scripts/import-wra-water-level.mjs || true
+          echo "Importing WRA reservoir status (2be9044c-...)..."
+          node scripts/import-wra-reservoir-status.mjs || true

@@ -77,7 +77,9 @@
     "cleaning-squads": "Municipal Cleaning Squad Directory",
     "carbon-footprint-products": "Carbon Footprint Label Products Directory",
     "carbon-footprint-coefficients": "Carbon Footprint Emission Coefficients Lookup",
-    "aqx-monitoring": "Extended Air Quality Monitoring Data (AQX Series)"
+    "aqx-monitoring": "Extended Air Quality Monitoring Data (AQX Series)",
+    "water-level-stations": "Real-Time Water Level Station Finder",
+    "reservoir-status": "Real-Time Reservoir Operations Status"
   },
   "categories": {
     "gov": "Government Agencies",

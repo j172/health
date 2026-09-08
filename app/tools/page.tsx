@@ -113,6 +113,8 @@ const TOOL_ICONS: Record<string, string> = {
   "carbon-footprint-products": "🌍",
   "carbon-footprint-coefficients": "📐",
   "aqx-monitoring": "🧪",
+  "water-level-stations": "💧",
+  "reservoir-status": "🏞️",
 };
 
 interface ToolCategory {
