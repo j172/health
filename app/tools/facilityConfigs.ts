@@ -70,6 +70,25 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的長照特約服務機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: { label: "特約服務項目：" },
+    // Values surveyed live off /api/facilities?type=ltc_contracted across 5 geographic
+    // centers (issue #132) — one row can carry several service items joined by "、"
+    // (e.g. "居家服務、喘息服務"), so the shared LIKE-based category filter (see
+    // lib/server/facilities/queries.ts) matches any row that lists this item among others.
+    categories: [
+      { value: "居家服務", label: "居家服務" },
+      { value: "日間照顧服務", label: "日間照顧服務" },
+      { value: "家庭托顧服務", label: "家庭托顧服務" },
+      { value: "喘息服務", label: "喘息服務" },
+      { value: "專業照護服務", label: "專業照護服務" },
+      { value: "居家失能個案家庭醫師照護服務", label: "居家失能個案家庭醫師照護服務" },
+      { value: "社區式交通接送服務", label: "社區式交通接送服務" },
+      { value: "交通接送服務", label: "交通接送服務" },
+      { value: "輔具及居家無障礙環境改善服務", label: "輔具及居家無障礙環境改善服務" },
+      { value: "營養餐飲服務", label: "營養餐飲服務" },
+      { value: "個案管理服務", label: "個案管理服務" },
+      { value: "巷弄長照站", label: "巷弄長照站" },
+      { value: "小規模多機能服務", label: "小規模多機能服務" },
+    ],
   },
   "elder-welfare": {
     facilityType: "elder_welfare",
@@ -82,6 +101,15 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的老人福利機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: { label: "收容對象：" },
+    // Values surveyed live off /api/facilities?type=elder_welfare (issue #132) — a row's
+    // 收容對象 can list more than one (e.g. "養護、長照"), matched via the shared
+    // LIKE-based category filter.
+    categories: [
+      { value: "安養", label: "安養" },
+      { value: "養護", label: "養護" },
+      { value: "長照", label: "長照" },
+      { value: "失智", label: "失智照護" },
+    ],
   },
   "disability-welfare": {
     facilityType: "disability_welfare",
@@ -94,6 +122,20 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的身心障礙福利機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: { label: "機構類型：" },
+    // Values surveyed live off /api/facilities?type=disability_welfare (issue #132).
+    categories: [
+      { value: "全日型住宿式機構", label: "全日型住宿式機構" },
+      { value: "夜間型住宿式機構", label: "夜間型住宿式機構" },
+      { value: "日間型機構", label: "日間型機構" },
+      { value: "身心障礙庇護工場", label: "身心障礙庇護工場" },
+      { value: "福利服務中心", label: "福利服務中心" },
+      { value: "身心障礙日間作業設施", label: "身心障礙日間作業設施" },
+    ],
+    // "是否有愛心義賣" (issue #132) — extra_json.charityUrl is set for the ~62 institutions
+    // scripts/enrich-disability-charity-sales.mjs matched to a charity-sale listing; already
+    // shown on every card as the 🛍️ badge (see FacilitySearchContent.tsx), this just adds a
+    // way to filter down to only those.
+    charityFilter: { label: "只顯示有愛心義賣的機構" },
   },
   "disability-atm": {
     facilityType: "disability_atm",
@@ -124,6 +166,22 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: { label: "認可項目：" },
     showGeocodeNote: true,
+    // Values surveyed live off /api/facilities?type=health_check across 5 geographic
+    // centers (issue #132). The mol_labor_checkup source's raw 認可類別及有效期限 field
+    // packs a validity date range onto each item (e.g. "一般健檢(1150101~1171231)"), and a
+    // "巡迴"-prefixed traveling variant exists for several of them (e.g. "巡迴一般健檢(...)") —
+    // the shared LIKE-based category filter matches the base term regardless of the trailing
+    // date range, and (as an accepted side effect, same tradeoff as disability-atm's combined
+    // badges) also surfaces the matching 巡迴 variant since it's a superset string.
+    categories: [
+      { value: "一般健檢", label: "一般健檢" },
+      { value: "特殊健檢", label: "特殊健檢" },
+      { value: "特殊粉塵健檢", label: "特殊粉塵健檢" },
+      { value: "特殊噪音健檢", label: "特殊噪音健檢" },
+      { value: "異常氣壓健檢", label: "異常氣壓健檢" },
+      { value: "成人預防保健", label: "成人預防保健" },
+      { value: "職業傷病防治網絡醫院", label: "職業傷病防治網絡醫院" },
+    ],
   },
   "home-healthcare": {
     facilityType: "home_healthcare",
