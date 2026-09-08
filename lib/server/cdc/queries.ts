@@ -81,7 +81,7 @@ export async function getCdcTravelAlerts(params: {
       `SELECT id, alert_title, severity_level, level_code, disease, country,
               country_en, instruction, web, lat, lng, iso, effective_at
        FROM cdc_travel_alerts
-       ORDER BY level_code DESC, country ASC`
+       ORDER BY effective_at DESC`
     );
 
     const [newsRows] = await conn.query<RowDataPacket[]>(
