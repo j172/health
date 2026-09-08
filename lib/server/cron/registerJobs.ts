@@ -18,6 +18,9 @@ import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint
 import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
 import { runWraSync } from "@/lib/server/wra/runSync";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
+import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
+import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
+import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -178,5 +181,28 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "0 5 * * *",
     runGuarded("indexnow-sync-cron.log", () => submitRecentNewsToIndexNow(100)),
+  );
+  // Cool spots (gis_p_82), IAQ Act premises (aqx_p_23), cleaning squads
+  // (wr_s_04) — issue #156. Unlike green-products/carbon-footprint/aqx/wra,
+  // these three had NO cron backstop at all and depended solely on
+  // deploy-ftps.yml's "Seed culture shows..." step, whose scripts POST to
+  // this app's own public hostname and get silently blocked by Cloudflare
+  // bot protection (403 JS challenge) when called from the GitHub Actions
+  // runner — that step reported "success" every time while inserting zero
+  // rows for these three sources, since none of them self-heals via cron.
+  // These datasets update irregularly per MOENV metadata, so daily is plenty
+  // — same cadence rationale as the neighboring green-products/carbon
+  // footprint jobs above, at unused minutes in the same off-peak window.
+  cron.schedule(
+    "33 4 * * *",
+    runGuarded("cool-spots-cron.log", () => runCoolSpotsSync()),
+  );
+  cron.schedule(
+    "38 4 * * *",
+    runGuarded("iaq-premises-cron.log", () => runIaqPremisesSync()),
+  );
+  cron.schedule(
+    "53 4 * * *",
+    runGuarded("cleaning-squads-cron.log", () => runCleaningSquadsSync()),
   );
 };

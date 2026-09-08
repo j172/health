@@ -81,16 +81,22 @@ async function fetchAllRows() {
 }
 
 /** The amenity flags, joined into serviceItem so a searcher can tell at a glance what's on offer. */
+// Field names below are lowercase, matching every other data.moenv.gov.tw v2
+// dataset already wired into this codebase (gp_p_02, gp_p_43, epr_p_02,
+// aqx_p_23, wr_s_04, ...) — a PascalCase guess used here previously
+// (row.PlaceName / row.Address / ...) matched nothing in the live response,
+// so every row got silently dropped, which is why cool_spot stayed at 0
+// rows in production (see issue #156).
 const describe = (row) => {
   const parts = [
-    text(row.CoolingType),
-    text(row.StationType),
-    isTruthy(row.AirConditioning) ? "有冷氣" : "",
-    isTruthy(row.Restroom) ? "有廁所" : "",
-    isTruthy(row.Seats) ? "有座位" : "",
-    isTruthy(row.WaterDispenser) ? "有飲水機" : "",
-    isTruthy(row.IsAccessible) ? "無障礙設施" : "",
-    isTruthy(row.IsOutdoor) ? "戶外" : "",
+    text(row.coolingtype),
+    text(row.stationtype),
+    isTruthy(row.airconditioning) ? "有冷氣" : "",
+    isTruthy(row.restroom) ? "有廁所" : "",
+    isTruthy(row.seats) ? "有座位" : "",
+    isTruthy(row.waterdispenser) ? "有飲水機" : "",
+    isTruthy(row.isaccessible) ? "無障礙設施" : "",
+    isTruthy(row.isoutdoor) ? "戶外" : "",
   ].filter(Boolean);
   return parts.length > 0 ? parts.join("｜") : null;
 };
@@ -100,17 +106,17 @@ function toRecords(rows) {
   const records = [];
 
   for (const row of rows) {
-    const name = text(row.PlaceName);
-    const address = text(row.Address);
+    const name = text(row.placename);
+    const address = text(row.address);
     if (!name && !address) continue;
 
-    const recordId = text(row.RecordID);
+    const recordId = text(row.recordid);
     const sourceId = recordId || `${name}_${address}`;
     if (seen.has(sourceId)) continue;
     seen.add(sourceId);
 
-    const phone = text(row.Phone);
-    const fullAddress = [text(row.City), text(row.District), address].filter(Boolean).join("");
+    const phone = text(row.phone);
+    const fullAddress = [text(row.city), text(row.district), address].filter(Boolean).join("");
 
     records.push({
       facilityType: "cool_spot",
@@ -119,10 +125,10 @@ function toRecords(rows) {
       name,
       address: fullAddress ? normalizeAddress(fullAddress) : null,
       phone: phone ? toHalfwidthDigits(phone) : null,
-      lat: num(row.Latitude),
-      lng: num(row.Longitude),
+      lat: num(row.latitude),
+      lng: num(row.longitude),
       serviceItem: describe(row),
-      serviceTime: text(row.OpeningHours) || null,
+      serviceTime: text(row.openinghours) || null,
       dataOrg: "環境部",
     });
   }
