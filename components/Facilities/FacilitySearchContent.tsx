@@ -30,6 +30,8 @@ export interface FacilitySearchConfig {
   locationDefaultWarning?: string;
   /** When set, shows a category filter + sort dropdown next to the search bar, matching against the facilities.service_item column. */
   categories?: { value: string; label: string }[];
+  /** When set, shows a checkbox next to the search bar that filters to rows with extra_json.charityUrl set. */
+  charityFilter?: { label: string };
 }
 
 interface FacilityItem {
@@ -97,12 +99,14 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     showGeocodeNote = false,
     locationDefaultWarning,
     categories,
+    charityFilter,
   } = config;
 
   const location = useGeolocation();
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [category, setCategory] = useState("");
+  const [onlyCharity, setOnlyCharity] = useState(false);
   const [sort, setSort] = useState<"distance" | "name" | "category">("distance");
   const [facilities, setFacilities] = useState<FacilityItem[] | null>(null);
   /** Size of the whole dataset for this facility type, independent of the current filters. */
@@ -132,6 +136,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         params.set("radius", String(radius));
       }
       if (category) params.set("category", category);
+      if (onlyCharity) params.set("charity", "1");
       if (effectiveSort) params.set("sort", effectiveSort);
 
       const res = await fetch(`/api/facilities?${params.toString()}`);
@@ -179,7 +184,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     return () => {
       cancelled = true;
     };
-  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, effectiveSort]);
+  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, onlyCharity, effectiveSort]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -264,6 +269,17 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
               <option value="category">依分類</option>
             </select>
           </>
+        )}
+        {charityFilter && (
+          <label className="flex items-center gap-1.5 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm text-neutral-700 dark:border-slate-700 dark:text-slate-200">
+            <input
+              type="checkbox"
+              checked={onlyCharity}
+              onChange={(e) => setOnlyCharity(e.target.checked)}
+              className="h-4 w-4 accent-primary"
+            />
+            {charityFilter.label}
+          </label>
         )}
         <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
           搜尋
