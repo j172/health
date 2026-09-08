@@ -6,7 +6,9 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 /**
  * Shared wrapper for every /tools/<slug> page.
  * Implements full-scale SEO, AEO, GEO, and E-E-A-T knowledge layout:
- * - Composite MedicalWebPage + WebApplication + FAQPage JSON-LD
+ * - Composite MedicalWebPage/WebPage + WebApplication + FAQPage JSON-LD
+ *   (the page type is MedicalWebPage by default, or WebPage for tools whose
+ *   catalog entry opts out via `schemaType` — see ToolCatalogEntry, issue #136)
  * - AEO Direct Answer Box (#aeo-direct-answer)
  * - Standard Semantic HTML Comparison/Reference Tables
  * - Calculation Formula & Evaluation Steps

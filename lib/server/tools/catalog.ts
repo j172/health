@@ -45,6 +45,18 @@ export interface ToolCatalogEntry {
    * "ltc" → 長照機構; "disability" → 身心障礙; "child-welfare" → 兒少福利;
    * "public-facility" → 便民服務; "weather" → 環境監測. */
   group: ToolGroup;
+  /**
+   * schema.org type for the page-level JSON-LD built by `buildToolPageJsonLd`
+   * (lib/server/news/seo.ts). Defaults to "MedicalWebPage" when omitted — right
+   * for the health calculators and medical/care-facility directories that make
+   * up most of the catalog. Set to "WebPage" for tools that surface a
+   * regulatory, business, or administrative open dataset with no clinical or
+   * personal-health-guidance content (e.g. an NPO tax registry, a kindergarten
+   * directory, an earthquake feed) — `MedicalWebPage`'s `medicalAudience`
+   * property doesn't apply to those and using it anyway is a schema.org type
+   * misuse (issue #136).
+   */
+  schemaType?: "MedicalWebPage" | "WebPage";
 }
 
 // Single source of truth for "what tools does this site have" — used by
@@ -140,6 +152,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "earthquakes",
     group: "weather",
+    schemaType: "WebPage",
     title: "台灣與全球顯著地震查詢",
     description:
       "即時查詢近 7 天全台 M4.0+ 與全球 M6.0+ 顯著地震動態資訊，包含震央地點、規模大小、震源深度與海嘯警報提示，整合中央氣象署 (CWA) 與美國地質調查局 (USGS) 測報數據。",
@@ -1047,6 +1060,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "food-operators",
     group: "food",
+    schemaType: "WebPage",
     title: "食品業者登錄查詢",
     description:
       "查詢衛福部食藥署食品業者登錄資料，依公司名稱、統一編號或地址搜尋登錄項目（販售場所、製造場所、餐飲場所等）。",
@@ -1267,6 +1281,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "public-toilets",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "全國公廁查詢",
     description: "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部。",
     directAnswer:
@@ -1295,6 +1310,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "green-shops",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "綠色商店查詢",
     description: "查詢環境部認證綠色商店。資料來源：環境部。",
     directAnswer:
@@ -1376,6 +1392,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "kindergartens",
     group: "child-welfare",
+    schemaType: "WebPage",
     title: "全國幼兒園查詢",
     description:
       "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航。資料來源：教育部開放資料。",
@@ -1404,6 +1421,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "cram-schools",
     group: "child-welfare",
+    schemaType: "WebPage",
     title: "全國短期補習班查詢",
     description:
       "查詢全台 22 縣市立案短期補習班名冊，涵蓋文理類、外語類、技藝類補習班地址、電話與立案狀態。資料來源：教育部短期補習班資訊管理系統。",
@@ -1433,6 +1451,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "child-safety-spots",
     group: "child-welfare",
+    schemaType: "WebPage",
     title: "婦幼安全警示地點查詢",
     description:
       "查詢內政部警政署公告之全國婦幼安全警示地點與加強維安路段，提供管轄警察分局及聯繫窗口資訊，提醒家長與婦幼留意環境安全。資料來源：內政部警政署開放資料。",
@@ -1462,6 +1481,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "family-cultural-activities",
     group: "child-welfare",
+    schemaType: "WebPage",
     title: "全國親子藝文活動查詢",
     description:
       "即時連線文化部全國親子及兒童藝文展演活動資料庫，提供近期演出檔期、場次時間表、演出場館地圖、票價與購票連結。資料來源：文化部全國藝文活動開放資料。",
@@ -1491,6 +1511,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "tax-organizations",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "非營利組織(NPO)查詢",
     description:
       "查詢全國非營利組織（NPO）、機關團體、同業公會、社會福利慈善財團法人、公益協會與公寓大廈管委會統一編號、登記地址與稅籍狀態。資料來源：財政部財政資訊中心開放資料。",
@@ -1520,6 +1541,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "green-hotels",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "環保標章旅館與綠色住宿查詢",
     description:
       "查詢環境部認證之全國金級、銀級、銅級環保標章旅館及綠色旅店名冊。資料來源：環境部開放資料（gp_p_42, gp_p_43, epr_p_02）與台北市觀光傳播局。",
@@ -1549,6 +1571,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "green-products",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "環保標章產品查詢",
     description:
       "查詢環境部認證之各類綠色環保標章產品（低污染、省能資源、可回收）。資料來源：環境部開放資料（gp_p_02）。",
@@ -1573,6 +1596,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "cultural-events",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "全國藝文展覽與活動查詢",
     description:
       "查詢全國展覽、音樂、戲劇、講座與親子藝文活動。資料來源：文化部開放資料。",
@@ -1597,6 +1621,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "public-art",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "全國公共藝術地圖查詢",
     description:
       "查詢全台設置之公共藝術作品、作者與設置地點。資料來源：文化部公共藝術資料庫開放資料。",
@@ -1733,6 +1758,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "iaq-premises",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "室內空氣品質法公告場所查詢",
     description:
       "查詢應符合《室內空氣品質管理法》之公告場所名冊，如捷運站、圖書館、大型賣場等。資料來源：環境部開放資料。",
@@ -1757,6 +1783,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "cleaning-squads",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "地方清潔隊聯絡資訊查詢",
     description:
       "查詢全國各縣市地方清潔隊聯絡地址與電話，供民眾洽詢垃圾清運、資源回收等相關業務。資料來源：環境部開放資料。",
@@ -1781,6 +1808,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "carbon-footprint-products",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "產品碳足跡標籤查詢",
     description:
       "查詢環境部審查通過、碳標籤證書有效期限內之產品碳足跡數據與宣告單位。資料來源：環境部開放資料（cfp_p_01）。",
@@ -1810,6 +1838,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "carbon-footprint-coefficients",
     group: "public-facility",
+    schemaType: "WebPage",
     title: "碳足跡排放係數查詢",
     description:
       "查詢環境部公告之碳足跡排放係數（原物料、製程、能源等單位活動量之溫室氣體排放量），供產品碳足跡計算參考。資料來源：環境部開放資料（cfp_p_02）。",
