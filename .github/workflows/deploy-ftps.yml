@@ -748,35 +748,139 @@ jobs:
             test -s "$TMP_DIR/card-image"
           done < "$TMP_DIR/card-images.txt"
 
-      - name: Seed culture shows, public art, green hotels, green products and AQX/CFP data
+      # This used to be one multi-command step where every `node ...` call was
+      # suffixed with `|| true`, all under one shared `continue-on-error`. It
+      # reported "success" on every run while nine of its twelve imports
+      # silently inserted zero rows — see issue #156's investigation:
+      # every POST from this runner to https://health.j172.tw/api/admin/*
+      # gets answered with a Cloudflare bot-protection "Just a moment..." 403
+      # JS-challenge page instead of JSON, so every import here fails, just
+      # near-instantly rather than by hanging. Each script DID still run to
+      # completion (`|| true` swallowed the resulting exit 1), but that
+      # failure was invisible: (a) all twelve ran inside one green step, and
+      # (b) the ~65KB single-line Cloudflare HTML each failure dumped via
+      # console.error made `gh run view --log` silently drop everything after
+      # it, which looked exactly like the step had hung and cut off — it had
+      # not; the raw log (`gh api .../actions/jobs/<id>/logs`) had the full
+      # per-script SyntaxError traces the whole time.
+      #
+      # Splitting into one step per import fixes the actual bug this ticket
+      # is about — visibility, and no single failure able to hide/cascade
+      # into the ones queued after it — independent of whatever the
+      # underlying transport issue turns out to be on a given run. Each step
+      # still has its own continue-on-error (so one failing import doesn't
+      # block the rest of the deploy) and a short timeout-minutes (so a
+      # genuine future hang can't silently eat the deploy's time budget), but
+      # now shows its own red/green in the Actions UI instead of folding into
+      # one step's exit code.
+      #
+      # cool-spots / iaq-premises / cleaning-squads no longer depend on this
+      # step at all for their data's survival — they now have their own daily
+      # in-process cron jobs (lib/server/cron/registerJobs.ts) that fetch and
+      # upsert directly, with no HTTP call to this app's own public hostname
+      # and therefore no exposure to this Cloudflare block. They stay in this
+      # deploy step too, harmlessly, as a same-day head start ahead of the
+      # first cron tick.
+      - name: Sync culture shows
         continue-on-error: true
+        timeout-minutes: 3
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: |
+          curl -fsS -X POST "https://health.j172.tw/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
+
+      - name: Import public art
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+        run: node scripts/import-public-art.mjs
+
+      - name: Import green hotels (gp_p_43 + epr_p_02)
+        continue-on-error: true
+        timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: https://health.j172.tw
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
-        run: |
-          set -euo pipefail
-          echo "Syncing culture shows..."
-          curl -fsS -X POST "https://health.j172.tw/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET" || true
-          echo "Importing public art..."
-          node scripts/import-public-art.mjs || true
-          echo "Importing green hotels (gp_p_43 + epr_p_02)..."
-          node scripts/import-moenv-green-hotels.mjs || true
-          echo "Importing green products..."
-          node scripts/import-moenv-green-products.mjs || true
-          echo "Importing carbon footprint products (cfp_p_01)..."
-          node scripts/import-moenv-carbon-footprint-products.mjs || true
-          echo "Importing cool spots (gis_p_82)..."
-          node scripts/import-moenv-cool-spots.mjs || true
-          echo "Importing indoor air quality act premises (aqx_p_23)..."
-          node scripts/import-moenv-iaq-premises.mjs || true
-          echo "Importing cleaning squads (wr_s_04)..."
-          node scripts/import-moenv-cleaning-squads.mjs || true
-          echo "Importing carbon footprint coefficients (cfp_p_02)..."
-          node scripts/import-moenv-carbon-footprint-coefficients.mjs || true
-          echo "Importing AQX series air quality data (aqx_p_15/16/17/18/25/318/319/35)..."
-          node scripts/import-moenv-aqx.mjs || true
-          echo "Importing WRA water level stations (73c4c3de-...)..."
-          node scripts/import-wra-water-level.mjs || true
-          echo "Importing WRA reservoir status (2be9044c-...)..."
-          node scripts/import-wra-reservoir-status.mjs || true
+        run: node scripts/import-moenv-green-hotels.mjs
+
+      - name: Import green products
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-green-products.mjs
+
+      - name: Import carbon footprint products (cfp_p_01)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-carbon-footprint-products.mjs
+
+      - name: Import cool spots (gis_p_82)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-cool-spots.mjs
+
+      - name: Import indoor air quality act premises (aqx_p_23)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-iaq-premises.mjs
+
+      - name: Import cleaning squads (wr_s_04)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-cleaning-squads.mjs
+
+      - name: Import carbon footprint coefficients (cfp_p_02)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-carbon-footprint-coefficients.mjs
+
+      - name: Import AQX series air quality data (aqx_p_15/16/17/18/25/318/319/35)
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+          MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
+        run: node scripts/import-moenv-aqx.mjs
+
+      - name: Import WRA water level stations
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+        run: node scripts/import-wra-water-level.mjs
+
+      - name: Import WRA reservoir status
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: https://health.j172.tw
+        run: node scripts/import-wra-reservoir-status.mjs

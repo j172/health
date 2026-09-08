@@ -85,13 +85,34 @@ export const normalizeAddress = (raw) => {
   return deduped.replace(/\s+/g, " ").trim();
 };
 
+// 30s: generous for a single batch upsert, short enough that a genuinely
+// hung request fails fast and visibly instead of running out the clock on
+// whatever timeout GitHub Actions/the caller happens to have (see issue
+// #156 — the actual failure mode turned out to be an instant Cloudflare 403
+// challenge page rather than a hang, but a future real hang should not be
+// able to silently eat the rest of a deploy step).
+const SUBMIT_TIMEOUT_MS = 30_000;
+// Cloudflare's JS-challenge interstitial is tens of KB of HTML on one line;
+// dumping it whole into console.error/CI logs is what made a real 403 look
+// like silent truncation (gh run view --log drops overlong lines). Truncate
+// so the failure is still legible.
+const MAX_ERROR_BODY_PREVIEW = 500;
+
 export async function submitFacilities(baseUrl, adminSecret, records) {
   const res = await fetch(`${baseUrl}/api/admin/facilities-import`, {
     method: "POST",
     headers: { "content-type": "application/json", "x-rss-sync-admin-secret": adminSecret },
     body: JSON.stringify({ records }),
+    signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
   });
-  const json = await res.json();
+  const bodyText = await res.text();
+  let json;
+  try {
+    json = JSON.parse(bodyText);
+  } catch {
+    const preview = bodyText.length > MAX_ERROR_BODY_PREVIEW ? `${bodyText.slice(0, MAX_ERROR_BODY_PREVIEW)}... (truncated, ${bodyText.length} bytes total)` : bodyText;
+    throw new Error(`Import failed: HTTP ${res.status} returned non-JSON body: ${preview}`);
+  }
   if (!res.ok || !json.ok) throw new Error(`Import failed: ${JSON.stringify(json)}`);
   return json;
 }
