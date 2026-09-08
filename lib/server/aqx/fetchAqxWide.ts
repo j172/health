@@ -4,6 +4,17 @@ import { httpGetText } from "@/lib/server/net/httpClient";
 // (issue #131). Shared fetch for AQX_P_15/16/17/18/25 — see lib/server/aqx/datasets.ts.
 const BASE_URL = "https://data.moenv.gov.tw/api/v2";
 const PAGE_SIZE = 1000;
+// Verified live (2026-09-08): these datasets are NOT a "today only" snapshot —
+// they are the full historical archive (offset=200000+ still returns full
+// pages). Looping until a short page, unbounded, would pull the dataset's
+// entire multi-year history into memory every run — this app only ever shows
+// "recent" data, and this cron job runs inside the production Next.js process
+// itself (unlike the CI-side deploy-time seed script), which has a hard
+// ~768MB V8 heap cap on this host. So: always request newest-first and cap
+// the number of pages fetched — each cron tick pulls a bounded, most-recent
+// slice, and repeated ticks accumulate a full "recent window" in MySQL over
+// time via the upsert, without ever holding more than MAX_PAGES pages in memory.
+const MAX_PAGES = 5;
 
 export interface AqxWideRecord {
   datasetCode: string;
@@ -49,8 +60,8 @@ export async function fetchAqxWideDataset(datasetCode: string): Promise<AqxWideR
   const all: Record<string, unknown>[] = [];
   let offset = 0;
 
-  while (true) {
-    const url = `${BASE_URL}/${datasetCode}?format=JSON&limit=${PAGE_SIZE}&offset=${offset}&api_key=${encodeURIComponent(apiKey)}`;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = `${BASE_URL}/${datasetCode}?format=JSON&limit=${PAGE_SIZE}&offset=${offset}&sort=${encodeURIComponent("monitordate desc")}&api_key=${encodeURIComponent(apiKey)}`;
     // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
     // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
     const { status, text } = await httpGetText(url);

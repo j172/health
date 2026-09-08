@@ -1,8 +1,17 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection } from "@/lib/server/db/mysql";
+import { withConnection, toSqlDateTime } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import type { AqxWideRecord } from "@/lib/server/aqx/fetchAqxWide";
 import type { AqxNarrowRecord } from "@/lib/server/aqx/fetchAqxNarrow";
+
+// The pool (lib/server/db/mysql.ts) is configured with dateStrings: false, so
+// DATE/DATETIME columns come back as JS Date objects, not raw MySQL strings —
+// String(date) would render the noisy default toString() ("Mon Sep 07 2026
+// 00:00:00 GMT+0000 (Coordinated Universal Time)"). Format them explicitly instead.
+const formatDateOnly = (value: unknown): string =>
+  value instanceof Date ? value.toISOString().slice(0, 10) : String(value ?? "");
+const formatDateTime = (value: unknown): string =>
+  value instanceof Date ? toSqlDateTime(value) : String(value ?? "");
 
 export interface AqxWideListItem {
   id: number;
@@ -147,7 +156,7 @@ export const getAqxWidePage = async ({
       total,
       rows: rows.map((r) => ({
         ...r,
-        monitordate: String(r.monitordate),
+        monitordate: formatDateOnly(r.monitordate),
         hourly_values: Array.isArray(r.hourly_values)
           ? r.hourly_values
           : JSON.parse(String(r.hourly_values ?? "[]")),
@@ -190,6 +199,6 @@ export const getAqxNarrowPage = async ({
 
     return {
       total,
-      rows: rows.map((r) => ({ ...r, monitordate: String(r.monitordate) })) as unknown as AqxNarrowListItem[],
+      rows: rows.map((r) => ({ ...r, monitordate: formatDateTime(r.monitordate) })) as unknown as AqxNarrowListItem[],
     };
   });

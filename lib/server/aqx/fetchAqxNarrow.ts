@@ -4,6 +4,13 @@ import { httpGetText } from "@/lib/server/net/httpClient";
 // Shared fetch for AQX_P_318 (CO 8hr) / AQX_P_319 (PM10) / AQX_P_35 (其它測項).
 const BASE_URL = "https://data.moenv.gov.tw/api/v2";
 const PAGE_SIZE = 1000;
+// Verified live (2026-09-08): same finding as fetchAqxWide.ts — these are the
+// full historical archive, not a "today only" snapshot (offset=20000+ still
+// returns full pages, spanning weeks). Same fix: always request newest-first
+// and cap pages fetched per run — see fetchAqxWide.ts's MAX_PAGES comment for
+// the full rationale (this cron job runs in-process on a host with a hard
+// ~768MB V8 heap cap).
+const MAX_PAGES = 5;
 
 export interface AqxNarrowRecord {
   datasetCode: string;
@@ -46,8 +53,8 @@ export async function fetchAqxNarrowDataset(datasetCode: string): Promise<AqxNar
   const all: Record<string, unknown>[] = [];
   let offset = 0;
 
-  while (true) {
-    const url = `${BASE_URL}/${datasetCode}?format=JSON&limit=${PAGE_SIZE}&offset=${offset}&api_key=${encodeURIComponent(apiKey)}`;
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url = `${BASE_URL}/${datasetCode}?format=JSON&limit=${PAGE_SIZE}&offset=${offset}&sort=${encodeURIComponent("monitordate desc")}&api_key=${encodeURIComponent(apiKey)}`;
     // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
     // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
     const { status, text } = await httpGetText(url);
