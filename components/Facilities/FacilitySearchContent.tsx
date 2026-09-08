@@ -6,6 +6,8 @@ import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import type { MapMarker } from "@/components/Facilities/FacilityMap";
 import WeeklyHoursLine from "@/components/Facilities/WeeklyHours";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -64,6 +66,14 @@ interface FacilityItem {
 const NEARBY_FALLBACK_RADIUS_METERS = 500000;
 
 /**
+ * Issue #157: the page-size switcher (30/50/100) needs enough fetched rows to page
+ * through — the API's own default cap (200) only just clears one 100-per-page page.
+ * 300 comfortably covers 3 pages at the largest size without turning every facility
+ * search into an unbounded query.
+ */
+const FETCH_LIMIT = 300;
+
+/**
  * Pulls the tool's own noun out of copy it already carries, so the nearby-fallback
  * notice can name what it is listing ("附近查無收錄的伯公照護站，可改用關鍵字搜尋。"
  * → "伯公照護站"). Every config phrases `emptyStateNoKeyword` the same way, and the
@@ -116,6 +126,11 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  // Issue #157: 地圖/定位類頁面 default to nearest-first 30, switchable to 50/100. Paging
+  // is client-side over whatever `/api/facilities` already returned (see FETCH_LIMIT) —
+  // the server keeps doing the distance sort, this just slices the sorted list.
+  const { page, pageSize, setPage, setPageSize } = usePagination();
+
   // Keyword search never sends lat/lng (see below), so distance can't be computed —
   // drop back to name sort rather than let the dropdown keep a now-meaningless selection.
   const effectiveSort = keyword && sort === "distance" ? "name" : sort;
@@ -125,7 +140,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     let cancelled = false;
 
     const load = async (radius: number): Promise<{ facilities: FacilityItem[]; total?: number }> => {
-      const params = new URLSearchParams({ type: facilityType });
+      const params = new URLSearchParams({ type: facilityType, limit: String(FETCH_LIMIT) });
       if (keyword) {
         // Keyword search browses by name/address regardless of geocoding status.
         params.set("keyword", keyword);
@@ -193,6 +208,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     if (trimmed && sort === "distance") {
       setSort("name");
     }
+    setPage(1);
   };
 
   const geocoded = (facilities ?? []).filter((f): f is FacilityItem & { lat: number; lng: number } => f.lat !== null && f.lng !== null);
@@ -225,6 +241,14 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   const nearestText = Number.isFinite(nearestKm) ? `（最近一處約 ${Math.round(nearestKm)} 公里）` : "";
   const fallbackNotice = widenedRadius ? `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。` : null;
 
+  // Client-side slice of whatever the API already returned (see FETCH_LIMIT above).
+  // Clamp defensively rather than trust the URL's `page` — a filter change can shrink
+  // the result set out from under a page number that was valid a moment ago.
+  const facilityList = facilities ?? [];
+  const totalPages = Math.max(1, Math.ceil(facilityList.length / pageSize));
+  const clampedPage = Math.min(Math.max(1, page), totalPages);
+  const pagedFacilities = facilityList.slice((clampedPage - 1) * pageSize, clampedPage * pageSize);
+
   return (
     <div className="space-y-6">
       <div>
@@ -247,7 +271,10 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
           <>
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
               aria-label="分類篩解"
               className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
@@ -260,7 +287,10 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
             </select>
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value as typeof sort)}
+              onChange={(e) => {
+                setSort(e.target.value as typeof sort);
+                setPage(1);
+              }}
               aria-label="排序方式"
               className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
@@ -275,7 +305,10 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
             <input
               type="checkbox"
               checked={onlyCharity}
-              onChange={(e) => setOnlyCharity(e.target.checked)}
+              onChange={(e) => {
+                setOnlyCharity(e.target.checked);
+                setPage(1);
+              }}
               className="h-4 w-4 accent-primary"
             />
             {charityFilter.label}
@@ -290,6 +323,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
             onClick={() => {
               setKeyword("");
               setSearchInput("");
+              setPage(1);
             }}
             className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
           >
@@ -331,7 +365,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
               <p className="text-xs text-neutral-500 dark:text-slate-400">
                 顯示 {facilities.length} 筆{total !== null && `／全台共 ${total} 筆`}
               </p>
-              {facilities.map((f) => (
+              {pagedFacilities.map((f) => (
                 <div key={f.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
@@ -365,6 +399,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                   {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">（尚未完成地理定位，暫不顯示於地圖）</p>}
                 </div>
               ))}
+              <Pagination page={page} pageSize={pageSize} totalItems={facilities.length} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel={`筆${noun}`} />
             </div>
           )}
         </>

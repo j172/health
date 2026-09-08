@@ -61,56 +61,80 @@ export const upsertGreenProducts = async (
 
 export const getRecentGreenProducts = async (
   limit = 30,
+  offset = 0,
 ): Promise<GreenProductListItem[]> =>
   withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, flag_no, product_name, class_type, sign_date, expire_date, date_extend_date, is_expire
        FROM green_products
        ORDER BY id DESC
-       LIMIT ?`,
-      [limit],
+       LIMIT ? OFFSET ?`,
+      [limit, offset],
     );
     return rows as unknown as GreenProductListItem[];
+  });
+
+/** Total rows in green_products — pairs with getRecentGreenProducts() for pagination (issue #157). */
+export const countGreenProducts = async (): Promise<number> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM green_products`);
+    return Number(rows[0]?.total ?? 0);
   });
 
 export interface SearchGreenProductsParams {
   keyword?: string;
   classType?: string;
   limit?: number;
+  offset?: number;
 }
+
+const buildSearchGreenProductsWhere = ({ keyword, classType }: Pick<SearchGreenProductsParams, "keyword" | "classType">) => {
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (keyword) {
+    conditions.push("(product_name LIKE ? OR flag_no LIKE ?)");
+    params.push(`%${keyword}%`, `%${keyword}%`);
+  }
+
+  if (classType) {
+    conditions.push("class_type = ?");
+    params.push(classType);
+  }
+
+  return { whereClause: conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "", params };
+};
 
 export const searchGreenProducts = async ({
   keyword,
   classType,
   limit = 50,
+  offset = 0,
 }: SearchGreenProductsParams): Promise<GreenProductListItem[]> =>
   withConnection(async (conn) => {
-    const conditions: string[] = [];
-    const params: unknown[] = [];
-
-    if (keyword) {
-      conditions.push("(product_name LIKE ? OR flag_no LIKE ?)");
-      params.push(`%${keyword}%`, `%${keyword}%`);
-    }
-
-    if (classType) {
-      conditions.push("class_type = ?");
-      params.push(classType);
-    }
-
-    const whereClause =
-      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+    const { whereClause, params } = buildSearchGreenProductsWhere({ keyword, classType });
     const query = `
       SELECT id, flag_no, product_name, class_type, sign_date, expire_date, date_extend_date, is_expire
       FROM green_products
       ${whereClause}
       ORDER BY id DESC
-      LIMIT ?
+      LIMIT ? OFFSET ?
     `;
-    params.push(limit);
+    params.push(limit, offset);
 
     const [rows] = await conn.query<RowDataPacket[]>(query, params);
     return rows as unknown as GreenProductListItem[];
+  });
+
+/** Total rows matching the same filters as searchGreenProducts() — pairs with it for pagination (issue #157). */
+export const countSearchGreenProducts = async ({
+  keyword,
+  classType,
+}: Pick<SearchGreenProductsParams, "keyword" | "classType">): Promise<number> =>
+  withConnection(async (conn) => {
+    const { whereClause, params } = buildSearchGreenProductsWhere({ keyword, classType });
+    const [rows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM green_products ${whereClause}`, params);
+    return Number(rows[0]?.total ?? 0);
   });
 
 export const getGreenProductCategories = async (): Promise<string[]> =>

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 interface GreenProductItem {
   id: number;
@@ -19,33 +21,44 @@ export default function GreenProductsContent() {
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState<string[]>([]);
   const [products, setProducts] = useState<GreenProductItem[] | null>(null);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [searchedFor, setSearchedFor] = useState("");
 
-  const fetchProducts = async (kw?: string, cat?: string) => {
-    setLoading(true);
-    setError(false);
-    try {
-      const params = new URLSearchParams();
-      if (kw) params.set("keyword", kw);
-      if (cat) params.set("category", cat);
-      const url = params.toString() ? `/api/green-products?${params.toString()}` : "/api/green-products";
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setProducts(data.products || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Issue #157: 最新收錄環保產品 defaults to 30 per page, switchable to 50/100.
+  const { page, pageSize, setPage, setPageSize } = usePagination();
 
   useEffect(() => {
+    let cancelled = false;
     queueMicrotask(() => {
-      fetchProducts();
+      (async () => {
+        if (cancelled) return;
+        setLoading(true);
+        setError(false);
+        try {
+          const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+          if (searchedFor) params.set("keyword", searchedFor);
+          if (category) params.set("category", category);
+          const res = await fetch(`/api/green-products?${params.toString()}`);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+          if (cancelled) return;
+          setProducts(data.products || []);
+          setTotal(typeof data.total === "number" ? data.total : 0);
+        } catch {
+          if (!cancelled) setError(true);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
     });
+    return () => {
+      cancelled = true;
+    };
+  }, [searchedFor, category, page, pageSize]);
+
+  useEffect(() => {
     fetch("/api/green-products?categories=true")
       .then((res) => (res.ok ? res.json() : { categories: [] }))
       .then((data) => {
@@ -56,23 +69,22 @@ export default function GreenProductsContent() {
       .catch(() => {});
   }, []);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const keyword = searchInput.trim();
-    setSearchedFor(keyword);
-    await fetchProducts(keyword, category);
+    setSearchedFor(searchInput.trim());
+    setPage(1);
   };
 
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
-    fetchProducts(searchInput.trim(), newCat);
+    setPage(1);
   };
 
   const handleClear = () => {
     setSearchInput("");
     setCategory("");
     setSearchedFor("");
-    fetchProducts();
+    setPage(1);
   };
 
   return (
@@ -144,9 +156,7 @@ export default function GreenProductsContent() {
       {!loading && !error && products && (
         <>
           <p className="text-xs text-neutral-500 dark:text-slate-400">
-            {searchedFor || category
-              ? `搜尋結果共 ${products.length} 筆${products.length >= 50 ? "（僅顯示前50筆，請縮小關鍵字範圍）" : ""}`
-              : `最新收錄環保產品（顯示前 ${products.length} 筆）`}
+            {searchedFor || category ? `搜尋結果共 ${total} 筆` : `最新收錄環保產品，共 ${total} 筆`}
           </p>
 
           {products.length === 0 ? (
@@ -208,6 +218,8 @@ export default function GreenProductsContent() {
               })}
             </div>
           )}
+
+          <Pagination page={page} pageSize={pageSize} totalItems={total} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="筆產品" />
         </>
       )}
     </div>

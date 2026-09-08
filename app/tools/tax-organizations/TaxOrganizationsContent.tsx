@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { TaxOrganizationItem } from "@/lib/server/taxOrganizations/queries";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 const TAIWAN_CITIES = [
   "全部縣市",
@@ -31,43 +33,34 @@ const TAIWAN_CITIES = [
 
 export default function TaxOrganizationsContent() {
   const [items, setItems] = useState<TaxOrganizationItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [searchInput, setSearchInput] = useState("");
   const [searchedFor, setSearchedFor] = useState("");
   const [city, setCity] = useState("全部縣市");
+  // Bumped on demand (see the error state's "重新嘗試" button) to re-run the effect
+  // below without changing any of its actual filter/paging dependencies.
+  const [retryNonce, setRetryNonce] = useState(0);
 
-  const fetchItems = async (kw?: string, c?: string) => {
-    setLoading(true);
-    setError(false);
-    try {
-      const params = new URLSearchParams();
-      if (kw) params.set("keyword", kw);
-      if (c && c !== "全部縣市") params.set("city", c);
-      const url = params.toString()
-        ? `/api/tax-organizations?${params.toString()}`
-        : "/api/tax-organizations";
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setItems(data.items || []);
-    } catch {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Issue #157: 最新收錄非營利組織 defaults to 30 per page, switchable to 50/100.
+  const { page, pageSize, setPage, setPageSize } = usePagination();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      setLoading(true);
+      setError(false);
       try {
-        const res = await fetch("/api/tax-organizations");
+        const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+        if (searchedFor) params.set("keyword", searchedFor);
+        if (city && city !== "全部縣市") params.set("city", city);
+        const res = await fetch(`/api/tax-organizations?${params.toString()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!cancelled) {
           setItems(data.items || []);
-          setError(false);
+          setTotal(typeof data.total === "number" ? data.total : 0);
         }
       } catch {
         if (!cancelled) {
@@ -83,25 +76,24 @@ export default function TaxOrganizationsContent() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [searchedFor, city, page, pageSize, retryNonce]);
 
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    const keyword = searchInput.trim();
-    setSearchedFor(keyword);
-    await fetchItems(keyword, city);
+    setSearchedFor(searchInput.trim());
+    setPage(1);
   };
 
   const handleCityChange = (newCity: string) => {
     setCity(newCity);
-    fetchItems(searchInput.trim(), newCity);
+    setPage(1);
   };
 
   const handleClear = () => {
     setSearchInput("");
     setSearchedFor("");
     setCity("全部縣市");
-    fetchItems("", "全部縣市");
+    setPage(1);
   };
 
   const isFiltered = Boolean(searchedFor || (city && city !== "全部縣市"));
@@ -199,14 +191,14 @@ export default function TaxOrganizationsContent() {
                 </span>
               )}
               <span className="ml-1.5 text-xs text-neutral-500">
-                （共 {items.length} 筆）
+                （共 {total} 筆）
               </span>
             </span>
           ) : (
             <span>
               最新收錄非營利組織
               <span className="ml-1.5 text-xs font-normal text-neutral-500 dark:text-neutral-400">
-                （顯示前 30 筆）
+                （共 {total} 筆）
               </span>
             </span>
           )}
@@ -227,7 +219,7 @@ export default function TaxOrganizationsContent() {
           <p className="font-semibold">載入非營利組織資料時發生錯誤</p>
           <p className="mt-1 text-xs">請檢查網路連線或稍後再試。</p>
           <button
-            onClick={() => fetchItems(searchedFor, city)}
+            onClick={() => setRetryNonce((n) => n + 1)}
             className="mt-3 rounded-lg bg-red-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-red-500"
           >
             重新嘗試
@@ -319,6 +311,10 @@ export default function TaxOrganizationsContent() {
             </div>
           ))}
         </div>
+      )}
+
+      {!loading && !error && items.length > 0 && (
+        <Pagination page={page} pageSize={pageSize} totalItems={total} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel="筆組織" />
       )}
     </div>
   );
