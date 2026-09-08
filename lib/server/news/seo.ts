@@ -266,15 +266,26 @@ export const buildToolPageJsonLd = (tool: ToolCatalogEntry): Record<string, unkn
     offers: { "@type": "Offer", price: "0", priceCurrency: "TWD" },
   };
 
+  // Most tools are health calculators or medical/care-facility directories, so
+  // MedicalWebPage is the right default. A tool that surfaces a regulatory,
+  // business, or administrative open dataset with no clinical or
+  // personal-health-guidance content (an NPO tax registry, a kindergarten
+  // directory, an earthquake feed, ...) opts into the generic WebPage type via
+  // `schemaType` instead — `medicalAudience` doesn't apply to those, and tagging
+  // them MedicalWebPage anyway is a schema.org type misuse (issue #136).
+  const pageType = tool.schemaType ?? "MedicalWebPage";
+
   const medicalPage: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": "MedicalWebPage",
+    "@type": pageType,
     name: tool.title,
     url: canonical,
     description: tool.description,
     abstract: tool.directAnswer,
     inLanguage: ["zh-TW", "zh-Hant"],
-    medicalAudience: { "@type": "MedicalAudience", audienceType: "Patient" },
+    ...(pageType === "MedicalWebPage"
+      ? { medicalAudience: { "@type": "MedicalAudience", audienceType: "Patient" } }
+      : {}),
     citation: citations,
     mainEntity: webApp,
     speakable: {
