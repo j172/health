@@ -17,7 +17,8 @@
     "weather": "Environmental Monitoring",
     "searchPlaceholder": "Search news...",
     "publicServices": "Public Services",
-    "disasterMap": "Disaster Preparedness Map"
+    "disasterMap": "Disaster Preparedness Map",
+    "heritageMap": "Heritage Assets Map"
   },
   "tools": {
     "water": "Water Intake Calculator",
@@ -82,7 +83,8 @@
     "aqx-monitoring": "Extended Air Quality Monitoring Data (AQX Series)",
     "water-level-stations": "Real-Time Water Level Station Finder",
     "reservoir-status": "Real-Time Reservoir Operations Status",
-    "disaster-map": "Disaster Shelter & Rescue Unit Map"
+    "disaster-map": "Disaster Shelter & Rescue Unit Map",
+    "heritage-map": "Heritage Assets Map (Monuments & Archaeological Sites)"
   },
   "categories": {
     "gov": "Government Agencies",
