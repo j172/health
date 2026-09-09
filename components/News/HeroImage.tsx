@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import ImageSkeleton from "@/components/ui/ImageSkeleton";
 import type { HeroImageAttribution } from "@/lib/server/news/heroImage";
 
@@ -34,18 +35,46 @@ export default function HeroImage({
     return null;
   }
 
+  // Scraped article images are hotlinked from arbitrary RSS-source domains
+  // (see resolveHeroImage's `/^https?:\/\//` check) -- next.config.js only
+  // whitelists cdn.sanity.io/localhost for remote optimization, and adding
+  // every possible news-source hostname isn't practical. Only the locally
+  // cached stock-photo fallback (pixabay/pexels/unsplash, saved under
+  // /images/news/...) can safely go through /_next/image.
+  const isExternal = /^https?:\/\//i.test(src);
+  const imgClass = `absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`;
+
   return (
     <figure className="mt-8">
-      <div className="relative overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+      {/* Fixed aspect box so the skeleton (and the eventual image) always
+          occupies real layout space -- previously this div had no intrinsic
+          height, so the ImageSkeleton (absolutely positioned) rendered at
+          0x0 until the image loaded and the box's height popped in, a CLS
+          hit hiding behind the fade transition. */}
+      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
         {!loaded && <ImageSkeleton className="absolute inset-0" />}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={src}
-          alt={alt}
-          onLoad={() => setLoaded(true)}
-          onError={() => setHasError(true)}
-          className={`max-h-[32rem] w-full object-cover transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`}
-        />
+        {isExternal ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={src}
+            alt={alt}
+            fetchPriority="high"
+            onLoad={() => setLoaded(true)}
+            onError={() => setHasError(true)}
+            className={imgClass}
+          />
+        ) : (
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            sizes="(min-width: 896px) 896px, 100vw"
+            priority
+            onLoad={() => setLoaded(true)}
+            onError={() => setHasError(true)}
+            className={imgClass}
+          />
+        )}
       </div>
       {attribution ? (
         <figcaption className="mt-3 text-center text-xs text-slate-400">
