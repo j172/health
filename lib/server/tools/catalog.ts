@@ -1612,7 +1612,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://cloud.culture.tw",
       },
     ],
-    relatedSlugs: ["public-art", "child-welfare-nurseries"],
+    relatedSlugs: ["public-art", "heritage-map", "child-welfare-nurseries"],
     faqs: [
       {
         question: "活動資訊包含哪些類別？",
@@ -1637,12 +1637,42 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://publicartap.moc.gov.tw",
       },
     ],
-    relatedSlugs: ["cultural-events"],
+    relatedSlugs: ["cultural-events", "heritage-map"],
     faqs: [
       {
         question: "如何查找身邊的公共藝術作品？",
         answer:
           "開啟定位或輸入行政區關鍵字，即可列出周遭公共設施、捷運站與公園設置的公共藝術地標。",
+      },
+    ],
+  },
+  {
+    slug: "heritage-map",
+    group: "public-facility",
+    schemaType: "WebPage",
+    title: "文化資產地圖：古蹟／歷史建築／考古遺址查詢",
+    description:
+      "整合文化部文化資產局開放資料，於地圖上查詢全台古蹟、歷史建築與考古遺址點位，支援圖層切換、沿革與登錄理由查詢。",
+    directAnswer:
+      "文化資產地圖整合文化部文化資產局開放資料，提供全台古蹟／歷史建築（1,700+ 案）與考古遺址（50+ 案）點位地圖，可切換圖層查詢名稱、地址、沿革與登錄理由。",
+    scientificBasis: [
+      {
+        title: "文化資產個案（建築類、考古遺址類）開放資料",
+        authority: "文化部文化資產局 (BOCH)",
+        url: "https://data.boch.gov.tw",
+      },
+    ],
+    relatedSlugs: ["public-art", "cultural-events"],
+    faqs: [
+      {
+        question: "文化資產地圖的資料多久更新一次？",
+        answer:
+          "本站不定期同步一次文化部文化資產局開放資料平台之文化資產個案資料，頁面頂端會顯示最近一次同步時間。",
+      },
+      {
+        question: "「古蹟／歷史建築」與「考古遺址」兩個圖層分別代表什麼？",
+        answer:
+          "古蹟／歷史建築圖層涵蓋依《文化資產保存法》指定或登錄之古蹟與歷史建築個案；考古遺址圖層涵蓋國定、直轄市定與縣（市）定考古遺址個案，兩者資料筆數與登錄理由皆來自文化資產局官方資料庫。",
       },
     ],
   },

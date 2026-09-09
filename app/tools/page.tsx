@@ -117,6 +117,7 @@ const TOOL_ICONS: Record<string, string> = {
   "water-level-stations": "💧",
   "reservoir-status": "🏞️",
   "disaster-map": "🆘",
+  "heritage-map": "🏛️",
 };
 
 interface ToolCategory {

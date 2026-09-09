@@ -1049,4 +1049,51 @@ export const TABLE_DDL = {
       KEY idx_disaster_point_county (county)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 文化部文化資產局 (BOCH) 開放資料 — 文化資產個案，建築類 (古蹟／歷史建築,
+  // assetsCase/1.2.json, ~1,789 rows) 與考古遺址類 (assetsCase/2.1.json, ~58
+  // rows), issue #170. Both source JSON documents already carry usable decimal
+  // longitude/latitude, so — same as disaster_response_points (issue #168) —
+  // this deliberately bypasses the facilities table and its geocode batch
+  // pipeline entirely. One table + a `category` enum rather than two tables:
+  // the two source datasets' fields are a near-total union of each other, with
+  // only a handful of columns exclusive to one side (assets_type_names is
+  // building-only; classify_code/classify_name are archaeological-site-only).
+  // Unlike disaster_response_points, this source DOES carry a stable
+  // cross-run identifier (`caseId`), so the sync is a plain upsert
+  // (INSERT ... ON DUPLICATE KEY UPDATE) against `case_id`, not a
+  // truncate-and-replace — see lib/server/culture/ingestHeritageAssets.ts.
+  // past_history and register_reason are both nullable on both categories:
+  // real-world building records were found to often carry both fields, not
+  // just registerReason as originally assumed (see docs/specs/
+  // heritage-assets-map.md 1.1). image_source (representImageSource) is only
+  // ever populated by the archaeological-site dataset — the building dataset
+  // never sends that field at all, confirmed live 2026-09-09.
+  heritageAssets: `
+    CREATE TABLE IF NOT EXISTS heritage_assets (
+      id INT NOT NULL AUTO_INCREMENT,
+      case_id VARCHAR(50) NOT NULL,
+      category ENUM('building','archaeological_site') NOT NULL,
+      case_name VARCHAR(255) NOT NULL,
+      assets_type_names VARCHAR(255) NULL,
+      classify_code VARCHAR(20) NULL,
+      classify_name VARCHAR(100) NULL,
+      city_name VARCHAR(50) NULL,
+      dist_name VARCHAR(50) NULL,
+      address VARCHAR(255) NULL,
+      past_history MEDIUMTEXT NULL,
+      register_reason MEDIUMTEXT NULL,
+      gov_institution_name VARCHAR(100) NULL,
+      longitude DECIMAL(10,7) NULL,
+      latitude DECIMAL(10,7) NULL,
+      image_url VARCHAR(500) NULL,
+      image_source VARCHAR(255) NULL,
+      source_updated_at DATETIME NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_heritage_asset_case_id (case_id),
+      KEY idx_heritage_asset_category (category),
+      KEY idx_heritage_asset_geo (latitude, longitude)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };

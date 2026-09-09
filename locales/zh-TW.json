@@ -17,7 +17,8 @@
     "weather": "環境監測",
     "searchPlaceholder": "搜尋新聞...",
     "publicServices": "便民服務",
-    "disasterMap": "防災地圖"
+    "disasterMap": "防災地圖",
+    "heritageMap": "文化資產地圖"
   },
   "categories": {
     "allNews": "全部新聞",

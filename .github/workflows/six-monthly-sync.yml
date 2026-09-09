@@ -114,6 +114,16 @@ jobs:
           curl -fsS -X POST "http://127.0.0.1:18080/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
           node scripts/import-public-art.mjs
 
+      # BOCH heritage assets (issue #170) — the production host fetches both
+      # source JSON documents itself inside runHeritageAssetsSync(), same as
+      # `type=shows` above, so this needs no separate runner-side import
+      # script the way public-art does.
+      - name: Sync Heritage Assets (BOCH)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+        run: |
+          curl -fsS -X POST "http://127.0.0.1:18080/api/admin/culture-sync?type=heritage" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
+
       - name: Close SSH tunnel
         if: always()
         run: |
