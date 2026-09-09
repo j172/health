@@ -45,6 +45,18 @@ export interface FacilitySourceSpec {
 // consumed by the Next.js server bundle. Confirmed against production's
 // actual (facility_type, source_key) pairs 2026-08-20.
 export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
+  // Bumped to the front 2026-09-09: these three sit at the very end of a
+  // 21-entry queue behind large existing backlogs (pharmacy/clinic in
+  // particular), so the shared daily OpenCage/Nominatim budget was
+  // exhausting every run before ever reaching them — all three sat at 0
+  // geocoded rows for days after landing (issue #130), leaving their tool
+  // pages' default "nearby" search permanently empty even though the
+  // facilities table had real rows. Front-of-queue is temporary triage,
+  // not a permanent priority — safe to fold back into normal position once
+  // each has meaningful geocode coverage.
+  { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
+  { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
+  { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
   { facilityType: "child_safety_spot", sourceKey: "npa_child_safety_spot", label: "婦幼安全警示地點" },
   { facilityType: "child_welfare_nursery", sourceKey: "mohw_child_welfare_nursery", label: "全國親子館" },
   { facilityType: "child_welfare_center", sourceKey: "mohw_child_welfare_center", label: "兒少福利中心" },
@@ -64,10 +76,6 @@ export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
   { facilityType: "home_healthcare", sourceKey: "nhi_home_healthcare", label: "居家醫療機構" },
   { facilityType: "clinic", sourceKey: "nhi_hospital", label: "醫療院所與診所" },
   { facilityType: "green_shop", sourceKey: "moenv_green_shop", label: "綠色商店" },
-  // Added for issue #130 — none of these three carry coordinates in their source feed.
-  { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
-  { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
-  { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
 ];
 
 export interface GeocodeBatchSourceSummary {

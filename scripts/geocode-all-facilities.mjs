@@ -21,6 +21,18 @@ if (!ADMIN_SECRET) {
 }
 
 const SOURCES_IN_PRIORITY = [
+  // Priority 0: bumped to the front 2026-09-09 (temporary triage, not
+  // permanent) — these three sit at the very end of a 21-entry queue behind
+  // large existing backlogs (pharmacy/clinic in particular), so the shared
+  // daily OpenCage/Nominatim budget was exhausting every run before ever
+  // reaching them, leaving their tool pages' default "nearby" search
+  // permanently empty even though the facilities table had real rows.
+  // Safe to fold back into Priority 5 below once each has meaningful
+  // geocode coverage.
+  { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
+  { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
+  { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
+
   // Priority 1: 兒少福利與婦幼安全 (優先定位)
   { facilityType: "child_safety_spot", sourceKey: "npa_child_safety_spot", label: "婦幼安全警示地點" },
   { facilityType: "child_welfare_nursery", sourceKey: "mohw_child_welfare_nursery", label: "全國親子館" },
@@ -47,11 +59,6 @@ const SOURCES_IN_PRIORITY = [
   // Priority 4: 診所與綠色商店 (筆數最多)
   { facilityType: "clinic", sourceKey: "nhi_hospital", label: "醫療院所與診所" },
   { facilityType: "green_shop", sourceKey: "moenv_green_shop", label: "綠色商店" },
-
-  // Priority 5: 新增於 issue #130 — 這三個來源的原始資料都不含經緯度
-  { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
-  { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
-  { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
 ];
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
