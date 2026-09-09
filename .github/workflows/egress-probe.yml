@@ -127,16 +127,24 @@ jobs:
                 const cd = res.headers.get("content-disposition") || "";
                 const buf = Buffer.from(await res.arrayBuffer());
                 console.log(`\n--- ${label} --- status=${res.status} content-type=${ct} content-disposition=${cd} bytes=${buf.length}`);
-                const text = buf.toString("utf8");
+                const text = buf.toString("utf8").replace(/^﻿/, "");
                 if (text.trim().startsWith("{") || text.trim().startsWith("[")) {
                   const parsed = JSON.parse(text);
                   console.log("  top-level keys:", Array.isArray(parsed) ? `array[${parsed.length}]` : Object.keys(parsed).join(", "));
-                  const rows = Array.isArray(parsed) ? parsed : (parsed.records || parsed.data || Object.values(parsed).find(Array.isArray) || []);
+                  if (!Array.isArray(parsed)) {
+                    for (const [k, v] of Object.entries(parsed)) {
+                      if (!Array.isArray(v)) console.log(`  top-level non-array field ${k}:`, JSON.stringify(v));
+                    }
+                  }
+                  const rows = Array.isArray(parsed) ? parsed : (parsed.records || parsed.data || parsed.aaData || Object.values(parsed).find(Array.isArray) || []);
                   console.log("  row count:", Array.isArray(rows) ? rows.length : "n/a");
                   if (Array.isArray(rows) && rows[0]) {
                     console.log("  row[0] keys:", Object.keys(rows[0]).join(", "));
-                    console.log("  row[0] sample:", JSON.stringify(rows[0]).slice(0, 800));
-                    console.log("  row[1] sample:", JSON.stringify(rows[1] || null).slice(0, 800));
+                    console.log("  row[0] full:", JSON.stringify(rows[0]));
+                    console.log("  row[1] full:", JSON.stringify(rows[1] || null));
+                    console.log("  row[2] full:", JSON.stringify(rows[2] || null));
+                    const unitTypes = new Set(rows.map((r) => r["機組類型"] ?? r["type"] ?? null));
+                    console.log("  distinct 機組類型/type values (up to 20):", [...unitTypes].slice(0, 20).join(" | "));
                   }
                 } else {
                   console.log("  first 2000 chars (CSV/text):");
