@@ -223,6 +223,12 @@ export default function SiteNav() {
               >
                 {t("nav.news", "最新新聞")}
               </Link>
+              <Link
+                href="/tools/disaster-map"
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+              >
+                {t("nav.disasterMap", "防災地圖")}
+              </Link>
               <NavDropdown
                 label={t("nav.facilities", "醫療院所")}
                 items={facilityItems}
@@ -341,6 +347,13 @@ export default function SiteNav() {
                 className="rounded-lg p-2 text-slate-700 dark:text-slate-200"
               >
                 {t("nav.news", "最新新聞")}
+              </Link>
+              <Link
+                href="/tools/disaster-map"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg p-2 text-slate-700 dark:text-slate-200"
+              >
+                {t("nav.disasterMap", "防災地圖")}
               </Link>
             </div>
 

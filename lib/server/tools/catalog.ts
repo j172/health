@@ -23,7 +23,8 @@ export type ToolGroup =
   | "disability"
   | "child-welfare"
   | "public-facility"
-  | "weather";
+  | "weather"
+  | "disaster-preparedness";
 
 export interface ToolCatalogEntry {
   slug: string;
@@ -43,7 +44,9 @@ export interface ToolCatalogEntry {
   /** Drives the nav dropdowns, the footer columns and the /tools index sections
    * from one place: "calculator" → 健康工具; "facility" → 醫療院所; "food" → 食品營養;
    * "ltc" → 長照機構; "disability" → 身心障礙; "child-welfare" → 兒少福利;
-   * "public-facility" → 便民服務; "weather" → 環境監測. */
+   * "public-facility" → 便民服務; "weather" → 環境監測;
+   * "disaster-preparedness" → 防災地圖 (deliberately separate from
+   * "public-facility" — see docs/specs/disaster-shelter-rescue-map.md). */
   group: ToolGroup;
   /**
    * schema.org type for the page-level JSON-LD built by `buildToolPageJsonLd`
@@ -2024,6 +2027,46 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "disaster-map",
+    group: "disaster-preparedness",
+    schemaType: "WebPage",
+    title: "防災地圖：避難收容處所／消防救援單位／應變中心查詢",
+    description:
+      "整合內政部開放資料，於地圖上查詢全台避難收容處所、消防救援單位與縣市應變中心點位，支援圖層切換與地點詳細資訊查詢。",
+    directAnswer:
+      "防災地圖整合內政部開放資料平台之避難收容處所（5,900+ 處）、消防救援單位（770+ 處）與縣市應變中心（25 處）點位，提供地圖圖層切換查詢；本頁資料非即時，實際開設狀態請以地方政府正式公告為準。",
+    scientificBasis: [
+      {
+        title: "避難收容處所點位檔案",
+        authority: "內政部 (MOI) 開放資料平台",
+        url: "https://data.gov.tw",
+      },
+      {
+        title: "消防救援單位點位、應變中心點位",
+        authority: "內政部消防署 (NFA)",
+        url: "https://www.nfa.gov.tw",
+      },
+    ],
+    relatedSlugs: ["earthquakes", "weather-alerts"],
+    faqs: [
+      {
+        question: "防災地圖的資料多久更新一次？",
+        answer:
+          "本站每日定期同步一次內政部開放資料平台之避難收容處所、消防救援單位與應變中心點位資料，頁面頂端會顯示最近一次同步時間。",
+      },
+      {
+        question: "地震或颱風來臨時，避難收容所是否都已開設？",
+        answer:
+          "不一定。本頁資料為平時可用之避難收容處所名冊，非即時開設狀態；實際避難收容所是否開設、開放時間與收容狀況，請以地方政府（消防局／區公所）正式公告為準，切勿逕自依本頁資訊前往。",
+      },
+      {
+        question: "三個圖層（避難收容處所／消防救援單位／應變中心）分別代表什麼？",
+        answer:
+          "避難收容處所是災害發生時民眾可前往避難的場所；消防救援單位是消防隊點位，供查詢鄰近消防單位位置；應變中心是各縣市政府災害應變中心，通常與消防局同位置，負責統籌指揮救災。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -2056,7 +2099,9 @@ TOOL_CATALOG.sort((a, b) => compareToolTitles(a.title, b.title));
  * URLs that then told it not to index them. The calculators are the indexable set.
  */
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>
-  tool.group === "calculator" || tool.group === "weather";
+  tool.group === "calculator" ||
+  tool.group === "weather" ||
+  tool.group === "disaster-preparedness";
 
 export function toolsInGroup(
   group: ToolGroup,
