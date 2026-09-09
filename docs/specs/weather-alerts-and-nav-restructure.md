@@ -54,6 +54,9 @@ In [`components/News/SiteFooter.tsx`](../../components/News/SiteFooter.tsx):
 - Render `公共設施` column (`publicFacilityTools` showing `green-shops` and `public-toilets`).
 - Render `氣象觀測` column (`weatherTools` showing `weather-alerts`, `uv`, `aqi`, `earthquakes`).
 - Total footer columns: exactly 9 (`xl:grid-cols-9`), preserving layout balance.
+  (Historical: as of issue #176, the `food` group was removed and merged into
+  `calculator`, dropping this to 8 columns / `xl:grid-cols-8` — see
+  `docs/SPECIFICATION.md` §5 for the current, living count.)
 
 In [`app/tools/page.tsx`](../../app/tools/page.tsx):
 - Organize tools into categories: `environment` ("即時氣象與環境觀測"), `public-facility` ("公共設施與綠色生活"), `food` ("食品營養與業者登錄").

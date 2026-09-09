@@ -161,6 +161,19 @@ const CATEGORIES: ToolCategory[] = [
     slugs: ["heart-rate", "blood-pressure", "vo2max", "sleep", "stress"],
   },
   {
+    // food-nutrition and food-operators are group: "calculator" (issue #176
+    // folded the old standalone "food" ToolGroup into it), but a bare
+    // `groups: ["calculator"]` here would also re-match the 12 tools already
+    // claimed by "body" and "cardio" above — `groups` filters TOOL_CATALOG
+    // independently per category, it doesn't exclude what an earlier
+    // category already took. So this stays a third curated `slugs` section,
+    // same pattern as "body"/"cardio", instead of duplicating them.
+    id: "food",
+    title: "食品營養與業者登錄",
+    description: "衛福部食藥署食品營養成分分析與食品業者合法登錄資料庫",
+    slugs: ["food-nutrition", "food-operators"],
+  },
+  {
     id: "environment",
     title: "即時環境監測",
     description:
