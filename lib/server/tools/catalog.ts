@@ -1806,6 +1806,31 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "green-restaurants",
+    group: "public-facility",
+    schemaType: "WebPage",
+    title: "環保餐廳查詢",
+    description:
+      "查詢環境部「環保餐廳環境即時通」地圖名冊，提供響應減塑、節能等環保作為之餐廳位置與聯絡資訊。資料來源：環境部開放資料。",
+    directAnswer:
+      "查詢環境部「環保餐廳環境即時通」地圖名冊，收錄響應減塑、節能等環保作為之餐廳名稱、地址與聯絡電話。",
+    scientificBasis: [
+      {
+        title: "環保餐廳環境即時通地圖資料 (gis_p_11)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-shops", "green-hotels"],
+    faqs: [
+      {
+        question: "什麼是「環保餐廳」？",
+        answer:
+          "環保餐廳是環境部「環境即時通」平台盤點響應減塑、節能減碳等環保作為之餐飲業者，供民眾用餐時可優先選擇具環保意識的店家。",
+      },
+    ],
+  },
+  {
     slug: "carbon-footprint-products",
     group: "public-facility",
     schemaType: "WebPage",

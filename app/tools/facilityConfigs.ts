@@ -336,6 +336,17 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的清潔隊。",
     showGeocodeNote: true,
   },
+  "green-restaurants": {
+    facilityType: "green_restaurant",
+    emoji: "🍽️",
+    title: "環保餐廳查詢",
+    description:
+      "查詢環境部「環保餐廳環境即時通」地圖名冊。資料來源：環境部開放資料（gis_p_11）。",
+    searchPlaceholder: "輸入餐廳名稱或縣市關鍵字",
+    errorText: "查詢環保餐廳資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的環保餐廳，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的環保餐廳。",
+  },
   "child-safety-spots": {
     facilityType: "child_safety_spot",
     emoji: "🛡️",

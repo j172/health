@@ -897,7 +897,10 @@ jobs:
       # already proved out for "Backfill missing news card images" earlier
       # (this host disables TCP forwarding, so that step's
       # remote-curl-over-SSH pattern is reused verbatim here, not `ssh -L`).
-      - name: Trigger cool-spots/iaq-premises/cleaning-squads sync (SSH loopback)
+      # green-restaurants-sync (gis_p_11, issue #163) was added to this same
+      # loop rather than a new step — it's the exact same shape (its own
+      # daily cron plus this deploy-time seed) as the three routes above.
+      - name: Trigger cool-spots/iaq-premises/cleaning-squads/green-restaurants sync (SSH loopback)
         continue-on-error: true
         timeout-minutes: 5
         env:
@@ -934,7 +937,7 @@ jobs:
           }
 
           FAILED=0
-          for ROUTE in cool-spots-sync iaq-premises-sync cleaning-squads-sync; do
+          for ROUTE in cool-spots-sync iaq-premises-sync cleaning-squads-sync green-restaurants-sync; do
             echo "=== $ROUTE ==="
             RESPONSE="$(ssh_admin "$ROUTE")" || { echo "ssh/curl call failed for $ROUTE"; FAILED=1; continue; }
             printf '%s\n' "$RESPONSE" | jq . || printf '%s\n' "$RESPONSE"
@@ -946,6 +949,6 @@ jobs:
           done
 
           if [ "$FAILED" != "0" ]; then
-            echo "One or more syncs failed — the daily cron will retry at 4:33/4:38/4:53am."
+            echo "One or more syncs failed — the daily cron will retry at 4:33/4:38/4:53/4:58am."
             exit 1
           fi

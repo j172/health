@@ -110,6 +110,7 @@ const TOOL_ICONS: Record<string, string> = {
   "cool-spots": "🧊",
   "iaq-premises": "💨",
   "cleaning-squads": "🧹",
+  "green-restaurants": "🍽️",
   "carbon-footprint-products": "🌍",
   "carbon-footprint-coefficients": "📐",
   "aqx-monitoring": "🧪",
