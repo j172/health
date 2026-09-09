@@ -41,3 +41,35 @@ export async function runWraSync(): Promise<WraSyncResult[]> {
 
   return results;
 }
+
+/**
+ * Syncs WRA reference catalogs — 水庫代碼表 (dataset/139336) and
+ * 河川水位測站站況 (dataset/22227). Run daily or manually via admin endpoint.
+ */
+export async function runWraCatalogSync(): Promise<WraSyncResult[]> {
+  const { fetchReservoirCatalog } = await import("@/lib/server/wra/fetchReservoirCatalog");
+  const { fetchWaterLevelStationCatalog } = await import("@/lib/server/wra/fetchWaterLevelStationCatalog");
+  const { upsertReservoirCatalog, upsertWaterLevelStationCatalog } = await import(
+    "@/lib/server/wra/catalogQueries"
+  );
+
+  const results: WraSyncResult[] = [];
+
+  results.push(
+    await runSource("wra_reservoir_catalog", ZERO_COUNTS, async () => {
+      const records = await fetchReservoirCatalog();
+      const { inserted, updated } = await upsertReservoirCatalog(records);
+      return { fetched: records.length, inserted, updated };
+    }),
+  );
+
+  results.push(
+    await runSource("wra_water_level_station_catalog", ZERO_COUNTS, async () => {
+      const records = await fetchWaterLevelStationCatalog();
+      const { inserted, updated } = await upsertWaterLevelStationCatalog(records);
+      return { fetched: records.length, inserted, updated };
+    }),
+  );
+
+  return results;
+}
