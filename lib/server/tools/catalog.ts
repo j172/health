@@ -18,7 +18,6 @@ export interface ReferenceTable {
 export type ToolGroup =
   | "calculator"
   | "facility"
-  | "food"
   | "ltc"
   | "disability"
   | "child-welfare"
@@ -42,7 +41,7 @@ export interface ToolCatalogEntry {
   relatedSlugs: string[];
   faqs: ToolFaq[];
   /** Drives the nav dropdowns, the footer columns and the /tools index sections
-   * from one place: "calculator" → 健康工具; "facility" → 醫療院所; "food" → 食品營養;
+   * from one place: "calculator" → 健康工具; "facility" → 醫療院所;
    * "ltc" → 長照機構; "disability" → 身心障礙; "child-welfare" → 兒少福利;
    * "public-facility" → 便民服務; "weather" → 環境監測;
    * "disaster-preparedness" → 防災地圖 (deliberately separate from
@@ -1018,7 +1017,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-nutrition",
-    group: "food",
+    group: "calculator",
     title: "食品營養成分查詢",
     description:
       "查詢衛福部食藥署食品營養成分資料庫，依食品名稱搜尋熱量、蛋白質、脂肪、碳水化合物等營養成分含量。",
@@ -1062,7 +1061,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-operators",
-    group: "food",
+    group: "calculator",
     schemaType: "WebPage",
     title: "食品業者登錄查詢",
     description:
@@ -1543,7 +1542,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "green-hotels",
-    group: "public-facility",
+    group: "weather",
     schemaType: "WebPage",
     title: "環保標章旅館與綠色住宿查詢",
     description:
@@ -1573,7 +1572,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "green-products",
-    group: "public-facility",
+    group: "weather",
     schemaType: "WebPage",
     title: "環保標章產品查詢",
     description:
@@ -1840,7 +1839,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "green-restaurants",
-    group: "public-facility",
+    group: "weather",
     schemaType: "WebPage",
     title: "環保餐廳查詢",
     description:
