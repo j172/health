@@ -1,10 +1,22 @@
 #!/usr/bin/env node
 /**
  * Backfills missing coordinates for facilities in production DB using
- * Taiwan open-data geospatial datasets (preschools, hospitals/clinics, pharmacies).
+ * Taiwan open-data geospatial datasets (preschools, hospitals/clinics, pharmacies),
+ * plus two cross-match backfills against those same already-downloaded
+ * datasets for sibling sources that carry a matchable code or name+address
+ * but no coordinates of their own (see docs/specs/geocode-opendata-coverage-gap-research.md
+ * §4, items 2-3):
+ *   - mol_labor_checkup (勞工健檢機構): its 醫療機構代碼 is the same NHI
+ *     institution-code format already indexed for nhi_hospital below.
+ *   - tfda_pharmacy (一般藥局): exact (name, address) overlap with
+ *     nhi_pharmacy already collapses ~36% of it at query time (see
+ *     lib/server/facilities/queries.ts's pharmacy dedup, issue #132) — this
+ *     writes those same matches back as real coordinates instead.
+ * Both reuse the coordinate index already fetched for their sibling source
+ * (hospitals.json / pharmacies points.json) — no new external dataset.
  *
  * Usage:
- *   node --env-file=.env scripts/backfill-facilities-from-opendata-geo.mjs [kindergarten|clinic|pharmacy|all]
+ *   node --env-file=.env scripts/backfill-facilities-from-opendata-geo.mjs [kindergarten|clinic|pharmacy|mol-labor-checkup|tfda-pharmacy-match|all]
  */
 import { normalizeAddress, toHalfwidthDigits, parseCsv } from "./lib/mohw-csv.mjs";
 
@@ -150,11 +162,13 @@ async function backfillKindergartens() {
   await uploadBatches(recordsWithCoords, "Kindergartens");
 }
 
-// 2. Backfill Hospitals & Clinics (nhi_hospital)
-async function backfillHospitals() {
-  console.log("=================================================");
-  console.log("🏥 [Hospitals & Clinics] 載入開放資料醫事機構空間資料 (hospitals.json)...");
-  console.log("=================================================");
+// Shared coordinate index for the NHI institution registry (hospitals.json)
+// — used by backfillHospitals (nhi_hospital) and backfillMolLaborCheckup
+// (mol_labor_checkup, matched by the same 醫事機構代碼/id format). Fetched
+// once per script run and passed into both, so extending coverage to a
+// sibling source costs no new external call.
+async function loadHospitalIndex() {
+  console.log("  載入開放資料醫事機構空間資料 (hospitals.json)...");
   const geoRes = await fetch("https://raw.githubusercontent.com/kiang/info.nhi.gov.tw/master/docs/geojson/hospitals.json");
   if (!geoRes.ok) throw new Error(`Failed to load hospitals.json: HTTP ${geoRes.status}`);
   const geoData = await geoRes.json();
@@ -173,6 +187,14 @@ async function backfillHospitals() {
     }
   }
   console.log(`  空間索引建立完成: ${codeMap.size} 個醫事機構代碼。`);
+  return { codeMap, nameAddrMap };
+}
+
+// 2. Backfill Hospitals & Clinics (nhi_hospital)
+async function backfillHospitals({ codeMap, nameAddrMap }) {
+  console.log("=================================================");
+  console.log("🏥 [Hospitals & Clinics] 配對健保特約名冊坐標...");
+  console.log("=================================================");
 
   const TIERS = [
     { rId: "A21030000I-D21001-003", tier: "醫學中心" },
@@ -235,11 +257,67 @@ async function backfillHospitals() {
   await uploadBatches(recordsWithCoords, "Hospitals & Clinics");
 }
 
-// 3. Backfill Pharmacies (nhi_pharmacy)
-async function backfillPharmacies() {
+// 2b. Backfill Labor Health-Check Facilities (mol_labor_checkup) — cross-match
+// against the same NHI hospitals.json codeMap loaded for backfillHospitals,
+// since 醫療機構代碼/醫事機構代碼 are the same institution-code standard (see
+// docs/specs/geocode-opendata-coverage-gap-research.md #15). No new external
+// dataset — reuses the index the caller already fetched.
+async function backfillMolLaborCheckup({ codeMap, nameAddrMap }) {
   console.log("=================================================");
-  console.log("💊 [Pharmacies] 載入開放資料藥局空間資料 (pharmacies/points.json)...");
+  console.log("🩺 [Labor Health-Check] 配對勞工健檢機構坐標 (醫療機構代碼 vs NHI codeMap)...");
   console.log("=================================================");
+
+  console.log("  抓取勞動部勞工健檢機構名冊 (A17000000J-020057-8CT)...");
+  const res = await fetch("https://apiservice.mol.gov.tw/OdService/download/A17000000J-020057-8CT");
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch MOL labor health-check dataset`);
+
+  const rows = await res.json();
+  console.log(`  取得 ${rows.length} 筆資料，進行坐標配對...`);
+
+  const recordsWithCoords = [];
+  for (const row of rows) {
+    const code = (row["醫療機構代碼"] || "").trim();
+    const name = (row["醫療機構名稱"] || "").trim();
+    if (!code || !name) continue;
+
+    const rawAddr = row["醫療機構地址"] || "";
+    const address = normalizeAddress(rawAddr);
+
+    let coords = codeMap.get(code);
+    if (!coords) {
+      const key = `${normalizeMatchKey(name)}|${normalizeMatchKey(address)}`;
+      coords = nameAddrMap.get(key);
+    }
+    if (!coords) continue;
+
+    const phoneDigits = row["連絡電話"] ? toHalfwidthDigits(row["連絡電話"]) : null;
+    const ext = row["分機號碼"] && row["分機號碼"] !== "0" ? ` 分機${toHalfwidthDigits(row["分機號碼"])}` : "";
+
+    recordsWithCoords.push({
+      facilityType: "health_check",
+      sourceKey: "mol_labor_checkup",
+      sourceId: code,
+      name,
+      address,
+      phone: phoneDigits ? `${phoneDigits}${ext}` : null,
+      lat: coords.lat,
+      lng: coords.lng,
+      serviceItem: row["認可類別及有效期限"] || null,
+      serviceTime: row["勞工健檢聯絡人"] ? `聯絡人：${row["勞工健檢聯絡人"]}` : null,
+      dataOrg: "勞動部",
+    });
+  }
+
+  console.log(`  勞工健檢機構配對成功筆數: ${recordsWithCoords.length} / ${rows.length} 筆。準備分批寫入生產資料庫...`);
+  await uploadBatches(recordsWithCoords, "Labor Health-Check");
+}
+
+// Shared coordinate index for the NHI contracted-pharmacy registry
+// (pharmacies/points.json) — used by backfillPharmacies (nhi_pharmacy) and
+// backfillTfdaPharmacyMatch (tfda_pharmacy, matched by name+address). Fetched
+// once per script run and passed into both.
+async function loadPharmacyIndex() {
+  console.log("  載入開放資料藥局空間資料 (pharmacies/points.json)...");
   const geoRes = await fetch("https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json");
   if (!geoRes.ok) throw new Error(`Failed to load pharmacies points.json: HTTP ${geoRes.status}`);
   const geoData = await geoRes.json();
@@ -258,6 +336,14 @@ async function backfillPharmacies() {
     }
   }
   console.log(`  空間索引建立完成: ${codeMap.size} 個特約藥局坐標。`);
+  return { codeMap, nameAddrMap };
+}
+
+// 3. Backfill Pharmacies (nhi_pharmacy)
+async function backfillPharmacies({ codeMap, nameAddrMap }) {
+  console.log("=================================================");
+  console.log("💊 [Pharmacies] 配對健保特約藥局名冊坐標...");
+  console.log("=================================================");
 
   console.log("  抓取健保特約藥局名冊 (A21030000I-D21005-001)...");
   const res = await fetch("https://info.nhi.gov.tw/api/iode0000s01/Dataset?rId=A21030000I-D21005-001");
@@ -303,6 +389,69 @@ async function backfillPharmacies() {
   await uploadBatches(recordsWithCoords, "Pharmacies");
 }
 
+// 3b. Backfill TFDA General Pharmacies (tfda_pharmacy) — cross-match by
+// (name, address) against the same NHI pharmacy index loaded for
+// backfillPharmacies. lib/server/facilities/queries.ts's query-time pharmacy
+// dedup already proves an exact (name, address) match catches ~36% of
+// tfda_pharmacy rows against nhi_pharmacy (issue #132) but only uses it to
+// collapse duplicate *display* rows — the underlying tfda_pharmacy DB row
+// stays uncoordinated. This writes real coordinates onto those matched rows
+// instead, using the exact same sourceId derivation as
+// lib/server/facilities/sources/tfdaPharmacies.ts so the upsert lands on the
+// same existing rows rather than creating duplicates.
+async function backfillTfdaPharmacyMatch({ nameAddrMap }) {
+  console.log("=================================================");
+  console.log("💊 [TFDA Pharmacies] 配對一般藥局 vs 健保特約藥局坐標 (name+address cross-match)...");
+  console.log("=================================================");
+
+  console.log("  抓取食藥署藥局管理系統名冊 (data.fda.gov.tw/data/opendata/export/35/json)...");
+  const res = await fetch("https://data.fda.gov.tw/data/opendata/export/35/json");
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch TFDA pharmacy dataset`);
+
+  const raw = await res.json();
+  console.log(`  取得 ${raw.length} 筆資料，進行坐標配對...`);
+
+  const recordsWithCoords = [];
+  let index = -1;
+  for (const item of raw) {
+    index += 1;
+    if (item["機構狀態"] !== "開業" || !item["機構名稱"]) continue;
+
+    const name = item["機構名稱"];
+    // rawAddress stays un-normalized — sourceId must match
+    // tfdaPharmacies.ts's derivation exactly (same comment there: an ID
+    // derived from normalizeAddress()'s output would drift every time that
+    // function improves, duplicating the whole table instead of updating it).
+    const rawAddress = `${item["地址縣市別"] || ""}${item["地址鄉鎮市區"] || ""}${item["地址街道巷弄號"] || ""}`;
+    const address = normalizeAddress(rawAddress);
+    const sourceId = `${name}|${rawAddress}`.slice(0, 100) || `row-${index}`;
+
+    // This dataset has no NHI institution code, so go straight to the
+    // name+address cross-match — the same fallback technique
+    // backfillHospitals/backfillPharmacies already use.
+    const key = `${normalizeMatchKey(name)}|${normalizeMatchKey(address)}`;
+    const coords = nameAddrMap.get(key);
+    if (!coords) continue;
+
+    recordsWithCoords.push({
+      facilityType: "pharmacy",
+      sourceKey: "tfda_pharmacy",
+      sourceId,
+      name,
+      address,
+      phone: item["電話"] || null,
+      lat: coords.lat,
+      lng: coords.lng,
+      serviceItem: item["是否為健保特約藥局"] === "Y" ? "健保特約藥局" : "一般藥局",
+      serviceTime: null,
+      dataOrg: "衛福部食藥署",
+    });
+  }
+
+  console.log(`  一般藥局配對成功筆數: ${recordsWithCoords.length} / ${raw.length} 筆。準備分批寫入生產資料庫...`);
+  await uploadBatches(recordsWithCoords, "TFDA Pharmacies");
+}
+
 async function main() {
   console.log("🚀 [OpenData Geo Backfill] 開始執行台灣開放空間資料坐標補齊任務...");
   console.log(`🎯 目標環境: ${BASE_URL}`);
@@ -314,12 +463,24 @@ async function main() {
     await backfillKindergartens();
   }
 
-  if (targetScope === "all" || targetScope === "clinic" || targetScope === "hospital") {
-    await backfillHospitals();
+  if (targetScope === "all" || targetScope === "clinic" || targetScope === "hospital" || targetScope === "mol-labor-checkup") {
+    const hospitalIndex = await loadHospitalIndex();
+    if (targetScope === "all" || targetScope === "clinic" || targetScope === "hospital") {
+      await backfillHospitals(hospitalIndex);
+    }
+    if (targetScope === "all" || targetScope === "mol-labor-checkup") {
+      await backfillMolLaborCheckup(hospitalIndex);
+    }
   }
 
-  if (targetScope === "all" || targetScope === "pharmacy") {
-    await backfillPharmacies();
+  if (targetScope === "all" || targetScope === "pharmacy" || targetScope === "tfda-pharmacy-match") {
+    const pharmacyIndex = await loadPharmacyIndex();
+    if (targetScope === "all" || targetScope === "pharmacy") {
+      await backfillPharmacies(pharmacyIndex);
+    }
+    if (targetScope === "all" || targetScope === "tfda-pharmacy-match") {
+      await backfillTfdaPharmacyMatch(pharmacyIndex);
+    }
   }
 
   const durationSec = ((Date.now() - start) / 1000).toFixed(1);

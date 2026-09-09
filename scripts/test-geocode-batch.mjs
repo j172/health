@@ -261,12 +261,12 @@ test("dedupByNormalizedAddress: blank address is skipped entirely", () => {
 
 // ─── SOURCES_IN_PRIORITY shape (loaded from the real TS source as text — no
 // TS loader needed since this only checks the list literal, not behavior) ──
-test("SOURCES_IN_PRIORITY: 16 sources, all with non-empty facilityType/sourceKey, no duplicate (facilityType, sourceKey) pair", () => {
+test("SOURCES_IN_PRIORITY: 22 sources, all with non-empty facilityType/sourceKey, no duplicate (facilityType, sourceKey) pair", () => {
   const src = readGeocodeBatchSource();
   const listMatch = src.match(/SOURCES_IN_PRIORITY:.*?=\s*\[([\s\S]*?)\n\];/);
   assert.ok(listMatch, "could not locate SOURCES_IN_PRIORITY literal in geocodeBatch.ts");
   const entries = [...listMatch[1].matchAll(/facilityType:\s*"([^"]+)",\s*sourceKey:\s*"([^"]+)"/g)];
-  assert.equal(entries.length, 16);
+  assert.equal(entries.length, 22);
   const seen = new Set();
   for (const [, facilityType, sourceKey] of entries) {
     assert.ok(facilityType.length > 0);
@@ -280,5 +280,50 @@ test("SOURCES_IN_PRIORITY: 16 sources, all with non-empty facilityType/sourceKey
 function readGeocodeBatchSource() {
   return readFileSync(path.join(__dirname, "..", "lib", "server", "facilities", "geocodeBatch.ts"), "utf-8");
 }
+
+// ─── rotateSourcesFrom (round-robin fairness cursor) ───────────────────────
+// Re-implemented inline for the same standalone-node reason as above — see
+// lib/server/facilities/geocodeSourceRotation.ts for the production version.
+function rotateSourcesFrom(sources, lastVisitedKey) {
+  if (!lastVisitedKey || sources.length === 0) return sources;
+  const lastIndex = sources.findIndex((s) => `${s.facilityType}:${s.sourceKey}` === lastVisitedKey);
+  if (lastIndex === -1) return sources;
+  const startIndex = (lastIndex + 1) % sources.length;
+  return [...sources.slice(startIndex), ...sources.slice(0, startIndex)];
+}
+
+const ROTATION_SOURCES = [
+  { facilityType: "a", sourceKey: "1" },
+  { facilityType: "a", sourceKey: "2" },
+  { facilityType: "b", sourceKey: "1" },
+];
+
+test("rotateSourcesFrom: no cursor yet -> original order unchanged", () => {
+  assert.deepEqual(rotateSourcesFrom(ROTATION_SOURCES, null), ROTATION_SOURCES);
+});
+
+test("rotateSourcesFrom: resumes right after the last-visited source", () => {
+  const rotated = rotateSourcesFrom(ROTATION_SOURCES, "a:1");
+  assert.deepEqual(
+    rotated.map((s) => `${s.facilityType}:${s.sourceKey}`),
+    ["a:2", "b:1", "a:1"],
+  );
+});
+
+test("rotateSourcesFrom: last source in the list wraps back to the start", () => {
+  const rotated = rotateSourcesFrom(ROTATION_SOURCES, "b:1");
+  assert.deepEqual(
+    rotated.map((s) => `${s.facilityType}:${s.sourceKey}`),
+    ["a:1", "a:2", "b:1"],
+  );
+});
+
+test("rotateSourcesFrom: stored cursor no longer matches any source (removed/renamed) -> falls back to original order", () => {
+  assert.deepEqual(rotateSourcesFrom(ROTATION_SOURCES, "gone:99"), ROTATION_SOURCES);
+});
+
+test("rotateSourcesFrom: empty source list -> empty regardless of cursor", () => {
+  assert.deepEqual(rotateSourcesFrom([], "a:1"), []);
+});
 
 console.log(`\n${passed} passed`);

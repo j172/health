@@ -157,6 +157,21 @@ export const TABLE_DDL = {
       PRIMARY KEY (flag_key)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Round-robin cursor for the geocode batch job (see
+  // lib/server/facilities/geocodeSourceRotation.ts) — a single row recording
+  // which (facilityType, sourceKey) was last visited, so each invocation
+  // resumes the rotation instead of always restarting from
+  // SOURCES_IN_PRIORITY[0] and starving whichever source sits behind a
+  // high-backlog one. DB-backed for the same restart-safety reason as
+  // geocode_provider_budget above.
+  geocodeSourceRotation: `
+    CREATE TABLE IF NOT EXISTS geocode_source_rotation (
+      rotation_key VARCHAR(64) NOT NULL,
+      last_source_key VARCHAR(191) NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (rotation_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestRuns: `
     CREATE TABLE IF NOT EXISTS ingest_runs (
       id BIGINT NOT NULL AUTO_INCREMENT,
