@@ -182,12 +182,6 @@ const CATEGORIES: ToolCategory[] = [
     groups: ["child-welfare"],
   },
   {
-    id: "food",
-    title: "食品營養與業者登錄",
-    description: "衛福部食藥署食品營養成分分析與食品業者合法登錄資料庫",
-    groups: ["food"],
-  },
-  {
     id: "public-facility",
     title: "便民服務",
     description:
