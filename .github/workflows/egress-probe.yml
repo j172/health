@@ -18,6 +18,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
+    environment: FTP_SERVER
     timeout-minutes: 5
     steps:
       - name: Probe upstreams from the runner
@@ -105,3 +106,70 @@ jobs:
 
       - name: What is inside the WRA warning map layers
         run: node scripts/probe-wra-kml.mjs
+
+      # Issue #177 — service.taipower.com.tw timed out from the dev worktree
+      # (both curl and WebFetch, 20s/60s). Confirm real field shapes for
+      # d006001 (real-time generation) and d525001 (unconfirmed — guessed to
+      # be scheduled-outage data) from the runner before writing any ingestion
+      # code against them.
+      - name: Taipower d006001 / d525001 field shapes (runner egress)
+        run: |
+          node -e '
+          const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36";
+          (async () => {
+            for (const [label, url] of Object.entries({
+              "d006001 (real-time generation, JSON)": "https://service.taipower.com.tw/data/opendata/apply/file/d006001/001.json",
+              "d525001 (unconfirmed, CSV)": "https://service.taipower.com.tw/data/opendata/apply/file/d525001/001.csv",
+            })) {
+              try {
+                const res = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(30000) });
+                const ct = res.headers.get("content-type") || "";
+                const cd = res.headers.get("content-disposition") || "";
+                const buf = Buffer.from(await res.arrayBuffer());
+                console.log(`\n--- ${label} --- status=${res.status} content-type=${ct} content-disposition=${cd} bytes=${buf.length}`);
+                const text = buf.toString("utf8");
+                if (text.trim().startsWith("{") || text.trim().startsWith("[")) {
+                  const parsed = JSON.parse(text);
+                  console.log("  top-level keys:", Array.isArray(parsed) ? `array[${parsed.length}]` : Object.keys(parsed).join(", "));
+                  const rows = Array.isArray(parsed) ? parsed : (parsed.records || parsed.data || Object.values(parsed).find(Array.isArray) || []);
+                  console.log("  row count:", Array.isArray(rows) ? rows.length : "n/a");
+                  if (Array.isArray(rows) && rows[0]) {
+                    console.log("  row[0] keys:", Object.keys(rows[0]).join(", "));
+                    console.log("  row[0] sample:", JSON.stringify(rows[0]).slice(0, 800));
+                    console.log("  row[1] sample:", JSON.stringify(rows[1] || null).slice(0, 800));
+                  }
+                } else {
+                  console.log("  first 2000 chars (CSV/text):");
+                  console.log(text.slice(0, 2000));
+                }
+              } catch (e) { console.log(`${label}: ERROR ${e.message}`); }
+            }
+          })();
+          '
+
+      # Also checks whether the production host itself (not just the runner)
+      # can reach service.taipower.com.tw — decides whether the sync job can
+      # run in-process on the host (like WRA reservoir/water-level) or needs
+      # to fetch on the runner and POST back over the SSH loopback (like the
+      # nhi.gov.tw / UDN pattern). Read-only, no admin API calls.
+      - name: Taipower reachability from the production host (SSH loopback)
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SSH_HOST:-}" ] || [ -z "${SSH_PRIVATE_KEY:-}" ]; then
+            echo "Missing SSH secrets — skipping host-side probe."
+            exit 0
+          fi
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          ssh -i "$KEY_FILE" -p "${SSH_PORT:-22}" \
+            -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15 \
+            "${SSH_USER}@${SSH_HOST}" \
+            'for u in "https://service.taipower.com.tw/data/opendata/apply/file/d006001/001.json" "https://service.taipower.com.tw/data/opendata/apply/file/d525001/001.csv"; do
+               code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 "$u" 2>/dev/null || echo "000")
+               printf "%-70s %s\n" "$u" "$code"
+             done'
