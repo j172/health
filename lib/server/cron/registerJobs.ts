@@ -21,6 +21,7 @@ import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
+import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -204,5 +205,14 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "53 4 * * *",
     runGuarded("cleaning-squads-cron.log", () => runCleaningSquadsSync()),
+  );
+  // Green restaurants (gis_p_11) — issue #163, the one dataset left over
+  // from #130/#156 pending confirmation it shares the same MOENV_GP_API_KEY
+  // as gp_p_42/gp_p_43/gis_p_82 (it does). Same daily-cadence rationale as
+  // the neighboring cool-spots/iaq-premises/cleaning-squads jobs above, at
+  // an unused minute in the same off-peak window.
+  cron.schedule(
+    "58 4 * * *",
+    runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
   );
 };
