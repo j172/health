@@ -5,6 +5,7 @@ import type {
   NearestRainfallOverview,
   TopRainfallStation,
 } from "@/lib/server/cwa/queries";
+import { resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
 
 const TAIWAN_COUNTIES = [
   "臺北市",
@@ -131,7 +132,7 @@ export default function WeatherRainfallLocator({
     }
   };
 
-  const handleGeoLocate = () => {
+  const handleGeoLocate = async () => {
     if (!navigator.geolocation) {
       setErrorMsg("您的瀏覽器不支援 GPS 地理定位。");
       return;
@@ -139,6 +140,7 @@ export default function WeatherRainfallLocator({
     setLocating(true);
     setErrorMsg(null);
 
+    const { timeoutMs } = await resolveGeolocationTimeout(10000);
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
@@ -155,7 +157,7 @@ export default function WeatherRainfallLocator({
           setErrorMsg("定位失敗，請手動選擇縣市。");
         }
       },
-      { timeout: 10000, enableHighAccuracy: false },
+      { timeout: timeoutMs, enableHighAccuracy: false },
     );
   };
 
@@ -172,20 +174,23 @@ export default function WeatherRainfallLocator({
     let active = true;
 
     if (navigator?.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          if (!active) return;
-          setLocationName("您的目前位置");
-          fetchRainfall({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        },
-        () => {
-          if (!active) return;
-          setSelectedCounty("臺北市");
-          setLocationName("臺北市");
-          fetchRainfall({ county: "臺北市" });
-        },
-        { timeout: 6000, enableHighAccuracy: false },
-      );
+      resolveGeolocationTimeout(6000).then(({ timeoutMs }) => {
+        if (!active) return;
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            if (!active) return;
+            setLocationName("您的目前位置");
+            fetchRainfall({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+          },
+          () => {
+            if (!active) return;
+            setSelectedCounty("臺北市");
+            setLocationName("臺北市");
+            fetchRainfall({ county: "臺北市" });
+          },
+          { timeout: timeoutMs, enableHighAccuracy: false },
+        );
+      });
     } else {
       const timer = setTimeout(() => {
         if (!active) return;
