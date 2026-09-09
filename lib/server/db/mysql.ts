@@ -58,6 +58,7 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.imageProviderCooldown);
   await p.query(TABLE_DDL.geocodeProviderBudget);
   await p.query(TABLE_DDL.geocodeBackfillFlags);
+  await p.query(TABLE_DDL.geocodeSourceRotation);
   await p.query(TABLE_DDL.ingestRuns);
   await p.query(TABLE_DDL.ingestErrors);
   await p.query(TABLE_DDL.facilities);
@@ -93,8 +94,8 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.carbonFootprintCoefficients);
   await p.query(TABLE_DDL.wraWaterLevelReadings);
   await p.query(TABLE_DDL.wraReservoirStatus);
-  await p.query(TABLE_DDL.disasterResponsePoints);
-  await p.query(TABLE_DDL.heritageAssets);
+  await p.query(TABLE_DDL.wraReservoirs);
+  await p.query(TABLE_DDL.wraWaterLevelStations);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

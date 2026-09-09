@@ -16,7 +16,7 @@ import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProd
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
 import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
-import { runWraSync } from "@/lib/server/wra/runSync";
+import { runWraSync, runWraCatalogSync } from "@/lib/server/wra/runSync";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
@@ -194,6 +194,11 @@ export const registerCronJobs = (): void => {
   // These datasets update irregularly per MOENV metadata, so daily is plenty
   // — same cadence rationale as the neighboring green-products/carbon
   // footprint jobs above, at unused minutes in the same off-peak window.
+  // WRA reference catalogs (水庫代碼表 139336 + 水位測站站況 22227) — daily off-peak sync
+  cron.schedule(
+    "30 4 * * *",
+    runGuarded("wra-catalog-sync-cron.log", () => runWraCatalogSync()),
+  );
   cron.schedule(
     "33 4 * * *",
     runGuarded("cool-spots-cron.log", () => runCoolSpotsSync()),

@@ -157,6 +157,21 @@ export const TABLE_DDL = {
       PRIMARY KEY (flag_key)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // Round-robin cursor for the geocode batch job (see
+  // lib/server/facilities/geocodeSourceRotation.ts) — a single row recording
+  // which (facilityType, sourceKey) was last visited, so each invocation
+  // resumes the rotation instead of always restarting from
+  // SOURCES_IN_PRIORITY[0] and starving whichever source sits behind a
+  // high-backlog one. DB-backed for the same restart-safety reason as
+  // geocode_provider_budget above.
+  geocodeSourceRotation: `
+    CREATE TABLE IF NOT EXISTS geocode_source_rotation (
+      rotation_key VARCHAR(64) NOT NULL,
+      last_source_key VARCHAR(191) NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (rotation_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestRuns: `
     CREATE TABLE IF NOT EXISTS ingest_runs (
       id BIGINT NOT NULL AUTO_INCREMENT,
@@ -1005,95 +1020,50 @@ export const TABLE_DDL = {
       KEY idx_wra_reservoir_status_time (observation_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // 內政部 (MOI) 防救災點位 — 消防救援單位 (770 rows)、應變中心 (25 rows,
-  // 一縣市一筆)、避難收容處所點位檔案 v9 (5,973 rows), issue #168. All three
-  // source CSVs already carry usable decimal lon/lat, so this deliberately
-  // bypasses the facilities table and its geocode batch pipeline entirely —
-  // no OpenCage/Nominatim budget contention with the 22 facility sources that
-  // do need geocoding. One table + a `layer` enum rather than three tables:
-  // the columns are almost identical, only shelter rows populate the
-  // shelter-only fields (capacity/disaster_types/indoor/outdoor/
-  // weak_suitable/manager_*). Each sync is a full truncate-and-replace of its
-  // own layer (see lib/server/disaster/ingestDisasterPoints.ts) — the source
-  // has no stable cross-run identifier to upsert against, and this project
-  // has already been burned once by an accumulating/upsert-style ingestion
-  // count silently drifting from the real row count (see memory:
-  // ops_ingestion_counters_and_deploy_timing.md) — so `inserted` reported by
-  // each sync function is always a post-write COUNT(*) for that layer, never
-  // the length of the batch it tried to insert.
-  disasterResponsePoints: `
-    CREATE TABLE IF NOT EXISTS disaster_response_points (
-      id INT NOT NULL AUTO_INCREMENT,
-      layer ENUM('shelter','rescue_unit','eoc_center') NOT NULL,
-      name VARCHAR(255) NOT NULL,
-      county VARCHAR(50) NOT NULL,
-      district VARCHAR(50) NULL,
-      village VARCHAR(50) NULL,
-      address VARCHAR(255) NULL,
-      phone VARCHAR(100) NULL,
-      longitude DECIMAL(10,7) NOT NULL,
-      latitude DECIMAL(10,7) NOT NULL,
-      capacity INT NULL,
-      disaster_types VARCHAR(255) NULL,
-      indoor BOOLEAN NULL,
-      outdoor BOOLEAN NULL,
-      weak_suitable BOOLEAN NULL,
-      manager_name VARCHAR(100) NULL,
-      manager_phone VARCHAR(100) NULL,
-      source_updated_at DATETIME NULL,
+  // 經濟部水利署 (WRA) 水庫代碼表 (Metadata / Catalog) — opendata.wra.gov.tw dataset
+  // f65a2148-9c7a-4e16-acaf-48917a5124e2 (data.gov.tw/dataset/139336).
+  // Supplies official Chinese names, river basin, and town names for reservoir_id.
+  wraReservoirs: `
+    CREATE TABLE IF NOT EXISTS wra_reservoirs (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      reservoir_id VARCHAR(20) NOT NULL,
+      reservoir_name VARCHAR(100) NOT NULL,
+      river_name VARCHAR(255) NULL,
+      town_name VARCHAR(100) NULL,
+      area_code VARCHAR(20) NULL,
+      synced_at DATETIME NOT NULL,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
-      KEY idx_disaster_point_layer (layer),
-      KEY idx_disaster_point_geo (latitude, longitude),
-      KEY idx_disaster_point_county (county)
+      UNIQUE KEY uq_wra_reservoirs_id (reservoir_id),
+      KEY idx_wra_reservoirs_name (reservoir_name)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // 文化部文化資產局 (BOCH) 開放資料 — 文化資產個案，建築類 (古蹟／歷史建築,
-  // assetsCase/1.2.json, ~1,789 rows) 與考古遺址類 (assetsCase/2.1.json, ~58
-  // rows), issue #170. Both source JSON documents already carry usable decimal
-  // longitude/latitude, so — same as disaster_response_points (issue #168) —
-  // this deliberately bypasses the facilities table and its geocode batch
-  // pipeline entirely. One table + a `category` enum rather than two tables:
-  // the two source datasets' fields are a near-total union of each other, with
-  // only a handful of columns exclusive to one side (assets_type_names is
-  // building-only; classify_code/classify_name are archaeological-site-only).
-  // Unlike disaster_response_points, this source DOES carry a stable
-  // cross-run identifier (`caseId`), so the sync is a plain upsert
-  // (INSERT ... ON DUPLICATE KEY UPDATE) against `case_id`, not a
-  // truncate-and-replace — see lib/server/culture/ingestHeritageAssets.ts.
-  // past_history and register_reason are both nullable on both categories:
-  // real-world building records were found to often carry both fields, not
-  // just registerReason as originally assumed (see docs/specs/
-  // heritage-assets-map.md 1.1). image_source (representImageSource) is only
-  // ever populated by the archaeological-site dataset — the building dataset
-  // never sends that field at all, confirmed live 2026-09-09.
-  heritageAssets: `
-    CREATE TABLE IF NOT EXISTS heritage_assets (
-      id INT NOT NULL AUTO_INCREMENT,
-      case_id VARCHAR(50) NOT NULL,
-      category ENUM('building','archaeological_site') NOT NULL,
-      case_name VARCHAR(255) NOT NULL,
-      assets_type_names VARCHAR(255) NULL,
-      classify_code VARCHAR(20) NULL,
-      classify_name VARCHAR(100) NULL,
-      city_name VARCHAR(50) NULL,
-      dist_name VARCHAR(50) NULL,
-      address VARCHAR(255) NULL,
-      past_history MEDIUMTEXT NULL,
-      register_reason MEDIUMTEXT NULL,
-      gov_institution_name VARCHAR(100) NULL,
-      longitude DECIMAL(10,7) NULL,
-      latitude DECIMAL(10,7) NULL,
-      image_url VARCHAR(500) NULL,
-      image_source VARCHAR(255) NULL,
-      source_updated_at DATETIME NULL,
+  // 經濟部水利署 (WRA) 河川水位測站站況 (Metadata / Catalog) — opendata.wra.gov.tw dataset
+  // c4acc691-7416-40ca-9464-292c0c00da92 (data.gov.tw/dataset/22227).
+  // Supplies official Chinese station names, river, address, and alert water levels for station_id.
+  wraWaterLevelStations: `
+    CREATE TABLE IF NOT EXISTS wra_water_level_stations (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(30) NOT NULL,
+      station_name VARCHAR(100) NOT NULL,
+      observatory_identifier VARCHAR(50) NULL,
+      river_name VARCHAR(255) NULL,
+      location_address VARCHAR(255) NULL,
+      alert_level_1 DECIMAL(10,3) NULL,
+      alert_level_2 DECIMAL(10,3) NULL,
+      alert_level_3 DECIMAL(10,3) NULL,
+      area_code VARCHAR(20) NULL,
+      basin_code VARCHAR(30) NULL,
+      observation_status VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
-      UNIQUE KEY uq_heritage_asset_case_id (case_id),
-      KEY idx_heritage_asset_category (category),
-      KEY idx_heritage_asset_geo (latitude, longitude)
+      UNIQUE KEY uq_wra_stations_id (station_id),
+      KEY idx_wra_stations_name (station_name),
+      KEY idx_wra_stations_river (river_name)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
 };
+
