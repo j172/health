@@ -1,0 +1,65 @@
+name: Disaster points sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Daily at 04:20 UTC (12:20 Taipei) — inside the deploy-safe :15-:30
+    # window (see memory: ops_ingestion_counters_and_deploy_timing.md) so a
+    # PM2 restart from a concurrent deploy doesn't kill a mid-flight sync.
+    - cron: "20 4 * * *"
+
+concurrency:
+  group: host-tw123457-server
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Same SSH-loopback pattern as facilities-geocode-batch.yml — HawkHost
+      # disables TCP forwarding (AllowTcpForwarding no), so the admin API
+      # call runs as remote curl against the app host's own loopback rather
+      # than a tunnel. The MOI CSV downloads themselves happen inside the
+      # app process (lib/server/disaster/ingestDisasterPoints.ts), not on
+      # this runner.
+      - name: Run MOI disaster points sync (SSH loopback)
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
+
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
+            node scripts/gha-disaster-points-sync.mjs

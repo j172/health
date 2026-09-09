@@ -3,8 +3,14 @@ import { withConnection } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import type { ReservoirStatusRecord } from "@/lib/server/wra/fetchReservoirStatus";
 
+import { ensureCatalogsSeeded } from "@/lib/server/wra/catalogQueries";
+
 export interface ReservoirStatusListItem {
   reservoir_id: string;
+  reservoir_name: string | null;
+  river_name: string | null;
+  town_name: string | null;
+  area_code: string | null;
   observation_time: Date;
   water_level: number | null;
   effective_capacity: number | null;
@@ -78,25 +84,43 @@ export const upsertReservoirStatus = async (
 
 export interface ReservoirStatusPageParams {
   keyword?: string;
+  region?: string;
   limit: number;
   offset: number;
 }
 
 /**
- * Latest reading per reservoir (issue #135), optionally filtered by a
- * reservoir-id substring — the source payload carries no reservoir name, so
- * the id itself is the only searchable field. Mirrors
- * getLatestWaterLevelReadingsPage's MAX(observation_time)-per-key join, plus
- * issue #133's LIMIT/OFFSET pagination.
+ * Latest reading per reservoir, joined with wra_reservoirs catalog for official
+ * Chinese name, river, and town names. Supports keyword search across id/name/river/town
+ * and region prefix filter (10: 北部, 20: 中部, 30: 南部, 40: 東部, 50: 離島).
  */
 export const getLatestReservoirStatusPage = async ({
   keyword,
+  region,
   limit,
   offset,
-}: ReservoirStatusPageParams): Promise<{ rows: ReservoirStatusListItem[]; total: number }> =>
-  withConnection(async (conn) => {
-    const keywordClause = keyword ? "AND latest.reservoir_id LIKE ?" : "";
-    const keywordParams = keyword ? [`%${keyword}%`] : [];
+}: ReservoirStatusPageParams): Promise<{ rows: ReservoirStatusListItem[]; total: number }> => {
+  // Ensure catalog table is populated on cold start
+  await ensureCatalogsSeeded().catch(() => {});
+
+  return withConnection(async (conn) => {
+    const conditions: string[] = ["1 = 1"];
+    const params: unknown[] = [];
+
+    if (region) {
+      conditions.push("latest.reservoir_id LIKE ?");
+      params.push(`${region}%`);
+    }
+
+    if (keyword) {
+      const kw = `%${keyword}%`;
+      conditions.push(
+        "(latest.reservoir_id LIKE ? OR c.reservoir_name LIKE ? OR c.river_name LIKE ? OR c.town_name LIKE ?)",
+      );
+      params.push(kw, kw, kw, kw);
+    }
+
+    const whereSql = conditions.join(" AND ");
 
     const [countRows] = await conn.query<RowDataPacket[]>(
       `
@@ -106,15 +130,17 @@ export const getLatestReservoirStatusPage = async ({
         FROM wra_reservoir_status
         GROUP BY reservoir_id
       ) latest
-      WHERE 1 = 1 ${keywordClause}
+      LEFT JOIN wra_reservoirs c ON c.reservoir_id = latest.reservoir_id
+      WHERE ${whereSql}
       `,
-      keywordParams,
+      params,
     );
     const total = Number(countRows[0]?.total ?? 0);
 
     const [rows] = await conn.query<RowDataPacket[]>(
       `
-      SELECT r.reservoir_id, r.observation_time, r.water_level, r.effective_capacity, r.inflow_discharge, r.total_outflow,
+      SELECT r.reservoir_id, c.reservoir_name, c.river_name, c.town_name, c.area_code,
+             r.observation_time, r.water_level, r.effective_capacity, r.inflow_discharge, r.total_outflow,
              r.spillway_outflow, r.power_outlet_outflow, r.drainage_tunnel_outflow, r.desilting_tunnel_outflow,
              r.others_outflow, r.water_draw, r.accumulate_rainfall, r.predetermined_cross_flow,
              r.predetermined_outflow_time, r.status_type
@@ -124,12 +150,14 @@ export const getLatestReservoirStatusPage = async ({
         FROM wra_reservoir_status
         GROUP BY reservoir_id
       ) latest ON latest.reservoir_id = r.reservoir_id AND latest.max_observation_time = r.observation_time
-      WHERE 1 = 1 ${keywordClause}
+      LEFT JOIN wra_reservoirs c ON c.reservoir_id = r.reservoir_id
+      WHERE ${whereSql}
       ORDER BY r.reservoir_id ASC
       LIMIT ? OFFSET ?
       `,
-      [...keywordParams, limit, offset],
+      [...params, limit, offset],
     );
 
     return { total, rows: rows as unknown as ReservoirStatusListItem[] };
   });
+};

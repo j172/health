@@ -1020,4 +1020,50 @@ export const TABLE_DDL = {
       KEY idx_wra_reservoir_status_time (observation_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 經濟部水利署 (WRA) 水庫代碼表 (Metadata / Catalog) — opendata.wra.gov.tw dataset
+  // f65a2148-9c7a-4e16-acaf-48917a5124e2 (data.gov.tw/dataset/139336).
+  // Supplies official Chinese names, river basin, and town names for reservoir_id.
+  wraReservoirs: `
+    CREATE TABLE IF NOT EXISTS wra_reservoirs (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      reservoir_id VARCHAR(20) NOT NULL,
+      reservoir_name VARCHAR(100) NOT NULL,
+      river_name VARCHAR(255) NULL,
+      town_name VARCHAR(100) NULL,
+      area_code VARCHAR(20) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_reservoirs_id (reservoir_id),
+      KEY idx_wra_reservoirs_name (reservoir_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 經濟部水利署 (WRA) 河川水位測站站況 (Metadata / Catalog) — opendata.wra.gov.tw dataset
+  // c4acc691-7416-40ca-9464-292c0c00da92 (data.gov.tw/dataset/22227).
+  // Supplies official Chinese station names, river, address, and alert water levels for station_id.
+  wraWaterLevelStations: `
+    CREATE TABLE IF NOT EXISTS wra_water_level_stations (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(30) NOT NULL,
+      station_name VARCHAR(100) NOT NULL,
+      observatory_identifier VARCHAR(50) NULL,
+      river_name VARCHAR(255) NULL,
+      location_address VARCHAR(255) NULL,
+      alert_level_1 DECIMAL(10,3) NULL,
+      alert_level_2 DECIMAL(10,3) NULL,
+      alert_level_3 DECIMAL(10,3) NULL,
+      area_code VARCHAR(20) NULL,
+      basin_code VARCHAR(30) NULL,
+      observation_status VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_stations_id (station_id),
+      KEY idx_wra_stations_name (station_name),
+      KEY idx_wra_stations_river (river_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
+

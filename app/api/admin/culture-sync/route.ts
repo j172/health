@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
+import { runHeritageAssetsSync } from "@/lib/server/culture/ingestHeritageAssets";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     let showsResult: any = null;
     let publicArtResult: any = null;
+    let heritageResult: any = null;
 
     if (type === "shows" || type === "all") {
       showsResult = await runCulturalShowsSync();
@@ -31,11 +33,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       publicArtResult = await runPublicArtSync(supplied);
     }
 
+    if (type === "heritage" || type === "all") {
+      heritageResult = await runHeritageAssetsSync();
+    }
+
     return NextResponse.json({
       ok: true,
       results: {
         shows: showsResult,
         publicArt: publicArtResult,
+        heritage: heritageResult,
       },
     });
   } catch (error: any) {

@@ -1,10 +1,11 @@
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { withConnection, withConnectionFallback, utcNowSql } from "@/lib/server/db/mysql";
 import type { RowDataPacket } from "mysql2/promise";
 import type {
   CulturalActivityItem,
   CulturalShowInfo,
   PublicArtItem,
 } from "./types";
+import type { HeritageCategory } from "./ingestHeritageAssets";
 import { runCulturalShowsSync } from "./ingestShows";
 import { runPublicArtSync } from "./ingestPublicArt";
 
@@ -308,6 +309,84 @@ export async function searchPublicArt({
       totalMatched: items.length,
       updatedAt: new Date().toISOString(),
     };
+  });
+}
+
+export interface HeritageAssetPoint {
+  id: number;
+  caseId: string;
+  category: HeritageCategory;
+  caseName: string;
+  assetsTypeNames: string | null;
+  classifyCode: string | null;
+  classifyName: string | null;
+  cityName: string | null;
+  distName: string | null;
+  address: string | null;
+  pastHistory: string | null;
+  registerReason: string | null;
+  govInstitutionName: string | null;
+  lng: number;
+  lat: number;
+  imageUrl: string | null;
+  imageSource: string | null;
+}
+
+export interface HeritageMapData {
+  points: HeritageAssetPoint[];
+  /** Most recent sync timestamp across every category present in `points`, or
+   * null if the table is empty. Drives the "最後同步時間" header. */
+  updatedAt: string | null;
+}
+
+/** Reads every heritage_assets row with usable coordinates (~1,800 rows total
+ * across both categories — small enough to fetch in one shot; the frontend
+ * filters by category client-side via the layer toggle checkboxes). Rows with
+ * NULL longitude/latitude are excluded here — they still exist in the table
+ * but are never plottable, per docs/specs/heritage-assets-map.md. */
+export async function getHeritageMapData(): Promise<HeritageMapData> {
+  return withConnectionFallback({ points: [], updatedAt: null }, async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT id, case_id, category, case_name, assets_type_names, classify_code,
+              classify_name, city_name, dist_name, address, past_history,
+              register_reason, gov_institution_name, longitude, latitude,
+              image_url, image_source, source_updated_at
+         FROM heritage_assets
+        WHERE longitude IS NOT NULL AND latitude IS NOT NULL
+        ORDER BY category, case_name`,
+    );
+
+    let latestUpdatedAt: string | null = null;
+    const points: HeritageAssetPoint[] = rows.map((row) => {
+      const sourceUpdatedAt: string | null = row.source_updated_at
+        ? new Date(row.source_updated_at).toISOString()
+        : null;
+      if (sourceUpdatedAt && (!latestUpdatedAt || sourceUpdatedAt > latestUpdatedAt)) {
+        latestUpdatedAt = sourceUpdatedAt;
+      }
+
+      return {
+        id: Number(row.id),
+        caseId: String(row.case_id),
+        category: row.category as HeritageCategory,
+        caseName: String(row.case_name),
+        assetsTypeNames: row.assets_type_names ?? null,
+        classifyCode: row.classify_code ?? null,
+        classifyName: row.classify_name ?? null,
+        cityName: row.city_name ?? null,
+        distName: row.dist_name ?? null,
+        address: row.address ?? null,
+        pastHistory: row.past_history ?? null,
+        registerReason: row.register_reason ?? null,
+        govInstitutionName: row.gov_institution_name ?? null,
+        lng: Number(row.longitude),
+        lat: Number(row.latitude),
+        imageUrl: row.image_url ?? null,
+        imageSource: row.image_source ?? null,
+      };
+    });
+
+    return { points, updatedAt: latestUpdatedAt };
   });
 }
 

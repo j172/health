@@ -116,6 +116,8 @@ const TOOL_ICONS: Record<string, string> = {
   "aqx-monitoring": "🧪",
   "water-level-stations": "💧",
   "reservoir-status": "🏞️",
+  "disaster-map": "🆘",
+  "heritage-map": "🏛️",
 };
 
 interface ToolCategory {
@@ -191,6 +193,13 @@ const CATEGORIES: ToolCategory[] = [
     description:
       "全國公廁、環境部認證綠色商店、非營利組織(NPO)與國際旅遊疫情警示查詢",
     groups: ["public-facility"],
+  },
+  {
+    id: "disaster-preparedness",
+    title: "防災地圖",
+    description:
+      "內政部開放資料：避難收容處所、消防救援單位與縣市應變中心點位地圖查詢",
+    groups: ["disaster-preparedness"],
   },
 ];
 

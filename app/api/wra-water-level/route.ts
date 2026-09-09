@@ -26,10 +26,11 @@ const resolvePaging = (searchParams: URLSearchParams): { limit: number; offset: 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const keyword = params.get("keyword")?.trim() || undefined;
+  const region = params.get("region")?.trim() || undefined;
   const { limit, offset } = resolvePaging(params);
 
   try {
-    const { rows, total } = await getLatestWaterLevelReadingsPage({ keyword, limit, offset });
+    const { rows, total } = await getLatestWaterLevelReadingsPage({ keyword, region, limit, offset });
     return NextResponse.json({ stations: rows, total }, { headers: NO_CACHE_HEADERS });
   } catch (error) {
     console.error("GET /api/wra-water-level failed:", error);
