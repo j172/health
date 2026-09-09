@@ -257,6 +257,9 @@ export default function SiteFooter() {
                 {localizeTitle(tool)}
               </FooterLink>
             ))}
+            <FooterLink href="/tools/disaster-map">
+              {t("nav.disasterMap", "防災地圖")}
+            </FooterLink>
           </FooterColumn>
 
           <FooterColumn label={t("footer.food", "食品營養")}>

@@ -16,7 +16,8 @@
     "healthTools": "Health Tools",
     "weather": "Environmental Monitoring",
     "searchPlaceholder": "Search news...",
-    "publicServices": "Public Services"
+    "publicServices": "Public Services",
+    "disasterMap": "Disaster Preparedness Map"
   },
   "tools": {
     "water": "Water Intake Calculator",
@@ -80,7 +81,8 @@
     "carbon-footprint-coefficients": "Carbon Footprint Emission Coefficients Lookup",
     "aqx-monitoring": "Extended Air Quality Monitoring Data (AQX Series)",
     "water-level-stations": "Real-Time Water Level Station Finder",
-    "reservoir-status": "Real-Time Reservoir Operations Status"
+    "reservoir-status": "Real-Time Reservoir Operations Status",
+    "disaster-map": "Disaster Shelter & Rescue Unit Map"
   },
   "categories": {
     "gov": "Government Agencies",
