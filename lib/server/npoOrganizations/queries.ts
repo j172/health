@@ -21,6 +21,9 @@ export interface NpoOrganizationItem {
   contact?: string | null;
   lat?: number | null;
   lng?: number | null;
+  hasProducts?: boolean;
+  storeUrl?: string | null;
+  productNote?: string | null;
 }
 
 export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
@@ -36,6 +39,9 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
   let workFocus: string | null = null;
   let serviceArea: string | null = null;
   let contact: string | null = null;
+  let hasProducts: boolean = false;
+  let storeUrl: string | null = null;
+  let productNote: string | null = null;
 
   if (r.extra_json) {
     try {
@@ -52,6 +58,9 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
       if (extra.workFocus) workFocus = extra.workFocus;
       if (extra.serviceArea) serviceArea = extra.serviceArea;
       if (extra.contact) contact = extra.contact;
+      if (extra.hasProducts === true || extra.hasProducts === "true") hasProducts = true;
+      if (extra.storeUrl) storeUrl = extra.storeUrl;
+      if (extra.productNote) productNote = extra.productNote;
     } catch {
       // fallback
     }
@@ -94,8 +103,21 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
     contact,
     lat: r.lat ? Number(r.lat) : null,
     lng: r.lng ? Number(r.lng) : null,
+    hasProducts,
+    storeUrl,
+    productNote,
   };
 };
+
+const ORDER_BY_PRIORITY = `
+  ORDER BY
+    CASE
+      WHEN extra_json->>'$.hasProducts' = 'true' THEN 1
+      WHEN source_key = 'npo_tw' OR extra_json->>'$.npoCenterOrgid' IS NOT NULL THEN 2
+      ELSE 3
+    END ASC,
+    id DESC
+`;
 
 export const getRecentNpoOrganizations = async (
   limit = 30,
@@ -106,7 +128,7 @@ export const getRecentNpoOrganizations = async (
       `SELECT id, name, address, phone, lat, lng, service_item, service_time, extra_json
        FROM facilities
        WHERE facility_type IN ('npo', 'tax_organization')
-       ORDER BY id DESC
+       ${ORDER_BY_PRIORITY}
        LIMIT ? OFFSET ?`,
       [limit, offset],
     );
@@ -114,10 +136,13 @@ export const getRecentNpoOrganizations = async (
   });
 
 /** Total npo & tax_organization rows for pagination. */
-export const countNpoOrganizations = async (): Promise<number> =>
+export const countNpoOrganizations = async (hasProducts?: boolean): Promise<number> =>
   withConnection(async (conn) => {
+    const where = hasProducts
+      ? `WHERE facility_type IN ('npo', 'tax_organization') AND extra_json->>'$.hasProducts' = 'true'`
+      : `WHERE facility_type IN ('npo', 'tax_organization')`;
     const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT COUNT(*) AS total FROM facilities WHERE facility_type IN ('npo', 'tax_organization')`,
+      `SELECT COUNT(*) AS total FROM facilities ${where}`,
     );
     return Number(rows[0]?.total ?? 0);
   });
@@ -126,6 +151,7 @@ export interface SearchNpoOrganizationsParams {
   keyword?: string;
   city?: string;
   attribute?: string;
+  hasProducts?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -134,9 +160,14 @@ const buildSearchNpoOrganizationsWhere = ({
   keyword,
   city,
   attribute,
-}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute">) => {
+  hasProducts,
+}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts">) => {
   const conditions: string[] = ["facility_type IN ('npo', 'tax_organization')"];
   const params: unknown[] = [];
+
+  if (hasProducts) {
+    conditions.push("extra_json->>'$.hasProducts' = 'true'");
+  }
 
   if (keyword) {
     conditions.push(
@@ -162,16 +193,22 @@ export const searchNpoOrganizations = async ({
   keyword,
   city,
   attribute,
+  hasProducts,
   limit = 50,
   offset = 0,
 }: SearchNpoOrganizationsParams): Promise<NpoOrganizationItem[]> =>
   withConnection(async (conn) => {
-    const { whereClause, params } = buildSearchNpoOrganizationsWhere({ keyword, city, attribute });
+    const { whereClause, params } = buildSearchNpoOrganizationsWhere({
+      keyword,
+      city,
+      attribute,
+      hasProducts,
+    });
     const query = `
       SELECT id, name, address, phone, lat, lng, service_item, service_time, extra_json
       FROM facilities
       ${whereClause}
-      ORDER BY id DESC
+      ${ORDER_BY_PRIORITY}
       LIMIT ? OFFSET ?
     `;
     params.push(limit, offset);
@@ -184,9 +221,15 @@ export const countSearchNpoOrganizations = async ({
   keyword,
   city,
   attribute,
-}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute">): Promise<number> =>
+  hasProducts,
+}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts">): Promise<number> =>
   withConnection(async (conn) => {
-    const { whereClause, params } = buildSearchNpoOrganizationsWhere({ keyword, city, attribute });
+    const { whereClause, params } = buildSearchNpoOrganizationsWhere({
+      keyword,
+      city,
+      attribute,
+      hasProducts,
+    });
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT COUNT(*) AS total FROM facilities ${whereClause}`,
       params,

@@ -60,20 +60,24 @@ export async function GET(request: NextRequest) {
   const keyword = params.get("keyword")?.trim() || undefined;
   const city = params.get("city")?.trim() || undefined;
   const attribute = params.get("attribute")?.trim() || undefined;
+  const hasProducts = params.get("hasProducts") === "true";
   const { limit, offset } = resolvePaging(params);
 
   try {
     const hasFilter =
-      keyword || (city && city !== "全部縣市") || (attribute && attribute !== "全部屬性");
+      keyword ||
+      (city && city !== "全部縣市") ||
+      (attribute && attribute !== "全部屬性") ||
+      hasProducts;
 
     const [items, total] = hasFilter
       ? await Promise.all([
-          searchNpoOrganizations({ keyword, city, attribute, limit, offset }),
-          countSearchNpoOrganizations({ keyword, city, attribute }),
+          searchNpoOrganizations({ keyword, city, attribute, hasProducts, limit, offset }),
+          countSearchNpoOrganizations({ keyword, city, attribute, hasProducts }),
         ])
       : await Promise.all([
           getRecentNpoOrganizations(limit, offset),
-          countNpoOrganizations(),
+          countNpoOrganizations(hasProducts),
         ]);
 
     return NextResponse.json({ items, total }, { headers: NO_CACHE_HEADERS });

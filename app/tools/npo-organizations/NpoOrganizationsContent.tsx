@@ -56,6 +56,7 @@ export default function NpoOrganizationsContent() {
   const [searchedFor, setSearchedFor] = useState("");
   const [city, setCity] = useState("全部縣市");
   const [attribute, setAttribute] = useState("全部屬性");
+  const [onlyProducts, setOnlyProducts] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
 
   const { page, pageSize, setPage, setPageSize } = usePagination();
@@ -70,6 +71,7 @@ export default function NpoOrganizationsContent() {
         if (searchedFor) params.set("keyword", searchedFor);
         if (city && city !== "全部縣市") params.set("city", city);
         if (attribute && attribute !== "全部屬性") params.set("attribute", attribute);
+        if (onlyProducts) params.set("hasProducts", "true");
 
         const res = await fetch(`/api/npo-organizations?${params.toString()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -92,7 +94,7 @@ export default function NpoOrganizationsContent() {
     return () => {
       cancelled = true;
     };
-  }, [searchedFor, city, attribute, page, pageSize, retryNonce]);
+  }, [searchedFor, city, attribute, onlyProducts, page, pageSize, retryNonce]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,11 +117,15 @@ export default function NpoOrganizationsContent() {
     setSearchedFor("");
     setCity("全部縣市");
     setAttribute("全部屬性");
+    setOnlyProducts(false);
     setPage(1);
   };
 
   const isFiltered = Boolean(
-    searchedFor || (city && city !== "全部縣市") || (attribute && attribute !== "全部屬性"),
+    searchedFor ||
+      (city && city !== "全部縣市") ||
+      (attribute && attribute !== "全部屬性") ||
+      onlyProducts,
   );
 
   return (
@@ -189,6 +195,24 @@ export default function NpoOrganizationsContent() {
                 </option>
               ))}
             </select>
+
+            {/* Charity Products Quick Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                setOnlyProducts(!onlyProducts);
+                setPage(1);
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition ${
+                onlyProducts
+                  ? "bg-amber-500 text-white shadow-xs hover:bg-amber-600"
+                  : "border border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-100 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-300 dark:hover:bg-amber-950/50"
+              }`}
+              title="只顯示販售公益商品、庇護工場與愛心禮盒之機構"
+            >
+              <span>🎁</span>
+              <span>{onlyProducts ? "顯示全部組織" : "僅看公益商品"}</span>
+            </button>
 
             <button
               type="submit"
@@ -323,6 +347,11 @@ export default function NpoOrganizationsContent() {
                   <span className="inline-flex items-center rounded-md bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700 dark:bg-teal-950/60 dark:text-teal-300">
                     {item.city}
                   </span>
+                  {item.hasProducts && (
+                    <span className="inline-flex items-center rounded-md bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-800 dark:bg-amber-950/80 dark:text-amber-200">
+                      🎁 販售公益商品
+                    </span>
+                  )}
                   {item.orgAttribute && (
                     <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-950/60 dark:text-purple-300">
                       {item.orgAttribute}
@@ -339,6 +368,13 @@ export default function NpoOrganizationsContent() {
                 <h3 className="mt-2.5 text-base font-bold text-neutral-900 group-hover:text-teal-600 dark:text-neutral-100 dark:group-hover:text-teal-400 leading-snug">
                   {item.name}
                 </h3>
+
+                {/* Product Note */}
+                {item.productNote && (
+                  <div className="mt-2 rounded-lg border border-amber-200/80 bg-amber-50/70 px-2.5 py-1.5 text-xs font-medium text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
+                    🛍️ {item.productNote}
+                  </div>
+                )}
 
                 {/* Purpose or Reason summary */}
                 {(item.purpose || item.workFocus || item.reason) && (
@@ -375,6 +411,19 @@ export default function NpoOrganizationsContent() {
 
                 {/* Interactive Action Links */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {item.storeUrl && (
+                    <a
+                      href={item.storeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white shadow-2xs hover:bg-amber-600 transition"
+                      title={item.productNote || "前往公益商城 / 訂購禮盒"}
+                    >
+                      <span>🎁</span>
+                      <span>公益商品 / 商城</span>
+                    </a>
+                  )}
+
                   {item.website && (
                     <a
                       href={item.website}
