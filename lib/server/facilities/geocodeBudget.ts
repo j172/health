@@ -12,15 +12,26 @@ import { utcNowSql } from "@/lib/server/db/mysql";
  * process-restarts-on-deploy rationale.
  */
 
-export type GeocodeProvider = "opencage" | "nominatim";
+// "opencage2" is a second, independent OpenCage account/key (see
+// geocodeProviders.ts's queryOpenCage2) tracked as its own provider — same
+// shape as "opencage", own row in geocode_provider_budget, own circuit
+// breaker — so key1 tripping (402/429) doesn't take key2 down with it.
+// Added 2026-09-09 to raise the facility batch job's + news geo-extractor's
+// combined daily OpenCage capacity; OPENCAGE_API_KEY2 unset just means this
+// provider is always exhausted (see isBudgetExhausted below — no row ever
+// gets written for it).
+export type GeocodeProvider = "tgos" | "opencage" | "opencage2" | "nominatim";
 
-// Deliberately below each provider's actual documented cap (OpenCage's own
-// free-tier quota is 2,500/day; Nominatim's public-instance usage policy is
-// ~1 req/sec with no hard daily count) — the agreed policy caps requests
-// well under those limits so a single day's batch run never risks tipping a
-// shared-instance provider into blocking this app's IP/key outright.
+// Deliberately below each provider's actual documented cap (TGOS standard cap
+// is 10,000/day; OpenCage's free-tier quota is 2,500/day; Nominatim's
+// public-instance usage policy is ~1 req/sec with no hard daily count) — the
+// agreed policy caps requests well under those limits so a single day's batch
+// run never risks tipping a shared-instance provider into blocking this app's
+// IP/key outright.
 export const DAILY_BUDGET: Record<GeocodeProvider, number> = {
+  tgos: 5000,
   opencage: 1400,
+  opencage2: 1400,
   nominatim: 1000,
 };
 
@@ -58,6 +69,22 @@ export const isBudgetExhausted = (state: Map<GeocodeProvider, GeocodeBudgetState
   if (!row) return false;
   return row.circuitBroken || row.requestsUsed >= DAILY_BUDGET[provider];
 };
+
+/** Whether TGOS credentials (TGOS_APP_ID/TGOS_APPID and TGOS_API_KEY) are configured. */
+export const isTgosConfigured = (): boolean => Boolean((process.env.TGOS_APP_ID || process.env.TGOS_APPID) && process.env.TGOS_API_KEY);
+
+/** Whether OPENCAGE_API_KEY2 is set. Unconfigured means "opencage2" never gets a budget row written for it, so isBudgetExhausted alone would read it as perpetually "not exhausted" (no row = false) rather than "doesn't exist" — callers must gate every opencage2 attempt/check on this too. */
+export const isOpenCage2Configured = (): boolean => Boolean(process.env.OPENCAGE_API_KEY2);
+
+/** Whether OpenCage capacity — key1 and, if configured, key2 — is entirely spent for today. The single source of truth for "is there any more OpenCage budget at all", used both to gate individual attempts and to decide when the caller should give up on OpenCage and fall to Nominatim. */
+export const isOpenCageCapacityExhausted = (state: Map<GeocodeProvider, GeocodeBudgetState>): boolean =>
+  isBudgetExhausted(state, "opencage") && (!isOpenCage2Configured() || isBudgetExhausted(state, "opencage2"));
+
+/** Whether all external geocoding providers (TGOS, OpenCage, Nominatim) are exhausted for today. */
+export const isAllProvidersCapacityExhausted = (state: Map<GeocodeProvider, GeocodeBudgetState>): boolean =>
+  (!isTgosConfigured() || isBudgetExhausted(state, "tgos")) &&
+  isOpenCageCapacityExhausted(state) &&
+  isBudgetExhausted(state, "nominatim");
 
 /** Records one request against `provider`'s today counter (call once per actual network request, success or failure alike — only the circuit breaker below distinguishes a quota/rate error). */
 export const recordGeocodeRequest = async (conn: PoolConnection, state: Map<GeocodeProvider, GeocodeBudgetState>, provider: GeocodeProvider): Promise<void> => {
