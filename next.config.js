@@ -63,6 +63,11 @@ const nextConfig = {
         destination: "/tools/hakka-bogong",
         permanent: true,
       },
+      {
+        source: "/tools/tax-organizations",
+        destination: "/tools/npo-organizations",
+        permanent: true,
+      },
     ];
   },
 };
