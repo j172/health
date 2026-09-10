@@ -47,10 +47,11 @@ yarn-error.log*
 # SSH credentials
 /.ssh/
 
-# runtime-downloaded card images (Pixabay/Pexels/Unsplash), generated static maps, and re-hosted article images
+# runtime-downloaded card images (Pixabay/Pexels/Unsplash/Flickr), generated static maps, and re-hosted article images
 /public/images/news/pixabay/
 /public/images/news/pexels/
 /public/images/news/unsplash/
+/public/images/news/flickr/
 /public/images/news/articles/
 /public/images/news/maps/
 

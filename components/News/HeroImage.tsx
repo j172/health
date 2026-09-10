@@ -9,6 +9,7 @@ const PROVIDER_LABELS: Record<HeroImageAttribution["provider"], string> = {
   pixabay: "Pixabay",
   pexels: "Pexels",
   unsplash: "Unsplash",
+  flickr: "Flickr",
 };
 
 /**

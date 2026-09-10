@@ -1018,8 +1018,8 @@ if (str_starts_with($path, '/__ops/')) {
             // articles/ had simply lost its owner write bit. 0755 restores it and
             // states the intended mode outright instead of adding bits to whatever
             // the directory happened to have.
-            . "&& { mkdir -p public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash "
-            . "&& chmod 0755 public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash || true; } >> .apply-prebuilt.log 2>&1 "
+            . "&& { mkdir -p public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash public/images/news/flickr "
+            . "&& chmod 0755 public/images/news/articles public/images/news/maps public/images/news/pixabay public/images/news/pexels public/images/news/unsplash public/images/news/flickr || true; } >> .apply-prebuilt.log 2>&1 "
             // Record who actually owns these afterwards. chmod only succeeds for the
             // owner, so if the EACCES persists this line is what tells us whether the
             // chmod was refused and a manual chown is required.
@@ -1887,6 +1887,14 @@ if (str_starts_with($path, '/images/news/articles/')) {
         rawurldecode(substr($path, strlen('/images/news/articles/'))),
         '/home/tw123457/health_app/public/images/news/articles',
         ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif'],
+    );
+}
+
+if (str_starts_with($path, '/images/news/flickr/')) {
+    $serveNewsAsset(
+        rawurldecode(substr($path, strlen('/images/news/flickr/'))),
+        '/home/tw123457/health_app/public/images/news/flickr',
+        ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'],
     );
 }
 

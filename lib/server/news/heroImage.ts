@@ -1,6 +1,6 @@
 import type { NewsAssetItem, NewsDetailItem } from "@/lib/server/news/queries";
 
-export type HeroImageProvider = "pixabay" | "pexels" | "unsplash";
+export type HeroImageProvider = "pixabay" | "pexels" | "unsplash" | "flickr";
 
 export interface HeroImageAttribution {
   contributorName: string | null;
@@ -14,14 +14,14 @@ export interface ResolvedHeroImage {
   caption: string | null;
   /**
    * Photographer/source-page credit for a stock-photo hero (Pixabay/Pexels/
-   * Unsplash) — required by Unsplash's API Guidelines whenever one of their
-   * photos is displayed, and applied to all three providers for consistency
+   * Unsplash/Flickr) — required by Unsplash's API Guidelines whenever one of their
+   * photos is displayed, and applied to all providers for consistency
    * (see docs/specs/news-card-image-multi-provider-fallback.md section 3).
    */
   attribution: HeroImageAttribution | null;
 }
 
-const STOCK_PHOTO_PROVIDERS: readonly HeroImageProvider[] = ["pixabay", "pexels", "unsplash"];
+const STOCK_PHOTO_PROVIDERS: readonly HeroImageProvider[] = ["pixabay", "pexels", "unsplash", "flickr"];
 
 const isStockPhotoProvider = (value: string | null): value is HeroImageProvider =>
   value !== null && (STOCK_PHOTO_PROVIDERS as readonly string[]).includes(value);
