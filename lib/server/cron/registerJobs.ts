@@ -9,6 +9,7 @@ import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
+import { runNpoActivitiesSync } from "@/lib/server/culture/ingestNpoActivities";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
@@ -128,7 +129,11 @@ export const registerCronJobs = (): void => {
   // Cultural events sync every 6 hours (at :10 past)
   cron.schedule(
     "10 0,6,12,18 * * *",
-    runGuarded("culture-shows-cron.log", () => runCulturalShowsSync()),
+    runGuarded("culture-shows-cron.log", async () => {
+      const shows = await runCulturalShowsSync();
+      const npo = await runNpoActivitiesSync();
+      return { shows, npo };
+    }),
   );
   // Public art sync daily at 3am
   cron.schedule(

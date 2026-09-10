@@ -38,6 +38,7 @@ const CATEGORY_TABS = [
   { key: "4", label: "親子活動", icon: "🎨" },
   { key: "7", label: "講座工作坊", icon: "🎤" },
   { key: "8", label: "電影沉浸", icon: "🎬" },
+  { key: "npo", label: "公益活動", icon: "🤝" },
 ];
 
 export default function CulturalEventsContent() {

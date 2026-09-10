@@ -40,6 +40,15 @@ import { fetchSungfulKnowledge } from "@/lib/server/rss/fetchSungfulKnowledge";
 import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
 import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
 import { fetchTaseNews } from "@/lib/server/rss/fetchTaseNews";
+import {
+  fetchAmnestyNews,
+  fetchNpoHotMsg,
+  fetchDownSyndromeNews,
+  fetchWorldVisionArticles,
+  fetchSyinluNews,
+  fetchWorldPeaceNews,
+  fetchGreenpeaceNews,
+} from "@/lib/server/rss/fetchNpoSources";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
   FRESHNESS_WINDOW_DAYS,
@@ -688,6 +697,82 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += taseResult.skippedUnchanged;
       staleRejected += taseResult.staleRejected;
+
+      // -----------------------------------------------------------------------
+      // NPO / NGO Sources: Amnesty, NPO Center, Down Syndrome, World Vision,
+      // Syin-Lu, World Peace, Greenpeace
+      // -----------------------------------------------------------------------
+      const npoSources = [
+        {
+          meta: {
+            code: "amnesty_news" as FeedCode,
+            name: "國際特赦組織台灣分會",
+            url: "https://www.amnesty.tw/news",
+            sourceName: "amnesty",
+          },
+          fetchFn: fetchAmnestyNews,
+        },
+        {
+          meta: {
+            code: "npo_hotmsg" as FeedCode,
+            name: "台灣公益資訊中心",
+            url: "https://www.npo.org.tw/hotmsglist.aspx?tid=127",
+            sourceName: "npo_tw",
+          },
+          fetchFn: fetchNpoHotMsg,
+        },
+        {
+          meta: {
+            code: "down_syndrome_news" as FeedCode,
+            name: "唐氏症基金會",
+            url: "https://www.rocdown-syndrome.org.tw/news/all/1",
+            sourceName: "down_syndrome",
+          },
+          fetchFn: fetchDownSyndromeNews,
+        },
+        {
+          meta: {
+            code: "worldvision_articles" as FeedCode,
+            name: "台灣世界展望會",
+            url: "https://www.worldvision.org.tw/articles/category/7",
+            sourceName: "worldvision",
+          },
+          fetchFn: fetchWorldVisionArticles,
+        },
+        {
+          meta: {
+            code: "syinlu_news" as FeedCode,
+            name: "心路基金會",
+            url: "https://www.syinlu.org.tw/news/index",
+            sourceName: "syinlu",
+          },
+          fetchFn: fetchSyinluNews,
+        },
+        {
+          meta: {
+            code: "worldpeace" as FeedCode,
+            name: "世界和平會",
+            url: "https://www.worldpeace.org.tw/news_msg.php",
+            sourceName: "worldpeace",
+          },
+          fetchFn: fetchWorldPeaceNews,
+        },
+        {
+          meta: {
+            code: "greenpeace" as FeedCode,
+            name: "綠色和平",
+            url: "https://www.greenpeace.org/taiwan/press-media/press-releases/",
+            sourceName: "greenpeace",
+          },
+          fetchFn: fetchGreenpeaceNews,
+        },
+      ];
+
+      for (const { meta, fetchFn } of npoSources) {
+        const res = await processSpecialSource(meta, fetchFn, specialSourceCtx);
+        skippedUnchanged += res.skippedUnchanged;
+        staleRejected += res.staleRejected;
+      }
 
       const persisted = await persistItems(enrichedItems);
       persisted.unchanged += skippedUnchanged;

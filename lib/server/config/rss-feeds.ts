@@ -293,4 +293,11 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://feeds.feedburner.com/lianhonghong",
     sourceName: "lianhonghong",
   },
+  {
+    code: "goh_news",
+    name: "勵馨基金會",
+    url: "https://www.goh.org.tw/feed/",
+    sourceName: "goh",
+    skipDetailFetch: true,
+  },
 ];

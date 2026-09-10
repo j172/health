@@ -13,7 +13,7 @@ const TAIWAN_CITIES = [
   "臺東縣", "台東縣", "澎湖縣", "金門縣", "連江縣",
 ];
 
-function extractCity(locationStr: string, locationNameStr: string): string {
+export function extractCity(locationStr: string, locationNameStr: string): string {
   const combined = `${locationStr} ${locationNameStr}`;
   for (const c of TAIWAN_CITIES) {
     if (combined.includes(c)) {

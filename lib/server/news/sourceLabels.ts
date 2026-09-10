@@ -66,6 +66,12 @@ const SOURCE_LABELS: Record<string, string> = {
   mamibuy: "媽咪拜",
   tasctaiwan: "台灣性諮商學會",
   tase: "台灣性教育學會",
+  amnesty: "國際特赦組織台灣分會",
+  npo_tw: "台灣公益資訊中心",
+  down_syndrome: "唐氏症基金會",
+  worldvision: "台灣世界展望會",
+  goh: "勵馨基金會",
+  syinlu: "心路基金會",
 };
 
 export interface SourceLabelInput {
