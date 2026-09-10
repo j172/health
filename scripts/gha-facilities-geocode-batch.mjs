@@ -50,11 +50,20 @@ const callBatch = () => {
     "-d {}",
   ].join(" ");
 
-  const result = ssh.call(remote);
+  const result = ssh.call(remote, { retries: 3, retryDelayMs: 4000 });
 
   if (result.error) throw result.error;
   if (result.status === 255) {
     return { ok: false, hostLveSaturated: true, status: 255 };
+  }
+  const isConnectionRefused =
+    result.status === 7 ||
+    result.status === 52 ||
+    /Failed to connect|Connection refused|Empty reply from server/i.test(
+      result.stderr || "",
+    );
+  if (isConnectionRefused) {
+    return { ok: false, hostWebOffline: true, status: result.status };
   }
   const out = (result.stdout || "").trim();
   const lines = out.split(/\r?\n/).filter((l) => l.trim().startsWith("{"));
@@ -80,6 +89,12 @@ const main = async () => {
       if (response.hostLveSaturated) {
         console.warn(
           "Host SSH / LVE process limit saturated (exit 255). Exiting batch runner gracefully (exit 0) to allow host recovery.",
+        );
+        break;
+      }
+      if (response.hostWebOffline) {
+        console.warn(
+          `Host 127.0.0.1:3000 temporarily unreachable (health-web restarting/offline, exit ${response.status}). Exiting batch runner gracefully (exit 0) to allow pm2 watchdog to recover.`,
         );
         break;
       }
