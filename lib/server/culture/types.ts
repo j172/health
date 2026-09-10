@@ -53,6 +53,7 @@ export const CATEGORY_LABELS: Record<string, string> = {
   "7": "🎤 講座工作坊",
   "8": "🎬 電影與沉浸",
   "17": "✨ 綜藝節慶",
+  npo: "🤝 公益活動",
 };
 
 export const ALL_CATEGORIES = ["6", "1", "2", "3", "4", "7", "8"];
