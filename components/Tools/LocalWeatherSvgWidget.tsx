@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { GEO_DEFAULTS, resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
 
 interface StationWeather {
   station_id: string;
@@ -111,13 +112,16 @@ export default function LocalWeatherSvgWidget() {
     };
 
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeather(25.033, 121.5654), // Default Taipei
-        { timeout: 8000 }
-      );
+      resolveGeolocationTimeout(8000).then(({ timeoutMs }) => {
+        if (!isMounted) return;
+        navigator.geolocation.getCurrentPosition(
+          (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+          () => fetchWeather(GEO_DEFAULTS.lat, GEO_DEFAULTS.lng),
+          { timeout: timeoutMs }
+        );
+      });
     } else {
-      fetchWeather(25.033, 121.5654);
+      fetchWeather(GEO_DEFAULTS.lat, GEO_DEFAULTS.lng);
     }
 
     return () => {

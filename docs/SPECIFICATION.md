@@ -102,7 +102,7 @@
 
 ### 5.1 Sorting Rule
 
-All 31 entries in `TOOL_CATALOG` (`lib/server/tools/catalog.ts`), every category on `/tools`, and all 8 link columns in `SiteFooter` (`components/News/SiteFooter.tsx`) are sorted by the first character using standard Traditional Chinese collation. The comparator is exported once as `compareToolTitles`, and `toolsInGroup(group, label)` applies it to a group — passing the _localized_ label, so the English footer is collated by what it actually renders:
+All 54 entries in `TOOL_CATALOG` (`lib/server/tools/catalog.ts`), every category on `/tools`, and all 7 link columns in `SiteFooter` (`components/News/SiteFooter.tsx`) are sorted by the first character using standard Traditional Chinese collation. The comparator is exported once as `compareToolTitles`, and `toolsInGroup(group, label)` applies it to a group — passing the _localized_ label, so the English footer is collated by what it actually renders:
 
 ```ts
 items.sort((a, b) =>
@@ -112,19 +112,18 @@ items.sort((a, b) =>
 
 ### 5.2 Category Ordering
 
-Eight footer columns: 全站總覽 (static links) plus one per `ToolGroup`. Ordering within a column is the 5.1 comparator applied to the **displayed** label, via `toolsInGroup(group, label)` — which is what keeps the English footer collated by the English titles it renders.
+Eight footer columns total: 全站總覽 (static links, not tied to a `ToolGroup`) plus one column for each of the 7 `ToolGroup` members that render their own footer section — every group except `disaster-preparedness`, whose 1 entry surfaces as a single link inside 環境監測 (weather) rather than a column of its own. Ordering within a column is the 5.1 comparator applied to the **displayed** label, via `toolsInGroup(group, label)` — which is what keeps the English footer collated by the English titles it renders.
 
 1. **全站總覽 (Overview)**: 首頁 ➔ 健康新聞列表 ➔ 隱私權政策
 2. **醫療院所 (Medical Facilities)** (5): 健康檢查機構查詢 ➔ 居家醫療查詢 ➔ 藥品查詢 ➔ 藥局查詢 ➔ 醫療院所查詢
 3. **長照機構 (LTC Facilities)** (4): 客家委員會「伯公照護站」查詢 ➔ 老人福利機構查詢 ➔ 長照機構查詢 ➔ 長照特約服務機構查詢
 4. **身心障礙 (Disability Services)** (2): 信用合作社無障礙ATM查詢 ➔ 身心障礙福利機構查詢
 5. **兒少福利 (Child & Youth Welfare)** (6): 兒少福利中心查詢 ➔ 全國幼兒園查詢 ➔ 全國短期補習班查詢 ➔ 全國親子館查詢 ➔ 全國親子藝文活動查詢 ➔ 婦幼安全警示地點查詢
-6. **便民服務 (Public Services)** (5): 全國公廁查詢 ➔ 信用合作社無障礙ATM查詢 ➔ 國際旅遊疫情與即時情報地圖 ➔ 非營利組織(NPO)查詢 ➔ 綠色商店查詢
-7. **氣象觀測 (Weather & Hazards)** (3): 全台即時紫外線指數 (UV) ➔ 台灣與全球顯著地震查詢 ➔ 即時氣象警報與降雨資訊
-8. **食品營養 (Food & Nutrition)** (2): 食品業者登錄查詢 ➔ 食品營養成分查詢
-9. **健康算盤與工具 (Health Tools)** (14): AQI 空氣品質即時查詢 ➔ BMI 計算器 ➔ VO2Max 估算器 ➔ 卡路里需求計算器 ➔ 去脂體重 (LBM) 計算器 ➔ 壓力評估測驗 ➔ 每日營養素建議計算器 ➔ 目標心率計算器 ➔ 睡眠品質評估 ➔ 腰臀比計算器 ➔ 血壓分析器 ➔ 飲水量計算器 ➔ 體脂率計算器
+6. **便民服務 (Public Services)** (12): 文化資產地圖：古蹟／歷史建築／考古遺址查詢 ➔ 全國公共藝術地圖查詢 ➔ 全國公廁查詢 ➔ 全國涼適點查詢 ➔ 全國藝文展覽與活動查詢 ➔ 地方清潔隊聯絡資訊查詢 ➔ 非營利組織(NPO)查詢 ➔ 室內空氣品質法公告場所查詢 ➔ 國際旅遊疫情與即時情報地圖 ➔ 產品碳足跡標籤查詢 ➔ 碳足跡排放係數查詢 ➔ 綠色商店查詢 (recounted from the live catalog while fixing issue #176's stale counts nearby; this section had drifted independently of that issue — it was undercounting at 5 and, in the previous revision of this doc, wrongly included 信用合作社無障礙ATM查詢, which is actually in the `disability` group, see item 4)
+7. **環境監測 (Weather & Hazards)** (10): 台灣與全球顯著地震查詢 ➔ 全台水位站即時水位查詢 ➔ 全台水庫即時營運狀況查詢 ➔ 全台即時紫外線指數 (UV) ➔ 即時氣象警報與降雨資訊 ➔ 空氣品質延伸監測資料查詢（AQX 系列）➔ 環保標章旅館與綠色住宿查詢 ➔ 環保標章產品查詢 ➔ 環保餐廳查詢 ➔ AQI 空氣品質即時查詢 (issue #176 moved 環保標章旅館與綠色住宿查詢/環保標章產品查詢/環保餐廳查詢 here from 便民服務; `green-shops` deliberately stayed in 便民服務. This section was also undercounting at 3 before this fix, missing several tools added by earlier unrelated features.)
+8. **健康算盤與工具 (Health Tools)** (14): 卡路里需求計算器 ➔ 去脂體重 (LBM) 計算器 ➔ 目標心率計算器 ➔ 血壓分析器 ➔ 每日營養素建議計算器 ➔ 食品業者登錄查詢 ➔ 食品營養成分查詢 ➔ 飲水量計算器 ➔ 睡眠品質評估 ➔ 腰臀比計算器 ➔ 壓力評估測驗 ➔ 體脂率計算器 ➔ BMI 計算器 ➔ VO2Max 估算器 (issue #176 merged the former 食品營養 group's 食品業者登錄查詢/食品營養成分查詢 in here — that group no longer exists; this list also drops AQI 空氣品質即時查詢, which the previous version of this doc listed here in error — AQI has only ever been in the weather group, see item 7)
 
-Total: 37 tools across 8 groups. (Listed here in codepoint order for readability; the exact runtime order is whatever `localeCompare(…, "zh-Hant", { numeric: true })` yields.)
+Total: 54 tools across 8 `ToolGroup` values — the 7 listed above plus `disaster-preparedness` (1 entry, no dedicated footer column). (Listed here in codepoint order for readability; the exact runtime order is whatever `localeCompare(…, "zh-Hant", { numeric: true })` yields.)
 
 ---
 

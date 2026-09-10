@@ -36,11 +36,6 @@ const PUBLIC_FACILITY_TOOLS = TOOL_CATALOG.filter(
 const WEATHER_TOOLS = TOOL_CATALOG.filter(
   (t) => t.group === "weather",
 ).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
-const FOOD_TOOLS = TOOL_CATALOG.filter((t) => t.group === "food").map((t) => ({
-  href: `/tools/${t.slug}`,
-  slug: t.slug,
-  title: t.title,
-}));
 
 interface NavLinkItem {
   href: string;
@@ -153,7 +148,6 @@ export default function SiteNav() {
   const disabilityItems = localizeItems(DISABILITY_TOOLS);
   const publicFacilityItems = localizeItems(PUBLIC_FACILITY_TOOLS);
   const weatherItems = localizeItems(WEATHER_TOOLS);
-  const foodItems = localizeItems(FOOD_TOOLS);
   const calculatorItems = localizeItems(CALCULATOR_TOOLS);
 
   useEffect(() => {
@@ -245,10 +239,6 @@ export default function SiteNav() {
               <NavDropdown
                 label={t("nav.publicServices", "便民服務")}
                 items={publicFacilityItems}
-              />
-              <NavDropdown
-                label={t("nav.food", "食品營養")}
-                items={foodItems}
               />
               <NavDropdown
                 label={t("nav.weather", "環境監測")}
@@ -374,10 +364,6 @@ export default function SiteNav() {
               {
                 heading: t("nav.publicServices", "便民服務"),
                 items: publicFacilityItems,
-              },
-              {
-                heading: t("nav.food", "食品營養"),
-                items: foodItems,
               },
               {
                 heading: t("nav.weather", "環境監測"),

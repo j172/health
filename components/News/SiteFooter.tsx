@@ -137,7 +137,6 @@ export default function SiteFooter() {
   const childWelfareTools = toolsInGroup("child-welfare", localizeTitle);
   const publicFacilityTools = toolsInGroup("public-facility", localizeTitle);
   const weatherTools = toolsInGroup("weather", localizeTitle);
-  const foodTools = toolsInGroup("food", localizeTitle);
 
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -202,7 +201,7 @@ export default function SiteFooter() {
         </div>
 
         {/* Links Grid */}
-        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9 dark:border-slate-900">
+        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 dark:border-slate-900">
           <FooterColumn label={t("footer.overview", "全站總覽")}>
             {overviewLinks.map((item) => (
               <FooterLink key={item.href} href={item.href}>
@@ -260,14 +259,6 @@ export default function SiteFooter() {
             <FooterLink href="/tools/disaster-map">
               {t("nav.disasterMap", "防災地圖")}
             </FooterLink>
-          </FooterColumn>
-
-          <FooterColumn label={t("footer.food", "食品營養")}>
-            {foodTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
           </FooterColumn>
 
           <FooterColumn label={t("footer.calculatorTools", "健康算盤與工具")}>

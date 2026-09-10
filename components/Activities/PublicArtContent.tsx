@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import type { PublicArtItem } from "@/app/api/culture/public-art/route";
+import { resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -120,12 +121,13 @@ export default function PublicArtContent() {
     });
   }, [loadData]);
 
-  const handleUseGps = () => {
+  const handleUseGps = async () => {
     if (!navigator.geolocation) {
       alert("您的瀏覽器不支援定位功能。");
       return;
     }
     setGpsLoading(true);
+    const { timeoutMs } = await resolveGeolocationTimeout(10000);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -137,7 +139,7 @@ export default function PublicArtContent() {
         setGpsLoading(false);
         alert(`無法取得位置：${err.message}`);
       },
-      { timeout: 10000, enableHighAccuracy: true }
+      { timeout: timeoutMs, enableHighAccuracy: true }
     );
   };
 

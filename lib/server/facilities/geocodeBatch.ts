@@ -17,6 +17,7 @@ import {
   type GeocodeBudgetState,
   type GeocodeProvider,
 } from "@/lib/server/facilities/geocodeBudget";
+import { loadRotatedSources, saveRotationCursor } from "@/lib/server/facilities/geocodeSourceRotation";
 
 /**
  * Unified, budget-aware geocode batch runner for all 16 facility sources
@@ -42,7 +43,14 @@ const RESET_FLAG_KEY = "geocode_attempts_reset_tgos_v1";
 // this job's cascade is deeper (3 candidates vs. that route's None-until-now),
 // so it needs an even smaller cap.
 const MAX_FACILITIES_PER_INVOCATION = 8;
-const PER_SOURCE_FETCH_LIMIT = 8;
+// Caps how many rows a single source can claim out of one invocation's
+// MAX_FACILITIES_PER_INVOCATION budget, so no one high-backlog source can
+// exhaust an entire invocation and starve every source behind it in
+// SOURCES_IN_PRIORITY (confirmed 2026-09-09 — see geocodeSourceRotation.ts's
+// doc comment). Combined with the rotation cursor below, every source gets a
+// turn across successive invocations instead of strict array order deciding
+// who eats first every single time.
+const SOURCE_ROUND_ROBIN_CAP = 2;
 
 export interface FacilitySourceSpec {
   facilityType: string;
@@ -225,12 +233,21 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
 
     const budgetState = await loadGeocodeBudgetState(conn);
 
-    for (const source of SOURCES_IN_PRIORITY) {
+    // Resume the round-robin rotation from wherever the last invocation left
+    // off, rather than always starting at SOURCES_IN_PRIORITY[0] (see
+    // geocodeSourceRotation.ts). lastVisited tracks the last source this
+    // invocation actually considered, whether or not it had backlog, so the
+    // persisted cursor advances even through empty sources.
+    const rotatedSources = await loadRotatedSources(conn, SOURCES_IN_PRIORITY);
+    let lastVisited: FacilitySourceSpec | null = null;
+
+    for (const source of rotatedSources) {
       if (summary.totalAttempted >= MAX_FACILITIES_PER_INVOCATION) break;
       if (isAllProvidersCapacityExhausted(budgetState)) break;
 
+      lastVisited = source;
       const remaining = MAX_FACILITIES_PER_INVOCATION - summary.totalAttempted;
-      const rows = await findMissingCoordsForSource(conn, source.facilityType, source.sourceKey, Math.min(PER_SOURCE_FETCH_LIMIT, remaining));
+      const rows = await findMissingCoordsForSource(conn, source.facilityType, source.sourceKey, Math.min(SOURCE_ROUND_ROBIN_CAP, remaining));
       if (rows.length === 0) continue;
 
       // Dedup exact normalized addresses within this fetched batch — one
@@ -274,6 +291,10 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
         summary.totalAttempted += ids.length;
         if (summary.totalAttempted >= MAX_FACILITIES_PER_INVOCATION) break;
       }
+    }
+
+    if (lastVisited) {
+      await saveRotationCursor(conn, lastVisited);
     }
 
     summary.budgetExhausted = {
