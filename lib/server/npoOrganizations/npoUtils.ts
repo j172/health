@@ -211,3 +211,51 @@ export function extractNpoDetailFields(html: string, orgid: string): ParsedNpoDe
     serviceItems,
   };
 }
+
+export interface NpoListItem {
+  orgid: string;
+  orgCode: string;
+  orgAttribute: string;
+  name: string;
+  serviceArea: string;
+}
+
+export function parseListPage(html: string): { items: NpoListItem[]; totalPages: number } {
+  const $ = cheerio.load(html);
+  const items: NpoListItem[] = [];
+
+  $("table tr").each((_, el) => {
+    const onclick = $(el).attr("onclick") || "";
+    const match = onclick.match(/orgid=(\d+)/);
+    if (!match) return;
+
+    const orgid = match[1];
+    const tds = $(el).find("td");
+    if (tds.length < 4) return;
+
+    const orgCode = $(tds[0]).text().trim();
+    const orgAttribute = $(tds[1]).text().trim();
+    const name = $(tds[2]).text().trim();
+    const serviceArea = $(tds[3]).text().trim();
+
+    items.push({
+      orgid,
+      orgCode,
+      orgAttribute,
+      name,
+      serviceArea,
+    });
+  });
+
+  let totalPages = 1;
+  $("a[href*='nowPage']").each((_, a) => {
+    const href = $(a).attr("href") || "";
+    const m = href.match(/nowPage=(\d+)/);
+    if (m) {
+      const p = Number(m[1]);
+      if (p > totalPages) totalPages = p;
+    }
+  });
+
+  return { items, totalPages };
+}

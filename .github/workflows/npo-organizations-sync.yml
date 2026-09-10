@@ -1,0 +1,68 @@
+name: NPO organizations sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_page:
+        description: "Starting page number on NPO Center (1-457)"
+        required: false
+        default: "1"
+      rounds:
+        description: "Number of rounds to fetch (each round is 2 pages)"
+        required: false
+        default: "5"
+  schedule:
+    # Runs twice daily at 03:30 and 15:30 UTC to continuously backfill NPO addresses & websites
+    - cron: "30 3,15 * * *"
+
+concurrency:
+  group: host-tw123457-server
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run NPO Sync (SSH loopback)
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          NPO_START_PAGE: ${{ github.event.inputs.start_page || '1' }}
+          NPO_ROUNDS: ${{ github.event.inputs.rounds || '5' }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
+
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
+            node scripts/gha-npo-sync.mjs

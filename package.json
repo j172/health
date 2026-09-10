@@ -32,7 +32,9 @@
     "sync:cdc": "node scripts/sync-cdc-alerts.mjs",
     "verify:hospital-names": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-hospital-search-names.mjs",
     "export:tgos": "node scripts/export-facilities-for-tgos.mjs",
-    "import:tgos": "node scripts/import-tgos-geocode-results.mjs"
+    "import:tgos": "node scripts/import-tgos-geocode-results.mjs",
+    "import:npo-organizations": "node scripts/ingest-npo-organizations.mjs",
+    "sync:npo": "node scripts/gha-npo-sync.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.6.0",
