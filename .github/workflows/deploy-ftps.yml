@@ -127,6 +127,9 @@ jobs:
           OPS_KEY_SECRET: ${{ secrets.OPS_KEY }}
           GOOGLE_MAPS_API_KEY_SECRET: ${{ secrets.GOOGLE_MAPS_API_KEY }}
           OPENCAGE_API_KEY_SECRET: ${{ secrets.OPENCAGE_API_KEY }}
+          OPENCAGE_API_KEY2_SECRET: ${{ secrets.OPENCAGE_API_KEY2 }}
+          TGOS_APP_ID_SECRET: ${{ secrets.TGOS_APP_ID || secrets.TGOS_APPID }}
+          TGOS_API_KEY_SECRET: ${{ secrets.TGOS_API_KEY }}
           NTFY_TOPIC_SECRET: ${{ secrets.NTFY_TOPIC }}
         run: |
           set -euo pipefail
@@ -152,6 +155,9 @@ jobs:
           OPS_KEY_CLEAN="$(clean "${OPS_KEY_SECRET:-}")"
           GOOGLE_MAPS_API_KEY_CLEAN="$(clean "${GOOGLE_MAPS_API_KEY_SECRET:-}")"
           OPENCAGE_API_KEY_CLEAN="$(clean "${OPENCAGE_API_KEY_SECRET:-}")"
+          OPENCAGE_API_KEY2_CLEAN="$(clean "${OPENCAGE_API_KEY2_SECRET:-}")"
+          TGOS_APP_ID_CLEAN="$(clean "${TGOS_APP_ID_SECRET:-}")"
+          TGOS_API_KEY_CLEAN="$(clean "${TGOS_API_KEY_SECRET:-}")"
           NTFY_TOPIC_CLEAN="$(clean "${NTFY_TOPIC_SECRET:-}")"
 
           if [ -z "$FTP_SERVER_CLEAN" ] || [ -z "$FTP_USERNAME_CLEAN" ] || [ -z "$FTP_PASSWORD_CLEAN" ] || [ -z "$PIXABAY_API_KEY" ]; then
@@ -181,6 +187,9 @@ jobs:
             "OPS_KEY:$OPS_KEY_CLEAN"
             "GOOGLE_MAPS_API_KEY:$GOOGLE_MAPS_API_KEY_CLEAN"
             "OPENCAGE_API_KEY:$OPENCAGE_API_KEY_CLEAN"
+            "OPENCAGE_API_KEY2:$OPENCAGE_API_KEY2_CLEAN"
+            "TGOS_APP_ID:$TGOS_APP_ID_CLEAN"
+            "TGOS_API_KEY:$TGOS_API_KEY_CLEAN"
             "NTFY_TOPIC:$NTFY_TOPIC_CLEAN"
           )
           for item in "${PIXABAY_ENV_ITEMS[@]}"; do

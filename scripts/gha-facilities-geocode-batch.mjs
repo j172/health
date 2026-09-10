@@ -90,7 +90,7 @@ const main = async () => {
       }
       const s = response.summary;
       console.log(
-        `round ${round}: attempted=${s.totalAttempted} geocoded=${s.totalGeocoded} failed=${s.totalFailed} locked=${s.locked} reset=${s.resetPerformed} opencage_exhausted=${s.budgetExhausted?.opencage} nominatim_exhausted=${s.budgetExhausted?.nominatim} reason=${s.reason ?? ""}`,
+        `round ${round}: attempted=${s.totalAttempted} geocoded=${s.totalGeocoded} failed=${s.totalFailed} locked=${s.locked} reset=${s.resetPerformed} tgos_exhausted=${s.budgetExhausted?.tgos} opencage_exhausted=${s.budgetExhausted?.opencage} nominatim_exhausted=${s.budgetExhausted?.nominatim} reason=${s.reason ?? ""}`,
       );
       totalGeocoded += s.totalGeocoded ?? 0;
       totalFailed += s.totalFailed ?? 0;
@@ -99,9 +99,10 @@ const main = async () => {
         console.log("another run holds the lock — stopping this invocation");
         break;
       }
-      if (s.budgetExhausted?.opencage && s.budgetExhausted?.nominatim) {
+      const allExhausted = (s.budgetExhausted?.tgos ?? true) && s.budgetExhausted?.opencage && s.budgetExhausted?.nominatim;
+      if (allExhausted) {
         console.log(
-          "both providers' daily budget exhausted — stopping until tomorrow",
+          "all providers' daily budget exhausted — stopping until tomorrow",
         );
         break;
       }

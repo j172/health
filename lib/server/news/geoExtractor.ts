@@ -4,12 +4,16 @@ import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import type { RowDataPacket } from "mysql2/promise";
 import { resolveAdministrativeArea } from "./administrativeArea";
 import {
+  queryTgos,
   queryOpenCage,
+  queryOpenCage2,
   queryNominatim,
 } from "@/lib/server/facilities/geocodeProviders";
 import {
   loadGeocodeBudgetState,
   isBudgetExhausted,
+  isTgosConfigured,
+  isOpenCage2Configured,
   recordGeocodeRequest,
   tripCircuitBreaker,
   type GeocodeProvider,
@@ -212,12 +216,46 @@ export async function extractLocationFromText(
         return withConnection(async (conn) => {
           const budgetState = await loadGeocodeBudgetState(conn);
 
-          // Try OpenCage first if budget allows
+          // Try TGOS (primary) if configured and budget allows
+          if (isTgosConfigured() && !isBudgetExhausted(budgetState, "tgos")) {
+            await recordGeocodeRequest(conn, budgetState, "tgos");
+            const outcome = await queryTgos(normalizedQuery);
+            if (outcome.kind === "quota_exceeded") {
+              await tripCircuitBreaker(conn, budgetState, "tgos");
+            } else if (outcome.kind === "ok") {
+              return {
+                lat: outcome.coords.lat,
+                lng: outcome.coords.lng,
+                locationName: rawAddress,
+                facilityId: null,
+                matchType: "geocoded",
+              };
+            }
+          }
+
+          // Try OpenCage key1 first if budget allows
           if (!isBudgetExhausted(budgetState, "opencage")) {
             await recordGeocodeRequest(conn, budgetState, "opencage");
             const outcome = await queryOpenCage(normalizedQuery);
             if (outcome.kind === "quota_exceeded") {
               await tripCircuitBreaker(conn, budgetState, "opencage");
+            } else if (outcome.kind === "ok") {
+              return {
+                lat: outcome.coords.lat,
+                lng: outcome.coords.lng,
+                locationName: rawAddress,
+                facilityId: null,
+                matchType: "geocoded",
+              };
+            }
+          }
+
+          // Then OpenCage key2, if OPENCAGE_API_KEY2 is configured
+          if (isOpenCage2Configured() && !isBudgetExhausted(budgetState, "opencage2")) {
+            await recordGeocodeRequest(conn, budgetState, "opencage2");
+            const outcome = await queryOpenCage2(normalizedQuery);
+            if (outcome.kind === "quota_exceeded") {
+              await tripCircuitBreaker(conn, budgetState, "opencage2");
             } else if (outcome.kind === "ok") {
               return {
                 lat: outcome.coords.lat,

@@ -1,5 +1,6 @@
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { rateLimiter } from "@/lib/server/net/rateLimiter";
+import { queryTgos } from "@/lib/server/facilities/geocodeProviders";
 
 export interface LatLng {
   lat: number;
@@ -140,6 +141,14 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
     }
     if (!candidate || tried.has(candidate)) continue;
     tried.add(candidate);
+
+    // 1. TGOS — official MOI address locator (primary)
+    try {
+      const fromTgos = await queryTgos(candidate);
+      if (fromTgos.kind === "ok") return fromTgos.coords;
+    } catch (error) {
+      console.error(`geocodeAddress: TGOS request failed for "${candidate}":`, error instanceof Error ? error.message : error);
+    }
 
     const query = withCountry(candidate);
     try {

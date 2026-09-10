@@ -4,8 +4,19 @@ import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { MAX_GEOCODE_ATTEMPTS } from "@/lib/server/facilities/queries";
 import { buildQueryCandidates } from "@/lib/server/facilities/addressNormalize";
 import { resolveRoadLevelFallback } from "@/lib/server/facilities/autoGeocode";
-import { queryOpenCage, queryNominatim, type LatLng } from "@/lib/server/facilities/geocodeProviders";
-import { loadGeocodeBudgetState, isBudgetExhausted, recordGeocodeRequest, tripCircuitBreaker, type GeocodeBudgetState, type GeocodeProvider } from "@/lib/server/facilities/geocodeBudget";
+import { queryTgos, queryOpenCage, queryOpenCage2, queryNominatim, type LatLng } from "@/lib/server/facilities/geocodeProviders";
+import {
+  loadGeocodeBudgetState,
+  isBudgetExhausted,
+  isTgosConfigured,
+  isOpenCage2Configured,
+  isOpenCageCapacityExhausted,
+  isAllProvidersCapacityExhausted,
+  recordGeocodeRequest,
+  tripCircuitBreaker,
+  type GeocodeBudgetState,
+  type GeocodeProvider,
+} from "@/lib/server/facilities/geocodeBudget";
 import { loadRotatedSources, saveRotationCursor } from "@/lib/server/facilities/geocodeSourceRotation";
 
 /**
@@ -19,7 +30,7 @@ import { loadRotatedSources, saveRotationCursor } from "@/lib/server/facilities/
  */
 
 const LOCK_NAME = "geocode_batch_lock";
-const RESET_FLAG_KEY = "geocode_attempts_reset_v1";
+const RESET_FLAG_KEY = "geocode_attempts_reset_tgos_v1";
 // One HTTP invocation (Next.js route, maxDuration=60s) budgets at most this
 // many address groups. Each one can now cost up to 3 progressively-stripped
 // candidates (buildQueryCandidates) times a throttled OpenCage attempt
@@ -100,7 +111,7 @@ export interface GeocodeBatchSummary {
   totalAttempted: number;
   totalGeocoded: number;
   totalFailed: number;
-  budgetExhausted: { opencage: boolean; nominatim: boolean };
+  budgetExhausted: { tgos?: boolean; opencage: boolean; nominatim: boolean };
   bySource: GeocodeBatchSourceSummary[];
   reason: string | null;
 }
@@ -139,28 +150,47 @@ const findMissingCoordsForSource = async (conn: PoolConnection, facilityType: st
 };
 
 /**
- * Tries OpenCage then Nominatim across progressively-simplified address
+ * Tries TGOS (primary), then OpenCage key1, then OpenCage key2 (if OPENCAGE_API_KEY2 is
+ * configured), then Nominatim, across progressively-simplified address
  * candidates (see buildQueryCandidates — a full address with house number
- * routinely returns zero results even though the street itself geocodes
- * fine), respecting each provider's remaining daily budget and recording
- * usage/circuit-breaker state as it goes. Returns null once every candidate
- * has been tried against every provider with budget left, or budget runs
- * out entirely.
+ * routinely returns zero results in OpenCage/Nominatim even though the street itself geocodes
+ * fine, whereas TGOS specializes in full Taiwanese addresses), respecting each provider's
+ * remaining daily budget and recording usage/circuit-breaker state as it goes.
+ * Returns null once every candidate has been tried against every provider with budget left,
+ * or budget runs out entirely.
  */
 const geocodeOneAddress = async (
   conn: PoolConnection,
   budgetState: Map<GeocodeProvider, GeocodeBudgetState>,
   candidates: string[],
 ): Promise<LatLng | null> => {
+  const tgosConfigured = isTgosConfigured();
+  const openCage2Configured = isOpenCage2Configured();
+
   for (const candidate of candidates) {
-    if (isBudgetExhausted(budgetState, "opencage") && isBudgetExhausted(budgetState, "nominatim")) return null;
+    if (isAllProvidersCapacityExhausted(budgetState)) return null;
+
+    if (tgosConfigured && !isBudgetExhausted(budgetState, "tgos")) {
+      await recordGeocodeRequest(conn, budgetState, "tgos");
+      const outcome = await queryTgos(candidate);
+      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "tgos");
+      // no_result / rejected / error fall through to OpenCage / Nominatim / the next candidate.
+    }
 
     if (!isBudgetExhausted(budgetState, "opencage")) {
       await recordGeocodeRequest(conn, budgetState, "opencage");
       const outcome = await queryOpenCage(candidate);
       if (outcome.kind === "ok") return outcome.coords;
       if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "opencage");
-      // no_result / rejected / error fall through to Nominatim / the next candidate.
+      // no_result / rejected / error fall through to key2 / Nominatim / the next candidate.
+    }
+
+    if (openCage2Configured && !isBudgetExhausted(budgetState, "opencage2")) {
+      await recordGeocodeRequest(conn, budgetState, "opencage2");
+      const outcome = await queryOpenCage2(candidate);
+      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "opencage2");
     }
 
     if (!isBudgetExhausted(budgetState, "nominatim")) {
@@ -185,7 +215,7 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
     totalAttempted: 0,
     totalGeocoded: 0,
     totalFailed: 0,
-    budgetExhausted: { opencage: false, nominatim: false },
+    budgetExhausted: { tgos: false, opencage: false, nominatim: false },
     bySource: [],
     reason: null,
   };
@@ -213,7 +243,7 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
 
     for (const source of rotatedSources) {
       if (summary.totalAttempted >= MAX_FACILITIES_PER_INVOCATION) break;
-      if (isBudgetExhausted(budgetState, "opencage") && isBudgetExhausted(budgetState, "nominatim")) break;
+      if (isAllProvidersCapacityExhausted(budgetState)) break;
 
       lastVisited = source;
       const remaining = MAX_FACILITIES_PER_INVOCATION - summary.totalAttempted;
@@ -241,7 +271,7 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
       summary.bySource.push(sourceSummary);
 
       for (const { ids, candidates } of groupsByAddress.values()) {
-        if (isBudgetExhausted(budgetState, "opencage") && isBudgetExhausted(budgetState, "nominatim")) break;
+        if (isAllProvidersCapacityExhausted(budgetState)) break;
 
         let coords = await geocodeOneAddress(conn, budgetState, candidates);
         if (!coords && candidates.length > 0) {
@@ -268,11 +298,14 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
     }
 
     summary.budgetExhausted = {
-      opencage: isBudgetExhausted(budgetState, "opencage"),
+      tgos: !isTgosConfigured() || isBudgetExhausted(budgetState, "tgos"),
+      // "opencage" here means all OpenCage capacity — key1 and, if
+      // configured, key2 — not just key1's own budget row.
+      opencage: isOpenCageCapacityExhausted(budgetState),
       nominatim: isBudgetExhausted(budgetState, "nominatim"),
     };
-    if (summary.budgetExhausted.opencage && summary.budgetExhausted.nominatim) {
-      summary.reason = "Both providers' daily budget is exhausted for today.";
+    if (isAllProvidersCapacityExhausted(budgetState)) {
+      summary.reason = "All providers' daily budget is exhausted for today.";
     } else if (summary.totalAttempted === 0) {
       summary.reason = "No facilities are missing coordinates.";
     }

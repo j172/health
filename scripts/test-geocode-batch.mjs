@@ -192,11 +192,26 @@ test("isWithinTaiwanBounds: boundary is inclusive", () => {
 });
 
 // ─── Daily budget / circuit breaker arithmetic ─────────────────────────────
-const DAILY_BUDGET = { opencage: 1400, nominatim: 1000 };
+const DAILY_BUDGET = { tgos: 5000, opencage: 1400, opencage2: 1400, nominatim: 1000 };
 function isBudgetExhausted(state, provider) {
   const row = state.get(provider);
   if (!row) return false;
   return row.circuitBroken || row.requestsUsed >= DAILY_BUDGET[provider];
+}
+// Mirrors geocodeBudget.ts's isOpenCageCapacityExhausted, but takes
+// key2Configured explicitly instead of reading OPENCAGE_API_KEY2 off
+// process.env — this script runs standalone and shouldn't have its
+// determinism depend on whichever local .env happens to be present.
+function isOpenCageCapacityExhausted(state, key2Configured) {
+  return isBudgetExhausted(state, "opencage") && (!key2Configured || isBudgetExhausted(state, "opencage2"));
+}
+
+function isAllProvidersCapacityExhausted(state, tgosConfigured, key2Configured) {
+  return (
+    (!tgosConfigured || isBudgetExhausted(state, "tgos")) &&
+    isOpenCageCapacityExhausted(state, key2Configured) &&
+    isBudgetExhausted(state, "nominatim")
+  );
 }
 
 test("isBudgetExhausted: no row yet today -> not exhausted", () => {
@@ -225,6 +240,62 @@ test("isBudgetExhausted: providers are independent", () => {
   ]);
   assert.equal(isBudgetExhausted(state, "opencage"), true);
   assert.equal(isBudgetExhausted(state, "nominatim"), false);
+});
+
+test("isOpenCageCapacityExhausted: key2 not configured -> only key1 matters", () => {
+  const exhausted = new Map([["opencage", { requestsUsed: 1400, circuitBroken: false }]]);
+  assert.equal(isOpenCageCapacityExhausted(exhausted, false), true);
+  const fresh = new Map([["opencage", { requestsUsed: 1399, circuitBroken: false }]]);
+  assert.equal(isOpenCageCapacityExhausted(fresh, false), false);
+});
+
+test("isOpenCageCapacityExhausted: key2 configured but still has budget -> not exhausted", () => {
+  const state = new Map([
+    ["opencage", { requestsUsed: 1400, circuitBroken: false }],
+    ["opencage2", { requestsUsed: 0, circuitBroken: false }],
+  ]);
+  assert.equal(isOpenCageCapacityExhausted(state, true), false);
+});
+
+test("isOpenCageCapacityExhausted: key2 configured and both spent -> exhausted", () => {
+  const state = new Map([
+    ["opencage", { requestsUsed: 1400, circuitBroken: false }],
+    ["opencage2", { requestsUsed: 1400, circuitBroken: false }],
+  ]);
+  assert.equal(isOpenCageCapacityExhausted(state, true), true);
+});
+
+test("isAllProvidersCapacityExhausted: TGOS has budget -> not exhausted", () => {
+  const state = new Map([
+    ["tgos", { requestsUsed: 4999, circuitBroken: false }],
+    ["opencage", { requestsUsed: 1400, circuitBroken: false }],
+    ["nominatim", { requestsUsed: 1000, circuitBroken: false }],
+  ]);
+  assert.equal(isAllProvidersCapacityExhausted(state, true, false), false);
+});
+
+test("isAllProvidersCapacityExhausted: all providers spent -> exhausted", () => {
+  const state = new Map([
+    ["tgos", { requestsUsed: 5000, circuitBroken: false }],
+    ["opencage", { requestsUsed: 1400, circuitBroken: false }],
+    ["nominatim", { requestsUsed: 1000, circuitBroken: false }],
+  ]);
+  assert.equal(isAllProvidersCapacityExhausted(state, true, false), true);
+});
+
+test("isAllProvidersCapacityExhausted: TGOS not configured -> falls back to OpenCage & Nominatim", () => {
+  const state = new Map([
+    ["opencage", { requestsUsed: 1399, circuitBroken: false }],
+    ["nominatim", { requestsUsed: 1000, circuitBroken: false }],
+  ]);
+  // TGOS unconfigured (false), OpenCage not exhausted -> not exhausted
+  assert.equal(isAllProvidersCapacityExhausted(state, false, false), false);
+
+  const allSpent = new Map([
+    ["opencage", { requestsUsed: 1400, circuitBroken: false }],
+    ["nominatim", { requestsUsed: 1000, circuitBroken: false }],
+  ]);
+  assert.equal(isAllProvidersCapacityExhausted(allSpent, false, false), true);
 });
 
 // ─── Batch-local address dedup ──────────────────────────────────────────────
