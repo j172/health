@@ -1511,32 +1511,37 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "tax-organizations",
+    slug: "npo-organizations",
     group: "public-facility",
     schemaType: "WebPage",
-    title: "非營利組織(NPO)查詢",
+    title: "全台公益組織(NPO)查詢",
     description:
-      "查詢全國非營利組織（NPO）、機關團體、同業公會、社會福利慈善財團法人、公益協會與公寓大廈管委會統一編號、登記地址與稅籍狀態。資料來源：財政部財政資訊中心開放資料。",
+      "整合台灣公益資訊中心（NPO Center）及財政部機關團體名冊，收錄全國社會福利慈善財團法人、兒少保護、身心障礙、老人照護、環境保護、性別平權與急難救助等公益組織。支援名稱、統一編號、縣市與機構屬性篩選，提供詳細地址地圖導航、官方網站連結與電話一鍵撥號。",
     directAnswer:
-      "查詢全國非營利組織（NPO）、機關團體與扣繳單位統一編號、登記地址與最新異動事由。",
+      "查詢全國非營利組織（NPO）、公益慈善財團法人、社會福利團體、統一編號、門牌地址、官方網站與聯絡電話。",
     scientificBasis: [
+      {
+        title: "台灣公益資訊中心 (NPO Center) 組織名錄",
+        authority: "財團法人喜瑪拉雅研究發展基金會",
+        url: "https://www.npo.org.tw",
+      },
       {
         title: "機關團體扣繳單位基本資料 (BGMOPEN99)",
         authority: "財政部財政資訊中心 (FIA)",
         url: "https://eip.fia.gov.tw",
       },
     ],
-    relatedSlugs: ["food-operators", "green-shops", "public-toilets"],
+    relatedSlugs: ["food-operators", "green-shops", "child-welfare-centers", "disability-welfare"],
     faqs: [
       {
-        question: "BGMOPEN99 包含哪些非營利組織？",
+        question: "全台公益組織(NPO)名錄包含哪些機構？",
         answer:
-          "包含非營利機構 (NPO)、同業公會、學術社團、宗教團體、慈善財團法人、公益協會、各級公私立學校及公寓大廈管委會等扣繳單位。",
+          "收錄台灣公益資訊中心登記之社福、兒少、身障、長者照護、環境永續、國際倡議等非營利公益團體，以及財政部登記之機關團體扣繳單位。",
       },
       {
-        question: "如何查驗統一編號是否有效？",
+        question: "如何查驗非營利組織的官方網站與聯絡電話？",
         answer:
-          "可在搜尋框輸入 8 碼統一編號或機關名稱，點擊卡片可複製統編並外連至財政部稅籍公示系統查驗。",
+          "在搜尋結果卡片上，可直接點擊「官方網站/Facebook 粉專」外連按鈕，或透過電話與地圖導航按鈕直接聯繫前往。",
       },
     ],
   },
@@ -2144,7 +2149,8 @@ export function toolsInGroup(
 /** Look up a tool's catalog entry by slug — throws if missing so a typo'd slug fails
  * loudly at build/request time instead of silently rendering blank title/description. */
 export function getToolCatalogEntry(slug: string): ToolCatalogEntry {
-  const entry = TOOL_CATALOG.find((tool) => tool.slug === slug);
+  const normalizedSlug = slug === "tax-organizations" ? "npo-organizations" : slug;
+  const entry = TOOL_CATALOG.find((tool) => tool.slug === normalizedSlug);
   if (!entry) {
     throw new Error(`No TOOL_CATALOG entry for slug "${slug}"`);
   }
