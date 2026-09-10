@@ -10,6 +10,7 @@ import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
 import { runNpoActivitiesSync } from "@/lib/server/culture/ingestNpoActivities";
+import { runPresidentialVisitSync } from "@/lib/server/culture/ingestPresidentialVisit";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
@@ -132,7 +133,8 @@ export const registerCronJobs = (): void => {
     runGuarded("culture-shows-cron.log", async () => {
       const shows = await runCulturalShowsSync();
       const npo = await runNpoActivitiesSync();
-      return { shows, npo };
+      const presidential = await runPresidentialVisitSync();
+      return { shows, npo, presidential };
     }),
   );
   // Public art sync daily at 3am

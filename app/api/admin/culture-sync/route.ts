@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
 import { runNpoActivitiesSync } from "@/lib/server/culture/ingestNpoActivities";
+import { runPresidentialVisitSync } from "@/lib/server/culture/ingestPresidentialVisit";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runHeritageAssetsSync } from "@/lib/server/culture/ingestHeritageAssets";
 
@@ -23,6 +24,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     let showsResult: any = null;
     let npoResult: any = null;
+    let presidentialResult: any = null;
     let publicArtResult: any = null;
     let heritageResult: any = null;
 
@@ -32,6 +34,10 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     if (type === "npo" || type === "shows" || type === "all") {
       npoResult = await runNpoActivitiesSync();
+    }
+
+    if (type === "presidential" || type === "shows" || type === "all") {
+      presidentialResult = await runPresidentialVisitSync();
     }
 
     if (type === "public-art" || type === "all") {
@@ -48,6 +54,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       results: {
         shows: showsResult,
         npo: npoResult,
+        presidential: presidentialResult,
         publicArt: publicArtResult,
         heritage: heritageResult,
       },
