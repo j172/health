@@ -109,11 +109,14 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
   };
 };
 
+const HAS_PRODUCTS_SQL = `(extra_json LIKE '%"hasProducts":true%' OR extra_json LIKE '%"hasProducts":"true"%')`;
+const IS_NPO_CENTER_SQL = `(source_key = 'npo_tw' OR extra_json LIKE '%"npoCenterOrgid"%')`;
+
 const ORDER_BY_PRIORITY = `
   ORDER BY
     CASE
-      WHEN extra_json->>'$.hasProducts' = 'true' THEN 1
-      WHEN source_key = 'npo_tw' OR extra_json->>'$.npoCenterOrgid' IS NOT NULL THEN 2
+      WHEN ${HAS_PRODUCTS_SQL} THEN 1
+      WHEN ${IS_NPO_CENTER_SQL} THEN 2
       ELSE 3
     END ASC,
     id DESC
@@ -139,7 +142,7 @@ export const getRecentNpoOrganizations = async (
 export const countNpoOrganizations = async (hasProducts?: boolean): Promise<number> =>
   withConnection(async (conn) => {
     const where = hasProducts
-      ? `WHERE facility_type IN ('npo', 'tax_organization') AND extra_json->>'$.hasProducts' = 'true'`
+      ? `WHERE facility_type IN ('npo', 'tax_organization') AND ${HAS_PRODUCTS_SQL}`
       : `WHERE facility_type IN ('npo', 'tax_organization')`;
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT COUNT(*) AS total FROM facilities ${where}`,
@@ -166,14 +169,14 @@ const buildSearchNpoOrganizationsWhere = ({
   const params: unknown[] = [];
 
   if (hasProducts) {
-    conditions.push("extra_json->>'$.hasProducts' = 'true'");
+    conditions.push(HAS_PRODUCTS_SQL);
   }
 
   if (keyword) {
     conditions.push(
-      "(name LIKE ? OR service_item LIKE ? OR address LIKE ? OR extra_json->>'$.contact' LIKE ? OR extra_json->>'$.ban' LIKE ?)",
+      "(name LIKE ? OR service_item LIKE ? OR address LIKE ? OR extra_json LIKE ?)",
     );
-    params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+    params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
   }
 
   if (city && city !== "全部縣市") {
@@ -182,7 +185,7 @@ const buildSearchNpoOrganizationsWhere = ({
   }
 
   if (attribute && attribute !== "全部屬性") {
-    conditions.push("(extra_json->>'$.orgAttribute' LIKE ? OR service_item LIKE ?)");
+    conditions.push("(extra_json LIKE ? OR service_item LIKE ?)");
     params.push(`%${attribute}%`, `%${attribute}%`);
   }
 
