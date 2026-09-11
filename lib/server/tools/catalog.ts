@@ -1621,7 +1621,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       {
         question: "活動資訊包含哪些類別？",
         answer:
-          "涵蓋視覺藝術展覽、音樂會、戲劇舞蹈表演、專題講座以及全國親子藝文活動。",
+          "完整涵蓋文化部 19 類藝文活動（展覽、音樂、戲劇、舞蹈、親子、講座、電影、獨立音樂、綜藝、藝文競賽、演唱會、研習課程等）、全國節慶活動與文化生活圈場館。",
       },
     ],
   },
@@ -1629,24 +1629,29 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "public-art",
     group: "public-facility",
     schemaType: "WebPage",
-    title: "全國公共藝術地圖查詢",
+    title: "全國公共藝術與演藝場所地圖",
     description:
-      "查詢全台設置之公共藝術作品、作者與設置地點。資料來源：文化部公共藝術資料庫開放資料。",
+      "查詢全台設置之公共藝術作品、作者與設置地點，以及 767 處公私立演藝活動場所。資料來源：文化部公共藝術資料庫與演藝場所開放資料。",
     directAnswer:
-      "即時探索全台灣各縣市設置之公共藝術作品、地標裝置與創作者資料。",
+      "即時探索全台灣各縣市設置之公共藝術作品、地標裝置與 767 處公私立演藝活動場所資訊。",
     scientificBasis: [
       {
         title: "公共藝術官方資料庫 (artWork/openData)",
         authority: "文化部 (MOC)",
         url: "https://publicartap.moc.gov.tw",
       },
+      {
+        title: "全國公私立演藝活動場所 (SearchPerformPlaceAction)",
+        authority: "文化部 (MOC)",
+        url: "https://cloud.culture.tw",
+      },
     ],
     relatedSlugs: ["cultural-events", "heritage-map"],
     faqs: [
       {
-        question: "如何查找身邊的公共藝術作品？",
+        question: "如何查找身邊的公共藝術作品與演藝場所？",
         answer:
-          "開啟定位或輸入行政區關鍵字，即可列出周遭公共設施、捷運站與公園設置的公共藝術地標。",
+          "開啟定位或輸入行政區關鍵字，即可列出周遭公共藝術地標以及演藝表演場所，並支援一鍵查詢登記方式與聯絡電話。",
       },
     ],
   },

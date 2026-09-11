@@ -82,6 +82,41 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   const hasClinics = cmData.points.some((p) => p.category === "clinic");
   const hasPharmacies = cmData.points.some((p) => p.category === "pharmacy");
   assert.ok(hasClinics && hasPharmacies, "Must contain both clinics and pharmacies");
+
+  // 7. Cultural events seed (19 categories + festival + venue_h)
+  const cePath = path.join(ROOT_DIR, "data", "cultural-events-seed.json");
+  assert.ok(fs.existsSync(cePath), "cultural-events-seed.json must exist");
+  const ceData = JSON.parse(fs.readFileSync(cePath, "utf-8"));
+  assert.ok(
+    ceData.ok && Array.isArray(ceData.events) && ceData.events.length > 1500,
+    `Expected > 1500 cultural events, got ${ceData.events?.length}`,
+  );
+  const ceCategories = new Set(ceData.events.map((e) => e.category));
+  assert.ok(ceCategories.has("1"), "Must contain music events (cat 1)");
+  assert.ok(ceCategories.has("2"), "Must contain drama events (cat 2)");
+  assert.ok(ceCategories.has("6"), "Must contain exhibition events (cat 6)");
+  assert.ok(ceCategories.has("festival"), "Must contain festival events");
+  assert.ok(ceCategories.has("venue_h"), "Must contain venue_h events");
+
+  // 8. Performance venues seed (767 venues)
+  const pvPath = path.join(ROOT_DIR, "data", "performance-venues-seed.json");
+  assert.ok(fs.existsSync(pvPath), "performance-venues-seed.json must exist");
+  const pvData = JSON.parse(fs.readFileSync(pvPath, "utf-8"));
+  assert.ok(
+    pvData.ok && Array.isArray(pvData.venues) && pvData.venues.length === 767,
+    `Expected exactly 767 performance venues, got ${pvData.venues?.length}`,
+  );
+  const allVenuesHaveCoords = pvData.venues.every((v) => v.lat != null && v.lng != null);
+  assert.ok(allVenuesHaveCoords, "All performance venues must have valid coordinates");
+
+  // 9. Combined public art seed (pure art + venues)
+  const artPath = path.join(ROOT_DIR, "data", "public-art.json");
+  assert.ok(fs.existsSync(artPath), "public-art.json must exist");
+  const artData = JSON.parse(fs.readFileSync(artPath, "utf-8"));
+  assert.ok(Array.isArray(artData) && artData.length > 7000, `Expected > 7000 combined art items, got ${artData.length}`);
+  const hasVenueType = artData.some((a) => a.fieldType === "演藝活動場所" || String(a.artNo).startsWith("VENUE_"));
+  const hasArtType = artData.some((a) => a.fieldType !== "演藝活動場所" && !String(a.artNo).startsWith("VENUE_"));
+  assert.ok(hasVenueType && hasArtType, "Must contain both public art installations and performance venues");
 });
 
 test("facilityConfigs has matching configurations for all facility tool pages", () => {

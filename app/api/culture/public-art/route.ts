@@ -24,6 +24,7 @@ export async function GET(request: Request) {
 
     const userLat = latParam ? parseFloat(latParam) : null;
     const userLng = lngParam ? parseFloat(lngParam) : null;
+    const fieldType = (searchParams.get("fieldType") || searchParams.get("type") || "all").trim();
 
     const result = await searchPublicArt({
       keyword: keyword || undefined,
@@ -32,6 +33,7 @@ export async function GET(request: Request) {
       lng: userLng && !isNaN(userLng) ? userLng : null,
       radiusKm: isNaN(radiusKm) ? 50 : radiusKm,
       limit: isNaN(limit) ? 200 : limit,
+      fieldType,
     });
 
     return NextResponse.json(

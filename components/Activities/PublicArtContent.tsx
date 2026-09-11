@@ -84,6 +84,7 @@ export default function PublicArtContent() {
   const [keyword, setKeyword] = useState("");
   const [selectedCity, setSelectedCity] = useState("全部縣市");
   const [selectedField, setSelectedField] = useState("全部場域");
+  const [artType, setArtType] = useState<"all" | "art" | "venue">("all");
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
   const [userGps, setUserGps] = useState<{ lat: number; lng: number } | null>(null);
@@ -100,16 +101,17 @@ export default function PublicArtContent() {
         params.set("lng", String(lng));
         params.set("radius", "50");
       }
+      params.set("limit", "10000");
       const qs = params.toString();
       if (qs) url += `?${qs}`;
 
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      if (!json.ok) throw new Error(json.error || "載入公共藝術資料失敗");
+      if (!json.ok) throw new Error(json.error || "載入公共藝術與演藝場所資料失敗");
       setItems(json.items || []);
     } catch (err: any) {
-      setError(err.message || "無法連線至文化部公共藝術資料庫");
+      setError(err.message || "無法連線至文化部公共藝術與演藝場所資料庫");
     } finally {
       setLoading(false);
     }
@@ -145,6 +147,12 @@ export default function PublicArtContent() {
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      const isVenue = item.fieldType === "演藝活動場所" || String(item.id).startsWith("VENUE_");
+
+      // Type filter
+      if (artType === "venue" && !isVenue) return false;
+      if (artType === "art" && isVenue) return false;
+
       // Keyword
       if (keyword.trim()) {
         const kw = keyword.toLowerCase().trim();
@@ -176,7 +184,7 @@ export default function PublicArtContent() {
 
       return true;
     });
-  }, [items, keyword, selectedCity, selectedField]);
+  }, [items, artType, keyword, selectedCity, selectedField]);
 
   const mapMarkers = useMemo(() => {
     return filteredItems
@@ -196,6 +204,43 @@ export default function PublicArtContent() {
       {/* Header Search & Filters Panel */}
       <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-xs sm:p-6 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-3">
+          {/* Main Category Pills */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setArtType("all")}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+                artType === "all"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+              }`}
+            >
+              ✨ 全部收錄 ({items.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setArtType("art")}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+                artType === "art"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+              }`}
+            >
+              🎨 公共藝術作品
+            </button>
+            <button
+              type="button"
+              onClick={() => setArtType("venue")}
+              className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+                artType === "venue"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+              }`}
+            >
+              🎭 演藝活動場所 (767)
+            </button>
+          </div>
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Keyword Search */}
             <div className="relative flex-1">
@@ -203,7 +248,7 @@ export default function PublicArtContent() {
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="搜尋公共藝術作品名稱、創作者、設置地點、機關..."
+                placeholder="搜尋公共藝術作品、演藝場所名稱、創作者、地點、主管機關..."
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder-slate-500"
               />
               {keyword && (
@@ -228,7 +273,7 @@ export default function PublicArtContent() {
                   : "border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               }`}
             >
-              <span>{gpsLoading ? "📍 定位中..." : userGps ? "📍 附近 50km" : "🧭 尋找附近作品"}</span>
+              <span>{gpsLoading ? "📍 定位中..." : userGps ? "📍 附近 50km" : "🧭 尋找附近場所與作品"}</span>
             </button>
           </div>
 
@@ -248,18 +293,20 @@ export default function PublicArtContent() {
             </select>
 
             {/* Field Type Filter */}
-            <select
-              value={selectedField}
-              onChange={(e) => setSelectedField(e.target.value)}
-              aria-label="選擇作品場域"
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-700 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-            >
-              {FIELD_TYPES.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </select>
+            {artType !== "venue" && (
+              <select
+                value={selectedField}
+                onChange={(e) => setSelectedField(e.target.value)}
+                aria-label="選擇作品場域"
+                className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-700 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              >
+                {FIELD_TYPES.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            )}
 
             {/* View Mode Toggle */}
             <div className="ml-auto flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-800/80">
@@ -292,9 +339,9 @@ export default function PublicArtContent() {
         {/* Status bar */}
         <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <span>
-            目前收錄 <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{filteredItems.length}</strong> 件全台公共藝術作品
+            目前顯示 <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{filteredItems.length}</strong> 處公共藝術作品與演藝場所
           </span>
-          <span>資料來源：文化部公共藝術資料庫開放資料</span>
+          <span>資料來源：文化部公共藝術資料庫與演藝活動場所開放資料</span>
         </div>
       </div>
 
@@ -372,12 +419,23 @@ export default function PublicArtContent() {
                   <div className="p-5">
                     {/* Badges */}
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
-                        🎨 {item.artist}
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+                          item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")
+                            ? "bg-purple-50 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300"
+                            : "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300"
+                        }`}
+                      >
+                        {item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_") ? "🎭 演藝場所" : `🎨 ${item.artist}`}
                       </span>
-                      {item.fieldType && (
+                      {item.fieldType && item.fieldType !== "演藝活動場所" && (
                         <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                           {item.fieldType}
+                        </span>
+                      )}
+                      {(item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")) && item.artist && (
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          🏛️ {item.artist}
                         </span>
                       )}
                       {item.year && (
@@ -402,6 +460,26 @@ export default function PublicArtContent() {
                       <span className="shrink-0 text-slate-400">📍</span>
                       <span className="font-medium">{item.location}</span>
                     </div>
+
+                    {/* Venue Phone / Contact if available */}
+                    {item.extraJson && (Boolean(item.extraJson.phone) || Boolean(item.extraJson.register)) ? (
+                      <div className="mt-2 space-y-1 rounded-xl bg-slate-50 p-2.5 text-xs dark:bg-slate-800/60">
+                        {item.extraJson.phone ? (
+                          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
+                            <span>📞</span>
+                            <a href={`tel:${String(item.extraJson.phone).split("#")[0]}`} className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                              {String(item.extraJson.phone)}
+                            </a>
+                          </div>
+                        ) : null}
+                        {item.extraJson.register ? (
+                          <div className="line-clamp-2 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span>📋 </span>
+                            <span>{String(item.extraJson.register)}</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
 
                     {/* Material & Dimensions */}
                     {(item.material || item.dimensions) && (
@@ -440,7 +518,9 @@ export default function PublicArtContent() {
                       rel="noopener noreferrer"
                       className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-500"
                     >
-                      🏛️ 文化部典藏頁 ↗
+                      {item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")
+                        ? "📝 線上登記/官網 ↗"
+                        : "🏛️ 文化部典藏頁 ↗"}
                     </a>
                   )}
                 </div>

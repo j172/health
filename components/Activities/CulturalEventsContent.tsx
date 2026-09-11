@@ -38,11 +38,21 @@ const CATEGORY_TABS = [
   { key: "2", label: "戲劇演出", icon: "🎭" },
   { key: "3", label: "舞蹈表演", icon: "💃" },
   { key: "4", label: "親子活動", icon: "🎨" },
+  { key: "5", label: "獨立音樂", icon: "🎸" },
   { key: "7", label: "講座工作坊", icon: "🎤" },
   { key: "8", label: "電影沉浸", icon: "🎬" },
+  { key: "11", label: "綜藝表演", icon: "🤹" },
+  { key: "17", label: "演唱會", icon: "✨" },
+  { key: "13", label: "藝文競賽", icon: "🏆" },
+  { key: "14", label: "徵選甄選", icon: "📣" },
+  { key: "16", label: "競賽活動", icon: "🏅" },
+  { key: "19", label: "研習課程", icon: "📚" },
+  { key: "festival", label: "全國節慶", icon: "🏮" },
+  { key: "venue_h", label: "生活圈場館", icon: "🏛️" },
   { key: "npo", label: "公益活動", icon: "🤝" },
-  { key: "charity_project", label: "公益專案/線上募款", icon: "❤️" },
+  { key: "charity_project", label: "公益專案", icon: "❤️" },
   { key: "ticketing", label: "售票展演", icon: "🎟️" },
+  { key: "15", label: "其他多元", icon: "📌" },
 ];
 
 export default function CulturalEventsContent() {
