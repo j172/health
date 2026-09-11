@@ -13,7 +13,13 @@ const BUILDING_CASE_URL =
 const ARCHAEOLOGICAL_SITE_URL =
   "https://data.boch.gov.tw/opendata/v2/assetsCase/2.1.json";
 
-export type HeritageCategory = "building" | "archaeological_site";
+export type HeritageCategory =
+  | "building"
+  | "archaeological_site"
+  | "memorial_building"
+  | "settlement"
+  | "historical_site"
+  | "cultural_landscape";
 
 export interface HeritageCategorySyncResult {
   category: HeritageCategory;

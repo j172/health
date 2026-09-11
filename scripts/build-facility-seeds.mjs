@@ -325,46 +325,207 @@ async function buildBookstoresSeed() {
 }
 
 async function buildHeritageMapSeed() {
-  console.log("🏛️ 下載與建置文化資產地圖種子資料 (typeId=A)...");
-  const SOURCE_URL =
-    "https://cloud.culture.tw/frontsite/trans/emapOpenDataAction.do?method=exportEmapJson&typeId=A";
-  const res = await fetch(SOURCE_URL, {
-    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) health.j172.tw" },
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to download heritage assets json`);
+  console.log("🏛️ 下載與建置文化資產地圖種子資料 (涵蓋古蹟建築、考古遺址、紀念建築、聚落群、史蹟與文化景觀 6 大法定文資)...");
 
-  const list = await res.json();
-  console.log(`取得 ${list.length} 筆文化資產原始資料...`);
+  const sources = [
+    // 1. 古蹟與歷史建築 (building)
+    {
+      category: "building",
+      defaultName: "古蹟／歷史建築",
+      type: "emap",
+      url: "https://cloud.culture.tw/frontsite/trans/emapOpenDataAction.do?method=exportEmapJson&typeId=A",
+    },
+    // 2. 聚落建築群 (settlement)
+    {
+      category: "settlement",
+      defaultName: "聚落建築群",
+      type: "emap",
+      url: "https://cloud.culture.tw/frontsite/trans/emapOpenDataAction.do?method=exportEmapJson&typeId=C",
+    },
+    // 3. 史蹟 (historical_site - 文化雲)
+    {
+      category: "historical_site",
+      defaultName: "史蹟",
+      type: "emap",
+      url: "https://cloud.culture.tw/frontsite/trans/emapOpenDataAction.do?method=exportEmapJson&typeId=L",
+    },
+    // 4. 文化景觀 (cultural_landscape - 文化雲)
+    {
+      category: "cultural_landscape",
+      defaultName: "文化景觀",
+      type: "emap",
+      url: "https://cloud.culture.tw/frontsite/trans/emapOpenDataAction.do?method=exportEmapJson&typeId=K",
+    },
+    // 5. 考古遺址 (archaeological_site - 文資局)
+    {
+      category: "archaeological_site",
+      defaultName: "考古遺址",
+      type: "boch",
+      url: "https://data.boch.gov.tw/opendata/v2/assetsCase/2.1.json",
+    },
+    // 6. 史蹟 (historical_site - 文資局)
+    {
+      category: "historical_site",
+      defaultName: "史蹟",
+      type: "boch",
+      url: "https://data.boch.gov.tw/opendata/v2/assetsCase/1.3.json",
+    },
+    // 7. 紀念建築 (memorial_building - 文資局)
+    {
+      category: "memorial_building",
+      defaultName: "紀念建築",
+      type: "boch",
+      url: "https://data.boch.gov.tw/opendata/v2/assetsCase/1.4.json",
+    },
+    // 8. 文化景觀 (cultural_landscape - 文資局 3.1 & 3.2)
+    {
+      category: "cultural_landscape",
+      defaultName: "文化景觀",
+      type: "boch",
+      url: "https://data.boch.gov.tw/opendata/v2/assetsCase/3.1.json",
+    },
+    {
+      category: "cultural_landscape",
+      defaultName: "文化景觀",
+      type: "boch",
+      url: "https://data.boch.gov.tw/opendata/v2/assetsCase/3.2.json",
+    },
+  ];
 
   const points = [];
+  const seenKeys = new Set();
   let idSeq = 1;
-  for (const item of list) {
-    const name = (item.name || "").trim();
-    if (!name) continue;
 
-    const lat = item.latitude ? Number(item.latitude) : null;
-    const lng = item.longitude ? Number(item.longitude) : null;
-    if (!lat || !lng || !Number.isFinite(lat) || lat === 0) continue;
+  for (const src of sources) {
+    try {
+      const res = await fetch(src.url, {
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) health.j172.tw" },
+      });
+      if (!res.ok) {
+        console.warn(`⚠️ [${src.category}] ${src.url} 回傳狀態 ${res.status}`);
+        continue;
+      }
+      const list = await res.json();
+      if (!Array.isArray(list)) {
+        console.warn(`⚠️ [${src.category}] 回傳格式非陣列`);
+        continue;
+      }
 
-    points.push({
-      id: idSeq++,
-      caseId: String(item.mainTypePk || idSeq).trim(),
-      category: "building",
-      caseName: name,
-      assetsTypeNames: item.level || item.typeName || "古蹟",
-      classifyCode: item.type || null,
-      classifyName: item.typeName || "古蹟",
-      cityName: item.cityName || null,
-      distName: null,
-      address: item.address || null,
-      pastHistory: item.intro || null,
-      registerReason: item.level || null,
-      govInstitutionName: item.headCityName || null,
-      lng: Number(lng),
-      lat: Number(lat),
-      imageUrl: item.representImage || null,
-      imageSource: item.srcWebsite || null,
-    });
+      console.log(`取得 ${src.defaultName} (${src.category}) 原始資料 ${list.length} 筆...`);
+
+      for (const item of list) {
+        if (src.type === "emap") {
+          const name = (item.name || "").trim();
+          if (!name) continue;
+
+          let lat = item.latitude ? Number(item.latitude) : null;
+          let lng = item.longitude ? Number(item.longitude) : null;
+
+          // 若缺少精確經緯度，依行政區或縣市中心點進行退避定位
+          if (!lat || !lng || !Number.isFinite(lat) || lat === 0) {
+            const rawAddr = (item.address || "") + (item.cityName || "");
+            for (const [distKey, coords] of Object.entries(DISTRICT_COORDS)) {
+              if (rawAddr.includes(distKey)) {
+                lat = coords.lat;
+                lng = coords.lng;
+                break;
+              }
+            }
+            if (!lat || !lng) {
+              const cityKey = item.cityName || Object.keys(COUNTY_COORDS).find((c) => rawAddr.includes(c));
+              if (cityKey && COUNTY_COORDS[cityKey]) {
+                lat = COUNTY_COORDS[cityKey].lat;
+                lng = COUNTY_COORDS[cityKey].lng;
+              }
+            }
+          }
+
+          if (!lat || !lng || !Number.isFinite(lat) || lat === 0) continue;
+
+          const dedupKey = `${src.category}_${name}_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+          if (seenKeys.has(dedupKey)) continue;
+          seenKeys.add(dedupKey);
+
+          points.push({
+            id: idSeq++,
+            caseId: String(item.mainTypePk || idSeq).trim(),
+            category: src.category,
+            caseName: name,
+            assetsTypeNames: item.level || item.typeName || src.defaultName,
+            classifyCode: item.type || null,
+            classifyName: item.typeName || src.defaultName,
+            cityName: item.cityName || null,
+            distName: null,
+            address: item.address || null,
+            pastHistory: item.intro || null,
+            registerReason: item.level || null,
+            govInstitutionName: item.headCityName || null,
+            lng: Number(lng),
+            lat: Number(lat),
+            imageUrl: item.representImage || null,
+            imageSource: item.srcWebsite || null,
+          });
+        } else {
+          // boch format
+          const name = (item.caseName || "").trim();
+          if (!name) continue;
+
+          let lat = item.latitude ? Number(item.latitude) : null;
+          let lng = item.longitude ? Number(item.longitude) : null;
+
+          const addrObj = Array.isArray(item.addresses) ? item.addresses[0] : null;
+          const cityName = addrObj?.cityName || null;
+          const distName = addrObj?.distName || null;
+          const address = addrObj?.address || null;
+
+          if (!lat || !lng || !Number.isFinite(lat) || lat === 0) {
+            const rawAddr = (address || "") + (cityName || "") + (distName || "");
+            for (const [distKey, coords] of Object.entries(DISTRICT_COORDS)) {
+              if (rawAddr.includes(distKey)) {
+                lat = coords.lat;
+                lng = coords.lng;
+                break;
+              }
+            }
+            if (!lat || !lng) {
+              const cityKey = cityName || Object.keys(COUNTY_COORDS).find((c) => rawAddr.includes(c));
+              if (cityKey && COUNTY_COORDS[cityKey]) {
+                lat = COUNTY_COORDS[cityKey].lat;
+                lng = COUNTY_COORDS[cityKey].lng;
+              }
+            }
+          }
+
+          if (!lat || !lng || !Number.isFinite(lat) || lat === 0) continue;
+
+          const dedupKey = `${src.category}_${name}_${lat.toFixed(4)}_${lng.toFixed(4)}`;
+          if (seenKeys.has(dedupKey)) continue;
+          seenKeys.add(dedupKey);
+
+          points.push({
+            id: idSeq++,
+            caseId: String(item.caseId || idSeq).trim(),
+            category: src.category,
+            caseName: name,
+            assetsTypeNames: item.assetsClassifyName || src.defaultName,
+            classifyCode: item.assetsClassifyCode || null,
+            classifyName: item.assetsClassifyName || src.defaultName,
+            cityName,
+            distName,
+            address,
+            pastHistory: item.pastHistory || null,
+            registerReason: item.registerReason || null,
+            govInstitutionName: item.govInstitutionName || null,
+            lng: Number(lng),
+            lat: Number(lat),
+            imageUrl: item.representImage || null,
+            imageSource: item.representImageSource || item.caseUrl || null,
+          });
+        }
+      }
+    } catch (err) {
+      console.warn(`下載 ${src.defaultName} 失敗:`, err?.message || err);
+    }
   }
 
   const payload = {
@@ -373,8 +534,18 @@ async function buildHeritageMapSeed() {
     updatedAt: new Date().toISOString(),
   };
 
-  fs.writeFileSync(HERITAGE_SEED_PATH, JSON.stringify(payload), "utf-8");
-  console.log(`✅ 文化資產地圖種子檔已生成: ${HERITAGE_SEED_PATH} (${points.length} 點)`);
+  fs.writeFileSync(HERITAGE_SEED_PATH, JSON.stringify(payload, null, 2), "utf-8");
+
+  const catCounts = {};
+  for (const p of points) catCounts[p.category] = (catCounts[p.category] || 0) + 1;
+
+  console.log(
+    `✅ 文化資產地圖種子檔已生成: ${HERITAGE_SEED_PATH} (總計 ${points.length} 點：` +
+      Object.entries(catCounts)
+        .map(([k, v]) => `${k}=${v}`)
+        .join(", ") +
+      ")",
+  );
 }
 
 async function main() {

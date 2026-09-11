@@ -18,16 +18,28 @@ L.Icon.Default.mergeOptions({
 const CATEGORY_COLORS: Record<HeritageCategory, string> = {
   building: "#b45309", // amber — 古蹟／歷史建築
   archaeological_site: "#7c3aed", // violet — 考古遺址
+  memorial_building: "#0284c7", // sky blue — 紀念建築
+  settlement: "#059669", // emerald — 聚落建築群
+  historical_site: "#dc2626", // red — 史蹟
+  cultural_landscape: "#16a34a", // green — 文化景觀
 };
 
 const CATEGORY_EMOJI: Record<HeritageCategory, string> = {
   building: "🏛️",
   archaeological_site: "🏺",
+  memorial_building: "🏢",
+  settlement: "🏘️",
+  historical_site: "📜",
+  cultural_landscape: "🏞️",
 };
 
 const CATEGORY_LABELS: Record<HeritageCategory, string> = {
   building: "古蹟／歷史建築",
   archaeological_site: "考古遺址",
+  memorial_building: "紀念建築",
+  settlement: "聚落建築群",
+  historical_site: "史蹟",
+  cultural_landscape: "文化景觀",
 };
 
 const makeIcon = (category: HeritageCategory) =>
@@ -42,6 +54,10 @@ const makeIcon = (category: HeritageCategory) =>
 const ICONS: Record<HeritageCategory, L.DivIcon> = {
   building: makeIcon("building"),
   archaeological_site: makeIcon("archaeological_site"),
+  memorial_building: makeIcon("memorial_building"),
+  settlement: makeIcon("settlement"),
+  historical_site: makeIcon("historical_site"),
+  cultural_landscape: makeIcon("cultural_landscape"),
 };
 
 const TRUNCATE_LENGTH = 120;

@@ -5,6 +5,7 @@ import { countFacilities, searchFacilities } from "@/lib/server/facilities/queri
 
 import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
 import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
+import contraceptionSeed from "@/data/contraception-map-seed.json";
 
 export const runtime = "nodejs";
 
@@ -51,6 +52,24 @@ function getFacilitySeedFallback(
 ): { facilities: SeedFacilityItem[]; total: number } | null {
   try {
     let raw = SEED_FACILITIES[facilityType];
+
+    if (options.serviceItem === "避孕諮詢" && (facilityType === "clinic" || facilityType === "pharmacy")) {
+      const isClinic = facilityType === "clinic";
+      const beokPoints = ((contraceptionSeed as any).points || []).filter(
+        (p: any) => (isClinic ? p.category === "clinic" : p.category === "pharmacy"),
+      );
+      raw = beokPoints.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        address: p.address,
+        phone: p.phone || null,
+        lat: p.lat,
+        lng: p.lng,
+        service_item: isClinic ? "避孕諮詢診所" : "避孕諮詢藥局",
+        extra_json: { beokCertified: true, source: p.source },
+      }));
+    }
+
     if (!raw) {
       const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
       if (fs.existsSync(seedPath)) {
@@ -164,6 +183,22 @@ export async function GET(request: NextRequest) {
     // normal for a geographically concentrated dataset, can't be misread as the dataset
     // itself being nearly empty. Passing keyword/radius/category in here would collapse
     // `total` back onto `facilities.length` and destroy the only comparison that matters.
+    if (serviceItem === "避孕諮詢") {
+      const fallback = getFacilitySeedFallback(facilityType, {
+        keyword,
+        lat,
+        lng,
+        radiusMeters,
+        serviceItem,
+        onlyCharity,
+        sort,
+        limit,
+      });
+      if (fallback) {
+        return NextResponse.json(fallback);
+      }
+    }
+
     const [facilities, total] = await Promise.all([
       searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, onlyCharity, sort, limit }),
       countFacilities(facilityType),

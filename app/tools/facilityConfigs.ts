@@ -25,6 +25,7 @@ export const facilitySearchConfigs = {
       { value: "區域醫院", label: "區域醫院" },
       { value: "地區醫院", label: "地區醫院" },
       { value: "基層診所", label: "基層診所" },
+      { value: "避孕諮詢", label: "🛡️ 避孕諮詢診所" },
     ],
   },
   pharmacies: {
@@ -46,6 +47,7 @@ export const facilitySearchConfigs = {
     categories: [
       { value: "健保特約藥局", label: "健保特約藥局" },
       { value: "一般藥局", label: "一般藥局" },
+      { value: "避孕諮詢", label: "🛡️ 避孕諮詢藥局" },
     ],
   },
   "hakka-bogong": {
