@@ -1103,5 +1103,36 @@ export const TABLE_DDL = {
       KEY idx_pet_updated (updated_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 便民服務：最新書籍 (博客來 4 榜 + 誠品 27 類) — Phase 4
+  latestBooks: `
+    CREATE TABLE IF NOT EXISTS latest_books (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      platform VARCHAR(32) NOT NULL,
+      category_id VARCHAR(64) NOT NULL,
+      category_name VARCHAR(128) NOT NULL,
+      ranking INT NULL,
+      title VARCHAR(512) NOT NULL,
+      subtitle VARCHAR(512) NULL,
+      author VARCHAR(256) NULL,
+      translator VARCHAR(256) NULL,
+      publisher VARCHAR(256) NULL,
+      publish_date VARCHAR(64) NULL,
+      cover_url VARCHAR(1024) NULL,
+      product_url VARCHAR(1024) NOT NULL,
+      isbn VARCHAR(32) NULL,
+      list_price INT NULL,
+      sale_price INT NULL,
+      discount VARCHAR(32) NULL,
+      description TEXT NULL,
+      payload_hash VARCHAR(64) NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_platform_prod (platform, product_url(255)),
+      KEY idx_platform_cat (platform, category_id),
+      KEY idx_books_title (title(128))
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
