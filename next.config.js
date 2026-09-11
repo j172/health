@@ -68,11 +68,6 @@ const nextConfig = {
         destination: "/tools/npo-organizations",
         permanent: true,
       },
-      {
-        source: "/tools/ltc-contracted",
-        destination: "/tools/long-term-care",
-        permanent: true,
-      },
     ];
   },
 };
