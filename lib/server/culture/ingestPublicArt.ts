@@ -76,6 +76,7 @@ export async function runPublicArtSync(
     year: string | null;
     sourceUrl: string | null;
     agency: string | null;
+    extraJson?: Record<string, unknown> | null;
   }> = [];
 
   const seenArtNos = new Set<string>();
@@ -113,6 +114,7 @@ export async function runPublicArtSync(
       year: toSafeString(item["創作年代yyyy"] || item.year) || null,
       sourceUrl: toSafeString(item["來源網站"] || item.sourceUrl) || null,
       agency: toSafeString(item["委託單位"] || item.agency) || null,
+      extraJson: item.extraJson || null,
     });
   }
 
@@ -139,6 +141,7 @@ export async function runPublicArtSync(
         a.year,
         a.sourceUrl,
         a.agency,
+        a.extraJson ? JSON.stringify(a.extraJson) : null,
         now,
         now,
       ]);
@@ -147,7 +150,7 @@ export async function runPublicArtSync(
         `INSERT INTO public_arts (
            art_no, title, artist, dimensions, material, city, location,
            lat, lng, field_type, description, image_url, year, source_url,
-           agency, created_at, updated_at
+           agency, extra_json, created_at, updated_at
          ) VALUES ?
          ON DUPLICATE KEY UPDATE
            title = VALUES(title),
@@ -164,6 +167,7 @@ export async function runPublicArtSync(
            year = VALUES(year),
            source_url = VALUES(source_url),
            agency = VALUES(agency),
+           extra_json = VALUES(extra_json),
            updated_at = VALUES(updated_at)`,
         [values]
       );
