@@ -1,0 +1,2005 @@
+{
+  "total": 100,
+  "records": [
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "感動智慧科技股份有限公司附設私立感動教育文理技藝短期補習班",
+      "address": "八里區龍行二街3巷2號2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "感動智慧科技股份有限公司附設私立感動教育文理技藝短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "龍行二街3巷2號2樓",
+        "date": "39127"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立青子園文理技藝短期補習班",
+      "address": "八里區中山路2段283號1、2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立青子園文理技藝短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段283號1、2樓",
+        "date": "44413"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立邁課斯文理短期補習班",
+      "address": "八里區中山路2段107號(1層)、2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立邁課斯文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段107號(1層)、2樓",
+        "date": "45953"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立小精靈文理語文短期補習班",
+      "address": "八里區中華路2段308巷6弄7號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立小精靈文理語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中華路2段308巷6弄7號1樓",
+        "date": "38456"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立佳泓珠心算美語文理短期補習班",
+      "address": "八里區中山路2段540巷9弄5號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立佳泓珠心算美語文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段540巷9弄5號1樓",
+        "date": "38119"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立聖讀文理語文短期補習班",
+      "address": "八里區忠七街20號1,2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立聖讀文理語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "忠七街20 號1,2樓",
+        "date": "38177"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立大楊老師文理語文短期補習班",
+      "address": "八里區中華路二段302號2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立大楊老師文理語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中華路二段302號2樓",
+        "date": "38329"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立昕典音樂短期補習班",
+      "address": "八里區華峰一街20號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立昕典音樂短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "華峰一街20號1樓",
+        "date": "41680"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立文化13文理短期補習班",
+      "address": "八里區龍形一街12巷2號(1層)、6號(1層)、龍形二街2之1號3樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立文化13文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "龍形一街12巷2號(1層)、6號(1層)、龍形二街2之1號3樓",
+        "date": "42556"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立快樂芝麻語文短期補習班",
+      "address": "八里區龍米路三段38號3樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立快樂芝麻語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "龍米路三段38號3樓",
+        "date": "41040"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立邁克斯文理語文短期補習班",
+      "address": "八里區中山路2段406巷19號1、2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立邁克斯文理語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段406巷19號1、2樓",
+        "date": "40795"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立晉昇文理語文短期補習班",
+      "address": "八里區中山路2段326號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立晉昇文理語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段326號1樓",
+        "date": "41046"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立格爾語文文理短期補習班",
+      "address": "八里區中山路2段213號1、2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立格爾語文文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段213號1、2樓",
+        "date": "41836"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立毅丞文理短期補習班",
+      "address": "八里區中山路2段259號1、2樓、261號2樓、263號2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立毅丞文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段259號1、2樓、261號2樓、263號2樓",
+        "date": "40848"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立玩音樂音樂語文短期補習班",
+      "address": "八里區中山路2段171號2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立玩音樂音樂語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段171號2樓",
+        "date": "41328"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立佳優文理語文短期補習班",
+      "address": "八里區中山路2段227號2樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立佳優文理語文短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段227號2樓",
+        "date": "39255"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "兩岸心動力國際教育文化有限公司附設私立愛智塾文理短期補習班",
+      "address": "八里區中山路1段53號",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "兩岸心動力國際教育文化有限公司附設私立愛智塾文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路1段53號",
+        "date": "38737"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立佳優點文理短期補習班",
+      "address": "八里區中山路2段225號1樓及227號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立佳優點文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段225號1樓及227號1樓",
+        "date": "45047"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立進益文理短期補習班",
+      "address": "八里區中山路2段412號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立進益文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段412號1樓",
+        "date": "37137"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立心領袖文理短期補習班",
+      "address": "八里區中華路2段556號1樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立心領袖文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中華路2段556號1樓",
+        "date": "44118"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立邁克司文理短期補習班",
+      "address": "八里區中山路2段366號3樓",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立邁克司文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段366號3樓",
+        "date": "41570"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立瀚敦文理短期補習班",
+      "address": "八里區中華路2段308巷10號(1樓)",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立瀚敦文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中華路2段308巷10號(1樓)",
+        "date": "38688"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000230",
+      "name": "私立邱吉爾文理短期補習班",
+      "address": "八里區中山路2段366號3樓之1",
+      "phone": null,
+      "lat": 25.147,
+      "lng": 121.398,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立邱吉爾文理短期補習班",
+        "district": "八里區",
+        "areacode": "65000230",
+        "address": "中山路2段366號3樓之1",
+        "date": "43885"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立洋明文理短期補習班",
+      "address": "三芝區中正路1段43號2樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立洋明文理短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中正路1段43號2樓",
+        "date": "43014"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立敦璦文理語文短期補習班",
+      "address": "三芝區長春街2之1號、10(由8、10號門牌合併)、12號(各1樓)",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立敦璦文理語文短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "長春街2之1號、10(由8、10號門牌合併)、12號(各1樓)",
+        "date": "38768"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立陽光生活美語短期補習班",
+      "address": "三芝區中正路1段18巷48、50號",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立陽光生活美語短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中正路1段18巷48、50號",
+        "date": "38799"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立裕仁文理語文短期補習班",
+      "address": "三芝區中正路1段110之1號1、2樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立裕仁文理語文短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中正路1段110之1號1、2樓",
+        "date": "41199"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立敦品文理語文短期補習班",
+      "address": "三芝區中山路1段29號1、2樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立敦品文理語文短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中山路1段29號1、2樓",
+        "date": "37830"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立洋名文理短期補習班",
+      "address": "三芝區長勤街11號1、2樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立洋名文理短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "長勤街11號1、2樓",
+        "date": "44909"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立華一正德技藝短期補習班",
+      "address": "三芝區公正街66號1、2樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立華一正德技藝短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "公正街66號1、2樓",
+        "date": "37077"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立凱宸文理短期補習班",
+      "address": "三芝區智成街7號(1樓)",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立凱宸文理短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "智成街7號(1樓)",
+        "date": "43350"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立瑞笛文理技藝短期補習班",
+      "address": "三芝區中正路1段72號3、4樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立瑞笛文理技藝短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中正路1段72號3、4樓",
+        "date": "40473"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立學承文理技藝短期補習班",
+      "address": "三芝區中正路1段104號1、2樓",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立學承文理技藝短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中正路1段104號1、2樓",
+        "date": "39394"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000210",
+      "name": "私立巧思菓文理短期補習班",
+      "address": "三芝區中正路1段100號(1、2樓)",
+      "phone": null,
+      "lat": 25.258,
+      "lng": 121.501,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立巧思菓文理短期補習班",
+        "district": "三芝區",
+        "areacode": "65000210",
+        "address": "中正路1段100號(1、2樓)",
+        "date": "43693"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "翊華五華文理技藝短期補習班",
+      "address": "三重區五華街200號1樓及夾層",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "翊華五華文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "五華街200號1樓及夾層",
+        "date": "44761"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立智英文理短期補習班",
+      "address": "三重區正義北路302巷35號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立智英文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義北路302巷35號2樓",
+        "date": "43826"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立新敦翰文理短期補習班",
+      "address": "三重區中正北路19號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立新敦翰文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "中正北路19號2樓",
+        "date": "44407"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "立全語文文理短期補習班",
+      "address": "三重區仁愛街367號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "立全語文文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "仁愛街367號2樓",
+        "date": "41883"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "百世教育科技股份有限公司附設百仕文理短期補習班",
+      "address": "三重區重新路4段43號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "百世教育科技股份有限公司附設百仕文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重新路4段43號2樓",
+        "date": "40534"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立翊華三德文理技藝短期補習班",
+      "address": "三重區三德街5號(1、2層)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立翊華三德文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三德街5號(1、2層)",
+        "date": "45891"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立育苗資優文理語文短期補習班",
+      "address": "三重區三和路3段79號(由79、81號各1樓、79號地下1層共3戶合併)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立育苗資優文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三和路3段79號(由79、81號各1樓、79號地下1層共3戶合併)",
+        "date": "39295"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "百世教育科技股份有限公司附設百試文理短期補習班",
+      "address": "三重區重陽路4段132號5樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "百世教育科技股份有限公司附設百試文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路4段132號5樓",
+        "date": "40527"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立新育林語文珠心算短期補習班",
+      "address": "三重區自由街18巷19號1樓、40號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立新育林語文珠心算短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "自由街18巷19號1樓、40號1樓",
+        "date": "40108"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "百晟文理技藝短期補習班",
+      "address": "三重區五華街68號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "百晟文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "五華街68號1樓",
+        "date": "37935"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "小久淘五華文理技藝短期補習班",
+      "address": "三重區集賢路161號(1、2層)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "小久淘五華文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集賢路161號(1、2層)",
+        "date": "45341"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "未來國際有限公司附設私立碧華文理短期補習班",
+      "address": "三重區溪尾街307號1、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "未來國際有限公司附設私立碧華文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "溪尾街307號1、2樓",
+        "date": "36623"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立景曜文理短期補習班",
+      "address": "三重區重新路4段98號8樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立景曜文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重新路4段98號8樓",
+        "date": "46065"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "自強電機技藝短期補習班",
+      "address": "三重區中央南路51號3樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "自強電機技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "中央南路51號3樓",
+        "date": "42635"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立愛學館集賢校文理短期補習班",
+      "address": "三重區集賢路191號(1樓及夾層)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立愛學館集賢校文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集賢路191號(1樓及夾層)",
+        "date": "45222"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "鼎盛語文電腦短期補習班",
+      "address": "三重區力行路2段148號2樓之1",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "鼎盛語文電腦短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "力行路2段148號2樓之1",
+        "date": "39764"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "巨匠電腦股份有限公司三重美語分公司附設鉅匠美語短期補習班",
+      "address": "三重區重新路2段23號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "巨匠電腦股份有限公司三重美語分公司附設鉅匠美語短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重新路2段23號2樓",
+        "date": "39105"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "快樂陽光文理短期補習班",
+      "address": "三重區忠孝路1段45巷1號1樓、3號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "快樂陽光文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "忠孝路1段45巷1號1樓、3號1樓",
+        "date": "43423"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "斯塔美語文理短期補習班",
+      "address": "三重區仁義街395號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "斯塔美語文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "仁義街395號1樓",
+        "date": "44259"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "艾美樂文理語文短期補習班",
+      "address": "三重區集美街126巷19號(1樓)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "艾美樂文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集美街126巷19號(1樓)",
+        "date": "39329"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立理想瑜伽技藝短期補習班",
+      "address": "三重區後竹圍街279之5號(1層)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立理想瑜伽技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "後竹圍街279之5號(1層)",
+        "date": "39413"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "佳思美文理技藝短期補習班",
+      "address": "三重區大智街190號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "佳思美文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "大智街190號1樓",
+        "date": "39745"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "騏霖文理短期補習班",
+      "address": "三重區中央南路102號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "騏霖文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "中央南路102號1樓",
+        "date": "37991"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "建兒樂語文美術珠心算短期補習班",
+      "address": "三重區大智街155號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "建兒樂語文美術珠心算短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "大智街155號1樓",
+        "date": "37343"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "智基科技開發股份有限公司附設珍志光文理法商短期補習班",
+      "address": "三重區正義北路218號1樓、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "智基科技開發股份有限公司附設珍志光文理法商短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義北路218號1樓、2樓",
+        "date": "40442"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "愛迪生文理語文短期補習班",
+      "address": "三重區永福街111巷2號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "愛迪生文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "永福街111巷2號1樓",
+        "date": "38876"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "士大文理技藝短期補習班",
+      "address": "三重區大智街206號(1樓)、208號(1、2樓)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "士大文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "大智街206號(1樓)、208號(1、2樓)",
+        "date": "41278"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立棋琳共學文理技藝短期補習班",
+      "address": "三重區重陽路3段130號4樓之1",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立棋琳共學文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路3段130號4樓之1",
+        "date": "45681"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "佳哲文化股份有限公司附設私立英群文理技藝短期補習班",
+      "address": "三重區水漾路1段126號4樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "佳哲文化股份有限公司附設私立英群文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "水漾路1段126號4樓",
+        "date": "45979"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "新中山語文文理短期補習班",
+      "address": "三重區信義西街102號、114號(各1層)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "新中山語文文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "信義西街102號、114號(各1層)",
+        "date": "37337"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "全盈文理語文短期補習班",
+      "address": "三重區安慶街285號1樓、重陽路3段5巷8弄8號1樓、6號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "全盈文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "安慶街285號1樓、重陽路3段5巷8弄8號1樓、6號2樓",
+        "date": "39009"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立捷登領袖文理短期補習班",
+      "address": "三重區溪尾街107號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立捷登領袖文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "溪尾街107號2樓",
+        "date": "45168"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "致和文理短期補習班",
+      "address": "三重區三和路4段15號4樓、4樓之1",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "致和文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三和路4段15號4樓、4樓之1",
+        "date": "38721"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "碩晟文理語文短期補習班",
+      "address": "三重區三和路4段20巷112號1樓、99之3號4樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "碩晟文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三和路4段20巷112號1樓、99之3號4樓",
+        "date": "40536"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立育麒文理技藝短期補習班",
+      "address": "三重區集美街5號(1層)、5號2、3樓、7號2、4樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立育麒文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集美街5號(1層)、5號2、3樓、7號2、4樓",
+        "date": "37137"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "精英國際教育管理顧問股份有限公司附設私立威妮斯特堡語文文理短期補習班",
+      "address": "三重區三信路5號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "精英國際教育管理顧問股份有限公司附設私立威妮斯特堡語文文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三信路5號2樓",
+        "date": "39901"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "學嘉文理技藝短期補習班",
+      "address": "三重區集美街238號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "學嘉文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集美街238號2樓",
+        "date": "41514"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "德碩文理語文短期補習班",
+      "address": "三重區集美街43號2、3樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "德碩文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集美街43號2、3樓",
+        "date": "40571"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立耶儒文理短期補習班",
+      "address": "三重區重陽路4段130號2樓、132號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立耶儒文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路4段130號2樓、132號2樓",
+        "date": "38202"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立碩仁文理短期補習班",
+      "address": "三重區集成路39號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立碩仁文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "集成路39號2樓",
+        "date": "43532"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "綸堡國際教育股份有限公司附設綸堡美語文理短期補習班",
+      "address": "三重區大智街94之2號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "綸堡國際教育股份有限公司附設綸堡美語文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "大智街94之2號1樓",
+        "date": "38721"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立恆德文理短期補習班",
+      "address": "三重區三和路4段16號3樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立恆德文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三和路4段16號3樓",
+        "date": "39699"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立正義大榮珠算短期補習班",
+      "address": "三重區大榮街40號1、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立正義大榮珠算短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "大榮街40號1、2樓",
+        "date": "38203"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立哈佛學園文理美語短期補習班",
+      "address": "三重區自由街20號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立哈佛學園文理美語短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "自由街20號1樓",
+        "date": "41859"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立群贊語文短期補習班",
+      "address": "三重區秀江街120號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立群贊語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "秀江街120號2樓",
+        "date": "40385"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "英帆文理語文電腦音樂美術珠算短期補習班",
+      "address": "三重區重陽路1段50號1、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "英帆文理語文電腦音樂美術珠算短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路1段50號1、2樓",
+        "date": "40794"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "煒群文理語文短期補習班",
+      "address": "三重區重陽路1段50號3、4樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "煒群文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路1段50號3、4樓",
+        "date": "40794"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立文彥語文短期補習班",
+      "address": "三重區重陽路4段34、36、38號(各2樓)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立文彥語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路4段34、36、38號(各2樓)",
+        "date": "39296"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立揚邦文理語文音樂美術珠心算短期補習班",
+      "address": "三重區重陽路4段34號3樓、34號5樓、36號5樓、38號5樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立揚邦文理語文音樂美術珠心算短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重陽路4段34號3樓、34號5樓、36號5樓、38號5樓",
+        "date": "36528"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立名人兒童圍棋有限公司附設重新圍棋短期補習班",
+      "address": "三重區重新路4段6之1號(2樓)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立名人兒童圍棋有限公司附設重新圍棋短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重新路4段6之1號(2樓)",
+        "date": "42571"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "綺響音樂語文美術補習班",
+      "address": "三重區三民街316號2樓(門牌整編)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "綺響音樂語文美術補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三民街316號2樓(門牌整編)",
+        "date": "36349"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "學悟處文理語文短期補習班",
+      "address": "三重區五華街125號2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "學悟處文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "五華街125號2樓",
+        "date": "42438"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "英權文理語文電腦美術珠心算短期補習班",
+      "address": "三重區三賢街117、119、121、123號各1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "英權文理語文電腦美術珠心算短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三賢街117、119、121、123號各1樓",
+        "date": "41514"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "聯發文理短期補習班",
+      "address": "三重區正義北路206、208號各11樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "聯發文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義北路206、208號各11樓",
+        "date": "41358"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立育庠英文短期補習班",
+      "address": "三重區正義北路154號6樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立育庠英文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義北路154號6樓",
+        "date": "39239"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立上榕舞蹈短期補習班",
+      "address": "三重區正義北路235號3、4樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立上榕舞蹈短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義北路235號3、4樓",
+        "date": "36907"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立盒子文理語文短期補習班",
+      "address": "三重區正義北路279號5樓之1",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立盒子文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義北路279號5樓之1",
+        "date": "39429"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "熊振文理短期補習班",
+      "address": "三重區正義南路85號1、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "熊振文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "正義南路85號1、2樓",
+        "date": "39834"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立真善美瑜伽短期補習班",
+      "address": "三重區六張街89號",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立真善美瑜伽短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "六張街89號",
+        "date": "39262"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "吉英文理技藝短期補習班",
+      "address": "三重區五華街118號2、3、4、5樓、120號5樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "吉英文理技藝短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "五華街118號2、3、4、5樓、120號5樓",
+        "date": "38334"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "諾貝爾優等文理語文短期補習班",
+      "address": "三重區永福街46巷41弄59號1、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "諾貝爾優等文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "永福街46巷41弄59號1、2樓",
+        "date": "42472"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立有鼓氣音樂短期補習班",
+      "address": "三重區三民街329號(2樓)",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立有鼓氣音樂短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "三民街329號(2樓)",
+        "date": "42080"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立智仁文理語文短期補習班",
+      "address": "三重區永福街89號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立智仁文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "永福街89號1樓",
+        "date": "41249"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "科踐語文文理短期補習班",
+      "address": "三重區重新路2段1之4號1~4樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "科踐語文文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "重新路2段1之4號1~4樓",
+        "date": "39594"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立浩瀚文理語文短期補習班",
+      "address": "三重區忠孝路3段35號1、2樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立浩瀚文理語文短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "忠孝路3段35號1、2樓",
+        "date": "39127"
+      }
+    },
+    {
+      "facilityType": "cram_school",
+      "sourceKey": "ntpc_cram_schools",
+      "sourceId": "65000020",
+      "name": "私立創勝語文文理短期補習班",
+      "address": "三重區力行路1段179巷11號1樓",
+      "phone": null,
+      "lat": 25.061,
+      "lng": 121.499,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "新北市政府教育局",
+      "extra": {
+        "c_schoolname": "私立創勝語文文理短期補習班",
+        "district": "三重區",
+        "areacode": "65000020",
+        "address": "力行路1段179巷11號1樓",
+        "date": "40715"
+      }
+    }
+  ]
+}

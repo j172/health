@@ -13,9 +13,9 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 60 tools registered", () => {
+test("TOOL_CATALOG has exactly 63 tools registered", () => {
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 60, `Expected 60 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 63, `Expected 63 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
@@ -118,7 +118,7 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   const hasArtType = artData.some((a) => a.fieldType !== "演藝活動場所" && !String(a.artNo).startsWith("VENUE_"));
   assert.ok(hasVenueType && hasArtType, "Must contain both public art installations and performance venues");
 
-  // 10. Latest books seed (博客來 4 榜 + 誠品 27 類)
+  // 10. Latest books seed (博客來 4 榜 + 誠品 27 類 + TAAZE 10 類)
   const lbPath = path.join(ROOT_DIR, "data", "latest-books-seed.json");
   assert.ok(fs.existsSync(lbPath), "latest-books-seed.json must exist");
   const lbData = JSON.parse(fs.readFileSync(lbPath, "utf-8"));
@@ -129,6 +129,28 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   const lbPlatforms = new Set(lbData.books.map((b) => b.platform));
   assert.ok(lbPlatforms.has("books_com_tw"), "Must contain books_com_tw books");
   assert.ok(lbPlatforms.has("eslite"), "Must contain eslite books");
+  assert.ok(lbPlatforms.has("taaze"), "Must contain taaze books");
+
+  // 11. Vet clinics seed
+  const vcPath = path.join(seedsDir, "vet_clinic.json");
+  assert.ok(fs.existsSync(vcPath), "vet_clinic.json seed file must exist");
+  const vcData = JSON.parse(fs.readFileSync(vcPath, "utf-8"));
+  const vcList = Array.isArray(vcData) ? vcData : (vcData.records || []);
+  assert.ok(Array.isArray(vcList) && vcList.length > 1000, `Expected > 1000 vet clinics, got ${vcList.length}`);
+
+  // 12. Metro alerts seed
+  const maPath = path.join(ROOT_DIR, "data", "metro-alerts-seed.json");
+  assert.ok(fs.existsSync(maPath), "metro-alerts-seed.json must exist");
+
+  // 13. YouBike stations seed
+  const ybPath = path.join(ROOT_DIR, "data", "youbike-stations-seed.json");
+  assert.ok(fs.existsSync(ybPath), "youbike-stations-seed.json must exist");
+  const ybData = JSON.parse(fs.readFileSync(ybPath, "utf-8"));
+  assert.ok(Array.isArray(ybData) && ybData.length > 2000, `Expected > 2000 youbike stations, got ${ybData.length}`);
+
+  // 14. Pest alerts seed
+  const pestPath = path.join(ROOT_DIR, "data", "pest-alerts-seed.json");
+  assert.ok(fs.existsSync(pestPath), "pest-alerts-seed.json must exist");
 });
 
 test("facilityConfigs has matching configurations for all facility tool pages", () => {
@@ -142,9 +164,11 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
   assert.ok(content.includes('facilityType: "bookstore"'), "bookstores must have facilityType bookstore");
 
   assert.ok(content.includes("避孕諮詢"), "facilityConfigs must contain 避孕諮詢 filter option");
+  assert.ok(content.includes('"vet-clinics":'), "facilityConfigs must contain vet-clinics");
+  assert.ok(content.includes('facilityType: "vet_clinic"'), "vet-clinics must have facilityType vet_clinic");
 });
 
-test("All 60 tool page files exist on disk", () => {
+test("All 63 tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");

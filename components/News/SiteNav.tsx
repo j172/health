@@ -136,11 +136,17 @@ export default function SiteNav() {
   const localizeItems = (
     items: { href: string; slug: string; title: string }[],
   ): NavLinkItem[] =>
-    items.map((item) => ({
-      href: item.href,
-      label:
-        locale === "en" ? t(`catalog.${item.slug}`, item.title) : item.title,
-    }));
+    items
+      .map((item) => ({
+        href: item.href,
+        label:
+          locale === "en" ? t(`catalog.${item.slug}`, item.title) : item.title,
+      }))
+      .sort((a, b) =>
+        a.label.localeCompare(b.label, locale === "en" ? "en" : "zh-Hant", {
+          numeric: true,
+        }),
+      );
 
   const facilityItems = localizeItems(FACILITY_TOOLS);
   const ltcItems = localizeItems(LTC_TOOLS);

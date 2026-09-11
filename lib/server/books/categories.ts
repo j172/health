@@ -225,10 +225,84 @@ export const BOOKS_CATEGORIES: BookCategoryConfig[] = [
     url: "https://www.eslite.com/category/3/65",
     description: "手作藝品、攝影園藝、戶外探險與豐富生活的休閒提案",
   },
+
+  // -------------------------------------------------------------------------
+  // TAAZE 讀冊生活 10 大注目新書／編輯推薦 RSS 頻道
+  // -------------------------------------------------------------------------
+  {
+    id: "taaze_5_16",
+    platform: "taaze",
+    name: "注目新書－醫學保健",
+    url: "https://ebook.taaze.tw/do/rssfeed/item5_16.xml",
+    description: "讀冊生活注目新書：醫學保健、防病養生與日常照護好書",
+  },
+  {
+    id: "taaze_5_12",
+    platform: "taaze",
+    name: "注目新書－生活風格",
+    url: "https://ebook.taaze.tw/do/rssfeed/item5_12.xml",
+    description: "讀冊生活注目新書：品味生活、收納美學與日常風格提案",
+  },
+  {
+    id: "taaze_5_17",
+    platform: "taaze",
+    name: "注目新書－少兒親子",
+    url: "https://ebook.taaze.tw/do/rssfeed/item5_17.xml",
+    description: "讀冊生活注目新書：親子溝通、育兒成長與兒童啟蒙讀物",
+  },
+  {
+    id: "taaze_5_18",
+    platform: "taaze",
+    name: "注目新書－教育學習",
+    url: "https://ebook.taaze.tw/do/rssfeed/item5_18.xml",
+    description: "讀冊生活注目新書：教育思潮、素養培育與學習方法探討",
+  },
+  {
+    id: "taaze_5_20",
+    platform: "taaze",
+    name: "注目新書－心理勵志",
+    url: "https://ebook.taaze.tw/do/rssfeed/item5_20.xml",
+    description: "讀冊生活注目新書：情緒覺察、心靈修復與自我啟發實踐",
+  },
+  {
+    id: "taaze_6_16",
+    platform: "taaze",
+    name: "編輯推薦－醫學保健",
+    url: "https://ebook.taaze.tw/do/rssfeed/item6_16.xml",
+    description: "讀冊生活編輯精選：權威醫學名著、健康科學與長壽指南",
+  },
+  {
+    id: "taaze_6_12",
+    platform: "taaze",
+    name: "編輯推薦－生活風格",
+    url: "https://ebook.taaze.tw/do/rssfeed/item6_12.xml",
+    description: "讀冊生活編輯精選：質感生活、手作美學與減法生活風格",
+  },
+  {
+    id: "taaze_6_17",
+    platform: "taaze",
+    name: "編輯推薦－少兒親子",
+    url: "https://ebook.taaze.tw/do/rssfeed/item6_17.xml",
+    description: "讀冊生活編輯精選：家庭教養、共讀推薦與正向親子互動",
+  },
+  {
+    id: "taaze_6_18",
+    platform: "taaze",
+    name: "編輯推薦－教育學習",
+    url: "https://ebook.taaze.tw/do/rssfeed/item6_18.xml",
+    description: "讀冊生活編輯精選：親職教育、深度學習與創新教育指南",
+  },
+  {
+    id: "taaze_6_20",
+    platform: "taaze",
+    name: "編輯推薦－心理勵志",
+    url: "https://ebook.taaze.tw/do/rssfeed/item6_20.xml",
+    description: "讀冊生活編輯精選：深度心靈療癒、挫折復原力與生命成長",
+  },
 ];
 
 export const getCategoryById = (id: string): BookCategoryConfig | undefined =>
   BOOKS_CATEGORIES.find((c) => c.id === id);
 
-export const getCategoriesByPlatform = (platform: "books_com_tw" | "eslite"): BookCategoryConfig[] =>
+export const getCategoriesByPlatform = (platform: import("./types").BookPlatform): BookCategoryConfig[] =>
   BOOKS_CATEGORIES.filter((c) => c.platform === platform);

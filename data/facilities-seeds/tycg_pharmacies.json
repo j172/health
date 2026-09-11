@@ -1,0 +1,425 @@
+{
+  "total": 20,
+  "records": [
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "1",
+      "name": "誠泰藥局",
+      "address": "八德區大千里東勇街51－2號",
+      "phone": "03 -3649340",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "1",
+        "藥局名稱": "誠泰藥局",
+        "地址": "八德區大千里東勇街51－2號",
+        "電話": "03 -3649340",
+        "負責人": "簡威榮"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "2",
+      "name": "新大明藥局",
+      "address": "八德區大明街二一號一樓",
+      "phone": "03 -3618284",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "2",
+        "藥局名稱": "新大明藥局",
+        "地址": "八德區大明街二一號一樓",
+        "電話": "03 -3618284",
+        "負責人": "李新森"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "3",
+      "name": "厚仁藥局",
+      "address": "八德區大義里永福街11號",
+      "phone": "03 -3611071",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "3",
+        "藥局名稱": "厚仁藥局",
+        "地址": "八德區大義里永福街11號",
+        "電話": "03 -3611071",
+        "負責人": "陳錦寶"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "4",
+      "name": "中山啄木鳥藥局",
+      "address": "八德區中山路211號、213號、215號、217號1樓",
+      "phone": "03-3656375",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "4",
+        "藥局名稱": "中山啄木鳥藥局",
+        "地址": "八德區中山路211號、213號、215號、217號1樓",
+        "電話": "03-3656375",
+        "負責人": "黃中成"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "5",
+      "name": "宏昌藥局",
+      "address": "八德區介壽路1段890號",
+      "phone": "03 -3639797",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "5",
+        "藥局名稱": "宏昌藥局",
+        "地址": "八德區介壽路1段890號",
+        "電話": "03 -3639797",
+        "負責人": "余瀅如"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "6",
+      "name": "井三原健保藥局",
+      "address": "八德區介壽路1段956號",
+      "phone": "03 -2184078",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "6",
+        "藥局名稱": "井三原健保藥局",
+        "地址": "八德區介壽路1段956號",
+        "電話": "03 -2184078",
+        "負責人": "林哲宇"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "7",
+      "name": "健民大藥局",
+      "address": "八德區介壽路2段282號",
+      "phone": "03 -3666639",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "7",
+        "藥局名稱": "健民大藥局",
+        "地址": "八德區介壽路2段282號",
+        "電話": "03 -3666639",
+        "負責人": "李哲瑜"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "8",
+      "name": "安慧藥局",
+      "address": "八德區介壽路一段733號",
+      "phone": "03 -3636131",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "8",
+        "藥局名稱": "安慧藥局",
+        "地址": "八德區介壽路一段733號",
+        "電話": "03 -3636131",
+        "負責人": "謝淑慧"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "9",
+      "name": "杏一八德介壽藥局",
+      "address": "八德區介壽路一段771號1樓",
+      "phone": "03 -3665542",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "9",
+        "藥局名稱": "杏一八德介壽藥局",
+        "地址": "八德區介壽路一段771號1樓",
+        "電話": "03 -3665542",
+        "負責人": "陳宣寰"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "10",
+      "name": "嘉家藥局",
+      "address": "八德區介壽路一段782號",
+      "phone": "03 -3749192",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "10",
+        "藥局名稱": "嘉家藥局",
+        "地址": "八德區介壽路一段782號",
+        "電話": "03 -3749192",
+        "負責人": "鄭志宏"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "11",
+      "name": "環球聯合藥局",
+      "address": "八德區介壽路一段831號",
+      "phone": "03 -3756939",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "11",
+        "藥局名稱": "環球聯合藥局",
+        "地址": "八德區介壽路一段831號",
+        "電話": "03 -3756939",
+        "負責人": "林函霈"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "12",
+      "name": "悅康藥局",
+      "address": "八德區介壽路一段916號",
+      "phone": "03 -3662930",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "12",
+        "藥局名稱": "悅康藥局",
+        "地址": "八德區介壽路一段916號",
+        "電話": "03 -3662930",
+        "負責人": "蘇于芳"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "13",
+      "name": "新寶樹藥局",
+      "address": "八德區介壽路一段966號",
+      "phone": "03 -3770000",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "13",
+        "藥局名稱": "新寶樹藥局",
+        "地址": "八德區介壽路一段966號",
+        "電話": "03 -3770000",
+        "負責人": "張靜瀅"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "14",
+      "name": "佳美大藥局",
+      "address": "八德區介壽路一段六八八號",
+      "phone": "03 -3772239",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "14",
+        "藥局名稱": "佳美大藥局",
+        "地址": "八德區介壽路一段六八八號",
+        "電話": "03 -3772239",
+        "負責人": "時玉玲"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "15",
+      "name": "博泰藥局",
+      "address": "八德區介壽路二段982號",
+      "phone": "03 -3731010",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "15",
+        "藥局名稱": "博泰藥局",
+        "地址": "八德區介壽路二段982號",
+        "電話": "03 -3731010",
+        "負責人": "呂文達"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "16",
+      "name": "興豐藥局",
+      "address": "八德區介壽路二段一一七五號",
+      "phone": "03 -3654229",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "16",
+        "藥局名稱": "興豐藥局",
+        "地址": "八德區介壽路二段一一七五號",
+        "電話": "03 -3654229",
+        "負責人": "林郁晟"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "17",
+      "name": "佑兒康藥局",
+      "address": "八德區永豐路570號",
+      "phone": "03-3709680",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "17",
+        "藥局名稱": "佑兒康藥局",
+        "地址": "八德區永豐路570號",
+        "電話": "03-3709680",
+        "負責人": "曾鈺婷"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "18",
+      "name": "成發藥局",
+      "address": "八德區和平路250號",
+      "phone": "03 -3751696",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "18",
+        "藥局名稱": "成發藥局",
+        "地址": "八德區和平路250號",
+        "電話": "03 -3751696",
+        "負責人": "蔡建鋒"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "19",
+      "name": "慈幼藥局",
+      "address": "八德區忠勇六街7號",
+      "phone": "03-3749915",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "19",
+        "藥局名稱": "慈幼藥局",
+        "地址": "八德區忠勇六街7號",
+        "電話": "03-3749915",
+        "負責人": "張玉芳"
+      }
+    },
+    {
+      "facilityType": "pharmacy",
+      "sourceKey": "tycg_pharmacies",
+      "sourceId": "20",
+      "name": "全球建國藥局",
+      "address": "八德區建國路866號1樓",
+      "phone": "03-3642147",
+      "lat": 24.929,
+      "lng": 121.283,
+      "serviceItem": null,
+      "serviceTime": null,
+      "dataOrg": "桃園市政府衛生局",
+      "extra": {
+        "區域": "八德區",
+        "序": "20",
+        "藥局名稱": "全球建國藥局",
+        "地址": "八德區建國路866號1樓",
+        "電話": "03-3642147",
+        "負責人": "鄭綺錞"
+      }
+    }
+  ]
+}

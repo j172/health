@@ -97,6 +97,10 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.wraReservoirs);
   await p.query(TABLE_DDL.wraWaterLevelStations);
   await p.query(TABLE_DDL.petAdoptions);
+  await p.query(TABLE_DDL.latestBooks);
+  await p.query(TABLE_DDL.metroAlerts);
+  await p.query(TABLE_DDL.youbikeStations);
+  await p.query(TABLE_DDL.pestAlerts);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`
@@ -428,6 +432,102 @@ export const ensureSchema = async (): Promise<void> => {
     }
   } catch (seedErr) {
     console.warn("[ensureSchema] latest_books seed warning:", seedErr);
+  }
+
+  // Auto-seed metro_alerts from bundled data/metro-alerts-seed.json if empty
+  try {
+    const [metroCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM metro_alerts");
+    if ((metroCount[0]?.cnt ?? 0) === 0) {
+      const metroPath = path.join(process.cwd(), "data", "metro-alerts-seed.json");
+      if (fs.existsSync(metroPath)) {
+        const alerts = JSON.parse(fs.readFileSync(metroPath, "utf-8"));
+        if (Array.isArray(alerts) && alerts.length > 0) {
+          for (const a of alerts) {
+            await p.query(
+              `INSERT IGNORE INTO metro_alerts (
+                external_id, line_name, station_name, alert_title, alert_content,
+                alert_type, alert_time, status, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              [a.externalId, a.lineName, a.stationName, a.alertTitle, a.alertContent, a.alertType, a.alertTime, a.status]
+            );
+          }
+          console.log(`[ensureSchema] Successfully seeded ${alerts.length} metro alerts into MySQL`);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ensureSchema] metro_alerts seed warning:", err);
+  }
+
+  // Auto-seed youbike_stations from bundled data/youbike-stations-seed.json if empty
+  try {
+    const [youbikeCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM youbike_stations");
+    if ((youbikeCount[0]?.cnt ?? 0) === 0) {
+      const youbikePath = path.join(process.cwd(), "data", "youbike-stations-seed.json");
+      if (fs.existsSync(youbikePath)) {
+        const stations = JSON.parse(fs.readFileSync(youbikePath, "utf-8"));
+        if (Array.isArray(stations) && stations.length > 0) {
+          const now = toSqlDateTime(new Date());
+          const BATCH_SIZE = 250;
+          for (let i = 0; i < stations.length; i += BATCH_SIZE) {
+            const chunk = stations.slice(i, i + BATCH_SIZE);
+            const values = chunk.map((s: any) => [
+              s.cityCode,
+              s.stationNo,
+              s.nameTw,
+              s.districtTw,
+              s.addressTw,
+              s.lat,
+              s.lng,
+              s.totalSpaces,
+              s.availableBikes,
+              s.availableEbikes || 0,
+              s.emptySpaces,
+              s.isActive,
+              s.updatedAtSource,
+              now,
+              now,
+            ]);
+            await p.query(
+              `INSERT IGNORE INTO youbike_stations (
+                city_code, station_no, name_tw, district_tw, address_tw,
+                lat, lng, total_spaces, available_bikes, available_ebikes,
+                empty_spaces, is_active, updated_at_source, created_at, updated_at
+              ) VALUES ?`,
+              [values]
+            );
+          }
+          console.log(`[ensureSchema] Successfully seeded ${stations.length} youbike stations into MySQL`);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ensureSchema] youbike_stations seed warning:", err);
+  }
+
+  // Auto-seed pest_alerts from bundled data/pest-alerts-seed.json if empty
+  try {
+    const [pestCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM pest_alerts");
+    if ((pestCount[0]?.cnt ?? 0) === 0) {
+      const pestPath = path.join(process.cwd(), "data", "pest-alerts-seed.json");
+      if (fs.existsSync(pestPath)) {
+        const alerts = JSON.parse(fs.readFileSync(pestPath, "utf-8"));
+        if (Array.isArray(alerts) && alerts.length > 0) {
+          for (const a of alerts) {
+            await p.query(
+              `INSERT IGNORE INTO pest_alerts (
+                subject_name, monitor_type, alert_time, target_crops,
+                alert_data_json, status, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              [a.subjectName, a.monitorType, a.alertTime, a.targetCrops, a.alertDataJson, a.status]
+            );
+          }
+          console.log(`[ensureSchema] Successfully seeded ${alerts.length} pest alerts into MySQL`);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("[ensureSchema] pest_alerts seed warning:", err);
   }
 
   schemaReady = true;

@@ -1134,5 +1134,68 @@ export const TABLE_DDL = {
       KEY idx_books_title (title(128))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 便民服務：捷運營運與無障礙電梯公告
+  metroAlerts: `
+    CREATE TABLE IF NOT EXISTS metro_alerts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      external_id VARCHAR(50) NOT NULL,
+      line_name VARCHAR(50) NOT NULL,
+      station_name VARCHAR(50) NOT NULL,
+      alert_title VARCHAR(255) NOT NULL,
+      alert_content TEXT NOT NULL,
+      alert_type VARCHAR(50) NOT NULL DEFAULT 'elevator',
+      alert_time DATETIME NOT NULL,
+      status VARCHAR(20) NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_metro_alert (external_id),
+      KEY idx_metro_station (station_name),
+      KEY idx_metro_line (line_name),
+      KEY idx_metro_time (alert_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 便民服務：北北桃竹公共自行車 (YouBike 2.0) 即時站點車位
+  youbikeStations: `
+    CREATE TABLE IF NOT EXISTS youbike_stations (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      city_code VARCHAR(10) NOT NULL,
+      station_no VARCHAR(50) NOT NULL,
+      name_tw VARCHAR(100) NOT NULL,
+      district_tw VARCHAR(50) NOT NULL,
+      address_tw VARCHAR(255) NOT NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      total_spaces INT NOT NULL DEFAULT 0,
+      available_bikes INT NOT NULL DEFAULT 0,
+      available_ebikes INT NOT NULL DEFAULT 0,
+      empty_spaces INT NOT NULL DEFAULT 0,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      updated_at_source DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_youbike_station (city_code, station_no),
+      KEY idx_youbike_geo (lat, lng),
+      KEY idx_youbike_city_district (city_code, district_tw)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 便民服務：作物病蟲害即時預警 (農業部動植物防疫檢疫署)
+  pestAlerts: `
+    CREATE TABLE IF NOT EXISTS pest_alerts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      subject_name VARCHAR(100) NOT NULL,
+      monitor_type VARCHAR(50) NOT NULL,
+      alert_time DATETIME NOT NULL,
+      target_crops VARCHAR(255) NULL,
+      alert_data_json LONGTEXT NULL,
+      status VARCHAR(20) NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_pest_alert_time (alert_time),
+      KEY idx_pest_subject (subject_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
+
 

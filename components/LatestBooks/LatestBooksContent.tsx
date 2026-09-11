@@ -133,6 +133,21 @@ export default function LatestBooksContent() {
           >
             🌿 誠品線上選書 (27大類)
           </button>
+          <button
+            type="button"
+            onClick={() => {
+              setPlatform("taaze");
+              setSelectedCategory("all");
+              setPage(1);
+            }}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+              platform === "taaze"
+                ? "bg-amber-600 text-white shadow-sm dark:bg-amber-500"
+                : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
+            }`}
+          >
+            📙 TAAZE 讀冊生活 (10大類)
+          </button>
         </div>
 
         {/* Sort selector */}
@@ -286,12 +301,18 @@ export default function LatestBooksContent() {
                       )}
                       <span
                         className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
-                          isBooksComTw
+                          book.platform === "books_com_tw"
                             ? "bg-sky-50 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300"
+                            : book.platform === "taaze"
+                            ? "bg-amber-50 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300"
                             : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300"
                         }`}
                       >
-                        {isBooksComTw ? "博客來" : "誠品線上"}
+                        {book.platform === "books_com_tw"
+                          ? "博客來"
+                          : book.platform === "taaze"
+                          ? "TAAZE讀冊"
+                          : "誠品線上"}
                       </span>
                     </div>
                     <span className="rounded bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
@@ -384,7 +405,15 @@ export default function LatestBooksContent() {
                     rel="noopener noreferrer"
                     className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-zinc-100 py-2 text-xs font-semibold text-zinc-800 transition hover:bg-indigo-50 hover:text-indigo-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300"
                   >
-                    <span>前往{isBooksComTw ? "博客來" : "誠品"}選購</span>
+                    <span>
+                      前往
+                      {book.platform === "books_com_tw"
+                        ? "博客來"
+                        : book.platform === "taaze"
+                        ? "TAAZE"
+                        : "誠品"}
+                      選購
+                    </span>
                     <span className="text-xs">↗</span>
                   </a>
                 </div>
