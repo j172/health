@@ -4,6 +4,7 @@ import { getMysqlPool, ensureSchema, utcNowSql } from "@/lib/server/db/mysql";
 import { MAX_GEOCODE_ATTEMPTS } from "@/lib/server/facilities/queries";
 import { buildQueryCandidates } from "@/lib/server/facilities/addressNormalize";
 import { resolveRoadLevelFallback } from "@/lib/server/facilities/autoGeocode";
+import { countyForAddress, isWithinCountyBounds } from "@/lib/server/facilities/countyBounds";
 import { queryTgos, queryOpenCage, queryOpenCage2, queryNominatim, type LatLng } from "@/lib/server/facilities/geocodeProviders";
 import {
   loadGeocodeBudgetState,
@@ -163,6 +164,7 @@ const geocodeOneAddress = async (
   conn: PoolConnection,
   budgetState: Map<GeocodeProvider, GeocodeBudgetState>,
   candidates: string[],
+  expectedCounty: string | null = null,
 ): Promise<LatLng | null> => {
   const tgosConfigured = isTgosConfigured();
   const openCage2Configured = isOpenCage2Configured();
@@ -173,7 +175,11 @@ const geocodeOneAddress = async (
     if (tgosConfigured && !isBudgetExhausted(budgetState, "tgos")) {
       await recordGeocodeRequest(conn, budgetState, "tgos");
       const outcome = await queryTgos(candidate);
-      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "ok") {
+        if (!expectedCounty || isWithinCountyBounds(expectedCounty, outcome.coords.lat, outcome.coords.lng)) {
+          return outcome.coords;
+        }
+      }
       if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "tgos");
       // no_result / rejected / error fall through to OpenCage / Nominatim / the next candidate.
     }
@@ -181,7 +187,11 @@ const geocodeOneAddress = async (
     if (!isBudgetExhausted(budgetState, "opencage")) {
       await recordGeocodeRequest(conn, budgetState, "opencage");
       const outcome = await queryOpenCage(candidate);
-      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "ok") {
+        if (!expectedCounty || isWithinCountyBounds(expectedCounty, outcome.coords.lat, outcome.coords.lng)) {
+          return outcome.coords;
+        }
+      }
       if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "opencage");
       // no_result / rejected / error fall through to key2 / Nominatim / the next candidate.
     }
@@ -189,14 +199,22 @@ const geocodeOneAddress = async (
     if (openCage2Configured && !isBudgetExhausted(budgetState, "opencage2")) {
       await recordGeocodeRequest(conn, budgetState, "opencage2");
       const outcome = await queryOpenCage2(candidate);
-      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "ok") {
+        if (!expectedCounty || isWithinCountyBounds(expectedCounty, outcome.coords.lat, outcome.coords.lng)) {
+          return outcome.coords;
+        }
+      }
       if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "opencage2");
     }
 
     if (!isBudgetExhausted(budgetState, "nominatim")) {
       await recordGeocodeRequest(conn, budgetState, "nominatim");
       const outcome = await queryNominatim(candidate);
-      if (outcome.kind === "ok") return outcome.coords;
+      if (outcome.kind === "ok") {
+        if (!expectedCounty || isWithinCountyBounds(expectedCounty, outcome.coords.lat, outcome.coords.lng)) {
+          return outcome.coords;
+        }
+      }
       if (outcome.kind === "quota_exceeded") await tripCircuitBreaker(conn, budgetState, "nominatim");
     }
   }
@@ -273,9 +291,13 @@ export const runGeocodeBatch = async (): Promise<GeocodeBatchSummary> => {
       for (const { ids, candidates } of groupsByAddress.values()) {
         if (isAllProvidersCapacityExhausted(budgetState)) break;
 
-        let coords = await geocodeOneAddress(conn, budgetState, candidates);
+        const expectedCounty = candidates.length > 0 ? countyForAddress(candidates[0]) : null;
+        let coords = await geocodeOneAddress(conn, budgetState, candidates, expectedCounty);
         if (!coords && candidates.length > 0) {
           coords = await resolveRoadLevelFallback(conn, candidates[0]);
+          if (coords && expectedCounty && !isWithinCountyBounds(expectedCounty, coords.lat, coords.lng)) {
+            coords = null;
+          }
         }
 
         if (coords) {

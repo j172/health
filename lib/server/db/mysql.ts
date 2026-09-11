@@ -219,6 +219,36 @@ export const ensureSchema = async (): Promise<void> => {
     WHERE source_name IN ('culture_tw', 'public_art', 'mababy', 'ntuh', 'ntuh_ifc')
   `);
 
+  // Fix hakka_community facilities that were incorrectly geocoded to Taipei due to unverified geocoder fuzzy matches
+  await p.query(`
+    UPDATE facilities 
+    SET lat = 24.22735, lng = 120.83594, updated_at = NOW()
+    WHERE facility_type = 'hakka_community' AND name = '臺中市東勢區詒福社區發展協會' AND (lat > 25.0 OR lat IS NULL)
+  `);
+  await p.query(`
+    UPDATE facilities 
+    SET lat = 23.98580, lng = 121.57275, updated_at = NOW()
+    WHERE facility_type = 'hakka_community' AND name = '花蓮縣花蓮市碧雲莊社區發展協會' AND (lat > 25.0 OR lat IS NULL)
+  `);
+  await p.query(`
+    UPDATE facilities 
+    SET lat = 24.23747, lng = 120.83410, updated_at = NOW()
+    WHERE facility_type = 'hakka_community' AND name = '社團法人臺中市東勢農民老人會' AND (lat > 25.0 OR lat IS NULL)
+  `);
+  await p.query(`
+    UPDATE facilities 
+    SET lat = 22.98504, lng = 120.18977, updated_at = NOW()
+    WHERE facility_type = 'hakka_community' AND name = '臺南市南區文南社區發展協會' AND (lat > 25.0 OR lat IS NULL)
+  `);
+  await p.query(`
+    UPDATE facilities
+    SET lat = NULL, lng = NULL, geocode_attempts = 0, updated_at = NOW()
+    WHERE facility_type = 'hakka_community'
+      AND address NOT LIKE '%台北%' AND address NOT LIKE '%臺北%' AND address NOT LIKE '%新北%'
+      AND lat BETWEEN 24.95 AND 25.25 AND lng BETWEEN 121.45 AND 121.65
+      AND name NOT IN ('臺中市東勢區詒福社區發展協會', '花蓮縣花蓮市碧雲莊社區發展協會', '社團法人臺中市東勢農民老人會', '臺南市南區文南社區發展協會')
+  `);
+
   // Auto-seed public_arts table from bundled data/public-art.json if empty
   try {
     const [paCountRows] = await p.query<RowDataPacket[]>(

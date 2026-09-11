@@ -3,6 +3,7 @@ import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { cleanAddress, extractRoadKey } from "@/lib/server/facilities/addressNormalize";
+import { countyForAddress, isWithinCountyBounds } from "@/lib/server/facilities/countyBounds";
 import { runGeocodeBatch, type GeocodeBatchSummary } from "@/lib/server/facilities/geocodeBatch";
 
 /**
@@ -87,7 +88,13 @@ export async function resolveRoadLevelFallback(
   );
 
   if (rows[0] && rows[0].lat != null && rows[0].lng != null) {
-    return { lat: Number(rows[0].lat), lng: Number(rows[0].lng) };
+    const lat = Number(rows[0].lat);
+    const lng = Number(rows[0].lng);
+    const expectedCounty = countyForAddress(rawAddress);
+    if (expectedCounty && !isWithinCountyBounds(expectedCounty, lat, lng)) {
+      return null;
+    }
+    return { lat, lng };
   }
 
   return null;
