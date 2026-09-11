@@ -1,0 +1,2372 @@
+[
+  {
+    "id": 1,
+    "name": "一太e衛浴觀光工廠",
+    "address": "基隆市安樂區大武崙工業區武訓街51號",
+    "phone": "02-24342111#503",
+    "lat": 25.132,
+    "lng": 121.713,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.itai.com.tw",
+      "region": "北部",
+      "city": "基隆市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 2,
+    "name": "吳福洋襪子故事館",
+    "address": "新北市林口區工二工業區工九路3號",
+    "phone": "02-26035008",
+    "lat": 25.077,
+    "lng": 121.391,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.wufuyang.com",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 3,
+    "name": "聖瑪莉丹麥麵包莊園",
+    "address": "新北市土城區中山路21號",
+    "phone": "02-22689600",
+    "lat": 24.972,
+    "lng": 121.444,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.sunmerry.com.tw/garden/",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 4,
+    "name": "手信坊創意和?子文化館",
+    "address": "新北市土城區國際路55號",
+    "phone": "02-82620506",
+    "lat": 24.972,
+    "lng": 121.444,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.3ssf.com.tw/factory/index.html",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 5,
+    "name": "王子創意文具國",
+    "address": "新北市林口區粉寮路一段86號",
+    "phone": "02-25783927 02-26033288",
+    "lat": 25.077,
+    "lng": 121.391,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.princecst.com.tw",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 6,
+    "name": "王鼎時間科藝體驗館",
+    "address": "新北市土城區大暖路136號",
+    "phone": "02-22682999",
+    "lat": 24.972,
+    "lng": 121.444,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.atopwatch.com/pages/factory",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 7,
+    "name": "卡滋爆米花觀光工廠樂園",
+    "address": "新北市八里區觀海大道171號",
+    "phone": "02-86303886",
+    "lat": 25.147,
+    "lng": 121.398,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.popsmile.com.tw",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 8,
+    "name": "玉美人孕婦裝觀光工廠",
+    "address": "新北市板橋區四川路2段16巷10號5樓",
+    "phone": "02-89669762 #13、#20",
+    "lat": 25.011,
+    "lng": 121.463,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.ymr.com.tw",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 9,
+    "name": "香帥蛋糕芋製所",
+    "address": "新北市汐止區汐萬路一段211巷26號",
+    "phone": "02-26486558",
+    "lat": 25.0125,
+    "lng": 121.4658,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.scake.com.tw/information/9",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 10,
+    "name": "啤酒頭釀造觀光酒廠",
+    "address": "新北市三重區中興北街50號",
+    "phone": "02-85110085",
+    "lat": 25.061,
+    "lng": 121.499,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://headbrewers.com.tw/",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 11,
+    "name": "許新旺陶瓷紀念博物館",
+    "address": "新北市鶯歌區尖山埔路81號",
+    "phone": "02-26789571 #220、219、225",
+    "lat": 24.955,
+    "lng": 121.355,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.shus.com.tw",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 12,
+    "name": "連淨綠色科技概念館",
+    "address": "新北市新店區寶興路45巷9弄2號",
+    "phone": "0800-585598",
+    "lat": 24.968,
+    "lng": 121.542,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.aconpure.com/en/index.php/tourism-factory2",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 13,
+    "name": "維格餅家 鳳梨酥夢工場",
+    "address": "新北市五股區成泰路一段87號",
+    "phone": "02-22919131",
+    "lat": 25.083,
+    "lng": 121.438,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.taiwan-vigor.com.tw",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 14,
+    "name": "豐得好食觀光工廠",
+    "address": "新北市五股區五權路48號1樓",
+    "phone": "02-22980002",
+    "lat": 25.083,
+    "lng": 121.438,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.fengde.com.tw/index_tw.php",
+      "region": "北部",
+      "city": "新北市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 15,
+    "name": "郭元益糕餅博物館",
+    "address": "桃園市楊梅區幼獅工業區青年路9巷3號",
+    "phone": "03-4962201#1",
+    "lat": 24.914,
+    "lng": 121.146,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.kuos.com/museum/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 16,
+    "name": "手信霧隱城",
+    "address": "桃園市龍潭區民豐一街99號",
+    "phone": "03-4700598",
+    "lat": 24.863,
+    "lng": 121.216,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.3ssf.com.tw/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 17,
+    "name": "宏亞食品-巧克力共和國(休館改裝)",
+    "address": "桃園市八德區瑞興里4鄰巧克力街177號",
+    "phone": "03-3656555#777",
+    "lat": 24.929,
+    "lng": 121.283,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.republicofchocolate.com.tw/index.aspx",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 18,
+    "name": "雄獅文具想像力製造所",
+    "address": "桃園市龍潭區中原路二段188號",
+    "phone": "03-4116888",
+    "lat": 24.863,
+    "lng": 121.216,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.simbalionartstudio.com/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 19,
+    "name": "太平洋自行車博物館",
+    "address": "桃園市新屋區永安里永福路686號",
+    "phone": "03-4861231 #312、218",
+    "lat": 24.972,
+    "lng": 121.106,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.pacificcyclesmuseum.com/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 20,
+    "name": "祥儀機器人夢工廠",
+    "address": "桃園市桃園區桃鶯路461號",
+    "phone": "03-3621252#9",
+    "lat": 24.993,
+    "lng": 121.301,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://robot.shayangye.com/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 21,
+    "name": "CAFE!N 觀光工廠",
+    "address": "桃園市平鎮區工業五路8號",
+    "phone": "03-4697387",
+    "lat": 24.9936,
+    "lng": 121.301,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.yeuanyeou.com/page57.html",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 22,
+    "name": "GFun機能服飾紡織生活館",
+    "address": "桃園市觀音區樹林里工業六路3號",
+    "phone": "0800-038038",
+    "lat": 24.9936,
+    "lng": 121.301,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.gfun.com.tw/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 23,
+    "name": "大溪老茶廠",
+    "address": "桃園市大溪區復興路二段732巷80號",
+    "phone": "03-3825089",
+    "lat": 24.883,
+    "lng": 121.287,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.daxitea.com",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 24,
+    "name": "江記豆腐乳文化館",
+    "address": "桃園市中壢區月眉路2段248巷85號",
+    "phone": "03-4986018#113",
+    "lat": 24.965,
+    "lng": 121.225,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.xpl.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 25,
+    "name": "老K舒眠文化館",
+    "address": "桃園市新屋區梅高路3段97號",
+    "phone": "03-4205050",
+    "lat": 24.972,
+    "lng": 121.106,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.kingbedhaha.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 26,
+    "name": "自然接觸保養品亮點體驗園",
+    "address": "桃園市楊梅區楊湖路一段351號",
+    "phone": "03-4789999",
+    "lat": 24.914,
+    "lng": 121.146,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.ntnt.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 27,
+    "name": "利百代彩筆文創館",
+    "address": "桃園市桃園區大樹里大誠路2號",
+    "phone": "03-3613020",
+    "lat": 24.993,
+    "lng": 121.301,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.libertycc.com.tw/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 28,
+    "name": "東和音樂體驗館",
+    "address": "桃園市大溪區信義路226號",
+    "phone": "03-3882215#210",
+    "lat": 24.883,
+    "lng": 121.287,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.music4fun.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 29,
+    "name": "金格｜卡司．蒂菈樂園",
+    "address": "桃園市蘆竹區宏竹村大竹北路90-66號",
+    "phone": "03-2551999",
+    "lat": 25.047,
+    "lng": 121.293,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.castella-land.com.tw/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 30,
+    "name": "南僑桃園觀光體驗工廠",
+    "address": "桃園市龜山區興邦路35號",
+    "phone": "03-2630264",
+    "lat": 24.993,
+    "lng": 121.338,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.namchow.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 31,
+    "name": "國巨洋傘文創園區",
+    "address": "桃園市大園區國際路一段105巷18號",
+    "phone": "03-3853987#8",
+    "lat": 25.064,
+    "lng": 121.197,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.yamaiji-umbrella.com/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 32,
+    "name": "勝昌中草藥探索館",
+    "address": "桃園市中壢區民族路六段 436號",
+    "phone": "0800-588995",
+    "lat": 24.965,
+    "lng": 121.225,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.scherb.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 33,
+    "name": "雅聞魅力博覽館",
+    "address": "桃園市楊梅區中山北路1段21巷1號",
+    "phone": "03-4883800 0910-605668",
+    "lat": 24.914,
+    "lng": 121.146,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.arwin.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 34,
+    "name": "義美生產‧生態‧生活廠區",
+    "address": "桃園市蘆竹區南工路一段11號",
+    "phone": "03-3117525",
+    "lat": 25.047,
+    "lng": 121.293,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.imeifoods.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 35,
+    "name": "葡萄王健康活力能量館",
+    "address": "桃園市平鎮區金陵路二段402號",
+    "phone": "03-2712121",
+    "lat": 24.9936,
+    "lng": 121.301,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.grapeking.com.tw",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 36,
+    "name": "臺灣菸酒(股)公司桃園觀光酒廠",
+    "address": "桃園市龜山區文化一路55號",
+    "phone": "03-3283001 #340、380、407",
+    "lat": 24.993,
+    "lng": 121.338,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://event.ttl.com.tw/lk/",
+      "region": "北部",
+      "city": "桃園市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 37,
+    "name": "吉比鮮釀識酒館",
+    "address": "新竹縣竹北市惟馨街79號",
+    "phone": "03-5533288 #143、134",
+    "lat": 24.839,
+    "lng": 121.018,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://gordonbiersch.com.tw",
+      "region": "北部",
+      "city": "新竹縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 38,
+    "name": "春池綠能玻璃觀光工廠",
+    "address": "工廠：新竹市香山區牛埔南路372號",
+    "phone": "03-5389165 0978-001320",
+    "lat": 24.786,
+    "lng": 120.932,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "http://springpoolglass.com/factory/",
+      "region": "北部",
+      "city": "新竹市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 39,
+    "name": "濟生Beauty兩岸觀光生醫美學健康館",
+    "address": "新竹縣湖口鄉勝利村實踐路3號",
+    "phone": "0800-213568",
+    "lat": 24.904,
+    "lng": 121.044,
+    "service_item": "北部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.csbeauty.com.tw/",
+      "region": "北部",
+      "city": "新竹縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 40,
+    "name": "立康健康養生觀光工廠",
+    "address": "苗栗縣頭份市蘆竹里工業路55號",
+    "phone": "037-629888",
+    "lat": 24.687,
+    "lng": 120.912,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.likang.com.tw",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 41,
+    "name": "四方鮮乳酪故事館",
+    "address": "苗栗縣竹南鎮大厝里9鄰59之13號",
+    "phone": "037-472609",
+    "lat": 24.686,
+    "lng": 120.878,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.fourways.com.tw",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 42,
+    "name": "竹南啤酒觀光工廠",
+    "address": "苗栗縣竹南鎮崎頂里15鄰和興路345號",
+    "phone": "037-583001#700",
+    "lat": 24.686,
+    "lng": 120.878,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://event.ttl.com.tw/jn/",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 43,
+    "name": "冠軍綠概念館",
+    "address": "苗栗縣造橋鄉豐湖村一鄰乳姑山2號",
+    "phone": "037-583775",
+    "lat": 24.5601,
+    "lng": 120.8214,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.champion.com.tw",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 44,
+    "name": "雅聞七里香玫瑰森林",
+    "address": "苗栗縣頭屋鄉明德村明德路226號",
+    "phone": "037-256588",
+    "lat": 24.5601,
+    "lng": 120.8214,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.arwin.com.tw",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 45,
+    "name": "裕隆、真、造車工廠",
+    "address": "苗栗縣三義鄉西湖村伯公坑39之1號",
+    "phone": "037871801＃2888",
+    "lat": 24.382,
+    "lng": 120.762,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://tour.yulon-motor.com.tw",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 46,
+    "name": "臺鹽通霄觀光園區",
+    "address": "苗栗縣通霄鎮內島里122號",
+    "phone": "037-792121#825",
+    "lat": 24.489,
+    "lng": 120.677,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://tesf.tybio.com.tw/",
+      "region": "中部",
+      "city": "苗栗縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 47,
+    "name": "寶熊漁樂碼頭",
+    "address": "台中市潭子區中山路三段11號",
+    "phone": "04-35013338",
+    "lat": 24.1627,
+    "lng": 120.6473,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.okumamuseum.com.tw",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 48,
+    "name": "台灣味噌釀造文化館",
+    "address": "台中市豐原區三村里西勢路701號",
+    "phone": "04-25320279",
+    "lat": 24.254,
+    "lng": 120.723,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.weijung.com",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 49,
+    "name": "伊莎貝爾烘焙觀光工廠",
+    "address": "台中市大雅區中清路三段735號",
+    "phone": "04-25687890#188",
+    "lat": 24.229,
+    "lng": 120.648,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.isabellexperience.com.tw/",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 50,
+    "name": "丸文觀光工廠",
+    "address": "台中市大里區仁化里工業11路156號",
+    "phone": "04-24953600",
+    "lat": 24.102,
+    "lng": 120.678,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.wan-wen.com.tw/",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 51,
+    "name": "阿聰師芋頭文化館",
+    "address": "台中市大安區福興里興安路168號",
+    "phone": "04-26713077",
+    "lat": 25.026,
+    "lng": 121.544,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.o-nongs.com.tw",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 52,
+    "name": "烏日啤酒觀光工廠",
+    "address": "台中市烏日區光華街1號",
+    "phone": "04-23381216",
+    "lat": 24.108,
+    "lng": 120.624,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://event.ttl.com.tw/wz",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 53,
+    "name": "張連昌薩克斯風博物館",
+    "address": "台中市后里區公安路330之1號",
+    "phone": "04-25562363 04-25578989",
+    "lat": 24.1627,
+    "lng": 120.6473,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.sax.org.tw",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 54,
+    "name": "微笑秘密口腔保健館",
+    "address": "台中市大甲區日南里幼獅路32號",
+    "phone": "04-26814585#3105",
+    "lat": 24.348,
+    "lng": 120.622,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.chinteng.tw",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 55,
+    "name": "鞋寶觀光工廠",
+    "address": "台中市西屯區工業區8路11號",
+    "phone": "04-23505773",
+    "lat": 24.181,
+    "lng": 120.617,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://shoeswonderland.bestmotion.com",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 56,
+    "name": "臺灣菸酒(股)公司臺中觀光酒廠",
+    "address": "台中市西屯區協和里工業28路2號",
+    "phone": "04-23501318 #448、888",
+    "lat": 24.181,
+    "lng": 120.617,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/tc",
+      "region": "中部",
+      "city": "台中市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 57,
+    "name": "台塑生醫健康悠活館",
+    "address": "彰化縣彰化市中山路三段359號",
+    "phone": "04-7236101",
+    "lat": 24.082,
+    "lng": 120.539,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.fbyoho.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 58,
+    "name": "台灣穀堡稻米觀光工廠",
+    "address": "彰化縣埤頭鄉彰水路二段526號",
+    "phone": "04-8926088",
+    "lat": 23.892,
+    "lng": 120.463,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.ricecastle.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 59,
+    "name": "台灣優格餅乾學院",
+    "address": "彰化縣線西鄉草豐路501巷5號",
+    "phone": "04-7589501 0966-187501",
+    "lat": 24.13,
+    "lng": 120.466,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.cookieschool.com.tw/",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 60,
+    "name": "華新MASK創意生活館",
+    "address": "彰化縣田中鎮中州路2段751號",
+    "phone": "04-8761226",
+    "lat": 23.859,
+    "lng": 120.584,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.motexmask.com",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 61,
+    "name": "緞帶王觀光工廠",
+    "address": "彰化縣鹿港鎮鹿工路15號",
+    "phone": "04-7813366",
+    "lat": 24.057,
+    "lng": 120.435,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.ribbon888.com",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 62,
+    "name": "水銡利廚衛生活村",
+    "address": "彰化縣秀水鄉下崙村育民巷2號",
+    "phone": "0800-888160#34",
+    "lat": 24.0816,
+    "lng": 120.5385,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://mizuworld.com.tw/",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 63,
+    "name": "台灣手套博物館",
+    "address": "彰化縣社頭鄉織襪一路8號",
+    "phone": "04-8736168",
+    "lat": 23.896,
+    "lng": 120.586,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.good-hand.com.tw/",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 64,
+    "name": "台灣玻璃館",
+    "address": "彰化縣鹿港鎮鹿工南四路30號",
+    "phone": "04-7811299 #266、#229",
+    "lat": 24.057,
+    "lng": 120.435,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.timingjump.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 65,
+    "name": "白蘭氏健康博物館",
+    "address": "彰化縣鹿港鎮彰濱工業區鹿工路18號",
+    "phone": "04-7810077",
+    "lat": 24.057,
+    "lng": 120.435,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.brands.com.tw/museum/index.html",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 66,
+    "name": "卷木森活館",
+    "address": "彰化縣鹿港鎮工業東三路6號",
+    "phone": "04-7812018",
+    "lat": 24.057,
+    "lng": 120.435,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://jw-garden.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 67,
+    "name": "愛玩色創意館",
+    "address": "彰化縣北斗鎮三號路296號",
+    "phone": "04-8886016",
+    "lat": 24.0816,
+    "lng": 120.5385,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://colortaiwan.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 68,
+    "name": "樂活襪之鄉博物館",
+    "address": "彰化縣社頭鄉社石路559號",
+    "phone": "04-8720522",
+    "lat": 23.896,
+    "lng": 120.586,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.loho.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 69,
+    "name": "興麥蛋捲烘焙王國",
+    "address": "彰化縣線西鄉和線路741巷5號",
+    "phone": "04-7588389",
+    "lat": 24.13,
+    "lng": 120.466,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.ximai.com.tw",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 70,
+    "name": "織夢樂園",
+    "address": "彰化縣北斗鎮復興路568號",
+    "phone": "04-8884540",
+    "lat": 24.0816,
+    "lng": 120.5385,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://dreamweaving.com.tw/",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 71,
+    "name": "襪仔王觀光工廠",
+    "address": "彰化縣田中鎮頂潭里員集路3段440巷16弄1號",
+    "phone": "04-8749909#9",
+    "lat": 23.859,
+    "lng": 120.584,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.soxlink.com.tw/soxking/",
+      "region": "中部",
+      "city": "彰化縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 72,
+    "name": "Cona's妮娜巧克力夢想城堡",
+    "address": "南投縣埔里鎮桃米路32號",
+    "phone": "049-2919528",
+    "lat": 23.966,
+    "lng": 120.969,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.conas.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 73,
+    "name": "Jijibanana集元果觀光工廠",
+    "address": "南投縣集集鎮富山里5鄰大坪巷38號",
+    "phone": "049-2764562",
+    "lat": 23.829,
+    "lng": 120.784,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.jijibanana.net",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 74,
+    "name": "水里蛇窯陶藝文化園區",
+    "address": "南投縣水里鄉頂崁村水信路一段512巷21號",
+    "phone": "049-2770967",
+    "lat": 23.812,
+    "lng": 120.855,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.snakekiln.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 75,
+    "name": "台灣麻糬主題?",
+    "address": "南投縣南投市自強三路3號",
+    "phone": "049-2261123",
+    "lat": 23.91,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.taiwanmochi.com.tw/",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 76,
+    "name": "光遠燈籠觀光工廠",
+    "address": "南投縣竹山鎮延平二路11號",
+    "phone": "049-2642394",
+    "lat": 23.758,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.ever-shine.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 77,
+    "name": "果寶歡酵觀光工廠",
+    "address": "南投縣埔里鎮珠格里下湳巷15號",
+    "phone": "049-2991207",
+    "lat": 23.966,
+    "lng": 120.969,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.twfruit.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 78,
+    "name": "采棉居寢飾文化?",
+    "address": "南投縣竹山鎮延平一路12號",
+    "phone": "049-2642166",
+    "lat": 23.758,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.cheauwei.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 79,
+    "name": "香里活力豬品牌文化館",
+    "address": "南投縣南投市南崗工業區仁和路3號",
+    "phone": "049-2259999 #204、205",
+    "lat": 23.91,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.shanglee.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 80,
+    "name": "遊山茶訪",
+    "address": "南投縣竹山鎮延平路19號",
+    "phone": "049-2643919#28",
+    "lat": 23.758,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.yoshantea.com",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 81,
+    "name": "廣興紙寮",
+    "address": "南投縣埔里鎮鐵山里鐵山路310號",
+    "phone": "049-2913037",
+    "lat": 23.966,
+    "lng": 120.969,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.taiwanpaper.com.tw",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 82,
+    "name": "樹德半山夢工廠",
+    "address": "南投縣南投市工業南六路6號",
+    "phone": "049-2009666",
+    "lat": 23.91,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.babbuza.com/",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 83,
+    "name": "臺灣菸酒(股)公司南投觀光酒廠",
+    "address": "南投市軍功里東山路82號",
+    "phone": "049-2234171 #555、556",
+    "lat": 23.91,
+    "lng": 120.686,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://event.ttl.com.tw/lt",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 84,
+    "name": "臺灣菸酒(股)公司埔里觀光酒廠",
+    "address": "南投縣埔里鎮中山路三段178號",
+    "phone": "049-2984006#456",
+    "lat": 23.966,
+    "lng": 120.969,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/pl/",
+      "region": "中部",
+      "city": "南投縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 85,
+    "name": "良作工場農業文創館",
+    "address": "雲林縣大埤鄉豐田路57號",
+    "phone": "05-5529586",
+    "lat": 23.645,
+    "lng": 120.431,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.nextland.com.tw",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 86,
+    "name": "塔吉特千層蛋糕大使館",
+    "address": "雲林縣斗六市榴中里工業路118號",
+    "phone": "05-5574516",
+    "lat": 23.709,
+    "lng": 120.543,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.jelly.com.tw/embssy.php",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 87,
+    "name": "興隆毛巾觀光工廠",
+    "address": "雲林縣虎尾鎮埒內里84-1號",
+    "phone": "05-6226008",
+    "lat": 23.708,
+    "lng": 120.432,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.sltowel.com.tw",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 88,
+    "name": "丸莊醬油觀光工廠",
+    "address": "雲林縣西螺鎮延平路25號",
+    "phone": "05-5863666",
+    "lat": 23.782,
+    "lng": 120.463,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.wuanchuang.com.tw",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 89,
+    "name": "大同醬油黑金釀造館",
+    "address": "雲林縣斗六市斗工二路39號",
+    "phone": "05-5576899",
+    "lat": 23.709,
+    "lng": 120.543,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.wretch.cc/blog/tatung1911\r\nhttp://www.tatungcan.com.tw",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 90,
+    "name": "台灣鯛生態創意園區",
+    "address": "雲林縣口湖鄉崙東村民生路1-88號",
+    "phone": "05-7993996",
+    "lat": 23.7093,
+    "lng": 120.4313,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.kf-fish.com/tw/subweb2/index.html",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 91,
+    "name": "雅聞峇里海岸觀光工廠",
+    "address": "雲林縣斗六市榴中里中興路333號",
+    "phone": "05-5511585",
+    "lat": 23.709,
+    "lng": 120.543,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.arwin.com.tw",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 92,
+    "name": "源順芝麻觀光油廠",
+    "address": "雲林縣土庫鎮成功路1-62號",
+    "phone": "05-6622574",
+    "lat": 23.694,
+    "lng": 120.362,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.god-bene.com.tw/",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 93,
+    "name": "瑞春醬油觀光工廠",
+    "address": "雲林縣西螺鎮福田里社口68-31號",
+    "phone": "05-5882288",
+    "lat": 23.782,
+    "lng": 120.463,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.rueichun.com.tw/pages/history",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 94,
+    "name": "福祿壽觀光酒廠",
+    "address": "雲林縣古坑鄉中山路11號",
+    "phone": "05-5823106",
+    "lat": 23.643,
+    "lng": 120.562,
+    "service_item": "中部｜觀光工廠",
+    "extra_json": {
+      "website": "http://museum.fortunebrewery.com.tw",
+      "region": "中部",
+      "city": "雲林縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 95,
+    "name": "月桃故事館",
+    "address": "嘉義市東區保忠一街359號",
+    "phone": "05-2766399",
+    "lat": 23.484,
+    "lng": 120.458,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://sgsh.mmweb.tw",
+      "region": "南部",
+      "city": "嘉義市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 96,
+    "name": "卡普秀醫美研發中心",
+    "address": "嘉義縣民雄鄉民雄工業區成功五街3號",
+    "phone": "0800-520668",
+    "lat": 23.554,
+    "lng": 120.432,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.facebook.com/TS.capsule",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 97,
+    "name": "卡羅爾銅管樂器觀光工廠",
+    "address": "嘉義縣大林鎮大埔美園區20路3號",
+    "phone": "05-2953688",
+    "lat": 23.604,
+    "lng": 120.472,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.carolbrasstourismfactory.com",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 98,
+    "name": "民雄金桔觀光工廠",
+    "address": "嘉義縣民雄鄉三興村陳厝寮7鄰38號",
+    "phone": "05-2720351",
+    "lat": 23.554,
+    "lng": 120.432,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.kingezi.com.tw",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 99,
+    "name": "佐登妮絲城堡",
+    "address": "嘉義縣大林鎮大埔美園區三路15號",
+    "phone": "04-22917296",
+    "lat": 23.604,
+    "lng": 120.472,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://chateau.jourdeness.com/",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 100,
+    "name": "余順豐花生觀光工廠",
+    "address": "嘉義縣東石鄉蔦松村湖底路20之28號",
+    "phone": "05-3660605",
+    "lat": 23.4518,
+    "lng": 120.2555,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.peanutempire.com.tw/",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 101,
+    "name": "冷研碳索館",
+    "address": "嘉義縣鹿草鄉馬稠後園區一路38號",
+    "phone": "05-3620966",
+    "lat": 23.4518,
+    "lng": 120.2555,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.co2tour.com/",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 102,
+    "name": "欣欣水泥森活園",
+    "address": "嘉義縣番路鄉觸口村車埕12號",
+    "phone": "05-2591588",
+    "lat": 23.4518,
+    "lng": 120.2555,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.hsinhsincement.com",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 103,
+    "name": "梅問屋梅子元氣館",
+    "address": "嘉義縣梅山鄉中山路527號",
+    "phone": "0800-606060",
+    "lat": 23.4518,
+    "lng": 120.2555,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.plummyume.com.tw",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 104,
+    "name": "愛木村休閒觀光工廠",
+    "address": "嘉義市西區文化路909-3號",
+    "phone": "05-2322441",
+    "lat": 23.475,
+    "lng": 120.44,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://iwoodvillage.com/",
+      "region": "南部",
+      "city": "嘉義市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 105,
+    "name": "臺灣菸酒(股)公司嘉義觀光酒廠",
+    "address": "嘉義縣民雄鄉福樂村中山路4號",
+    "phone": "05-2215721#572",
+    "lat": 23.554,
+    "lng": 120.432,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/cy/",
+      "region": "南部",
+      "city": "嘉義縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 106,
+    "name": "奇美食品幸福工廠",
+    "address": "台南市仁德區機場路1008號",
+    "phone": "06-2698588",
+    "lat": 22.971,
+    "lng": 120.252,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.happychimei.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 107,
+    "name": "萬國通路創意觀光工廠",
+    "address": "台南市歸仁區中正南路二段1號",
+    "phone": "06-7007600",
+    "lat": 22.967,
+    "lng": 120.294,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://tw.eminent.com/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 108,
+    "name": "黑橋牌香腸博物館",
+    "address": "台南市南區新忠路2號",
+    "phone": "06-2616990#12",
+    "lat": 24.123,
+    "lng": 120.663,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.blackbridge.com.tw/mus1.html",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 109,
+    "name": "TJCOS台鉅美妝觀光工廠",
+    "address": "台南市仁德區中正路三段589號",
+    "phone": "0800-567168",
+    "lat": 22.971,
+    "lng": 120.252,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://tjcos.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 110,
+    "name": "天一中藥生活化園區",
+    "address": "台南市官田區二鎮里工業路31號",
+    "phone": "06-6985800",
+    "lat": 23.194,
+    "lng": 120.316,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.itenergy.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 111,
+    "name": "卡多良食故事館",
+    "address": "台南市後壁區後壁里42-26號",
+    "phone": "06-6874762",
+    "lat": 22.9997,
+    "lng": 120.227,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.cadozea.com.tw/cadozea/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 112,
+    "name": "瓜瓜園地瓜生態故事館",
+    "address": "台南市新化區中正路65-1號",
+    "phone": "06-5902966",
+    "lat": 22.9997,
+    "lng": 120.227,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.kky.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 113,
+    "name": "立康中草藥產業文化館",
+    "address": "台南市永康區環工路29號",
+    "phone": "06-2335356",
+    "lat": 23.026,
+    "lng": 120.257,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.herbalmed.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 114,
+    "name": "和明織品文化館",
+    "address": "台南市七股區大埕里大埕189號",
+    "phone": "06-7875288",
+    "lat": 23.143,
+    "lng": 120.103,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.hermin.com/hmtm/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 115,
+    "name": "彼緹娃藝術蛋糕觀光工廠",
+    "address": "台南市佳里區民安里同安寮1之1號",
+    "phone": "06-7236328",
+    "lat": 23.165,
+    "lng": 120.177,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.beautiful-baby.com.tw/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 116,
+    "name": "東和蜂文化觀光工廠",
+    "address": "台南市東山區東正里東勢1-18號",
+    "phone": "06-6800773",
+    "lat": 22.9997,
+    "lng": 120.227,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.thbc.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 117,
+    "name": "美雅家具觀光工廠",
+    "address": "台南市白河區馬稠後里甘宅101-1號",
+    "phone": "06-6817456",
+    "lat": 22.9997,
+    "lng": 120.227,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.meiyafurniture.com.tw/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 118,
+    "name": "虹泰水凝膠世界",
+    "address": "台南市仁德區中正路3段523巷116號",
+    "phone": "06-2724880",
+    "lat": 22.971,
+    "lng": 120.252,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.hometech.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 119,
+    "name": "康那香不織布創意王國",
+    "address": "台南市將軍區將軍里三吉66之1號",
+    "phone": "06-7941573",
+    "lat": 23.199,
+    "lng": 120.157,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.knh.com.tw/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 120,
+    "name": "善化啤酒廠",
+    "address": "台南市善化區成功路2號",
+    "phone": "06-5838511#441",
+    "lat": 23.132,
+    "lng": 120.297,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://event.ttl.com.tw/sh",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 121,
+    "name": "港香蘭綠色健康知識館",
+    "address": "台南市新市區南科一路1號",
+    "phone": "06-5052505#2312",
+    "lat": 23.079,
+    "lng": 120.295,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.biotanico.com.tw",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 122,
+    "name": "華美光學eye玩視界",
+    "address": "台南市安定區中沙里沙崙30號",
+    "phone": "06-5937597#6802",
+    "lat": 23.106,
+    "lng": 120.237,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.eyecol.com",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 123,
+    "name": "雅聞湖濱療癒森林",
+    "address": "台南市後壁區上茄苳里12之66號",
+    "phone": "06-6882888",
+    "lat": 22.9997,
+    "lng": 120.227,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://app.arwin.com.tw/Shop/StoreDetail/1436/39105",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 124,
+    "name": "新百祿燕窩觀光工廠",
+    "address": "台南市南區新和路38號",
+    "phone": "06-2650924",
+    "lat": 24.123,
+    "lng": 120.663,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.facebook.com/sinbailu",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 125,
+    "name": "腳的眼鏡足部科學體驗中心\r\n(紅崴觀光工廠)",
+    "address": "台南市安南區鹽田里工業一路23號",
+    "phone": "06-2380713 #267、316",
+    "lat": 23.048,
+    "lng": 120.185,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.goodarch2u.com/tourism/index.php",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 126,
+    "name": "蘭都觀光工廠",
+    "address": "台南市六甲區和平街185-7號",
+    "phone": "06-6995208",
+    "lat": 22.9997,
+    "lng": 120.227,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.orchid-city.com/pages/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 127,
+    "name": "臺灣菸酒(股)公司隆田觀光酒廠",
+    "address": "台南市官田區中華路一段335號",
+    "phone": "06-5791311 #394、443",
+    "lat": 23.194,
+    "lng": 120.316,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/lt/",
+      "region": "南部",
+      "city": "台南市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 128,
+    "name": "台灣滷味博物館",
+    "address": "高雄市岡山區本工一路25號",
+    "phone": "07-6229800",
+    "lat": 22.796,
+    "lng": 120.296,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.de-food.com.tw",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 129,
+    "name": "宏裕行花枝丸館",
+    "address": "高雄市前鎮區新生路240號",
+    "phone": "07-8111319#1107",
+    "lat": 22.586,
+    "lng": 120.317,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.hongyu-food.com.tw/edcontent.php?lang=tw&tb=1",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 130,
+    "name": "紅頂穀創穀物文創樂園",
+    "address": "高雄市左營區民族一路709號",
+    "phone": "07-3460333#111",
+    "lat": 22.6273,
+    "lng": 120.3014,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.redbarn709.com",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 131,
+    "name": "彪琥台灣鞋故事館",
+    "address": "高雄市三民區民族一路335巷43-1號",
+    "phone": "07-3892246 #108、109",
+    "lat": 22.6273,
+    "lng": 120.3014,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.puhu.com.tw",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 132,
+    "name": "裕賀牛觀光工廠",
+    "address": "高雄市燕巢區大仁路68號",
+    "phone": "07-6151606",
+    "lat": 22.793,
+    "lng": 120.362,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.beefschool.com.tw",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 133,
+    "name": "FLOMO富樂夢橡皮擦觀光工廠",
+    "address": "高雄市湖內區中山路二段42號",
+    "phone": "07-6996173",
+    "lat": 22.6273,
+    "lng": 120.3014,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.flomogroup.com/",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 134,
+    "name": "珍芳烏魚子見學工廠",
+    "address": "高雄市前鎮區新衙路296巷81弄13號",
+    "phone": "07-8227488",
+    "lat": 22.586,
+    "lng": 120.317,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.a-ten588.com.tw",
+      "region": "南部",
+      "city": "高雄市",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 135,
+    "name": "天明製藥農科觀光藥廠",
+    "address": "屏東縣長治鄉德和村神農路3號",
+    "phone": "08-7629666",
+    "lat": 22.677,
+    "lng": 120.528,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.tcmm.com.tw",
+      "region": "南部",
+      "city": "屏東縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 136,
+    "name": "萬寶祿酵素品牌文化館",
+    "address": "屏東縣長治鄉德和村神農路17號",
+    "phone": "08-7624988",
+    "lat": 22.677,
+    "lng": 120.528,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.onepower.com.tw",
+      "region": "南部",
+      "city": "屏東縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 137,
+    "name": "鮮饌道海洋食品文化館",
+    "address": "屏東縣林邊鄉成功路122號",
+    "phone": "08-8752229",
+    "lat": 22.6826,
+    "lng": 120.4879,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.jyfood.com.tw",
+      "region": "南部",
+      "city": "屏東縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 138,
+    "name": "臺灣菸酒(股)公司屏東觀光酒廠",
+    "address": "屏東縣內埔鄉建國路34號",
+    "phone": "08-7781640 #448、430",
+    "lat": 22.613,
+    "lng": 120.567,
+    "service_item": "南部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/pt/",
+      "region": "南部",
+      "city": "屏東縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 139,
+    "name": "噶瑪蘭酒廠",
+    "address": "宜蘭縣員山鄉員山路二段326號",
+    "phone": "03-9229000#1104",
+    "lat": 24.743,
+    "lng": 121.722,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.kavalanshisky.com",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 140,
+    "name": "台灣足鞋健康知識館",
+    "address": "宜蘭縣五結鄉中興村中里路18號",
+    "phone": "03-9500551*501",
+    "lat": 24.685,
+    "lng": 121.797,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.drfoot.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 141,
+    "name": "亞典蛋糕密碼館",
+    "address": "宜蘭縣宜蘭市梅洲二路122號",
+    "phone": "03-9286777",
+    "lat": 24.757,
+    "lng": 121.753,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.rden.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 142,
+    "name": "一米特米食點心觀光工廠",
+    "address": "宜蘭縣蘇澳鎮祥和路199號",
+    "phone": "03-9907779#500",
+    "lat": 24.595,
+    "lng": 121.851,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.onemit.com.tw/",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 143,
+    "name": "安永心食館",
+    "address": "宜蘭縣蘇澳鎮中山路二段415號",
+    "phone": "03-9953399",
+    "lat": 24.595,
+    "lng": 121.851,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.anyomuseum.com/",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 144,
+    "name": "奇麗灣珍奶文化館",
+    "address": "宜蘭縣蘇澳鎮頂寮里頂強路23號",
+    "phone": "03-9909966",
+    "lat": 24.595,
+    "lng": 121.851,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.kilibay.net",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 145,
+    "name": "宜蘭餅發明館",
+    "address": "宜蘭縣蘇澳鎮海山西路369號",
+    "phone": "03-9905999",
+    "lat": 24.595,
+    "lng": 121.851,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.diy-icake.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 146,
+    "name": "虎牌米粉產業文化館",
+    "address": "宜蘭縣五結鄉成興村利興三路5號",
+    "phone": "03-9907718",
+    "lat": 24.685,
+    "lng": 121.797,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.tigerfood.com.tw/old/index.html",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 147,
+    "name": "博士鴨觀光工廠",
+    "address": "宜蘭縣五結鄉福興村新五路1-1號",
+    "phone": "03-9606051、2",
+    "lat": 24.685,
+    "lng": 121.797,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.dr-duck.com.tw/",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 148,
+    "name": "菌寶貝博物館",
+    "address": "宜蘭縣宜蘭市梅洲一路22號",
+    "phone": "03-9281168",
+    "lat": 24.757,
+    "lng": 121.753,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.junbaby.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 149,
+    "name": "溪和水產觀光工廠",
+    "address": "宜蘭縣五結鄉利興二路11號",
+    "phone": "03-9907998",
+    "lat": 24.685,
+    "lng": 121.797,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.siho.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 150,
+    "name": "蜡藝蜡筆城堡",
+    "address": "宜蘭縣蘇澳鎮海山西路500號",
+    "phone": "03-9907101",
+    "lat": 24.595,
+    "lng": 121.851,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.luckyart.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 151,
+    "name": "赫蒂法莊園",
+    "address": "宜蘭縣五結鄉五濱路一段40號",
+    "phone": "03-9908567",
+    "lat": 24.685,
+    "lng": 121.797,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.healtdevavillage.com/",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 152,
+    "name": "潭酵天地",
+    "address": "宜蘭縣礁溪鄉漳福路25號",
+    "phone": "0800-889096",
+    "lat": 24.829,
+    "lng": 121.767,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.hsuslegend.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 153,
+    "name": "橘之鄉蜜餞觀光工廠",
+    "address": "宜蘭縣宜蘭市梅洲二路33號",
+    "phone": "03-9285758",
+    "lat": 24.757,
+    "lng": 121.753,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.agrioz.com.tw",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 154,
+    "name": "臺灣菸酒(股)公司宜蘭酒廠觀光工廠",
+    "address": "宜蘭縣宜蘭市舊城西路3號",
+    "phone": "03-9355526#461",
+    "lat": 24.757,
+    "lng": 121.753,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/yl/",
+      "region": "東部",
+      "city": "宜蘭縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 155,
+    "name": "台泥DAKA-開放生態循環工廠",
+    "address": "花蓮縣秀林鄉和平村和平路二六三號",
+    "phone": "03-8221161",
+    "lat": 23.9912,
+    "lng": 121.6196,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "https://www.tccdaka.com/tw/index.html",
+      "region": "東部",
+      "city": "花蓮縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 156,
+    "name": "香又香便當調查局",
+    "address": "花蓮縣花蓮市美工路15號",
+    "phone": "03-8228111",
+    "lat": 23.991,
+    "lng": 121.62,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://www.xiangyouxiang.com.tw/info.htm",
+      "region": "東部",
+      "city": "花蓮縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 157,
+    "name": "臺灣菸酒(股)公司花蓮觀光酒廠",
+    "address": "花蓮市美工路6號",
+    "phone": "03-8222130",
+    "lat": 23.991,
+    "lng": 121.62,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://event.ttl-eshop.com.tw/hl/",
+      "region": "東部",
+      "city": "花蓮縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  },
+  {
+    "id": 158,
+    "name": "池上鄉農會觀光工廠金色豐收館",
+    "address": "台東縣池上鄉新興村7鄰85-6號",
+    "phone": "089-865936",
+    "lat": 22.7583,
+    "lng": 121.1444,
+    "service_item": "東部｜觀光工廠",
+    "extra_json": {
+      "website": "http://csfa.org.tw/",
+      "region": "東部",
+      "city": "台東縣",
+      "dataOrg": "經濟部產業發展署"
+    }
+  }
+]

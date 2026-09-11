@@ -82,6 +82,8 @@ COMBOS=(
   "child_welfare_center mohw_child_welfare_center"
   "hakka_community hakka_dtst20230600002"
   "green_shop moenv_green_shop"
+  "tourism_factory ida_tourism_factory"
+  "bookstore moc_bookstore"
 )
 
 for combo in "${COMBOS[@]}"; do

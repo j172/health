@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"lib/**/*.test.mjs\"",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test \"lib/**/*.test.mjs\" \"scripts/**/*.test.mjs\"",
     "import:cram-schools": "node scripts/import-moe-cram-schools.mjs",
     "import:kindergartens": "node scripts/import-moe-kindergartens.mjs",
     "import:child-safety-spots": "node scripts/import-npa-child-safety-spots.mjs",
@@ -33,7 +33,9 @@
     "verify:hospital-names": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-hospital-search-names.mjs",
     "export:tgos": "node scripts/export-facilities-for-tgos.mjs",
     "import:tgos": "node scripts/import-tgos-geocode-results.mjs",
-    "import:npo-organizations": "node scripts/ingest-npo-organizations.mjs",
+    "import:tourism-factories": "node scripts/import-ida-tourism-factories.mjs",
+    "import:bookstores": "node scripts/import-moc-bookstores.mjs",
+    "build:seeds": "node scripts/build-facility-seeds.mjs",
     "sync:npo": "node scripts/gha-npo-sync.mjs"
   },
   "dependencies": {

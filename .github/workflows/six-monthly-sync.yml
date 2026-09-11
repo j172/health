@@ -124,6 +124,18 @@ jobs:
         run: |
           curl -fsS -X POST "http://127.0.0.1:18080/api/admin/culture-sync?type=heritage" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 
+      - name: Import IDA Certified Tourism Factories (~178 factories)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-ida-tourism-factories.mjs
+
+      - name: Import MOC Physical Bookstores (~660 bookstores)
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-moc-bookstores.mjs
+
       - name: Close SSH tunnel
         if: always()
         run: |
