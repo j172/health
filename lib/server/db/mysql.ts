@@ -47,6 +47,8 @@ export const getMysqlPool = (): Pool => {
   return pool;
 };
 
+export const getPool = getMysqlPool;
+
 export const ensureSchema = async (): Promise<void> => {
   if (schemaReady) return;
   const p = getMysqlPool();

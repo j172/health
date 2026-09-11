@@ -215,3 +215,11 @@ export const httpGetText = async (
   const response = await httpRequest(url, options);
   return { status: response.status, text: response.buffer.toString("utf-8") };
 };
+
+export const httpGetJson = async <T = unknown>(
+  url: string,
+  options: HttpRequestOptions = {},
+): Promise<{ status: number; data: T }> => {
+  const { status, text } = await httpGetText(url, options);
+  return { status, data: JSON.parse(text) as T };
+};

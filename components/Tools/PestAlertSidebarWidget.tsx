@@ -36,7 +36,18 @@ export default function PestAlertSidebarWidget() {
     fetchAlerts();
   };
 
-  const hasUrgent = alerts.some((a) => a.warningLevel === "紅燈" || a.warningLevel === "黃燈");
+  const isRecentOrUrgent = (item: PestAlertItem) => {
+    const isUrgent = item.warningLevel === "紅燈" || item.warningLevel === "黃燈";
+    if (isUrgent) return true;
+    if (!item.alertTime) return true;
+    const t = new Date(item.alertTime).getTime();
+    if (isNaN(t)) return true;
+    const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
+    return Date.now() - t <= fourteenDaysMs;
+  };
+
+  const displayedAlerts = alerts.filter(isRecentOrUrgent).slice(0, 5);
+  const hasUrgent = displayedAlerts.some((a) => a.warningLevel === "紅燈" || a.warningLevel === "黃燈");
   const dotColorClass = hasUrgent ? "bg-amber-500" : "bg-emerald-500";
 
   return (
@@ -46,13 +57,13 @@ export default function PestAlertSidebarWidget() {
       onRefresh={handleRefresh}
       refreshing={refreshing}
       showSpinner={loading}
-      hasData={alerts.length > 0}
+      hasData={displayedAlerts.length > 0}
       emptyMessage="暫無病蟲害通報"
       footerHref="/tools/pest-alerts"
       footerLabel="查看全台農作物病蟲害示警"
     >
       <div className="space-y-3">
-        {alerts.map((item, idx) => {
+        {displayedAlerts.map((item, idx) => {
           const badgeClass =
             item.warningLevel === "紅燈"
               ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300"
