@@ -72,6 +72,17 @@ const SOURCE_LABELS: Record<string, string> = {
   worldvision: "台灣世界展望會",
   goh: "勵馨基金會",
   syinlu: "心路基金會",
+  ccf: "家扶基金會",
+  unitedway: "聯合勸募",
+  eden: "伊甸基金會",
+  elder: "華山基金會",
+  savedogs: "台灣動物緊急救援小組",
+  igiving: "iGiving 公益網",
+  csr_cw_social: "CSR@天下 社會共好",
+  caresb: "照顧情報",
+  nncf: "羅慧夫顱顏基金會",
+  chilingjj: "志玲姊姊慈善基金會",
+  anews: "愛傳媒",
 };
 
 export interface SourceLabelInput {

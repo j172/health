@@ -360,4 +360,33 @@ export const facilitySearchConfigs = {
     serviceItem: { label: "管轄單位與窗口：" },
     showGeocodeNote: true,
   },
+  bookstores: {
+    facilityType: "bookstore",
+    emoji: "📚",
+    title: "全國實體書店查詢",
+    description: "查詢全國特色實體書店、獨立書局與閱讀空間。資料來源：文化部開放資料（typeId=M）。",
+    searchPlaceholder: "輸入書店名稱或縣市關鍵字",
+    errorText: "查詢書店資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的實體書店，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的實體書店。",
+    serviceItem: { label: "營業時間：" },
+  },
+  "tourism-factories": {
+    facilityType: "tourism_factory",
+    emoji: "🏭",
+    title: "全台認證觀光工廠查詢",
+    description:
+      "查詢經濟部產業發展署評鑑通過之全台觀光工廠與產業文化館。資料來源：經濟部產業發展署開放資料（SDD6848）。",
+    searchPlaceholder: "輸入工廠名稱或縣市關鍵字",
+    errorText: "查詢觀光工廠資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的觀光工廠，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的觀光工廠。",
+    serviceItem: { label: "地區分類：" },
+    categories: [
+      { value: "北部", label: "北部地區" },
+      { value: "中部", label: "中部地區" },
+      { value: "南部", label: "南部地區" },
+      { value: "東部", label: "東部地區" },
+    ],
+  },
 } satisfies Record<string, FacilitySearchConfig>;

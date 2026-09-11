@@ -123,6 +123,8 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   const [total, setTotal] = useState<number | null>(null);
   /** True when the rendered list came from the widened fallback radius rather than the configured one. */
   const [widenedRadius, setWidenedRadius] = useState(false);
+  /** Number of results found in the initial radius before widening (when fewer than pageSize). */
+  const [initialNearbyCount, setInitialNearbyCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -163,19 +165,18 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
       try {
         let data = await load(radiusMeters);
         let widened = false;
+        let originalCount: number | null = null;
 
         // A dataset can be nationally large and locally empty at the same time — 伯公照護站
         // holds ~611 rows but almost none within 10km of Taipei. An empty page there reads as
         // "this tool has no data", so re-run the same query at a 500km radius and show the
         // nearest rows instead.
-        //
-        // The re-run keeps lat/lng deliberately: that is what makes the server keep
-        // ORDER BY distance_km, so the widened list is genuinely "the closest ones, however
-        // far that is". Dropping the coordinates instead would silently switch the server to
-        // ORDER BY name and hand a Taipei reader 200 alphabetically-first rows from Miaoli.
-        if (!keyword && data.facilities.length === 0) {
+        // If results within radius are fewer than one page (e.g. only 3 stations), also widen
+        // to fill up to pageSize so readers always get at least a full page of closest stations.
+        if (!keyword && data.facilities.length < pageSize) {
+          originalCount = data.facilities.length;
           const widenedData = await load(NEARBY_FALLBACK_RADIUS_METERS);
-          if (widenedData.facilities.length > 0) {
+          if (widenedData.facilities.length > data.facilities.length) {
             data = widenedData;
             widened = true;
           }
@@ -185,6 +186,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
           setFacilities(data.facilities);
           setTotal(typeof data.total === "number" ? data.total : null);
           setWidenedRadius(widened);
+          setInitialNearbyCount(widened ? originalCount : null);
           setError(false);
           setLoading(false);
         }
@@ -199,7 +201,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     return () => {
       cancelled = true;
     };
-  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, onlyCharity, effectiveSort]);
+  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, onlyCharity, effectiveSort, pageSize]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,13 +227,6 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
 
   // Naming both numbers — the radius that found nothing and how far the closest row actually
   // is — is what turns "we found nothing near you" into useful information.
-  //
-  // Scan the whole list for the minimum rather than reading row 0. Row 0 is only the nearest
-  // hit while the server ordered by distance, and the sort dropdown can select 名稱 or 類別
-  // with no keyword active — `effectiveSort` only rewrites `distance` away when a keyword is
-  // set — which leaves the rows GPS-filtered and carrying a distance_km, but ordered by name.
-  // Row 0 would then hold a real distance that simply isn't the smallest one, and this notice
-  // must not print a confidently wrong number. The list is capped at 200, so the scan is free.
   const noun = facilityNoun(emptyStateNoKeyword, title);
   const nearestKm = (facilities ?? []).reduce((min, f) => {
     const km = Number(f.distance_km);
@@ -239,7 +234,11 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   }, Infinity);
   // Infinity when no row carried a distance (a non-GPS list) — drop the clause rather than guess.
   const nearestText = Number.isFinite(nearestKm) ? `（最近一處約 ${Math.round(nearestKm)} 公里）` : "";
-  const fallbackNotice = widenedRadius ? `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。` : null;
+  const fallbackNotice = widenedRadius
+    ? (initialNearbyCount && initialNearbyCount > 0
+        ? `您附近 ${radiusMeters / 1000} 公里內僅有 ${initialNearbyCount} 處${noun}，已自動依距離為您列出全台最近的${noun}${nearestText}。`
+        : `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。`)
+    : null;
 
   // Client-side slice of whatever the API already returned (see FETCH_LIMIT above).
   // Clamp defensively rather than trust the URL's `page` — a filter change can shrink

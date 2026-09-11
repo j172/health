@@ -84,7 +84,18 @@ export type FeedCode =
   | "down_syndrome_news"
   | "worldvision_articles"
   | "goh_news"
-  | "syinlu_news";
+  | "syinlu_news"
+  | "ccf_news"
+  | "unitedway_news"
+  | "eden_news"
+  | "elder_news"
+  | "savedogs_news"
+  | "igiving_news"
+  | "csr_cw_social"
+  | "caresb_news"
+  | "nncf_news"
+  | "chilingjj_news"
+  | "anews_news";
 
 export interface FeedConfig {
   code: FeedCode;

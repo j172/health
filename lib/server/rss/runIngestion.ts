@@ -48,6 +48,16 @@ import {
   fetchSyinluNews,
   fetchWorldPeaceNews,
   fetchGreenpeaceNews,
+  fetchCcfNews,
+  fetchUnitedWayNews,
+  fetchEdenNews,
+  fetchElderNews,
+  fetchSaveDogsNews,
+  fetchIgivingNews,
+  fetchCaresbNews,
+  fetchNncfNews,
+  fetchChilingJjNews,
+  fetchAnewsNews,
 } from "@/lib/server/rss/fetchNpoSources";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
@@ -765,6 +775,96 @@ export const runRssIngestion = async (
             sourceName: "greenpeace",
           },
           fetchFn: fetchGreenpeaceNews,
+        },
+        {
+          meta: {
+            code: "ccf_news" as FeedCode,
+            name: "家扶基金會",
+            url: "https://www.ccf.org.tw/news",
+            sourceName: "ccf",
+          },
+          fetchFn: fetchCcfNews,
+        },
+        {
+          meta: {
+            code: "unitedway_news" as FeedCode,
+            name: "聯合勸募",
+            url: "https://www.unitedway.org.tw/news.aspx?NewsType=1",
+            sourceName: "unitedway",
+          },
+          fetchFn: fetchUnitedWayNews,
+        },
+        {
+          meta: {
+            code: "eden_news" as FeedCode,
+            name: "伊甸基金會",
+            url: "https://www.eden.org.tw/news/news-release/",
+            sourceName: "eden",
+          },
+          fetchFn: fetchEdenNews,
+        },
+        {
+          meta: {
+            code: "elder_news" as FeedCode,
+            name: "華山基金會",
+            url: "https://www.elder.org.tw/contents/news",
+            sourceName: "elder",
+          },
+          fetchFn: fetchElderNews,
+        },
+        {
+          meta: {
+            code: "savedogs_news" as FeedCode,
+            name: "台灣動物緊急救援小組",
+            url: "https://www.savedogs.org/index.php/MediaReports",
+            sourceName: "savedogs",
+          },
+          fetchFn: fetchSaveDogsNews,
+        },
+        {
+          meta: {
+            code: "igiving_news" as FeedCode,
+            name: "iGiving 公益網",
+            url: "https://www.igiving.org.tw/contents/news",
+            sourceName: "igiving",
+          },
+          fetchFn: fetchIgivingNews,
+        },
+        {
+          meta: {
+            code: "caresb_news" as FeedCode,
+            name: "照顧情報",
+            url: "https://caresb.etaiwan.com.tw/ads",
+            sourceName: "caresb",
+          },
+          fetchFn: fetchCaresbNews,
+        },
+        {
+          meta: {
+            code: "nncf_news" as FeedCode,
+            name: "羅慧夫顱顏基金會",
+            url: "https://www.nncf.org/news/index#cat-area",
+            sourceName: "nncf",
+          },
+          fetchFn: fetchNncfNews,
+        },
+        {
+          meta: {
+            code: "chilingjj_news" as FeedCode,
+            name: "志玲姊姊慈善基金會",
+            url: "https://www.chilingjj.org/contents/news?equal[classid]=",
+            sourceName: "chilingjj",
+          },
+          fetchFn: fetchChilingJjNews,
+        },
+        {
+          meta: {
+            code: "anews_news" as FeedCode,
+            name: "愛傳媒",
+            url: "https://anews.com.tw/archives/category/%e6%96%b0%e8%81%9e",
+            sourceName: "anews",
+          },
+          fetchFn: fetchAnewsNews,
         },
       ];
 

@@ -8,6 +8,7 @@ import type {
 import type { HeritageCategory } from "./ingestHeritageAssets";
 import { runCulturalShowsSync } from "./ingestShows";
 import { runPublicArtSync } from "./ingestPublicArt";
+import { runIngestExternalEvents } from "./ingestExternalEvents";
 
 let isSeedingShows = false;
 let isSeedingPublicArt = false;
@@ -24,8 +25,8 @@ async function checkAndTriggerAutoSeed(type: "shows" | "public_art"): Promise<vo
       if (rows[0]?.cnt === 0) {
         isSeedingShows = true;
         console.log("[Culture Queries] cultural_events is empty, triggering background auto-seed...");
-        runCulturalShowsSync()
-          .then((res) => console.log("[Culture Queries] Shows auto-seed complete:", res))
+        Promise.allSettled([runCulturalShowsSync(), runIngestExternalEvents()])
+          .then((results) => console.log("[Culture Queries] Shows & External auto-seed complete:", results))
           .catch((err) => console.error("[Culture Queries] Shows auto-seed error:", err))
           .finally(() => {
             isSeedingShows = false;
@@ -120,9 +121,9 @@ export async function searchCulturalEvents({
 
     // Fetch matching events
     const querySql = `
-      SELECT e.id, e.uid, e.title, e.category, e.category_label, e.description,
-             e.image_url, e.master_unit, e.start_date, e.end_date,
-             e.source_web_promote, e.web_sales, e.updated_at
+      SELECT e.id, e.uid, e.title, e.title_en, e.category, e.category_label, e.description,
+             e.description_en, e.image_url, e.master_unit, e.start_date, e.end_date,
+             e.source_web_promote, e.web_sales, e.extra_json, e.updated_at
       FROM cultural_events e
       ${whereSql}
       ORDER BY CASE WHEN e.start_date IS NULL OR e.start_date = '' THEN 1 ELSE 0 END,
@@ -172,20 +173,31 @@ export async function searchCulturalEvents({
       showsByEventId.set(s.event_id, list);
     }
 
-    const items: CulturalActivityItem[] = eventRows.map((e) => ({
-      id: e.uid,
-      title: e.title,
-      category: e.category,
-      categoryLabel: e.category_label,
-      description: e.description || "",
-      imageUrl: e.image_url || null,
-      masterUnit: e.master_unit || null,
-      startDate: e.start_date || "",
-      endDate: e.end_date || "",
-      sourceWebPromote: e.source_web_promote || null,
-      webSales: e.web_sales || null,
-      shows: showsByEventId.get(e.id) || [],
-    }));
+    const items: CulturalActivityItem[] = eventRows.map((e) => {
+      let extraJson: Record<string, unknown> | null = null;
+      if (e.extra_json) {
+        try {
+          extraJson = typeof e.extra_json === "string" ? JSON.parse(e.extra_json) : e.extra_json;
+        } catch {}
+      }
+      return {
+        id: e.uid,
+        title: e.title,
+        titleEn: e.title_en || null,
+        category: e.category,
+        categoryLabel: e.category_label,
+        description: e.description || "",
+        descriptionEn: e.description_en || null,
+        imageUrl: e.image_url || null,
+        masterUnit: e.master_unit || null,
+        startDate: e.start_date || "",
+        endDate: e.end_date || "",
+        sourceWebPromote: e.source_web_promote || null,
+        webSales: e.web_sales || null,
+        extraJson,
+        shows: showsByEventId.get(e.id) || [],
+      };
+    });
 
     return {
       items,

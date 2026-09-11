@@ -160,6 +160,13 @@ export const RSS_FEEDS: FeedConfig[] = [
     skipDetailFetch: true,
   },
   {
+    code: "csr_cw_social",
+    name: "CSR@天下 社會共好",
+    url: "https://news.google.com/rss/search?q=site:csr.cw.com.tw/master-channel/3&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",
+    sourceName: "csr_cw_social",
+    skipDetailFetch: true,
+  },
+  {
     code: "esg_gvm",
     name: "ESG遠見",
     url: "https://news.google.com/rss/search?q=site:esg.gvm.com.tw&hl=zh-TW&gl=TW&ceid=TW:zh-Hant",

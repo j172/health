@@ -628,3 +628,727 @@ export async function fetchGreenpeaceNews(): Promise<NpoFetchResult> {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
   }
 }
+
+// ---------------------------------------------------------------------------
+// 7. 家扶基金會 (CCF)
+// ---------------------------------------------------------------------------
+export async function fetchCcfNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "ccf_news";
+  const sourceName = "ccf";
+  const feedName = "家扶基金會";
+  const url = "https://www.ccf.org.tw/news";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='/news/']").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).find(".title, h3, h4, p").text().trim() || $(el).text().trim().split("\n")[0].trim();
+      if (!href || !title || title.length < 4 || title.includes("更多") || title.includes("最新消息")) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.ccf.org.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = $(el).text().match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.ccf.org.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.split("/news/")[1]?.replace(/\/detail.*$/, "") || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "最新消息",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 8. 聯合勸募 (United Way Taiwan)
+// ---------------------------------------------------------------------------
+export async function fetchUnitedWayNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "unitedway_news";
+  const sourceName = "unitedway";
+  const feedName = "聯合勸募";
+  const url = "https://www.unitedway.org.tw/news.aspx?NewsType=1";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $(".grid-news figure a, a[href*='news_page']").each((_, el) => {
+      const href = $(el).attr("href");
+      if (!href) return;
+      const canonicalUrl = toAbsoluteUrl("https://www.unitedway.org.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateText = $(el).find("h2 i, time").text().trim();
+      let title = $(el).find("h2").text().replace(dateText, "").trim();
+      if (!title) title = $(el).text().trim().replace(/\s+/g, " ");
+      if (!title || title.length < 4) return;
+
+      const publishedAtUtc = dateText ? parseYmdToUtc(dateText) : new Date();
+      const rawImg = $(el).find(".img img, img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.unitedway.org.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/SNo=(\d+)/i)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "新聞發佈",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 9. 伊甸社會福利基金會 (Eden Social Welfare Foundation)
+// ---------------------------------------------------------------------------
+export async function fetchEdenNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "eden_news";
+  const sourceName = "eden";
+  const feedName = "伊甸基金會";
+  const url = "https://www.eden.org.tw/news/news-release/";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='/news/detail/'], a[href*='/news-release/detail/']").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).find("h3, h4, .title, p").text().trim() || $(el).text().trim().replace(/\s+/g, " ");
+      if (!href || !title || title.length < 4 || title.includes("最新消息")) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.eden.org.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = $(el).text().match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.eden.org.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/detail\/(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "焦點新聞",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 10. 華山基金會 (Elder Foundation)
+// ---------------------------------------------------------------------------
+export async function fetchElderNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "elder_news";
+  const sourceName = "elder";
+  const feedName = "華山基金會";
+  const url = "https://www.elder.org.tw/contents/news";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='news_ct']").each((_, el) => {
+      const href = $(el).attr("href");
+      const fullText = $(el).text().trim();
+      const title = fullText.split("\n")[0].trim().slice(0, 120);
+      if (!href || !title || title.length < 4) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.elder.org.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = fullText.match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.elder.org.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/id=(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "最新消息",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 11. 台灣動物緊急救援小組 (SaveDogs)
+// ---------------------------------------------------------------------------
+export async function fetchSaveDogsNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "savedogs_news";
+  const sourceName = "savedogs";
+  const feedName = "台灣動物緊急救援小組";
+  const url = "https://www.savedogs.org/index.php/MediaReports";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='MediaReports/Page'], a[href*='MediaReports/detail']").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).text().trim().replace(/\s+/g, " ");
+      if (!href || !title || title.length < 5) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.savedogs.org", href.startsWith("/") ? href : `/index.php/${href}`);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = $(el).parent().text().match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src") || $(el).parent().find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.savedogs.org", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/id=(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "媒體報導",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 12. iGiving 公益網 (iGiving)
+// ---------------------------------------------------------------------------
+export async function fetchIgivingNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "igiving_news";
+  const sourceName = "igiving";
+  const feedName = "iGiving 公益網";
+  const url = "https://www.igiving.org.tw/contents/news";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='news_ct']").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).text().trim().replace(/\s+/g, " ");
+      if (!href || !title || title.length < 4) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.igiving.org.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = $(el).parent().text().match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.igiving.org.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/id=(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "公益新聞",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 13. 照顧情報 (Caresb)
+// ---------------------------------------------------------------------------
+export async function fetchCaresbNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "caresb_news";
+  const sourceName = "caresb";
+  const feedName = "照顧情報";
+  const url = "https://caresb.etaiwan.com.tw/ads";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("article a, .post-item a, .entry-title a, a[href*='/ads/']").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).text().trim().replace(/\s+/g, " ");
+      if (!href || !title || title.length < 5 || title.includes("閱讀全文")) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://caresb.etaiwan.com.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const publishedAtUtc = new Date();
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://caresb.etaiwan.com.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "照顧資訊",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 14. 羅慧夫顱顏基金會 (NNCF)
+// ---------------------------------------------------------------------------
+export async function fetchNncfNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "nncf_news";
+  const sourceName = "nncf";
+  const feedName = "羅慧夫顱顏基金會";
+  const url = "https://www.nncf.org/news/index#cat-area";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='/news/index/'], a[href*='/news/detail']").each((_, el) => {
+      const href = $(el).attr("href");
+      const fullText = $(el).text().trim();
+      const titleMatch = fullText.match(/【[^】]+】[^\n\r]+/) || fullText.match(/[^\n\r]{6,}/);
+      let title = titleMatch ? titleMatch[0].trim() : fullText.slice(0, 80);
+      if (!href || !title || title.length < 4) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.nncf.org", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = fullText.match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.nncf.org", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.split("/news/")[1]?.replace(/[^\w-]/g, "_") || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "基金會消息",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 15. 志玲姊姊慈善基金會 (Chiling Charity Foundation)
+// ---------------------------------------------------------------------------
+export async function fetchChilingJjNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "chilingjj_news";
+  const sourceName = "chilingjj";
+  const feedName = "志玲姊姊慈善基金會";
+  const url = "https://www.chilingjj.org/contents/news?equal[classid]=";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("a[href*='news_ct']").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).text().trim().replace(/\s+/g, " ");
+      if (!href || !title || title.length < 4) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://www.chilingjj.org", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const dateMatch = $(el).parent().text().match(/(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+      const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+      const rawImg = $(el).find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://www.chilingjj.org", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/id=(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "基金會消息",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 16. 愛傳媒 (Anews)
+// ---------------------------------------------------------------------------
+export async function fetchAnewsNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "anews_news";
+  const sourceName = "anews";
+  const feedName = "愛傳媒";
+  const url = "https://anews.com.tw/archives/category/%e6%96%b0%e8%81%9e";
+
+  try {
+    const response = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+    const $ = load(response.text);
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    $("article a[href*='/archives/'], .entry-title a").each((_, el) => {
+      const href = $(el).attr("href");
+      const title = $(el).text().trim().replace(/\s+/g, " ");
+      if (!href || !title || title.length < 5 || title.includes("閱讀更多")) return;
+
+      const canonicalUrl = toAbsoluteUrl("https://anews.com.tw", href);
+      if (seen.has(canonicalUrl)) return;
+      seen.add(canonicalUrl);
+
+      const timeEl = $(el).closest("article").find("time");
+      const dateStr = timeEl.attr("datetime") || timeEl.text().trim();
+      const publishedAtUtc = dateStr ? new Date(dateStr) : new Date();
+
+      const rawImg = $(el).closest("article").find("img").attr("src");
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        assets.push({ assetType: "image", title: null, url: toAbsoluteUrl("https://anews.com.tw", rawImg), sortOrder: 0 });
+      }
+
+      const externalId = canonicalUrl.match(/archives\/(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: title,
+        descriptionText: title,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw: "社會公益",
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: "",
+        geoSummary: "",
+      });
+    });
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+

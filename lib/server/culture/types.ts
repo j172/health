@@ -12,9 +12,11 @@ export interface CulturalShowInfo {
 export interface CulturalActivityItem {
   id: string;
   title: string;
+  titleEn?: string | null;
   category: string;
   categoryLabel: string;
   description: string;
+  descriptionEn?: string | null;
   imageUrl?: string | null;
   masterUnit?: string | null;
   startDate: string;
@@ -22,6 +24,7 @@ export interface CulturalActivityItem {
   sourceWebPromote?: string | null;
   webSales?: string | null;
   shows: CulturalShowInfo[];
+  extraJson?: Record<string, unknown> | null;
 }
 
 export interface PublicArtItem {
@@ -54,7 +57,10 @@ export const CATEGORY_LABELS: Record<string, string> = {
   "8": "🎬 電影與沉浸",
   "17": "✨ 綜藝節慶",
   npo: "🤝 公益活動",
+  charity_project: "❤️ 公益專案/線上募款",
+  ticketing: "🎟️ 售票展演",
 };
 
-export const ALL_CATEGORIES = ["6", "1", "2", "3", "4", "7", "8"];
+export const ALL_CATEGORIES = ["6", "1", "2", "3", "4", "7", "8", "npo", "charity_project", "ticketing"];
+
 
