@@ -6,9 +6,28 @@ import { useEffect } from "react";
 export default function RegisterServiceWorker() {
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
-    navigator.serviceWorker.register("/sw.js").catch(() => {
-      // Best-effort only — a failed registration (unsupported browser, blocked by extension, etc.) shouldn't affect the page.
-    });
+
+    const register = () => {
+      const scheduleRegistration = () => {
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(() => {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+          });
+        } else {
+          setTimeout(() => {
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
+          }, 1000);
+        }
+      };
+
+      if (document.readyState === "complete") {
+        scheduleRegistration();
+      } else {
+        window.addEventListener("load", scheduleRegistration, { once: true });
+      }
+    };
+
+    register();
   }, []);
 
   return null;

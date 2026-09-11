@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
-import { listLatestNews } from "@/lib/server/news/queries";
+import { listNewsForSitemap } from "@/lib/server/news/queries";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG, isToolIndexable } from "@/lib/server/tools/catalog";
 
 export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+export const revalidate = 3600;
 
 // Google's single-sitemap ceiling is 50,000 URLs; this cap just needs to stay
 // comfortably under that. If the archive ever grows past it, switch to a
@@ -16,7 +16,7 @@ const MAX_SITEMAP_ITEMS = 20_000;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getBaseUrl();
-  const items = await listLatestNews(MAX_SITEMAP_ITEMS);
+  const items = await listNewsForSitemap(MAX_SITEMAP_ITEMS);
 
   const newsEntries: MetadataRoute.Sitemap = items.map((item) => ({
     url: `${baseUrl}/news/${item.id}`,
