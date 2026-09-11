@@ -59,6 +59,7 @@ yarn-error.log*
 # regenerated fresh on every deploy, not committed (see ops_health_502_watchdog memory:
 # next/og's ImageResponse can't run on the production host itself, only at build time on the GHA runner)
 /public/images/og/source/
+/public/data/
 
 # vercel
 .vercel

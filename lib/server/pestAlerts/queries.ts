@@ -1,20 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import type { PestAlertItem } from "./types";
-
-const SEED_PATH = path.join(process.cwd(), "data", "pest-alerts-seed.json");
+import { readSeedJson } from "@/lib/server/db/seedReader";
 
 function getSeedAlerts(): PestAlertItem[] {
-  try {
-    if (fs.existsSync(SEED_PATH)) {
-      return JSON.parse(fs.readFileSync(SEED_PATH, "utf-8")) as PestAlertItem[];
-    }
-  } catch (err) {
-    console.warn("Failed to read pest-alerts-seed.json:", err);
-  }
-  return [];
+  return readSeedJson<PestAlertItem[]>("pest-alerts-seed.json") || [];
 }
 
 export async function getPestAlerts(options?: {

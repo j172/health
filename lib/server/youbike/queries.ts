@@ -1,10 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import type { YouBikeStation } from "./types";
-
-const SEED_PATH = path.join(process.cwd(), "data", "youbike-stations-seed.json");
+import { readSeedJson } from "@/lib/server/db/seedReader";
 
 function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -17,18 +14,8 @@ function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: num
   return Math.round(R * c * 100) / 100;
 }
 
-let cachedSeed: YouBikeStation[] | null = null;
 function getSeedStations(): YouBikeStation[] {
-  if (cachedSeed) return cachedSeed;
-  try {
-    if (fs.existsSync(SEED_PATH)) {
-      cachedSeed = JSON.parse(fs.readFileSync(SEED_PATH, "utf-8")) as YouBikeStation[];
-      return cachedSeed;
-    }
-  } catch (err) {
-    console.warn("Failed to read youbike-stations-seed.json:", err);
-  }
-  return [];
+  return readSeedJson<YouBikeStation[]>("youbike-stations-seed.json") || [];
 }
 
 export async function searchYouBikeStations(options?: {

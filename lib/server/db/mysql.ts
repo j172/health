@@ -7,6 +7,7 @@ import mysql, {
 } from "mysql2/promise";
 import { env } from "@/lib/server/config/env";
 import { TABLE_DDL } from "@/lib/server/db/schema";
+import { readSeedJson } from "./seedReader";
 
 let pool: Pool | null = null;
 let schemaReady = false;
@@ -390,46 +391,43 @@ export const ensureSchema = async (): Promise<void> => {
       "SELECT COUNT(*) AS cnt FROM latest_books"
     );
     if ((lbCountRows[0]?.cnt ?? 0) === 0) {
-      const filePath = path.join(process.cwd(), "data", "latest-books-seed.json");
-      if (fs.existsSync(filePath)) {
-        const rawJson = JSON.parse(fs.readFileSync(filePath, "utf-8"));
-        const books = rawJson?.books;
-        if (Array.isArray(books) && books.length > 0) {
-          const now = toSqlDateTime(new Date());
-          const values = books.map((b: any) => [
-            b.platform,
-            b.categoryId,
-            b.categoryName,
-            b.ranking ?? null,
-            b.title,
-            b.subtitle ?? null,
-            b.author ?? null,
-            b.translator ?? null,
-            b.publisher ?? null,
-            b.publishDate ?? null,
-            b.coverUrl ?? null,
-            b.productUrl,
-            b.isbn ?? null,
-            b.listPrice ?? null,
-            b.salePrice ?? null,
-            b.discount ?? null,
-            b.description ?? null,
-            b.payloadHash || "",
-            now,
-            now,
-            now,
-          ]);
-          await p.query(
-            `INSERT IGNORE INTO latest_books (
-               platform, category_id, category_name, ranking, title, subtitle,
-               author, translator, publisher, publish_date, cover_url, product_url,
-               isbn, list_price, sale_price, discount, description, payload_hash,
-               synced_at, created_at, updated_at
-             ) VALUES ?`,
-            [values]
-          );
-          console.log(`[ensureSchema] Successfully seeded ${books.length} latest books into MySQL`);
-        }
+      const rawBooks = readSeedJson<{ books?: any[] }>("latest-books-seed.json");
+      const books = rawBooks?.books;
+      if (Array.isArray(books) && books.length > 0) {
+        const now = toSqlDateTime(new Date());
+        const values = books.map((b: any) => [
+          b.platform,
+          b.categoryId,
+          b.categoryName,
+          b.ranking ?? null,
+          b.title,
+          b.subtitle ?? null,
+          b.author ?? null,
+          b.translator ?? null,
+          b.publisher ?? null,
+          b.publishDate ?? null,
+          b.coverUrl ?? null,
+          b.productUrl,
+          b.isbn ?? null,
+          b.listPrice ?? null,
+          b.salePrice ?? null,
+          b.discount ?? null,
+          b.description ?? null,
+          b.payloadHash || "",
+          now,
+          now,
+          now,
+        ]);
+        await p.query(
+          `INSERT IGNORE INTO latest_books (
+             platform, category_id, category_name, ranking, title, subtitle,
+             author, translator, publisher, publish_date, cover_url, product_url,
+             isbn, list_price, sale_price, discount, description, payload_hash,
+             synced_at, created_at, updated_at
+           ) VALUES ?`,
+          [values]
+        );
+        console.log(`[ensureSchema] Successfully seeded ${books.length} latest books into MySQL`);
       }
     }
   } catch (seedErr) {
@@ -440,21 +438,18 @@ export const ensureSchema = async (): Promise<void> => {
   try {
     const [metroCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM metro_alerts");
     if ((metroCount[0]?.cnt ?? 0) === 0) {
-      const metroPath = path.join(process.cwd(), "data", "metro-alerts-seed.json");
-      if (fs.existsSync(metroPath)) {
-        const alerts = JSON.parse(fs.readFileSync(metroPath, "utf-8"));
-        if (Array.isArray(alerts) && alerts.length > 0) {
-          for (const a of alerts) {
-            await p.query(
-              `INSERT IGNORE INTO metro_alerts (
-                external_id, line_name, station_name, alert_title, alert_content,
-                alert_type, alert_time, status, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-              [a.externalId, a.lineName, a.stationName, a.alertTitle, a.alertContent, a.alertType, a.alertTime, a.status]
-            );
-          }
-          console.log(`[ensureSchema] Successfully seeded ${alerts.length} metro alerts into MySQL`);
+      const alerts = readSeedJson<any[]>("metro-alerts-seed.json");
+      if (Array.isArray(alerts) && alerts.length > 0) {
+        for (const a of alerts) {
+          await p.query(
+            `INSERT IGNORE INTO metro_alerts (
+              external_id, line_name, station_name, alert_title, alert_content,
+              alert_type, alert_time, status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [a.externalId, a.lineName, a.stationName, a.alertTitle, a.alertContent, a.alertType, a.alertTime, a.status]
+          );
         }
+        console.log(`[ensureSchema] Successfully seeded ${alerts.length} metro alerts into MySQL`);
       }
     }
   } catch (err) {
@@ -465,42 +460,39 @@ export const ensureSchema = async (): Promise<void> => {
   try {
     const [youbikeCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM youbike_stations");
     if ((youbikeCount[0]?.cnt ?? 0) === 0) {
-      const youbikePath = path.join(process.cwd(), "data", "youbike-stations-seed.json");
-      if (fs.existsSync(youbikePath)) {
-        const stations = JSON.parse(fs.readFileSync(youbikePath, "utf-8"));
-        if (Array.isArray(stations) && stations.length > 0) {
-          const now = toSqlDateTime(new Date());
-          const BATCH_SIZE = 250;
-          for (let i = 0; i < stations.length; i += BATCH_SIZE) {
-            const chunk = stations.slice(i, i + BATCH_SIZE);
-            const values = chunk.map((s: any) => [
-              s.cityCode,
-              s.stationNo,
-              s.nameTw,
-              s.districtTw,
-              s.addressTw,
-              s.lat,
-              s.lng,
-              s.totalSpaces,
-              s.availableBikes,
-              s.availableEbikes || 0,
-              s.emptySpaces,
-              s.isActive,
-              s.updatedAtSource,
-              now,
-              now,
-            ]);
-            await p.query(
-              `INSERT IGNORE INTO youbike_stations (
-                city_code, station_no, name_tw, district_tw, address_tw,
-                lat, lng, total_spaces, available_bikes, available_ebikes,
-                empty_spaces, is_active, updated_at_source, created_at, updated_at
-              ) VALUES ?`,
-              [values]
-            );
-          }
-          console.log(`[ensureSchema] Successfully seeded ${stations.length} youbike stations into MySQL`);
+      const stations = readSeedJson<any[]>("youbike-stations-seed.json");
+      if (Array.isArray(stations) && stations.length > 0) {
+        const now = toSqlDateTime(new Date());
+        const BATCH_SIZE = 250;
+        for (let i = 0; i < stations.length; i += BATCH_SIZE) {
+          const chunk = stations.slice(i, i + BATCH_SIZE);
+          const values = chunk.map((s: any) => [
+            s.cityCode,
+            s.stationNo,
+            s.nameTw,
+            s.districtTw,
+            s.addressTw,
+            s.lat,
+            s.lng,
+            s.totalSpaces,
+            s.availableBikes,
+            s.availableEbikes || 0,
+            s.emptySpaces,
+            s.isActive,
+            s.updatedAtSource,
+            now,
+            now,
+          ]);
+          await p.query(
+            `INSERT IGNORE INTO youbike_stations (
+              city_code, station_no, name_tw, district_tw, address_tw,
+              lat, lng, total_spaces, available_bikes, available_ebikes,
+              empty_spaces, is_active, updated_at_source, created_at, updated_at
+            ) VALUES ?`,
+            [values]
+          );
         }
+        console.log(`[ensureSchema] Successfully seeded ${stations.length} youbike stations into MySQL`);
       }
     }
   } catch (err) {
@@ -511,21 +503,18 @@ export const ensureSchema = async (): Promise<void> => {
   try {
     const [pestCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM pest_alerts");
     if ((pestCount[0]?.cnt ?? 0) === 0) {
-      const pestPath = path.join(process.cwd(), "data", "pest-alerts-seed.json");
-      if (fs.existsSync(pestPath)) {
-        const alerts = JSON.parse(fs.readFileSync(pestPath, "utf-8"));
-        if (Array.isArray(alerts) && alerts.length > 0) {
-          for (const a of alerts) {
-            await p.query(
-              `INSERT IGNORE INTO pest_alerts (
-                subject_name, monitor_type, alert_time, target_crops,
-                alert_data_json, status, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-              [a.subjectName, a.monitorType, a.alertTime, a.targetCrops, a.alertDataJson, a.status]
-            );
-          }
-          console.log(`[ensureSchema] Successfully seeded ${alerts.length} pest alerts into MySQL`);
+      const alerts = readSeedJson<any[]>("pest-alerts-seed.json");
+      if (Array.isArray(alerts) && alerts.length > 0) {
+        for (const a of alerts) {
+          await p.query(
+            `INSERT IGNORE INTO pest_alerts (
+              subject_name, monitor_type, alert_time, target_crops,
+              alert_data_json, status, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [a.subjectName, a.monitorType, a.alertTime, a.targetCrops, a.alertDataJson, a.status]
+          );
         }
+        console.log(`[ensureSchema] Successfully seeded ${alerts.length} pest alerts into MySQL`);
       }
     }
   } catch (err) {

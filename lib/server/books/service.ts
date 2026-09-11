@@ -1,13 +1,9 @@
-import "server-only";
-import fs from "node:fs";
-import path from "node:path";
 import type { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { withConnection, utcNowSql, ensureSchema } from "@/lib/server/db/mysql";
 import type { BookItem, BookListResponse, BookQueryParams } from "./types";
 import { BOOKS_CATEGORIES, getCategoryById } from "./categories";
 import { scrapeCategory } from "./scraper";
-
-const SEED_PATH = path.join(process.cwd(), "data", "latest-books-seed.json");
+import { readSeedJson } from "@/lib/server/db/seedReader";
 
 /**
  * Load offline seed books as reliable fallback.
@@ -16,22 +12,9 @@ export function loadOfflineBooksSeed(inMemoryFallback?: BookItem[]): BookItem[] 
   if (Array.isArray(inMemoryFallback) && inMemoryFallback.length > 0) {
     return inMemoryFallback;
   }
-  try {
-    const candidates = [
-      SEED_PATH,
-      path.resolve(process.cwd(), "data/latest-books-seed.json"),
-    ];
-    for (const p of candidates) {
-      if (fs.existsSync(p)) {
-        const raw = fs.readFileSync(p, "utf-8");
-        const data = JSON.parse(raw);
-        if (Array.isArray(data.books)) {
-          return data.books;
-        }
-      }
-    }
-  } catch (err) {
-    console.error("[loadOfflineBooksSeed] Failed to read seed:", err);
+  const seed = readSeedJson<{ books?: BookItem[] }>("latest-books-seed.json");
+  if (Array.isArray(seed?.books)) {
+    return seed.books;
   }
   return [];
 }
