@@ -2,17 +2,22 @@ import { NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { getHeritageMapData } from "@/lib/server/culture/queries";
+import heritageMapSeed from "@/data/heritage-map-seed.json";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800; // 30 minutes — the source datasets sync infrequently (BOCH open data changes slowly)
 
 function getHeritageSeedFallback() {
   try {
+    if (heritageMapSeed && Array.isArray((heritageMapSeed as any).points) && (heritageMapSeed as any).points.length > 0) {
+      return heritageMapSeed;
+    }
     const seedPath = path.join(process.cwd(), "data", "heritage-map-seed.json");
-    if (!fs.existsSync(seedPath)) return null;
-    const raw = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
-    if (raw.points && raw.points.length > 0) {
-      return raw;
+    if (fs.existsSync(seedPath)) {
+      const raw = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
+      if (raw.points && raw.points.length > 0) {
+        return raw;
+      }
     }
     return null;
   } catch (err) {

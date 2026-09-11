@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { searchPetAdoptions } from "@/lib/server/petAdoption/queries";
 import type { PetAdoptionItem } from "@/lib/server/petAdoption/types";
+import petAdoptionsSeed from "@/data/pet-adoptions-seed.json";
 
 export const runtime = "nodejs";
 
@@ -16,9 +17,14 @@ function getSeedFallback(
   limit = 24,
 ): { items: PetAdoptionItem[]; total: number; totalAll: number } {
   try {
-    const seedPath = path.join(process.cwd(), "data", "pet-adoptions-seed.json");
-    if (!fs.existsSync(seedPath)) return { items: [], total: 0, totalAll: 0 };
-    const raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as PetAdoptionItem[];
+    let raw = (Array.isArray(petAdoptionsSeed) ? petAdoptionsSeed : null) as PetAdoptionItem[] | null;
+    if (!raw || raw.length === 0) {
+      const seedPath = path.join(process.cwd(), "data", "pet-adoptions-seed.json");
+      if (fs.existsSync(seedPath)) {
+        raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as PetAdoptionItem[];
+      }
+    }
+    if (!raw || raw.length === 0) return { items: [], total: 0, totalAll: 0 };
     const totalAll = raw.length;
 
     let filtered = raw;

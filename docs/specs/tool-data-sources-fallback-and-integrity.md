@@ -70,3 +70,18 @@
    - `npm test`: 173 tests passed, 0 failed.
    - `npm run typecheck`: 0 errors.
    - `npm run build`: Next.js Turbopack 60 routes compiled successfully.
+
+---
+
+## 4. Production Deployment Hardening: Static JSON Bundle Ingestion
+
+### 4.1 Discovery during Initial Production Verification
+During live verification of PR #201 on `https://health.j172.tw/api/facilities?type=tourism_factory`, the endpoint initially returned `{"facilities":[],"total":0}`.
+- **Root Cause**: In `.github/workflows/deploy-ftps.yml`, the build pipeline packages only `.next3` into `.prebuilt-next3.tgz` and `public/` into `.prebuilt-public.tgz`. The repository's `data/` directory is **not** uploaded to the host filesystem.
+- Consequently, runtime `fs.existsSync(path.join(process.cwd(), "data", ...))` calls on the production host evaluated to `false`.
+
+### 4.2 Architectural Fix
+- API routes (`/api/facilities`, `/api/heritage-map`, `/api/pet-adoptions`) statically `import` their seed JSON files.
+- Next.js / Webpack compiles these JSON modules directly into the server route bundle chunks in `.next3/server/app/api/...`.
+- **Result**: Zero runtime filesystem dependency, instant fallback even if the server lacks a `data/` directory, and full resilience against external API network timeouts or unseeded database states.
+
