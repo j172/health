@@ -119,6 +119,11 @@ const TOOL_ICONS: Record<string, string> = {
   "reservoir-status": "🏞️",
   "disaster-map": "🆘",
   "heritage-map": "🏛️",
+  "metro-alerts": "🚇",
+  youbike: "🚲",
+  "pest-alerts": "🌱",
+  "vet-clinics": "🐾",
+  "latest-books": "📖",
 };
 
 interface ToolCategory {

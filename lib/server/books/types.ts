@@ -1,4 +1,4 @@
-export type BookPlatform = "books_com_tw" | "eslite";
+export type BookPlatform = "books_com_tw" | "eslite" | "taaze";
 
 export interface BookCategoryConfig {
   id: string;

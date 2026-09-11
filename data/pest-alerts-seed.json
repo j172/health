@@ -1,0 +1,218 @@
+[
+  {
+    "subjectName": "斜紋夜蛾(自動監測)",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "Lettuce",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[{\"WarningLevel\":\"綠燈\",\"AlertLimit\":\"\",\"SurveyRecord\":[{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"褒忠鄉\",\"TownCode\":\"10009150\",\"SurveySiteID\":\"Yunlin_BZ01\",\"Lon\":\"120.324551\",\"Lat\":\"23.701683\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"褒忠鄉\",\"TownCode\":\"10009150\",\"SurveySiteID\":\"Yunlin_BZ02\",\"Lon\":\"120.325900\",\"Lat\":\"23.709269\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"褒忠鄉\",\"TownCode\":\"10009150\",\"SurveySiteID\":\"Yunlin_BZ03\",\"Lon\":\"120.292951\",\"Lat\":\"23.711386\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"東勢鄉\",\"TownCode\":\"10009140\",\"SurveySiteID\":\"Yunlin_BZ04\",\"Lon\":\"120.258461\",\"Lat\":\"23.719148\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"東勢鄉\",\"TownCode\":\"10009140\",\"SurveySiteID\":\"Yunlin_BZ05\",\"Lon\":\"120.275737\",\"Lat\":\"23.672938\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"東勢鄉\",\"TownCode\":\"10009140\",\"SurveySiteID\":\"Yunlin_BZ06\",\"Lon\":\"120.293994\",\"Lat\":\"23.687412\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"麥寮鄉\",\"TownCode\":\"10009130\",\"SurveySiteID\":\"Yunlin_BZ07\",\"Lon\":\"120.282141\",\"Lat\":\"23.742923\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"麥寮鄉\",\"TownCode\":\"10009130\",\"SurveySiteID\":\"Yunlin_BZ08\",\"Lon\":\"120.289226\",\"Lat\":\"23.752151\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"二崙鄉\",\"TownCode\":\"10009110\",\"SurveySiteID\":\"Yunlin_EL01\",\"Lon\":\"120.386597\",\"Lat\":\"23.791109\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"二崙鄉\",\"TownCode\":\"10009110\",\"SurveySiteID\":\"Yunlin_EL02\",\"Lon\":\"120.361419\",\"Lat\":\"23.793310\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_EL03\",\"Lon\":\"120.365466\",\"Lat\":\"23.781497\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_EL04\",\"Lon\":\"120.339970\",\"Lat\":\"23.786665\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_EL05\",\"Lon\":\"120.324982\",\"Lat\":\"23.778213\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_EL06\",\"Lon\":\"120.325063\",\"Lat\":\"23.798970\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"二崙鄉\",\"TownCode\":\"10009110\",\"SurveySiteID\":\"Yunlin_EL07\",\"Lon\":\"120.354876\",\"Lat\":\"23.806901\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"二崙鄉\",\"TownCode\":\"10009110\",\"SurveySiteID\":\"Yunlin_EL08\",\"Lon\":\"120.358927\",\"Lat\":\"23.803343\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_ML01\",\"Lon\":\"120.310461\",\"Lat\":\"23.744676\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_ML02\",\"Lon\":\"120.308464\",\"Lat\":\"23.749004\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_ML03\",\"Lon\":\"120.305418\",\"Lat\":\"23.754485\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"崙背鄉\",\"TownCode\":\"10009120\",\"SurveySiteID\":\"Yunlin_ML04\",\"Lon\":\"120.299954\",\"Lat\":\"23.751600\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"麥寮鄉\",\"TownCode\":\"10009130\",\"SurveySiteID\":\"Yunlin_ML05\",\"Lon\":\"120.293231\",\"Lat\":\"23.759197\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"麥寮鄉\",\"TownCode\":\"10009130\",\"SurveySiteID\":\"Yunlin_ML06\",\"Lon\":\"120.288713\",\"Lat\":\"23.748619\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"麥寮鄉\",\"TownCode\":\"10009130\",\"SurveySiteID\":\"Yunlin_ML07\",\"Lon\":\"120.281076\",\"Lat\":\"23.745342\",\"CropName\":\"Lettuce\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"麥寮鄉\",\"TownCode\":\"10009130\",\"SurveySiteID\":\"Yunlin_ML08\",\"Lon\":\"120.293445\",\"Lat\":\"23.742483\",\"CropName\":\"Lettuce\"}]}]",
+    "status": "active"
+  },
+  {
+    "subjectName": "荔枝椿象",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "草莓葉枯病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "草莓細菌性角斑病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "草莓萎凋病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "甜菜夜蛾(自動監測)",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "Scallion、Taro",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[{\"WarningLevel\":\"藍燈\",\"AlertLimit\":\"17隻≦監測密度≦64隻\",\"SurveyRecord\":[{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"彰化縣\",\"CountyCode\":\"10007\",\"TownName\":\"二林鎮\",\"TownCode\":\"10007200\",\"SurveySiteID\":\"07\",\"Lon\":\"120.461855\",\"Lat\":\"23.928771\",\"CropName\":\"Scallion\"}]},{\"WarningLevel\":\"綠燈\",\"AlertLimit\":\"\",\"SurveyRecord\":[{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"01\",\"Lon\":\"120.631889\",\"Lat\":\"24.398714\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"彰化縣\",\"CountyCode\":\"10007\",\"TownName\":\"二林鎮\",\"TownCode\":\"10007200\",\"SurveySiteID\":\"02\",\"Lon\":\"120.444989\",\"Lat\":\"23.946520\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"彰化縣\",\"CountyCode\":\"10007\",\"TownName\":\"二林鎮\",\"TownCode\":\"10007200\",\"SurveySiteID\":\"03\",\"Lon\":\"120.439876\",\"Lat\":\"23.883601\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大安區\",\"TownCode\":\"66000220\",\"SurveySiteID\":\"04\",\"Lon\":\"120.587383\",\"Lat\":\"24.329604\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"宜蘭縣\",\"CountyCode\":\"10002\",\"TownName\":\"三星鄉\",\"TownCode\":\"10002100\",\"SurveySiteID\":\"05\",\"Lon\":\"121.689315\",\"Lat\":\"24.695102\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"06\",\"Lon\":\"120.605979\",\"Lat\":\"24.327212\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"宜蘭縣\",\"CountyCode\":\"10002\",\"TownName\":\"三星鄉\",\"TownCode\":\"10002100\",\"SurveySiteID\":\"08\",\"Lon\":\"121.669335\",\"Lat\":\"24.671403\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"彰化縣\",\"CountyCode\":\"10007\",\"TownName\":\"福興鄉\",\"TownCode\":\"10007060\",\"SurveySiteID\":\"09\",\"Lon\":\"120.444857\",\"Lat\":\"24.044051\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"Taichung_DJ01\",\"Lon\":\"120.604041\",\"Lat\":\"24.327449\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"Taichung_DJ02\",\"Lon\":\"120.604224\",\"Lat\":\"24.327609\",\"CropName\":\"Scallion\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"Taichung_DJ03\",\"Lon\":\"120.623871\",\"Lat\":\"24.365121\",\"CropName\":\"Taro\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"Taichung_DJ04\",\"Lon\":\"120.620594\",\"Lat\":\"24.367068\",\"CropName\":\"Taro\"},{\"SurveyDate\":\"2026-09-11\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"Taichung_DJ05\",\"Lon\":\"120.618283\",\"Lat\":\"24.367877\",\"CropName\":\"Taro\"}]}]",
+    "status": "active"
+  },
+  {
+    "subjectName": "東方果實蠅(自動監測)",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "番茄潛旋蛾",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "番茄",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[{\"WarningLevel\":\"綠燈\",\"AlertLimit\":\"\",\"SurveyRecord\":[{\"SurveyDate\":\"2026-09-09\",\"CountyName\":\"南投縣\",\"CountyCode\":\"10008\",\"TownName\":\"仁愛鄉\",\"TownCode\":\"10008130\",\"SurveySiteID\":\"M00105\",\"Lon\":\"121.076600\",\"Lat\":\"23.951970\",\"CropName\":\"番茄\"},{\"SurveyDate\":\"2026-09-09\",\"CountyName\":\"南投縣\",\"CountyCode\":\"10008\",\"TownName\":\"仁愛鄉\",\"TownCode\":\"10008130\",\"SurveySiteID\":\"M00106\",\"Lon\":\"121.113900\",\"Lat\":\"23.969190\",\"CropName\":\"番茄\"},{\"SurveyDate\":\"2026-09-09\",\"CountyName\":\"南投縣\",\"CountyCode\":\"10008\",\"TownName\":\"仁愛鄉\",\"TownCode\":\"10008130\",\"SurveySiteID\":\"M00107\",\"Lon\":\"121.129500\",\"Lat\":\"23.961570\",\"CropName\":\"番茄\"},{\"SurveyDate\":\"2026-09-09\",\"CountyName\":\"南投縣\",\"CountyCode\":\"10008\",\"TownName\":\"仁愛鄉\",\"TownCode\":\"10008130\",\"SurveySiteID\":\"M00108\",\"Lon\":\"121.121400\",\"Lat\":\"23.966120\",\"CropName\":\"番茄\"},{\"SurveyDate\":\"2026-09-09\",\"CountyName\":\"南投縣\",\"CountyCode\":\"10008\",\"TownName\":\"仁愛鄉\",\"TownCode\":\"10008130\",\"SurveySiteID\":\"M00109\",\"Lon\":\"121.079200\",\"Lat\":\"23.996470\",\"CropName\":\"番茄\"},{\"SurveyDate\":\"2026-09-09\",\"CountyName\":\"南投縣\",\"CountyCode\":\"10008\",\"TownName\":\"埔里鎮\",\"TownCode\":\"10008020\",\"SurveySiteID\":\"M00140\",\"Lon\":\"121.017700\",\"Lat\":\"23.986420\",\"CropName\":\"番茄\"}]}]",
+    "status": "active"
+  },
+  {
+    "subjectName": "瓜實蠅",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "甜菜夜蛾",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "瘤野螟",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "水稻白葉枯病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "水稻",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[{\"WarningLevel\":\"綠燈\",\"AlertLimit\":\"\",\"SurveyRecord\":[{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"龍井區\",\"TownCode\":\"66000250\",\"SurveySiteID\":\"B00320\",\"Lon\":\"120.533900\",\"Lat\":\"24.194270\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"B00079\",\"Lon\":\"120.635900\",\"Lat\":\"24.392970\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"B00080\",\"Lon\":\"120.637600\",\"Lat\":\"24.349670\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大甲區\",\"TownCode\":\"66000110\",\"SurveySiteID\":\"B00081\",\"Lon\":\"120.613700\",\"Lat\":\"24.332280\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大安區\",\"TownCode\":\"66000220\",\"SurveySiteID\":\"B00082\",\"Lon\":\"120.571500\",\"Lat\":\"24.341250\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大安區\",\"TownCode\":\"66000220\",\"SurveySiteID\":\"B00083\",\"Lon\":\"120.596400\",\"Lat\":\"24.381190\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"外埔區\",\"TownCode\":\"66000210\",\"SurveySiteID\":\"B00084\",\"Lon\":\"120.655600\",\"Lat\":\"24.342890\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"外埔區\",\"TownCode\":\"66000210\",\"SurveySiteID\":\"B00085\",\"Lon\":\"120.689800\",\"Lat\":\"24.349820\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"外埔區\",\"TownCode\":\"66000210\",\"SurveySiteID\":\"B00086\",\"Lon\":\"120.714600\",\"Lat\":\"24.336240\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"清水區\",\"TownCode\":\"66000120\",\"SurveySiteID\":\"B00087\",\"Lon\":\"120.552400\",\"Lat\":\"24.290800\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"清水區\",\"TownCode\":\"66000120\",\"SurveySiteID\":\"B00088\",\"Lon\":\"120.575300\",\"Lat\":\"24.291820\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"清水區\",\"TownCode\":\"66000120\",\"SurveySiteID\":\"B00089\",\"Lon\":\"120.596600\",\"Lat\":\"24.308500\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"沙鹿區\",\"TownCode\":\"66000130\",\"SurveySiteID\":\"B00092\",\"Lon\":\"120.558200\",\"Lat\":\"24.247350\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"梧棲區\",\"TownCode\":\"66000140\",\"SurveySiteID\":\"B00090\",\"Lon\":\"120.528200\",\"Lat\":\"24.229990\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"梧棲區\",\"TownCode\":\"66000140\",\"SurveySiteID\":\"B00091\",\"Lon\":\"120.545700\",\"Lat\":\"24.221090\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"龍井區\",\"TownCode\":\"66000250\",\"SurveySiteID\":\"B00093\",\"Lon\":\"120.543600\",\"Lat\":\"24.177750\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"龍井區\",\"TownCode\":\"66000250\",\"SurveySiteID\":\"B00094\",\"Lon\":\"120.518200\",\"Lat\":\"24.202430\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大肚區\",\"TownCode\":\"66000240\",\"SurveySiteID\":\"B00095\",\"Lon\":\"120.573800\",\"Lat\":\"24.113540\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大肚區\",\"TownCode\":\"66000240\",\"SurveySiteID\":\"B00096\",\"Lon\":\"120.551400\",\"Lat\":\"24.133040\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大肚區\",\"TownCode\":\"66000240\",\"SurveySiteID\":\"B00097\",\"Lon\":\"120.539200\",\"Lat\":\"24.145220\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"烏日區\",\"TownCode\":\"66000230\",\"SurveySiteID\":\"B00105\",\"Lon\":\"120.633100\",\"Lat\":\"24.045800\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"烏日區\",\"TownCode\":\"66000230\",\"SurveySiteID\":\"B00107\",\"Lon\":\"120.640500\",\"Lat\":\"24.087390\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大里區\",\"TownCode\":\"66000280\",\"SurveySiteID\":\"B00108\",\"Lon\":\"120.666200\",\"Lat\":\"24.085450\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"霧峰區\",\"TownCode\":\"66000260\",\"SurveySiteID\":\"B00111\",\"Lon\":\"120.689700\",\"Lat\":\"24.014520\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"霧峰區\",\"TownCode\":\"66000260\",\"SurveySiteID\":\"B00112\",\"Lon\":\"120.659500\",\"Lat\":\"24.043920\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"霧峰區\",\"TownCode\":\"66000260\",\"SurveySiteID\":\"B00113\",\"Lon\":\"120.660800\",\"Lat\":\"24.065750\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"南屯區\",\"TownCode\":\"66000070\",\"SurveySiteID\":\"B00110\",\"Lon\":\"120.613400\",\"Lat\":\"24.127730\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"西屯區\",\"TownCode\":\"66000060\",\"SurveySiteID\":\"B00109\",\"Lon\":\"120.632100\",\"Lat\":\"24.191610\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大雅區\",\"TownCode\":\"66000180\",\"SurveySiteID\":\"B00103\",\"Lon\":\"120.645500\",\"Lat\":\"24.236620\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"大雅區\",\"TownCode\":\"66000180\",\"SurveySiteID\":\"B00104\",\"Lon\":\"120.630800\",\"Lat\":\"24.218660\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"潭子區\",\"TownCode\":\"66000170\",\"SurveySiteID\":\"B00098\",\"Lon\":\"120.686200\",\"Lat\":\"24.220660\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"潭子區\",\"TownCode\":\"66000170\",\"SurveySiteID\":\"B00099\",\"Lon\":\"120.696200\",\"Lat\":\"24.204480\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"神岡區\",\"TownCode\":\"66000160\",\"SurveySiteID\":\"B00101\",\"Lon\":\"120.682400\",\"Lat\":\"24.279330\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"神岡區\",\"TownCode\":\"66000160\",\"SurveySiteID\":\"B00102\",\"Lon\":\"120.662200\",\"Lat\":\"24.256670\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"豐原區\",\"TownCode\":\"66000090\",\"SurveySiteID\":\"B00100\",\"Lon\":\"120.720200\",\"Lat\":\"24.234670\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"后里區\",\"TownCode\":\"66000150\",\"SurveySiteID\":\"B00114\",\"Lon\":\"120.659100\",\"Lat\":\"24.312400\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"后里區\",\"TownCode\":\"66000150\",\"SurveySiteID\":\"B00115\",\"Lon\":\"120.677500\",\"Lat\":\"24.294540\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-05\",\"CountyName\":\"臺中市\",\"CountyCode\":\"66000\",\"TownName\":\"后里區\",\"TownCode\":\"66000150\",\"SurveySiteID\":\"B00116\",\"Lon\":\"120.736500\",\"Lat\":\"24.336990\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"鳳林鎮\",\"TownCode\":\"10015020\",\"SurveySiteID\":\"U00169\",\"Lon\":\"121.470200\",\"Lat\":\"23.793710\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"鳳林鎮\",\"TownCode\":\"10015020\",\"SurveySiteID\":\"U00170\",\"Lon\":\"121.458000\",\"Lat\":\"23.769090\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"鳳林鎮\",\"TownCode\":\"10015020\",\"SurveySiteID\":\"U00171\",\"Lon\":\"121.483600\",\"Lat\":\"23.764330\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"鳳林鎮\",\"TownCode\":\"10015020\",\"SurveySiteID\":\"U00172\",\"Lon\":\"121.477000\",\"Lat\":\"23.760520\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"鳳林鎮\",\"TownCode\":\"10015020\",\"SurveySiteID\":\"U00173\",\"Lon\":\"121.458500\",\"Lat\":\"23.742520\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"玉里鎮\",\"TownCode\":\"10015030\",\"SurveySiteID\":\"U00273\",\"Lon\":\"121.345300\",\"Lat\":\"23.421920\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"玉里鎮\",\"TownCode\":\"10015030\",\"SurveySiteID\":\"U00274\",\"Lon\":\"121.312600\",\"Lat\":\"23.323130\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"玉里鎮\",\"TownCode\":\"10015030\",\"SurveySiteID\":\"U00275\",\"Lon\":\"121.336200\",\"Lat\":\"23.325020\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"玉里鎮\",\"TownCode\":\"10015030\",\"SurveySiteID\":\"U00276\",\"Lon\":\"121.343700\",\"Lat\":\"23.344760\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"玉里鎮\",\"TownCode\":\"10015030\",\"SurveySiteID\":\"U00277\",\"Lon\":\"121.348800\",\"Lat\":\"23.367800\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"富里鄉\",\"TownCode\":\"10015100\",\"SurveySiteID\":\"U00313\",\"Lon\":\"121.254800\",\"Lat\":\"23.203840\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"富里鄉\",\"TownCode\":\"10015100\",\"SurveySiteID\":\"U00314\",\"Lon\":\"121.252400\",\"Lat\":\"23.199420\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"富里鄉\",\"TownCode\":\"10015100\",\"SurveySiteID\":\"U00315\",\"Lon\":\"121.249300\",\"Lat\":\"23.190650\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"富里鄉\",\"TownCode\":\"10015100\",\"SurveySiteID\":\"U00316\",\"Lon\":\"121.258100\",\"Lat\":\"23.186350\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"花蓮縣\",\"CountyCode\":\"10015\",\"TownName\":\"富里鄉\",\"TownCode\":\"10015100\",\"SurveySiteID\":\"U00317\",\"Lon\":\"121.283000\",\"Lat\":\"23.223790\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"屏東縣\",\"CountyCode\":\"10013\",\"TownName\":\"屏東市\",\"TownCode\":\"10013010\",\"SurveySiteID\":\"T00532\",\"Lon\":\"120.499800\",\"Lat\":\"22.639880\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"屏東縣\",\"CountyCode\":\"10013\",\"TownName\":\"屏東市\",\"TownCode\":\"10013010\",\"SurveySiteID\":\"T00533\",\"Lon\":\"120.497500\",\"Lat\":\"22.637100\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"屏東縣\",\"CountyCode\":\"10013\",\"TownName\":\"屏東市\",\"TownCode\":\"10013010\",\"SurveySiteID\":\"T00534\",\"Lon\":\"120.502200\",\"Lat\":\"22.644100\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-07\",\"CountyName\":\"屏東縣\",\"CountyCode\":\"10013\",\"TownName\":\"屏東市\",\"TownCode\":\"10013010\",\"SurveySiteID\":\"T00535\",\"Lon\":\"120.505700\",\"Lat\":\"22.649150\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-08\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"虎尾鎮\",\"TownCode\":\"10009030\",\"SurveySiteID\":\"P00747\",\"Lon\":\"120.443100\",\"Lat\":\"23.689030\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-08\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"莿桐鄉\",\"TownCode\":\"10009090\",\"SurveySiteID\":\"P00760\",\"Lon\":\"120.519100\",\"Lat\":\"23.755380\",\"CropName\":\"水稻\"},{\"SurveyDate\":\"2026-09-08\",\"CountyName\":\"雲林縣\",\"CountyCode\":\"10009\",\"TownName\":\"林內鄉\",\"TownCode\":\"10009100\",\"SurveySiteID\":\"P00761\",\"Lon\":\"120.593400\",\"Lat\":\"23.760330\",\"CropName\":\"水稻\"}]}]",
+    "status": "active"
+  },
+  {
+    "subjectName": "秋行軍蟲",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "炭疽病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "銀葉粉蝨",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "飛蝨類",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "水稻水象鼻蟲",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "穗稻熱病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "玉米薊馬",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "葉稻熱病",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "東方果實蠅",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "斜紋夜蛾",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "西方花薊馬",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  },
+  {
+    "subjectName": "小黃薊馬",
+    "monitorType": "即時示警",
+    "alertTime": "2026-09-11 00:00:00",
+    "targetCrops": "一般農作物",
+    "warningLevel": "綠燈",
+    "alertDataJson": "[]",
+    "status": "active"
+  }
+]

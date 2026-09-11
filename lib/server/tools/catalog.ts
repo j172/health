@@ -1116,24 +1116,29 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "long-term-care",
     group: "ltc",
-    title: "長照機構查詢",
+    title: "長照服務機構查詢",
     description:
-      "查詢衛福部許可全台長期照顧服務機構，支援關鍵字搜尋與附近定位。",
+      "查詢全台長照服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、住宿型長照機構與社區照顧據點。支援關鍵字搜尋與附近定位。",
     directAnswer:
-      "查詢衛福部許可全台長期照顧服務機構名冊，涵蓋住宿式長照、社區長照與日間照顧中心等合法許可長照機構。",
+      "長照服務機構查詢整合衛福部長照2.0特約服務單位與長期照顧服務機構名冊，涵蓋居家照顧、日間照顧、住宿式機構、喘息服務與社區據點，提供即時定位與多維度服務篩選。",
     scientificBasis: [
       {
         title: "長期照顧服務機構管理與許可名冊",
         authority: "衛生福利部長期照顧司",
         url: "https://1966.gov.tw",
       },
+      {
+        title: "長照 2.0 特約服務單位開放資料",
+        authority: "衛生福利部長期照顧司",
+        url: "https://1966.gov.tw",
+      },
     ],
-    relatedSlugs: ["ltc-contracted", "elder-welfare", "home-healthcare"],
+    relatedSlugs: ["elder-welfare", "home-healthcare", "disability-welfare"],
     faqs: [
       {
-        question: "資料涵蓋哪些長照機構？",
+        question: "資料涵蓋哪些長照機構與服務項目？",
         answer:
-          "資料來源為衛福部許可的全台長期照顧服務機構名冊，涵蓋各縣市的長照服務單位。",
+          "收錄衛福部許可之全台長期照顧服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、家庭托顧、住宿式長照機構及社區巷弄長照站等完整資源。",
       },
     ],
   },
@@ -1229,30 +1234,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "資料涵蓋哪些老人福利機構？",
         answer:
           "資料來源為衛福部社會及家庭署開放資料「全國老人福利機構名冊」，涵蓋安養、養護、長期照顧等各類老人福利機構，資料按縣市分別提供。",
-      },
-    ],
-  },
-  {
-    slug: "ltc-contracted",
-    group: "ltc",
-    title: "長照特約服務機構查詢",
-    description:
-      "查詢衛福部長照2.0特約服務機構，涵蓋居家服務、日間照顧、喘息服務等，支援關鍵字搜尋與附近定位。",
-    directAnswer:
-      "查詢衛福部長照 2.0 特約服務機構名冊，涵蓋居家照顧、日間照顧、專業服務、交通接送與喘息服務之特約機構。",
-    scientificBasis: [
-      {
-        title: "長照 2.0 特約服務單位開放資料",
-        authority: "衛生福利部長期照顧司",
-        url: "https://1966.gov.tw",
-      },
-    ],
-    relatedSlugs: ["long-term-care", "home-healthcare", "elder-welfare"],
-    faqs: [
-      {
-        question: "跟「長照機構查詢」有什麼不同？",
-        answer:
-          "「長照機構查詢」是長照服務單位的機構名冊；本頁收錄的是與衛福部簽有長照2.0特約的服務機構，資料更完整、涵蓋機構數更多，並標示每家機構實際承作的特約服務項目（如居家服務、日間照顧、喘息服務等）。",
       },
     ],
   },
@@ -2281,11 +2262,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "latest-books",
-    title: "最新書籍：博客來暢銷榜與誠品選書",
+    title: "書籍推薦：博客來、誠品與TAAZE讀冊選書",
     description:
-      "整合博客來 4 大暢銷榜與誠品線上 27 類主題選書，涵蓋醫療保健、心理勵志、飲食料理、親子教養、熟齡長照與寵物生活，即時掌握新書資訊、定價與讀者口碑好書。",
+      "整合博客來 4 大暢銷榜、誠品線上 27 類主題選書與 TAAZE 讀冊生活 10 大注目與編輯推薦書單，涵蓋醫療保健、心理勵志、飲食料理、親子教養、熟齡長照與生活風格，即時掌握優質書單、定價優惠與讀者口碑好書。",
     directAnswer:
-      "最新書籍服務整合台灣兩大圖書通路，收錄博客來 4 大暢銷榜與誠品 27 大選書類別，涵蓋健康醫學、心理成長與親子教養等多元好書，提供即時分類檢索與購書導覽。",
+      "書籍推薦服務整合台灣三大圖書通路，收錄博客來暢銷榜、誠品選書與 TAAZE 讀冊生活多元選書，涵蓋健康醫學、心理成長、生活風格與親子教養等多元好書，提供即時分類檢索與購書導覽。",
     group: "public-facility",
     scientificBasis: [
       {
@@ -2302,19 +2283,135 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     relatedSlugs: ["bookstores", "cultural-events", "family-cultural-activities"],
     faqs: [
       {
-        question: "「最新書籍」收錄哪些通路與主題分類？",
+        question: "「書籍推薦」收錄哪些通路與主題分類？",
         answer:
-          "整合博客來 4 大榜單（心理勵志、醫療保健、飲食料理、親子教養）與誠品線上 27 大選書類別（醫學總論、中醫、養生長照、疾病預防、寵物照護、社會科學等），滿足全民多元閱讀需求。",
+          "整合博客來 4 大榜單（心理勵志、醫療保健、飲食料理、親子教養）、誠品線上 27 大選書類別（醫學總論、中醫、養生長照、疾病預防、寵物照護等）與 TAAZE 讀冊生活 10 大注目新書及編輯推薦頻道（醫學保健、生活風格、少兒親子、教育學習、心理勵志），滿足多元閱讀需求。",
       },
       {
         question: "如何快速找到感興趣的特定好書？",
         answer:
-          "可使用頂部通路標籤快速切換博客來或誠品，再點選分類晶片過濾；亦可在搜尋框直接輸入書名關鍵字、作者姓名或出版社名稱進行全文即時檢索。",
+          "可使用頂部通路標籤快速切換博客來、誠品或 TAAZE 讀冊生活，再點選分類晶片過濾；亦可在搜尋框直接輸入書名關鍵字、作者姓名或出版社名稱進行全文即時檢索。",
       },
       {
         question: "本站有提供線上購書或寄送服務嗎？",
         answer:
           "本站為非營利便民資訊整理工具，不直接從事圖書販售；點擊書籍卡片之「前往通路查看」或「購書連結」將直接安全前往博客來或誠品線上官方專頁完成選購。",
+      },
+    ],
+  },
+  {
+    slug: "vet-clinics",
+    group: "public-facility",
+    title: "全台動物醫院與獸醫診所查詢",
+    description:
+      "查詢全台各縣市開業之合法獸醫診療機構與動物醫院，支援附近定位與關鍵字搜尋。資料來源：農業部動植物防疫檢疫署。",
+    directAnswer:
+      "全台動物醫院與獸醫診所查詢收錄農業部登記之合法獸醫診療機構，提供執業獸醫師、電話、地址與即時附近定位功能。",
+    scientificBasis: [
+      {
+        title: "獸醫診療機構登記名冊",
+        authority: "農業部動植物防疫檢疫署",
+        url: "https://www.aphia.gov.tw",
+      },
+    ],
+    relatedSlugs: ["pet-adoption", "clinics"],
+    faqs: [
+      {
+        question: "如何查詢附近的動物醫院？",
+        answer:
+          "允許瀏覽器定位授權後，系統將自動列出周邊最近的動物醫院與獸醫診所，亦可依縣市或名稱關鍵字搜尋。",
+      },
+      {
+        question: "資料涵蓋哪些機構類型？",
+        answer:
+          "收錄農業部動植物防檢署登錄之開業動物醫院、獸醫診所，並註記執照字號與負責獸醫師/獸醫佐。",
+      },
+    ],
+  },
+  {
+    slug: "metro-alerts",
+    group: "public-facility",
+    title: "捷運營運與電梯檢修公告",
+    description:
+      "即時查詢臺北捷運各路線營運狀況、設備異常通報與各車站無障礙電梯檢修公告。資料來源：臺北大眾捷運公司。",
+    directAnswer:
+      "捷運營運與電梯檢修公告即時彙整捷運路線異常事件與各車站無障礙電梯檢修資訊，便利輪椅與推車族群預先規劃動線。",
+    scientificBasis: [
+      {
+        title: "臺北捷運營運資訊與無障礙設施管理",
+        authority: "臺北大眾捷運股份有限公司",
+        url: "https://www.metro.taipei",
+      },
+    ],
+    relatedSlugs: ["youbike", "disability-atm"],
+    faqs: [
+      {
+        question: "公告資訊多久更新一次？",
+        answer:
+          "系統定時自動同步臺北大眾捷運公司發布之最新營運公告與電梯檢修排程，提供最新即時資訊。",
+      },
+      {
+        question: "電梯檢修期間如何轉乘？",
+        answer:
+          "每筆公告均提供輪椅或行動不便旅客之替代出入口建議或替代車站指引。",
+      },
+    ],
+  },
+  {
+    slug: "youbike",
+    group: "public-facility",
+    title: "公共自行車 (YouBike 2.0) 即時動態",
+    description:
+      "即時查詢北北桃竹（臺北市、新北市、桃園市、新竹市）YouBike 2.0 與 2.0E 租借站點、可借車輛與空位數量。",
+    directAnswer:
+      "公共自行車即時動態跨直轄市整合北北桃竹 YouBike 2.0 站點，提供即時可借車輛數、可還空位數、電輔車數量與附近站點導航。",
+    scientificBasis: [
+      {
+        title: "公共自行車租賃系統即時開放資料",
+        authority: "交通部及各直轄市政府交通局",
+        url: "https://www.youbike.com.tw",
+      },
+    ],
+    relatedSlugs: ["metro-alerts", "aqi"],
+    faqs: [
+      {
+        question: "支援哪些縣市的 YouBike 查詢？",
+        answer:
+          "目前整合臺北市、新北市、桃園市與新竹市之 YouBike 2.0 租借站點與即時可借車數、空位數。",
+      },
+      {
+        question: "如何查找最近的租借站？",
+        answer:
+          "開啟定位授權後，系統將依直線距離由近至遠排列站點，並標示可借車輛數（綠色為車輛充足）。",
+      },
+    ],
+  },
+  {
+    slug: "pest-alerts",
+    group: "public-facility",
+    title: "農作物病蟲害即時預警",
+    description:
+      "即時查詢農業部動植物防檢署發布之全台農作物病蟲害即時示警與發生預警資訊。",
+    directAnswer:
+      "農作物病蟲害即時預警提供台灣主要農作物害蟲與疫病即時預警燈號、受影響作物與防治建議，守護農業生產與綠色植栽。",
+    scientificBasis: [
+      {
+        title: "作物病蟲害預警監控體系",
+        authority: "農業部動植物防疫檢疫署",
+        url: "https://www.aphia.gov.tw",
+      },
+    ],
+    relatedSlugs: ["weather-alerts", "uv"],
+    faqs: [
+      {
+        question: "病蟲害預警資訊包含哪些內容？",
+        answer:
+          "收錄防檢署即時示警之害蟲名稱、警戒等級、好發作物與最新通報時間與防治注意事項。",
+      },
+      {
+        question: "資料來源為何？",
+        answer:
+          "資料直接源自農業部動植物防疫檢疫署植物疫情監控開放資料平台。",
       },
     ],
   },
@@ -2366,7 +2463,12 @@ export function toolsInGroup(
 /** Look up a tool's catalog entry by slug — throws if missing so a typo'd slug fails
  * loudly at build/request time instead of silently rendering blank title/description. */
 export function getToolCatalogEntry(slug: string): ToolCatalogEntry {
-  const normalizedSlug = slug === "tax-organizations" ? "npo-organizations" : slug;
+  const normalizedSlug =
+    slug === "tax-organizations"
+      ? "npo-organizations"
+      : slug === "ltc-contracted"
+      ? "long-term-care"
+      : slug;
   const entry = TOOL_CATALOG.find((tool) => tool.slug === normalizedSlug);
   if (!entry) {
     throw new Error(`No TOOL_CATALOG entry for slug "${slug}"`);

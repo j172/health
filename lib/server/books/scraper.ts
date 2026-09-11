@@ -198,6 +198,73 @@ export const parseEsliteHtml = (html: string, category: BookCategoryConfig): Boo
 };
 
 /**
+ * Pure parser for TAAZE 讀冊生活 RSS feed XML.
+ */
+export const parseTaazeRssXml = (xml: string, category: BookCategoryConfig): BookItem[] => {
+  const items: BookItem[] = [];
+  const itemMatches = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+
+  let rank = 1;
+  for (const match of itemMatches) {
+    const itemXml = match[1];
+    const rawTitle = itemXml.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/)?.[1]?.trim();
+    const rawLink = itemXml.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/)?.[1]?.trim();
+    if (!rawTitle || !rawLink) continue;
+
+    const title = rawTitle.replace(/\s+/g, " ");
+    const productUrl = rawLink.startsWith("http://") ? rawLink.replace("http://", "https://") : rawLink;
+
+    const descRaw = itemXml.match(/<description>([\s\S]*?)<\/description>/)?.[1] || "";
+    const descDecoded = descRaw
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, "&");
+
+    const rawImg = descDecoded.match(/src="([^"]+)"/)?.[1];
+    const coverUrl = rawImg
+      ? (rawImg.startsWith("http://") ? rawImg.replace("http://", "https://") : rawImg)
+      : null;
+
+    const pubDate = descDecoded.match(/出版日期[^0-9]*([0-9]{4}-[0-9]{2}-[0-9]{2})/)?.[1] || null;
+    const rawListPrice = descDecoded.match(/定價[^0-9]*([0-9]+)/)?.[1];
+    const rawSalePrice = descDecoded.match(/特價[^0-9]*([0-9]+)/)?.[1];
+
+    const listPrice = rawListPrice ? parseInt(rawListPrice, 10) : null;
+    const salePrice = rawSalePrice ? parseInt(rawSalePrice, 10) : null;
+    let discount: string | null = null;
+    if (listPrice && salePrice && listPrice > 0 && salePrice < listPrice) {
+      discount = `${Math.round((salePrice / listPrice) * 100)}折`;
+    }
+
+    const payloadHash = sha256(JSON.stringify({ title, productUrl, categoryId: category.id }));
+
+    items.push({
+      platform: "taaze",
+      categoryId: category.id,
+      categoryName: category.name,
+      ranking: rank++,
+      title,
+      subtitle: null,
+      author: null,
+      translator: null,
+      publisher: null,
+      publishDate: pubDate,
+      coverUrl,
+      productUrl,
+      isbn: null,
+      listPrice,
+      salePrice,
+      discount,
+      description: null,
+      payloadHash,
+    });
+  }
+
+  return items;
+};
+
+/**
  * Fetch and scrape a category from its source.
  */
 export const scrapeCategory = async (category: BookCategoryConfig): Promise<BookItem[]> => {
@@ -214,6 +281,8 @@ export const scrapeCategory = async (category: BookCategoryConfig): Promise<Book
 
     if (category.platform === "books_com_tw") {
       return parseBooksComTwHtml(res.text, category);
+    } else if (category.platform === "taaze") {
+      return parseTaazeRssXml(res.text, category);
     } else {
       return parseEsliteHtml(res.text, category);
     }
@@ -222,3 +291,4 @@ export const scrapeCategory = async (category: BookCategoryConfig): Promise<Book
     return [];
   }
 };
+

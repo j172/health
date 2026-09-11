@@ -1,0 +1,12 @@
+[
+  {
+    "externalId": "1e329d377e0aeebbcdf2914c8d876304",
+    "lineName": "中和新蘆線",
+    "stationName": "景安站",
+    "alertTitle": "景安站 電梯檢修暫停使用公告",
+    "alertContent": "捷運中和新蘆線【景安站】電梯，預計9月11日21時起至營運結束進行檢修作業，屆時無法使用。欲從【景安站】進出或轉乘的輪椅旅客，建議改由其他車站進出或轉乘。",
+    "alertType": "elevator",
+    "alertTime": "2026-09-11 20:21:00",
+    "status": "active"
+  }
+]

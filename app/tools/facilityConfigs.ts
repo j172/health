@@ -61,6 +61,30 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的伯公照護站，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的伯公照護站。",
   },
+  "long-term-care": {
+    facilityType: "long_term_care",
+    emoji: "🤝",
+    title: "長照服務機構查詢",
+    description:
+      "查詢全台長照服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、住宿型長照機構與社區照顧據點。資料來源：衛福部長照服務資訊網及各地方政府開放資料。",
+    searchPlaceholder: "輸入機構名稱、特約項目或縣市關鍵字",
+    errorText: "查詢長照機構資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的長照機構，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的長照機構。",
+    serviceItem: { label: "服務項目：" },
+    categories: [
+      { value: "居家服務", label: "居家服務" },
+      { value: "日間照顧", label: "日間照顧" },
+      { value: "喘息服務", label: "喘息服務" },
+      { value: "住宿", label: "住宿型機構" },
+      { value: "社區", label: "社區照顧據點" },
+      { value: "家庭托顧", label: "家庭托顧" },
+      { value: "專業照護", label: "專業照護" },
+      { value: "交通接送", label: "交通接送" },
+      { value: "輔具", label: "輔具與無障礙改善" },
+      { value: "巷弄長照站", label: "巷弄長照站" },
+    ],
+  },
   "ltc-contracted": {
     facilityType: "ltc_contracted",
     emoji: "🤝",
@@ -72,10 +96,6 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的長照特約服務機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: { label: "特約服務項目：" },
-    // Values surveyed live off /api/facilities?type=ltc_contracted across 5 geographic
-    // centers (issue #132) — one row can carry several service items joined by "、"
-    // (e.g. "居家服務、喘息服務"), so the shared LIKE-based category filter (see
-    // lib/server/facilities/queries.ts) matches any row that lists this item among others.
     categories: [
       { value: "居家服務", label: "居家服務" },
       { value: "日間照顧服務", label: "日間照顧服務" },
@@ -90,6 +110,22 @@ export const facilitySearchConfigs = {
       { value: "個案管理服務", label: "個案管理服務" },
       { value: "巷弄長照站", label: "巷弄長照站" },
       { value: "小規模多機能服務", label: "小規模多機能服務" },
+    ],
+  },
+  "vet-clinics": {
+    facilityType: "vet_clinic",
+    emoji: "🐾",
+    title: "全台動物醫院與獸醫診所查詢",
+    description:
+      "查詢全台各縣市開業之合法獸醫診療機構與動物醫院。資料來源：農業部動植物防疫檢疫署開放資料。",
+    searchPlaceholder: "輸入動物醫院名稱、地址或執照字號",
+    errorText: "查詢動物醫院資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的動物醫院，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的動物醫院。",
+    serviceItem: "badge",
+    categories: [
+      { value: "獸醫師", label: "獸醫師執業" },
+      { value: "獸醫佐", label: "獸醫佐執業" },
     ],
   },
   "elder-welfare": {
@@ -196,17 +232,6 @@ export const facilitySearchConfigs = {
     emptyStateNoKeyword: "附近查無收錄的機構，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的機構。",
     serviceItem: "badge",
-  },
-  "long-term-care": {
-    facilityType: "long_term_care",
-    emoji: "🏡",
-    title: "長照機構查詢",
-    description:
-      "查詢衛福部許可全台長期照顧服務機構。資料來源：衛福部長照服務地圖。",
-    searchPlaceholder: "輸入機構名稱或縣市關鍵字",
-    errorText: "查詢機構資料失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無收錄的長照機構，可改用關鍵字搜尋。",
-    emptyStateWithKeyword: "查無符合的機構。",
   },
   "public-toilets": {
     facilityType: "public_toilet",

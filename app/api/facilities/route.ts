@@ -73,7 +73,18 @@ function getFacilitySeedFallback(
     if (!raw) {
       const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
       if (fs.existsSync(seedPath)) {
-        raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as SeedFacilityItem[];
+        const parsed = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
+        const list = Array.isArray(parsed) ? parsed : (parsed.records || parsed.facilities || []);
+        raw = list.map((item: any, idx: number) => ({
+          id: item.id ?? idx + 1,
+          name: item.name,
+          address: item.address ?? null,
+          phone: item.phone ?? null,
+          lat: item.lat ?? null,
+          lng: item.lng ?? null,
+          service_item: item.service_item ?? item.serviceItem ?? null,
+          extra_json: item.extra_json ?? item.extra ?? null,
+        }));
       }
     }
     if (!raw || raw.length === 0) return null;
