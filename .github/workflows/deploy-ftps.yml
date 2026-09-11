@@ -96,6 +96,8 @@ jobs:
       - name: Package public assets
         run: |
           test -d public
+          mkdir -p public/data
+          cp -r data/* public/data/
           tar -czf .prebuilt-public.tgz -C public .
 
       - name: Upload handler and prebuilt bundle to server (FTPS)

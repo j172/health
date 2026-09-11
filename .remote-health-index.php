@@ -1030,6 +1030,7 @@ if (str_starts_with($path, '/__ops/')) {
             // files actually present in the uploaded tarball get added/overwritten. A
             // missing or bad tarball shouldn't fail the deploy.
             . "&& { if [ -s .prebuilt-public.tgz ]; then tar --no-same-owner --no-same-permissions -xzf .prebuilt-public.tgz -C public >> .apply-prebuilt.log 2>&1 && rm -f .prebuilt-public.tgz; fi; } "
+            . "&& { if [ -d public/data ]; then if [ ! -e data ]; then ln -sfn public/data data || true; elif [ -d data ] && [ ! -L data ]; then cp -rn public/data/* data/ 2>/dev/null || true; fi; fi; } "
             . "&& test -s .env "
             . "&& { if [ -s .pixabay.env ]; then "
             . "cp .env .env.before-pixabay "

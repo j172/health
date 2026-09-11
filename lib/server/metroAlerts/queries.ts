@@ -1,20 +1,10 @@
-import fs from "node:fs";
-import path from "node:path";
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import type { MetroAlertItem } from "./types";
-
-const SEED_PATH = path.join(process.cwd(), "data", "metro-alerts-seed.json");
+import { readSeedJson } from "@/lib/server/db/seedReader";
 
 function getSeedAlerts(): MetroAlertItem[] {
-  try {
-    if (fs.existsSync(SEED_PATH)) {
-      return JSON.parse(fs.readFileSync(SEED_PATH, "utf-8")) as MetroAlertItem[];
-    }
-  } catch (err) {
-    console.warn("Failed to read metro-alerts-seed.json:", err);
-  }
-  return [];
+  return readSeedJson<MetroAlertItem[]>("metro-alerts-seed.json") || [];
 }
 
 export async function getMetroAlerts(options?: {
