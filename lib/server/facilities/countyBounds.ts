@@ -43,14 +43,52 @@ for (const name of Object.keys(BOUNDS)) {
   if (name.startsWith("臺")) ALIASES[`台${name.slice(1)}`] = name;
 }
 
-/** Finds which county (if any) an address names, checked at the very start (where these addresses consistently put it). */
+/** County-level cities (縣轄市) that indicate their respective county when county prefix is omitted in raw addresses. */
+export const COUNTY_SEATS: Record<string, string> = {
+  花蓮市: "花蓮縣",
+  宜蘭市: "宜蘭縣",
+  苗栗市: "苗栗縣",
+  彰化市: "彰化縣",
+  南投市: "南投縣",
+  臺東市: "臺東縣",
+  台東市: "臺東縣",
+  屏東市: "屏東縣",
+  馬公市: "澎湖縣",
+  竹北市: "新竹縣",
+  斗六市: "雲林縣",
+  太保市: "嘉義縣",
+  朴子市: "嘉義縣",
+};
+
+/** Finds which county (if any) an address names, checked at the start (or with leading postal code/spaces stripped). */
 export function countyForAddress(address: string): string | null {
+  if (!address) return null;
+  // Strip leading digits (zip code like 423 or 970), brackets, full-width whitespace
+  const clean = address.replace(/^[\d\s\(\)\[\]【】\u3000-]+/, "").trim();
+
+  // 1. Direct startsWith check
   for (const name of Object.keys(BOUNDS)) {
-    if (address.startsWith(name)) return name;
+    if (clean.startsWith(name)) return name;
   }
   for (const [alias, canonical] of Object.entries(ALIASES)) {
-    if (address.startsWith(alias)) return canonical;
+    if (clean.startsWith(alias)) return canonical;
   }
+  for (const [seat, canonical] of Object.entries(COUNTY_SEATS)) {
+    if (clean.startsWith(seat)) return canonical;
+  }
+
+  // 2. Loose contains check within the first 12 characters (e.g. "台灣花蓮縣...", "中區花蓮市...")
+  const prefix = clean.slice(0, 12);
+  for (const name of Object.keys(BOUNDS)) {
+    if (prefix.includes(name)) return name;
+  }
+  for (const [alias, canonical] of Object.entries(ALIASES)) {
+    if (prefix.includes(alias)) return canonical;
+  }
+  for (const [seat, canonical] of Object.entries(COUNTY_SEATS)) {
+    if (prefix.includes(seat)) return canonical;
+  }
+
   return null;
 }
 
@@ -60,3 +98,4 @@ export function isWithinCountyBounds(county: string, lat: number, lng: number): 
   if (!bounds) return true; // unknown county name — don't flag what we can't check
   return lat >= bounds.minLat && lat <= bounds.maxLat && lng >= bounds.minLng && lng <= bounds.maxLng;
 }
+

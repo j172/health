@@ -129,19 +129,33 @@ const FALLBACK_STRIPS = [
   /\d+號.*$/,
   /(\d+巷|\d+弄).*$/,
 ];
+function stripVillageNeighborhood(rawAddress) {
+  return rawAddress
+    .replace(/(?<=[區鄉鎮市])([^0-9號樓路街大道巷弄區鄉鎮市\s]{1,6}[里村])/g, "")
+    .replace(/\d+鄰/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
 function buildQueryCandidates(rawAddress) {
   const base = cleanAddress(rawAddress);
   if (!base) return [];
   const candidates = [];
   const seen = new Set();
-  let candidate = base;
-  for (let attempt = 0; attempt <= FALLBACK_STRIPS.length; attempt++) {
-    if (attempt > 0) {
-      candidate = candidate.replace(FALLBACK_STRIPS[attempt - 1], "").trim();
+  const bases = [base];
+  const withoutVillage = stripVillageNeighborhood(base);
+  if (withoutVillage && withoutVillage !== base) {
+    bases.push(withoutVillage);
+  }
+  for (const b of bases) {
+    let candidate = b;
+    for (let attempt = 0; attempt <= FALLBACK_STRIPS.length; attempt++) {
+      if (attempt > 0) {
+        candidate = candidate.replace(FALLBACK_STRIPS[attempt - 1], "").trim();
+      }
+      if (!candidate || seen.has(candidate)) continue;
+      seen.add(candidate);
+      candidates.push(appendCountry(candidate));
     }
-    if (!candidate || seen.has(candidate)) continue;
-    seen.add(candidate);
-    candidates.push(appendCountry(candidate));
   }
   return candidates;
 }
@@ -160,9 +174,71 @@ test("buildQueryCandidates: address with only 號, no 巷/弄 -> simplified cand
   assert.deepEqual(candidates, ["台北市信義路5段7號, 台灣", "台北市信義路5段, 台灣"]);
 });
 
+test("buildQueryCandidates: village and neighborhood stripped variants are generated", () => {
+  const candidates = buildQueryCandidates("台中市東勢區詒福里詒福街65號");
+  assert.ok(candidates.includes("台中市東勢區詒福街65號, 台灣"));
+  assert.ok(candidates.includes("台中市東勢區詒福街, 台灣"));
+
+  const hualien = buildQueryCandidates("花蓮縣花蓮市國興里17鄰介禮街46號");
+  assert.ok(hualien.includes("花蓮縣花蓮市介禮街46號, 台灣"));
+  assert.ok(hualien.includes("花蓮縣花蓮市介禮街, 台灣"));
+});
+
 test("buildQueryCandidates: empty address -> empty array", () => {
   assert.deepEqual(buildQueryCandidates(""), []);
 });
+
+// ─── countyBounds validation tests ─────────────────────────────────────────
+const BOUNDS = {
+  臺北市: { minLat: 24.95, maxLat: 25.22, minLng: 121.44, maxLng: 121.67 },
+  臺中市: { minLat: 23.95, maxLat: 24.48, minLng: 120.5, maxLng: 121.1 },
+  臺南市: { minLat: 22.8, maxLat: 23.43, minLng: 120.0, maxLng: 120.65 },
+  花蓮縣: { minLat: 22.9, maxLat: 24.5, minLng: 121.1, maxLng: 121.8 },
+};
+const COUNTY_SEATS = { 花蓮市: "花蓮縣" };
+function countyForAddressTest(address) {
+  if (!address) return null;
+  const clean = address.replace(/^[\d\s\(\)\[\]【】\u3000-]+/, "").trim();
+  for (const name of Object.keys(BOUNDS)) {
+    if (clean.startsWith(name)) return name;
+    if (clean.startsWith(name.replace("臺", "台"))) return name;
+  }
+  for (const [seat, canonical] of Object.entries(COUNTY_SEATS)) {
+    if (clean.startsWith(seat)) return canonical;
+  }
+  return null;
+}
+function isWithinCountyBoundsTest(county, lat, lng) {
+  const b = BOUNDS[county];
+  if (!b) return true;
+  return lat >= b.minLat && lat <= b.maxLat && lng >= b.minLng && lng <= b.maxLng;
+}
+
+test("countyForAddressTest: resolves standard, aliases and county seats", () => {
+  assert.equal(countyForAddressTest("臺中市東勢區詒福街65號"), "臺中市");
+  assert.equal(countyForAddressTest("台中市東勢區新盛街527號"), "臺中市");
+  assert.equal(countyForAddressTest("台南市南區建南路154號"), "臺南市");
+  assert.equal(countyForAddressTest("花蓮市介禮街46號"), "花蓮縣");
+  assert.equal(countyForAddressTest("[970] 花蓮市介禮街46號"), "花蓮縣");
+});
+
+test("isWithinCountyBoundsTest: catches Taipei coordinates mismatched to other counties", () => {
+  // Bad Taipei coords for Taichung Dongshi:
+  assert.equal(isWithinCountyBoundsTest("臺中市", 25.057, 121.566), false);
+  // Real Taichung Dongshi coords:
+  assert.equal(isWithinCountyBoundsTest("臺中市", 24.22735, 120.83594), true);
+
+  // Bad Taipei coords for Hualien:
+  assert.equal(isWithinCountyBoundsTest("花蓮縣", 25.057, 121.528), false);
+  // Real Hualien coords:
+  assert.equal(isWithinCountyBoundsTest("花蓮縣", 23.9858, 121.57275), true);
+
+  // Bad Taipei coords for Tainan:
+  assert.equal(isWithinCountyBoundsTest("臺南市", 25.040, 121.509), false);
+  // Real Tainan coords:
+  assert.equal(isWithinCountyBoundsTest("臺南市", 22.98504, 120.18977), true);
+});
+
 
 // ─── isWithinTaiwanBounds ───────────────────────────────────────────────────
 const TAIWAN_BOUNDS = { minLat: 21.4, maxLat: 26.4, minLng: 118.0, maxLng: 122.3 };

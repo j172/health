@@ -26,7 +26,12 @@ export async function fetchHakkaCommunity(): Promise<FacilityRecord[]> {
   return rows
     .filter((r) => r.Unit_name && r.Address)
     .map((r) => {
-      const address = normalizeAddress(r.Address);
+      let rawAddr = r.Address.trim();
+      const city = (r.city_name || "").trim();
+      if (city && !rawAddr.startsWith(city) && !rawAddr.startsWith(city.replace("臺", "台"))) {
+        rawAddr = `${city}${rawAddr}`;
+      }
+      const address = normalizeAddress(rawAddr);
       return {
         facilityType: "hakka_community",
         sourceKey: "hakka_dtst20230600002",

@@ -126,6 +126,18 @@ const FALLBACK_STRIPS: RegExp[] = [
 ];
 
 /**
+ * Strips village (里/村) and neighborhood (鄰) which frequently prevent OSM / Nominatim / OpenCage from finding the road:
+ * e.g. "台中市東勢區詒福里詒福街65號" -> "台中市東勢區詒福街65號"
+ */
+export function stripVillageNeighborhood(rawAddress: string): string {
+  return rawAddress
+    .replace(/(?<=[區鄉鎮市])([^0-9號樓路街大道巷弄區鄉鎮市\s]{1,6}[里村])/g, "")
+    .replace(/\d+鄰/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * Builds the ordered list of query candidates for one address: the fully
  * normalized address first, then progressively-stripped fallbacks (deduped,
  * empties dropped, country suffix re-appended fresh to each — stripping has
@@ -142,16 +154,25 @@ export function buildQueryCandidates(rawAddress: string): string[] {
 
   const candidates: string[] = [];
   const seen = new Set<string>();
-  let candidate = base;
 
-  for (let attempt = 0; attempt <= FALLBACK_STRIPS.length; attempt++) {
-    if (attempt > 0) {
-      candidate = candidate.replace(FALLBACK_STRIPS[attempt - 1], "").trim();
+  const bases = [base];
+  const withoutVillage = stripVillageNeighborhood(base);
+  if (withoutVillage && withoutVillage !== base) {
+    bases.push(withoutVillage);
+  }
+
+  for (const b of bases) {
+    let candidate = b;
+    for (let attempt = 0; attempt <= FALLBACK_STRIPS.length; attempt++) {
+      if (attempt > 0) {
+        candidate = candidate.replace(FALLBACK_STRIPS[attempt - 1], "").trim();
+      }
+      if (!candidate || seen.has(candidate)) continue;
+      seen.add(candidate);
+      candidates.push(appendCountry(candidate));
     }
-    if (!candidate || seen.has(candidate)) continue;
-    seen.add(candidate);
-    candidates.push(appendCountry(candidate));
   }
 
   return candidates;
 }
+
