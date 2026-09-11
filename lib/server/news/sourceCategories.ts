@@ -35,6 +35,9 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "femh", label: "亞東紀念醫院" },
       { sourceName: "cgmh", label: "長庚紀念醫院" },
       { sourceName: "vghtpe", label: "臺北榮總" },
+      { sourceName: "moe_familyedu", label: "教育部家庭教育網" },
+      { sourceName: "sfaa", label: "衛生福利部社會及家庭署" },
+      { sourceName: "ncl", label: "國家圖書館" },
     ],
   },
   {
@@ -86,6 +89,9 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "mamibuy", label: "媽咪拜" },
       { sourceName: "tasctaiwan", label: "台灣性諮商學會" },
       { sourceName: "tase", label: "台灣性教育學會" },
+      { sourceName: "grinews", label: "草根影響力新視野" },
+      { sourceName: "thenewslens", label: "關鍵評論網" },
+      { sourceName: "pchome", label: "PChome 新聞" },
     ],
   },
   {
@@ -112,6 +118,8 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "nncf", label: "羅慧夫顱顏基金會" },
       { sourceName: "chilingjj", label: "志玲姊姊慈善基金會" },
       { sourceName: "anews", label: "愛傳媒" },
+      { sourceName: "yonglin", label: "永齡基金會" },
+      { sourceName: "children", label: "兒童福利聯盟" },
     ],
   },
 ];

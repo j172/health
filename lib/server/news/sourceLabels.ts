@@ -83,6 +83,14 @@ const SOURCE_LABELS: Record<string, string> = {
   nncf: "羅慧夫顱顏基金會",
   chilingjj: "志玲姊姊慈善基金會",
   anews: "愛傳媒",
+  yonglin: "永齡基金會",
+  children: "兒童福利聯盟",
+  moe_familyedu: "教育部家庭教育網",
+  sfaa: "衛生福利部社會及家庭署",
+  grinews: "草根影響力新視野",
+  thenewslens: "關鍵評論網",
+  pchome: "PChome 新聞",
+  ncl: "國家圖書館",
 };
 
 export interface SourceLabelInput {
