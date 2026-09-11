@@ -3,6 +3,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { countFacilities, searchFacilities } from "@/lib/server/facilities/queries";
 
+import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
+import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
+
 export const runtime = "nodejs";
 
 interface SeedFacilityItem {
@@ -16,6 +19,11 @@ interface SeedFacilityItem {
   extra_json?: any;
   distance_km?: number;
 }
+
+const SEED_FACILITIES: Record<string, SeedFacilityItem[]> = {
+  tourism_factory: tourismFactorySeed as unknown as SeedFacilityItem[],
+  bookstore: bookstoreSeed as unknown as SeedFacilityItem[],
+};
 
 function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -42,13 +50,16 @@ function getFacilitySeedFallback(
   },
 ): { facilities: SeedFacilityItem[]; total: number } | null {
   try {
-    const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
-    if (!fs.existsSync(seedPath)) return null;
+    let raw = SEED_FACILITIES[facilityType];
+    if (!raw) {
+      const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
+      if (fs.existsSync(seedPath)) {
+        raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as SeedFacilityItem[];
+      }
+    }
+    if (!raw || raw.length === 0) return null;
 
-    const raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as SeedFacilityItem[];
     const totalAll = raw.length;
-    if (totalAll === 0) return null;
-
     let list = raw.map((item) => ({ ...item }));
 
     // 1. Keyword filter
