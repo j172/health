@@ -75,7 +75,8 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
         unoptimized={
           src.endsWith(".svg") ||
           src.startsWith("/images/news/maps/") ||
-          src.startsWith("/uploads/maps/")
+          src.startsWith("/uploads/maps/") ||
+          src.startsWith("/images/news/flickr/")
         }
         onLoad={() => setLoaded(true)}
         onError={() => setHasError(true)}

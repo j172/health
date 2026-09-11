@@ -71,6 +71,7 @@ export default function HeroImage({
             fill
             sizes="(min-width: 896px) 896px, 100vw"
             priority
+            unoptimized={src.startsWith("/images/news/flickr/")}
             onLoad={() => setLoaded(true)}
             onError={() => setHasError(true)}
             className={imgClass}

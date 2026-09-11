@@ -758,6 +758,7 @@ jobs:
           test -s "$TMP_DIR/card-images.txt"
 
           while IFS= read -r IMAGE; do
+            echo "Verifying image: $IMAGE"
             curl --fail --show-error --silent --location --insecure \
               --retry 5 --retry-delay 3 --retry-all-errors \
               --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
