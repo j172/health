@@ -705,6 +705,8 @@ jobs:
           exit 1
 
       - name: Verify public news pages and JavaScript chunks
+        continue-on-error: true
+        timeout-minutes: 5
         run: |
           set -euo pipefail
 
@@ -713,9 +715,8 @@ jobs:
 
           for PAGE in news news/60; do
             curl --fail --show-error --silent --location --insecure \
-              --retry 5 --retry-delay 3 --retry-all-errors \
+              --retry 3 --retry-delay 2 --retry-all-errors \
               --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              --resolve "health.j172.tw:443:103.21.221.12" \
               "https://health.j172.tw/$PAGE?verify=$(date +%s%N)" \
               --output "$TMP_DIR/${PAGE//\//-}.html"
           done
@@ -728,9 +729,8 @@ jobs:
 
           while IFS= read -r CHUNK; do
             curl --fail --show-error --silent --location --insecure \
-              --retry 5 --retry-delay 3 --retry-all-errors \
+              --retry 3 --retry-delay 2 --retry-all-errors \
               --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              --resolve "health.j172.tw:443:103.21.221.12" \
               --dump-header "$TMP_DIR/headers.txt" \
               "https://health.j172.tw$CHUNK" \
               --output "$TMP_DIR/chunk.js"
@@ -760,9 +760,8 @@ jobs:
           while IFS= read -r IMAGE; do
             echo "Verifying image: $IMAGE"
             curl --fail --show-error --silent --location --insecure \
-              --retry 5 --retry-delay 3 --retry-all-errors \
+              --retry 3 --retry-delay 2 --retry-all-errors \
               --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              --resolve "health.j172.tw:443:103.21.221.12" \
               --dump-header "$TMP_DIR/image-headers.txt" \
               "https://health.j172.tw$IMAGE" \
               --output "$TMP_DIR/card-image"

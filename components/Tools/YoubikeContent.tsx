@@ -333,7 +333,21 @@ export default function YoubikeContent({
                     </div>
 
                     <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-50 dark:border-slate-800/60">
-                      <span>更新：{station.updatedAtSource?.slice(11, 16) || "即時"}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span>更新：{station.updatedAtSource?.slice(11, 16) || "即時"}</span>
+                        {(() => {
+                          if (!station.updatedAtSource) return null;
+                          const t = new Date(station.updatedAtSource).getTime();
+                          if (!isNaN(t) && Date.now() - t > 15 * 60 * 1000) {
+                            return (
+                              <span className="rounded bg-amber-50 px-1.5 py-0.2 text-[10px] font-medium text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+                                更新延遲
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                       {station.lat && station.lng && (
                         <a
                           href={`https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`}

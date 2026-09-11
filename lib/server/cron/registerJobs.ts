@@ -24,6 +24,10 @@ import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
+import { runYouBikeSync } from "@/lib/server/youbike/runSync";
+import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
+import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
+import { runLatestBooksSync } from "@/lib/server/books/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -226,5 +230,25 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "58 4 * * *",
     runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
+  );
+  // YouBike 2.0 every 5 minutes — batch upserts real-time station availability across Taipei, NTPC, Hsinchu
+  cron.schedule(
+    "*/5 * * * *",
+    runGuarded("youbike-sync-cron.log", () => runYouBikeSync()),
+  );
+  // Taipei Metro alerts every 30 minutes — fetches Big5 CSV elevator maintenance and operational bulletins
+  cron.schedule(
+    "0,30 * * * *",
+    runGuarded("metro-alerts-sync-cron.log", () => runMetroAlertsSync()),
+  );
+  // MOA Crop Pest warnings every 6 hours — near-realtime survey bulletins and critical alerts
+  cron.schedule(
+    "12 0,6,12,18 * * *",
+    runGuarded("pest-alerts-sync-cron.log", () => runPestAlertsSync()),
+  );
+  // Latest books recommendation daily at 05:30am off-peak — syncs Top 20 across 41 categories and purges old entries
+  cron.schedule(
+    "30 5 * * *",
+    runGuarded("latest-books-sync-cron.log", () => runLatestBooksSync()),
   );
 };
