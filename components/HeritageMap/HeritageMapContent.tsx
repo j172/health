@@ -18,6 +18,10 @@ interface LayerConfig {
 const LAYERS: LayerConfig[] = [
   { category: "building", label: "古蹟／歷史建築", emoji: "🏛️", color: "#b45309" },
   { category: "archaeological_site", label: "考古遺址", emoji: "🏺", color: "#7c3aed" },
+  { category: "memorial_building", label: "紀念建築", emoji: "🏢", color: "#0284c7" },
+  { category: "settlement", label: "聚落建築群", emoji: "🏘️", color: "#059669" },
+  { category: "historical_site", label: "史蹟", emoji: "📜", color: "#dc2626" },
+  { category: "cultural_landscape", label: "文化景觀", emoji: "🏞️", color: "#16a34a" },
 ];
 
 interface ApiResponse {
@@ -79,8 +83,19 @@ export default function HeritageMapContent() {
   }, []);
 
   const countsByLayer = useMemo(() => {
-    const counts: Record<HeritageCategory, number> = { building: 0, archaeological_site: 0 };
-    for (const p of points) counts[p.category] += 1;
+    const counts: Record<HeritageCategory, number> = {
+      building: 0,
+      archaeological_site: 0,
+      memorial_building: 0,
+      settlement: 0,
+      historical_site: 0,
+      cultural_landscape: 0,
+    };
+    for (const p of points) {
+      if (counts[p.category] !== undefined) {
+        counts[p.category] += 1;
+      }
+    }
     return counts;
   }, [points]);
 
