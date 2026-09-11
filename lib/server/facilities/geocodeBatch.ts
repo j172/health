@@ -74,6 +74,8 @@ export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
   // facilities table had real rows. Front-of-queue is temporary triage,
   // not a permanent priority — safe to fold back into normal position once
   // each has meaningful geocode coverage.
+  { facilityType: "tourism_factory", sourceKey: "ida_tourism_factory", label: "認證觀光工廠" },
+  { facilityType: "bookstore", sourceKey: "moc_bookstore", label: "實體書店" },
   { facilityType: "iaq_premise", sourceKey: "moenv_iaq_premise", label: "室內空氣品質法公告場所" },
   { facilityType: "cleaning_squad", sourceKey: "moenv_cleaning_squad", label: "地方清潔隊" },
   { facilityType: "green_hotel", sourceKey: "moenv_green_hotel_epr", label: "環保旅館(EPR_P_02)" },
