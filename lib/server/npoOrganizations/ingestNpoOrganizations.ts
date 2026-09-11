@@ -1,6 +1,7 @@
 import "server-only";
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection } from "@/lib/server/db/mysql";
+import { httpGetText } from "@/lib/server/net/httpClient";
 import {
   normalizeOrgName,
   extractNpoDetailFields,
@@ -28,14 +29,14 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 async function fetchWithRetry(url: string, retries = 3): Promise<string> {
   for (let i = 0; i < retries; i++) {
     try {
-      const res = await fetch(url, {
+      const { status, text } = await httpGetText(url, {
         headers: {
           "User-Agent": "Mozilla/5.0 (compatible; TaiwanHealthInfoBot/1.0; +https://health.j172.tw)",
         },
-        next: { revalidate: 0 },
+        timeoutMs: 15_000,
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      return await res.text();
+      if (status < 200 || status >= 300) throw new Error(`HTTP ${status}`);
+      return text;
     } catch (err) {
       if (i === retries - 1) throw err;
       await delay(1000 * (i + 1));

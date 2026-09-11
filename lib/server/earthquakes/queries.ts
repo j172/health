@@ -1,5 +1,5 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { withConnection, withConnectionFallback, utcNowSql } from "@/lib/server/db/mysql";
 import type { IncomingEarthquake } from "@/lib/server/earthquakes/types";
 
 // No source's event ID is usable as a cross-source key (USGS/EMSC/HKO each
@@ -166,7 +166,7 @@ export const getRecentSignificantEarthquakes = async (minMagnitude = 6.0, hours 
  */
 export const getTieredEarthquakes = async (hours = 168, limit = 50): Promise<SignificantEarthquake[]> =>
   memoizeQuery(`earthquakes_tiered_${hours}_${limit}`, async () =>
-    withConnection(async (conn) => {
+    withConnectionFallback([], async (conn) => {
       const [rows] = await conn.query<RowDataPacket[]>(
         `SELECT id, event_time, magnitude, depth_km, place, place_zh, tsunami_warning, primary_source, url
          FROM global_earthquakes

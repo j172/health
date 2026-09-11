@@ -417,3 +417,33 @@ export const searchNewsItems = async (
     );
     return coerceCoords(likeRows) as unknown as NewsListItem[];
   });
+
+export interface NewsSitemapItem {
+  id: number;
+  published_at_utc: Date | null;
+}
+
+/**
+ * Lightweight query specifically for sitemap generation.
+ * Only selects id and published_at_utc to prevent loading 20,000 article
+ * bodies, card images, and joins into Node.js memory.
+ */
+export const listNewsForSitemap = async (
+  limit = 20_000,
+): Promise<NewsSitemapItem[]> => {
+  const cacheKey = `list_news_sitemap_${limit}`;
+  return memoizeQuery(cacheKey, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT n.id, n.published_at_utc
+        FROM news_items n
+        ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
+        LIMIT ?
+        `,
+        [limit],
+      );
+      return rows as unknown as NewsSitemapItem[];
+    }),
+  );
+};

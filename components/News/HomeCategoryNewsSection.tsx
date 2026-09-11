@@ -11,8 +11,7 @@ interface HomeSourceCategory {
   sourceNames: string[];
 }
 
-const ALL_CATEGORY_CARD_COUNT = 24;
-const HOME_CARD_LIMIT = 51;
+const HOME_CARD_LIMIT = 21;
 
 export default function HomeCategoryNewsSection({
   items,

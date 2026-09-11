@@ -3,7 +3,7 @@ import { listLatestNews } from "@/lib/server/news/queries";
 import { buildNewsListJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const runtime = "nodejs";
 
 export const metadata: Metadata = {
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const items = await listLatestNews(54);
+  const items = await listLatestNews(24);
   const jsonLd = buildNewsListJsonLd(items, "最新新聞");
 
   return (
