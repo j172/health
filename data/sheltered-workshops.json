@@ -551,16 +551,26 @@
   },
   {
     "id": 56,
-    "name": "社團法人屏東縣自閉症協進會",
-    "storeUrl": "https://pse.is/9hgf2e",
-    "productNote": "星兒工坊 / 自閉症手作點心餅乾禮盒",
-    "address": "臺北市大安區和平東路二段24號",
-    "phone": "02-23635588",
-    "lat": 25.026411,
-    "lng": 121.538622
+    "name": "社團法人台灣技職教育產學研合作發展協會",
+    "storeUrl": null,
+    "productNote": "技職教育身心障礙學員產學實作商品",
+    "address": "臺中市大里區東榮路35巷20之3號",
+    "phone": "04-26805153",
+    "lat": 24.10372,
+    "lng": 120.68651
   },
   {
     "id": 57,
+    "name": "社團法人屏東縣自閉症協進會",
+    "storeUrl": "https://pse.is/9hgf2e",
+    "productNote": "星兒工坊 / 自閉症手作點心餅乾禮盒",
+    "address": "屏東縣屏東市建豐路180巷35號5樓",
+    "phone": "08-7351024",
+    "lat": 22.67812,
+    "lng": 120.50541
+  },
+  {
+    "id": 58,
     "name": "財團法人伊甸社會福利基金會－創皂工坊",
     "storeUrl": "https://pse.is/9hgf56",
     "productNote": "伊甸創皂工坊 / 弱勢婦女手作冷製皂禮盒",
@@ -570,7 +580,7 @@
     "lng": 120.481233
   },
   {
-    "id": 58,
+    "id": 59,
     "name": "社團法人屏東縣啟智協進會",
     "storeUrl": "https://reurl.cc/qaromn",
     "productNote": "屏東啟智協進會小舖 / 手工蛋捲伴手禮",
@@ -580,7 +590,7 @@
     "lng": 120.487635
   },
   {
-    "id": 59,
+    "id": 60,
     "name": "財團法人屏東縣私立基督教伯大尼之家",
     "storeUrl": "https://www.bethany-pt.org/",
     "productNote": "伯大尼之家自然農場 / 有機生鮮農產與烘焙",
@@ -590,7 +600,7 @@
     "lng": 120.505411
   },
   {
-    "id": 60,
+    "id": 61,
     "name": "屏東縣向陽康復之友協會附設誠欣工作坊",
     "storeUrl": "https://pse.is/9hgfbz",
     "productNote": "誠欣工作坊 / 精神復健自立手工藝品",
@@ -600,7 +610,7 @@
     "lng": 120.512345
   },
   {
-    "id": 61,
+    "id": 62,
     "name": "社團法人屏東縣微笑關懷協會",
     "storeUrl": "https://pse.is/9hgff2",
     "productNote": "微笑工坊 / 手作點心禮盒義賣",

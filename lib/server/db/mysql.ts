@@ -249,6 +249,85 @@ export const ensureSchema = async (): Promise<void> => {
       AND name NOT IN ('臺中市東勢區詒福社區發展協會', '花蓮縣花蓮市碧雲莊社區發展協會', '社團法人臺中市東勢農民老人會', '臺南市南區文南社區發展協會')
   `);
 
+  // Auto-seed / sync sheltered workshops (62 organizations with merchandise/products) into facilities
+  try {
+    const filePath = path.join(process.cwd(), "data", "sheltered-workshops.json");
+    if (fs.existsSync(filePath)) {
+      const workshops = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      if (Array.isArray(workshops) && workshops.length > 0) {
+        for (const item of workshops) {
+          const sourceId = `sheltered_${item.id}`;
+          const [existing] = await p.query<RowDataPacket[]>(
+            "SELECT id, extra_json FROM facilities WHERE source_id = ? OR name = ? LIMIT 1",
+            [sourceId, item.name]
+          );
+
+          let extra: any = {};
+          if (existing[0]?.extra_json) {
+            try {
+              extra = typeof existing[0].extra_json === "string" ? JSON.parse(existing[0].extra_json) : existing[0].extra_json;
+            } catch {}
+          }
+          extra.hasProducts = true;
+          if (item.storeUrl) extra.storeUrl = item.storeUrl;
+          if (item.productNote) extra.productNote = item.productNote;
+
+          if (existing[0]) {
+            await p.query(
+              "UPDATE facilities SET extra_json = ?, phone = COALESCE(phone, ?), address = COALESCE(address, ?), lat = COALESCE(lat, ?), lng = COALESCE(lng, ?), updated_at = NOW() WHERE id = ?",
+              [JSON.stringify(extra), item.phone || null, item.address || null, item.lat || null, item.lng || null, existing[0].id]
+            );
+          } else {
+            await p.query(
+              `INSERT INTO facilities (facility_type, source_key, source_id, name, address, phone, lat, lng, extra_json, created_at, updated_at)
+               VALUES ('npo', 'sheltered_workshop', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              [sourceId, item.name, item.address || null, item.phone || null, item.lat || null, item.lng || null, JSON.stringify(extra)]
+            );
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to auto-seed sheltered workshops:", err);
+  }
+
+  // Auto-seed pet_adoptions table from bundled data/pet-adoptions-seed.json if empty
+  try {
+    const [petCountRows] = await p.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS cnt FROM pet_adoptions"
+    );
+    if ((petCountRows[0]?.cnt ?? 0) === 0) {
+      const filePath = path.join(process.cwd(), "data", "pet-adoptions-seed.json");
+      if (fs.existsSync(filePath)) {
+        const seedRows = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        if (Array.isArray(seedRows) && seedRows.length > 0) {
+          for (const r of seedRows) {
+            await p.query(
+              `INSERT IGNORE INTO pet_adoptions (
+                animal_id, animal_subid, animal_kind, animal_variety, animal_sex,
+                animal_bodytype, animal_colour, animal_age, animal_sterilization,
+                animal_bacterin, animal_foundplace, animal_status, animal_remark,
+                animal_opendate, album_file, shelter_name, shelter_address, shelter_tel,
+                city, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+              [
+                r.animal_id, r.animal_subid || null, r.animal_kind || "其他", r.animal_variety || null,
+                r.animal_sex || "N", r.animal_bodytype || null, r.animal_colour || null, r.animal_age || null,
+                r.animal_sterilization || null, r.animal_bacterin || null, r.animal_foundplace || null,
+                r.animal_status || "OPEN", r.animal_remark || null, r.animal_opendate || null,
+                r.album_file || null, r.shelter_name || null, r.shelter_address || null, r.shelter_tel || null,
+                r.city || null,
+              ]
+            );
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to auto-seed pet adoptions:", err);
+  }
+
+
   // Auto-seed public_arts table from bundled data/public-art.json if empty
   try {
     const [paCountRows] = await p.query<RowDataPacket[]>(
