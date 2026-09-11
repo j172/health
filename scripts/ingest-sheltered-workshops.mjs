@@ -84,18 +84,30 @@ async function runLocalIngestion(workshops) {
       let matchedExtra = {};
 
       const [rows] = await conn.query(
-        "SELECT id, name, extra_json FROM facilities WHERE name LIKE ? LIMIT 5",
-        [`%${normalized.slice(0, 5)}%`],
+        "SELECT id, name, extra_json FROM facilities WHERE (source_key = 'sheltered_workshop' AND source_id = ?) OR name = ? OR name LIKE ? LIMIT 10",
+        [String(item.id), item.name, `%${normalized.slice(0, 5)}%`],
       );
 
       for (const row of rows) {
-        const rowNorm = normalizeOrgName(row.name);
-        if (rowNorm === normalized || rowNorm.includes(normalized) || normalized.includes(rowNorm)) {
+        if (row.name === item.name) {
           matchedId = row.id;
           try {
             matchedExtra = typeof row.extra_json === "string" ? JSON.parse(row.extra_json) : row.extra_json || {};
           } catch {}
           break;
+        }
+      }
+
+      if (!matchedId) {
+        for (const row of rows) {
+          const rowNorm = normalizeOrgName(row.name);
+          if (rowNorm === normalized || rowNorm.includes(normalized) || normalized.includes(rowNorm)) {
+            matchedId = row.id;
+            try {
+              matchedExtra = typeof row.extra_json === "string" ? JSON.parse(row.extra_json) : row.extra_json || {};
+            } catch {}
+            break;
+          }
         }
       }
 
@@ -135,7 +147,16 @@ async function runLocalIngestion(workshops) {
           `INSERT INTO facilities (
             facility_type, source_key, source_id, name, address, phone, lat, lng,
             service_item, data_org, extra_json, synced_at, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
+          ON DUPLICATE KEY UPDATE
+            name = VALUES(name),
+            address = COALESCE(VALUES(address), address),
+            phone = COALESCE(VALUES(phone), phone),
+            lat = COALESCE(VALUES(lat), lat),
+            lng = COALESCE(VALUES(lng), lng),
+            service_item = VALUES(service_item),
+            extra_json = VALUES(extra_json),
+            updated_at = NOW()`,
           [
             "npo",
             "sheltered_workshop",
@@ -199,18 +220,30 @@ async function runRemoteIngestion(workshops) {
           let matchedExtra = {};
 
           const [rows] = await conn.query(
-            "SELECT id, name, extra_json FROM facilities WHERE name LIKE ? LIMIT 5",
-            [\`%\${normalized.slice(0, 5)}%\`]
+            "SELECT id, name, extra_json FROM facilities WHERE (source_key = 'sheltered_workshop' AND source_id = ?) OR name = ? OR name LIKE ? LIMIT 10",
+            [String(item.id), item.name, \`%\${normalized.slice(0, 5)}%\`]
           );
 
           for (const row of rows) {
-            const rowNorm = normalizeOrgName(row.name);
-            if (rowNorm === normalized || rowNorm.includes(normalized) || normalized.includes(rowNorm)) {
+            if (row.name === item.name) {
               matchedId = row.id;
               try {
                 matchedExtra = typeof row.extra_json === "string" ? JSON.parse(row.extra_json) : row.extra_json || {};
               } catch {}
               break;
+            }
+          }
+
+          if (!matchedId) {
+            for (const row of rows) {
+              const rowNorm = normalizeOrgName(row.name);
+              if (rowNorm === normalized || rowNorm.includes(normalized) || normalized.includes(rowNorm)) {
+                matchedId = row.id;
+                try {
+                  matchedExtra = typeof row.extra_json === "string" ? JSON.parse(row.extra_json) : row.extra_json || {};
+                } catch {}
+                break;
+              }
             }
           }
 
@@ -250,7 +283,16 @@ async function runRemoteIngestion(workshops) {
               \`INSERT INTO facilities (
                 facility_type, source_key, source_id, name, address, phone, lat, lng,
                 service_item, data_org, extra_json, synced_at, created_at, updated_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())\`,
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
+              ON DUPLICATE KEY UPDATE
+                name = VALUES(name),
+                address = COALESCE(VALUES(address), address),
+                phone = COALESCE(VALUES(phone), phone),
+                lat = COALESCE(VALUES(lat), lat),
+                lng = COALESCE(VALUES(lng), lng),
+                service_item = VALUES(service_item),
+                extra_json = VALUES(extra_json),
+                updated_at = NOW()\`,
               [
                 "npo",
                 "sheltered_workshop",
@@ -276,6 +318,7 @@ async function runRemoteIngestion(workshops) {
         process.exit(1);
       }
     })();
+
   `;
 
   const output = runRemoteNode(remoteScript);

@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from "react";
 import type { CulturalActivityItem } from "@/app/api/culture/shows/route";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 const TAIWAN_CITIES = [
   "全部縣市",
@@ -52,6 +54,8 @@ export default function CulturalEventsContent() {
   const [keyword, setKeyword] = useState("");
   const [selectedCity, setSelectedCity] = useState("全部縣市");
   const [timeFilter, setTimeFilter] = useState<"all" | "month">("all");
+
+  const { page, pageSize, setPage, setPageSize } = usePagination();
 
   const loadData = async (cat: string) => {
     setLoading(true);
@@ -114,6 +118,15 @@ export default function CulturalEventsContent() {
     });
   }, [items, keyword, selectedCity, timeFilter]);
 
+  const totalItems = filteredItems.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, currentPage, pageSize]);
+
   return (
     <div className="space-y-6">
       {/* Category Pills Header */}
@@ -122,7 +135,10 @@ export default function CulturalEventsContent() {
           <button
             key={tab.key}
             type="button"
-            onClick={() => setSelectedCategory(tab.key)}
+            onClick={() => {
+              setSelectedCategory(tab.key);
+              setPage(1);
+            }}
             className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
               selectedCategory === tab.key
                 ? "bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
@@ -143,14 +159,20 @@ export default function CulturalEventsContent() {
             <input
               type="text"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setPage(1);
+              }}
               placeholder="搜尋展覽、表演劇團、音樂會、場館或關鍵字..."
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder-slate-500"
             />
             {keyword && (
               <button
                 type="button"
-                onClick={() => setKeyword("")}
+                onClick={() => {
+                  setKeyword("");
+                  setPage(1);
+                }}
                 className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 清除
@@ -161,7 +183,10 @@ export default function CulturalEventsContent() {
           {/* City Filter */}
           <select
             value={selectedCity}
-            onChange={(e) => setSelectedCity(e.target.value)}
+            onChange={(e) => {
+              setSelectedCity(e.target.value);
+              setPage(1);
+            }}
             aria-label="選擇活動縣市"
             className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm font-medium text-slate-700 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
@@ -176,7 +201,10 @@ export default function CulturalEventsContent() {
           <div className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-100/70 p-1 dark:border-slate-800 dark:bg-slate-800/80">
             <button
               type="button"
-              onClick={() => setTimeFilter("all")}
+              onClick={() => {
+                setTimeFilter("all");
+                setPage(1);
+              }}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                 timeFilter === "all"
                   ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-400"
@@ -187,7 +215,10 @@ export default function CulturalEventsContent() {
             </button>
             <button
               type="button"
-              onClick={() => setTimeFilter("month")}
+              onClick={() => {
+                setTimeFilter("month");
+                setPage(1);
+              }}
               className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
                 timeFilter === "month"
                   ? "bg-white text-indigo-600 shadow-xs dark:bg-slate-700 dark:text-indigo-400"
@@ -199,12 +230,34 @@ export default function CulturalEventsContent() {
           </div>
         </div>
 
-        {/* Status bar */}
-        <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <span>
-            目前收錄 <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{filteredItems.length}</strong> 檔最新藝文展演活動
-          </span>
-          <span>資料來源：文化部全國藝文活動開放資料 (SearchShowAction)</span>
+        {/* Status bar & Page Size Switcher */}
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 dark:text-slate-400">
+          <div>
+            顯示第{" "}
+            <strong className="font-semibold text-indigo-600 dark:text-indigo-400">
+              {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} - {Math.min(currentPage * pageSize, totalItems)}
+            </strong>{" "}
+            檔（共 <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{totalItems}</strong> 檔活動，第 {currentPage} / {totalPages} 頁）
+          </div>
+          <div className="flex items-center gap-2">
+            <span>每頁顯示</span>
+            <div className="flex items-center gap-1">
+              {[30, 50, 100].map((size) => (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => setPageSize(size as 30 | 50 | 100)}
+                  className={`rounded-md px-2 py-0.5 text-xs font-bold transition-colors ${
+                    pageSize === size
+                      ? "bg-indigo-600 text-white shadow-xs dark:bg-indigo-500"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -248,128 +301,145 @@ export default function CulturalEventsContent() {
 
       {/* Activities Grid */}
       {!loading && !error && filteredItems.length > 0 && (
-        <div className="grid gap-5 sm:grid-cols-2">
-          {filteredItems.map((item) => {
-            const firstShow = item.shows[0];
-            const promoUrl = item.sourceWebPromote || item.webSales;
+        <>
+          <div className="grid gap-5 sm:grid-cols-2">
+            {paginatedItems.map((item) => {
+              const firstShow = item.shows[0];
+              const promoUrl = item.sourceWebPromote || item.webSales;
 
-            return (
-              <div
-                key={item.id}
-                className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700/60"
-              >
-                <div>
-                  {/* Category & Date badges */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
-                      {item.categoryLabel}
-                    </span>
-                    {item.masterUnit && (
-                      <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                        {item.masterUnit}
+              return (
+                <div
+                  key={item.id}
+                  className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700/60"
+                >
+                  <div>
+                    {/* Category & Date badges */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-md bg-indigo-50 px-2 py-0.5 text-xs font-bold text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300">
+                        {item.categoryLabel}
                       </span>
-                    )}
-                    <span className="ml-auto text-[11px] font-semibold text-slate-400">
-                      {item.startDate} ~ {item.endDate}
-                    </span>
-                  </div>
-
-                  {/* Activity Title */}
-                  <h3 className="mt-2.5 text-base font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                    {item.title}
-                  </h3>
-
-                  {/* English Title if available */}
-                  {item.titleEn && (
-                    <div className="mt-0.5 text-xs italic text-slate-500 dark:text-slate-400">
-                      {item.titleEn}
+                      {item.masterUnit && (
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                          {item.masterUnit}
+                        </span>
+                      )}
+                      <span className="ml-auto text-[11px] font-semibold text-slate-400">
+                        {item.startDate} ~ {item.endDate}
+                      </span>
                     </div>
-                  )}
 
-                  {/* Description preview */}
-                  {item.description && (
-                    <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                      {item.description}
-                    </p>
-                  )}
+                    {/* Activity Title */}
+                    <h3 className="mt-2.5 text-base font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                      {item.title}
+                    </h3>
 
-                  {item.descriptionEn && item.descriptionEn !== item.description && (
-                    <p className="mt-1 line-clamp-2 text-[11px] italic leading-relaxed text-slate-400 dark:text-slate-500">
-                      EN: {item.descriptionEn}
-                    </p>
-                  )}
+                    {/* English Title if available */}
+                    {item.titleEn && (
+                      <div className="mt-0.5 text-xs italic text-slate-500 dark:text-slate-400">
+                        {item.titleEn}
+                      </div>
+                    )}
 
-                  {/* Show Venues & Times */}
-                  <div className="mt-4 space-y-2 rounded-xl bg-slate-50 p-3 text-xs dark:bg-slate-800/50">
-                    {item.shows.slice(0, 3).map((show, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start justify-between gap-2 border-b border-slate-200/60 pb-1.5 last:border-b-0 last:pb-0 dark:border-slate-700/60"
-                      >
-                        <div>
-                          <div className="font-semibold text-slate-800 dark:text-slate-200">
-                            📍 {show.locationName || show.location || "展演場地"}
-                          </div>
-                          {show.location && show.location !== show.locationName && (
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
-                              {show.location}
+                    {/* Description preview */}
+                    {item.description && (
+                      <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        {item.description}
+                      </p>
+                    )}
+
+                    {item.descriptionEn && item.descriptionEn !== item.description && (
+                      <p className="mt-1 line-clamp-2 text-[11px] italic leading-relaxed text-slate-400 dark:text-slate-500">
+                        EN: {item.descriptionEn}
+                      </p>
+                    )}
+
+                    {/* Show Venues & Times */}
+                    <div className="mt-4 space-y-2 rounded-xl bg-slate-50 p-3 text-xs dark:bg-slate-800/50">
+                      {item.shows.slice(0, 3).map((show, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-start justify-between gap-2 border-b border-slate-200/60 pb-1.5 last:border-b-0 last:pb-0 dark:border-slate-700/60"
+                        >
+                          <div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-200">
+                              📍 {show.locationName || show.location || "展演場地"}
                             </div>
-                          )}
-                          <div className="mt-0.5 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
-                            🕒 {show.time}
+                            {show.location && show.location !== show.locationName && (
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                {show.location}
+                              </div>
+                            )}
+                            <div className="mt-0.5 text-[11px] font-medium text-indigo-600 dark:text-indigo-400">
+                              🕒 {show.time}
+                            </div>
                           </div>
+                          {show.price && (
+                            <span className="flex-shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                              {show.price.includes("免費") ? "免費入場" : show.price.slice(0, 20)}
+                            </span>
+                          )}
                         </div>
-                        {show.price && (
-                          <span className="flex-shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                            {show.price.includes("免費") ? "免費入場" : show.price.slice(0, 20)}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                    {item.shows.length > 3 && (
-                      <div className="text-center text-[11px] font-medium text-slate-400">
-                        共 {item.shows.length} 場演出場次
-                      </div>
+                      ))}
+                      {item.shows.length > 3 && (
+                        <div className="text-center text-[11px] font-medium text-slate-400">
+                          共 {item.shows.length} 場演出場次
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer action buttons */}
+                  <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    {firstShow?.location && (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          firstShow.locationName || firstShow.location
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
+                      >
+                        🗺️ 場館導航
+                      </a>
+                    )}
+
+                    {promoUrl && (
+                      <a
+                        href={promoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors ${
+                          item.category === "charity_project"
+                            ? "bg-rose-600 hover:bg-rose-500"
+                            : "bg-indigo-600 hover:bg-indigo-500"
+                        }`}
+                      >
+                        {item.category === "charity_project"
+                          ? "❤️ 前往支持募款 ↗"
+                          : "🎟️ 購票／活動官網 ↗"}
+                      </a>
                     )}
                   </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Footer action buttons */}
-                <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  {firstShow?.location && (
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        firstShow.locationName || firstShow.location
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
-                    >
-                      🗺️ 場館導航
-                    </a>
-                  )}
-
-                  {promoUrl && (
-                    <a
-                      href={promoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors ${
-                        item.category === "charity_project"
-                          ? "bg-rose-600 hover:bg-rose-500"
-                          : "bg-indigo-600 hover:bg-indigo-500"
-                      }`}
-                    >
-                      {item.category === "charity_project"
-                        ? "❤️ 前往支持募款 ↗"
-                        : "🎟️ 購票／活動官網 ↗"}
-                    </a>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+          <Pagination
+            page={currentPage}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            itemLabel="檔活動"
+            onPageChange={(p) => {
+              setPage(p);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            onPageSizeChange={(s) => {
+              setPageSize(s);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+        </>
       )}
     </div>
   );

@@ -156,9 +156,9 @@ export async function enrichNpoOrganizations(): Promise<EnrichNpoSourcesResult> 
   let enrichedCount = 0;
 
   await withConnection(async (conn) => {
-    // Load existing NPOs and tax organizations
+    // Load existing NPOs, tax organizations, and disability welfare facilities
     const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT id, name, extra_json, website FROM facilities WHERE facility_type IN ('npo', 'tax_organization')`,
+      `SELECT id, name, extra_json, website FROM facilities WHERE facility_type IN ('npo', 'tax_organization', 'disability_welfare')`,
     );
 
     // Build index by exact name and normalized name

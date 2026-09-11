@@ -126,6 +126,7 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
 const HAS_PRODUCTS_SQL = `(extra_json LIKE '%"hasProducts":true%' OR extra_json LIKE '%"hasProducts":"true"%')`;
 const HAS_BADGES_SQL = `(extra_json LIKE '%"trustBadges"%' OR extra_json LIKE '%"certifications"%')`;
 const IS_NPO_CENTER_SQL = `(source_key = 'npo_tw' OR extra_json LIKE '%"npoCenterOrgid"%')`;
+const NPO_FACILITY_TYPES_SQL = `(facility_type IN ('npo', 'tax_organization', 'disability_welfare') OR ${HAS_PRODUCTS_SQL})`;
 
 const ORDER_BY_PRIORITY = `
   ORDER BY
@@ -146,7 +147,7 @@ export const getRecentNpoOrganizations = async (
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT id, name, address, phone, lat, lng, service_item, service_time, extra_json
        FROM facilities
-       WHERE facility_type IN ('npo', 'tax_organization')
+       WHERE ${NPO_FACILITY_TYPES_SQL}
        ${ORDER_BY_PRIORITY}
        LIMIT ? OFFSET ?`,
       [limit, offset],
@@ -155,10 +156,9 @@ export const getRecentNpoOrganizations = async (
   });
 
 /** Total npo & tax_organization rows for pagination. */
-/** Total npo & tax_organization rows for pagination. */
 export const countNpoOrganizations = async (hasProducts?: boolean, hasBadges?: boolean): Promise<number> =>
   withConnection(async (conn) => {
-    const conditions = ["facility_type IN ('npo', 'tax_organization')"];
+    const conditions = [NPO_FACILITY_TYPES_SQL];
     if (hasProducts) conditions.push(HAS_PRODUCTS_SQL);
     if (hasBadges) conditions.push(HAS_BADGES_SQL);
     const where = `WHERE ${conditions.join(" AND ")}`;
@@ -185,7 +185,7 @@ const buildSearchNpoOrganizationsWhere = ({
   hasProducts,
   hasBadges,
 }: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts" | "hasBadges">) => {
-  const conditions: string[] = ["facility_type IN ('npo', 'tax_organization')"];
+  const conditions: string[] = [NPO_FACILITY_TYPES_SQL];
   const params: unknown[] = [];
 
   if (hasProducts) {
@@ -273,7 +273,7 @@ export const getNpoOrganizationCities = async (): Promise<string[]> =>
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT DISTINCT address AS city
        FROM facilities
-       WHERE facility_type IN ('npo', 'tax_organization') AND address IS NOT NULL AND address != ''
+       WHERE ${NPO_FACILITY_TYPES_SQL} AND address IS NOT NULL AND address != ''
        ORDER BY address ASC`,
     );
     const citiesSet = new Set<string>();
