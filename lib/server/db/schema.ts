@@ -698,21 +698,24 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // Cultural events main table (文化部藝文活動)
+  // Cultural events main table (文化部藝文活動與售票平台)
   culturalEvents: `
     CREATE TABLE IF NOT EXISTS cultural_events (
       id BIGINT NOT NULL AUTO_INCREMENT,
       uid VARCHAR(100) NOT NULL,
       title VARCHAR(500) NOT NULL,
-      category VARCHAR(20) NOT NULL,
+      title_en VARCHAR(500) NULL,
+      category VARCHAR(50) NOT NULL,
       category_label VARCHAR(100) NOT NULL,
       description LONGTEXT NULL,
+      description_en LONGTEXT NULL,
       image_url VARCHAR(1000) NULL,
       master_unit VARCHAR(500) NULL,
       start_date VARCHAR(30) NULL,
       end_date VARCHAR(30) NULL,
       source_web_promote VARCHAR(1000) NULL,
       web_sales VARCHAR(1000) NULL,
+      extra_json JSON NULL,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
@@ -1063,6 +1066,41 @@ export const TABLE_DDL = {
       UNIQUE KEY uq_wra_stations_id (station_id),
       KEY idx_wra_stations_name (station_name),
       KEY idx_wra_stations_river (river_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 農業部動物保護資訊網「動物認領養」資料 (Open Data dataset 85903)
+  petAdoptions: `
+    CREATE TABLE IF NOT EXISTS pet_adoptions (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      animal_id BIGINT NOT NULL,
+      animal_subid VARCHAR(100) NULL,
+      animal_kind VARCHAR(50) NOT NULL,
+      animal_variety VARCHAR(100) NULL,
+      animal_sex VARCHAR(10) NOT NULL,
+      animal_bodytype VARCHAR(20) NULL,
+      animal_colour VARCHAR(50) NULL,
+      animal_age VARCHAR(20) NULL,
+      animal_sterilization VARCHAR(10) NULL,
+      animal_bacterin VARCHAR(10) NULL,
+      animal_foundplace VARCHAR(255) NULL,
+      animal_status VARCHAR(50) NULL,
+      animal_remark TEXT NULL,
+      animal_opendate VARCHAR(30) NULL,
+      album_file VARCHAR(1000) NULL,
+      shelter_name VARCHAR(255) NULL,
+      shelter_address VARCHAR(255) NULL,
+      shelter_tel VARCHAR(100) NULL,
+      city VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_pet_animal_id (animal_id),
+      KEY idx_pet_kind (animal_kind),
+      KEY idx_pet_city (city),
+      KEY idx_pet_sex (animal_sex),
+      KEY idx_pet_bodytype (animal_bodytype),
+      KEY idx_pet_updated (updated_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
 };

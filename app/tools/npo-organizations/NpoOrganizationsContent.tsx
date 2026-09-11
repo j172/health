@@ -57,6 +57,7 @@ export default function NpoOrganizationsContent() {
   const [city, setCity] = useState("全部縣市");
   const [attribute, setAttribute] = useState("全部屬性");
   const [onlyProducts, setOnlyProducts] = useState(false);
+  const [onlyBadges, setOnlyBadges] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
 
   const { page, pageSize, setPage, setPageSize } = usePagination();
@@ -72,6 +73,7 @@ export default function NpoOrganizationsContent() {
         if (city && city !== "全部縣市") params.set("city", city);
         if (attribute && attribute !== "全部屬性") params.set("attribute", attribute);
         if (onlyProducts) params.set("hasProducts", "true");
+        if (onlyBadges) params.set("hasBadges", "true");
 
         const res = await fetch(`/api/npo-organizations?${params.toString()}`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -94,7 +96,7 @@ export default function NpoOrganizationsContent() {
     return () => {
       cancelled = true;
     };
-  }, [searchedFor, city, attribute, onlyProducts, page, pageSize, retryNonce]);
+  }, [searchedFor, city, attribute, onlyProducts, onlyBadges, page, pageSize, retryNonce]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +120,7 @@ export default function NpoOrganizationsContent() {
     setCity("全部縣市");
     setAttribute("全部屬性");
     setOnlyProducts(false);
+    setOnlyBadges(false);
     setPage(1);
   };
 
@@ -125,7 +128,8 @@ export default function NpoOrganizationsContent() {
     searchedFor ||
       (city && city !== "全部縣市") ||
       (attribute && attribute !== "全部屬性") ||
-      onlyProducts,
+      onlyProducts ||
+      onlyBadges,
   );
 
   return (
@@ -212,6 +216,23 @@ export default function NpoOrganizationsContent() {
             >
               <span>🎁</span>
               <span>{onlyProducts ? "顯示全部組織" : "僅看公益商品"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setOnlyBadges(!onlyBadges);
+                setPage(1);
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition ${
+                onlyBadges
+                  ? "bg-emerald-600 text-white shadow-xs hover:bg-emerald-700"
+                  : "border border-emerald-300 bg-emerald-50/80 text-emerald-800 hover:bg-emerald-100 dark:border-emerald-800/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+              }`}
+              title="只顯示獲 Yahoo公益、NPO Channel 或 104 嚴選之合作夥伴組織"
+            >
+              <span>🛡️</span>
+              <span>{onlyBadges ? "顯示全部組織" : "僅看合作認證"}</span>
             </button>
 
             <button
@@ -368,6 +389,33 @@ export default function NpoOrganizationsContent() {
                 <h3 className="mt-2.5 text-base font-bold text-neutral-900 group-hover:text-teal-600 dark:text-neutral-100 dark:group-hover:text-teal-400 leading-snug">
                   {item.name}
                 </h3>
+
+                {/* Trust Badges */}
+                {item.trustBadges && item.trustBadges.length > 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {item.trustBadges.map((badge) => (
+                      <span
+                        key={badge.id}
+                        className="inline-flex items-center gap-1 rounded-md border border-emerald-200/80 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:border-emerald-800/60 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        title={badge.label}
+                      >
+                        <span>🛡️</span>
+                        {badge.url ? (
+                          <a
+                            href={badge.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline"
+                          >
+                            {badge.label}
+                          </a>
+                        ) : (
+                          <span>{badge.label}</span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
 
                 {/* Product Note */}
                 {item.productNote && (

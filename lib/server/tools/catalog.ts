@@ -2101,6 +2101,106 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "bookstores",
+    group: "public-facility",
+    schemaType: "WebPage",
+    title: "全國實體書店查詢",
+    description:
+      "查詢全國特色實體書店、獨立書局與閱讀空間。資料來源：文化部開放資料。",
+    directAnswer:
+      "全國實體書店查詢收錄文化部特色書店開放資料，提供全台獨立書店與實體書局的營業時間、地址、聯絡電話、交通方式與地圖定位導航。",
+    scientificBasis: [
+      {
+        title: "實體書店開放資料 (typeId=M)",
+        authority: "文化部文化資料開放服務網",
+        url: "https://cloud.culture.tw",
+      },
+    ],
+    relatedSlugs: ["cultural-events", "public-art", "cool-spots"],
+    faqs: [
+      {
+        question: "本頁收錄哪些實體書店？",
+        answer:
+          "本頁收錄文化部「文化資料開放服務網」登記之全國實體書店名冊，涵蓋特色獨立書店、文學書房與社區閱讀空間。",
+      },
+      {
+        question: "如何查詢身邊最近的書店？",
+        answer:
+          "頁面會自動依您的 GPS 定位，由近到遠列出附近的書店並標示直線距離；您亦可於上方搜尋列輸入書店名稱或縣市關鍵字快速尋找。",
+      },
+      {
+        question: "書店營業時間是否即時準確？",
+        answer:
+          "營業時間為文化部資料集建檔資訊，特殊節慶、店休日或臨時營業時間異動，建議前往前先致電門市確認。",
+      },
+    ],
+  },
+  {
+    slug: "tourism-factories",
+    group: "public-facility",
+    schemaType: "WebPage",
+    title: "全台認證觀光工廠查詢",
+    description:
+      "查詢經濟部產業發展署評鑑通過之全台觀光工廠與產業文化館。資料來源：經濟部產業發展署開放資料。",
+    directAnswer:
+      "收錄全台通過經濟部產業發展署認證之優良觀光工廠名錄，提供北部、中部、南部、東部地區分類、預約參觀電話、廠址與官方網站連結。",
+    scientificBasis: [
+      {
+        title: "觀光工廠名冊開放資料 (SDD6848)",
+        authority: "經濟部產業發展署 (IDA)",
+        url: "https://www.ida.gov.tw",
+      },
+    ],
+    relatedSlugs: ["green-shops", "cool-spots", "bookstores"],
+    faqs: [
+      {
+        question: "什麼是經濟部認證觀光工廠？",
+        answer:
+          "通過經濟部產業發展署「觀光工廠輔導評鑑」之傳統製造工廠，具備產業文化展示、製程參觀與 DIY 體驗教學等寓教於樂服務。",
+      },
+      {
+        question: "參觀觀光工廠需要提前預約嗎？",
+        answer:
+          "部分觀光工廠開放自由參觀，部分需配合導覽梯次或提前電話預約，建議出發前點擊卡片上的電話先致電確認。",
+      },
+    ],
+  },
+  {
+    slug: "pet-adoption",
+    group: "public-facility",
+    schemaType: "WebPage",
+    title: "全台毛孩認領養查詢",
+    description:
+      "即時查詢全台公立動物收容所等待認養之犬貓與各類毛小孩。資料來源：農業部動物保護資訊網開放資料。",
+    directAnswer:
+      "整合農業部動物保護資訊網全台公立動物收容所資料，提供品種、性別、體型、毛色、絕育與狂犬病疫苗狀態篩選，附帶毛孩照片與收容所一鍵撥號諮詢。",
+    scientificBasis: [
+      {
+        title: "公立動物收容所認領養開放資料 (85903)",
+        authority: "農業部動物保護資訊網",
+        url: "https://data.moa.gov.tw",
+      },
+    ],
+    relatedSlugs: ["child-welfare-nurseries", "cool-spots", "bookstores"],
+    faqs: [
+      {
+        question: "本頁收錄哪些動物認養資訊？",
+        answer:
+          "本頁同步農業部官方全國公立動物收容所之在所動物名錄，涵蓋狗、貓及其他等待有緣家庭認養之毛小孩。",
+      },
+      {
+        question: "認養公立收容所的動物需要費用嗎？",
+        answer:
+          "政府公立收容所認養多數免收認養規費，並提供免費晶片植入、寵物登記與基礎狂犬病疫苗或絕育補助，各縣市具體規範請向各收容所洽詢。",
+      },
+      {
+        question: "如何辦理認養手續？",
+        answer:
+          "認養人須年滿 18 歲，請攜帶身分證件親自前往收容所互動評估並辦理認養手續；出發前可先撥打卡片上的收容所電話確認動物當前在所狀況。",
+      },
+    ],
+  },
 ];
 
 /**

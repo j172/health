@@ -84,7 +84,10 @@
     "water-level-stations": "Real-Time Water Level Station Finder",
     "reservoir-status": "Real-Time Reservoir Operations Status",
     "disaster-map": "Disaster Shelter & Rescue Unit Map",
-    "heritage-map": "Heritage Assets Map (Monuments & Archaeological Sites)"
+    "heritage-map": "Heritage Assets Map (Monuments & Archaeological Sites)",
+    "bookstores": "National Physical & Independent Bookstore Finder",
+    "tourism-factories": "Certified Tourism Factory & Cultural Center Finder",
+    "pet-adoption": "National Public Animal Shelter Pet Adoption Finder"
   },
   "categories": {
     "gov": "Government Agencies",

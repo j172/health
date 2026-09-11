@@ -1,6 +1,12 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection } from "@/lib/server/db/mysql";
 
+export interface NpoTrustBadge {
+  id: string;
+  label: string;
+  url?: string;
+}
+
 export interface NpoOrganizationItem {
   id: number;
   name: string;
@@ -24,6 +30,8 @@ export interface NpoOrganizationItem {
   hasProducts?: boolean;
   storeUrl?: string | null;
   productNote?: string | null;
+  trustBadges?: NpoTrustBadge[];
+  certifications?: string[];
 }
 
 export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
@@ -42,6 +50,8 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
   let hasProducts: boolean = false;
   let storeUrl: string | null = null;
   let productNote: string | null = null;
+  let trustBadges: NpoTrustBadge[] = [];
+  let certifications: string[] = [];
 
   if (r.extra_json) {
     try {
@@ -61,6 +71,8 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
       if (extra.hasProducts === true || extra.hasProducts === "true") hasProducts = true;
       if (extra.storeUrl) storeUrl = extra.storeUrl;
       if (extra.productNote) productNote = extra.productNote;
+      if (Array.isArray(extra.trustBadges)) trustBadges = extra.trustBadges;
+      if (Array.isArray(extra.certifications)) certifications = extra.certifications;
     } catch {
       // fallback
     }
@@ -106,18 +118,22 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
     hasProducts,
     storeUrl,
     productNote,
+    trustBadges: trustBadges.length > 0 ? trustBadges : undefined,
+    certifications: certifications.length > 0 ? certifications : undefined,
   };
 };
 
 const HAS_PRODUCTS_SQL = `(extra_json LIKE '%"hasProducts":true%' OR extra_json LIKE '%"hasProducts":"true"%')`;
+const HAS_BADGES_SQL = `(extra_json LIKE '%"trustBadges"%' OR extra_json LIKE '%"certifications"%')`;
 const IS_NPO_CENTER_SQL = `(source_key = 'npo_tw' OR extra_json LIKE '%"npoCenterOrgid"%')`;
 
 const ORDER_BY_PRIORITY = `
   ORDER BY
     CASE
       WHEN ${HAS_PRODUCTS_SQL} THEN 1
-      WHEN ${IS_NPO_CENTER_SQL} THEN 2
-      ELSE 3
+      WHEN ${HAS_BADGES_SQL} THEN 2
+      WHEN ${IS_NPO_CENTER_SQL} THEN 3
+      ELSE 4
     END ASC,
     id DESC
 `;
@@ -139,11 +155,13 @@ export const getRecentNpoOrganizations = async (
   });
 
 /** Total npo & tax_organization rows for pagination. */
-export const countNpoOrganizations = async (hasProducts?: boolean): Promise<number> =>
+/** Total npo & tax_organization rows for pagination. */
+export const countNpoOrganizations = async (hasProducts?: boolean, hasBadges?: boolean): Promise<number> =>
   withConnection(async (conn) => {
-    const where = hasProducts
-      ? `WHERE facility_type IN ('npo', 'tax_organization') AND ${HAS_PRODUCTS_SQL}`
-      : `WHERE facility_type IN ('npo', 'tax_organization')`;
+    const conditions = ["facility_type IN ('npo', 'tax_organization')"];
+    if (hasProducts) conditions.push(HAS_PRODUCTS_SQL);
+    if (hasBadges) conditions.push(HAS_BADGES_SQL);
+    const where = `WHERE ${conditions.join(" AND ")}`;
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT COUNT(*) AS total FROM facilities ${where}`,
     );
@@ -155,6 +173,7 @@ export interface SearchNpoOrganizationsParams {
   city?: string;
   attribute?: string;
   hasProducts?: boolean;
+  hasBadges?: boolean;
   limit?: number;
   offset?: number;
 }
@@ -164,12 +183,17 @@ const buildSearchNpoOrganizationsWhere = ({
   city,
   attribute,
   hasProducts,
-}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts">) => {
+  hasBadges,
+}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts" | "hasBadges">) => {
   const conditions: string[] = ["facility_type IN ('npo', 'tax_organization')"];
   const params: unknown[] = [];
 
   if (hasProducts) {
     conditions.push(HAS_PRODUCTS_SQL);
+  }
+
+  if (hasBadges) {
+    conditions.push(HAS_BADGES_SQL);
   }
 
   if (keyword) {
@@ -197,6 +221,7 @@ export const searchNpoOrganizations = async ({
   city,
   attribute,
   hasProducts,
+  hasBadges,
   limit = 50,
   offset = 0,
 }: SearchNpoOrganizationsParams): Promise<NpoOrganizationItem[]> =>
@@ -206,6 +231,7 @@ export const searchNpoOrganizations = async ({
       city,
       attribute,
       hasProducts,
+      hasBadges,
     });
     const query = `
       SELECT id, name, address, phone, lat, lng, service_item, service_time, extra_json
@@ -225,13 +251,15 @@ export const countSearchNpoOrganizations = async ({
   city,
   attribute,
   hasProducts,
-}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts">): Promise<number> =>
+  hasBadges,
+}: Pick<SearchNpoOrganizationsParams, "keyword" | "city" | "attribute" | "hasProducts" | "hasBadges">): Promise<number> =>
   withConnection(async (conn) => {
     const { whereClause, params } = buildSearchNpoOrganizationsWhere({
       keyword,
       city,
       attribute,
       hasProducts,
+      hasBadges,
     });
     const [rows] = await conn.query<RowDataPacket[]>(
       `SELECT COUNT(*) AS total FROM facilities ${whereClause}`,

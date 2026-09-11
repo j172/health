@@ -39,6 +39,8 @@ const CATEGORY_TABS = [
   { key: "7", label: "講座工作坊", icon: "🎤" },
   { key: "8", label: "電影沉浸", icon: "🎬" },
   { key: "npo", label: "公益活動", icon: "🤝" },
+  { key: "charity_project", label: "公益專案/線上募款", icon: "❤️" },
+  { key: "ticketing", label: "售票展演", icon: "🎟️" },
 ];
 
 export default function CulturalEventsContent() {
@@ -277,10 +279,23 @@ export default function CulturalEventsContent() {
                     {item.title}
                   </h3>
 
+                  {/* English Title if available */}
+                  {item.titleEn && (
+                    <div className="mt-0.5 text-xs italic text-slate-500 dark:text-slate-400">
+                      {item.titleEn}
+                    </div>
+                  )}
+
                   {/* Description preview */}
                   {item.description && (
                     <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                       {item.description}
+                    </p>
+                  )}
+
+                  {item.descriptionEn && item.descriptionEn !== item.description && (
+                    <p className="mt-1 line-clamp-2 text-[11px] italic leading-relaxed text-slate-400 dark:text-slate-500">
+                      EN: {item.descriptionEn}
                     </p>
                   )}
 
@@ -339,9 +354,15 @@ export default function CulturalEventsContent() {
                       href={promoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-500"
+                      className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors ${
+                        item.category === "charity_project"
+                          ? "bg-rose-600 hover:bg-rose-500"
+                          : "bg-indigo-600 hover:bg-indigo-500"
+                      }`}
                     >
-                      🎟️ 購票／活動官網 ↗
+                      {item.category === "charity_project"
+                        ? "❤️ 前往支持募款 ↗"
+                        : "🎟️ 購票／活動官網 ↗"}
                     </a>
                   )}
                 </div>
