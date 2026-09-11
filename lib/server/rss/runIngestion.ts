@@ -19,14 +19,26 @@ import { fetchMirrorMediaHealthnews } from "@/lib/server/rss/fetchMirrorMediaExt
 import { fetchUdnHealthNews } from "@/lib/server/rss/fetchUdnHealthNews";
 import { fetchMoenvNews } from "@/lib/server/rss/fetchMoenvNews";
 import { fetchSetnHealthNews } from "@/lib/server/rss/fetchSetnHealthNews";
-import { fetchEttodayHealthNews } from "@/lib/server/rss/fetchEttodayHealthNews";
 import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
 import { fetchNhiNewsHtml } from "@/lib/server/rss/fetchNhiNews";
-import { fetchHelloYishiNews } from "@/lib/server/rss/fetchHelloYishiNews";
-import { fetchWeGetCareNews } from "@/lib/server/rss/fetchWeGetCareNews";
+import {
+  fetchYonglinNews,
+  fetchChildrenEvents,
+  fetchChildrenResearch,
+  fetchMoeFamilyEdu,
+  fetchSfaaNews,
+  fetchHelloYishiHealth,
+  fetchCommonHealthClub,
+  fetchTheNewsLensHealth,
+  fetchTheNewsLensLifestyle,
+  fetchTheNewsLensElderly,
+  fetchPchomeHealth,
+  fetchPchomePet,
+  fetchPchomeLiving,
+} from "@/lib/server/rss/fetchExpandedSources";
 import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
 import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
 import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
@@ -418,19 +430,6 @@ export const runRssIngestion = async (
       skippedUnchanged += setnResult.skippedUnchanged;
       staleRejected += setnResult.staleRejected;
 
-      const ettodayResult = await processSpecialSource(
-        {
-          code: "ettoday_health",
-          name: "ETtoday健康雲",
-          url: "https://health.ettoday.net/",
-          sourceName: "ettoday",
-        },
-        fetchEttodayHealthNews,
-        specialSourceCtx,
-      );
-      skippedUnchanged += ettodayResult.skippedUnchanged;
-      staleRejected += ettodayResult.staleRejected;
-
       const healthnewsResult = await processSpecialSource(
         {
           code: "healthnews_tw",
@@ -504,32 +503,6 @@ export const runRssIngestion = async (
       // -----------------------------------------------------------------------
       // Phase 12: Expanded Media and Health News Special Sources
       // -----------------------------------------------------------------------
-      const helloyishiResult = await processSpecialSource(
-        {
-          code: "helloyishi_news",
-          name: "Hello 醫師",
-          url: "https://helloyishi.com.tw/",
-          sourceName: "helloyishi",
-        },
-        fetchHelloYishiNews,
-        specialSourceCtx,
-      );
-      skippedUnchanged += helloyishiResult.skippedUnchanged;
-      staleRejected += helloyishiResult.staleRejected;
-
-      const wegetcareResult = await processSpecialSource(
-        {
-          code: "wegetcare_blog",
-          name: "醫聯網",
-          url: "https://www.wegetcare.tw/blogpost",
-          sourceName: "wegetcare",
-        },
-        fetchWeGetCareNews,
-        specialSourceCtx,
-      );
-      skippedUnchanged += wegetcareResult.skippedUnchanged;
-      staleRejected += wegetcareResult.staleRejected;
-
       const uniqmanResult = await processSpecialSource(
         {
           code: "uniqman_blog",
@@ -869,6 +842,135 @@ export const runRssIngestion = async (
       ];
 
       for (const { meta, fetchFn } of npoSources) {
+        const res = await processSpecialSource(meta, fetchFn, specialSourceCtx);
+        skippedUnchanged += res.skippedUnchanged;
+        staleRejected += res.staleRejected;
+      }
+
+      // -----------------------------------------------------------------------
+      // Phase 3: 19 Sources Expansion (Issue #207)
+      // -----------------------------------------------------------------------
+      const expandedPhase3Sources = [
+        {
+          meta: {
+            code: "yonglin_news" as FeedCode,
+            name: "永齡基金會",
+            url: "https://www.yonglin.org.tw/news/list",
+            sourceName: "yonglin",
+          },
+          fetchFn: fetchYonglinNews,
+        },
+        {
+          meta: {
+            code: "children_events" as FeedCode,
+            name: "兒福聯盟－活動消息",
+            url: "https://www.children.org.tw/news/index?cat=%E6%B4%BB%E5%8B%95%E6%B6%88%E6%81%AF",
+            sourceName: "children",
+          },
+          fetchFn: fetchChildrenEvents,
+        },
+        {
+          meta: {
+            code: "children_research" as FeedCode,
+            name: "兒福聯盟－調查研究",
+            url: "https://www.children.org.tw/publication_research/treasure_chest#cat_area",
+            sourceName: "children",
+          },
+          fetchFn: fetchChildrenResearch,
+        },
+        {
+          meta: {
+            code: "moe_familyedu" as FeedCode,
+            name: "教育部家庭教育網",
+            url: "https://familyedu.moe.gov.tw/docList.aspx?uid=28&pid=27",
+            sourceName: "moe_familyedu",
+          },
+          fetchFn: fetchMoeFamilyEdu,
+        },
+        {
+          meta: {
+            code: "sfaa_news" as FeedCode,
+            name: "衛福部社家署",
+            url: "https://www.sfaa.gov.tw/sfaa/list/5cX",
+            sourceName: "sfaa",
+          },
+          fetchFn: fetchSfaaNews,
+        },
+        {
+          meta: {
+            code: "helloyishi_health" as FeedCode,
+            name: "Hello 醫師",
+            url: "https://helloyishi.com.tw/health/",
+            sourceName: "helloyishi",
+          },
+          fetchFn: fetchHelloYishiHealth,
+        },
+        {
+          meta: {
+            code: "commonhealth_club_new" as FeedCode,
+            name: "康健大人社團",
+            url: "https://club.commonhealth.com.tw/new",
+            sourceName: "commonhealth_club",
+          },
+          fetchFn: fetchCommonHealthClub,
+        },
+        {
+          meta: {
+            code: "thenewslens_health" as FeedCode,
+            name: "關鍵評論網－健康",
+            url: "https://www.thenewslens.com/category/health",
+            sourceName: "thenewslens",
+          },
+          fetchFn: fetchTheNewsLensHealth,
+        },
+        {
+          meta: {
+            code: "thenewslens_lifestyle" as FeedCode,
+            name: "關鍵評論網－生活",
+            url: "https://www.thenewslens.com/category/lifestyle",
+            sourceName: "thenewslens",
+          },
+          fetchFn: fetchTheNewsLensLifestyle,
+        },
+        {
+          meta: {
+            code: "thenewslens_elderly" as FeedCode,
+            name: "關鍵評論網－銀髮",
+            url: "https://www.thenewslens.com/category/elderly",
+            sourceName: "thenewslens",
+          },
+          fetchFn: fetchTheNewsLensElderly,
+        },
+        {
+          meta: {
+            code: "pchome_health" as FeedCode,
+            name: "PChome－健康新聞",
+            url: "https://news.pchome.com.tw/cat/healthcare",
+            sourceName: "pchome",
+          },
+          fetchFn: fetchPchomeHealth,
+        },
+        {
+          meta: {
+            code: "pchome_pet" as FeedCode,
+            name: "PChome－熱門寵物",
+            url: "https://news.pchome.com.tw/cat/pet/hot",
+            sourceName: "pchome",
+          },
+          fetchFn: fetchPchomePet,
+        },
+        {
+          meta: {
+            code: "pchome_living" as FeedCode,
+            name: "PChome－生活休閒",
+            url: "https://news.pchome.com.tw/cat/living",
+            sourceName: "pchome",
+          },
+          fetchFn: fetchPchomeLiving,
+        },
+      ];
+
+      for (const { meta, fetchFn } of expandedPhase3Sources) {
         const res = await processSpecialSource(meta, fetchFn, specialSourceCtx);
         skippedUnchanged += res.skippedUnchanged;
         staleRejected += res.staleRejected;

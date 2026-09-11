@@ -95,7 +95,24 @@ export type FeedCode =
   | "caresb_news"
   | "nncf_news"
   | "chilingjj_news"
-  | "anews_news";
+  | "anews_news"
+  | "yonglin_news"
+  | "children_events"
+  | "children_research"
+  | "moe_familyedu"
+  | "helloyishi_health"
+  | "grinews_life"
+  | "grinews_health"
+  | "commonhealth_club_new"
+  | "thenewslens_health"
+  | "thenewslens_lifestyle"
+  | "thenewslens_elderly"
+  | "sfaa_news"
+  | "pchome_health"
+  | "pchome_pet"
+  | "pchome_living"
+  | "ettoday_pet"
+  | "ncl_fmevents";
 
 export interface FeedConfig {
   code: FeedCode;
