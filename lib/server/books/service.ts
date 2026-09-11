@@ -12,13 +12,22 @@ const SEED_PATH = path.join(process.cwd(), "data", "latest-books-seed.json");
 /**
  * Load offline seed books as reliable fallback.
  */
-export function loadOfflineBooksSeed(): BookItem[] {
+export function loadOfflineBooksSeed(inMemoryFallback?: BookItem[]): BookItem[] {
+  if (Array.isArray(inMemoryFallback) && inMemoryFallback.length > 0) {
+    return inMemoryFallback;
+  }
   try {
-    if (fs.existsSync(SEED_PATH)) {
-      const raw = fs.readFileSync(SEED_PATH, "utf-8");
-      const data = JSON.parse(raw);
-      if (Array.isArray(data.books)) {
-        return data.books;
+    const candidates = [
+      SEED_PATH,
+      path.resolve(process.cwd(), "data/latest-books-seed.json"),
+    ];
+    for (const p of candidates) {
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, "utf-8");
+        const data = JSON.parse(raw);
+        if (Array.isArray(data.books)) {
+          return data.books;
+        }
       }
     }
   } catch (err) {
@@ -83,7 +92,10 @@ export function filterAndSortBooks(books: BookItem[], params: BookQueryParams): 
 /**
  * Query latest books: DB first, with offline seed fallback.
  */
-export async function getLatestBooks(params: BookQueryParams): Promise<BookListResponse> {
+export async function getLatestBooks(
+  params: BookQueryParams,
+  fallbackBooks?: BookItem[],
+): Promise<BookListResponse> {
   const page = Math.max(1, params.page || 1);
   const limit = Math.max(1, Math.min(100, params.limit || 24));
   const offset = (page - 1) * limit;
@@ -118,11 +130,63 @@ export async function getLatestBooks(params: BookQueryParams): Promise<BookListR
         `SELECT COUNT(*) as total FROM latest_books ${whereClause}`,
         values,
       );
-      const total = Number(countRows[0]?.total || 0);
+      let total = Number(countRows[0]?.total || 0);
 
       if (total === 0) {
-        // If DB has no records for this query, fall back to prebuilt seed
-        const seedBooks = loadOfflineBooksSeed();
+        // If query returned 0, check if table is completely empty and needs auto-seeding
+        const [tableTotalRows] = await conn.query<RowDataPacket[]>(
+          "SELECT COUNT(*) as cnt FROM latest_books",
+        );
+        const tableCnt = Number(tableTotalRows[0]?.cnt || 0);
+        if (tableCnt === 0) {
+          const seedBooks = loadOfflineBooksSeed(fallbackBooks);
+          if (seedBooks.length > 0) {
+            const now = utcNowSql();
+            const seedValues = seedBooks.map((b) => [
+              b.platform,
+              b.categoryId,
+              b.categoryName,
+              b.ranking ?? null,
+              b.title,
+              b.subtitle ?? null,
+              b.author ?? null,
+              b.translator ?? null,
+              b.publisher ?? null,
+              b.publishDate ?? null,
+              b.coverUrl ?? null,
+              b.productUrl,
+              b.isbn ?? null,
+              b.listPrice ?? null,
+              b.salePrice ?? null,
+              b.discount ?? null,
+              b.description ?? null,
+              b.payloadHash || "",
+              now,
+              now,
+              now,
+            ]);
+            await conn.query(
+              `INSERT IGNORE INTO latest_books (
+                platform, category_id, category_name, ranking, title, subtitle,
+                author, translator, publisher, publish_date, cover_url, product_url,
+                isbn, list_price, sale_price, discount, description, payload_hash,
+                synced_at, created_at, updated_at
+              ) VALUES ?`,
+              [seedValues],
+            );
+            // Re-run count query after auto-seeding
+            const [reCountRows] = await conn.query<RowDataPacket[]>(
+              `SELECT COUNT(*) as total FROM latest_books ${whereClause}`,
+              values,
+            );
+            total = Number(reCountRows[0]?.total || 0);
+          }
+        }
+      }
+
+      if (total === 0) {
+        // If DB still has no matching records, fall back to in-memory filter
+        const seedBooks = loadOfflineBooksSeed(fallbackBooks);
         return filterAndSortBooks(seedBooks, params);
       }
 
@@ -186,7 +250,7 @@ export async function getLatestBooks(params: BookQueryParams): Promise<BookListR
     });
   } catch (error: any) {
     console.warn(`[getLatestBooks] DB query failed, falling back to offline seed: ${error.message}`);
-    const seedBooks = loadOfflineBooksSeed();
+    const seedBooks = loadOfflineBooksSeed(fallbackBooks);
     return filterAndSortBooks(seedBooks, params);
   }
 }

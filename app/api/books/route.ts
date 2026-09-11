@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLatestBooks } from "@/lib/server/books/service";
-import type { BookPlatform } from "@/lib/server/books/types";
+import type { BookPlatform, BookItem } from "@/lib/server/books/types";
+import latestBooksSeed from "@/data/latest-books-seed.json";
 
 export const runtime = "nodejs";
 
@@ -19,14 +20,19 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "24", 10);
 
-    const result = await getLatestBooks({
-      platform,
-      categoryId,
-      search,
-      sortBy,
-      page: isNaN(page) ? 1 : page,
-      limit: isNaN(limit) ? 24 : limit,
-    });
+    const fallbackBooks = ((latestBooksSeed as any)?.books || []) as BookItem[];
+
+    const result = await getLatestBooks(
+      {
+        platform,
+        categoryId,
+        search,
+        sortBy,
+        page: isNaN(page) ? 1 : page,
+        limit: isNaN(limit) ? 24 : limit,
+      },
+      fallbackBooks,
+    );
 
     return NextResponse.json(result, {
       headers: {

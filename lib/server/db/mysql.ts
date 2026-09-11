@@ -378,6 +378,58 @@ export const ensureSchema = async (): Promise<void> => {
     console.warn("[ensureSchema] public_arts seed warning:", seedErr);
   }
 
+  // Auto-seed latest_books table from bundled data/latest-books-seed.json if empty
+  try {
+    const [lbCountRows] = await p.query<RowDataPacket[]>(
+      "SELECT COUNT(*) AS cnt FROM latest_books"
+    );
+    if ((lbCountRows[0]?.cnt ?? 0) === 0) {
+      const filePath = path.join(process.cwd(), "data", "latest-books-seed.json");
+      if (fs.existsSync(filePath)) {
+        const rawJson = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+        const books = rawJson?.books;
+        if (Array.isArray(books) && books.length > 0) {
+          const now = toSqlDateTime(new Date());
+          const values = books.map((b: any) => [
+            b.platform,
+            b.categoryId,
+            b.categoryName,
+            b.ranking ?? null,
+            b.title,
+            b.subtitle ?? null,
+            b.author ?? null,
+            b.translator ?? null,
+            b.publisher ?? null,
+            b.publishDate ?? null,
+            b.coverUrl ?? null,
+            b.productUrl,
+            b.isbn ?? null,
+            b.listPrice ?? null,
+            b.salePrice ?? null,
+            b.discount ?? null,
+            b.description ?? null,
+            b.payloadHash || "",
+            now,
+            now,
+            now,
+          ]);
+          await p.query(
+            `INSERT IGNORE INTO latest_books (
+               platform, category_id, category_name, ranking, title, subtitle,
+               author, translator, publisher, publish_date, cover_url, product_url,
+               isbn, list_price, sale_price, discount, description, payload_hash,
+               synced_at, created_at, updated_at
+             ) VALUES ?`,
+            [values]
+          );
+          console.log(`[ensureSchema] Successfully seeded ${books.length} latest books into MySQL`);
+        }
+      }
+    }
+  } catch (seedErr) {
+    console.warn("[ensureSchema] latest_books seed warning:", seedErr);
+  }
+
   schemaReady = true;
 };
 
