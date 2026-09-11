@@ -13,9 +13,9 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 59 tools registered", () => {
+test("TOOL_CATALOG has exactly 60 tools registered", () => {
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 59, `Expected 59 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 60, `Expected 60 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
@@ -117,6 +117,18 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   const hasVenueType = artData.some((a) => a.fieldType === "演藝活動場所" || String(a.artNo).startsWith("VENUE_"));
   const hasArtType = artData.some((a) => a.fieldType !== "演藝活動場所" && !String(a.artNo).startsWith("VENUE_"));
   assert.ok(hasVenueType && hasArtType, "Must contain both public art installations and performance venues");
+
+  // 10. Latest books seed (博客來 4 榜 + 誠品 27 類)
+  const lbPath = path.join(ROOT_DIR, "data", "latest-books-seed.json");
+  assert.ok(fs.existsSync(lbPath), "latest-books-seed.json must exist");
+  const lbData = JSON.parse(fs.readFileSync(lbPath, "utf-8"));
+  assert.ok(
+    lbData.ok && Array.isArray(lbData.books) && lbData.books.length >= 31,
+    `Expected at least 31 latest books across categories, got ${lbData.books?.length}`,
+  );
+  const lbPlatforms = new Set(lbData.books.map((b) => b.platform));
+  assert.ok(lbPlatforms.has("books_com_tw"), "Must contain books_com_tw books");
+  assert.ok(lbPlatforms.has("eslite"), "Must contain eslite books");
 });
 
 test("facilityConfigs has matching configurations for all facility tool pages", () => {
@@ -132,7 +144,7 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
   assert.ok(content.includes("避孕諮詢"), "facilityConfigs must contain 避孕諮詢 filter option");
 });
 
-test("All 59 tool page files exist on disk", () => {
+test("All 60 tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");
