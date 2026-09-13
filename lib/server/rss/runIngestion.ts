@@ -71,6 +71,7 @@ import {
   fetchChilingJjNews,
   fetchAnewsNews,
   fetchApatwNews,
+  fetchSeinsightsNews,
 } from "@/lib/server/rss/fetchNpoSources";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
@@ -848,6 +849,16 @@ export const runRssIngestion = async (
             sourceName: "apatw",
           },
           fetchFn: fetchApatwNews,
+        },
+        {
+          meta: {
+            code: "seinsights_news" as FeedCode,
+            name: "社企流",
+            url: "https://www.seinsights.asia/section",
+            sourceName: "seinsights",
+            skipDetailFetch: true,
+          },
+          fetchFn: fetchSeinsightsNews,
         },
       ];
 

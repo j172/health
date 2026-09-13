@@ -92,6 +92,7 @@ const SOURCE_LABELS: Record<string, string> = {
   pchome: "PChome 新聞",
   ncl: "國家圖書館",
   apatw: "社團法人中華民國保護動物協會",
+  seinsights: "社企流",
 };
 
 export interface SourceLabelInput {
