@@ -199,6 +199,13 @@ export const ensureSchema = async (): Promise<void> => {
     ALTER TABLE facilities
       ADD INDEX IF NOT EXISTS idx_facility_source_id (source_id)
   `);
+  // Issue #239: Clean up any weeklyHoursNote corrupted by latin1 charset into question-mark mojibake (e.g. "????2?14-2?22???")
+  await p.query(`
+    UPDATE facilities
+      SET extra_json = JSON_REMOVE(extra_json, '$.weeklyHoursNote')
+      WHERE extra_json IS NOT NULL
+        AND JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.weeklyHoursNote')) LIKE '%??%'
+  `);
   await p.query(`
     ALTER TABLE aqi_readings
       ADD COLUMN IF NOT EXISTS lat DECIMAL(10,7) NULL AFTER county,

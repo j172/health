@@ -1,5 +1,19 @@
 const DAYS = ["一", "二", "三", "四", "五", "六", "日"];
 
+/**
+ * Validates whether a clinic weekly-hours note is displayable.
+ * Rejects empty strings, plain hyphens, and strings corrupted by charset mismatches
+ * (e.g. latin1 conversion turning Chinese characters into "????2?14-2?22???").
+ */
+export function isDisplayableNote(note?: string | null): boolean {
+  if (!note) return false;
+  const trimmed = note.trim();
+  if (trimmed === "" || trimmed === "-") return false;
+  // If there are 2 or more consecutive question marks, it's garbled mojibake
+  if (/[\?？]{2,}/.test(trimmed)) return false;
+  return true;
+}
+
 export default function WeeklyHoursLine({
   weeklyHours,
   note,
@@ -7,7 +21,8 @@ export default function WeeklyHoursLine({
   weeklyHours?: Record<string, string[]> | null;
   note?: string | null;
 }) {
-  if ((!weeklyHours || Object.keys(weeklyHours).length === 0) && !note) return null;
+  const hasValidNote = isDisplayableNote(note);
+  if ((!weeklyHours || Object.keys(weeklyHours).length === 0) && !hasValidNote) return null;
 
   return (
     <div className="mt-2 space-y-1">
@@ -33,9 +48,9 @@ export default function WeeklyHoursLine({
           })}
         </div>
       )}
-      {note && note !== "-" && (
+      {hasValidNote && (
         <p className="text-xs text-amber-600 dark:text-amber-400">
-          📝 備註：{note}
+          📝 備註：{note!.trim()}
         </p>
       )}
     </div>
