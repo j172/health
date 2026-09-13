@@ -13,9 +13,9 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 63 tools registered", () => {
+test("TOOL_CATALOG has exactly 64 tools registered", () => {
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 63, `Expected 63 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 64, `Expected 64 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
@@ -168,7 +168,7 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
   assert.ok(content.includes('facilityType: "vet_clinic"'), "vet-clinics must have facilityType vet_clinic");
 });
 
-test("All 63 tool page files exist on disk", () => {
+test("All 64 tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");
