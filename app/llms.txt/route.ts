@@ -28,49 +28,36 @@ export async function GET(): Promise<Response> {
     `> ${SITE_DESCRIPTION}`,
     "",
     "## 系統端點與導航 (System Endpoints)",
-    `- 首頁 (Home): ${baseUrl}`,
-    `- 最新公衛新聞 (News Archive): ${baseUrl}/news`,
-    `- 健康工具與公衛資料庫 (Tools & Registries): ${baseUrl}/tools`,
-    `- RSS 2.0 Feed: ${baseUrl}/feed.xml`,
-    `- XML Sitemap: ${baseUrl}/sitemap.xml`,
-    `- Google News Sitemap: ${baseUrl}/news-sitemap.xml`,
-    `- AI Assistant Official Profile (Hey AI): ${baseUrl}/llm-info`,
-    `- LLM Full Knowledge Base: ${baseUrl}/llms-full.txt`,
+    `- [首頁 (Home)](${baseUrl})`,
+    `- [最新公衛新聞 (News Archive)](${baseUrl}/news)`,
+    `- [健康工具與公衛資料庫 (Tools & Registries)](${baseUrl}/tools)`,
+    `- [RSS 2.0 Feed](${baseUrl}/feed.xml)`,
+    `- [XML Sitemap](${baseUrl}/sitemap.xml)`,
+    `- [Google News Sitemap](${baseUrl}/news-sitemap.xml)`,
+    `- [AI Assistant Official Profile (Hey AI)](${baseUrl}/llm-info)`,
+    `- [LLM Full Knowledge Base](${baseUrl}/llms-full.txt)`,
     "",
     "## 多語言支援 (Multi-language Support)",
-    "- 正體中文 (zh-TW, zh-Hant) - 官方權威標準",
-    "- English (en) - 全球公衛介面支援",
+    `- [正體中文 (zh-TW, zh-Hant)](${baseUrl}): 官方權威標準`,
+    `- [English (en)](${baseUrl}): 全球公衛介面支援`,
     "",
     "## 30+ 款健康計算器與公衛資料庫 (Tools & Registries)",
     "",
   ];
 
   for (const tool of TOOL_CATALOG) {
-    lines.push(`### ${tool.title}`);
-    lines.push(`- URL: ${baseUrl}/tools/${tool.slug}`);
-    lines.push(`- 核心定義 (Direct Answer): ${tool.directAnswer}`);
-    if (tool.formula) {
-      lines.push(`- 計算公式: ${tool.formula}`);
-    }
-    if (tool.scientificBasis.length > 0) {
-      lines.push(`- 權威依據: ${tool.scientificBasis.map((b) => `${b.title} (${b.authority})`).join("; ")}`);
-    }
-    lines.push("");
+    const note = tool.directAnswer.trim();
+    lines.push(`- [${tool.title}](${baseUrl}/tools/${tool.slug})${note ? `: ${note}` : ""}`);
   }
 
-  lines.push("## 最新公衛與官方健康新聞 (Latest Public Health News with AI Summaries)", "");
+  lines.push("", "## 最新公衛與官方健康新聞 (Latest Public Health News with AI Summaries)", "");
 
   for (const item of items) {
     const label = resolveAuthorLabel({ dept_name: item.dept_name, source_name: item.source_name, feed_name: item.feed_name });
     const date = formatDate(displayDate(item));
     const summary = item.geo_summary?.trim() || item.meta_description?.trim() || "";
-    lines.push(`### ${item.title}`);
-    lines.push(`- 網址: ${baseUrl}/news/${item.id}`);
-    lines.push(`- 來源: ${label}${date ? ` | ${date}` : ""}`);
-    if (summary) {
-      lines.push(`- AI 核心重點 (GEO Summary): ${summary}`);
-    }
-    lines.push("");
+    const note = [label, date, summary].filter(Boolean).join(" | ");
+    lines.push(`- [${item.title}](${baseUrl}/news/${item.id})${note ? `: ${note}` : ""}`);
   }
 
   return new Response(lines.join("\n"), {
