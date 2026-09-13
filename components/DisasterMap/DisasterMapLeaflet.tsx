@@ -47,13 +47,31 @@ const LAYER_LABELS: Record<DisasterLayer, string> = {
   eoc_center: "應變中心",
 };
 
+import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
+import { GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+
 const boolLabel = (v: boolean | null): string | null => {
   if (v === null) return null;
   return v ? "是" : "否";
 };
 
+import type { InundationPoint } from "@/lib/server/wra/inundation";
+
+const makeInundationIcon = (status: "normal" | "warning" | "critical") => {
+  const color = status === "critical" ? "#dc2626" : status === "warning" ? "#d97706" : "#0284c7";
+  return new L.DivIcon({
+    className: "",
+    html: `<div style="width:20px;height:20px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 0 2px ${color};display:flex;align-items:center;justify-content:center;font-size:11px;">🌊</div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10],
+  });
+};
+
 export interface DisasterMapProps {
   points: DisasterPoint[];
+  inundationPoints?: InundationPoint[];
+  userLocation?: { lat: number; lng: number; isDefault: boolean };
   center?: [number, number];
   zoom?: number;
 }
@@ -61,12 +79,47 @@ export interface DisasterMapProps {
 /** 防災地圖（Leaflet + OpenStreetMap，免API金鑰）。SSR不安全，需以 dynamic({ ssr: false }) 載入。 */
 export default function DisasterMapLeaflet({
   points,
-  center = [23.6978, 120.9605], // 台灣地理中心附近
-  zoom = 8,
+  inundationPoints = [],
+  userLocation,
+  center = [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng],
+  zoom = 13,
 }: DisasterMapProps) {
+  const mapCenter: [number, number] = center || [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng];
+
   return (
-    <MapContainer center={center} zoom={zoom} className="h-full w-full" scrollWheelZoom>
+    <MapContainer center={mapCenter} zoom={zoom} className="h-full w-full" scrollWheelZoom>
+      <MapViewController center={mapCenter} zoom={zoom} />
       <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+      {userLocation && (
+        <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
+          <Popup>{userLocation.isDefault ? "預設位置：台北101" : "您目前的位置"}</Popup>
+        </Marker>
+      )}
+
+      {inundationPoints.map((ip) => (
+        <Marker key={ip.id} position={[ip.lat, ip.lng]} icon={makeInundationIcon(ip.status)}>
+          <Popup>
+            <div className="text-sm leading-relaxed">
+              <p className="text-xs font-bold text-sky-600">🌊 即時路面積淹水／水情警戒</p>
+              <p className="font-semibold text-neutral-900">{ip.name}</p>
+              <div className="mt-1 text-xs">
+                <span className={`inline-block px-2 py-0.5 rounded font-bold ${
+                  ip.status === "critical"
+                    ? "bg-red-100 text-red-700"
+                    : ip.status === "warning"
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-sky-100 text-sky-700"
+                }`}>
+                  {ip.statusText}
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-neutral-600">{ip.county} {ip.district} {ip.address}</p>
+              <p className="mt-1 text-[10px] text-neutral-400">資料來源：{ip.source}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
 
       {points.map((p) => (
         <Marker key={`${p.layer}-${p.id}`} position={[p.lat, p.lng]} icon={ICONS[p.layer]}>

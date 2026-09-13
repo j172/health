@@ -2,6 +2,7 @@ import "server-only";
 import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getPool } from "@/lib/server/db/mysql";
 import type { YouBikeStation } from "./types";
+import { fetchAllTdxStations } from "./tdxClient";
 
 function formatTime(str?: string | null): string {
   if (!str) return new Date().toISOString().slice(0, 19).replace("T", " ");
@@ -21,24 +22,43 @@ export interface YouBikeSyncSummary {
   totalUpserted: number;
   cities: Record<string, number>;
   errors: string[];
+  source?: "tdx" | "direct_fallback";
 }
 
 export async function runYouBikeSync(): Promise<YouBikeSyncSummary> {
   const summary: YouBikeSyncSummary = {
     ok: true,
     totalUpserted: 0,
-    cities: { TPE: 0, NTPC: 0, HSC: 0 },
+    cities: {},
     errors: [],
   };
 
-  const allStations: YouBikeStation[] = [];
+  let allStations: YouBikeStation[] = [];
 
-  // 1. Taipei City
+  // 1. 優先嘗試交通部 TDX 全台 API (涵蓋 10 縣市)
   try {
-    const res = await httpGetJson<unknown[]>(
-      "https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediate.json",
-      { timeoutMs: 15000 }
-    );
+    const tdxResult = await fetchAllTdxStations();
+    if (tdxResult.stations.length > 0) {
+      allStations = tdxResult.stations;
+      summary.cities = tdxResult.citiesCount;
+      summary.source = "tdx";
+    }
+  } catch (tdxErr) {
+    const msg = tdxErr instanceof Error ? tdxErr.message : String(tdxErr);
+    summary.errors.push(`TDX sync failed, falling back to direct open data: ${msg}`);
+  }
+
+  // 2. 若 TDX 未取得資料（未設憑證或異常），自動無縫退回各縣市官方直連開放資料（雙北、新竹）
+  if (allStations.length === 0) {
+    summary.source = "direct_fallback";
+    summary.cities = { TPE: 0, NTPC: 0, HSC: 0 };
+
+    // 2.1. Taipei City
+    try {
+      const res = await httpGetJson<unknown[]>(
+        "https://tcgbusfs.blob.core.windows.net/dotapp/youbike/v2/youbike_immediate.json",
+        { timeoutMs: 15000 }
+      );
     if (res.status === 200 && Array.isArray(res.data)) {
       let tpeCount = 0;
       for (const s of res.data as Record<string, unknown>[]) {
@@ -147,6 +167,7 @@ export async function runYouBikeSync(): Promise<YouBikeSyncSummary> {
     const msg = err instanceof Error ? err.message : String(err);
     summary.errors.push(`Hsinchu fetch failed: ${msg}`);
   }
+}
 
   // Upsert into MySQL in batches
   if (allStations.length > 0) {

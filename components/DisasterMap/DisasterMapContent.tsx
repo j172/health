@@ -6,6 +6,9 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { DisasterLayer } from "@/lib/server/disaster/ingestDisasterPoints";
 import type { DisasterPoint } from "@/lib/server/disaster/queries";
 
+import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import type { InundationPoint } from "@/lib/server/wra/inundation";
+
 const DisasterMapLeaflet = dynamic(() => import("@/components/DisasterMap/DisasterMapLeaflet"), { ssr: false });
 
 interface LayerConfig {
@@ -46,7 +49,10 @@ const formatUpdatedAt = (iso: string | null): string => {
 };
 
 export default function DisasterMapContent() {
+  const location = useGeolocation();
   const [points, setPoints] = useState<DisasterPoint[]>([]);
+  const [inundationPoints, setInundationPoints] = useState<InundationPoint[]>([]);
+  const [showInundation, setShowInundation] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,14 +64,22 @@ export default function DisasterMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/disaster-map");
-        const json: ApiResponse = await res.json();
+        const [disasterRes, inundationRes] = await Promise.allSettled([
+          fetch("/api/disaster-map").then((r) => r.json()),
+          fetch("/api/disaster/inundation").then((r) => r.json()),
+        ]);
+
         if (cancelled) return;
-        if (!json.ok) {
-          setError(json.error || "資料載入失敗");
-        } else {
-          setPoints(json.points ?? []);
-          setUpdatedAt(json.updatedAt ?? null);
+
+        if (disasterRes.status === "fulfilled" && disasterRes.value.ok) {
+          setPoints(disasterRes.value.points ?? []);
+          setUpdatedAt(disasterRes.value.updatedAt ?? null);
+        } else if (disasterRes.status === "fulfilled" && !disasterRes.value.ok) {
+          setError(disasterRes.value.error || "防災點位資料載入失敗");
+        }
+
+        if (inundationRes.status === "fulfilled" && inundationRes.value.ok) {
+          setInundationPoints(inundationRes.value.points ?? []);
         }
       } catch (err: any) {
         if (!cancelled) setError(err?.message || "資料載入失敗");
@@ -136,6 +150,22 @@ export default function DisasterMapContent() {
             </span>
           </label>
         ))}
+
+        <label
+          className="flex cursor-pointer items-center gap-2 rounded-lg border border-sky-200 bg-sky-50/50 px-3 py-2 text-sm font-medium text-sky-800 transition-colors hover:bg-sky-100/60 dark:border-sky-800/60 dark:bg-sky-950/30 dark:text-sky-200 dark:hover:bg-sky-900/40"
+        >
+          <input
+            type="checkbox"
+            checked={showInundation}
+            onChange={() => setShowInundation(!showInundation)}
+            className="h-4 w-4 rounded border-sky-300 text-sky-600 focus:ring-sky-500"
+          />
+          <span aria-hidden="true">🌊</span>
+          <span>即時路面積淹水警戒</span>
+          <span className="rounded-full bg-sky-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            {inundationPoints.length}
+          </span>
+        </label>
       </div>
 
       {error && (
@@ -151,7 +181,11 @@ export default function DisasterMapContent() {
             <LoadingOrb />
           </div>
         ) : (
-          <DisasterMapLeaflet points={visiblePoints} />
+          <DisasterMapLeaflet
+            points={visiblePoints}
+            inundationPoints={showInundation ? inundationPoints : []}
+            userLocation={location}
+          />
         )}
       </div>
     </div>

@@ -6,6 +6,8 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { HeritageCategory } from "@/lib/server/culture/ingestHeritageAssets";
 import type { HeritageAssetPoint } from "@/lib/server/culture/queries";
 
+import { useGeolocation } from "@/components/Facilities/useGeolocation";
+
 const HeritageMapLeaflet = dynamic(() => import("@/components/HeritageMap/HeritageMapLeaflet"), { ssr: false });
 
 interface LayerConfig {
@@ -48,6 +50,7 @@ const formatUpdatedAt = (iso: string | null): string => {
 };
 
 export default function HeritageMapContent() {
+  const location = useGeolocation();
   const [points, setPoints] = useState<HeritageAssetPoint[]>([]);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -165,7 +168,7 @@ export default function HeritageMapContent() {
             <LoadingOrb />
           </div>
         ) : (
-          <HeritageMapLeaflet points={visiblePoints} />
+          <HeritageMapLeaflet points={visiblePoints} userLocation={location} />
         )}
       </div>
     </div>
