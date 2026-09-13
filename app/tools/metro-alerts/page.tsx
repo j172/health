@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import MetroAlertsContent from "@/components/Tools/MetroAlertsContent";
 import { getMetroAlerts } from "@/lib/server/metroAlerts/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/metro-alerts`;

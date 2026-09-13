@@ -6,20 +6,12 @@ export default function GoogleTag() {
   return (
     <>
       {/*
-        False positive: this rule's isInAppDir check only tests whether the
-        linted file's own path contains an "/app/" segment (see
-        no-before-interactive-script-outside-document.js in
-        @next/eslint-plugin-next). This component is rendered exclusively
-        from App Router layouts (app/(site)/layout.tsx, app/news/layout.tsx,
-        app/privacy/layout.tsx, app/tools/layout.tsx) but lives under
-        components/, so the path check never exempts it even though
-        beforeInteractive is valid and required here: it sets Google Consent
-        Mode defaults before gtag.js loads below.
+        Inline synchronous script for Google Consent Mode v2 defaults.
+        Executes immediately in 0ms without the overhead of next/script beforeInteractive,
+        satisfying Google Consent Mode v2 timing before any analytics events.
       */}
-      {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
-      <Script
+      <script
         id="google-consent-init"
-        strategy="beforeInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];
@@ -46,10 +38,10 @@ export default function GoogleTag() {
         }}
       />
       <Script
+        id="gtag-loader"
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
       />
     </>
   );
 }
-

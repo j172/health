@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  buildBreadcrumbJsonLd,
-  buildItemListJsonLd,
+  buildToolsIndexGraphJsonLd,
   getBaseUrl,
   SITE_NAME,
 } from "@/lib/server/news/seo";
@@ -14,7 +13,7 @@ import {
 } from "@/lib/server/tools/catalog";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const baseUrl = getBaseUrl();
@@ -254,29 +253,13 @@ const SECTIONS = (() => {
 })();
 
 export default function ToolsIndexPage() {
-  const breadcrumb = buildBreadcrumbJsonLd([
-    { name: "首頁", url: baseUrl },
-    { name: "健康工具與公衛資料庫", url: `${baseUrl}/tools` },
-  ]);
-
-  const itemList = buildItemListJsonLd(
-    "健康工具與公衛資料庫目錄",
-    TOOL_CATALOG.map((tool) => ({
-      name: tool.title,
-      url: `${baseUrl}/tools/${tool.slug}`,
-      description: tool.description,
-    })),
-  );
+  const toolsGraph = buildToolsIndexGraphJsonLd(TOOL_CATALOG);
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(toolsGraph) }}
       />
 
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">

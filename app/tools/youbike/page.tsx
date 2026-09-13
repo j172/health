@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import YoubikeContent from "@/components/Tools/YoubikeContent";
 import { searchYouBikeStations } from "@/lib/server/youbike/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/youbike`;

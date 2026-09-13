@@ -1,38 +1,12 @@
-import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
-import "../globals.css";
-import { buildOrganizationJsonLd, buildWebsiteJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
-import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
-import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
-import GoogleTag from "@/components/Analytics/GoogleTag";
-import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
-import Provider from "../(site)/Provider";
+import type { Metadata } from "next";
+import { SITE_NAME } from "@/lib/server/news/seo";
 
-const inter = Inter({ subsets: ["latin"] });
-
-const PRIVACY_DESCRIPTION = "j172tw Healthz 隱私權政策：說明本站蒐集哪些資料、如何使用，並符合 GDPR、CCPA/CPRA、APPI、CBPR 與台灣個人資料保護法之揭露與使用者權利規範。";
-
-export const viewport: Viewport = {
-  themeColor: "#625df5",
-};
+const PRIVACY_DESCRIPTION =
+  "j172tw Healthz 隱私權政策：說明本站蒐集哪些資料、如何使用，並符合 GDPR、CCPA/CPRA、APPI、CBPR 與台灣個人資料保護法之揭露與使用者權利規範。";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getBaseUrl()),
   title: { default: `隱私權政策 | ${SITE_NAME}`, template: `%s | ${SITE_NAME}` },
   description: PRIVACY_DESCRIPTION,
-  icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
-  appleWebApp: { capable: true, title: "j172tw Healthz", statusBarStyle: "default" },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
@@ -47,18 +21,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PrivacyRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="zh-Hant-TW">
-      <body className={inter.className}>
-        <GoogleTag />
-        <MicrosoftClarity />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationJsonLd()) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebsiteJsonLd()) }} />
-        <Provider>{children}</Provider>
-        <PrivacyConsentBanner />
-        <RegisterServiceWorker />
-      </body>
-    </html>
-  );
+export default function PrivacyLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return <>{children}</>;
 }

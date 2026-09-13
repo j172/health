@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
 import { facilitySearchConfigs } from "../facilityConfigs";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/disability-welfare`;

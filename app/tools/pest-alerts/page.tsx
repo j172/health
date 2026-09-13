@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import PestAlertsContent from "@/components/Tools/PestAlertsContent";
 import { getPestAlerts } from "@/lib/server/pestAlerts/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/pest-alerts`;

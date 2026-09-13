@@ -1,5 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
-import { buildToolPageJsonLd, getBaseUrl } from "@/lib/server/news/seo";
+import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
@@ -41,19 +42,16 @@ export default function ToolPageShell({
     .map((s) => TOOL_CATALOG.find((t) => t.slug === s))
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
-  const jsonLdSchemas = catalogEntry
-    ? buildToolPageJsonLd(catalogEntry)
-    : [];
+  const toolGraph = catalogEntry ? buildToolGraphJsonLd(catalogEntry) : null;
 
   return (
     <>
-      {jsonLdSchemas.map((schema, index) => (
+      {toolGraph && (
         <script
-          key={index}
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(toolGraph) }}
         />
-      ))}
+      )}
 
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <StabloHeader />
@@ -82,7 +80,9 @@ export default function ToolPageShell({
 
           {/* Interactive Tool Widget (Children) */}
           <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-            {children}
+            <Suspense fallback={<div className="min-h-[220px] animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800/40" />}>
+              {children}
+            </Suspense>
           </div>
 
           {/* 💡 AEO Direct Answer Box (Featured Snippet Optimization) */}

@@ -25,31 +25,20 @@ export default function HeroPost({
       <article className="group relative flex flex-col justify-between overflow-hidden rounded-3xl bg-slate-900 shadow-xl lg:col-span-2">
         <div className="relative aspect-[16/10] w-full overflow-hidden sm:aspect-[21/10] lg:aspect-auto lg:h-full">
           {src ? (
-            isExternal ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={src}
-                alt={hero.title}
-                fetchPriority="high"
-                decoding="async"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-            ) : (
-              <Image
-                src={src}
-                alt={hero.title}
-                fill
-                priority
-                unoptimized={
-                  src.endsWith(".svg") ||
-                  src.startsWith("/images/news/maps/") ||
-                  src.startsWith("/uploads/maps/") ||
-                  src.startsWith("/images/news/flickr/")
-                }
-                sizes="(max-width: 1024px) 100vw, 66vw"
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-              />
-            )
+            <Image
+              src={src}
+              alt={hero.title}
+              fill
+              priority
+              unoptimized={
+                src.endsWith(".svg") ||
+                src.startsWith("/images/news/maps/") ||
+                src.startsWith("/uploads/maps/") ||
+                src.startsWith("/images/news/flickr/")
+              }
+              sizes="(max-width: 1024px) 100vw, 66vw"
+              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-blue-700" />
           )}
