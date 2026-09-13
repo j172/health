@@ -12,10 +12,37 @@ on:
         required: false
         default: "5"
   schedule:
-    # Runs twice daily at 03:30 and 15:30 UTC to continuously backfill NPO addresses & websites
-    - cron: "30 3,15 * * *"
+    # Runs twice daily at 03:45 and 15:45 UTC to continuously backfill NPO
+    # addresses & websites.
+    #
+    # Issue #249: this used to fire at :30 — the same half-hour grid point as
+    # facilities-geocode-batch.yml's "*/30 * * * *". Both workflows share the
+    # host-tw123457-server concurrency group, and that workflow's
+    # cancel-in-progress: true cancels *whatever else* holds the group, not
+    # just its own prior run. Landing on the same tick meant every single
+    # npo-sync run got cancelled ~34s after starting, every time, silently
+    # (conclusion "cancelled", not "failure", so nothing alerted on it) —
+    # NPO address/website backfill was effectively stalled indefinitely.
+    # Shifting to :45 puts a 15-minute buffer on both sides of the :00/:30
+    # grid, comfortably longer than an npo-sync run's typical few-minute
+    # duration, without touching the shared group itself (see the group
+    # comment below for why it must stay shared).
+    - cron: "45 3,15 * * *"
 
 concurrency:
+  # Shared with facilities-geocode-batch.yml, disaster-points-sync.yml,
+  # health-supplements-import.yml and deploy-ftps.yml on purpose: this group
+  # exists so only one job at a time is hitting the production host's admin
+  # API / DB connection pool over SSH loopback, per the 2026-08-23 NPROC/LVE
+  # Entry Process exhaustion incident. npo-sync and facilities-geocode-batch
+  # both call the same running Next.js process's admin routes (127.0.0.1:3000)
+  # against the same production MySQL pool, each via its own SSH-spawned curl
+  # process on the host — genuine resource contention, not just a scheduling
+  # coincidence — so this workflow intentionally keeps sharing the group
+  # rather than getting its own (see issue #249's investigation). Only the
+  # cron time changed above; cancel-in-progress here stays false as before —
+  # npo-sync itself doesn't need self-cancellation, and the other workflows'
+  # own cancel-in-progress settings are untouched.
   group: host-tw123457-server
   cancel-in-progress: false
 
