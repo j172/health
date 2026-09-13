@@ -31,6 +31,13 @@ const TAIWAN_CITIES = [
   "連江縣",
 ];
 
+// issue #256: the former "family-cultural-activities" tool merged into this
+// page. Category "4" is 文化部 SearchShowAction's own 親子/兒童 category —
+// exactly the scope that page rendered (unfiltered, as a bug — see the FAQ
+// added for this merge) — so the dedicated "親子友善" quick-filter below
+// just jumps straight to it instead of duplicating a second data path.
+const FAMILY_FRIENDLY_CATEGORY_KEY = "4";
+
 const CATEGORY_TABS = [
   { key: "all", label: "全部活動", icon: "✨" },
   { key: "6", label: "藝文展覽", icon: "🖼️" },
@@ -141,6 +148,28 @@ export default function CulturalEventsContent() {
     <div className="space-y-6">
       {/* Category Pills Header */}
       <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1">
+        {/* 親子友善 quick filter — replaces the former standalone
+            "全國親子藝文活動查詢" (family-cultural-activities) tool, now
+            301-redirected here. */}
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedCategory(FAMILY_FRIENDLY_CATEGORY_KEY);
+            setPage(1);
+          }}
+          className={`flex items-center gap-1.5 rounded-xl border-2 px-3.5 py-2 text-xs font-bold transition-all ${
+            selectedCategory === FAMILY_FRIENDLY_CATEGORY_KEY
+              ? "border-rose-600 bg-rose-600 text-white shadow-xs dark:border-rose-500 dark:bg-rose-500"
+              : "border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/70"
+          }`}
+        >
+          <span>👨‍👩‍👧</span>
+          <span>親子友善</span>
+        </button>
+        <span
+          aria-hidden="true"
+          className="h-5 w-px bg-slate-200 dark:bg-slate-700"
+        />
         {CATEGORY_TABS.map((tab) => (
           <button
             key={tab.key}

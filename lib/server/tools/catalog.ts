@@ -1,3 +1,5 @@
+import { compareByStrokeOrder } from "./strokeOrder";
+
 export interface ToolFaq {
   question: string;
   answer: string;
@@ -17,16 +19,55 @@ export interface ReferenceTable {
 
 export type ToolGroup =
   | "calculator"
-  | "facility"
-  | "ltc"
-  | "disability"
+  | "care-facility"
+  | "registry"
   | "child-welfare"
-  | "public-facility"
-  | "weather";
+  | "disaster-safety"
+  | "transport-energy"
+  | "environment"
+  | "culture-tourism"
+  | "life-services";
+
+export interface ToolGroupMeta {
+  group: ToolGroup;
+  /** i18n dictionary key (locales/{zh-TW,en}.json → nav.*) for this category's label. */
+  labelKey: string;
+  /** Traditional Chinese default, used when a translation is missing and as
+   * the source string for `compareByStrokeOrder`'s category ordering. */
+  labelDefault: string;
+}
+
+/**
+ * Single source of truth for the 9 Nav-dropdown / Footer-column / /tools
+ * category buckets (issue #256 reclassification) — SiteNav.tsx and
+ * SiteFooter.tsx both derive their category list from this array instead of
+ * each hand-rolling their own, so the two can't drift out of sync the way
+ * the old 7-bucket layout was hardcoded independently in both files.
+ */
+export const TOOL_GROUP_META: ToolGroupMeta[] = [
+  { group: "calculator", labelKey: "nav.healthTools", labelDefault: "健康工具" },
+  { group: "care-facility", labelKey: "nav.careFacility", labelDefault: "醫療照護機構" },
+  { group: "registry", labelKey: "nav.registry", labelDefault: "藥品食品登錄查詢" },
+  { group: "child-welfare", labelKey: "nav.childWelfare", labelDefault: "兒少福利與教育" },
+  { group: "disaster-safety", labelKey: "nav.disasterSafety", labelDefault: "防災與安全示警" },
+  { group: "transport-energy", labelKey: "nav.transportEnergy", labelDefault: "交通與能源" },
+  { group: "environment", labelKey: "nav.environment", labelDefault: "環境品質與綠色生活" },
+  { group: "culture-tourism", labelKey: "nav.cultureTourism", labelDefault: "文化藝術與觀光" },
+  { group: "life-services", labelKey: "nav.lifeServices", labelDefault: "公益與生活服務" },
+];
 
 export interface ToolCatalogEntry {
   slug: string;
   title: string;
+  /**
+   * Optional short label for the Nav dropdowns and Footer columns, when the
+   * SEO `title` (kept verbatim in every page's `<title>`/meta/JSON-LD) is too
+   * long or verbose for a nav list — e.g. a colon-subtitle title like
+   * "文化資產地圖：古蹟／歷史建築／考古遺址查詢" navigates better as just
+   * "文化資產地圖". Falls back to `title` when omitted; most entries don't
+   * need it. Never affects the tool page's own metadata.
+   */
+  navLabel?: string;
   description: string;
   /** Direct-answer concise definition for AEO / Featured Snippets / AI Overviews (40-80 chars) */
   directAnswer: string;
@@ -40,9 +81,11 @@ export interface ToolCatalogEntry {
   relatedSlugs: string[];
   faqs: ToolFaq[];
   /** Drives the nav dropdowns, the footer columns and the /tools index sections
-   * from one place: "calculator" → 健康工具; "facility" → 醫療院所;
-   * "ltc" → 長照機構; "disability" → 身心障礙; "child-welfare" → 兒少福利;
-   * "public-facility" → 便民服務; "weather" → 環境監測. */
+   * from one place (issue #256 reclassification): "calculator" → 健康工具;
+   * "care-facility" → 醫療照護機構; "registry" → 藥品食品登錄查詢;
+   * "child-welfare" → 兒少福利與教育; "disaster-safety" → 防災與安全示警;
+   * "transport-energy" → 交通與能源; "environment" → 環境品質與綠色生活;
+   * "culture-tourism" → 文化藝術與觀光; "life-services" → 公益與生活服務. */
   group: ToolGroup;
   /**
    * schema.org type for the page-level JSON-LD built by `buildToolPageJsonLd`
@@ -65,7 +108,7 @@ export interface ToolCatalogEntry {
 export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "uv",
-    group: "weather",
+    group: "disaster-safety",
     title: "全台即時紫外線指數 (UV)",
     description:
       "即時查詢全台各縣市氣象站紫外線指數 (UV Index)，提供紫外線曝曬防護分級（低量、中量、高量、過量、極高量）與專業防曬係數與配件建議。",
@@ -150,7 +193,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "earthquakes",
-    group: "weather",
+    group: "disaster-safety",
     schemaType: "WebPage",
     title: "台灣與全球顯著地震查詢",
     description:
@@ -847,7 +890,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aqi",
-    group: "weather",
+    group: "environment",
     title: "AQI 空氣品質即時查詢",
     description:
       "即時顯示全台環境部監測站 AQI 空氣品質指標，包含 PM2.5、PM10 等污染物濃度。",
@@ -935,7 +978,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "clinics",
-    group: "facility",
+    group: "care-facility",
     title: "醫療院所查詢",
     description: "查詢全民健保特約醫療院所，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -962,7 +1005,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pharmacies",
-    group: "facility",
+    group: "care-facility",
     title: "藥局查詢",
     description: "查詢全台一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -985,7 +1028,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "drugs",
-    group: "facility",
+    group: "registry",
     title: "藥品查詢",
     description:
       "查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵，協助辨識藥品。",
@@ -1014,7 +1057,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-nutrition",
-    group: "calculator",
+    group: "registry",
     title: "食品營養成分查詢",
     description:
       "查詢衛福部食藥署食品營養成分資料庫，依食品名稱搜尋熱量、蛋白質、脂肪、碳水化合物等營養成分含量。",
@@ -1058,7 +1101,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-operators",
-    group: "calculator",
+    group: "registry",
     schemaType: "WebPage",
     title: "食品業者登錄查詢",
     description:
@@ -1072,7 +1115,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.fda.gov.tw",
       },
     ],
-    relatedSlugs: ["food-nutrition", "green-shops"],
+    relatedSlugs: ["food-nutrition", "green-certifications"],
     faqs: [
       {
         question: "食品業者登錄字號代表什麼？",
@@ -1088,7 +1131,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "health-checks",
-    group: "facility",
+    group: "care-facility",
     title: "健康檢查機構查詢",
     description:
       "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院，支援關鍵字搜尋與附近定位。",
@@ -1112,7 +1155,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "long-term-care",
-    group: "ltc",
+    group: "care-facility",
     title: "長照服務機構查詢",
     description:
       "查詢全台長照服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、住宿型長照機構與社區照顧據點。支援關鍵字搜尋與附近定位。",
@@ -1141,7 +1184,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "home-healthcare",
-    group: "facility",
+    group: "care-facility",
     title: "居家醫療查詢",
     description:
       "查詢提供居家醫療照護服務的全民健保特約機構，支援關鍵字搜尋與附近定位。",
@@ -1165,7 +1208,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disability-welfare",
-    group: "disability",
+    group: "care-facility",
     title: "身心障礙福利機構查詢",
     description:
       "查詢衛福部全國身心障礙福利機構名冊，支援關鍵字搜尋與附近定位。",
@@ -1178,7 +1221,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["disability-atm", "elder-welfare", "child-welfare-centers"],
+    relatedSlugs: ["disability-atm", "elder-welfare", "child-welfare-institutions"],
     faqs: [
       {
         question: "資料涵蓋哪些身心障礙福利機構？",
@@ -1189,7 +1232,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disability-atm",
-    group: "disability",
+    group: "life-services",
+    navLabel: "無障礙ATM查詢",
     title: "信用合作社無障礙ATM查詢",
     description:
       "查詢全台信用合作社提供輪椅可及或語音服務的無障礙ATM，支援關鍵字搜尋與附近定位。",
@@ -1213,7 +1257,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "elder-welfare",
-    group: "ltc",
+    group: "care-facility",
     title: "老人福利機構查詢",
     description: "查詢衛福部全國老人福利機構名冊，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1236,7 +1280,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "hakka-bogong",
-    group: "ltc",
+    group: "care-facility",
     title: "客家委員會「伯公照護站」查詢",
     description:
       "查詢客家委員會「伯公照護站」名冊，支援關鍵字搜尋與附近定位。",
@@ -1260,7 +1304,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "public-toilets",
-    group: "public-facility",
+    group: "life-services",
     schemaType: "WebPage",
     title: "全國公廁查詢",
     description: "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部。",
@@ -1273,7 +1317,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["green-shops", "disability-atm"],
+    relatedSlugs: ["green-certifications", "disability-atm"],
     faqs: [
       {
         question: "這裡的公廁資料包含哪些類型？",
@@ -1288,84 +1332,47 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "green-shops",
-    group: "public-facility",
-    schemaType: "WebPage",
-    title: "綠色商店查詢",
-    description: "查詢環境部認證綠色商店。資料來源：環境部。",
-    directAnswer:
-      "查詢環境部認證之綠色商店名冊，提供優先販售環保標章商品與綠色消費之合法商家據點。",
-    scientificBasis: [
-      {
-        title: "全民綠生活 - 綠色商店認證名冊",
-        authority: "環境部 (MOENV)",
-        url: "https://greenlifestyle.moenv.gov.tw",
-      },
-    ],
-    relatedSlugs: ["food-operators", "aqi"],
-    faqs: [
-      {
-        question: "什麼是環境部認證綠色商店？",
-        answer:
-          "綠色商店是通過環境部認證、優先採購及販售環保標章商品的商店，資料來源為環境部認證名冊。",
-      },
-    ],
-  },
-  {
-    slug: "child-welfare-nurseries",
+    // issue #256: merged "child-welfare-nurseries" (全國親子館查詢) and
+    // "child-welfare-centers" (兒少福利中心查詢) — both are 衛福部社家署
+    // 機構名冊查詢 of the same shape, differing only in `facilityType`. The
+    // merged page renders both via the existing generic FacilitySearchContent
+    // + facilitySearchConfigs["child-welfare-nurseries" | "child-welfare-centers"]
+    // (unchanged), switched by a type tab — see ChildWelfareInstitutionsContent.tsx.
+    slug: "child-welfare-institutions",
     group: "child-welfare",
-    title: "全國親子館查詢",
+    title: "全國親子館與兒少福利中心查詢",
     description:
-      "查詢全國親子館（托育資源中心）名冊，提供育兒資源與親子互動空間場所資訊。資料來源：衛福部社會及家庭署開放資料。",
+      "查詢全國親子館（托育資源中心）與兒童及少年福利服務中心名冊，可切換機構類型查看育兒親子空間或兒少個案輔導據點。資料來源：衛福部社會及家庭署開放資料。",
     directAnswer:
-      "查詢全國親子館（托育資源中心）名冊，提供學齡前幼兒免費親子遊戲空間、圖書借閱與育兒諮詢場所。",
+      "整合衛福部社家署全國親子館（托育資源中心）與兒少福利中心名冊，可切換類型查詢學齡前親子遊戲空間，或兒少個案輔導、課後陪伴與家庭支持服務據點。",
     scientificBasis: [
       {
         title: "全國親子館 (托育資源中心) 名冊",
         authority: "衛生福利部社會及家庭署 (SFAA)",
         url: "https://www.sfaa.gov.tw",
       },
-    ],
-    relatedSlugs: ["child-welfare-centers", "disability-welfare"],
-    faqs: [
-      {
-        question: "什麼是親子館（托育資源中心）？",
-        answer:
-          "親子館為政府補助設置的免費或平價育兒資源場所，提供學齡前幼兒親子活動空間、圖書玩具借閱、育兒諮詢與親職教育課程。",
-      },
-      {
-        question: "資料來源是哪裡？",
-        answer:
-          "資料來源為衛福部社會及家庭署開放資料「全國親子館(托育資源中心)名冊」。",
-      },
-    ],
-  },
-  {
-    slug: "child-welfare-centers",
-    group: "child-welfare",
-    title: "兒少福利中心查詢",
-    description:
-      "查詢全台兒童及少年福利服務中心一覽表，提供兒童與青少年個案輔導、社區關懷與家庭支持服務。資料來源：衛福部社會及家庭署開放資料。",
-    directAnswer:
-      "查詢全台兒童及少年福利服務中心名冊，提供兒少個案關懷、課後陪伴、家庭支持與心理輔導諮詢。",
-    scientificBasis: [
       {
         title: "全國兒童及少年福利服務中心名冊",
         authority: "衛生福利部社會及家庭署 (SFAA)",
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["child-welfare-nurseries", "disability-welfare"],
+    relatedSlugs: ["kindergartens", "cram-schools", "disability-welfare"],
     faqs: [
       {
-        question: "兒少福利服務中心提供哪些服務？",
+        question: "什麼是親子館（托育資源中心）？",
         answer:
-          "兒少福利服務中心提供兒童與青少年心理輔導、家庭支持、課後照顧、福利諮詢及兒少權益宣導等多項社會福利服務。",
+          "親子館為政府補助設置的免費或平價育兒資源場所，提供學齡前幼兒親子活動空間、圖書玩具借閱、育兒諮詢與親職教育課程。切換上方「親子館」類型分頁即可查詢。",
       },
       {
-        question: "資料來源是哪裡？",
+        question: "兒少福利中心提供哪些服務？",
         answer:
-          "資料來源為衛福部社會及家庭署開放資料「兒童及少年福利服務中心一覽表」。",
+          "兒少福利服務中心提供兒童與青少年心理輔導、家庭支持、課後照顧、福利諮詢及兒少權益宣導等多項社會福利服務。切換上方「兒少福利中心」類型分頁即可查詢。",
+      },
+      {
+        question: "這個頁面是否包含原本「全國親子館查詢」與「兒少福利中心查詢」的內容？",
+        answer:
+          "是。這兩個原本獨立的工具已合併為本頁，原網址皆已 301 轉址於此，資料範圍與更新來源維持不變，僅以類型分頁取代原本的兩個獨立頁面。",
       },
     ],
   },
@@ -1385,7 +1392,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://stats.moe.gov.tw",
       },
     ],
-    relatedSlugs: ["cram-schools", "child-welfare-nurseries", "child-welfare-centers"],
+    relatedSlugs: ["cram-schools", "child-welfare-institutions"],
     faqs: [
       {
         question: "如何查詢附近的公立或私立幼兒園？",
@@ -1414,7 +1421,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://bsb.kh.edu.tw",
       },
     ],
-    relatedSlugs: ["kindergartens", "child-welfare-centers", "child-safety-spots"],
+    relatedSlugs: ["kindergartens", "child-welfare-institutions", "child-safety-spots"],
     faqs: [
       {
         question: "短期補習班包含哪些類科？",
@@ -1430,7 +1437,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "child-safety-spots",
-    group: "child-welfare",
+    group: "disaster-safety",
     schemaType: "WebPage",
     title: "婦幼安全警示地點查詢",
     description:
@@ -1444,7 +1451,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.gov.tw",
       },
     ],
-    relatedSlugs: ["child-welfare-centers", "cram-schools", "kindergartens"],
+    relatedSlugs: ["disaster-map", "weather-alerts", "kindergartens"],
     faqs: [
       {
         question: "什麼是婦幼安全警示地點？",
@@ -1459,39 +1466,10 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "family-cultural-activities",
-    group: "child-welfare",
-    schemaType: "WebPage",
-    title: "全國親子藝文活動查詢",
-    description:
-      "即時連線文化部全國親子及兒童藝文展演活動資料庫，提供近期演出檔期、場次時間表、演出場館地圖、票價與購票連結。資料來源：文化部全國藝文活動開放資料。",
-    directAnswer:
-      "即時查詢文化部親子類別藝文展演、兒童劇團、音樂會與展覽活動時間表與場館地圖導航。",
-    scientificBasis: [
-      {
-        title: "文化部全國藝文活動資訊系統 (SearchShowAction Category 4)",
-        authority: "文化部 (MOC)",
-        url: "https://cloud.culture.tw",
-      },
-    ],
-    relatedSlugs: ["child-welfare-nurseries", "kindergartens", "child-welfare-centers"],
-    faqs: [
-      {
-        question: "收錄哪些親子藝文活動？",
-        answer:
-          "收錄文化部全國藝文活動平台中分類為「親子/兒童」之音樂會、戲劇演出、舞蹈、偶戲、親子工作坊及展覽。",
-      },
-      {
-        question: "如何購買活動門票？",
-        answer:
-          "活動卡片提供官方售票平台（如 OPENTIX 兩廳院文化生活）或主辦單位連結，點擊即可直接前往購票。",
-      },
-    ],
-  },
-  {
     slug: "child-native-languages",
     group: "child-welfare",
     schemaType: "WebPage",
+    navLabel: "本土語言辭典",
     title: "兒少本土語言辭典（閩南語／客語）",
     description:
       "整合教育部《臺灣閩南語常用詞辭典》與《臺灣客家語常用詞辭典》，收錄數萬筆詞目、臺羅與客拼標音、六大客語腔調、生活例句與真人線上發音朗讀，支援華語意譯反查。",
@@ -1514,7 +1492,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.moedict.tw",
       },
     ],
-    relatedSlugs: ["family-cultural-activities", "kindergartens", "cram-schools"],
+    relatedSlugs: ["cultural-events", "kindergartens", "cram-schools"],
     faqs: [
       {
         question: "兒少本土語言辭典收錄哪些語言與腔調？",
@@ -1535,7 +1513,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "npo-organizations",
-    group: "public-facility",
+    group: "life-services",
     schemaType: "WebPage",
     title: "全台公益組織(NPO)查詢",
     description:
@@ -1554,7 +1532,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://eip.fia.gov.tw",
       },
     ],
-    relatedSlugs: ["food-operators", "green-shops", "child-welfare-centers", "disability-welfare"],
+    relatedSlugs: ["food-operators", "green-certifications", "child-welfare-institutions", "disability-welfare"],
     faqs: [
       {
         question: "全台公益組織(NPO)名錄包含哪些機構？",
@@ -1569,69 +1547,21 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "green-hotels",
-    group: "weather",
-    schemaType: "WebPage",
-    title: "環保標章旅館與綠色住宿查詢",
-    description:
-      "查詢環境部認證之全國金級、銀級、銅級環保標章旅館及綠色旅店名冊。資料來源：環境部開放資料（gp_p_42, gp_p_43, epr_p_02）與台北市觀光傳播局。",
-    directAnswer:
-      "即時查詢全國獲得環境部金級、銀級、銅級環保標章之綠色旅宿與飯店資訊。",
-    scientificBasis: [
-      {
-        title: "環保標章旅館認證作業規範 (gp_p_42, gp_p_43)",
-        authority: "環境部 (MOENV)",
-        url: "https://data.moenv.gov.tw",
-      },
-      {
-        title: "環保旅館推動計畫旅館名冊 (epr_p_02)",
-        authority: "環境部 (MOENV)",
-        url: "https://data.moenv.gov.tw",
-      },
-    ],
-    relatedSlugs: ["green-shops", "green-products", "public-toilets"],
-    faqs: [
-      {
-        question: "環保標章旅館的分級標準？",
-        answer:
-          "環境部依節能、省水、減廢、綠色採購等面向，評定為金級、銀級與銅級環保標章旅館。",
-      },
-    ],
-  },
-  {
-    slug: "green-products",
-    group: "weather",
-    schemaType: "WebPage",
-    title: "環保標章產品查詢",
-    description:
-      "查詢環境部認證之各類綠色環保標章產品（低污染、省能資源、可回收）。資料來源：環境部開放資料（gp_p_02）。",
-    directAnswer:
-      "查詢全國取得政府環保標章認證之綠色產品、型號與生產廠商。",
-    scientificBasis: [
-      {
-        title: "環保標章資訊開放資料 (gp_p_02)",
-        authority: "環境部 (MOENV)",
-        url: "https://data.moenv.gov.tw",
-      },
-    ],
-    relatedSlugs: ["green-shops", "green-hotels"],
-    faqs: [
-      {
-        question: "什麼是環保標章產品？",
-        answer:
-          "經過環境部審查通過「低污染、省資源、可回收」之優良環境品質產品。",
-      },
-    ],
-  },
-  {
+    // issue #256: merged with the former "family-cultural-activities" tool
+    // (全國親子藝文活動查詢, slug now 301-redirected here) — both drew on the
+    // exact same 文化部 SearchShowAction dataset, the "family" page just
+    // rendered it without the category tabs/pagination this page already had.
+    // The merged page keeps every existing category tab and adds a "親子友善"
+    // quick-filter (see CulturalEventsContent.tsx) so the family-oriented
+    // subset is still one click away instead of living on a separate page.
     slug: "cultural-events",
-    group: "public-facility",
+    group: "culture-tourism",
     schemaType: "WebPage",
-    title: "全國藝文展覽與活動查詢",
+    title: "全國藝文展覽與親子活動查詢",
     description:
-      "查詢全國展覽、音樂、戲劇、講座與親子藝文活動。資料來源：文化部開放資料。",
+      "整合文化部全國藝文活動開放資料，查詢全國展覽、音樂、戲劇、講座等各類活動，並提供「親子友善」篩選標籤快速鎖定親子劇場、兒童音樂會與親子工作坊。資料來源：文化部開放資料。",
     directAnswer:
-      "即時連線文化部藝文活動資訊系統，查詢全國展演、音樂會與親子藝文活動。",
+      "即時連線文化部藝文活動資訊系統，查詢全國展演、音樂會與講座活動，並可切換「親子友善」篩選標籤只看親子劇場、兒童音樂會與工作坊節目。",
     scientificBasis: [
       {
         title: "文化部全國藝文活動資訊系統開放資料 (SearchShowAction)",
@@ -1639,18 +1569,23 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://cloud.culture.tw",
       },
     ],
-    relatedSlugs: ["public-art", "heritage-map", "child-welfare-nurseries"],
+    relatedSlugs: ["public-art", "heritage-map", "latest-books"],
     faqs: [
       {
         question: "活動資訊包含哪些類別？",
         answer:
           "完整涵蓋文化部 19 類藝文活動（展覽、音樂、戲劇、舞蹈、親子、講座、電影、獨立音樂、綜藝、藝文競賽、演唱會、研習課程等）、全國節慶活動與文化生活圈場館。",
       },
+      {
+        question: "這個頁面是否包含原本「全國親子藝文活動查詢」的內容？",
+        answer:
+          "是。原「全國親子藝文活動查詢」頁面已併入本頁並 301 轉址於此，點擊「👨‍👩‍👧 親子友善」篩選標籤即可只看親子劇場、兒童音樂會與親子工作坊等節目，範圍與原頁面一致。",
+      },
     ],
   },
   {
     slug: "public-art",
-    group: "public-facility",
+    group: "culture-tourism",
     schemaType: "WebPage",
     title: "全國公共藝術與演藝場所地圖",
     description:
@@ -1680,8 +1615,9 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "heritage-map",
-    group: "public-facility",
+    group: "culture-tourism",
     schemaType: "WebPage",
+    navLabel: "文化資產地圖",
     title: "文化資產地圖：古蹟／歷史建築／考古遺址查詢",
     description:
       "整合文化部文化資產局開放資料，於地圖上查詢全台古蹟、歷史建築與考古遺址點位，支援圖層切換、沿革與登錄理由查詢。",
@@ -1710,7 +1646,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "travel-epidemic-alerts",
-    group: "public-facility",
+    group: "disaster-safety",
     title: "國際旅遊疫情與即時情報地圖",
     description:
       "即時連線疾管署國際旅遊疫情建議等級與全球重要疫情快訊，提供各國警戒等級（注意/警示/警告）地圖視覺化、疾病快搜與最新流行病學情報。資料來源：衛生福利部疾病管制署。",
@@ -1744,7 +1680,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "weather-alerts",
-    group: "weather",
+    group: "disaster-safety",
     title: "即時氣象警報與降雨資訊",
     description:
       "即時查詢全台氣象警報（強風、濃霧、豪大雨、颱風警報及鄉鎮劇烈天氣特報），並依 GPS 定位查詢最近測站即時與月累積降雨量。",
@@ -1793,7 +1729,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cool-spots",
-    group: "public-facility",
+    group: "life-services",
     title: "全國涼適點查詢",
     description:
       "查詢環境部「Cool Map 涼適點」名冊，提供百貨、圖書館、里民活動中心等可供民眾避暑消暑之場所位置與設施資訊。資料來源：環境部開放資料。",
@@ -1806,7 +1742,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["uv", "public-toilets", "green-shops"],
+    relatedSlugs: ["uv", "public-toilets", "green-certifications"],
     faqs: [
       {
         question: "什麼是「涼適點」？",
@@ -1822,7 +1758,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "iaq-premises",
-    group: "public-facility",
+    group: "environment",
     schemaType: "WebPage",
     title: "室內空氣品質法公告場所查詢",
     description:
@@ -1847,7 +1783,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cleaning-squads",
-    group: "public-facility",
+    group: "environment",
     schemaType: "WebPage",
     title: "地方清潔隊聯絡資訊查詢",
     description:
@@ -1861,7 +1797,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["green-shops", "public-toilets"],
+    relatedSlugs: ["green-certifications", "public-toilets"],
     faqs: [
       {
         question: "清潔隊可以協助處理哪些業務？",
@@ -1871,82 +1807,47 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "green-restaurants",
-    group: "weather",
+    // issue #256: merged "carbon-footprint-products" (產品碳足跡標籤查詢) and
+    // "carbon-footprint-coefficients" (碳足跡排放係數查詢) into one page with
+    // a 產品標籤／排放係數 tab, reusing both existing bespoke content
+    // components unmodified — see CarbonFootprintContent.tsx.
+    slug: "carbon-footprint",
+    group: "environment",
     schemaType: "WebPage",
-    title: "環保餐廳查詢",
+    navLabel: "碳足跡查詢",
+    title: "碳足跡查詢：產品標籤與排放係數",
     description:
-      "查詢環境部「環保餐廳環境即時通」地圖名冊，提供響應減塑、節能等環保作為之餐廳位置與聯絡資訊。資料來源：環境部開放資料。",
+      "查詢環境部審查通過之產品碳足跡標籤數據，以及原物料、製程、能源等單位活動量之碳足跡排放係數，可切換分頁查看。資料來源：環境部開放資料（cfp_p_01、cfp_p_02）。",
     directAnswer:
-      "查詢環境部「環保餐廳環境即時通」地圖名冊，收錄響應減塑、節能等環保作為之餐廳名稱、地址與聯絡電話。",
-    scientificBasis: [
-      {
-        title: "環保餐廳環境即時通地圖資料 (gis_p_11)",
-        authority: "環境部 (MOENV)",
-        url: "https://data.moenv.gov.tw",
-      },
-    ],
-    relatedSlugs: ["green-shops", "green-hotels"],
-    faqs: [
-      {
-        question: "什麼是「環保餐廳」？",
-        answer:
-          "環保餐廳是環境部「環境即時通」平台盤點響應減塑、節能減碳等環保作為之餐飲業者，供民眾用餐時可優先選擇具環保意識的店家。",
-      },
-    ],
-  },
-  {
-    slug: "carbon-footprint-products",
-    group: "public-facility",
-    schemaType: "WebPage",
-    title: "產品碳足跡標籤查詢",
-    description:
-      "查詢環境部審查通過、碳標籤證書有效期限內之產品碳足跡數據與宣告單位。資料來源：環境部開放資料（cfp_p_01）。",
-    directAnswer:
-      "查詢通過環境部審查、取得碳足跡標籤且證書仍在有效期限內之產品碳足跡數據，包含宣告單位與有效期限。",
+      "碳足跡查詢整合環境部審查通過之產品碳足跡標籤（含宣告單位與證書效期）與碳足跡排放係數資料庫（原物料、製程、能源等單位活動量對應排放量），可切換分頁查看。",
     scientificBasis: [
       {
         title: "產品碳足跡資訊開放資料 (cfp_p_01)",
         authority: "環境部 (MOENV)",
         url: "https://data.moenv.gov.tw",
       },
-    ],
-    relatedSlugs: ["green-products", "green-shops"],
-    faqs: [
-      {
-        question: "什麼是產品碳足跡標籤？",
-        answer:
-          "碳足跡標籤是產品從原料取得、製造、配送銷售、使用到廢棄回收之生命週期溫室氣體排放量，經環境部審查認證後核發的標示，協助消費者辨識低碳產品。",
-      },
-      {
-        question: "碳足跡數據的單位是什麼？",
-        answer:
-          "每項產品的碳足跡數據會搭配「宣告單位」一併顯示（如每公斤、每件），代表該碳排放數值所對應的計算基準，不同產品間的宣告單位可能不同，比較時請留意單位是否一致。",
-      },
-    ],
-  },
-  {
-    slug: "carbon-footprint-coefficients",
-    group: "public-facility",
-    schemaType: "WebPage",
-    title: "碳足跡排放係數查詢",
-    description:
-      "查詢環境部公告之碳足跡排放係數（原物料、製程、能源等單位活動量之溫室氣體排放量），供產品碳足跡計算參考。資料來源：環境部開放資料（cfp_p_02）。",
-    directAnswer:
-      "查詢環境部公告之碳足跡排放係數資料庫，提供原物料取得、製造、能源使用等各類活動每單位對應之溫室氣體排放量，作為計算產品碳足跡的基礎數據。",
-    scientificBasis: [
       {
         title: "碳足跡排放係數資料庫 (cfp_p_02)",
         authority: "環境部 (MOENV)",
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["carbon-footprint-products", "green-products"],
+    relatedSlugs: ["green-certifications", "water-conditions"],
     faqs: [
+      {
+        question: "什麼是產品碳足跡標籤？",
+        answer:
+          "碳足跡標籤是產品從原料取得、製造、配送銷售、使用到廢棄回收之生命週期溫室氣體排放量，經環境部審查認證後核發的標示，協助消費者辨識低碳產品。「產品標籤查詢」分頁可查詢通過審查且證書仍在有效期限內之產品碳足跡數據。",
+      },
       {
         question: "什麼是碳足跡排放係數？",
         answer:
-          "排放係數是計算特定活動（如生產一公斤原物料、消耗一度電）所產生溫室氣體排放量的換算基準，是計算產品碳足跡時不可或缺的參考數據，由環境部審定並公告。",
+          "排放係數是計算特定活動（如生產一公斤原物料、消耗一度電）所產生溫室氣體排放量的換算基準，是計算產品碳足跡時不可或缺的參考數據，由環境部審定並公告。「排放係數對照表」分頁可查詢完整係數資料庫。",
+      },
+      {
+        question: "碳足跡數據的單位是什麼？",
+        answer:
+          "每項產品的碳足跡數據會搭配「宣告單位」一併顯示（如每公斤、每件），代表該碳排放數值所對應的計算基準，不同產品間的宣告單位可能不同，比較時請留意單位是否一致。",
       },
       {
         question: "為什麼有些係數沒有標示公告部門？",
@@ -1957,7 +1858,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aqx-monitoring",
-    group: "weather",
+    group: "environment",
     title: "空氣品質延伸監測資料查詢（AQX 系列）",
     description:
       "查詢環境部開放資料平臺 AQX 系列監測小時值，涵蓋一般污染物、BTEX、非甲烷碳氫化合物（NMHC）、總碳氫化合物（THC）、光化測站、CO 8小時平均值、PM10 小時值與其它測項。",
@@ -2020,62 +1921,42 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "water-level-stations",
-    group: "weather",
+    // issue #256: merged "water-level-stations" (全台水位站即時水位查詢) and
+    // "reservoir-status" (全台水庫即時營運狀況查詢) into one 全台水情 page
+    // with a river/reservoir tab, reusing both existing bespoke content
+    // components unmodified — see WaterConditionsContent.tsx.
+    slug: "water-conditions",
+    group: "environment",
     schemaType: "WebPage",
-    title: "全台水位站即時水位查詢",
+    navLabel: "全台水情查詢",
+    title: "全台水情：河川水位與水庫營運查詢",
     description:
-      "即時查詢經濟部水利署全台河川與地下水位站監測資料，涵蓋測站代碼、即時水位（公尺）與資料品質檢核結果。資料來源：經濟部水利署開放資料平臺。",
+      "即時查詢經濟部水利署全台河川／地下水位站與水庫營運狀況，可切換分頁查看測站即時水位或水庫蓄水量、進出流量與集水區降雨量。資料來源：經濟部水利署開放資料平臺。",
     directAnswer:
-      "即時查詢經濟部水利署全台約 370 個河川與地下水位站的最新監測水位（公尺），並顯示各測站資料品質檢核結果與觀測時間，資料每 30 分鐘自動更新。",
+      "全台水情查詢整合經濟部水利署約 370 個河川／地下水位站即時水位，以及全台 61 座水庫的蓄水量、進出流量與集水區降雨量，可切換分頁查看，資料每 30 分鐘自動更新。",
     scientificBasis: [
       {
         title: "水位站監測資料",
         authority: "經濟部水利署 (WRA)",
         url: "https://opendata.wra.gov.tw",
       },
-    ],
-    relatedSlugs: ["reservoir-status", "weather-alerts", "earthquakes"],
-    faqs: [
-      {
-        question: "這份水位資料涵蓋哪些測站？",
-        answer:
-          "涵蓋經濟部水利署全台河川與地下水位監測站，不限水庫集水區，測站以代碼（如 1010H006）標示，資料來源未提供測站中文名稱。",
-      },
-      {
-        question: "水位資料多久更新一次？",
-        answer:
-          "本站每 30 分鐘自動同步一次經濟部水利署開放資料平臺的最新監測結果；部分測站本身回報頻率可達每 10 分鐘一次，實際更新頻率以各測站狀況為準。",
-      },
-      {
-        question: "「資料檢核」欄位代表什麼？",
-        answer:
-          "水利署會針對每筆水位觀測值進行合理性檢核（如是否符合近期水位變化趨勢），檢核結果與說明會一併顯示，供使用者評估資料可信度。",
-      },
-    ],
-  },
-  {
-    slug: "reservoir-status",
-    group: "weather",
-    schemaType: "WebPage",
-    title: "全台水庫即時營運狀況查詢",
-    description:
-      "即時查詢經濟部水利署全台水庫營運狀況，涵蓋水位、有效蓄水量、進出流量與集水區降雨量等監測數據。資料來源：經濟部水利署開放資料平臺。",
-    directAnswer:
-      "即時查詢經濟部水利署全台 61 座水庫的最新營運狀況，包含水位（公尺）、有效蓄水量（萬立方公尺）、進流量與出流量（CMS）、集水區累積降雨量等監測數據，資料每 30 分鐘自動更新。",
-    scientificBasis: [
       {
         title: "水庫即時營運狀況資料",
         authority: "經濟部水利署 (WRA)",
         url: "https://opendata.wra.gov.tw",
       },
     ],
-    relatedSlugs: ["water-level-stations", "weather-alerts", "earthquakes"],
+    relatedSlugs: ["weather-alerts", "earthquakes", "aqi"],
     faqs: [
+      {
+        question: "這份水位資料涵蓋哪些測站？",
+        answer:
+          "「河川水位」分頁涵蓋經濟部水利署全台河川與地下水位監測站，不限水庫集水區，測站以代碼（如 1010H006）標示，資料來源未提供測站中文名稱。",
+      },
       {
         question: "這份資料涵蓋哪些水庫？",
         answer:
-          "涵蓋經濟部水利署列管之全台主要水庫，以水庫代碼（如 50303）標示，資料來源未提供水庫中文名稱；水庫代碼前兩碼代表區域（10北部、20中部、30南部、40東部、50離島）。",
+          "「水庫營運」分頁涵蓋經濟部水利署列管之全台主要水庫，以水庫代碼（如 50303）標示；水庫代碼前兩碼代表區域（10北部、20中部、30南部、40東部、50離島）。",
       },
       {
         question: "「有效蓄水量」與「進出流量」的單位是什麼？",
@@ -2085,14 +1966,20 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       {
         question: "資料多久更新一次？",
         answer:
-          "本站每 30 分鐘自動同步一次經濟部水利署開放資料平臺的最新營運狀況；來源資料本身以逐時（每小時）為主要更新頻率。",
+          "本站每 30 分鐘自動同步一次經濟部水利署開放資料平臺的最新監測與營運結果；來源資料本身以逐時或每 10 分鐘為主要更新頻率，實際以各測站/水庫狀況為準。",
+      },
+      {
+        question: "這個頁面是否包含原本「全台水位站即時水位查詢」與「全台水庫即時營運狀況查詢」的內容？",
+        answer:
+          "是。這兩個原本獨立的工具已合併為本頁，原網址皆已 301 轉址於此，切換上方「河川水位」／「水庫營運」分頁即可分別查看，資料範圍與更新來源維持不變。",
       },
     ],
   },
   {
     slug: "disaster-map",
-    group: "public-facility",
+    group: "disaster-safety",
     schemaType: "WebPage",
+    navLabel: "防災地圖",
     title: "防災地圖：避難收容處所／消防救援單位／應變中心查詢",
     description:
       "整合內政部開放資料，於地圖上查詢全台避難收容處所、消防救援單位與縣市應變中心點位，支援圖層切換與地點詳細資訊查詢。",
@@ -2131,7 +2018,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "bookstores",
-    group: "public-facility",
+    group: "culture-tourism",
     schemaType: "WebPage",
     title: "全國實體書店查詢",
     description:
@@ -2166,7 +2053,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "tourism-factories",
-    group: "public-facility",
+    group: "culture-tourism",
     schemaType: "WebPage",
     title: "全台認證觀光工廠查詢",
     description:
@@ -2180,7 +2067,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.ida.gov.tw",
       },
     ],
-    relatedSlugs: ["green-shops", "cool-spots", "bookstores"],
+    relatedSlugs: ["green-certifications", "cool-spots", "bookstores"],
     faqs: [
       {
         question: "什麼是經濟部認證觀光工廠？",
@@ -2196,7 +2083,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pet-adoption",
-    group: "public-facility",
+    group: "life-services",
     schemaType: "WebPage",
     title: "全台毛孩認領養查詢",
     description:
@@ -2210,7 +2097,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moa.gov.tw",
       },
     ],
-    relatedSlugs: ["child-welfare-nurseries", "cool-spots", "bookstores"],
+    relatedSlugs: ["vet-clinics", "cool-spots", "bookstores"],
     faqs: [
       {
         question: "本頁收錄哪些動物認養資訊？",
@@ -2236,7 +2123,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       "整合衛生福利部國民健康署官方開放資料，查詢全台依法設置與自願設置之公共哺集乳室位置、地址、電話與開放時段。",
     directAnswer:
       "全國哺集乳室地圖整合國健署孕產兒關懷網站資料，提供全台 3,800+ 處依法設置與自願設置哺集乳室，支援 22 縣市快選、GPS 距離排序與機構電話查詢。",
-    group: "child-welfare",
+    group: "life-services",
     scientificBasis: [
       {
         title: "公共場所母乳哺育條例",
@@ -2249,7 +2136,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://mammy.hpa.gov.tw",
       },
     ],
-    relatedSlugs: ["child-welfare-centers", "contraception-map", "cool-spots"],
+    relatedSlugs: ["child-welfare-institutions", "contraception-map", "cool-spots"],
     faqs: [
       {
         question: "哪些場所依法必須設置哺集乳室？",
@@ -2270,12 +2157,13 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "contraception-map",
+    navLabel: "避孕諮詢地圖",
     title: "避孕諮詢地圖：婦產科診所與諮詢藥局查詢",
     description:
       "整合台灣婦產科醫學會 BeOK 避孕諮詢室認證機構名冊，提供全台 88 家婦產科診所與 798 家諮詢藥局之雙圖層點位查詢與雙重避孕衛教指引。",
     directAnswer:
       "避孕諮詢地圖整合台灣婦產科醫學會認證名冊，收錄全台近 900 處專業婦產科診所與健保諮詢藥局，提供事前/事後口服避孕藥諮詢與雙重避孕指導。",
-    group: "child-welfare",
+    group: "care-facility",
     scientificBasis: [
       {
         title: "雙重避孕指引與衛教規範",
@@ -2304,12 +2192,13 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "latest-books",
+    navLabel: "書籍推薦",
     title: "書籍推薦：博客來、誠品與TAAZE讀冊選書",
     description:
       "整合博客來 4 大暢銷榜、誠品線上 27 類主題選書與 TAAZE 讀冊生活 10 大注目與編輯推薦書單，涵蓋醫療保健、心理勵志、飲食料理、親子教養、熟齡長照與生活風格，即時掌握優質書單、定價優惠與讀者口碑好書。",
     directAnswer:
       "書籍推薦服務整合台灣三大圖書通路，收錄博客來暢銷榜、誠品選書與 TAAZE 讀冊生活多元選書，涵蓋健康醫學、心理成長、生活風格與親子教養等多元好書，提供即時分類檢索與購書導覽。",
-    group: "public-facility",
+    group: "culture-tourism",
     scientificBasis: [
       {
         title: "圖書分類法與出版書目規範",
@@ -2322,7 +2211,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.moc.gov.tw",
       },
     ],
-    relatedSlugs: ["bookstores", "cultural-events", "family-cultural-activities"],
+    relatedSlugs: ["bookstores", "cultural-events", "public-art"],
     faqs: [
       {
         question: "「書籍推薦」收錄哪些通路與主題分類？",
@@ -2343,7 +2232,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "vet-clinics",
-    group: "public-facility",
+    group: "life-services",
     title: "全台動物醫院與獸醫診所查詢",
     description:
       "查詢全台各縣市開業之合法獸醫診療機構與動物醫院，支援附近定位與關鍵字搜尋。資料來源：農業部動植物防疫檢疫署。",
@@ -2372,7 +2261,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "metro-alerts",
-    group: "public-facility",
+    group: "transport-energy",
     title: "捷運營運與電梯檢修公告",
     description:
       "即時查詢臺北捷運各路線營運狀況、設備異常通報與各車站無障礙電梯檢修公告。資料來源：臺北大眾捷運公司。",
@@ -2401,7 +2290,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "youbike",
-    group: "public-facility",
+    group: "transport-energy",
     title: "公共自行車 (YouBike 2.0) 即時動態",
     description:
       "即時查詢北北桃竹（臺北市、新北市、桃園市、新竹市）YouBike 2.0 與 2.0E 租借站點、可借車輛與空位數量。",
@@ -2430,7 +2319,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pest-alerts",
-    group: "public-facility",
+    group: "disaster-safety",
     title: "農作物病蟲害即時預警",
     description:
       "即時查詢農業部動植物防檢署發布之全台農作物病蟲害即時示警與發生預警資訊。",
@@ -2459,7 +2348,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "power-grid-overview",
-    group: "public-facility",
+    group: "transport-energy",
     schemaType: "WebPage",
     title: "全台電力概況儀表板",
     description:
@@ -2483,7 +2372,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://service.taipower.com.tw",
       },
     ],
-    relatedSlugs: ["reservoir-status", "water-level-stations", "aqi"],
+    relatedSlugs: ["water-conditions", "aqi"],
     faqs: [
       {
         question: "這個儀表板的三份資料分別是什麼？",
@@ -2504,7 +2393,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cpc-prices",
-    group: "public-facility",
+    group: "transport-energy",
     title: "中油各式油氣牌價查詢",
     description:
       "即時查詢台灣中油（CPC）最新公告各式牌價，包含汽柴油零售（92/95/98/超級柴油）、家用天然氣、工業燃料油、桶裝液化石油氣（瓦斯）、海運用油、航空燃油、六大類油品、中油生技酒類及液化天然氣氣源成本分析。",
@@ -2550,7 +2439,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cpc-stations",
-    group: "public-facility",
+    group: "transport-energy",
     title: "中油加油站服務據點地圖",
     description:
       "全台台灣中油（CPC）加油站多功能服務地圖，聚合 20 大便民設施：洗車服務、電動機車充換電、汽車電動車充電、來速咖啡（Cup Go）、輪胎充氣、數位打氣機、自助加油、代收停車費、無障礙廁所與悠遊卡/一卡通支付，支援 GPS 定位與多選交叉篩選。",
@@ -2589,6 +2478,79 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
     schemaType: "WebPage",
   },
+  {
+    // issue #256: merged the 4-tool "green certification family" —
+    // "green-shops" (綠色商店查詢), "green-hotels" (環保標章旅館與綠色住宿查詢),
+    // "green-products" (環保標章產品查詢) and "green-restaurants" (環保餐廳查詢)
+    // — into one page with a certification-type tab. The shops/hotels/
+    // restaurants tabs reuse the existing generic FacilitySearchContent +
+    // facilitySearchConfigs (unchanged); the products tab reuses the existing
+    // bespoke GreenProductsContent unmodified — see GreenCertificationsContent.tsx.
+    // Indexability: green-shops was previously the one non-indexed member of
+    // this family (group "public-facility"); the other three were indexed
+    // (group "weather"). The merged page is indexed (see isToolIndexable) —
+    // it is now a substantive, single canonical page comparing all four
+    // certification types, not a thin single-type directory shell.
+    slug: "green-certifications",
+    group: "environment",
+    schemaType: "WebPage",
+    navLabel: "環保標章查詢",
+    title: "環保標章與綠色生活認證查詢",
+    description:
+      "整合環境部認證之綠色商店、環保標章旅館、環保標章產品與環保餐廳名冊，可切換認證類型查詢。資料來源：環境部開放資料（gp_p_01、gp_p_02、gp_p_42、gp_p_43、epr_p_02、gis_p_11）。",
+    directAnswer:
+      "環保標章與綠色生活認證查詢整合環境部綠色商店、環保標章旅館（金/銀/銅級）、環保標章產品與環保餐廳四類認證名冊，可切換分頁查詢各類綠色消費據點與產品。",
+    scientificBasis: [
+      {
+        title: "全民綠生活 - 綠色商店認證名冊",
+        authority: "環境部 (MOENV)",
+        url: "https://greenlifestyle.moenv.gov.tw",
+      },
+      {
+        title: "環保標章旅館認證作業規範 (gp_p_42, gp_p_43)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "環保標章資訊開放資料 (gp_p_02)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+      {
+        title: "環保餐廳環境即時通地圖資料 (gis_p_11)",
+        authority: "環境部 (MOENV)",
+        url: "https://data.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["public-toilets", "cool-spots", "carbon-footprint"],
+    faqs: [
+      {
+        question: "什麼是環境部認證綠色商店？",
+        answer:
+          "綠色商店是通過環境部認證、優先採購及販售環保標章商品的商店，資料來源為環境部認證名冊。切換上方「綠色商店」分頁即可查詢。",
+      },
+      {
+        question: "環保標章旅館的分級標準？",
+        answer:
+          "環境部依節能、省水、減廢、綠色採購等面向，評定為金級、銀級與銅級環保標章旅館。切換上方「環保旅館」分頁即可查詢。",
+      },
+      {
+        question: "什麼是環保標章產品？",
+        answer:
+          "經過環境部審查通過「低污染、省資源、可回收」之優良環境品質產品。切換上方「環保產品」分頁即可查詢。",
+      },
+      {
+        question: "什麼是「環保餐廳」？",
+        answer:
+          "環保餐廳是環境部「環境即時通」平台盤點響應減塑、節能減碳等環保作為之餐飲業者，供民眾用餐時可優先選擇具環保意識的店家。切換上方「環保餐廳」分頁即可查詢。",
+      },
+      {
+        question: "這個頁面是否包含原本四個獨立工具的內容？",
+        answer:
+          "是。原「綠色商店查詢」「環保標章旅館與綠色住宿查詢」「環保標章產品查詢」「環保餐廳查詢」四個工具已合併為本頁，原網址皆已 301 轉址於此，切換上方分頁即可分別查看，資料範圍與更新來源維持不變。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -2606,35 +2568,71 @@ export const compareToolTitles = (a: string, b: string): number =>
 TOOL_CATALOG.sort((a, b) => compareToolTitles(a.title, b.title));
 
 /**
- * Every tool in one group, collated per 5.1.
+ * Every tool in one group, collated per the navbar/footer stroke-order rule
+ * (see `compareByStrokeOrder`).
  *
  * `label` defaults to the catalog title; pass a localizer to sort by what the
- * reader actually sees.
+ * reader actually sees (and to sort by `navLabel` when present — callers that
+ * drive Nav/Footer should pass `(tool) => tool.navLabel ?? tool.title`).
  */
 /**
  * Whether a tool page should appear in the sitemap.
  *
- * The 16 registry-lookup pages (facility, ltc, disability, child-welfare,
- * green-shop, food) each set `robots: { index: false }` in their own metadata —
- * they are thin search shells over an external dataset, not indexable content.
- * The sitemap used to submit all 31 tools regardless, asking Google to crawl 16
- * URLs that then told it not to index them. The calculators are the indexable set.
- * `disaster-map` is matched by slug rather than group: it's real content (not a
- * thin registry shell) that happens to share the "public-facility" group with
- * many registry-lookup pages, so its indexability can't be derived from group
- * membership the way calculator/weather can.
+ * Most tools are thin search shells over an external open-data registry
+ * (facility/institution rosters, product/business registries) — not
+ * indexable content in their own right — versus a smaller set of tools that
+ * are genuinely substantive, frequently-changing content (health calculators,
+ * real-time environmental/disaster monitoring). This used to be derivable
+ * from `group` alone (`"calculator"` and the old `"weather"` group), but
+ * issue #256's reclassification mixes indexable and non-indexable tools
+ * within the same new group (e.g. "environment" holds both `aqi`, a
+ * real-time monitoring page, and `iaq-premises`, a thin premises registry).
+ * So indexability is now tracked directly as an explicit slug allowlist,
+ * decoupled from whatever `group` a tool happens to sit in.
+ *
+ * The allowlist preserves each tool's PRE-#256 indexability except
+ * `green-certifications`: three of its four merged sources (green-hotels,
+ * green-products, green-restaurants) were already indexed and only
+ * green-shops was not, and the merged page is a substantially richer,
+ * single canonical comparison across all four certification types — not a
+ * thin single-type shell — so it is indexed (a net SEO improvement for the
+ * green-shops content, not a demotion for the other three).
  */
+const INDEXABLE_SLUGS = new Set([
+  // "calculator" group — every tool in it is indexable.
+  "bmi",
+  "calories",
+  "nutrition",
+  "water",
+  "body-fat",
+  "waist-hip",
+  "heart-rate",
+  "blood-pressure",
+  "sleep",
+  "stress",
+  "lbm",
+  "vo2max",
+  // Formerly the "weather" group's substantive, frequently-updated content.
+  "uv",
+  "earthquakes",
+  "aqi",
+  "weather-alerts",
+  "aqx-monitoring",
+  "water-conditions",
+  "green-certifications",
+  // Real content that happens to share a group with registry-lookup pages.
+  "disaster-map",
+]);
+
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>
-  tool.group === "calculator" ||
-  tool.group === "weather" ||
-  tool.slug === "disaster-map";
+  INDEXABLE_SLUGS.has(tool.slug);
 
 export function toolsInGroup(
   group: ToolGroup,
   label: (tool: ToolCatalogEntry) => string = (tool) => tool.title,
 ): ToolCatalogEntry[] {
   return TOOL_CATALOG.filter((tool) => tool.group === group).sort((a, b) =>
-    compareToolTitles(label(a), label(b)),
+    compareByStrokeOrder(label(a), label(b)),
   );
 }
 

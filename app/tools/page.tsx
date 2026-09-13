@@ -95,27 +95,22 @@ const TOOL_ICONS: Record<string, string> = {
   "elder-welfare": "👵",
   "ltc-contracted": "🤝",
   "hakka-bogong": "🧓",
-  "green-shops": "🌿",
-  "child-welfare-nurseries": "👶",
-  "child-welfare-centers": "🎈",
+  "child-welfare-institutions": "👶",
   "weather-alerts": "⛈️",
   "public-toilets": "🚻",
   kindergartens: "🧩",
   "cram-schools": "📚",
   "child-safety-spots": "🛟",
-  "family-cultural-activities": "🎭",
   "npo-organizations": "🤝",
   "tax-organizations": "🤝",
   "travel-epidemic-alerts": "🌍",
   "cool-spots": "🧊",
   "iaq-premises": "💨",
   "cleaning-squads": "🧹",
-  "green-restaurants": "🍽️",
-  "carbon-footprint-products": "🌍",
-  "carbon-footprint-coefficients": "📐",
+  "carbon-footprint": "🌍",
   "aqx-monitoring": "🧪",
-  "water-level-stations": "💧",
-  "reservoir-status": "🏞️",
+  "water-conditions": "💧",
+  "green-certifications": "🌿",
   "disaster-map": "🆘",
   "heritage-map": "🏛️",
   "metro-alerts": "🚇",
@@ -131,12 +126,18 @@ interface ToolCategory {
   description: string;
   /**
    * Membership comes from ToolGroup, so this page cannot drift away from the
-   * nav dropdowns and the footer columns. It had drifted twice already: tools
-   * were added to the catalog, wired into a group, and stayed invisible here
-   * because nobody remembered to append the slug by hand.
+   * nav dropdowns and the footer columns (issue #256 reclassification: both
+   * derive from the same 9 `TOOL_GROUP_META` buckets in catalog.ts). It had
+   * drifted before: tools were added to the catalog, wired into a group, and
+   * stayed invisible here because nobody remembered to append the slug by
+   * hand.
    *
-   * `slugs` is the single exception — the twelve calculators are split into two
-   * curated sections, a distinction no group boundary expresses.
+   * `slugs` is the exception, for the three curated sections below that split
+   * a group's tools into a finer distinction no group boundary expresses (the
+   * twelve `calculator` tools into "body" vs. "cardio", and `registry` named
+   * as the drug/food registry-lookup section it actually is). Every group
+   * appears exactly once across these `slugs` sections and the `groups`
+   * sections further down — otherwise a tool would double-render.
    */
   groups?: ToolGroup[];
   slugs?: string[];
@@ -166,45 +167,62 @@ const CATEGORIES: ToolCategory[] = [
     slugs: ["heart-rate", "blood-pressure", "vo2max", "sleep", "stress"],
   },
   {
-    // food-nutrition and food-operators are group: "calculator" (issue #176
-    // folded the old standalone "food" ToolGroup into it), but a bare
-    // `groups: ["calculator"]` here would also re-match the 12 tools already
-    // claimed by "body" and "cardio" above — `groups` filters TOOL_CATALOG
-    // independently per category, it doesn't exclude what an earlier
-    // category already took. So this stays a third curated `slugs` section,
-    // same pattern as "body"/"cardio", instead of duplicating them.
-    id: "food",
-    title: "食品營養與業者登錄",
-    description: "衛福部食藥署食品營養成分分析與食品業者合法登錄資料庫",
-    slugs: ["food-nutrition", "food-operators"],
+    // The entire "registry" group (issue #256), named for what it actually
+    // is — drug/food registry & composition lookups — rather than as a
+    // groups-based section, so its tools don't also need excluding from a
+    // separate `groups: ["registry"]` section elsewhere in this list.
+    id: "registry",
+    title: "藥品食品登錄查詢",
+    description: "衛福部食藥署藥品許可證、食品營養成分與食品業者登錄資料庫",
+    slugs: ["drugs", "food-nutrition", "food-operators"],
   },
   {
-    id: "environment",
-    title: "即時環境監測",
+    id: "care-facility",
+    title: "醫療照護機構",
     description:
-      "中央氣象署、環境部、USGS 即時連線氣象與海嘯警報、紫外線、AQI 空氣品質與顯著地震監測",
-    groups: ["weather"],
-  },
-  {
-    id: "facility",
-    title: "醫療院所與長照福利資源",
-    description:
-      "全台健保特約醫院、診所、藥局、長照 2.0、居家醫療與身心障礙福利機構檢索",
-    groups: ["facility", "ltc", "disability"],
+      "全台健保特約醫院、診所、藥局、健康檢查機構、長照 2.0、居家醫療、老人與身心障礙福利機構檢索",
+    groups: ["care-facility"],
   },
   {
     id: "child-welfare",
     title: "兒少福利與教育資源",
-    description:
-      "全國親子館、兒少福利中心、幼兒園、短期補習班、婦幼安全警示地點與親子藝文活動",
+    description: "全國親子館與兒少福利中心、幼兒園、短期補習班、本土語言辭典",
     groups: ["child-welfare"],
   },
   {
-    id: "public-facility",
-    title: "便民服務",
+    id: "disaster-safety",
+    title: "防災與安全示警",
     description:
-      "全國公廁、環境部認證綠色商店、非營利組織(NPO)、實體書店、觀光工廠、毛孩認領養、國際旅遊疫情警示與防災地圖（避難收容處所／消防救援單位／應變中心）查詢",
-    groups: ["public-facility"],
+      "紫外線、地震、天氣警報、防災地圖、婦幼安全警示地點、國際旅遊疫情與農作物病蟲害預警",
+    groups: ["disaster-safety"],
+  },
+  {
+    id: "transport-energy",
+    title: "交通與能源",
+    description:
+      "YouBike、中油油價與站點地圖、電力概況儀表板與捷運營運公告",
+    groups: ["transport-energy"],
+  },
+  {
+    id: "environment",
+    title: "環境品質與綠色生活",
+    description:
+      "AQI／AQX 空品監測、室內空氣品質公告場所、水情（水位站／水庫）、地方清潔隊、環保標章與碳足跡查詢",
+    groups: ["environment"],
+  },
+  {
+    id: "culture-tourism",
+    title: "文化藝術與觀光",
+    description:
+      "全國藝文展覽與親子活動、公共藝術與演藝場所地圖、文化資產地圖、實體書店與觀光工廠",
+    groups: ["culture-tourism"],
+  },
+  {
+    id: "life-services",
+    title: "公益與生活服務",
+    description:
+      "非營利組織(NPO)、公廁、涼適點、無障礙ATM、毛孩認養與動物醫院查詢",
+    groups: ["life-services"],
   },
 ];
 

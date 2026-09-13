@@ -2,19 +2,25 @@ import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
-import { facilitySearchConfigs } from "../facilityConfigs";
+import CarbonFootprintContent from "./CarbonFootprintContent";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/green-restaurants`;
-const catalogEntry = getToolCatalogEntry("green-restaurants");
+const canonical = `${getBaseUrl()}/tools/carbon-footprint`;
+const catalogEntry = getToolCatalogEntry("carbon-footprint");
 
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["環保餐廳", "綠色餐廳", "環境即時通", "環保標章", "環境部"],
+  keywords: [
+    "產品碳足跡",
+    "碳足跡標籤",
+    "碳足跡排放係數",
+    "環境部",
+    "減碳",
+    "溫室氣體",
+  ],
   alternates: { canonical },
   robots: { index: false },
   openGraph: {
@@ -24,10 +30,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function GreenRestaurantsPage() {
+export default function CarbonFootprintPage() {
   return (
-    <ToolPageShell slug="green-restaurants" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs["green-restaurants"]} />
+    <ToolPageShell
+      slug="carbon-footprint"
+      title={catalogEntry.title}
+      maxWidthClassName="max-w-4xl"
+    >
+      <CarbonFootprintContent />
     </ToolPageShell>
   );
 }

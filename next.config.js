@@ -67,6 +67,63 @@ const nextConfig = {
         destination: "/tools/npo-organizations",
         permanent: true,
       },
+      // issue #256 (navbar/footer reclassification + 5 tool merges) — every
+      // merged-away slug 301s to its new merged tool page.
+      {
+        source: "/tools/child-welfare-nurseries",
+        destination: "/tools/child-welfare-institutions",
+        permanent: true,
+      },
+      {
+        source: "/tools/child-welfare-centers",
+        destination: "/tools/child-welfare-institutions",
+        permanent: true,
+      },
+      {
+        source: "/tools/green-shops",
+        destination: "/tools/green-certifications",
+        permanent: true,
+      },
+      {
+        source: "/tools/green-hotels",
+        destination: "/tools/green-certifications",
+        permanent: true,
+      },
+      {
+        source: "/tools/green-products",
+        destination: "/tools/green-certifications",
+        permanent: true,
+      },
+      {
+        source: "/tools/green-restaurants",
+        destination: "/tools/green-certifications",
+        permanent: true,
+      },
+      {
+        source: "/tools/water-level-stations",
+        destination: "/tools/water-conditions",
+        permanent: true,
+      },
+      {
+        source: "/tools/reservoir-status",
+        destination: "/tools/water-conditions",
+        permanent: true,
+      },
+      {
+        source: "/tools/family-cultural-activities",
+        destination: "/tools/cultural-events",
+        permanent: true,
+      },
+      {
+        source: "/tools/carbon-footprint-products",
+        destination: "/tools/carbon-footprint",
+        permanent: true,
+      },
+      {
+        source: "/tools/carbon-footprint-coefficients",
+        destination: "/tools/carbon-footprint",
+        permanent: true,
+      },
     ];
   },
 };

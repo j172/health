@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { toolsInGroup } from "@/lib/server/tools/catalog";
+import {
+  TOOL_GROUP_META,
+  toolsInGroup,
+  type ToolCatalogEntry,
+} from "@/lib/server/tools/catalog";
+import { compareByStrokeOrder } from "@/lib/server/tools/strokeOrder";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 const FooterColumn = ({
@@ -116,8 +121,12 @@ const ThreadsIcon = () => (
 
 export default function SiteFooter() {
   const { t, locale } = useLanguage();
-  const localizeTitle = (item: { slug: string; title: string }) =>
-    locale === "en" ? t(`catalog.${item.slug}`, item.title) : item.title;
+  // navLabel (issue #256) is the Nav/Footer-only display name — falls back to
+  // the SEO title when not set. Never affects the tool page's own metadata.
+  const localizeTitle = (item: ToolCatalogEntry) => {
+    const zhLabel = item.navLabel ?? item.title;
+    return locale === "en" ? t(`catalog.${item.slug}`, zhLabel) : zhLabel;
+  };
 
   const overviewLinks = [
     { href: "/", label: t("nav.home", "首頁") },
@@ -129,16 +138,17 @@ export default function SiteFooter() {
     },
   ];
 
-  // One helper, one comparator (SPECIFICATION.md 5.1). Sorting on localizeTitle
-  // rather than tool.title is what keeps the English footer in order — it used to
-  // sort by the Traditional Chinese title while rendering the English one.
-  const calculatorTools = toolsInGroup("calculator", localizeTitle);
-  const facilityTools = toolsInGroup("facility", localizeTitle);
-  const ltcTools = toolsInGroup("ltc", localizeTitle);
-  const disabilityTools = toolsInGroup("disability", localizeTitle);
-  const childWelfareTools = toolsInGroup("child-welfare", localizeTitle);
-  const publicFacilityTools = toolsInGroup("public-facility", localizeTitle);
-  const weatherTools = toolsInGroup("weather", localizeTitle);
+  // One column per TOOL_GROUP_META entry (issue #256 reclassification) — this
+  // mirrors SiteNav.tsx's category resolution exactly (same source array,
+  // same stroke-order comparator for both category and tool ordering) so the
+  // footer can never drift from the nav dropdowns or from an
+  // added/removed/re-grouped tool the way the old 7-hardcoded-columns layout
+  // could.
+  const categoryColumns = TOOL_GROUP_META.map((meta) => ({
+    id: meta.group,
+    label: t(meta.labelKey, meta.labelDefault),
+    tools: toolsInGroup(meta.group, localizeTitle),
+  })).sort((a, b) => compareByStrokeOrder(a.label, b.label));
 
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -202,8 +212,9 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        {/* Links Grid */}
-        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 dark:border-slate-900">
+        {/* Links Grid: 1 static overview column + 9 TOOL_GROUP_META columns
+            (issue #256) — two neat rows of 5 at the widest breakpoint. */}
+        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 dark:border-slate-900">
           <FooterColumn label={t("footer.overview", "全站總覽")}>
             {overviewLinks.map((item) => (
               <FooterLink key={item.href} href={item.href}>
@@ -212,61 +223,15 @@ export default function SiteFooter() {
             ))}
           </FooterColumn>
 
-          <FooterColumn label={t("nav.facilities", "醫療院所")}>
-            {facilityTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn label={t("nav.ltc", "長照機構")}>
-            {ltcTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn label={t("nav.disability", "身心障礙")}>
-            {disabilityTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn label={t("nav.childWelfare", "兒少福利")}>
-            {childWelfareTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn label={t("nav.publicServices", "便民服務")}>
-            {publicFacilityTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn label={t("nav.weather", "環境監測")}>
-            {weatherTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn label={t("footer.calculatorTools", "健康算盤與工具")}>
-            {calculatorTools.map((tool) => (
-              <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                {localizeTitle(tool)}
-              </FooterLink>
-            ))}
-          </FooterColumn>
+          {categoryColumns.map((category) => (
+            <FooterColumn key={category.id} label={category.label}>
+              {category.tools.map((tool) => (
+                <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
+                  {localizeTitle(tool)}
+                </FooterLink>
+              ))}
+            </FooterColumn>
+          ))}
         </div>
 
         {/* Bottom copyright */}

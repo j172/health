@@ -119,6 +119,11 @@ test("Catalog & Spec: catalog.ts and SPECIFICATION.md register child-native-lang
 
   const specPath = path.join(ROOT_DIR, "docs", "SPECIFICATION.md");
   const specContent = fs.readFileSync(specPath, "utf-8");
-  assert.ok(specContent.includes("兒少本土語言辭典（閩南語／客語）"), "SPECIFICATION must include dictionary");
-  assert.ok(specContent.includes("Total: 55 tools"), "SPECIFICATION must reflect 55 tools total");
+  // issue #256 reclassified 7 groups → 9 and merged 5 tool families (67 → 60
+  // tools); SPECIFICATION.md §5.2 now documents per-group counts in a table
+  // instead of enumerating every tool name (so it can't go stale the way the
+  // old hand-copied per-tool list did) — this only checks the group and the
+  // updated total are still documented, not an exact tool-name string.
+  assert.ok(specContent.includes("`child-welfare`"), "SPECIFICATION must document the child-welfare group");
+  assert.ok(specContent.includes("60 tools"), "SPECIFICATION must reflect 60 tools total");
 });
