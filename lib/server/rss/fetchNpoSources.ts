@@ -1352,3 +1352,116 @@ export async function fetchAnewsNews(): Promise<NpoFetchResult> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 21. 社團法人中華民國保護動物協會 (APA Taiwan)
+// ---------------------------------------------------------------------------
+export async function fetchApatwNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "apatw_news";
+  const sourceName = "apatw";
+  const feedName = "社團法人中華民國保護動物協會";
+  const baseUrl = "https://www.apatw.org";
+
+  try {
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+    let lastHttpStatus = 200;
+
+    // Crawl first 4 pages (pages 0 to 3, yielding ~16 articles)
+    for (let page = 0; page < 4; page++) {
+      const pageUrl = page === 0 ? `${baseUrl}/news` : `${baseUrl}/news?page=${page}`;
+      const response = await httpGetText(pageUrl, {
+        headers: DEFAULT_HEADERS,
+        timeoutMs: 15_000,
+      });
+
+      lastHttpStatus = response.status;
+      if (response.status < 200 || response.status >= 300) {
+        if (page === 0) {
+          return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+        }
+        break;
+      }
+
+      const $ = load(response.text);
+      const rows = $(".views-row").toArray();
+      if (rows.length === 0) break;
+
+      for (const el of rows) {
+        const anchor = $(el).find("h2.title a");
+        const href = anchor.attr("href");
+        const title = anchor.text().trim().replace(/\s+/g, " ");
+        if (!href || !title) continue;
+
+        const canonicalUrl = toAbsoluteUrl(href, baseUrl);
+        if (seen.has(canonicalUrl)) continue;
+        seen.add(canonicalUrl);
+
+        // Date extraction: "日期：2026-09-11"
+        const textContent = $(el).text();
+        const dateMatch = textContent.match(/日期[：:]\s*(\d{4}[./-]\d{1,2}[./-]\d{1,2})/);
+        const publishedAtUtc = dateMatch ? parseYmdToUtc(dateMatch[1]) : new Date();
+
+        // Summary extraction: .intro-text
+        const introText = $(el).find(".intro-text").text().trim().replace(/\s+/g, " ");
+        const description = introText || title;
+
+        // Image extraction: .rep-img img
+        const rawImg = $(el).find(".rep-img img").attr("src");
+        const assets: NewsAsset[] = [];
+        if (rawImg) {
+          const fullImg = toAbsoluteUrl(rawImg, baseUrl);
+          const localPath = await downloadArticleImage(fullImg).catch(() => null);
+          assets.push({
+            assetType: "image",
+            title: null,
+            url: localPath || fullImg,
+            sortOrder: 0,
+          });
+        }
+
+        // Semantic category tagging
+        let categoryRaw = "動物保護";
+        if (/活動|講座|論壇|志工|參觀|開放日|營隊|義賣/.test(title)) {
+          categoryRaw = "動保活動";
+        } else if (/照護|健康|醫療|疾病|癱瘓|飲食|結紮|疫苗|領養|認養/.test(title)) {
+          categoryRaw = "毛孩照護";
+        }
+
+        const externalId = canonicalUrl.match(/\/news\/(\d+)/)?.[1] || sha256(canonicalUrl).slice(0, 16);
+        const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, publishedAtUtc }));
+
+        items.push({
+          sourceName,
+          feedCode,
+          feedName,
+          externalId,
+          canonicalUrl,
+          sourceUrl: canonicalUrl,
+          title,
+          descriptionHtml: description,
+          descriptionText: description,
+          detailHtml: null,
+          detailText: null,
+          deptName: null,
+          categoryRaw,
+          displayType: null,
+          publishedAtUtc,
+          publicBeginAtTaipei: null,
+          publicEndAtTaipei: null,
+          payloadHash,
+          assets,
+          metaTitle: "",
+          metaDescription: "",
+          keywords: "",
+          geoSummary: "",
+        });
+      }
+    }
+
+    return { ok: true, httpStatus: lastHttpStatus, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+

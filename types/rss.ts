@@ -112,7 +112,8 @@ export type FeedCode =
   | "pchome_pet"
   | "pchome_living"
   | "ettoday_pet"
-  | "ncl_fmevents";
+  | "ncl_fmevents"
+  | "apatw_news";
 
 export interface FeedConfig {
   code: FeedCode;
