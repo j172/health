@@ -22,6 +22,25 @@ interface CpcStationsClientProps {
   allServices: string[];
 }
 
+const FUEL_TYPE_LABELS: Record<string, string> = {
+  unleaded92: "無鉛92",
+  unleaded95: "無鉛95",
+  unleaded98: "無鉛98",
+  alcoholGasoline: "酒精汽油",
+  kerosene: "煤油",
+  superDiesel: "超柴",
+};
+
+const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  memberCard: "會員卡",
+  selfServiceCard: "刷卡自助",
+  eInvoice: "電子發票",
+  easyCard: "悠遊卡",
+  iPassCard: "一卡通",
+  happyCash: "HappyCash",
+  selfServeDieselStation: "自助柴油站",
+};
+
 const QUICK_FILTERS = [
   { id: "wash", label: "🧽 洗車服務", service: "洗車服務" },
   { id: "selfGas", label: "⛽ 自助汽油", service: "自助汽油" },
@@ -345,6 +364,20 @@ export default function CpcStationsClient({
               const isSelected = selectedStationId === st.id;
               const services = st.extra_json?.services || [];
               const hours = st.extra_json?.serviceHours || {};
+              const fuelTypes = st.extra_json?.fuelTypes;
+              const paymentMethods = st.extra_json?.paymentMethods;
+              const businessHours = st.extra_json?.businessHours;
+              const washCategory = st.extra_json?.washCategory;
+              const availableFuels = fuelTypes
+                ? Object.entries(fuelTypes)
+                    .filter(([, v]) => v)
+                    .map(([k]) => FUEL_TYPE_LABELS[k] || k)
+                : [];
+              const availablePayments = paymentMethods
+                ? Object.entries(paymentMethods)
+                    .filter(([, v]) => v)
+                    .map(([k]) => PAYMENT_METHOD_LABELS[k] || k)
+                : [];
 
               return (
                 <div
@@ -388,6 +421,12 @@ export default function CpcStationsClient({
                     {hours["洗車服務"] && (
                       <div className="text-blue-600 dark:text-blue-400">
                         🧽 洗車時段：{hours["洗車服務"]}
+                        {washCategory ? `（${washCategory}）` : ""}
+                      </div>
+                    )}
+                    {businessHours && (
+                      <div>
+                        🕐 總營業時間：{businessHours}
                       </div>
                     )}
                   </div>
@@ -407,6 +446,42 @@ export default function CpcStationsClient({
                       </span>
                     ))}
                   </div>
+
+                  {/* Fuel Types & Payment Methods */}
+                  {(availableFuels.length > 0 || availablePayments.length > 0) && (
+                    <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
+                      {availableFuels.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                            ⛽ 供應油品：
+                          </span>
+                          {availableFuels.map((fuel) => (
+                            <span
+                              key={fuel}
+                              className="rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                            >
+                              {fuel}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {availablePayments.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                            💳 付款方式：
+                          </span>
+                          {availablePayments.map((method) => (
+                            <span
+                              key={method}
+                              className="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700 dark:bg-violet-950/40 dark:text-violet-300"
+                            >
+                              {method}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Footer Navigation Action */}
                   <div className="mt-4 flex items-center justify-between pt-2">

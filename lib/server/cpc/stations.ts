@@ -1,6 +1,25 @@
 import { withConnection } from "@/lib/server/db/mysql";
 import seedStations from "@/data/facilities-seeds/cpc_gas_station.json";
 
+export interface CpcFuelTypes {
+  unleaded92: boolean;
+  unleaded95: boolean;
+  unleaded98: boolean;
+  alcoholGasoline: boolean;
+  kerosene: boolean;
+  superDiesel: boolean;
+}
+
+export interface CpcPaymentMethods {
+  memberCard: boolean;
+  selfServiceCard: boolean;
+  eInvoice: boolean;
+  easyCard: boolean;
+  iPassCard: boolean;
+  happyCash: boolean;
+  selfServeDieselStation: boolean;
+}
+
 export interface CpcStationExtraJson {
   stationCode: string;
   postalCode: string;
@@ -8,6 +27,14 @@ export interface CpcStationExtraJson {
   serviceHours: Record<string, string>;
   landArea?: string;
   dataOrg: string;
+  /** 油品種類供應旗標，來自中油 getStationInfo 端點；並非所有站點都有此資料。 */
+  fuelTypes?: CpcFuelTypes;
+  /** 付款方式旗標，來自中油 getStationInfo 端點；並非所有站點都有此資料。 */
+  paymentMethods?: CpcPaymentMethods;
+  /** 總營業時間（非個別加值服務的時段），來自中油 getStationInfo 端點。 */
+  businessHours?: string;
+  /** 洗車類別（如：自助投幣式、精緻手工、洗車機），來自中油 getStationInfo 端點。 */
+  washCategory?: string;
 }
 
 export interface CpcStationItem {
