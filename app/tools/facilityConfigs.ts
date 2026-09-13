@@ -13,8 +13,8 @@ export const facilitySearchConfigs = {
     emoji: "🏥",
     title: "醫療院所查詢",
     description:
-      "查詢全民健保特約醫療院所。資料來源：衛福部中央健康保險署（目前收錄醫學中心、區域醫院、地區醫院）。",
-    searchPlaceholder: "輸入院所名稱或縣市關鍵字",
+      "查詢全民健保特約醫療院所與健保違規重大、停約及五年不予特約名冊。資料來源：衛福部中央健康保險署。",
+    searchPlaceholder: "輸入院所、醫師姓名、地址或縣市關鍵字",
     errorText: "查詢院所資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無已定位的院所，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的院所。",
@@ -25,6 +25,7 @@ export const facilitySearchConfigs = {
       { value: "區域醫院", label: "區域醫院" },
       { value: "地區醫院", label: "地區醫院" },
       { value: "基層診所", label: "基層診所" },
+      { value: "違規／停約", label: "⚠️ 違規／停約名單" },
       { value: "避孕諮詢", label: "🛡️ 避孕諮詢診所" },
     ],
   },

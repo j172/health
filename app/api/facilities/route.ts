@@ -70,6 +70,24 @@ function getFacilitySeedFallback(
       }));
     }
 
+    if (options.serviceItem === "違規／停約" && facilityType === "clinic") {
+      const penaltySeedPath = path.join(process.cwd(), "data", "facilities-seeds", "nhi-penalties.json");
+      if (fs.existsSync(penaltySeedPath)) {
+        const parsed = JSON.parse(fs.readFileSync(penaltySeedPath, "utf-8"));
+        const list = Array.isArray(parsed) ? parsed : [];
+        raw = list.map((item: any, idx: number) => ({
+          id: item.id ?? idx + 1,
+          name: item.name,
+          address: item.address ?? null,
+          phone: item.phone ?? null,
+          lat: item.lat ?? null,
+          lng: item.lng ?? null,
+          service_item: item.service_item ?? item.serviceItem ?? "健保違規停約",
+          extra_json: item.extra_json ?? item.extra ?? null,
+        }));
+      }
+    }
+
     if (!raw) {
       const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
       if (fs.existsSync(seedPath)) {
@@ -99,12 +117,15 @@ function getFacilitySeedFallback(
         const n = (item.name || "").toLowerCase().replace(/臺/g, "台");
         const a = (item.address || "").toLowerCase().replace(/臺/g, "台");
         const s = (item.service_item || "").toLowerCase().replace(/臺/g, "台");
-        return n.includes(kw) || a.includes(kw) || s.includes(kw);
+        const p = (item.extra_json?.penalty?.practitioner || "").toLowerCase().replace(/臺/g, "台");
+        return n.includes(kw) || a.includes(kw) || s.includes(kw) || p.includes(kw);
       });
     }
 
     // 2. Category / serviceItem filter
-    if (options.serviceItem) {
+    if (options.serviceItem === "違規／停約" || options.serviceItem === "違規" || options.serviceItem === "停約") {
+      list = list.filter((item) => Boolean(item.extra_json?.penalty || item.service_item?.includes("違規") || item.service_item?.includes("停約")));
+    } else if (options.serviceItem) {
       const cat = options.serviceItem.trim();
       list = list.filter((item) => item.service_item && item.service_item.includes(cat));
     }

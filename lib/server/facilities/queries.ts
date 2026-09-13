@@ -239,11 +239,13 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
     const params: unknown[] = [facilityType];
 
     if (keyword) {
-      conditions.push("(name LIKE ? OR address LIKE ?)");
-      params.push(`%${keyword}%`, `%${keyword}%`);
+      conditions.push("(name LIKE ? OR address LIKE ? OR JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.penalty.practitioner')) LIKE ?)");
+      params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
     }
 
-    if (serviceItem) {
+    if (serviceItem === "違規／停約" || serviceItem === "違規" || serviceItem === "停約") {
+      conditions.push("(JSON_EXTRACT(extra_json, '$.penalty') IS NOT NULL OR source_key = 'nhi_penalty' OR service_item LIKE '%違規%' OR service_item LIKE '%停約%')");
+    } else if (serviceItem) {
       // Substring match, not exact — some sources (e.g. disability_atm) store
       // a combined service_item like "輪椅可及、語音服務" for a row that
       // qualifies under more than one category filter value; a plain "="
