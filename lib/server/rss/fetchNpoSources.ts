@@ -1464,4 +1464,135 @@ export async function fetchApatwNews(): Promise<NpoFetchResult> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 24. 社企流 (Social Enterprise Insights)
+// ---------------------------------------------------------------------------
+export async function fetchSeinsightsNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "seinsights_news";
+  const sourceName = "seinsights";
+  const feedName = "社企流";
+  const baseUrl = "https://www.seinsights.asia";
+
+  try {
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+    let lastHttpStatus = 200;
+
+    // Fetch pages 1 to 3 (10 articles per page, ~30 articles total)
+    for (let page = 1; page <= 3; page++) {
+      const pageUrl = page === 1 ? `${baseUrl}/section` : `${baseUrl}/section?page=${page}`;
+      const response = await httpGetText(pageUrl, {
+        headers: DEFAULT_HEADERS,
+        timeoutMs: 15_000,
+      });
+
+      lastHttpStatus = response.status;
+      if (response.status < 200 || response.status >= 300) {
+        if (page === 1) {
+          return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+        }
+        break;
+      }
+
+      const text = response.text;
+      const startTag = '<script id="__NEXT_DATA__" type="application/json">';
+      const startIndex = text.indexOf(startTag);
+      if (startIndex === -1) {
+        if (page === 1) {
+          return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: "Missing __NEXT_DATA__ in page" };
+        }
+        break;
+      }
+
+      const endIndex = text.indexOf("</script>", startIndex);
+      if (endIndex === -1) break;
+
+      const jsonStr = text.slice(startIndex + startTag.length, endIndex);
+      let parsedData: any;
+      try {
+        parsedData = JSON.parse(jsonStr);
+      } catch {
+        break;
+      }
+
+      const posts = parsedData?.props?.pageProps?.sectionObj?.posts || [];
+      if (!Array.isArray(posts) || posts.length === 0) break;
+
+      for (const post of posts) {
+        if (!post?.id || !post?.title) continue;
+        const canonicalUrl = `${baseUrl}/article/${post.id}`;
+        if (seen.has(canonicalUrl)) continue;
+        seen.add(canonicalUrl);
+
+        const title = String(post.title).trim();
+        const publishedAtUtc = post.publishDate ? new Date(post.publishDate) : new Date();
+
+        // Extract section and category tags
+        const tags: string[] = [];
+        if (Array.isArray(post.section)) {
+          for (const sec of post.section) {
+            if (sec?.name) tags.push(String(sec.name).trim());
+          }
+        }
+        if (Array.isArray(post.category)) {
+          for (const cat of post.category) {
+            if (cat?.name) tags.push(String(cat.name).trim());
+          }
+        }
+        const categoryRaw = tags.length > 0 ? tags.join("、") : "社會創新";
+
+        // Summary / Description: heroCaption or title
+        const description = (post.heroCaption ? String(post.heroCaption).trim() : "") || title;
+
+        // Image extraction: heroImage.resized.w800 or original
+        const rawImg = post.heroImage?.resized?.w800 || post.heroImage?.resized?.original || null;
+        const assets: NewsAsset[] = [];
+        if (rawImg) {
+          const localPath = await downloadArticleImage(rawImg).catch(() => null);
+          assets.push({
+            assetType: "image",
+            title: null,
+            url: localPath || rawImg,
+            sortOrder: 0,
+          });
+        }
+
+        const externalId = `seinsights_${post.id}`;
+        const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, publishedAtUtc }));
+
+        items.push({
+          sourceName,
+          feedCode,
+          feedName,
+          externalId,
+          canonicalUrl,
+          sourceUrl: canonicalUrl,
+          title,
+          descriptionHtml: description,
+          descriptionText: description,
+          detailHtml: null,
+          detailText: null,
+          deptName: null,
+          categoryRaw,
+          displayType: null,
+          publishedAtUtc,
+          publicBeginAtTaipei: null,
+          publicEndAtTaipei: null,
+          payloadHash,
+          assets,
+          metaTitle: "",
+          metaDescription: "",
+          keywords: tags.join(","),
+          geoSummary: "",
+        });
+      }
+    }
+
+    return { ok: true, httpStatus: lastHttpStatus, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+
 
