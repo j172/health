@@ -108,6 +108,7 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.powerGenerationMix);
   await p.query(TABLE_DDL.powerRadiationStations);
   await p.query(TABLE_DDL.nativeDictEntries);
+  await p.query(TABLE_DDL.cpcPrices);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

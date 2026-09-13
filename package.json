@@ -35,6 +35,8 @@
     "import:tgos": "node scripts/import-tgos-geocode-results.mjs",
     "import:tourism-factories": "node scripts/import-ida-tourism-factories.mjs",
     "import:bookstores": "node scripts/import-moc-bookstores.mjs",
+    "import:cpc-prices": "node scripts/import-cpc-prices.mjs",
+    "import:cpc-stations": "node scripts/import-cpc-stations.mjs",
     "build:seeds": "node scripts/build-facility-seeds.mjs",
     "sync:npo": "node scripts/gha-npo-sync.mjs"
   },

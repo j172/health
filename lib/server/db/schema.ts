@@ -1280,6 +1280,32 @@ export const TABLE_DDL = {
       KEY idx_native_dict_lang_dialect (lang, dialect)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 便民服務：台灣中油 (CPC) 油品/天然氣/燃料油/瓦斯等 9 大牌價與成本資料
+  cpcPrices: `
+    CREATE TABLE IF NOT EXISTS cpc_prices (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      category VARCHAR(64) NOT NULL,
+      product_code VARCHAR(64) NULL,
+      product_name VARCHAR(128) NOT NULL,
+      package_type VARCHAR(64) NULL,
+      target_customer VARCHAR(128) NULL,
+      delivery_point VARCHAR(256) NULL,
+      unit VARCHAR(32) NOT NULL,
+      price DECIMAL(10, 4) NOT NULL,
+      tax_desc VARCHAR(64) NULL,
+      goods_tax VARCHAR(64) NULL,
+      effective_date VARCHAR(32) NULL,
+      remark TEXT NULL,
+      payload_hash VARCHAR(64) NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_cpc_price_prod (category, product_code, product_name, package_type, delivery_point(100), effective_date),
+      KEY idx_cpc_price_cat (category),
+      KEY idx_cpc_price_eff (effective_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

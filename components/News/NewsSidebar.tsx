@@ -12,6 +12,7 @@ import LocalWeatherSvgWidget from "@/components/Tools/LocalWeatherSvgWidget";
 import WaterOutageSidebarWidget from "@/components/Tools/WaterOutageSidebarWidget";
 import CdcAlertSidebarWidget from "@/components/Tools/CdcAlertSidebarWidget";
 import PestAlertSidebarWidget from "@/components/Tools/PestAlertSidebarWidget";
+import CpcPriceSidebarWidget from "@/components/Tools/CpcPriceSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { toTaipei, displayDate } from "@/lib/format/news";
 import { type CwaAlertItem } from "@/lib/server/cwa/queries";
@@ -50,6 +51,7 @@ export default function NewsSidebar({
       <WaterOutageSidebarWidget />
       <CdcAlertSidebarWidget />
       <PestAlertSidebarWidget />
+      <CpcPriceSidebarWidget />
 
       {/* 6. Source Categories Cloud (公衛與新聞來源) */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
