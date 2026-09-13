@@ -50,11 +50,13 @@ jobs:
 
       # Admin sync endpoints have been observed getting a JS anti-bot
       # challenge page instead of JSON when called from a GitHub Actions
-      # runner IP hitting the public domain — tunnel to the app's own
-      # loopback instead, same as every other scheduled sync in this repo.
-      # Background process persists into later steps of this job (same
-      # runner VM), so it only needs to be started once here.
-      - name: Open SSH tunnel to production loopback
+      # runner IP hitting the public domain.
+      # HawkHost disables TCP forwarding (AllowTcpForwarding no), so an
+      # `ssh -L` tunnel fails with "administratively prohibited".
+      # We start a transparent local SSH loopback bridge (scripts/lib/ssh-bridge.mjs)
+      # on 127.0.0.1:18080 that multiplexes HTTP requests into remote curl calls
+      # against the production host's own 127.0.0.1:3000.
+      - name: Start SSH loopback bridge
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -65,15 +67,31 @@ jobs:
           KEY_FILE="$RUNNER_TEMP/deploy_key"
           printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
           chmod 600 "$KEY_FILE"
-          ssh -i "$KEY_FILE" -p "$SSH_PORT" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 \
-            -o ServerAliveInterval=30 -N -L 18080:127.0.0.1:3000 "$SSH_USER@$SSH_HOST" &
-          echo $! > "$RUNNER_TEMP/tunnel.pid"
+
+          SSH_KEY_FILE="$KEY_FILE" \
+          SSH_HOST="$SSH_HOST" \
+          SSH_PORT="$SSH_PORT" \
+          SSH_USER="$SSH_USER" \
+          PORT=18080 \
+          node scripts/lib/ssh-bridge.mjs &
+          echo $! > "$RUNNER_TEMP/bridge.pid"
+
+          # 1. Local liveness probe
+          echo "Waiting for ssh-bridge to listen on 127.0.0.1:18080..."
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/healthz >/dev/null 2>&1; then break; fi
+            sleep 0.2
+          done
+          curl -fsS http://127.0.0.1:18080/healthz
+
+          # 2. End-to-end probe verifying SSH multiplexer + remote app connectivity
+          echo "Verifying end-to-end connectivity via /api/aqi..."
           for _ in $(seq 1 20); do
-            if curl -s -o /dev/null "http://127.0.0.1:18080/api/aqi"; then break; fi
+            if curl -fsS -o /dev/null "http://127.0.0.1:18080/api/aqi"; then break; fi
             sleep 0.5
           done
           curl -fsS -o /dev/null "http://127.0.0.1:18080/api/aqi"
-          echo "Tunnel ready on 127.0.0.1:18080."
+          echo "SSH loopback bridge ready on 127.0.0.1:18080."
 
       # scripts/run-six-monthly-sync.sh runs both the facilities-directory
       # sync (+ its geocode backfill) and the TFDA drug syncs in one pass —
@@ -180,11 +198,11 @@ jobs:
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-moc-bookstores.mjs
 
-      - name: Close SSH tunnel
+      - name: Stop SSH loopback bridge
         if: always()
         run: |
-          if [ -f "$RUNNER_TEMP/tunnel.pid" ]; then
-            kill "$(cat "$RUNNER_TEMP/tunnel.pid")" 2>/dev/null || true
+          if [ -f "$RUNNER_TEMP/bridge.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/bridge.pid")" 2>/dev/null || true
           fi
           rm -f "$RUNNER_TEMP/deploy_key"
 

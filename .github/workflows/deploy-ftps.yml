@@ -574,6 +574,7 @@ jobs:
           exit 1
 
       - name: Purge Cloudflare cache
+        continue-on-error: true
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -594,12 +595,27 @@ jobs:
           # /news and /tools now carry short-TTL "Cache-Control: public" (see
           # next.config.js) — without this, a stale prebuilt page could sit in
           # Cloudflare's/LiteSpeed's cache for up to that TTL after a deploy.
-          curl --fail --show-error --silent \
+          #
+          # Issue #229: If CLOUDFLARE_API_TOKEN is revoked or expired (401),
+          # emit a GitHub Actions warning annotation rather than aborting the deploy
+          # and skipping downstream crontab sync and 20+ open-data imports.
+          HTTP_OUTPUT="$(curl --show-error --silent \
             --request POST \
             --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             --header "Content-Type: application/json" \
             --data '{"purge_everything":true}' \
-            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" | jq .
+            --write-out "\n__HTTP_STATUS__:%{http_code}" \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache" || true)"
+
+          HTTP_CODE="$(printf '%s\n' "$HTTP_OUTPUT" | grep '^__HTTP_STATUS__:' | cut -d':' -f2 || echo "000")"
+          RESPONSE_BODY="$(printf '%s\n' "$HTTP_OUTPUT" | sed '/^__HTTP_STATUS__:/d')"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            printf '%s\n' "$RESPONSE_BODY" | jq . || printf '%s\n' "$RESPONSE_BODY"
+          else
+            echo "::warning::Cloudflare cache purge failed with HTTP $HTTP_CODE: $RESPONSE_BODY"
+            echo "Proceeding with deployment to avoid blocking scheduled crontab and open-data syncs."
+          fi
 
       - name: Sync scheduled-task crontab
         continue-on-error: true
