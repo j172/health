@@ -11,6 +11,7 @@ import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
 import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
 import { runNpoActivitiesSync } from "@/lib/server/culture/ingestNpoActivities";
 import { runSeinsightsEventsSync } from "@/lib/server/culture/ingestSeinsightsEvents";
+import { runG0vEventsSync } from "@/lib/server/culture/ingestG0vEvents";
 import { runPresidentialVisitSync } from "@/lib/server/culture/ingestPresidentialVisit";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
@@ -139,8 +140,9 @@ export const registerCronJobs = (): void => {
       const shows = await runCulturalShowsSync();
       const npo = await runNpoActivitiesSync();
       const seinsights = await runSeinsightsEventsSync();
+      const g0v = await runG0vEventsSync();
       const presidential = await runPresidentialVisitSync();
-      return { shows, npo, seinsights, presidential };
+      return { shows, npo, seinsights, g0v, presidential };
     }),
   );
   // Public art sync daily at 3am
