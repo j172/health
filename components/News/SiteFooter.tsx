@@ -123,9 +123,11 @@ export default function SiteFooter() {
     { href: "/", label: t("nav.home", "首頁") },
     { href: "/news", label: t("footer.newsList", "健康新聞列表") },
     { href: "/privacy", label: t("footer.privacy", "隱私權政策") },
-  ].sort((a, b) =>
-    a.label.localeCompare(b.label, "zh-Hant", { numeric: true }),
-  );
+    {
+      href: "/llm-info",
+      label: t("footer.llmInfo", "Hey AI, learn about j172.tw Healthz"),
+    },
+  ];
 
   // One helper, one comparator (SPECIFICATION.md 5.1). Sorting on localizeTitle
   // rather than tool.title is what keeps the English footer in order — it used to

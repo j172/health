@@ -51,6 +51,7 @@
     "newsList": "健康新聞列表",
     "tagline": "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。",
     "mainSite": "主站 j172.tw",
+    "llmInfo": "Hey AI, learn about j172.tw Healthz",
     "disclaimer": "本站資料彙整自政府與公衛機構公開 RSS 及數據 API，內容以原始公告單位為準。"
   },
   "tts_title": "語音朗讀",

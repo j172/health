@@ -113,6 +113,7 @@
     "newsList": "Health News",
     "tagline": "Aggregating public information from the Ministry of Health and Welfare, CDC, TFDA, and major health news outlets to help you stay on top of Taiwan's latest public health and air quality updates.",
     "mainSite": "Main Site j172.tw",
+    "llmInfo": "Hey AI, learn about j172.tw Healthz",
     "disclaimer": "Data on this site is aggregated from public RSS feeds and APIs provided by government and public health agencies; content is subject to the original publishing authority."
   },
   "tts_title": "Voice Reader",

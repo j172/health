@@ -31,6 +31,7 @@ export async function GET(): Promise<Response> {
     "## 系統核心資訊與端點 (System Overview & Endpoints)",
     `- Canonical Base URL: ${baseUrl}`,
     `- Short AI Index: ${baseUrl}/llms.txt`,
+    `- AI Assistant Official Profile (Hey AI): ${baseUrl}/llm-info`,
     `- RSS 2.0 Feed: ${baseUrl}/feed.xml`,
     `- XML Sitemap: ${baseUrl}/sitemap.xml`,
     `- Google News Sitemap: ${baseUrl}/news-sitemap.xml`,

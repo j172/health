@@ -34,6 +34,7 @@ export async function GET(): Promise<Response> {
     `- RSS 2.0 Feed: ${baseUrl}/feed.xml`,
     `- XML Sitemap: ${baseUrl}/sitemap.xml`,
     `- Google News Sitemap: ${baseUrl}/news-sitemap.xml`,
+    `- AI Assistant Official Profile (Hey AI): ${baseUrl}/llm-info`,
     `- LLM Full Knowledge Base: ${baseUrl}/llms-full.txt`,
     "",
     "## 多語言支援 (Multi-language Support)",
