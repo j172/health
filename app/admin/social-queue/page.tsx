@@ -62,7 +62,7 @@ export default async function SocialQueuePage({
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
           Unauthorized
         </p>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
           Open this page once as <code>/admin/social-queue/enter?key=…</code> to
           start a session.
         </p>
@@ -77,13 +77,13 @@ export default async function SocialQueuePage({
       <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100">
         社群貼文草稿佇列
       </h1>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
         Phase 1：僅供檢視，尚未串接 Meta Graph／Threads API，不會實際發布。
       </p>
 
       <div className="mt-6 space-y-4">
         {rows.length === 0 && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             目前沒有排入佇列的草稿。
           </p>
         )}
@@ -111,7 +111,7 @@ export default async function SocialQueuePage({
                 >
                   {row.status}
                 </span>
-                <span className="text-slate-400">
+                <span className="text-slate-600">
                   {formatUtc(row.created_at)}
                 </span>
               </div>

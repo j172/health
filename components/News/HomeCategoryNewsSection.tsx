@@ -62,7 +62,7 @@ export default function HomeCategoryNewsSection({
         <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl xl:text-4xl">
           最新健康動態與即時新聞
         </h2>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">依來源分類快速瀏覽，查看你最在意的健康資訊</p>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">依來源分類快速瀏覽，查看你最在意的健康資訊</p>
       </div>
 
       <div className="mb-1 flex flex-wrap items-center justify-center gap-3">
@@ -96,7 +96,7 @@ export default function HomeCategoryNewsSection({
       </div>
 
       {visibleItems.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
           目前此分類暫無可顯示的最新新聞。
         </div>
       ) : (

@@ -23,7 +23,7 @@ export default function AqiSidebarWidget() {
         <>
           <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                 {station.county} · {station.siteName}測站 · 約 {station.distanceKm} km
               </p>
               <div className="mt-1 flex items-center gap-2">
@@ -38,7 +38,7 @@ export default function AqiSidebarWidget() {
             </div>
             {station.pm25 !== null && (
               <div className="text-right">
-                <span className="block text-[10px] uppercase font-semibold text-slate-400">PM2.5</span>
+                <span className="block text-[10px] uppercase font-semibold text-slate-600">PM2.5</span>
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{station.pm25} μg/m³</span>
               </div>
             )}

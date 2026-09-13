@@ -228,7 +228,7 @@ export default function PetAdoptionContent() {
 
       {/* Main Content Area */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-500 dark:text-slate-400 text-sm">
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-600 dark:text-slate-400 text-sm">
           <LoadingOrb size={32} />
           <span>正在載入最新認領養毛孩名單...</span>
         </div>

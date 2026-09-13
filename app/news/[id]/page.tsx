@@ -128,7 +128,7 @@ export default async function NewsDetailPage({
           {/* Breadcrumbs */}
           <nav
             aria-label="Breadcrumb"
-            className="mb-8 text-xs font-semibold text-slate-400"
+            className="mb-8 text-xs font-semibold text-slate-600"
           >
             <ol className="flex flex-wrap items-center gap-x-2">
               <li>
@@ -176,7 +176,7 @@ export default async function NewsDetailPage({
               <h1 className="mt-5 text-2xl leading-snug font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl dark:text-slate-100">
                 <LocalizedText>{news.title}</LocalizedText>
               </h1>
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-slate-600 dark:text-slate-400">
                 <span className="font-bold text-slate-800 dark:text-slate-200">
                   {authorLabel}
                 </span>
@@ -207,7 +207,7 @@ export default async function NewsDetailPage({
                     <span>💡</span>
                     <span>AI 核心摘要 (GEO Index)</span>
                   </p>
-                  <span className="font-mono text-[10px] text-slate-400">
+                  <span className="font-mono text-[10px] text-slate-600">
                     Generative Search Ready
                   </span>
                 </div>
@@ -219,11 +219,11 @@ export default async function NewsDetailPage({
             {hero ? (
               <HeroImage
                 src={hero.url}
-                alt={
-                  hero.attribution?.contributorName ||
-                  hero.caption ||
-                  news.title
-                }
+                // Falls back to "" (decorative), not news.title — the <h1>
+                // right above already renders that exact text, so repeating
+                // it as alt would be redundant noise for screen readers
+                // (issue #262, Lighthouse "redundant alt text").
+                alt={hero.attribution?.contributorName || hero.caption || ""}
                 caption={hero.caption}
                 attribution={hero.attribution}
               />

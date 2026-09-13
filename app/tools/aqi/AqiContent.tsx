@@ -42,11 +42,11 @@ function AqiPollutant({
 }) {
   return (
     <div className="rounded-lg bg-slate-50 p-2 text-center dark:bg-slate-800/60">
-      <p className="text-[11px] font-semibold text-slate-400">{label}</p>
+      <p className="text-[11px] font-semibold text-slate-600">{label}</p>
       <p className="mt-0.5 text-xs font-bold text-slate-800 dark:text-slate-200">
         {value !== null ? value : "—"}
       </p>
-      <p className="text-[10px] text-slate-400">{unit}</p>
+      <p className="text-[10px] text-slate-600">{unit}</p>
     </div>
   );
 }
@@ -100,7 +100,7 @@ export default function AqiContent() {
             <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl dark:text-slate-100">
               全台 AQI 空氣品質即時監測 Dashboard
             </h1>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
               環境部開放資料 · 每 30 分鐘自動同步更新
             </p>
           </div>
@@ -111,6 +111,7 @@ export default function AqiContent() {
             <select
               value={county}
               onChange={(e) => setCounty(e.target.value)}
+              aria-label="縣市"
               className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
               <option value="">全台 22 縣市測站</option>
@@ -121,14 +122,14 @@ export default function AqiContent() {
               ))}
             </select>
             {stations && (
-              <span className="text-xs font-semibold text-slate-400">
+              <span className="text-xs font-semibold text-slate-600">
                 顯示 {stations.length} 個監測站
               </span>
             )}
           </div>
 
           {updatedAt && (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-600">
               更新時間：{new Date(updatedAt).toLocaleString("zh-TW")}
             </span>
           )}
@@ -153,7 +154,7 @@ export default function AqiContent() {
       )}
 
       {!loading && !error && stations && stations.length === 0 && (
-        <div className="py-12 text-center text-sm text-slate-400">
+        <div className="py-12 text-center text-sm text-slate-600">
           目前無符合條件的 AQI 測站資料。
         </div>
       )}
@@ -171,7 +172,7 @@ export default function AqiContent() {
                   <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
                     {tDynamic(site.siteName)}
                   </h3>
-                  <p className="text-xs font-medium text-slate-400">
+                  <p className="text-xs font-medium text-slate-600">
                     {tDynamic(site.county)}
                   </p>
                 </div>

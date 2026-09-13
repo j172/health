@@ -28,7 +28,7 @@ function WeatherSvgIcon({ condition }: { condition: string | null }) {
         <path
           d="M20 38a14 14 0 1 1 27.5-4.5A11 11 0 1 1 52 44H20a10 10 0 0 1 0-20c.5 0 1 .05 1.5.15A14 14 0 0 1 20 38Z"
           fill="currentColor"
-          className="text-slate-400 dark:text-slate-500"
+          className="text-slate-600 dark:text-slate-500"
           opacity="0.9"
         />
         <path
@@ -48,7 +48,7 @@ function WeatherSvgIcon({ condition }: { condition: string | null }) {
         <path
           d="M20 34a14 14 0 1 1 27.5-4.5A11 11 0 1 1 52 40H20a10 10 0 0 1 0-20c.5 0 1 .05 1.5.15A14 14 0 0 1 20 34Z"
           fill="currentColor"
-          className="text-slate-400 dark:text-slate-500"
+          className="text-slate-600 dark:text-slate-500"
           opacity="0.85"
         />
         <line x1="24" y1="44" x2="20" y2="54" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
@@ -60,7 +60,7 @@ function WeatherSvgIcon({ condition }: { condition: string | null }) {
 
   if (c.includes("陰") || c.includes("雲")) {
     return (
-      <svg className="h-12 w-12 text-slate-400" viewBox="0 0 64 64" fill="none">
+      <svg className="h-12 w-12 text-slate-600" viewBox="0 0 64 64" fill="none">
         <circle cx="26" cy="24" r="10" fill="#f59e0b" opacity="0.8" />
         <path
           d="M20 38a14 14 0 1 1 27.5-4.5A11 11 0 1 1 52 44H20a10 10 0 0 1 0-20c.5 0 1 .05 1.5.15A14 14 0 0 1 20 38Z"
@@ -161,7 +161,7 @@ export default function LocalWeatherSvgWidget() {
       showSpinner={loading && !weather}
       hasData={Boolean(weather)}
       emptyMessage="暫無測站即時天氣觀測資料"
-      footerHref="/tools/rainfall"
+      footerHref="/tools/weather-alerts"
       footerLabel="查詢全台即時降雨與測站 →"
     >
       {weather && (
@@ -175,7 +175,7 @@ export default function LocalWeatherSvgWidget() {
                 {weather.weather || "舒適晴朗"}
               </span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
               {locationTitle} · 距離約 {weather.distance_km}km
             </p>
             {weather.precipitation && Number(weather.precipitation) > 0 && (

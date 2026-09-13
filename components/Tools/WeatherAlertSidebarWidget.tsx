@@ -87,7 +87,7 @@ export default function WeatherAlertSidebarWidget({
             即時氣象警報
           </h3>
         </div>
-        <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+        <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
           中央氣象署
         </span>
       </div>
@@ -139,7 +139,7 @@ export default function WeatherAlertSidebarWidget({
                     <p className="mt-1.5 line-clamp-2 text-[11px] font-medium text-slate-600 dark:text-slate-400">
                       📍 {alert.area_desc}
                       {alert.area_count && alert.area_count > 1 ? (
-                        <span className="ml-1 font-semibold text-slate-500 dark:text-slate-500">
+                        <span className="ml-1 font-semibold text-slate-600 dark:text-slate-500">
                           （共 {alert.area_count} 個地區）
                         </span>
                       ) : null}
@@ -147,7 +147,7 @@ export default function WeatherAlertSidebarWidget({
                   ) : null}
 
                   {until ? (
-                    <p className="mt-1 text-[10px] font-medium text-slate-500 dark:text-slate-500">
+                    <p className="mt-1 text-[10px] font-medium text-slate-600 dark:text-slate-500">
                       有效至 {until}
                     </p>
                   ) : null}
@@ -158,14 +158,14 @@ export default function WeatherAlertSidebarWidget({
         ) : (
           <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
             <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
                 全台天氣概況
               </p>
               <div className="mt-1 flex items-center gap-2">
                 <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                   正常
                 </span>
-                <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white shadow-xs">
+                <span className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-xs font-bold text-white shadow-xs dark:bg-emerald-600">
                   無特報
                 </span>
               </div>

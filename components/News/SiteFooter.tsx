@@ -18,7 +18,7 @@ const FooterColumn = ({
   children: React.ReactNode;
 }) => (
   <div>
-    <p className="text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+    <p className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-500">
       {label}
     </p>
     <ul className="mt-3 space-y-2 text-xs font-medium">{children}</ul>
@@ -35,7 +35,7 @@ const FooterLink = ({
   <li>
     <Link
       href={href}
-      className="text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+      className="text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
     >
       {children}
     </Link>
@@ -62,7 +62,7 @@ const SocialIcon = ({
     target="_blank"
     rel="noreferrer noopener"
     aria-label={label}
-    className="text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+    className="text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
   >
     {children}
   </a>
@@ -159,7 +159,7 @@ export default function SiteFooter() {
             <Link href="/" className="flex items-center gap-2.5">
               <Image
                 src="/images/logo/j172tw-health-logo.png"
-                alt="j172tw Healthz"
+                alt=""
                 width={36}
                 height={36}
                 className="h-9 w-9 rounded-xl shadow-xs"
@@ -171,7 +171,7 @@ export default function SiteFooter() {
                 </span>
               </span>
             </Link>
-            <p className="mt-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
               {t(
                 "footer.tagline",
                 "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。",
@@ -235,7 +235,7 @@ export default function SiteFooter() {
         </div>
 
         {/* Bottom copyright */}
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-400 sm:flex-row sm:items-center dark:border-slate-900">
+        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-600 sm:flex-row sm:items-center dark:border-slate-900">
           <p suppressHydrationWarning>
             &copy; {new Date().getFullYear()} j172tw Healthz.{" "}
             {t("footer.rights", "版權所有。")}

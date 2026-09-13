@@ -132,6 +132,7 @@ export default function BreastfeedingMapContent() {
           <select
             value={selectedCounty}
             onChange={(e) => setSelectedCounty(e.target.value)}
+            aria-label="縣市"
             className="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm focus:border-pink-500 focus:outline-none focus:ring-1 focus:ring-pink-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             {COUNTIES.map((c) => (

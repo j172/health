@@ -175,7 +175,7 @@ export default function SiteNav() {
             <Link href="/" className="flex items-center gap-2.5">
               <Image
                 src="/images/logo/j172tw-health-logo.png"
-                alt="j172tw Healthz"
+                alt=""
                 width={36}
                 height={36}
                 className="h-9 w-9 rounded-xl shadow-xs"
@@ -223,7 +223,7 @@ export default function SiteNav() {
               {/* Cmd+K Search Trigger */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="dark:hover:bg-slate-850 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs text-slate-400 shadow-xs transition-all hover:border-indigo-300 hover:bg-white hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:text-indigo-400"
+                className="dark:hover:bg-slate-850 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs text-slate-600 shadow-xs transition-all hover:border-indigo-300 hover:bg-white hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:text-indigo-400"
               >
                 <svg
                   className="h-4 w-4 text-indigo-500"
@@ -241,7 +241,7 @@ export default function SiteNav() {
                 <span className="sr-only sm:not-sr-only sm:inline">
                   {t("nav.searchPlaceholder", "搜尋新聞...")}
                 </span>
-                <kbd className="hidden rounded bg-slate-200/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-500 sm:inline-block dark:bg-slate-800 dark:text-slate-400">
+                <kbd className="hidden rounded bg-slate-200/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 sm:inline-block dark:bg-slate-800 dark:text-slate-400">
                   ⌘K
                 </kbd>
               </button>
@@ -256,6 +256,11 @@ export default function SiteNav() {
                 type="button"
                 aria-expanded={mobileOpen}
                 aria-controls={mobilePanelId}
+                aria-label={
+                  mobileOpen
+                    ? t("nav.closeMenu", "關閉選單")
+                    : t("nav.openMenu", "開啟選單")
+                }
                 onClick={() => setMobileOpen((v) => !v)}
                 className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 xl:hidden dark:border-slate-800 dark:text-slate-300"
               >
@@ -313,7 +318,7 @@ export default function SiteNav() {
                 key={category.id}
                 className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800"
               >
-                <p className="px-2 text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
+                <p className="px-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-500">
                   {category.label}
                 </p>
                 <div className="mt-1 flex flex-col gap-1">

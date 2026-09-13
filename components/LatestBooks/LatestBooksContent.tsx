@@ -159,6 +159,7 @@ export default function LatestBooksContent() {
               setSortBy(e.target.value);
               setPage(1);
             }}
+            aria-label="排序方式"
             className="rounded-md border border-zinc-300 bg-white px-2.5 py-1 text-xs text-zinc-800 shadow-sm focus:border-indigo-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
           >
             <option value="ranking">🏆 暢銷名次</option>

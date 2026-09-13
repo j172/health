@@ -125,7 +125,7 @@ export default function WeatherAlertsList({ alerts }: { alerts: CwaAlertItem[] }
 
                 {alert.area_desc && (
                   <div className="mt-3">
-                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+                    <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                       📍 影響範圍 {alert.area_count ? `(共 ${alert.area_count} 地區)` : ""}：
                     </p>
                     <p className="mt-1 text-xs font-medium text-slate-800 dark:text-slate-200">{alert.area_desc}</p>
@@ -133,12 +133,12 @@ export default function WeatherAlertsList({ alerts }: { alerts: CwaAlertItem[] }
                 )}
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-400 dark:border-slate-800">
+              <div className="mt-4 flex flex-wrap items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-600 dark:border-slate-800">
                 <div>
                   {effectiveStr && <span>發布：{effectiveStr}</span>}
                   {expiresStr && <span className="ml-2">預計至：{expiresStr}</span>}
                 </div>
-                <span className="font-mono text-[10px] text-slate-400">{alert.dataset_id}</span>
+                <span className="font-mono text-[10px] text-slate-600">{alert.dataset_id}</span>
               </div>
             </article>
           );

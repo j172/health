@@ -56,7 +56,7 @@ export default function HeroImage({
         />
       </div>
       {attribution ? (
-        <figcaption className="mt-3 text-center text-xs text-slate-400">
+        <figcaption className="mt-3 text-center text-xs text-slate-600">
           <a
             href={attribution.sourcePageUrl}
             target="_blank"
@@ -67,7 +67,7 @@ export default function HeroImage({
           </a>
         </figcaption>
       ) : caption ? (
-        <figcaption className="mt-3 text-center text-xs text-slate-400">{caption}</figcaption>
+        <figcaption className="mt-3 text-center text-xs text-slate-600">{caption}</figcaption>
       ) : null}
     </figure>
   );

@@ -76,6 +76,7 @@ export default function NutrientRankingTab() {
           <select
             value={selectedNutrient}
             onChange={(e) => setSelectedNutrient(e.target.value)}
+            aria-label="營養素"
             className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {nutrients.map((nutrient) => (
@@ -87,6 +88,7 @@ export default function NutrientRankingTab() {
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
+            aria-label="顯示筆數"
             className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {[10, 20, 50, 100].map((n) => (

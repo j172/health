@@ -47,7 +47,7 @@ export default function NewsMapCard({
               </span>
             </h3>
             {approximate ? null : (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
                 {lat.toFixed(4)}°N, {lng.toFixed(4)}°E
               </p>
             )}

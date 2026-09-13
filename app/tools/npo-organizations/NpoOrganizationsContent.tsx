@@ -178,6 +178,7 @@ export default function NpoOrganizationsContent() {
             <select
               value={attribute}
               onChange={(e) => handleAttributeChange(e.target.value)}
+              aria-label="立案屬性篩選"
               className="rounded-xl border border-neutral-300 bg-neutral-50/50 px-3 py-2.5 text-sm text-neutral-900 focus:border-teal-500 focus:bg-white focus:outline-hidden dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-800"
             >
               {NPO_ATTRIBUTES.map((a) => (
@@ -191,6 +192,7 @@ export default function NpoOrganizationsContent() {
             <select
               value={city}
               onChange={(e) => handleCityChange(e.target.value)}
+              aria-label="縣市篩選"
               className="rounded-xl border border-neutral-300 bg-neutral-50/50 px-3 py-2.5 text-sm text-neutral-900 focus:border-teal-500 focus:bg-white focus:outline-hidden dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:focus:bg-neutral-800"
             >
               {TAIWAN_CITIES.map((c) => (

@@ -175,6 +175,7 @@ export default function ContraceptionMapContent() {
           <select
             value={selectedCounty}
             onChange={(e) => setSelectedCounty(e.target.value)}
+            aria-label="縣市"
             className="rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             {COUNTIES.map((c) => (

@@ -36,7 +36,7 @@ export default function OutRedirectCountdown({
   }, [remaining, targetUrl]);
 
   return (
-    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+    <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
       {remaining}
       秒後將帶您前往原網站，如未跳轉請
       <a

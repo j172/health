@@ -117,14 +117,14 @@ export default function SearchModal({
           {query && !loading && (
             <button
               onClick={() => setQuery("")}
-              className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-400 hover:text-slate-600 dark:bg-slate-800 dark:hover:text-slate-200"
+              className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 hover:text-slate-600 dark:bg-slate-800 dark:hover:text-slate-200"
             >
               {t("search.clear", "清除")}
             </button>
           )}
           <button
             onClick={handleClose}
-            className="ml-2 rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+            className="ml-2 rounded-lg p-1 text-slate-600 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             aria-label={t("search.close", "關閉搜尋")}
           >
             <svg
@@ -146,7 +146,7 @@ export default function SearchModal({
         {/* Search Results Body */}
         <div className="max-h-[60vh] overflow-y-auto p-3">
           {query.trim() === "" ? (
-            <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+            <div className="py-10 text-center text-sm text-slate-600 dark:text-slate-500">
               輸入關鍵字以搜尋各大公衛與媒體健康新聞...
               <div className="mt-3 flex flex-wrap justify-center gap-2">
                 {["登革熱", "流感疫苗", "食安特報", "高血壓", "心血管"].map(
@@ -163,7 +163,7 @@ export default function SearchModal({
               </div>
             </div>
           ) : results.length === 0 && !loading ? (
-            <div className="py-10 text-center text-sm text-slate-400 dark:text-slate-500">
+            <div className="py-10 text-center text-sm text-slate-600 dark:text-slate-500">
               找不到與「
               <span className="font-semibold text-slate-600 dark:text-slate-300">
                 {query}
@@ -205,14 +205,14 @@ export default function SearchModal({
                         >
                           {item.feed_name}
                         </span>
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-[11px] text-slate-600">
                           {toTaipei(displayDate(item))}
                         </span>
                       </div>
                       <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-slate-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                         {tDynamic(item.title)}
                       </h4>
-                      <p className="mt-0.5 line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
+                      <p className="mt-0.5 line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
                         {stripHtml(item.description_html)}
                       </p>
                     </div>
@@ -224,7 +224,7 @@ export default function SearchModal({
         </div>
 
         {/* Search Modal Footer */}
-        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-500">
+        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-4 py-2.5 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-500">
           <span>{t("search.escHint", "Esc 關閉搜尋")}</span>
           {results.length > 0 && (
             <Link

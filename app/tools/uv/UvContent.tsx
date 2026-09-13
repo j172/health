@@ -109,7 +109,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
             <span className="font-bold text-emerald-700 dark:text-emerald-300">
               0 - 2 低量
             </span>
-            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
               綠色 · 安全戶外
             </p>
           </div>
@@ -117,7 +117,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
             <span className="font-bold text-yellow-700 dark:text-yellow-300">
               3 - 5 中量
             </span>
-            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
               黃色 · 注意防曬
             </p>
           </div>
@@ -125,7 +125,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
             <span className="font-bold text-amber-700 dark:text-amber-300">
               6 - 7 高量
             </span>
-            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
               橘色 · 戴帽/塗防曬
             </p>
           </div>
@@ -133,7 +133,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
             <span className="font-bold text-red-700 dark:text-red-300">
               8 - 10 過量
             </span>
-            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
               紅色 · 減少曝曬
             </p>
           </div>
@@ -141,7 +141,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
             <span className="font-bold text-purple-700 dark:text-purple-300">
               11+ 極高量
             </span>
-            <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
               紫色 · 避開正午
             </p>
           </div>
@@ -151,12 +151,13 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
       {/* Filter Bar */}
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
             縣市：
           </span>
           <select
             value={selectedCounty}
             onChange={(e) => setSelectedCounty(e.target.value)}
+            aria-label="縣市"
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             {counties.map((c) => (
@@ -180,7 +181,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
 
       {/* Stations Grid */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-600 dark:border-slate-800 dark:bg-slate-900">
           目前沒有符合條件的測站數據。
         </div>
       ) : (
@@ -196,7 +197,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
                       {tDynamic(item.county_name) || "全台測站"}
                     </span>
                     <span
@@ -219,7 +220,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
                   </p>
                 </div>
 
-                <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-400 dark:border-slate-800">
+                <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-600 dark:border-slate-800">
                   <span>觀測日期: {item.obs_date}</span>
                   <span className="font-mono text-[10px]">CWA Station</span>
                 </div>

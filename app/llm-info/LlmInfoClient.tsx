@@ -133,7 +133,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       {/* Top Breadcrumb */}
-      <nav className="mb-6 text-xs text-slate-500 dark:text-slate-400" aria-label="breadcrumb">
+      <nav className="mb-6 text-xs text-slate-600 dark:text-slate-400" aria-label="breadcrumb">
         <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400">
           首頁
         </Link>
@@ -236,39 +236,39 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
 
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 text-xs">
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Platform Name</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider block">Platform Name</span>
               <span className="mt-1 font-bold text-slate-900 dark:text-slate-100 text-sm block">j172tw Healthz</span>
-              <span className="text-slate-500 dark:text-slate-400">台灣健康與公衛資訊站</span>
+              <span className="text-slate-600 dark:text-slate-400">台灣健康與公衛資訊站</span>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Platform Type</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider block">Platform Type</span>
               <span className="mt-1 font-bold text-slate-900 dark:text-slate-100 text-sm block">Public Health & Calculators</span>
-              <span className="text-slate-500 dark:text-slate-400">實證公衛與健康算盤開放資料平台</span>
+              <span className="text-slate-600 dark:text-slate-400">實證公衛與健康算盤開放資料平台</span>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Official URL</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider block">Official URL</span>
               <span className="mt-1 font-bold text-indigo-600 dark:text-indigo-400 text-sm block">https://health.j172.tw</span>
-              <span className="text-slate-500 dark:text-slate-400">Canonical Base Domain</span>
+              <span className="text-slate-600 dark:text-slate-400">Canonical Base Domain</span>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Geographic Scope</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider block">Geographic Scope</span>
               <span className="mt-1 font-bold text-slate-900 dark:text-slate-100 text-sm block">Taiwan (台灣 / UTC+8)</span>
-              <span className="text-slate-500 dark:text-slate-400">全球連線可及，資料以台灣標準為本</span>
+              <span className="text-slate-600 dark:text-slate-400">全球連線可及，資料以台灣標準為本</span>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Supported Languages</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider block">Supported Languages</span>
               <span className="mt-1 font-bold text-slate-900 dark:text-slate-100 text-sm block">zh-TW (繁體中文) & en</span>
-              <span className="text-slate-500 dark:text-slate-400">權威內容以正體中文為準</span>
+              <span className="text-slate-600 dark:text-slate-400">權威內容以正體中文為準</span>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-              <span className="font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Core Authority Sources</span>
+              <span className="font-semibold text-slate-600 dark:text-slate-500 uppercase tracking-wider block">Core Authority Sources</span>
               <span className="mt-1 font-bold text-slate-900 dark:text-slate-100 text-sm block">MOHW, CDC, TFDA, HPA, MOENV</span>
-              <span className="text-slate-500 dark:text-slate-400">衛福部、疾管署、國健署、環境部</span>
+              <span className="text-slate-600 dark:text-slate-400">衛福部、疾管署、國健署、環境部</span>
             </div>
           </div>
         </section>
@@ -409,7 +409,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
                     <span className="rounded-md bg-indigo-100/70 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300">
                       {GROUP_LABELS[tool.group] || tool.group}
                     </span>
-                    <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">
+                    <span className="font-mono text-[10px] text-slate-600 dark:text-slate-500">
                       /{tool.slug}
                     </span>
                   </div>
@@ -432,7 +432,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
                 </div>
 
                 {tool.scientificBasis.length > 0 && (
-                  <div className="mt-3 pt-2 border-t border-slate-200/50 text-[10px] text-slate-500 dark:border-slate-700/50 dark:text-slate-400">
+                  <div className="mt-3 pt-2 border-t border-slate-200/50 text-[10px] text-slate-600 dark:border-slate-700/50 dark:text-slate-400">
                     權威出處: {tool.scientificBasis[0].title} ({tool.scientificBasis[0].authority})
                   </div>
                 )}

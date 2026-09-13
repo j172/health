@@ -57,7 +57,7 @@ export default function EarthquakeSidebarWidget({
             近期地震動態
           </h3>
         </div>
-        <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+        <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
           全台+全球顯著
         </span>
       </div>
@@ -83,8 +83,8 @@ export default function EarthquakeSidebarWidget({
                       {q.place_zh ?? q.place ?? "未知地點"}
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-slate-400 dark:text-slate-500">
-                    <span className="rounded bg-slate-200/70 px-1.5 py-0.5 font-bold uppercase text-slate-500 dark:bg-slate-700/70 dark:text-slate-400">
+                  <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-slate-600 dark:text-slate-500">
+                    <span className="rounded bg-slate-200/70 px-1.5 py-0.5 font-bold uppercase text-slate-600 dark:bg-slate-700/70 dark:text-slate-400">
                       {sourceLabel(q.primary_source)}
                     </span>
                     <span>{toTaipeiShort(q.event_time)}</span>
@@ -96,14 +96,14 @@ export default function EarthquakeSidebarWidget({
         ) : (
           <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
             <div>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
                 近 7 天全台與全球地殼狀態
               </p>
               <div className="mt-1 flex items-center gap-2">
                 <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">
                   平穩
                 </span>
-                <span className="rounded-full bg-emerald-500 px-2.5 py-0.5 text-xs font-bold text-white shadow-xs">
+                <span className="rounded-full bg-emerald-700 px-2.5 py-0.5 text-xs font-bold text-white shadow-xs dark:bg-emerald-600">
                   無顯著地震
                 </span>
               </div>

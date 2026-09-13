@@ -92,7 +92,7 @@ export default function NearbyRainfallCard() {
             <h2 className="text-lg font-extrabold text-slate-900 sm:text-xl dark:text-slate-100">
               即時雨量
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               {station
                 ? `${station.county ?? ""}${station.town ?? ""} ${station.stationName ?? ""} 測站 · 距離約 ${station.distanceKm} 公里`
                 : "依您的所在位置尋找最近的中央氣象署雨量站"}
@@ -135,7 +135,7 @@ export default function NearbyRainfallCard() {
                       : "bg-slate-50 dark:bg-slate-800/60"
                   }`}
                 >
-                  <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                  <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
                     {label}
                   </p>
                   <p
@@ -146,7 +146,7 @@ export default function NearbyRainfallCard() {
                     }`}
                   >
                     {display(value)}
-                    <span className="ml-0.5 text-[10px] font-semibold text-slate-400">
+                    <span className="ml-0.5 text-[10px] font-semibold text-slate-600">
                       mm
                     </span>
                   </p>
@@ -157,9 +157,9 @@ export default function NearbyRainfallCard() {
 
           {totals && (totals.monthMm !== null || totals.yearMm !== null) ? (
             <div className="mt-4 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
-              <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+              <p className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                 累積雨量
-                <span className="ml-1 font-normal text-slate-400">
+                <span className="ml-1 font-normal text-slate-600">
                   （{totals.stationName ?? "最近測站"} 署屬站 ·{" "}
                   {totals.distanceKm} 公里）
                 </span>
@@ -170,14 +170,14 @@ export default function NearbyRainfallCard() {
                   <span className="font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
                     {totals.monthMm ?? "–"}
                   </span>
-                  <span className="ml-0.5 text-[10px] text-slate-400">mm</span>
+                  <span className="ml-0.5 text-[10px] text-slate-600">mm</span>
                 </span>
                 <span className="text-slate-600 dark:text-slate-300">
                   今年{" "}
                   <span className="font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
                     {totals.yearMm ?? "–"}
                   </span>
-                  <span className="ml-0.5 text-[10px] text-slate-400">mm</span>
+                  <span className="ml-0.5 text-[10px] text-slate-600">mm</span>
                 </span>
                 {totals.wetDays30 !== null ? (
                   <span className="text-slate-600 dark:text-slate-300">
@@ -185,7 +185,7 @@ export default function NearbyRainfallCard() {
                     <span className="font-extrabold text-sky-700 tabular-nums dark:text-sky-300">
                       {totals.wetDays30}
                     </span>
-                    <span className="ml-0.5 text-[10px] text-slate-400">
+                    <span className="ml-0.5 text-[10px] text-slate-600">
                       天有雨
                     </span>
                   </span>
@@ -195,7 +195,7 @@ export default function NearbyRainfallCard() {
           ) : null}
 
           {station.observedAt ? (
-            <p className="mt-4 text-xs text-slate-400">
+            <p className="mt-4 text-xs text-slate-600">
               觀測時間：
               {new Date(station.observedAt).toLocaleString("zh-TW", {
                 timeZone: "Asia/Taipei",
@@ -205,7 +205,7 @@ export default function NearbyRainfallCard() {
           ) : null}
         </>
       ) : (
-        <p className="mt-5 rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
+        <p className="mt-5 rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-600 dark:bg-slate-800/60 dark:text-slate-400">
           附近三小時內查無回報的雨量站。
         </p>
       )}

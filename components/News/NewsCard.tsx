@@ -48,7 +48,7 @@ export default function NewsCard({
               <LocalizedText>{item.title}</LocalizedText>
             </Link>
           </h3>
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-slate-600">
             {toTaipei(displayDate(item))}
           </p>
         </div>
@@ -83,7 +83,7 @@ export default function NewsCard({
               </span>
             ) : null}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-500">
             <span>{toTaipei(displayDate(item))}</span>
             <span aria-hidden="true">•</span>
             <span className="inline-flex items-center gap-1">
@@ -109,7 +109,7 @@ export default function NewsCard({
         </h2>
 
         {!compact && (
-          <p className="mt-2 line-clamp-2 flex-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+          <p className="mt-2 line-clamp-2 flex-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
             {excerpt(item.description_html, 95)}
           </p>
         )}

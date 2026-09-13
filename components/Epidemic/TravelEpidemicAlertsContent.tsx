@@ -147,9 +147,9 @@ export default function TravelEpidemicAlertsContent() {
               : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900"
           }`}
         >
-          <div className="text-xs font-medium text-slate-500 dark:text-slate-400">各國旅遊警示總數</div>
+          <div className="text-xs font-medium text-slate-600 dark:text-slate-400">各國旅遊警示總數</div>
           <div className="mt-1 text-2xl font-extrabold text-slate-900 dark:text-slate-100">{stats.total}</div>
-          <div className="mt-0.5 text-[11px] text-slate-400">涵蓋全球疾管署監測國</div>
+          <div className="mt-0.5 text-[11px] text-slate-600">涵蓋全球疾管署監測國</div>
         </button>
 
         <button
@@ -245,7 +245,7 @@ export default function TravelEpidemicAlertsContent() {
             </div>
 
             {/* Source info */}
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-slate-600">
               資料來源：衛福部疾病管制署 (Taiwan CDC)
             </div>
           </div>
@@ -264,7 +264,7 @@ export default function TravelEpidemicAlertsContent() {
                 <button
                   type="button"
                   onClick={() => setKeyword("")}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   清除
                 </button>
@@ -337,7 +337,7 @@ export default function TravelEpidemicAlertsContent() {
             <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
               <span className="text-4xl">🌴</span>
               <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">查無符合條件的旅遊疫情警示</h3>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">可嘗試更換關鍵字或切換警示等級篩選。</p>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">可嘗試更換關鍵字或切換警示等級篩選。</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -350,7 +350,7 @@ export default function TravelEpidemicAlertsContent() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
-                          {item.country} <span className="text-xs font-normal text-slate-500 dark:text-slate-400">{item.countryEn}</span>
+                          {item.country} <span className="text-xs font-normal text-slate-600 dark:text-slate-400">{item.countryEn}</span>
                         </h3>
                         <div className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400">
                           🦠 警示疾病：{item.disease}
@@ -364,7 +364,7 @@ export default function TravelEpidemicAlertsContent() {
                       <p className="mt-1 leading-relaxed">{item.instruction || "提醒遵守當地一般預防措施，注意飲食與防蚊衛生。"}</p>
                     </div>
 
-                    <div className="mt-3 text-[11px] text-slate-400">
+                    <div className="mt-3 text-[11px] text-slate-600">
                       生效發布日期：{item.effective?.slice(0, 10) || "最新公告"}
                     </div>
                   </div>
@@ -407,7 +407,7 @@ export default function TravelEpidemicAlertsContent() {
             <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
               <span className="text-4xl">📰</span>
               <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">查無相關重要疫情快訊</h3>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">可嘗試更換關鍵字搜尋。</p>
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">可嘗試更換關鍵字搜尋。</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -425,7 +425,7 @@ export default function TravelEpidemicAlertsContent() {
                         📍 {item.country} {item.countryEn && `(${item.countryEn})`}
                       </span>
                     </div>
-                    <span className="text-xs font-medium text-slate-400">
+                    <span className="text-xs font-medium text-slate-600">
                       發布時間：{item.sent?.slice(0, 10) || item.effective?.slice(0, 10)}
                     </span>
                   </div>
