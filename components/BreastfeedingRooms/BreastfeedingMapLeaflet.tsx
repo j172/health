@@ -40,23 +40,37 @@ export interface BreastfeedingRoomPoint {
   source?: string;
 }
 
+import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
+import { GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+
 export interface BreastfeedingMapProps {
   points: BreastfeedingRoomPoint[];
+  userLocation?: { lat: number; lng: number; isDefault: boolean };
   center?: [number, number];
   zoom?: number;
 }
 
 export default function BreastfeedingMapLeaflet({
   points,
-  center = [23.6978, 120.9605],
-  zoom = 8,
+  userLocation,
+  center = [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng],
+  zoom = 13,
 }: BreastfeedingMapProps) {
+  const mapCenter: [number, number] = center || [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng];
+
   return (
-    <MapContainer center={center} zoom={zoom} className="h-full w-full" scrollWheelZoom>
+    <MapContainer center={mapCenter} zoom={zoom} className="h-full w-full" scrollWheelZoom>
+      <MapViewController center={mapCenter} zoom={zoom} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+
+      {userLocation && (
+        <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
+          <Popup>{userLocation.isDefault ? "預設位置：台北101" : "您目前的位置"}</Popup>
+        </Marker>
+      )}
 
       {points.map((p) => {
         const isStatutory = p.settingType === "statutory";

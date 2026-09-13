@@ -223,3 +223,26 @@ export const httpGetJson = async <T = unknown>(
   const { status, text } = await httpGetText(url, options);
   return { status, data: JSON.parse(text) as T };
 };
+
+export const httpPostForm = async <T = unknown>(
+  url: string,
+  form: Record<string, string>,
+  options: HttpRequestOptions = {},
+): Promise<{ status: number; data: T }> => {
+  const body = new URLSearchParams(form).toString();
+  const headers = {
+    "content-type": "application/x-www-form-urlencoded",
+    "content-length": String(Buffer.byteLength(body)),
+    ...(options.headers || {}),
+  };
+  const response = await httpRequest(url, {
+    ...options,
+    method: "POST",
+    headers,
+    body,
+  });
+  return {
+    status: response.status,
+    data: JSON.parse(response.buffer.toString("utf-8")) as T,
+  };
+};

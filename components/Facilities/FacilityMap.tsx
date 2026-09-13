@@ -5,6 +5,8 @@ import L from "leaflet";
 import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { GEO_DEFAULTS } from "./useGeolocation";
 
+import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
+
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead.
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -13,12 +15,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const userIcon = new L.DivIcon({
-  className: "",
-  html: `<div style="width:14px;height:14px;border-radius:50%;background:#625df5;border:3px solid #fff;box-shadow:0 0 0 2px #625df5;"></div>`,
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-});
+const userIcon = userLocationIcon;
 
 export interface MapMarker {
   id: string;
@@ -44,6 +41,7 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
 
   return (
     <MapContainer center={center} zoom={13} className="h-full w-full" scrollWheelZoom>
+      <MapViewController center={center} zoom={13} />
       <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
       <Marker position={center} icon={userIcon}>

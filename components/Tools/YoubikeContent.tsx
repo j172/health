@@ -1,13 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import type { YouBikeStation } from "@/lib/server/youbike/types";
+import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 
 const CITIES = [
-  { code: "", label: "全部縣市" },
+  { code: "", label: "附近 3km" },
   { code: "TPE", label: "臺北市" },
   { code: "NTPC", label: "新北市" },
+  { code: "TYCG", label: "桃園市" },
   { code: "HSC", label: "新竹市" },
+  { code: "HCH", label: "新竹縣" },
+  { code: "MAL", label: "苗栗縣" },
+  { code: "TXG", label: "臺中市" },
+  { code: "CYI", label: "嘉義市" },
+  { code: "TNN", label: "臺南市" },
+  { code: "KHH", label: "高雄市" },
+  { code: "PTT", label: "屏東縣" },
 ];
 
 export default function YoubikeContent({
@@ -15,13 +24,13 @@ export default function YoubikeContent({
 }: {
   initialStations?: YouBikeStation[];
 }) {
+  const location = useGeolocation();
   const [stations, setStations] = useState<YouBikeStation[]>(initialStations);
   const [loading, setLoading] = useState(false);
   const [selectedCity, setSelectedCity] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [userGeo, setUserGeo] = useState<{ lat: number; lng: number } | null>(null);
-  const [geoLoading, setGeoLoading] = useState(false);
   const [filterMode, setFilterMode] = useState<"all" | "bikes" | "spaces">("all");
+  const initialFetchDone = useRef(false);
 
   const fetchStations = useCallback(
     async (params: { city?: string; kw?: string; lat?: number; lng?: number }) => {
@@ -53,13 +62,26 @@ export default function YoubikeContent({
     []
   );
 
+  // 當定位完成（允許或逾時退回台北101）且尚未發起查詢時，自動帶出周圍 3km 站點
+  useEffect(() => {
+    if (!location.loading && !initialFetchDone.current) {
+      initialFetchDone.current = true;
+      fetchStations({
+        city: selectedCity,
+        kw: keyword,
+        lat: location.lat,
+        lng: location.lng,
+      });
+    }
+  }, [location.loading, location.lat, location.lng, selectedCity, keyword, fetchStations]);
+
   const handleCityChange = (cityCode: string) => {
     setSelectedCity(cityCode);
     fetchStations({
       city: cityCode,
       kw: keyword,
-      lat: userGeo?.lat,
-      lng: userGeo?.lng,
+      lat: cityCode ? undefined : location.lat,
+      lng: cityCode ? undefined : location.lng,
     });
   };
 
@@ -68,35 +90,20 @@ export default function YoubikeContent({
     fetchStations({
       city: selectedCity,
       kw: keyword,
-      lat: userGeo?.lat,
-      lng: userGeo?.lng,
+      lat: selectedCity ? undefined : location.lat,
+      lng: selectedCity ? undefined : location.lng,
     });
   };
 
   const handleLocateMe = () => {
-    if (!navigator.geolocation) {
-      alert("您的瀏覽器不支援定位功能。");
-      return;
-    }
-    setGeoLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setUserGeo(coords);
-        setGeoLoading(false);
-        fetchStations({
-          city: selectedCity,
-          kw: keyword,
-          lat: coords.lat,
-          lng: coords.lng,
-        });
-      },
-      (err) => {
-        setGeoLoading(false);
-        alert(`定位失敗：${err.message}`);
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+    setSelectedCity("");
+    location.refresh();
+    fetchStations({
+      city: "",
+      kw: keyword,
+      lat: location.lat,
+      lng: location.lng,
+    });
   };
 
   const filteredStations = stations.filter((s) => {
@@ -127,13 +134,33 @@ export default function YoubikeContent({
 
             <button
               onClick={handleLocateMe}
-              disabled={geoLoading}
+              disabled={location.loading || location.refreshing}
               className="flex items-center gap-1.5 rounded-xl bg-yellow-500 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-yellow-600 disabled:opacity-50"
             >
               <span>🧭</span>
-              {geoLoading ? "定位中..." : userGeo ? "已取得定位 (點擊重測)" : "尋找附近站點"}
+              {location.loading || location.refreshing
+                ? "定位中..."
+                : location.isDefault
+                ? "以 101 為中心 (點擊重測)"
+                : "已定位 (點擊重測)"}
             </button>
           </div>
+
+          {/* 台北 101 降級友善提示 */}
+          {!location.loading && location.isDefault && (
+            <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 px-3.5 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
+              <span className="flex items-center gap-1.5">
+                <span>📍</span>
+                <span>定位權限未開啟或逾時，目前已自動切換至<strong>台北 101</strong>周邊 3 公里站點。</span>
+              </span>
+              <button
+                onClick={handleLocateMe}
+                className="font-bold underline transition hover:text-amber-950 dark:hover:text-amber-100"
+              >
+                重試定位
+              </button>
+            </div>
+          )}
 
           {/* City Selection Tabs */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -167,7 +194,12 @@ export default function YoubikeContent({
                   type="button"
                   onClick={() => {
                     setKeyword("");
-                    fetchStations({ city: selectedCity, kw: "", lat: userGeo?.lat, lng: userGeo?.lng });
+                    fetchStations({
+                      city: selectedCity,
+                      kw: "",
+                      lat: selectedCity ? undefined : location.lat,
+                      lng: selectedCity ? undefined : location.lng,
+                    });
                   }}
                   className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
                 >
@@ -230,7 +262,9 @@ export default function YoubikeContent({
           <span>
             共找到 <strong className="text-slate-800 dark:text-slate-200">{filteredStations.length}</strong> 個站點
           </span>
-          {userGeo && <span className="text-emerald-600 dark:text-emerald-400">已依距離由近到遠排序</span>}
+          {!selectedCity && !location.loading && (
+            <span className="text-emerald-600 dark:text-emerald-400">已依距離由近到遠排序</span>
+          )}
         </div>
 
         {loading ? (

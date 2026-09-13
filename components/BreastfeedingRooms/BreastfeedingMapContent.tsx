@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { BreastfeedingRoomPoint } from "./BreastfeedingMapLeaflet";
+import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 
 const BreastfeedingMapLeaflet = dynamic(
   () => import("./BreastfeedingMapLeaflet"),
@@ -42,6 +43,7 @@ const COUNTY_COORDINATES: Record<string, [number, number]> = {
 };
 
 export default function BreastfeedingMapContent() {
+  const location = useGeolocation();
   const [points, setPoints] = useState<BreastfeedingRoomPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -102,10 +104,10 @@ export default function BreastfeedingMapContent() {
     if (selectedCounty !== "全部縣市" && COUNTY_COORDINATES[selectedCounty]) {
       return COUNTY_COORDINATES[selectedCounty];
     }
-    return [23.6978, 120.9605];
-  }, [selectedCounty]);
+    return [location.lat ?? GEO_DEFAULTS.lat, location.lng ?? GEO_DEFAULTS.lng];
+  }, [selectedCounty, location.lat, location.lng]);
 
-  const mapZoom = selectedCounty === "全部縣市" ? 8 : 12;
+  const mapZoom = selectedCounty === "全部縣市" ? 13 : 12;
 
   return (
     <div className="space-y-4">
@@ -231,6 +233,7 @@ export default function BreastfeedingMapContent() {
             <BreastfeedingMapLeaflet
               key={`${selectedCounty}-${mapCenter.join(",")}`}
               points={filteredPoints}
+              userLocation={location}
               center={mapCenter}
               zoom={mapZoom}
             />
