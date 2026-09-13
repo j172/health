@@ -1,4 +1,5 @@
 import { load } from "cheerio";
+import { XMLParser } from "fast-xml-parser";
 import type { EnrichedRssItem, FeedCode, NewsAsset } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
@@ -1593,6 +1594,122 @@ export async function fetchSeinsightsNews(): Promise<NpoFetchResult> {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
   }
 }
+
+// ---------------------------------------------------------------------------
+// 25. MyGoPen 查核中心 (MyGoPen Fact-checking)
+// ---------------------------------------------------------------------------
+export async function fetchMygopenNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "mygopen_news";
+  const sourceName = "mygopen";
+  const feedName = "MyGoPen 查核中心";
+  const feedUrl = "https://www.mygopen.com/feeds/posts/default?alt=rss&max-results=50";
+
+  try {
+    const response = await httpGetText(feedUrl, {
+      headers: DEFAULT_HEADERS,
+      timeoutMs: 15_000,
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: "@_",
+    });
+    const parsed = parser.parse(response.text);
+    const channelItems = parsed?.rss?.channel?.item || [];
+    const rawList = Array.isArray(channelItems) ? channelItems : [channelItems];
+
+    const items: EnrichedRssItem[] = [];
+    const seen = new Set<string>();
+
+    for (const raw of rawList) {
+      if (!raw || !raw.title || !raw.link) continue;
+      const canonicalUrl = String(raw.link).trim();
+      if (seen.has(canonicalUrl)) continue;
+      seen.add(canonicalUrl);
+
+      const title = String(raw.title).trim();
+      const publishedAtUtc = raw.pubDate ? new Date(raw.pubDate) : new Date();
+
+      // Extract categories
+      const tags: string[] = [];
+      if (Array.isArray(raw.category)) {
+        for (const cat of raw.category) {
+          const txt = typeof cat === "object" ? cat?.["#text"] || cat?.["@_term"] : cat;
+          if (txt) tags.push(String(txt).trim());
+        }
+      } else if (raw.category) {
+        const txt = typeof raw.category === "object" ? raw.category?.["#text"] || raw.category?.["@_term"] : raw.category;
+        if (txt) tags.push(String(txt).trim());
+      }
+      const categoryRaw = tags.length > 0 ? tags.join("、") : "事實查核";
+
+      // Extract description
+      const descHtml = String(raw.description || "");
+      const $ = load(descHtml);
+      // Try to find quote_style or text summary
+      const quoteText = $(".quote_style").text().replace(/\s+/g, " ").trim();
+      const cleanSummary = quoteText || $.text().replace(/\s+/g, " ").trim().slice(0, 250) || title;
+
+      // Extract image: <img> in description or media:thumbnail
+      const imgInDesc = $("img").first().attr("src");
+      const thumbUrl = raw["media:thumbnail"]?.["@_url"];
+      let rawImg = imgInDesc || thumbUrl || null;
+      if (rawImg && rawImg.includes("s72-c")) {
+        rawImg = rawImg.replace(/\/s[0-9]+(-c)?\//, "/s1600/");
+      }
+
+      const assets: NewsAsset[] = [];
+      if (rawImg) {
+        const localPath = await downloadArticleImage(rawImg).catch(() => null);
+        assets.push({
+          assetType: "image",
+          title: null,
+          url: localPath || rawImg,
+          sortOrder: 0,
+        });
+      }
+
+      const slugMatch = canonicalUrl.match(/\/([^/?#]+)\.html/);
+      const externalId = slugMatch ? `mygopen_${slugMatch[1]}` : sha256(canonicalUrl).slice(0, 16);
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, publishedAtUtc }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: cleanSummary,
+        descriptionText: cleanSummary,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw,
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: tags.join(","),
+        geoSummary: "",
+      });
+    }
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
 
 
 

@@ -72,6 +72,7 @@ import {
   fetchAnewsNews,
   fetchApatwNews,
   fetchSeinsightsNews,
+  fetchMygopenNews,
 } from "@/lib/server/rss/fetchNpoSources";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
@@ -859,6 +860,16 @@ export const runRssIngestion = async (
             skipDetailFetch: true,
           },
           fetchFn: fetchSeinsightsNews,
+        },
+        {
+          meta: {
+            code: "mygopen_news" as FeedCode,
+            name: "MyGoPen 查核中心",
+            url: "https://www.mygopen.com/feeds/posts/default?alt=rss&max-results=50",
+            sourceName: "mygopen",
+            skipDetailFetch: true,
+          },
+          fetchFn: fetchMygopenNews,
         },
       ];
 

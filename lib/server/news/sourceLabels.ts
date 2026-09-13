@@ -93,6 +93,7 @@ const SOURCE_LABELS: Record<string, string> = {
   ncl: "國家圖書館",
   apatw: "社團法人中華民國保護動物協會",
   seinsights: "社企流",
+  mygopen: "MyGoPen 查核中心",
 };
 
 export interface SourceLabelInput {
