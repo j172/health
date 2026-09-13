@@ -15,6 +15,15 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+const FUEL_TYPE_LABELS: Record<string, string> = {
+  unleaded92: "無鉛92",
+  unleaded95: "無鉛95",
+  unleaded98: "無鉛98",
+  alcoholGasoline: "酒精汽油",
+  kerosene: "煤油",
+  superDiesel: "超柴",
+};
+
 export interface CpcStationMapProps {
   stations: CpcStationItem[];
   userLocation: { lat: number; lng: number; isDefault: boolean };
@@ -100,6 +109,27 @@ export default function CpcStationMap({
                   {station.distance_km !== undefined && (
                     <div className="text-[11px] font-semibold text-emerald-600">
                       距離約 {station.distance_km.toFixed(1)} 公里
+                    </div>
+                  )}
+
+                  {station.extra_json?.businessHours && (
+                    <div className="text-slate-600">
+                      🕐 總營業時間：{station.extra_json.businessHours}
+                    </div>
+                  )}
+
+                  {station.extra_json?.fuelTypes && (
+                    <div className="flex flex-wrap gap-1">
+                      {Object.entries(station.extra_json.fuelTypes)
+                        .filter(([, v]) => v)
+                        .map(([k]) => (
+                          <span
+                            key={k}
+                            className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700"
+                          >
+                            {FUEL_TYPE_LABELS[k] || k}
+                          </span>
+                        ))}
                     </div>
                   )}
 

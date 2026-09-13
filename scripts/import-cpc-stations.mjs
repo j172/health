@@ -131,6 +131,69 @@ const ENDPOINTS = [
   },
 ];
 
+// 站點基本資料補充來源：油品種類、付款方式、總營業時間、洗車類別。
+// 注意：這個端點同時回傳「自營站/漁船站」（站代號 5 碼，如 D2030，跟既有 20 大服務端點格式一致）
+// 與「加盟站」（站代號 9 碼，如 AA6212A03，既有站點清單中從未出現過的全新命名空間）。
+// 本次擴充僅補強既有站點清單中「已存在」的站點資料，不會因為這個來源而新增「加盟站」站點，
+// 以維持既有站點範疇（詳見 docs/specs/cpc-station-info-enrichment.md）。
+const STATION_INFO_URL = "https://vipmbr.cpc.com.tw/openData/getStationInfo";
+
+function toBool(val) {
+  return val === 1 || val === "1" || val === true;
+}
+
+async function mergeStationInfo(stationsMap) {
+  console.log("-> 正在抓取 [站點基本資料：油品種類/付款方式/總營業時間] (JSON)...");
+  const text = await fetchWithTimeout(STATION_INFO_URL);
+  const rawList = JSON.parse(text);
+
+  let matched = 0;
+  let skippedNoMatch = 0;
+  for (const item of rawList) {
+    if (!item || typeof item !== "object") continue;
+    const code = String(item["站代號"] || "").trim();
+    if (!code) continue;
+
+    const station = stationsMap.get(code);
+    if (!station) {
+      // 既有站點清單以外的站代號（多為加盟站的 9 碼代號，或既有服務端點未涵蓋到的站點）
+      // 暫不視為既有站點資料缺口，故不建立新站點。
+      skippedNoMatch++;
+      continue;
+    }
+
+    station.fuelTypes = {
+      unleaded92: toBool(item["無鉛92"]),
+      unleaded95: toBool(item["無鉛95"]),
+      unleaded98: toBool(item["無鉛98"]),
+      alcoholGasoline: toBool(item["酒精汽油"]),
+      kerosene: toBool(item["煤油"]),
+      superDiesel: toBool(item["超柴"]),
+    };
+    station.paymentMethods = {
+      memberCard: toBool(item["會員卡"]),
+      selfServiceCard: toBool(item["刷卡自助"]),
+      eInvoice: toBool(item["電子發票"]),
+      easyCard: toBool(item["悠遊卡"]),
+      iPassCard: toBool(item["一卡通"]),
+      happyCash: toBool(item["HappyCash"]),
+      selfServeDieselStation: toBool(item["自助柴油站"]),
+    };
+
+    const businessHours = String(item["營業時間"] || "").trim();
+    if (businessHours) station.businessHours = businessHours;
+
+    const washCategory = String(item["洗車類別"] || "").trim();
+    if (washCategory) station.washCategory = washCategory;
+
+    matched++;
+  }
+
+  console.log(
+    `   ✓ 成功合併 [站點基本資料]: ${matched} 筆既有站點補上油品/付款方式/營業時間資料（另有 ${skippedNoMatch} 筆站代號不在既有站點清單中，暫不建立新站點）`
+  );
+}
+
 async function fetchWithTimeout(url, timeoutMs = 20000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -263,6 +326,12 @@ async function main() {
 
   console.log(`\n聚合完成！全台共收錄 ${stationsMap.size} 座台灣中油加油站據點。`);
 
+  try {
+    await mergeStationInfo(stationsMap);
+  } catch (err) {
+    console.warn("   ✗ 抓取 [站點基本資料：油品種類/付款方式/總營業時間] 失敗:", err.message);
+  }
+
   // Transform into Facility structure
   const facilityItems = [];
   let seqId = 1;
@@ -285,6 +354,10 @@ async function main() {
         serviceHours: st.serviceHours,
         landArea: st.landArea || "",
         dataOrg: "台灣中油股份有限公司",
+        ...(st.fuelTypes ? { fuelTypes: st.fuelTypes } : {}),
+        ...(st.paymentMethods ? { paymentMethods: st.paymentMethods } : {}),
+        ...(st.businessHours ? { businessHours: st.businessHours } : {}),
+        ...(st.washCategory ? { washCategory: st.washCategory } : {}),
       },
     });
   }
