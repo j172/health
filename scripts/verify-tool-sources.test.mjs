@@ -13,9 +13,9 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 65 tools registered", () => {
+test("TOOL_CATALOG has exactly 67 tools registered", () => {
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 65, `Expected 65 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 67, `Expected 67 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
@@ -155,6 +155,18 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   // 15. Child native languages seed
   const nativeLangPath = path.join(ROOT_DIR, "data", "child-native-languages-seed.json");
   assert.ok(fs.existsSync(nativeLangPath), "child-native-languages-seed.json must exist");
+
+  // 16. CPC Prices seed
+  const cpcPricesPath = path.join(ROOT_DIR, "data", "cpc-prices-seed.json");
+  assert.ok(fs.existsSync(cpcPricesPath), "cpc-prices-seed.json must exist");
+  const cpcPricesData = JSON.parse(fs.readFileSync(cpcPricesPath, "utf-8"));
+  assert.ok(Array.isArray(cpcPricesData.items) && cpcPricesData.items.length > 0, "CPC prices seed must have items");
+
+  // 17. CPC Gas Stations seed
+  const cpcStationsPath = path.join(seedsDir, "cpc_gas_station.json");
+  assert.ok(fs.existsSync(cpcStationsPath), "cpc_gas_station.json must exist");
+  const cpcStationsData = JSON.parse(fs.readFileSync(cpcStationsPath, "utf-8"));
+  assert.ok(Array.isArray(cpcStationsData) && cpcStationsData.length > 500, "CPC gas stations seed must have > 500 stations");
 });
 
 test("facilityConfigs has matching configurations for all facility tool pages", () => {
@@ -172,7 +184,7 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
   assert.ok(content.includes('facilityType: "vet_clinic"'), "vet-clinics must have facilityType vet_clinic");
 });
 
-test("All 65 tool page files exist on disk", () => {
+test("All 67 tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");

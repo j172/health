@@ -6,6 +6,7 @@ import { countFacilities, searchFacilities } from "@/lib/server/facilities/queri
 import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
 import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
 import contraceptionSeed from "@/data/contraception-map-seed.json";
+import cpcGasStationSeed from "@/data/facilities-seeds/cpc_gas_station.json";
 
 export const runtime = "nodejs";
 
@@ -24,6 +25,7 @@ interface SeedFacilityItem {
 const SEED_FACILITIES: Record<string, SeedFacilityItem[]> = {
   tourism_factory: tourismFactorySeed as unknown as SeedFacilityItem[],
   bookstore: bookstoreSeed as unknown as SeedFacilityItem[],
+  cpc_gas_station: cpcGasStationSeed as unknown as SeedFacilityItem[],
 };
 
 function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
