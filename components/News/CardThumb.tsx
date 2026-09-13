@@ -27,7 +27,7 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
     return (
       <div className={`flex h-full w-full flex-col items-center justify-center bg-gradient-to-br ${theme.bg} p-4 text-center`}>
         <span className={`text-sm font-bold tracking-wide ${theme.text}`}>{label}</span>
-        <span className="mt-1.5 text-[10px] font-medium tracking-wider text-slate-400 dark:text-slate-500 opacity-70">j172tw Healthz</span>
+        <span className="mt-1.5 text-[10px] font-medium tracking-wider text-slate-600 dark:text-slate-500 opacity-70">j172tw Healthz</span>
       </div>
     );
   }

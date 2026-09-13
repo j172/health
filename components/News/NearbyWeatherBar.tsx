@@ -127,7 +127,7 @@ export default function NearbyWeatherBar() {
               🌧️{data.rainfall.county}
               {data.rainfall.stationName} 時雨量 {data.rainfall.past1hr ?? "–"}
               mm
-              <span className="ml-1 text-slate-400">
+              <span className="ml-1 text-slate-600">
                 （今累積 {data.rainfall.past24hr ?? "–"}mm）
               </span>
             </span>

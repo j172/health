@@ -197,7 +197,7 @@ export default function ArticleReaderToolbar({
 
                 {/* Speed selector */}
                 <div className="flex items-center gap-1 text-xs">
-                  <span className="hidden font-medium text-slate-400 sm:inline">
+                  <span className="hidden font-medium text-slate-600 sm:inline">
                     語速:
                   </span>
                   <select
@@ -205,6 +205,7 @@ export default function ArticleReaderToolbar({
                     onChange={(e) =>
                       handleRateChange(parseFloat(e.target.value))
                     }
+                    aria-label="語速"
                     className="cursor-pointer rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                   >
                     <option value={0.8}>0.8x</option>
@@ -216,7 +217,7 @@ export default function ArticleReaderToolbar({
                 </div>
               </>
             ) : (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-600">
                 您的瀏覽器不支援語音合成
               </span>
             )}

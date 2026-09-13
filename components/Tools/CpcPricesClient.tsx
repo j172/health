@@ -95,7 +95,7 @@ export default function CpcPricesClient({
               · 營業稅 5% 內含
             </p>
           </div>
-          <div className="text-right text-xs text-slate-400">
+          <div className="text-right text-xs text-slate-600">
             資料更新時間：{new Date(updatedAt).toLocaleDateString("zh-TW")}
           </div>
         </div>
@@ -104,74 +104,74 @@ export default function CpcPricesClient({
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           {/* 95 無鉛 */}
           <div className="relative overflow-hidden rounded-2xl border border-blue-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-blue-800/50 dark:bg-slate-800/90">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
               <span className="font-semibold text-blue-600 dark:text-blue-400">95 無鉛</span>
               <span>元/公升</span>
             </div>
             <div className="mt-2 text-2xl font-black tracking-tight text-blue-700 dark:text-blue-300">
               ${gas?.unleaded95?.price !== undefined ? gas.unleaded95.price.toFixed(1) : "--"}
             </div>
-            <div className="mt-1 text-[11px] text-slate-400">最熱門自用車汽油</div>
+            <div className="mt-1 text-[11px] text-slate-600">最熱門自用車汽油</div>
           </div>
 
           {/* 92 無鉛 */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/90">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
               <span className="font-semibold text-slate-800 dark:text-slate-200">92 無鉛</span>
               <span>元/公升</span>
             </div>
             <div className="mt-2 text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
               ${gas?.unleaded92?.price !== undefined ? gas.unleaded92.price.toFixed(1) : "--"}
             </div>
-            <div className="mt-1 text-[11px] text-slate-400">經濟型機車與汽車</div>
+            <div className="mt-1 text-[11px] text-slate-600">經濟型機車與汽車</div>
           </div>
 
           {/* 98 無鉛 */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-slate-700/60 dark:bg-slate-800/90">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
               <span className="font-semibold text-purple-600 dark:text-purple-400">98 無鉛</span>
               <span>元/公升</span>
             </div>
             <div className="mt-2 text-2xl font-black tracking-tight text-purple-700 dark:text-purple-300">
               ${gas?.unleaded98?.price !== undefined ? gas.unleaded98.price.toFixed(1) : "--"}
             </div>
-            <div className="mt-1 text-[11px] text-slate-400">高壓縮比與渦輪引擎</div>
+            <div className="mt-1 text-[11px] text-slate-600">高壓縮比與渦輪引擎</div>
           </div>
 
           {/* 超級柴油 */}
           <div className="rounded-2xl border border-amber-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-amber-800/50 dark:bg-slate-800/90">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
               <span className="font-semibold text-amber-600 dark:text-amber-400">超級柴油</span>
               <span>元/公升</span>
             </div>
             <div className="mt-2 text-2xl font-black tracking-tight text-amber-700 dark:text-amber-300">
               ${gas?.diesel?.price !== undefined ? gas.diesel.price.toFixed(1) : "--"}
             </div>
-            <div className="mt-1 text-[11px] text-slate-400">客貨運與柴油休旅</div>
+            <div className="mt-1 text-[11px] text-slate-600">客貨運與柴油休旅</div>
           </div>
 
           {/* 天然氣(1) */}
           <div className="rounded-2xl border border-orange-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-orange-800/50 dark:bg-slate-800/90">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
               <span className="font-semibold text-orange-600 dark:text-orange-400">天然氣 (1)</span>
               <span>元/度</span>
             </div>
             <div className="mt-2 text-2xl font-black tracking-tight text-orange-700 dark:text-orange-300">
               ${ng?.ng1?.price !== undefined ? ng.ng1.price.toFixed(2) : "--"}
             </div>
-            <div className="mt-1 text-[11px] text-slate-400">公用/家庭熱水煮食</div>
+            <div className="mt-1 text-[11px] text-slate-600">公用/家庭熱水煮食</div>
           </div>
 
           {/* 天然氣(2) */}
           <div className="rounded-2xl border border-emerald-200/80 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-emerald-800/50 dark:bg-slate-800/90">
-            <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">天然氣 (2)</span>
               <span>元/度</span>
             </div>
             <div className="mt-2 text-2xl font-black tracking-tight text-emerald-700 dark:text-emerald-300">
               ${ng?.ng2?.price !== undefined ? ng.ng2.price.toFixed(2) : "--"}
             </div>
-            <div className="mt-1 text-[11px] text-slate-400">公用天然氣分區</div>
+            <div className="mt-1 text-[11px] text-slate-600">公用天然氣分區</div>
           </div>
         </div>
       </section>
@@ -213,7 +213,7 @@ export default function CpcPricesClient({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-3 top-2.5 text-xs text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 清除
               </button>
@@ -221,10 +221,11 @@ export default function CpcPricesClient({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-400">排序：</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">排序：</span>
             <select
               value={sortBy}
               onChange={(e: any) => setSortBy(e.target.value)}
+              aria-label="排序方式"
               className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             >
               <option value="default">預設排序</option>
@@ -232,7 +233,7 @@ export default function CpcPricesClient({
               <option value="priceDesc">金額：由高到低</option>
               <option value="name">產品名稱排序</option>
             </select>
-            <span className="ml-2 text-xs font-semibold text-slate-400">
+            <span className="ml-2 text-xs font-semibold text-slate-600">
               共 {filteredItems.length} 筆
             </span>
           </div>
@@ -258,7 +259,7 @@ export default function CpcPricesClient({
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
+                  <td colSpan={8} className="py-12 text-center text-slate-600">
                     查無符合條件的牌價資料
                   </td>
                 </tr>
@@ -273,7 +274,7 @@ export default function CpcPricesClient({
                         {item.productName}
                       </div>
                       {item.productCode && (
-                        <div className="font-mono text-[11px] text-slate-400">
+                        <div className="font-mono text-[11px] text-slate-600">
                           {item.productCode}
                         </div>
                       )}
@@ -286,10 +287,10 @@ export default function CpcPricesClient({
                     <td className="px-4 py-3.5 text-xs">
                       <div>{item.packageType || "散裝"}</div>
                       {item.targetCustomer && (
-                        <div className="text-slate-400">{item.targetCustomer}</div>
+                        <div className="text-slate-600">{item.targetCustomer}</div>
                       )}
                     </td>
-                    <td className="px-4 py-3.5 text-xs text-slate-500 dark:text-slate-400 max-w-[180px] truncate">
+                    <td className="px-4 py-3.5 text-xs text-slate-600 dark:text-slate-400 max-w-[180px] truncate">
                       {item.deliveryPoint || "中油指定儲運處/自營站"}
                     </td>
                     <td className="px-4 py-3.5 text-right whitespace-nowrap">
@@ -317,7 +318,7 @@ export default function CpcPricesClient({
                         )}
                       </div>
                       {item.remark && (
-                        <div className="mt-1 text-[10px] text-slate-400 line-clamp-1" title={item.remark}>
+                        <div className="mt-1 text-[10px] text-slate-600 line-clamp-1" title={item.remark}>
                           {item.remark}
                         </div>
                       )}

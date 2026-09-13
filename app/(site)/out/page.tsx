@@ -47,7 +47,7 @@ export default async function OutPage({
                 正在前往原網站…
               </p>
               <OutRedirectCountdown targetUrl={targetUrl} />
-              <p className="mt-6 truncate text-xs text-slate-400 dark:text-slate-500">
+              <p className="mt-6 truncate text-xs text-slate-600 dark:text-slate-500">
                 {targetUrl}
               </p>
             </div>
@@ -56,7 +56,7 @@ export default async function OutPage({
               <p className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 無效的連結
               </p>
-              <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                 此轉址連結的網址參數無效或遺失，無法前往原網站。
               </p>
               <Link

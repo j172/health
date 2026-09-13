@@ -126,7 +126,7 @@ export default function YoubikeContent({
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   公共自行車即時站點車位 (YouBike 2.0)
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   全台多縣市即時站點查詢，即時掌握可借車輛數與可還空位。
                 </p>
               </div>
@@ -201,7 +201,7 @@ export default function YoubikeContent({
                       lng: selectedCity ? undefined : location.lng,
                     });
                   }}
-                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-2.5 text-xs text-slate-600 hover:text-slate-600"
                 >
                   ✕
                 </button>
@@ -223,7 +223,7 @@ export default function YoubikeContent({
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
                     filterMode === "all"
                       ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
-                      : "text-slate-500"
+                      : "text-slate-600"
                   }`}
                 >
                   全部
@@ -234,7 +234,7 @@ export default function YoubikeContent({
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
                     filterMode === "bikes"
                       ? "bg-white text-emerald-600 shadow-sm dark:bg-slate-900 dark:text-emerald-400"
-                      : "text-slate-500"
+                      : "text-slate-600"
                   }`}
                 >
                   有車
@@ -245,7 +245,7 @@ export default function YoubikeContent({
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
                     filterMode === "spaces"
                       ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
-                      : "text-slate-500"
+                      : "text-slate-600"
                   }`}
                 >
                   有空位
@@ -258,7 +258,7 @@ export default function YoubikeContent({
 
       {/* Station Cards Grid */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+        <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 px-1">
           <span>
             共找到 <strong className="text-slate-800 dark:text-slate-200">{filteredStations.length}</strong> 個站點
           </span>
@@ -268,7 +268,7 @@ export default function YoubikeContent({
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-16 text-slate-600">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent" />
             <p className="mt-3 text-sm">正在查詢即時站點資料庫...</p>
           </div>
@@ -278,7 +278,7 @@ export default function YoubikeContent({
             <h3 className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-200">
               查無符合條件的 YouBike 站點
             </h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               請試著切換縣市、清除關鍵字或擴大搜尋半徑。
             </p>
           </div>
@@ -313,7 +313,7 @@ export default function YoubikeContent({
                             : "新竹"}
                         </span>
                         {station.districtTw && (
-                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                             {station.districtTw}
                           </span>
                         )}
@@ -331,7 +331,7 @@ export default function YoubikeContent({
                     <h3 className="mt-2 text-base font-bold text-slate-900 dark:text-white">
                       {station.nameTw}
                     </h3>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-1">
                       {station.addressTw || "無詳細地址資訊"}
                     </p>
                   </div>
@@ -360,13 +360,13 @@ export default function YoubikeContent({
                         <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
                           可還空位
                         </div>
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-[10px] text-slate-600">
                           總車格 {station.totalSpaces}
                         </div>
                       </div>
                     </div>
 
-                    <div className="mt-3 flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-50 dark:border-slate-800/60">
+                    <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-50 dark:border-slate-800/60">
                       <div className="flex items-center gap-1.5">
                         <span>更新：{station.updatedAtSource?.slice(11, 16) || "即時"}</span>
                         {(() => {

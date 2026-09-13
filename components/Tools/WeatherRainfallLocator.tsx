@@ -223,7 +223,7 @@ export default function WeatherRainfallLocator({
           <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
             🌧️ 即時雨量觀測站定位
           </h3>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
             自動連線中央氣象署 1,300+ 座自動雨量站 (O-A0002-001) 與 38 署屬氣象站歷史統計 (C-B0025-001)
           </p>
         </div>
@@ -278,7 +278,7 @@ export default function WeatherRainfallLocator({
                   {badge.label}
                 </span>
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                 📍 位於 {realtime?.county_name || ""}{realtime?.town_name || ""}
                 {realtime?.distance_km != null && (
                   <span className="ml-1 font-semibold text-indigo-600 dark:text-indigo-400">
@@ -289,7 +289,7 @@ export default function WeatherRainfallLocator({
               </p>
             </div>
             {realtime?.obs_time && (
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-600">
                 觀測時間：{new Date(realtime.obs_time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
@@ -298,30 +298,30 @@ export default function WeatherRainfallLocator({
           {/* Realtime Accumulation stats (O-A0002-001) */}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">時雨量 (1小時)</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">時雨量 (1小時)</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                {formatRainValue(realtime?.precip_1hr)} <span className="text-xs font-normal text-slate-400">mm</span>
+                {formatRainValue(realtime?.precip_1hr)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">3小時累積</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">3小時累積</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                {formatRainValue(realtime?.precip_3hr)} <span className="text-xs font-normal text-slate-400">mm</span>
+                {formatRainValue(realtime?.precip_3hr)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">24小時累積 (日雨量)</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">24小時累積 (日雨量)</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-indigo-600 dark:text-indigo-400">
-                {formatRainValue(realtime?.precip_24hr)} <span className="text-xs font-normal text-slate-400">mm</span>
+                {formatRainValue(realtime?.precip_24hr)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">3天累積雨量</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">3天累積雨量</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-slate-100">
-                {formatRainValue(realtime?.precip_3days)} <span className="text-xs font-normal text-slate-400">mm</span>
+                {formatRainValue(realtime?.precip_3days)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
           </div>
@@ -331,26 +331,26 @@ export default function WeatherRainfallLocator({
             <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
               <span>📊 氣象站中長期累積歷史 (C-B0025-001)：{accumulation?.station_name || "署屬測站"}</span>
               {accumulation?.distance_km != null && (
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[11px] text-slate-600">
                   距約 {accumulation.distance_km.toFixed(1)} km
                 </span>
               )}
             </div>
             <div className="mt-2.5 grid grid-cols-3 gap-2 text-center text-xs">
               <div className="rounded-lg bg-white p-2 shadow-2xs dark:bg-slate-800">
-                <span className="text-slate-500 dark:text-slate-400">本月累積雨量</span>
+                <span className="text-slate-600 dark:text-slate-400">本月累積雨量</span>
                 <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
                   {accumulation?.month_mm != null ? accumulation.month_mm.toFixed(1) : "--"} mm
                 </p>
               </div>
               <div className="rounded-lg bg-white p-2 shadow-2xs dark:bg-slate-800">
-                <span className="text-slate-500 dark:text-slate-400">本年度累積雨量</span>
+                <span className="text-slate-600 dark:text-slate-400">本年度累積雨量</span>
                 <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
                   {accumulation?.year_mm != null ? accumulation.year_mm.toFixed(1) : "--"} mm
                 </p>
               </div>
               <div className="rounded-lg bg-white p-2 shadow-2xs dark:bg-slate-800">
-                <span className="text-slate-500 dark:text-slate-400">近30天降雨日</span>
+                <span className="text-slate-600 dark:text-slate-400">近30天降雨日</span>
                 <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
                   {accumulation?.wet_days_30 != null ? `${accumulation.wet_days_30} 天` : "--"}
                 </p>
@@ -397,7 +397,7 @@ export default function WeatherRainfallLocator({
                         <p className="font-bold text-slate-800 dark:text-slate-200">
                           {st.station_name}
                         </p>
-                        <p className="text-[10px] text-slate-400">
+                        <p className="text-[10px] text-slate-600">
                           {st.county_name} {st.town_name}
                         </p>
                       </div>
@@ -406,13 +406,13 @@ export default function WeatherRainfallLocator({
                       <span className="font-mono text-sm font-extrabold text-indigo-600 dark:text-indigo-400">
                         {rain24.toFixed(1)}
                       </span>
-                      <span className="text-[10px] text-slate-400"> mm</span>
+                      <span className="text-[10px] text-slate-600"> mm</span>
                     </div>
                   </div>
                 );
               })
             ) : (
-              <p className="py-4 text-center text-xs text-slate-400">
+              <p className="py-4 text-center text-xs text-slate-600">
                 目前全台各地降雨均未達顯著累積量。
               </p>
             )}

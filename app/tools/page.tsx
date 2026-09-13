@@ -315,7 +315,7 @@ export default function ToolsIndexPage() {
                         {categoryTools.length}
                       </span>
                     </h2>
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
                       {category.description}
                     </p>
                   </div>
@@ -335,7 +335,7 @@ export default function ToolsIndexPage() {
                             <h3 className="truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                               {tool.title}
                             </h3>
-                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                               {tool.description}
                             </p>
                           </div>

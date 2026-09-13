@@ -27,7 +27,11 @@ export default function HeroPost({
           {src ? (
             <Image
               src={src}
-              alt={hero.title}
+              // Decorative relative to the <h1> overlaid on this same image
+              // (rendered a few lines below) — an alt duplicating that
+              // heading text is screen-reader noise, not new information
+              // (issue #262, Lighthouse "redundant alt text").
+              alt=""
               fill
               priority
               unoptimized={
@@ -119,7 +123,7 @@ export default function HeroPost({
                   >
                     {item.feed_name}
                   </span>
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400 dark:text-slate-500">
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-500">
                     <span>{toTaipei(displayDate(item))}</span>
                     <span aria-hidden="true">•</span>
                     <span className="inline-flex items-center gap-1">
@@ -139,12 +143,12 @@ export default function HeroPost({
                     </span>
                   </div>
                 </div>
-                <h3 className="mt-3 line-clamp-2 text-base leading-snug font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                <h2 className="mt-3 line-clamp-2 text-base leading-snug font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                   <Link href={`/news/${item.id}`}>
                     <LocalizedText>{item.title}</LocalizedText>
                   </Link>
-                </h3>
-                <p className="mt-2 line-clamp-2 text-xs text-slate-500 dark:text-slate-400">
+                </h2>
+                <p className="mt-2 line-clamp-2 text-xs text-slate-600 dark:text-slate-400">
                   {excerpt(item.description_html, 90)}
                 </p>
               </div>

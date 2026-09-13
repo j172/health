@@ -58,7 +58,7 @@ export default function ToolPageShell({
 
         <main className={`mx-auto px-4 py-8 sm:px-6 lg:px-8 ${maxWidthClassName}`}>
           {/* Breadcrumb navigation */}
-          <nav className="mb-6 text-xs font-medium text-slate-500 dark:text-slate-400" aria-label="breadcrumb">
+          <nav className="mb-6 text-xs font-medium text-slate-600 dark:text-slate-400" aria-label="breadcrumb">
             <ol className="flex flex-wrap items-center gap-1.5">
               <li>
                 <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400">
@@ -97,7 +97,7 @@ export default function ToolPageShell({
                   <span>💡</span>
                   <span>核心定義與重點快覽 (AEO Direct Answer)</span>
                 </h2>
-                <span className="font-mono text-[10px] text-slate-400">AI / Snippet Ready</span>
+                <span className="font-mono text-[10px] text-slate-600">AI / Snippet Ready</span>
               </div>
               <p className="font-medium leading-relaxed">{directAnswer}</p>
             </section>
@@ -176,7 +176,7 @@ export default function ToolPageShell({
                       ) : (
                         <span className="font-semibold text-slate-800 dark:text-slate-200">{ref.title}</span>
                       )}
-                      <span className="ml-1.5 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                      <span className="ml-1.5 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                         {ref.authority}
                       </span>
                     </div>
@@ -214,7 +214,7 @@ export default function ToolPageShell({
                     <span className="font-semibold text-xs text-slate-800 group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
                       {tool.title}
                     </span>
-                    <span className="mt-1 line-clamp-2 text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
+                    <span className="mt-1 line-clamp-2 text-[11px] text-slate-600 dark:text-slate-400 leading-snug">
                       {tool.description}
                     </span>
                   </Link>

@@ -81,14 +81,14 @@ export default function PestAlertSidebarWidget() {
                 <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-bold ${badgeClass}`}>
                   {item.warningLevel || "預警"}
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-slate-600">
                   {item.alertTime?.slice(5, 10) || "最新"}
                 </span>
               </div>
               <h4 className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
                 {item.subjectName}
               </h4>
-              <p className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">
+              <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400 line-clamp-1">
                 作物：{item.targetCrops || "各類農作"}
               </p>
             </Link>

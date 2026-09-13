@@ -11,7 +11,7 @@ export default function NewsLoading() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 bg-slate-50/50 dark:bg-slate-950">
       <LoadingOrb size={32} />
-      <p className="text-xs font-medium text-slate-400 dark:text-slate-500">載入新聞中…</p>
+      <p className="text-xs font-medium text-slate-600 dark:text-slate-500">載入新聞中…</p>
     </div>
   );
 }

@@ -244,7 +244,7 @@ export default function WaterLevelStaffGauge({
 
       {/* Alert levels summary indicator */}
       {(alertLevel1 !== null || alertLevel2 !== null || alertLevel3 !== null) && (
-        <div className="flex gap-2 text-[10px] text-slate-500 dark:text-slate-400">
+        <div className="flex gap-2 text-[10px] text-slate-600 dark:text-slate-400">
           {alertLevel3 !== null && (
             <span className="text-amber-600 dark:text-amber-400">三級:{alertLevel3}m</span>
           )}

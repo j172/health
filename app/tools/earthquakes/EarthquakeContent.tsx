@@ -79,7 +79,7 @@ export default function EarthquakeContent({
               全台與全球顯著地震動態
             </h2>
           </div>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
             資料來源：中央氣象署 (CWA，全台 M4.0+) · 美國地質調查局 (USGS，全球
             M6.0+)
           </p>
@@ -87,7 +87,7 @@ export default function EarthquakeContent({
 
         {/* Magnitude Filter Pills */}
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
             篩選規模：
           </span>
           {[
@@ -112,7 +112,7 @@ export default function EarthquakeContent({
 
       {/* Earthquakes List Grid */}
       {filtered.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-600 dark:border-slate-800 dark:bg-slate-900">
           目前沒有符合此規模篩選條件的顯著地震紀錄。
         </div>
       ) : (
@@ -150,7 +150,7 @@ export default function EarthquakeContent({
                       </span>
                     )}
 
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-600">
                       {toTaipeiTime(item.event_time)}
                     </span>
                   </div>
@@ -160,14 +160,14 @@ export default function EarthquakeContent({
                   </h3>
 
                   {item.place && item.place_zh && (
-                    <p className="mt-1 line-clamp-1 font-mono text-xs text-slate-400">
+                    <p className="mt-1 line-clamp-1 font-mono text-xs text-slate-600">
                       {item.place}
                     </p>
                   )}
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
-                  <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                     {item.depth_km != null && (
                       <span>
                         深度:{" "}

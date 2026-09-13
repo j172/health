@@ -23,7 +23,7 @@ export default function UvSidebarWidget() {
         <>
           <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                 {station.county ?? "未知地區"}
                 {station.stationName ?? "測站"}測站 · 約 {station.distanceKm} km
               </p>

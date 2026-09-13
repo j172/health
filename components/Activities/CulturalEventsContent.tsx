@@ -212,7 +212,7 @@ export default function CulturalEventsContent() {
                   setKeyword("");
                   setPage(1);
                 }}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 清除
               </button>
@@ -270,7 +270,7 @@ export default function CulturalEventsContent() {
         </div>
 
         {/* Status bar & Page Size Switcher */}
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-600 dark:text-slate-400">
           <div>
             顯示第{" "}
             <strong className="font-semibold text-indigo-600 dark:text-indigo-400">
@@ -334,7 +334,7 @@ export default function CulturalEventsContent() {
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
           <span className="text-4xl">🎨</span>
           <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">查無符合條件的藝文展演活動</h3>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">可嘗試切換分類標籤、縣市或清除關鍵字搜尋。</p>
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">可嘗試切換分類標籤、縣市或清除關鍵字搜尋。</p>
         </div>
       )}
 
@@ -362,7 +362,7 @@ export default function CulturalEventsContent() {
                           {item.masterUnit}
                         </span>
                       )}
-                      <span className="ml-auto text-[11px] font-semibold text-slate-400">
+                      <span className="ml-auto text-[11px] font-semibold text-slate-600">
                         {item.startDate} ~ {item.endDate}
                       </span>
                     </div>
@@ -374,7 +374,7 @@ export default function CulturalEventsContent() {
 
                     {/* English Title if available */}
                     {item.titleEn && (
-                      <div className="mt-0.5 text-xs italic text-slate-500 dark:text-slate-400">
+                      <div className="mt-0.5 text-xs italic text-slate-600 dark:text-slate-400">
                         {item.titleEn}
                       </div>
                     )}
@@ -387,7 +387,7 @@ export default function CulturalEventsContent() {
                     )}
 
                     {item.descriptionEn && item.descriptionEn !== item.description && (
-                      <p className="mt-1 line-clamp-2 text-[11px] italic leading-relaxed text-slate-400 dark:text-slate-500">
+                      <p className="mt-1 line-clamp-2 text-[11px] italic leading-relaxed text-slate-600 dark:text-slate-500">
                         EN: {item.descriptionEn}
                       </p>
                     )}
@@ -404,7 +404,7 @@ export default function CulturalEventsContent() {
                               📍 {show.locationName || show.location || "展演場地"}
                             </div>
                             {show.location && show.location !== show.locationName && (
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                              <div className="text-[11px] text-slate-600 dark:text-slate-400">
                                 {show.location}
                               </div>
                             )}
@@ -420,7 +420,7 @@ export default function CulturalEventsContent() {
                         </div>
                       ))}
                       {item.shows.length > 3 && (
-                        <div className="text-center text-[11px] font-medium text-slate-400">
+                        <div className="text-center text-[11px] font-medium text-slate-600">
                           共 {item.shows.length} 場演出場次
                         </div>
                       )}

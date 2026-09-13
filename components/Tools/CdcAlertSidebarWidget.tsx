@@ -103,7 +103,7 @@ export default function CdcAlertSidebarWidget() {
       ) : activeTab === "epid" ? (
         <div className="space-y-3">
           {epidNews.length === 0 ? (
-            <p className="text-xs text-slate-500">暫無國際疫情資訊。</p>
+            <p className="text-xs text-slate-600">暫無國際疫情資訊。</p>
           ) : (
             epidNews.map((item) => (
               <div key={item.id} className="border-b border-slate-100 pb-2 last:border-0 last:pb-0 dark:border-slate-800">
@@ -121,7 +121,7 @@ export default function CdcAlertSidebarWidget() {
                   {item.headline || item.description}
                 </p>
                 {item.effective && (
-                  <p className="mt-0.5 text-[10px] text-slate-400">
+                  <p className="mt-0.5 text-[10px] text-slate-600">
                     {item.effective.slice(0, 10)}
                   </p>
                 )}
@@ -132,7 +132,7 @@ export default function CdcAlertSidebarWidget() {
       ) : (
         <div className="space-y-3">
           {travelAlerts.length === 0 ? (
-            <p className="text-xs text-slate-500">暫無旅遊警示資訊。</p>
+            <p className="text-xs text-slate-600">暫無旅遊警示資訊。</p>
           ) : (
             travelAlerts.map((item) => (
               <div key={item.id} className="border-b border-slate-100 pb-2 last:border-0 last:pb-0 dark:border-slate-800">
@@ -148,7 +148,7 @@ export default function CdcAlertSidebarWidget() {
                   {item.disease}：{item.instruction || item.alertTitle}
                 </p>
                 {item.effective && (
-                  <p className="mt-0.5 text-[10px] text-slate-400">
+                  <p className="mt-0.5 text-[10px] text-slate-600">
                     發布日期：{item.effective.slice(0, 10)}
                   </p>
                 )}

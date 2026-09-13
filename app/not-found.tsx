@@ -63,7 +63,7 @@ export default function NotFound() {
 
               {/* Popular Tools Navigation */}
               <div className="mt-10 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 text-left">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-3 text-left">
                   🔥 熱門推薦健康工具與資料庫
                 </h2>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

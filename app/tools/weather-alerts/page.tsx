@@ -69,7 +69,7 @@ export default async function WeatherAlertsPage() {
               中央氣象署 CWA 即時連線
             </span>
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-slate-500 sm:text-sm dark:text-slate-400">
+          <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm dark:text-slate-400">
             整合陸上強風特報 (W-C0033-003)、濃霧特報 (W-C0033-004)、豪大雨特報 (W-C0033-005)、颱風警報與路徑 (W-C0034-001/005)、海嘯資訊及全台各鄉鎮劇烈天氣特報。
           </p>
         </div>
@@ -96,7 +96,7 @@ export default async function WeatherAlertsPage() {
                 共 {alerts.length} 則特報
               </span>
             </div>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-600">
               更新頻率：每 5-10 分鐘
             </span>
           </div>

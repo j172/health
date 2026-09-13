@@ -9,7 +9,7 @@ const CpcStationMap = dynamic(() => import("@/components/Tools/CpcStationMap"), 
   ssr: false,
   loading: () => (
     <div className="flex h-[480px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-      <div className="flex items-center gap-2 text-sm text-slate-500">
+      <div className="flex items-center gap-2 text-sm text-slate-600">
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></span>
         地圖載入中...
       </div>
@@ -166,7 +166,7 @@ export default function CpcStationsClient({
             <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 sm:text-2xl">
               全台中油加油站服務據點搜尋
             </h2>
-            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
               共收錄 {initialStations.length} 座站點，提供 20 大便民服務即時多選篩選
             </p>
           </div>
@@ -224,7 +224,7 @@ export default function CpcStationsClient({
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3.5 top-3 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              className="absolute right-3.5 top-3 text-xs text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
             >
               清除
             </button>
@@ -305,7 +305,7 @@ export default function CpcStationsClient({
         </div>
 
         {/* Status Bar */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 pt-2.5 dark:border-slate-800">
+        <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 border-t border-slate-100 pt-2.5 dark:border-slate-800">
           <div>
             符合條件站點：
             <span className="font-bold text-blue-600 dark:text-blue-400">
@@ -313,7 +313,7 @@ export default function CpcStationsClient({
             </span>{" "}
             座
             {selectedServices.length > 0 && (
-              <span className="ml-2 text-slate-400">
+              <span className="ml-2 text-slate-600">
                 (已套用 {selectedServices.length} 項服務條件)
               </span>
             )}
@@ -338,7 +338,7 @@ export default function CpcStationsClient({
           selectedStationId={selectedStationId}
           onSelectStation={(st) => setSelectedStationId(st.id)}
         />
-        <div className="mt-2 text-right text-[11px] text-slate-400">
+        <div className="mt-2 text-right text-[11px] text-slate-600">
           地圖預設標記前 150 筆符合條件站點 · 點擊圖標可展開導航與詳細服務
         </div>
       </section>
@@ -349,14 +349,14 @@ export default function CpcStationsClient({
           <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
             據點清單列表
           </h3>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-slate-600">
             第 {page} / {Math.max(1, totalPages)} 頁 · 每頁 {pageSize} 筆
           </span>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {paginatedStations.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-sm text-slate-400">
+            <div className="col-span-full py-12 text-center text-sm text-slate-600">
               查無符合條件的中油加油站，請嘗試放寬篩選條件或清除關鍵字。
             </div>
           ) : (
@@ -412,7 +412,7 @@ export default function CpcStationsClient({
                   </div>
 
                   {/* Phone and Hours */}
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-400">
                     {st.phone && (
                       <div>
                         📞 <a href={`tel:${st.phone}`} className="hover:text-blue-600">{st.phone}</a>
@@ -452,7 +452,7 @@ export default function CpcStationsClient({
                     <div className="mt-2 space-y-1.5 border-t border-slate-100 pt-2 dark:border-slate-800">
                       {availableFuels.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                             ⛽ 供應油品：
                           </span>
                           {availableFuels.map((fuel) => (
@@ -467,7 +467,7 @@ export default function CpcStationsClient({
                       )}
                       {availablePayments.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                          <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                             💳 付款方式：
                           </span>
                           {availablePayments.map((method) => (
@@ -526,7 +526,7 @@ export default function CpcStationsClient({
             >
               上一頁
             </button>
-            <span className="px-2 text-xs font-medium text-slate-500">
+            <span className="px-2 text-xs font-medium text-slate-600">
               {page} / {totalPages}
             </span>
             <button

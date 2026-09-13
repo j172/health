@@ -62,7 +62,7 @@ export default function PestAlertsContent({
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               農作物病蟲害即時預警與疫情通報
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               整合農業部動植物防疫檢疫署自動監測系統，提供全台各鄉鎮病蟲害警訊與防治指引。
             </p>
           </div>
@@ -83,7 +83,7 @@ export default function PestAlertsContent({
                 <button
                   type="button"
                   onClick={() => setSearchKeyword("")}
-                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-2.5 text-xs text-slate-600 hover:text-slate-600"
                 >
                   ✕
                 </button>
@@ -97,7 +97,7 @@ export default function PestAlertsContent({
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedLevel === "all"
                     ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
-                    : "text-slate-500"
+                    : "text-slate-600"
                 }`}
               >
                 全部燈號
@@ -108,7 +108,7 @@ export default function PestAlertsContent({
                 className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedLevel === "紅燈"
                     ? "bg-white text-red-600 shadow-sm dark:bg-slate-900 dark:text-red-400"
-                    : "text-slate-500"
+                    : "text-slate-600"
                 }`}
               >
                 <span>🔴</span> 紅燈緊急
@@ -119,7 +119,7 @@ export default function PestAlertsContent({
                 className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedLevel === "黃燈"
                     ? "bg-white text-amber-600 shadow-sm dark:bg-slate-900 dark:text-amber-400"
-                    : "text-slate-500"
+                    : "text-slate-600"
                 }`}
               >
                 <span>🟡</span> 黃燈注意
@@ -130,7 +130,7 @@ export default function PestAlertsContent({
                 className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedLevel === "綠燈"
                     ? "bg-white text-emerald-600 shadow-sm dark:bg-slate-900 dark:text-emerald-400"
-                    : "text-slate-500"
+                    : "text-slate-600"
                 }`}
               >
                 <span>🟢</span> 綠燈正常
@@ -143,7 +143,7 @@ export default function PestAlertsContent({
       {/* Alerts Grid */}
       <div className="space-y-4">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-16 text-slate-600">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
             <p className="mt-3 text-sm">正在載入病蟲害即時預警資料...</p>
           </div>
@@ -153,7 +153,7 @@ export default function PestAlertsContent({
             <h3 className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-200">
               查無符合條件的病蟲害預警
             </h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               目前選取條件下無發布預警，代表監測狀況良好或請清除關鍵字後重試。
             </p>
           </div>
@@ -196,7 +196,7 @@ export default function PestAlertsContent({
                         {alert.monitorType}
                       </span>
                     </div>
-                    <time className="text-xs text-slate-400">{alert.alertTime}</time>
+                    <time className="text-xs text-slate-600">{alert.alertTime}</time>
                   </div>
 
                   <h3 className="mt-2 text-lg font-bold text-slate-900 dark:text-white">
@@ -204,7 +204,7 @@ export default function PestAlertsContent({
                   </h3>
 
                   <div className="mt-3 flex flex-wrap items-center gap-1.5 text-xs">
-                    <span className="text-slate-500 dark:text-slate-400">主要寄主/受害作物：</span>
+                    <span className="text-slate-600 dark:text-slate-400">主要寄主/受害作物：</span>
                     {alert.targetCrops.split("、").map((crop, cIdx) => (
                       <span
                         key={cIdx}
@@ -217,7 +217,7 @@ export default function PestAlertsContent({
 
                   {records.length > 0 && (
                     <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs dark:border-slate-800">
-                      <span className="text-slate-500">
+                      <span className="text-slate-600">
                         收錄 <strong>{records.length}</strong> 個鄉鎮監測站點觀測數據
                       </span>
                       <button
@@ -243,7 +243,7 @@ export default function PestAlertsContent({
                           <div className="font-semibold text-slate-800 dark:text-slate-200">
                             {rec.CountyName} {rec.TownName}
                           </div>
-                          <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+                          <div className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
                             {rec.CropName ? `作物: ${rec.CropName}` : `站號: ${rec.SurveySiteID}`}
                           </div>
                         </div>

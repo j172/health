@@ -70,7 +70,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
               臺北捷運營運與無障礙電梯即時公告
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-slate-600 dark:text-slate-400">
               即時同步臺北大眾捷運股份有限公司營運資訊，包含各車站無障礙電梯保養檢修及特別班次動態。
             </p>
           </div>
@@ -106,7 +106,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
               {searchKeyword && (
                 <button
                   onClick={() => setSearchKeyword("")}
-                  className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-2.5 text-xs text-slate-600 hover:text-slate-600"
                 >
                   ✕
                 </button>
@@ -119,7 +119,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedType === "all"
                     ? "bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white"
-                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
                 全部公告
@@ -129,7 +129,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedType === "elevator"
                     ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
-                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
                 <span>🛗</span> 電梯檢修
@@ -139,7 +139,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   selectedType === "operational"
                     ? "bg-white text-amber-600 shadow-sm dark:bg-slate-900 dark:text-amber-400"
-                    : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
                 <span>⚠️</span> 營運調整
@@ -152,7 +152,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
       {/* Alert List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <div className="flex flex-col items-center justify-center py-16 text-slate-600">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
             <p className="mt-3 text-sm">正在載入捷運即時公告...</p>
           </div>
@@ -162,7 +162,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
             <h3 className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-200">
               目前全線營運正常
             </h3>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               {searchKeyword || selectedLine !== "all" || selectedType !== "all"
                 ? "目前選取的條件查無公告，您可切換回全部路線或清除關鍵字。"
                 : "目前捷運全線設備及電梯運作良好，無維護中或暫停使用通報。"}
@@ -186,7 +186,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                     {alert.stationName}
                   </span>
                 </div>
-                <time className="text-xs text-slate-400 dark:text-slate-500">
+                <time className="text-xs text-slate-600 dark:text-slate-500">
                   {alert.alertTime}
                 </time>
               </div>
@@ -199,7 +199,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 {alert.alertContent}
               </p>
 
-              <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-400 dark:border-slate-800">
+              <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-600 dark:border-slate-800">
                 <span>資訊來源：臺北大眾捷運股份有限公司開放資料</span>
                 <span className="text-amber-600 dark:text-amber-400 font-medium">進行中</span>
               </div>

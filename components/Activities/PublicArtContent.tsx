@@ -29,7 +29,7 @@ function ArtworkImage({ src, alt }: { src: string; alt: string }) {
 
   if (failed) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-500">
         <span className="text-2xl">🖼️</span>
         <span className="text-[11px] font-medium">圖片來源暫無法顯示</span>
       </div>
@@ -255,7 +255,7 @@ export default function PublicArtContent() {
                 <button
                   type="button"
                   onClick={() => setKeyword("")}
-                  className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
                 >
                   清除
                 </button>
@@ -337,7 +337,7 @@ export default function PublicArtContent() {
         </div>
 
         {/* Status bar */}
-        <div className="mt-3 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-3 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
           <span>
             目前顯示 <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{filteredItems.length}</strong> 處公共藝術作品與演藝場所
           </span>
@@ -395,7 +395,7 @@ export default function PublicArtContent() {
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
           <span className="text-4xl">🗿</span>
           <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">查無符合條件的公共藝術作品</h3>
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">可嘗試切換縣市、場域或清除關鍵字搜尋。</p>
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">可嘗試切換縣市、場域或清除關鍵字搜尋。</p>
         </div>
       )}
 
@@ -439,7 +439,7 @@ export default function PublicArtContent() {
                         </span>
                       )}
                       {item.year && (
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                           {item.year} 年
                         </span>
                       )}
@@ -457,7 +457,7 @@ export default function PublicArtContent() {
 
                     {/* Setting location */}
                     <div className="mt-2 flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                      <span className="shrink-0 text-slate-400">📍</span>
+                      <span className="shrink-0 text-slate-600">📍</span>
                       <span className="font-medium">{item.location}</span>
                     </div>
 
@@ -473,7 +473,7 @@ export default function PublicArtContent() {
                           </div>
                         ) : null}
                         {item.extraJson.register ? (
-                          <div className="line-clamp-2 text-[11px] text-slate-500 dark:text-slate-400">
+                          <div className="line-clamp-2 text-[11px] text-slate-600 dark:text-slate-400">
                             <span>📋 </span>
                             <span>{String(item.extraJson.register)}</span>
                           </div>
@@ -483,7 +483,7 @@ export default function PublicArtContent() {
 
                     {/* Material & Dimensions */}
                     {(item.material || item.dimensions) && (
-                      <div className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
+                      <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-400">
                         {item.material && <span>材質：{item.material} </span>}
                         {item.dimensions && <span>({item.dimensions})</span>}
                       </div>
@@ -491,7 +491,7 @@ export default function PublicArtContent() {
 
                     {/* Description preview */}
                     {item.description && (
-                      <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                      <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                         {item.description}
                       </p>
                     )}

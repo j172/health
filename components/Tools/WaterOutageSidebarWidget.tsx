@@ -63,14 +63,14 @@ export default function WaterOutageSidebarWidget() {
               <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-950/70 dark:text-blue-300">
                 {item.county} {item.districts}
               </span>
-              <span className="text-[10px] text-slate-400">
+              <span className="text-[10px] text-slate-600">
                 {item.type}
               </span>
             </div>
             <p className="mt-1 line-clamp-1 text-xs font-semibold text-slate-800 dark:text-slate-200">
               {item.influenceArea || item.reason || "管線維修施工"}
             </p>
-            <p className="mt-0.5 text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="mt-0.5 text-[10px] text-slate-600 dark:text-slate-500">
               {item.startTime.slice(5, 16)} ~ {item.endTime.slice(5, 16)}
             </p>
           </div>

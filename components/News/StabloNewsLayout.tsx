@@ -122,7 +122,7 @@ export default async function StabloNewsLayout({
                 {archiveTitle ?? "最新新聞列表"}
               </h1>
               {archiveDescription && (
-                <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
                   {archiveDescription}
                 </p>
               )}
@@ -131,8 +131,15 @@ export default async function StabloNewsLayout({
             <div className="grid gap-10 lg:grid-cols-3">
               <div className="lg:col-span-2">
                 {items.length === 0 ? (
-                  <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-                    目前沒有符合的新聞報導。
+                  <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-600 dark:border-slate-800 dark:bg-slate-900">
+                    {/* An <h2> here (not just plain text) keeps the page's
+                        heading levels sequential down to the sidebar's <h3>
+                        widgets even on this empty-results path — see issue
+                        #262, Lighthouse "heading-order". */}
+                    <h2 className="text-base font-semibold text-slate-700 dark:text-slate-300">
+                      目前沒有符合的新聞報導
+                    </h2>
+                    <p className="mt-1 text-sm">請稍後再試，或切換其他分類瀏覽。</p>
                   </div>
                 ) : (
                   <>

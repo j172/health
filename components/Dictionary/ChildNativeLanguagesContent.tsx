@@ -197,7 +197,7 @@ export default function ChildNativeLanguagesContent() {
         {/* Hakka Dialect Selector */}
         {lang === "hakka" && (
           <div className="flex items-center gap-1.5 overflow-x-auto">
-            <span className="text-xs font-bold text-slate-400 whitespace-nowrap mr-1">
+            <span className="text-xs font-bold text-slate-600 whitespace-nowrap mr-1">
               腔調：
             </span>
             {HAKKA_DIALECTS.map((d) => (
@@ -224,7 +224,7 @@ export default function ChildNativeLanguagesContent() {
       {/* Search Input Bar */}
       <form onSubmit={handleSearchSubmit} className="relative">
         <div className="relative flex items-center">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-600">
             <svg
               className="h-5 w-5"
               xmlns="http://www.w3.org/2000/svg"
@@ -253,7 +253,7 @@ export default function ChildNativeLanguagesContent() {
                 type="button"
                 onClick={handleClearSearch}
                 aria-label="清除搜尋"
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="p-1.5 text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <svg
                   className="h-4 w-4"
@@ -283,7 +283,7 @@ export default function ChildNativeLanguagesContent() {
       <TopicPills selectedTopic={selectedTopic} onSelectTopic={handleTopicChange} />
 
       {/* Results Header / Stats */}
-      <div className="flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+      <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-400">
         <span>
           {loading
             ? "正在查詢詞條..."
@@ -300,7 +300,7 @@ export default function ChildNativeLanguagesContent() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3">
           <LoadingOrb size={36} />
-          <p className="text-xs font-semibold text-slate-400 animate-pulse">
+          <p className="text-xs font-semibold text-slate-600 animate-pulse">
             載入萌典語言資料庫中...
           </p>
         </div>
@@ -323,7 +323,7 @@ export default function ChildNativeLanguagesContent() {
           <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
             找不到符合的詞條
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mb-4">
+          <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto mb-4">
             您可以嘗試改用華語對照（如「吃飯」、「謝謝」、「天空」），或點選上方的「兒少生活情境探索主題」。
           </p>
           {(activeQuery || selectedTopic) && (
@@ -376,7 +376,7 @@ export default function ChildNativeLanguagesContent() {
                     type="button"
                     onClick={() => handleShare(item)}
                     title="複製此詞條連結"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
+                    className="p-1.5 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     {copiedId === String(item.id) ? (
                       <span className="text-xs text-emerald-600 font-bold">已複製！</span>
@@ -451,7 +451,7 @@ export default function ChildNativeLanguagesContent() {
                                 </p>
                               )}
                               {exMandarin && (
-                                <p className="text-slate-500 dark:text-slate-400 pl-4">
+                                <p className="text-slate-600 dark:text-slate-400 pl-4">
                                   華語：{exMandarin}
                                 </p>
                               )}

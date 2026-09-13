@@ -105,7 +105,7 @@ export default function NewsSidebar({
                       {tDynamic(item.title)}
                     </Link>
                   </h4>
-                  <p className="mt-1 text-[11px] text-slate-400">
+                  <p className="mt-1 text-[11px] text-slate-600">
                     {item.feed_name} ·{" "}
                     {toTaipei(displayDate(item), "short")}
                   </p>

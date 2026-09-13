@@ -14,7 +14,7 @@ export default function TopicPills({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+        <h3 className="text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-400">
           兒少生活情境探索主題
         </h3>
         {selectedTopic && (
