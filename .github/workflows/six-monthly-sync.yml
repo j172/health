@@ -2,6 +2,19 @@ name: Six-monthly facility/drug data sync
 
 on:
   workflow_dispatch:
+    inputs:
+      type:
+        description: >-
+          只重跑單一資料類型，還是完整排程？all（預設）維持現有行為；
+          heritage 只跑文化資產／考古遺址（不吃 geocode 額度，幾分鐘內完成）；
+          facilities 只跑機構名冊（含其 geocode 回填）；drugs 只跑 TFDA 藥品／食品資料庫。
+        type: choice
+        default: all
+        options:
+          - all
+          - heritage
+          - facilities
+          - drugs
   schedule:
     # ~03:00 Taipei time on Jan 2 and Jul 2 (cron is UTC).
     - cron: "0 19 1 1,7 *"
@@ -16,8 +29,13 @@ jobs:
     environment: FTP_SERVER
     # Geocoding backfill dominates the runtime (Nominatim/OpenCage are each
     # throttled to ~1 req/sec) — give it plenty of room under GitHub's
-    # 360-minute hard cap rather than getting cut off mid-run.
+    # 360-minute hard cap rather than getting cut off mid-run. A scoped
+    # `type` run finishes in a fraction of this; the cap only bites `all`.
     timeout-minutes: 340
+    env:
+      # `github.event.inputs.type` is unset on the `schedule` trigger, so this
+      # falls back to "all" there too — scheduled runs are unaffected.
+      SYNC_TYPE: ${{ github.event.inputs.type || 'all' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -57,37 +75,51 @@ jobs:
           curl -fsS -o /dev/null "http://127.0.0.1:18080/api/aqi"
           echo "Tunnel ready on 127.0.0.1:18080."
 
+      # scripts/run-six-monthly-sync.sh runs both the facilities-directory
+      # sync (+ its geocode backfill) and the TFDA drug syncs in one pass —
+      # it isn't internally parameterized by type. So `facilities` and
+      # `drugs` both still run this whole step (still far cheaper than `all`,
+      # since every step below it that this type doesn't need gets skipped);
+      # only `heritage` avoids it entirely, which is what actually matters
+      # here since this step (with its 5-minute wait + per-source geocode
+      # loop) is where nearly all of the 340-minute budget goes.
       - name: Run six-monthly sync
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities' || env.SYNC_TYPE == 'drugs'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: bash scripts/run-six-monthly-sync.sh
 
       - name: Import TFDA food nutrition database (~227k rows, unzipped/parsed here)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'drugs'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-food-nutrition.mjs
 
       - name: Import TFDA food operator registry (~825k rows, unzipped/parsed here)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'drugs'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-food-operators.mjs
 
       - name: Import TFDA 健康食品(健字號) registry (~400-600 rows)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'drugs'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-tfda-health-supplements.mjs
 
       - name: Import NFCC accessible-ATM lists (wheelchair + voice, ~150 rows)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-nfcc-accessible-atm.mjs
 
       - name: Import MOENV green shop directory (~8.5k stores, paginated here)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
@@ -95,18 +127,24 @@ jobs:
         run: node scripts/import-moenv-green-shops.mjs
 
       - name: Import MOHW child welfare nurseries (~200 centers)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-mohw-child-welfare-nurseries.mjs
 
       - name: Import MOHW child welfare centers (~40 centers)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-mohw-child-welfare-centers.mjs
 
+      # Cultural events/public art — not one of the four sync types (all /
+      # heritage / facilities / drugs) offered by the `type` input, so this
+      # only runs on a full `all` sync, same as before this input existed.
       - name: Sync Culture Shows and Public Art
+        if: env.SYNC_TYPE == 'all'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
@@ -117,20 +155,26 @@ jobs:
       # BOCH heritage assets (issue #170) — the production host fetches both
       # source JSON documents itself inside runHeritageAssetsSync(), same as
       # `type=shows` above, so this needs no separate runner-side import
-      # script the way public-art does.
+      # script the way public-art does. Covers both 古蹟／歷史建築 and
+      # 考古遺址 in one call (see ingestHeritageAssets.ts) — no separate
+      # "archaeological sites" step exists, so `type=heritage` on this
+      # workflow's own `type` input needs just this one step.
       - name: Sync Heritage Assets (BOCH)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'heritage'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
         run: |
           curl -fsS -X POST "http://127.0.0.1:18080/api/admin/culture-sync?type=heritage" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 
       - name: Import IDA Certified Tourism Factories (~178 factories)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-ida-tourism-factories.mjs
 
       - name: Import MOC Physical Bookstores (~660 bookstores)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           HEALTH_BASE_URL: http://127.0.0.1:18080

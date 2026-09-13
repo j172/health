@@ -22,8 +22,7 @@ export type ToolGroup =
   | "disability"
   | "child-welfare"
   | "public-facility"
-  | "weather"
-  | "disaster-preparedness";
+  | "weather";
 
 export interface ToolCatalogEntry {
   slug: string;
@@ -43,9 +42,7 @@ export interface ToolCatalogEntry {
   /** Drives the nav dropdowns, the footer columns and the /tools index sections
    * from one place: "calculator" → 健康工具; "facility" → 醫療院所;
    * "ltc" → 長照機構; "disability" → 身心障礙; "child-welfare" → 兒少福利;
-   * "public-facility" → 便民服務; "weather" → 環境監測;
-   * "disaster-preparedness" → 防災地圖 (deliberately separate from
-   * "public-facility" — see docs/specs/disaster-shelter-rescue-map.md). */
+   * "public-facility" → 便民服務; "weather" → 環境監測. */
   group: ToolGroup;
   /**
    * schema.org type for the page-level JSON-LD built by `buildToolPageJsonLd`
@@ -2049,7 +2046,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disaster-map",
-    group: "disaster-preparedness",
+    group: "public-facility",
     schemaType: "WebPage",
     title: "防災地圖：避難收容處所／消防救援單位／應變中心查詢",
     description:
@@ -2445,11 +2442,15 @@ TOOL_CATALOG.sort((a, b) => compareToolTitles(a.title, b.title));
  * they are thin search shells over an external dataset, not indexable content.
  * The sitemap used to submit all 31 tools regardless, asking Google to crawl 16
  * URLs that then told it not to index them. The calculators are the indexable set.
+ * `disaster-map` is matched by slug rather than group: it's real content (not a
+ * thin registry shell) that happens to share the "public-facility" group with
+ * many registry-lookup pages, so its indexability can't be derived from group
+ * membership the way calculator/weather can.
  */
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>
   tool.group === "calculator" ||
   tool.group === "weather" ||
-  tool.group === "disaster-preparedness";
+  tool.slug === "disaster-map";
 
 export function toolsInGroup(
   group: ToolGroup,
