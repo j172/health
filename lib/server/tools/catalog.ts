@@ -2412,6 +2412,51 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "power-grid-overview",
+    group: "public-facility",
+    schemaType: "WebPage",
+    title: "全台電力概況儀表板",
+    description:
+      "整合台灣電力公司與經濟部能源署開放資料，一頁掌握全台各機組即時發電量、全國電源配比與核電廠周邊輻射偵測站即時劑量率。",
+    directAnswer:
+      "全台電力概況儀表板整合台電各機組即時發電量（每 10 分鐘更新）、經濟部能源署全國發電來源配比，以及核電廠周邊輻射偵測站即時劑量率，一頁式呈現全台電力與核安監測現況。",
+    scientificBasis: [
+      {
+        title: "台灣電力公司各機組發電量即時資訊 (d006001)",
+        authority: "台灣電力股份有限公司 (Taipower)",
+        url: "https://service.taipower.com.tw",
+      },
+      {
+        title: "全國發電來源配比開放資料 (set_id=55)",
+        authority: "經濟部能源署",
+        url: "https://www.moeaea.gov.tw",
+      },
+      {
+        title: "核電廠周邊輻射偵測站即時資訊 (d525001)",
+        authority: "台灣電力股份有限公司 (Taipower)",
+        url: "https://service.taipower.com.tw",
+      },
+    ],
+    relatedSlugs: ["reservoir-status", "water-level-stations", "aqi"],
+    faqs: [
+      {
+        question: "這個儀表板的三份資料分別是什麼？",
+        answer:
+          "分別是台電各機組即時發電量（機組類型、裝置容量、淨發電量，每 10 分鐘更新）、經濟部能源署全國發電來源配比（台電/民營電廠/汽電共生占比，僅 4 筆資料）、以及核一/核二/核三廠周邊輻射偵測站即時劑量率（安全監測用途）。",
+      },
+      {
+        question: "輻射偵測站資料是停電資訊嗎？",
+        answer:
+          "不是。這份資料集（d525001）原先被誤以為是分區停電時段資料，但實際驗證後確認欄位是「站名、站號、劑量率(微西弗/小時)、日期時間、經度、緯度」，屬於核電廠周邊環境輻射安全監測，與停電時段無關。",
+      },
+      {
+        question: "資料多久更新一次？",
+        answer:
+          "台電各機組即時發電量與輻射偵測站資料每 10 分鐘自動同步一次；能源署全國發電來源配比因數值極少變動，採每日同步。本頁僅呈現最新快照，不提供歷史趨勢圖。",
+      },
+    ],
+  },
 ];
 
 /**

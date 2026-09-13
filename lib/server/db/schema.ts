@@ -1196,6 +1196,69 @@ export const TABLE_DDL = {
       KEY idx_pest_subject (subject_name)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 便民服務：全台電力概況儀表板 (issue #177) — 台電 d006001 各機組即時發電量,
+  // ~10-minute cadence. Latest-snapshot-only convention (issue's Out of Scope
+  // explicitly excludes history/trend storage): unique key is unit_name alone
+  // (機組名稱), no timestamp in the key, so each sync overwrites the previous
+  // reading in place — same shape as youbike_stations, not the
+  // wra_reservoir_status timestamp-keyed history pattern.
+  powerGenerationUnits: `
+    CREATE TABLE IF NOT EXISTS power_generation_units (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      unit_name VARCHAR(100) NOT NULL,
+      unit_type VARCHAR(50) NOT NULL,
+      capacity_mw DECIMAL(10,2) NULL,
+      net_generation_mw DECIMAL(10,2) NULL,
+      capacity_ratio_pct DECIMAL(6,3) NULL,
+      remark VARCHAR(255) NULL,
+      source_datetime DATETIME NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_power_unit_name (unit_name),
+      KEY idx_power_unit_type (unit_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 經濟部能源署 set_id=55 全國發電來源配比 — only ~4 rows (台電/民營電廠/汽電
+  // 共生 + 合計), synced daily. Latest-snapshot upsert keyed by source_category.
+  powerGenerationMix: `
+    CREATE TABLE IF NOT EXISTS power_generation_mix (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      source_category VARCHAR(50) NOT NULL,
+      capacity_mw DECIMAL(12,2) NULL,
+      capacity_ratio_pct DECIMAL(6,3) NULL,
+      data_org VARCHAR(100) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_power_mix_category (source_category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 台電 d525001 核電廠周邊輻射偵測站即時劑量率 — despite the issue's original
+  // guess, this dataset is NOT scheduled-outage data; it's per-station
+  // radiation dose-rate telemetry around 核一/核二/核三 (安全監測), confirmed
+  // live via a GitHub Actions egress probe (see
+  // docs/specs/taipower-energy-dashboard.md). ~10-minute cadence alongside
+  // d006001. Latest-snapshot upsert keyed by station_no (站號).
+  powerRadiationStations: `
+    CREATE TABLE IF NOT EXISTS power_radiation_stations (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_no VARCHAR(50) NOT NULL,
+      station_name VARCHAR(100) NOT NULL,
+      dose_rate_usv_h DECIMAL(10,4) NULL,
+      recorded_at DATETIME NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_power_radiation_station (station_no),
+      KEY idx_power_radiation_geo (lat, lng)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

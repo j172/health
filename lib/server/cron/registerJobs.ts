@@ -30,6 +30,7 @@ import { runYouBikeSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
+import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -254,5 +255,18 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "30 5 * * *",
     runGuarded("latest-books-sync-cron.log", () => runLatestBooksSync()),
+  );
+  // 全台電力概況儀表板 (issue #177) — 台電 d006001 各機組即時發電量 + d525001
+  // 核電廠周邊輻射偵測站都約每 10 分鐘更新一次，比照 wra-sync 的 30 分鐘級距
+  // 慣例但取一半頻率貼近來源更新節奏。
+  cron.schedule(
+    "*/10 * * * *",
+    runGuarded("power-sync-cron.log", () => runPowerRealtimeSync()),
+  );
+  // 經濟部能源署 set_id=55 全國發電來源配比 — 極小型靜態總表，幾乎不變，daily
+  // off-peak 即可，取一個未被佔用的凌晨分鐘。
+  cron.schedule(
+    "5 5 * * *",
+    runGuarded("power-mix-sync-cron.log", () => runPowerMixSync()),
   );
 };
