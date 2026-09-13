@@ -30,6 +30,10 @@ function withCountyPrefix(county: string, address: string): string {
   return `${county}${address}`;
 }
 
+export function buildMolOccupationalInjurySourceId(name: string, address?: string | null): string {
+  return `${name.trim()}|${(address || "").trim()}`.slice(0, 100);
+}
+
 export async function fetchMolOccupationalInjuryHospitals(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
   // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
@@ -40,17 +44,20 @@ export async function fetchMolOccupationalInjuryHospitals(): Promise<FacilityRec
 
   return raw
     .filter((r) => r.醫療機構名稱)
-    .map((r) => ({
-      facilityType: "health_check",
-      sourceKey: "mol_occupational_injury",
-      sourceId: r.序號 || r.醫療機構名稱,
-      name: r.醫療機構名稱,
-      address: normalizeAddress(withCountyPrefix(r.直轄市或省轄縣市 || "", r.地址 || "")),
-      phone: r.市話 ? toHalfwidthDigits(r.市話) + (r.分機 ? ` 分機${toHalfwidthDigits(r.分機)}` : "") : null,
-      lat: null,
-      lng: null,
-      serviceItem: "職業傷病防治網絡醫院",
-      serviceTime: r.聯絡人 ? `聯絡人：${r.聯絡人}` : null,
-      dataOrg: "勞動部",
-    }));
+    .map((r) => {
+      const cleanAddress = normalizeAddress(withCountyPrefix(r.直轄市或省轄縣市 || "", r.地址 || ""));
+      return {
+        facilityType: "health_check",
+        sourceKey: "mol_occupational_injury",
+        sourceId: buildMolOccupationalInjurySourceId(r.醫療機構名稱, cleanAddress),
+        name: r.醫療機構名稱,
+        address: cleanAddress,
+        phone: r.市話 ? toHalfwidthDigits(r.市話) + (r.分機 ? ` 分機${toHalfwidthDigits(r.分機)}` : "") : null,
+        lat: null,
+        lng: null,
+        serviceItem: "職業傷病防治網絡醫院",
+        serviceTime: r.聯絡人 ? `聯絡人：${r.聯絡人}` : null,
+        dataOrg: "勞動部",
+      };
+    });
 }

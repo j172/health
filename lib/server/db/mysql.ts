@@ -256,7 +256,15 @@ export const ensureSchema = async (): Promise<void> => {
     WHERE facility_type = 'hakka_community'
       AND address NOT LIKE '%台北%' AND address NOT LIKE '%臺北%' AND address NOT LIKE '%新北%'
       AND lat BETWEEN 24.95 AND 25.25 AND lng BETWEEN 121.45 AND 121.65
-      AND name NOT IN ('臺中市東勢區詒福社區發展協會', '花蓮縣花蓮市碧雲莊社區發展協會', '社團法人臺中市東勢農民老人會', '臺南市南區文南社區發展協會')
+  `);
+
+  // Issue #21: Migrate MOL occupational-injury facilities' source_id from fragile row index (1..39) to stable {name}|{address} key
+  await p.query(`
+    UPDATE facilities
+    SET source_id = SUBSTRING(CONCAT(name, '|', COALESCE(address, '')), 1, 100),
+        updated_at = NOW()
+    WHERE source_key = 'mol_occupational_injury'
+      AND source_id REGEXP '^[0-9]+$'
   `);
 
   // Auto-seed / sync sheltered workshops (62 organizations with merchandise/products) into facilities
