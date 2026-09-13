@@ -18,6 +18,34 @@ import type { FeedConfig } from "@/types/rss";
  * were purged from the table (see ensureSchema) and so could lose their labels
  * as well. `types/rss.ts` keeps the FeedCode literals for the same reason: the
  * codes persist in news_items.feed_code.
+ *
+ * Candidate verification 2026-09-14 (issue #258): 11 user-supplied URLs were
+ * checked for a real subscribable RSS/Atom/JSON feed before considering
+ * addition here. None qualified — no entries were added:
+ *   - `hpa.gov.tw/wf/newsapi.ashx` returns a JSON blob (not RSS/Atom), a flat
+ *     1000-item dump spanning years with no per-category split — it overlaps
+ *     the same 國民健康署 news system already covered by the five `hpa*`
+ *     feeds below (nodeid 124/126/127/128/129) and doesn't fit FeedConfig's
+ *     XML-feed shape anyway.
+ *   - `mohw.gov.tw/lp-2704-1-1-20.html` is the HTML listing page for
+ *     "焦點新聞(全)" (confirmed via its own breadcrumb) — the exact category
+ *     the `16` feed (`rss-16-1.html`, 焦點新聞) already serves as real RSS.
+ *   - `health.setn.com`, `health.tvbs.com.tw`, `edh.tw` already have dedicated
+ *     scrapers wired into runIngestion.ts (fetchSetnHealthNews.ts /
+ *     fetchTvbsHealthNews.ts / fetchEdhNews.ts) — each confirmed to have no
+ *     RSS of its own, hence the special-source scrape in the first place.
+ *   - `storm.mg/channel/63/` (健康 channel) links to `/feed`, a page that
+ *     itself calls `/api/getRss/channel_id/{id}?path=...`; every channel_id
+ *     that page lists — including 63 and the health section's real internal
+ *     id 16 — returns a well-formed but permanently empty RSS shell (0
+ *     `<item>`), so the vendor's own advertised feed API is non-functional
+ *     in production, not merely undiscovered.
+ *   - `h2u.io/articles`, `hiking.biji.co`, `running.biji.co`, `daypets.tw`,
+ *     `nhri.edu.tw/News/...` have no feed at all: no `<link rel="alternate">`
+ *     feed tag, and `/feed`/`/rss`/`/rss.xml`/`?feed=rss2` guesses either
+ *     404 or (nhri.edu.tw) soft-404 HTML with HTTP 200. Would need an
+ *     HTML-scraping special source, deliberately not built here — left for a
+ *     separate ticket if wanted.
  */
 export const RSS_FEEDS: FeedConfig[] = [
   {
