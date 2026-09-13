@@ -7,7 +7,16 @@ on:
     # og:image backfill runs independently of deploy cadence — previously
     # this only ran as a step inside deploy-ftps.yml, i.e. only at deploy
     # time. See docs/specs/news-card-image-freshness-scheduling.md.
-    - cron: "*/30 * * * *"
+    #
+    # Deliberately offset from :00/:30 (facilities-geocode-batch.yml's
+    # "*/30 * * * *") and :45 (npo-organizations-sync.yml's "45 3,15 * * *")
+    # rather than sharing them — this workflow shares the
+    # host-tw123457-server concurrency group (cancel-in-progress: true) with
+    # facilities-geocode-batch.yml, and a same-grid-point cron here would
+    # reproduce the "scheduled but always preempted/cancelled" bug fixed in
+    # #249 (PR #250), just against this workflow instead. :07/:37 gives a
+    # 7-minute buffer on both sides. See #252.
+    - cron: "7,37 * * * *"
 
 concurrency:
   group: host-tw123457-server

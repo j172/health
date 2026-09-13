@@ -2,6 +2,25 @@ name: TFDA health supplements import
 
 on:
   workflow_dispatch:
+  schedule:
+    # TFDA's own data.gov.tw/dataset/6951 listing states this dataset
+    # updates every 3 months, i.e. more often than the six-monthly-sync.yml
+    # cadence this used to depend on (Jan 1 / Jul 1) — see #252 and
+    # docs/specs/scheduling-health-audit-20260914.md. Runs quarterly on the
+    # 15th (Jan/Apr/Jul/Oct) at 05:17 UTC:
+    #  - Day 15, not day 1, so it never lands on six-monthly-sync.yml's own
+    #    Jan 1 / Jul 1 schedule ("0 19 1 1,7 *") — that workflow also runs
+    #    this same import, and upsertHealthSupplements() is idempotent
+    #    (upsert keyed on licenseNo), so an accidental double-run wouldn't
+    #    corrupt data, but there's no reason to invite a same-day double
+    #    import anyway.
+    #  - :17 past the hour, off the common :00/:30/:45 grid points other
+    #    workflows in the host-tw123457-server concurrency group use
+    #    (facilities-geocode-batch.yml's "*/30", news-og-backfill.yml's
+    #    "7,37", npo-organizations-sync.yml's "45 3,15") — this workflow only
+    #    fires 4 days a year so collision odds are already low, but keeping
+    #    it off those grid points costs nothing.
+    - cron: "17 5 15 1,4,7,10 *"
 
 # This step also lives inside six-monthly-sync.yml (cron: Jan 1 / Jul 1), but
 # that workflow was only added 2026-07-29 -- after this half's Jan 1/Jul 1
@@ -11,6 +30,14 @@ on:
 # re-triggering six-monthly-sync's much heavier food-nutrition (~227k rows)
 # and food-operators (~825k rows) imports. See
 # scripts/import-tfda-health-supplements.mjs for details.
+#
+# Update 2026-09-14 (#252): this workflow now also carries its own quarterly
+# `schedule:` above, since TFDA updates this dataset every 3 months — waiting
+# for six-monthly-sync.yml's Jan/Jul cadence meant production trailed the
+# source by up to 3 months. six-monthly-sync.yml's Jan 1 / Jul 1 run still
+# also imports this dataset as before (unchanged, not touched here); the two
+# schedules are intentionally offset (day 1 vs day 15) so they don't land on
+# the same day.
 concurrency:
   group: host-tw123457-server
   cancel-in-progress: false
