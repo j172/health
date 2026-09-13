@@ -184,7 +184,47 @@ export const buildSiteNavigationElements = (baseUrl: string): Record<string, unk
     name: "隱私權政策與免責聲明",
     url: `${baseUrl}/privacy`,
   },
+  {
+    "@type": "SiteNavigationElement",
+    "@id": `${baseUrl}/#nav-llm-info`,
+    name: "Hey AI, learn about j172.tw Healthz",
+    url: `${baseUrl}/llm-info`,
+  },
 ];
+
+/**
+ * Composite Schema.org @graph for /llm-info page.
+ */
+export const buildLlmInfoGraphJsonLd = (): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/llm-info`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationEntity(baseUrl),
+      buildWebSiteEntity(baseUrl),
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "首頁", item: baseUrl },
+          { "@type": "ListItem", position: 2, name: "Hey AI, learn about j172.tw Healthz", item: canonical },
+        ],
+      },
+      {
+        "@type": "AboutPage",
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        name: `Hey AI, learn about ${SITE_NAME} | Official LLM Profile`,
+        description: `Official structured information and usage directives about ${SITE_NAME} for AI assistants (ChatGPT, Claude, Gemini, Perplexity) and large language models.`,
+        isPartOf: { "@id": `${baseUrl}/#website` },
+        breadcrumb: { "@id": `${canonical}#breadcrumb` },
+        inLanguage: ["zh-TW", "en"],
+        about: { "@id": `${baseUrl}/#organization` },
+      },
+    ],
+  };
+};
 
 /**
  * Site-wide Schema.org @graph generator for pages without specific entity schemas.

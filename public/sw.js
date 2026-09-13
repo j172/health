@@ -1,7 +1,7 @@
-// Hand-written PWA Service Worker v2 (Network-First for navigations, Cache-First for static assets)
-const CACHE_VERSION = "v2";
+// Hand-written PWA Service Worker v3 (Network-First for navigations, Cache-First for static assets)
+const CACHE_VERSION = "v3";
 const STATIC_CACHE = `j172-health-static-${CACHE_VERSION}`;
-const CORE_ROUTES = ["/", "/news", "/privacy"];
+const CORE_ROUTES = ["/", "/news", "/privacy", "/llm-info"];
 
 const OFFLINE_HTML = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>離線閱讀模式 | j172tw Healthz</title>
 <style>body{font-family:system-ui,-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;color:#181c31;background:#fbfbfb;text-align:center;padding:2rem}
