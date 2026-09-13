@@ -8,6 +8,8 @@ import WeeklyHoursLine from "@/components/Facilities/WeeklyHours";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { FacilityPenaltyBadge, FacilityPenaltyAccordion } from "@/components/Facilities/FacilityPenaltySection";
+import type { FacilityPenaltyInfo } from "@/lib/server/facilities/sources/nhiPenalties";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -49,6 +51,7 @@ interface FacilityItem {
     weeklyHoursNote?: string;
     charityUrl?: string;
     charityName?: string;
+    penalty?: FacilityPenaltyInfo;
   } | null;
   /**
    * Only present on GPS searches — the Haversine distance the API sorted the list by.
@@ -368,7 +371,8 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                 <div key={f.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   <div className="flex items-start justify-between gap-3">
                     <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      {f.extra_json?.penalty && <FacilityPenaltyBadge penalty={f.extra_json.penalty} />}
                       {serviceItem === "badge" && f.service_item && (
                         <span className="rounded-full bg-zumthor px-2 py-0.5 text-xs text-primary dark:bg-primary/20">{f.service_item}</span>
                       )}
@@ -395,6 +399,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                     </p>
                   )}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
+                  {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
                   {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">（尚未完成地理定位，暫不顯示於地圖）</p>}
                 </div>
               ))}

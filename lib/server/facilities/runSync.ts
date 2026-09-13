@@ -7,6 +7,7 @@ import { fetchNhiPharmacies } from "@/lib/server/facilities/sources/nhiPharmacie
 import { fetchNhiHomeHealthcare } from "@/lib/server/facilities/sources/nhiHomeHealthcare";
 import { fetchHakkaCommunity } from "@/lib/server/facilities/sources/hakkaCommunity";
 import { fetchMoenvGreenHotels } from "@/lib/server/facilities/sources/moenvGreenHotels";
+import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -30,6 +31,7 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "nhi_home_healthcare", fetch: fetchNhiHomeHealthcare },
   { key: "hakka_dtst20230600002", fetch: fetchHakkaCommunity },
   { key: "moenv_green_hotel", fetch: fetchMoenvGreenHotels },
+  { key: "nhi_penalty", fetch: fetchNhiPenalties },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —

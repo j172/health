@@ -1,0 +1,1700 @@
+[
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_5f41647682296dc6",
+    "name": "[健保管制地址] 臺北市中山區長安東路二段189號-6",
+    "address": "臺北市中山區長安東路二段189號-6",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2022-06-01",
+        "endDate": "2027-05-31",
+        "rawMinguoRange": "1110601 ~ 1160531",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_639debf619648677",
+    "name": "[健保管制地址] 臺北市內湖區康樂街72巷17弄6號",
+    "address": "臺北市內湖區康樂街72巷17弄6號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2021-10-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1101001 ~ 1150930",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_235dae1113f3b38d",
+    "name": "[健保管制地址] 新北市板橋區龍興街47號1樓",
+    "address": "新北市板橋區龍興街47號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2022-08-01",
+        "endDate": "2027-07-31",
+        "rawMinguoRange": "1110801 ~ 1160731",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_e8272fec17dd91bc",
+    "name": "[健保管制地址] 新北市蘆洲區中山一路165號1樓",
+    "address": "新北市蘆洲區中山一路165號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2021-10-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1101001 ~ 1150930",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_8626113a26fce9b7",
+    "name": "[健保管制地址] 新北市新店區中正路396號1樓、398號1樓",
+    "address": "新北市新店區中正路396號1樓、398號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2023-11-01",
+        "endDate": "2028-10-31",
+        "rawMinguoRange": "1121101 ~ 1171031",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_51d2db2a7dd9b03a",
+    "name": "[健保管制地址] 新北市板橋區中山路2段225號1樓、2樓",
+    "address": "新北市板橋區中山路2段225號1樓、2樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2025-09-18",
+        "endDate": "2030-09-17",
+        "rawMinguoRange": "1140918 ~ 1190917",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_6cf1cbad585733fa",
+    "name": "[健保管制地址] 基隆市仁愛區仁二路105號1樓",
+    "address": "基隆市仁愛區仁二路105號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2023-11-26",
+        "endDate": "2028-11-25",
+        "rawMinguoRange": "1121126 ~ 1171125",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_a26a347501b48e21",
+    "name": "[健保管制地址] 桃園市中壢區新中北路二段453號1樓、455號1樓",
+    "address": "桃園市中壢區新中北路二段453號1樓、455號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2022-11-01",
+        "endDate": "2027-10-31",
+        "rawMinguoRange": "1111101 ~ 1161031",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_a9eedd79a6c824f3",
+    "name": "[健保管制地址] 桃園市中壢區領航南路一段186號1樓",
+    "address": "桃園市中壢區領航南路一段186號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2023-06-01",
+        "endDate": "2028-05-31",
+        "rawMinguoRange": "1120601 ~ 1170531",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_0f363217efffcada",
+    "name": "[健保管制地址] 桃園市新屋區新屋里中華路290號",
+    "address": "桃園市新屋區新屋里中華路290號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2026-04-03",
+        "endDate": "2031-04-02",
+        "rawMinguoRange": "1150403 ~ 1200402",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_b342070e5cd4db71",
+    "name": "[健保管制地址] 苗栗縣苗栗市綠苗里博愛街79號",
+    "address": "苗栗縣苗栗市綠苗里博愛街79號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2024-11-01",
+        "endDate": "2029-10-31",
+        "rawMinguoRange": "1131101 ~ 1181031",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_fdef7bbc26f013a0",
+    "name": "[健保管制地址] 苗栗縣苑裡鎮苑南里1鄰新興路78號1樓",
+    "address": "苗栗縣苑裡鎮苑南里1鄰新興路78號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2024-06-04",
+        "endDate": "2029-06-03",
+        "rawMinguoRange": "1130604 ~ 1180603",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_b13a1469ad0ed59e",
+    "name": "[健保管制地址] 臺中市西區向上南路一段215號1樓、217號1樓",
+    "address": "臺中市西區向上南路一段215號1樓、217號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2025-06-06",
+        "endDate": "2030-06-05",
+        "rawMinguoRange": "1140606 ~ 1190605",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_19b79ec721bb67df",
+    "name": "[健保管制地址] 高雄市三民區堯山街78號",
+    "address": "高雄市三民區堯山街78號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2022-02-28",
+        "endDate": "2027-02-27",
+        "rawMinguoRange": "1110228 ~ 1160227",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_8bffdfef9086a787",
+    "name": "[健保管制地址] 高雄市三民區鼎力路305號1樓",
+    "address": "高雄市三民區鼎力路305號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2022-01-01",
+        "endDate": "2026-12-31",
+        "rawMinguoRange": "1110101 ~ 1151231",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_cb1f2ab2cb99ce79",
+    "name": "[健保管制地址] 高雄市三民區建工路396號1樓",
+    "address": "高雄市三民區建工路396號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2024-03-31",
+        "endDate": "2029-03-30",
+        "rawMinguoRange": "1130331 ~ 1180330",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_c00587276c9d32c5",
+    "name": "[健保管制地址] 高雄市左營區博愛二路206號1樓",
+    "address": "高雄市左營區博愛二路206號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2022-03-01",
+        "endDate": "2027-02-28",
+        "rawMinguoRange": "1110301 ~ 1160228",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_401e03e9a2beae77",
+    "name": "[健保管制地址] 高雄市左營區自由三路382號1樓",
+    "address": "高雄市左營區自由三路382號1樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2025-01-01",
+        "endDate": "2029-12-31",
+        "rawMinguoRange": "1140101 ~ 1181231",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_c6e8e2c1b678e973",
+    "name": "[健保管制地址] 新竹縣新埔鎮下寮里義民路三段156巷90弄66號",
+    "address": "新竹縣新埔鎮下寮里義民路三段156巷90弄66號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2025-03-20",
+        "endDate": "2030-03-19",
+        "rawMinguoRange": "1140320 ~ 1190319",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_c4e29c08946e5c7b",
+    "name": "[健保管制地址] 臺北市大安區和平東路2段98之1號",
+    "address": "臺北市大安區和平東路2段98之1號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2026-01-01",
+        "endDate": "2030-12-31",
+        "rawMinguoRange": "1150101 ~ 1191231",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_bfa896f02658999b",
+    "name": "[健保管制地址] 宜蘭縣宜蘭市昇平街72號",
+    "address": "宜蘭縣宜蘭市昇平街72號",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2026-05-01",
+        "endDate": "2031-04-30",
+        "rawMinguoRange": "1150501 ~ 1200430",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "addr_4d38a90cb1a913cb",
+    "name": "[健保管制地址] 新北市新店區中正路289號1樓、2樓",
+    "address": "新北市新店區中正路289號1樓、2樓",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "五年不予特約地址",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "依全民健康保險法規，此門牌地址於管制期間內，任何新設立之醫事機構均不予健保特約。",
+        "clauses": "全民健康保險醫事服務機構特約及管理辦法",
+        "startDate": "2026-07-01",
+        "endDate": "2031-06-30",
+        "rawMinguoRange": "1150701 ~ 1200630",
+        "sourceTitle": "五年內不予特約之地址"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3522023877",
+    "name": "博愛診所",
+    "address": "嘉義市西區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "expired",
+        "category": "終止特約",
+        "reason": "經查有保險對象復健治療之新療程首次治療日長期未經醫師看診，逕做復健治療虛報診察費，或未接受復健治療，或以補卡、同日多刷等方式虛報復健治療費用，違規虛報點數超過25萬點，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "王博瀚",
+        "startDate": "2025-09-01",
+        "endDate": "2026-08-31",
+        "rawMinguoRange": "1140901 ~ 1150831",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3543281048",
+    "name": "瑪家診所",
+    "address": "屏東縣瑪家鄉",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "經查有保險對象持家人健保卡代領藥(包括領取非健保卡本人所需藥品、備用藥品)、預防接種當日不當申報疾病就醫費用，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第2款",
+        "practitioner": "周譚正",
+        "startDate": "2026-08-01",
+        "endDate": "2027-07-31",
+        "rawMinguoRange": "1150801 ~ 1160731",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3544011817",
+    "name": "鄭鴻藝內科診所",
+    "address": "澎湖縣馬公市",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "經查有「以提供保險對象非治療需要之藥品、營養品或其他物品之方式，登錄就醫並申報醫療費用」、「未診治保險對象，卻自創就醫紀錄，虛報醫療費用」，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第1、2款及第43條第1、2款",
+        "practitioner": "鄭鴻藝",
+        "rawMinguoRange": "1141101\n(本署函文同意延後執行，原執行起日為1140801) ~ 1151031\n(本署函文同意延後執行，原執行迄日為1150731)",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3707350073",
+    "name": "維泰牙醫診所",
+    "address": "高雄市苓雅區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "終止特約",
+        "reason": "經查有「容留未具醫師資格之人員，為保險對象執行醫療業務，卻偽以合格醫師名義虛報本保險醫療費用」之情事，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第4款及第43條第4款",
+        "practitioner": "李惠慈",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3707360079",
+    "name": "瑞隆牙醫診所",
+    "address": "高雄市前鎮區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "終止特約",
+        "reason": "經查有「容留未具醫師資格之人員，為保險對象執行醫療業務，卻偽以合格醫師名義虛報本保險醫療費用」之情事，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第4款及第43條第4款",
+        "practitioner": "王騮郴",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3702071497",
+    "name": "聯盟牙醫診所",
+    "address": "高雄市前金區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "經查有「容留未具醫師資格之人員，為保險對象執行醫療業務，卻偽以合格醫師名義虛報本保險醫療費用」之情事，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第4款及第43條第4款",
+        "practitioner": "紀乃智",
+        "startDate": "2026-08-01",
+        "endDate": "2027-07-31",
+        "rawMinguoRange": "1150801 ~ 1160731",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3707380142",
+    "name": "Ａｂｃ小港牙醫診所",
+    "address": "高雄市小港區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "經查有「容留未具醫師資格之人員，為保險對象執行醫療業務，卻偽以合格醫師名義虛報本保險醫療費用」之情事，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第4款及第43條第4款",
+        "practitioner": "凌博亨",
+        "startDate": "2026-08-01",
+        "endDate": "2027-07-31",
+        "rawMinguoRange": "1150801 ~ 1160731",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3707010207",
+    "name": "Ａｂｃ鳳山牙醫診所",
+    "address": "高雄市鳳山區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "終止特約",
+        "reason": "經查有「容留未具醫師資格之人員，為保險對象執行醫療業務，卻偽以合格醫師名義虛報本保險醫療費用」之情事，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第4款及第43條第4款",
+        "practitioner": "俞德志",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3536020366",
+    "name": "張德旺耳鼻喉科診所",
+    "address": "臺中市東勢區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "以不正當行為或虛偽之證明、報告或陳述申報醫療費用，情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "張德旺",
+        "startDate": "2026-04-01",
+        "endDate": "2027-03-31",
+        "rawMinguoRange": "1150401 ~ 1160331",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3541271624",
+    "name": "仁義復健科診所",
+    "address": "臺南市仁德區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "以不正當行為或虛偽之證明、報告或陳述申報醫療費用，情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "吳政德",
+        "startDate": "2026-07-01",
+        "endDate": "2027-06-30",
+        "rawMinguoRange": "1150701 ~ 1160630",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5931034039",
+    "name": "叁品藥局",
+    "address": "新北市永和區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查藥局有長期租用負責藥師牌照，並以非藥事人員調劑給藥，虛報醫療費用超過25萬點，情節重大等違規情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "蕭新民",
+        "startDate": "2026-01-01",
+        "endDate": "2026-12-31",
+        "rawMinguoRange": "1150101 ~ 1151231",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3538022466",
+    "name": "慈惠診所",
+    "address": "南投縣埔里鎮",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用之情事。",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "翁文德",
+        "startDate": "2026-03-01",
+        "endDate": "2027-02-28",
+        "rawMinguoRange": "1150301 ~ 1160228",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3534011850",
+    "name": "永合診所",
+    "address": "宜蘭縣宜蘭市",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查診所有「以提供保險對象非治療需要之藥品、營養品或其他物品之方式，登錄就醫並申報醫療費用」、「利用民眾因考照自費體檢，未因病就醫卻申報醫療費用」等違規情事，於前次停約處分執行完畢後5年內再次違規",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第1款",
+        "practitioner": "鄭永祥",
+        "startDate": "2026-05-01",
+        "endDate": "2027-04-30",
+        "rawMinguoRange": "1150501 ~ 1160430",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5936192278",
+    "name": "亮亮藥局",
+    "address": "臺中市太平區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用之情事。",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "黃惠雅",
+        "startDate": "2026-05-01",
+        "endDate": "2027-04-30",
+        "rawMinguoRange": "1150501 ~ 1160430",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3543281100",
+    "name": "重仁診所",
+    "address": "屏東縣瑪家鄉",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "經查有「以提供保險對象非治療需要之藥品、營養品或其他物品之方式，登錄就醫並申報醫療費用」、「保險對象接受預防保健或領取慢箋用藥當日，並無疾病需求就醫及領藥，卻申報醫療費用」等違規情節重大情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第1款",
+        "practitioner": "陳重仁",
+        "startDate": "2026-09-01",
+        "endDate": "2027-08-31",
+        "rawMinguoRange": "1150901 ~ 1160831",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3790011221",
+    "name": "金鼎牙醫診所",
+    "address": "金門縣金城鎮",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查診所有容留未具牙醫師資格之人員，為保險對象執行醫療業務，卻偽以負責醫師名義申報醫療費用，違規情節重大",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第4款及第43條第4款",
+        "practitioner": "劉倩蕾",
+        "startDate": "2026-06-01",
+        "endDate": "2027-05-31",
+        "rawMinguoRange": "1150601 ~ 1160531",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3541091135",
+    "name": "怡安診所",
+    "address": "臺南市柳營區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "經查有以提供保險對象非治療需要之藥品、營養品或其他物品之方式，登錄就醫並申報醫療費用情節重大之違規情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第1款",
+        "practitioner": "尤榮茂",
+        "startDate": "2026-06-01",
+        "endDate": "2027-05-31",
+        "rawMinguoRange": "1150601 ~ 1160531",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5901154377",
+    "name": "晨熙藥局",
+    "address": "臺北市士林區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查藥局有長期租用負責藥師牌照，容留非藥事人員或由支援藥師調劑，並以負責藥師名義虛報醫療費用、另有保險對象領取慢性病連續處方箋第1次用藥時，一次給予3個月用量，虛報慢性病連續處方箋第2、3次藥事服務費之情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "林和志",
+        "startDate": "2026-07-01",
+        "endDate": "2027-06-30",
+        "rawMinguoRange": "1150701 ~ 1160630",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3531053767",
+    "name": "日安診所",
+    "address": "新北市新店區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查診所有「利用民眾因考照自費體檢，非因病就診，同日刷取健保卡虛報醫療費用」違規情事，於前次停約處分執行完畢後5年內再次違規",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第1款",
+        "practitioner": "林泰成",
+        "startDate": "2026-07-01",
+        "endDate": "2027-06-30",
+        "rawMinguoRange": "1150701 ~ 1160630",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5901025193",
+    "name": "信義欣辰藥局",
+    "address": "臺北市大安區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查藥局有長期租用負責藥師牌照，並由其他合格藥師或未具藥事資格人員調劑給藥",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "呂秀齡",
+        "startDate": "2026-07-01",
+        "endDate": "2027-06-30",
+        "rawMinguoRange": "1150701 ~ 1160630",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5931026251",
+    "name": "宏原健保藥局",
+    "address": "新北市三重區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查藥局有長期容留未具藥事資格人員為保險對象調劑、交付藥品，並偽以負責藥師名義虛報藥事費用",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款及第43條第4款",
+        "practitioner": "黃朝瑋",
+        "startDate": "2026-08-01",
+        "endDate": "2027-07-31",
+        "rawMinguoRange": "1150801 ~ 1160731",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3533052991",
+    "name": "上杉診所",
+    "address": "新竹縣竹北市",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查有負責醫事人員許柏格於受停約處分期間提供醫療服務，卻以其他醫師名義申報醫療費用，及於前次停約執行完畢後5年內再有以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用等情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款及40條第1項第1款",
+        "practitioner": "許柏格",
+        "startDate": "2026-08-01",
+        "endDate": "2027-07-31",
+        "rawMinguoRange": "1150801 ~ 1160731",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3532018584",
+    "name": "政揚診所",
+    "address": "桃園市桃園區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查有「收集保險憑證，或有未診治保險對象，仍記載就醫紀錄，虛報醫療費用」等情節重大情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款、第2項及第43條第2款",
+        "practitioner": "楊詠竣",
+        "startDate": "2026-09-01",
+        "endDate": "2027-08-31",
+        "rawMinguoRange": "1150901 ~ 1160831",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3532121791",
+    "name": "健群診所",
+    "address": "桃園市觀音區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "終止特約",
+        "reason": "查有「收集保險憑證，或有未診治保險對象，仍記載就醫紀錄，虛報醫療費用」等情節重大情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第40條第1項第2款、第2項及第43條第2款",
+        "practitioner": "牟珊珊",
+        "startDate": "2026-09-01",
+        "endDate": "2027-08-31",
+        "rawMinguoRange": "1150901 ~ 1160831",
+        "sourceTitle": "違規情節重大名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3522024436",
+    "name": "大學眼科診所",
+    "address": "嘉義市西區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "停約3個月",
+        "reason": "以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用之情事。",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3532014853",
+    "name": "昇昇婦產科診所",
+    "address": "桃園市桃園區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約3個月\n(終約處分改核停約)",
+        "reason": "查有以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用之情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-08-01",
+        "endDate": "2026-10-31",
+        "rawMinguoRange": "1150801 ~ 1151031",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3531090055",
+    "name": "主恩診所",
+    "address": "新北市三峽區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "停約2個月暨行政追扣",
+        "reason": "有未診治保險對象，卻自創就醫紀錄，虛報醫療費用之情事",
+        "clauses": "全民健康保險法第81條及64條、特約及管理辦法第39條第3款",
+        "practitioner": "",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5940041560",
+    "name": "永安藥局",
+    "address": "嘉義縣民雄鄉",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "停約1個月",
+        "reason": "以不正當行為或虛偽之證明、報告或陳述，申報醫療費用",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3501103272",
+    "name": "大直診所",
+    "address": "臺北市中山區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "停約1個月暨行政追扣",
+        "reason": "查保險對象没有任何疾病，單純至診所施打公費疫苗或執行成人預防保健，卻自創疾病診斷就醫紀錄虛報醫療費用",
+        "clauses": "全民健康保險法第81條及64條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3540041579",
+    "name": "和順興診所",
+    "address": "嘉義縣民雄鄉",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約1個月",
+        "reason": "以不正當行為或虛偽之證明、報告或陳述，申報醫療費用",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-09-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1150901 ~ 1150930",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "593106B830",
+    "name": "湧恩藥師藥局",
+    "address": "新北市新莊區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約3個月",
+        "reason": "查藥局有以不正當行為或虛偽之證明、報告或陳述，向本署虛報藥事費用之情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-07-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1150701 ~ 1150930",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5931045372",
+    "name": "伍品藥局",
+    "address": "新北市中和區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "停約2個月",
+        "reason": "查藥局有以不正當行為或虛偽之證明、報告或陳述，向本署虛報藥事費用之情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5931132538",
+    "name": "宏奇藥局",
+    "address": "新北市土城區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "expired",
+        "category": "停約1個月",
+        "reason": "查藥局有未實際接受處方箋調劑給藥，虛報藥事費用等情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-31",
+        "rawMinguoRange": "1150801 ~ 1150831",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "0617060018",
+    "name": "臺中榮民總醫院",
+    "address": "臺中市西屯區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "suspended_execution",
+        "category": "停約3個月\n(神經外科住院業務)",
+        "reason": "有容留未具醫師資格之人員，為保險對象執行醫療業務，申報醫療費用",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第5款",
+        "practitioner": "",
+        "rawMinguoRange": "暫緩執行",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "353101A440",
+    "name": "板橋光澤診所",
+    "address": "新北市板橋區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約6個月",
+        "reason": "違反醫療法第108條第6款規定，新北市政府衛生局予以停業6個月處分",
+        "clauses": "特約及管理辦法第44條",
+        "practitioner": "",
+        "startDate": "2026-05-21",
+        "endDate": "2026-11-20",
+        "rawMinguoRange": "1150521 ~ 1151120",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "350102E212",
+    "name": "尚行美耳鼻喉專科診所",
+    "address": "臺北市大安區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約3個月、違約記點、行政追扣",
+        "reason": "保險對象10人自費至診所執行鼻中隔彎曲手術處置併申報健保手術費用虛報198,173點；未依規定向保險對象收取部分負擔費用；追扣49,204點(未以實際醫師名義申報費用追扣35,020點及逾3年裁處時效14,184點)",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4項及第36條",
+        "practitioner": "",
+        "startDate": "2026-08-01",
+        "endDate": "2026-10-31",
+        "rawMinguoRange": "1150801 ~ 1151031",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3501162726",
+    "name": "王景平眼科診所",
+    "address": "臺北市北投區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約1個月",
+        "reason": "經查有以不正當行為或以虛偽之證明、報告、陳述而虛報醫療費用，虛報醫療費用5,934點",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4項",
+        "practitioner": "",
+        "startDate": "2026-08-01",
+        "endDate": "2029-08-31",
+        "rawMinguoRange": "1150801 ~ 1180831",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3735061170",
+    "name": "全聯牙醫診所",
+    "address": "苗栗縣後龍鎮",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約1個月",
+        "reason": "查有「以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用」及「未依處方箋、病歷或其他紀錄之記載提供醫事服務」等情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4項及第37條第1項第1款",
+        "practitioner": "",
+        "startDate": "2026-09-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1150901 ~ 1150930",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "5937121344",
+    "name": "品鋐藥局",
+    "address": "彰化縣秀水鄉",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約3個月",
+        "reason": "有以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用之情事。",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-09-01",
+        "endDate": "2026-11-30",
+        "rawMinguoRange": "1150901 ~ 1151130",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3503250658",
+    "name": "工學誠心診所",
+    "address": "臺中市南區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約1個月",
+        "reason": "有以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用之情事。",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-09-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1150901 ~ 1150930",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3543022094",
+    "name": "新黃診所(黃英雅)",
+    "address": "屏東縣潮州鎮",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約1個月",
+        "reason": "經查有「以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用」、「非具藥師資格人員交付藥品」及「未以實際看診醫師名義申報醫療費用」等情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4項及第37條第1項第2款",
+        "practitioner": "",
+        "startDate": "2026-10-01",
+        "endDate": "2026-10-31",
+        "rawMinguoRange": "1151001 ~ 1151031",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3733051505",
+    "name": "景觀牙醫診所",
+    "address": "新竹縣竹北市",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "expired",
+        "category": "停約1個月",
+        "reason": "查有「以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用」及「醫療費用案件經審查認定牙面申報錯誤」等情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第4款",
+        "practitioner": "",
+        "startDate": "2026-08-01",
+        "endDate": "2026-08-31",
+        "rawMinguoRange": "1150801 ~ 1150831",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3535021396",
+    "name": "良宜診所",
+    "address": "苗栗縣苑裡鎮",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "停約1個月",
+        "reason": "查有「未診治保險對象，卻自創就醫紀錄，虛報醫療費用」及「其他以不正當行為或以虛偽之證明、報告或陳述，申報醫療費用」等情事",
+        "clauses": "全民健康保險法第81條、特約及管理辦法第39條第3款及第4款",
+        "practitioner": "",
+        "startDate": "2026-09-01",
+        "endDate": "2026-09-30",
+        "rawMinguoRange": "1150901 ~ 1150930",
+        "sourceTitle": "停約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3502033411",
+    "name": "麥格彰婦產科診所",
+    "address": "高雄市左營區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "五年內不予健保特約之醫事機構及負責醫事人員管制。",
+        "practitioner": "麥格彰",
+        "startDate": "2022-03-01",
+        "endDate": "2027-02-28",
+        "rawMinguoRange": "1110301 ~ 1160228",
+        "sourceTitle": "五年內不予特約名冊"
+      }
+    }
+  },
+  {
+    "facilityType": "clinic",
+    "sourceKey": "nhi_penalty",
+    "sourceId": "3507200010",
+    "name": "梓官鴻裕診所",
+    "address": "高雄市梓官區",
+    "phone": null,
+    "lat": null,
+    "lng": null,
+    "serviceItem": "健保違規停約",
+    "serviceTime": null,
+    "dataOrg": "衛福部中央健康保險署",
+    "extra": {
+      "penalty": {
+        "status": "active",
+        "category": "五年不予特約",
+        "reason": "五年內不予健保特約之醫事機構及負責醫事人員管制。",
+        "practitioner": "易宗鴻",
+        "startDate": "2022-06-01",
+        "endDate": "2027-05-31",
+        "rawMinguoRange": "1110601 ~ 1160531",
+        "sourceTitle": "五年內不予特約名冊"
+      }
+    }
+  }
+]
