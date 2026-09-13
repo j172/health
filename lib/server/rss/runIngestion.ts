@@ -70,6 +70,7 @@ import {
   fetchNncfNews,
   fetchChilingJjNews,
   fetchAnewsNews,
+  fetchApatwNews,
 } from "@/lib/server/rss/fetchNpoSources";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
@@ -838,6 +839,15 @@ export const runRssIngestion = async (
             sourceName: "anews",
           },
           fetchFn: fetchAnewsNews,
+        },
+        {
+          meta: {
+            code: "apatw_news" as FeedCode,
+            name: "社團法人中華民國保護動物協會",
+            url: "https://www.apatw.org/news",
+            sourceName: "apatw",
+          },
+          fetchFn: fetchApatwNews,
         },
       ];
 

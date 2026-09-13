@@ -120,6 +120,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "anews", label: "愛傳媒" },
       { sourceName: "yonglin", label: "永齡基金會" },
       { sourceName: "children", label: "兒童福利聯盟" },
+      { sourceName: "apatw", label: "社團法人中華民國保護動物協會" },
     ],
   },
 ];
