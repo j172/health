@@ -114,7 +114,8 @@ export type FeedCode =
   | "ettoday_pet"
   | "ncl_fmevents"
   | "apatw_news"
-  | "seinsights_news";
+  | "seinsights_news"
+  | "mygopen_news";
 
 export interface FeedConfig {
   code: FeedCode;
