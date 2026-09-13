@@ -3,7 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
-import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { TOOL_CATALOG, TOOL_GROUP_META } from "@/lib/server/tools/catalog";
+import { compareByStrokeOrder } from "@/lib/server/tools/strokeOrder";
 import dynamic from "next/dynamic";
 import ThemeToggler from "@/components/Header/ThemeToggler";
 import LanguageToggler from "@/components/Header/LanguageToggler";
@@ -13,33 +14,15 @@ const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), {
   ssr: false,
 });
 
-const CALCULATOR_TOOLS = TOOL_CATALOG.filter(
-  (t) => t.group === "calculator",
-).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
-const FACILITY_TOOLS = TOOL_CATALOG.filter((t) => t.group === "facility").map(
-  (t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }),
-);
-const LTC_TOOLS = TOOL_CATALOG.filter((t) => t.group === "ltc").map((t) => ({
-  href: `/tools/${t.slug}`,
-  slug: t.slug,
-  title: t.title,
-}));
-const CHILD_WELFARE_TOOLS = TOOL_CATALOG.filter(
-  (t) => t.group === "child-welfare",
-).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
-const DISABILITY_TOOLS = TOOL_CATALOG.filter(
-  (t) => t.group === "disability",
-).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
-const PUBLIC_FACILITY_TOOLS = TOOL_CATALOG.filter(
-  (t) => t.group === "public-facility",
-).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
-const WEATHER_TOOLS = TOOL_CATALOG.filter(
-  (t) => t.group === "weather",
-).map((t) => ({ href: `/tools/${t.slug}`, slug: t.slug, title: t.title }));
-
 interface NavLinkItem {
   href: string;
   label: string;
+}
+
+interface NavCategory {
+  id: string;
+  label: string;
+  items: NavLinkItem[];
 }
 
 const ChevronIcon = () => (
@@ -133,28 +116,30 @@ export default function SiteNav() {
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const { t, locale } = useLanguage();
 
-  const localizeItems = (
-    items: { href: string; slug: string; title: string }[],
-  ): NavLinkItem[] =>
-    items
-      .map((item) => ({
-        href: item.href,
-        label:
-          locale === "en" ? t(`catalog.${item.slug}`, item.title) : item.title,
-      }))
-      .sort((a, b) =>
-        a.label.localeCompare(b.label, locale === "en" ? "en" : "zh-Hant", {
-          numeric: true,
-        }),
-      );
-
-  const facilityItems = localizeItems(FACILITY_TOOLS);
-  const ltcItems = localizeItems(LTC_TOOLS);
-  const childWelfareItems = localizeItems(CHILD_WELFARE_TOOLS);
-  const disabilityItems = localizeItems(DISABILITY_TOOLS);
-  const publicFacilityItems = localizeItems(PUBLIC_FACILITY_TOOLS);
-  const weatherItems = localizeItems(WEATHER_TOOLS);
-  const calculatorItems = localizeItems(CALCULATOR_TOOLS);
+  // The 9 Nav dropdowns / mobile-drawer sections (issue #256
+  // reclassification), each resolved from TOOL_GROUP_META + TOOL_CATALOG so
+  // this can never drift from the footer's columns (SiteFooter.tsx reads the
+  // same TOOL_GROUP_META) or from an added/removed/re-grouped tool. Category
+  // order and the tool order within each category both apply the shared
+  // stroke-order rule (spec: navbar-footer-reclassification-and-merges §0.2):
+  // Latin-named items first, then Chinese items by first-character stroke
+  // count ascending.
+  const categories: NavCategory[] = TOOL_GROUP_META.map((meta) => {
+    const items = TOOL_CATALOG.filter((tool) => tool.group === meta.group)
+      .map((tool) => {
+        const zhLabel = tool.navLabel ?? tool.title;
+        return {
+          href: `/tools/${tool.slug}`,
+          label: locale === "en" ? t(`catalog.${tool.slug}`, zhLabel) : zhLabel,
+        };
+      })
+      .sort((a, b) => compareByStrokeOrder(a.label, b.label));
+    return {
+      id: meta.group,
+      label: t(meta.labelKey, meta.labelDefault),
+      items,
+    };
+  }).sort((a, b) => compareByStrokeOrder(a.label, b.label));
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -203,10 +188,11 @@ export default function SiteNav() {
               </span>
             </Link>
 
-            {/* Desktop Navigation. It unfolds at xl, not md: ten top-level
-                items cannot share a 768px row with the logo, the search field
-                and three toggles. Below 1280px the hamburger drawer carries
-                the same groups, so nothing is lost. */}
+            {/* Desktop Navigation. It unfolds at xl, not md: nine
+                category dropdowns plus home/news cannot share a 768px row
+                with the logo, the search field and three toggles. Below
+                1280px the hamburger drawer carries the same groups, so
+                nothing is lost. */}
             <nav
               aria-label="主要導覽"
               className="hidden items-center gap-1.5 xl:flex"
@@ -223,31 +209,13 @@ export default function SiteNav() {
               >
                 {t("nav.news", "最新新聞")}
               </Link>
-              <NavDropdown
-                label={t("nav.facilities", "醫療院所")}
-                items={facilityItems}
-              />
-              <NavDropdown label={t("nav.ltc", "長照機構")} items={ltcItems} />
-              <NavDropdown
-                label={t("nav.childWelfare", "兒少福利")}
-                items={childWelfareItems}
-              />
-              <NavDropdown
-                label={t("nav.disability", "身心障礙")}
-                items={disabilityItems}
-              />
-              <NavDropdown
-                label={t("nav.publicServices", "便民服務")}
-                items={publicFacilityItems}
-              />
-              <NavDropdown
-                label={t("nav.weather", "環境監測")}
-                items={weatherItems}
-              />
-              <NavDropdown
-                label={t("nav.healthTools", "健康工具")}
-                items={calculatorItems}
-              />
+              {categories.map((category) => (
+                <NavDropdown
+                  key={category.id}
+                  label={category.label}
+                  items={category.items}
+                />
+              ))}
             </nav>
 
             {/* Right Actions (Search Button + Theme Toggler) */}
@@ -340,42 +308,16 @@ export default function SiteNav() {
               </Link>
             </div>
 
-            {[
-              {
-                heading: t("nav.facilities", "醫療院所"),
-                items: facilityItems,
-              },
-              { heading: t("nav.ltc", "長照機構"), items: ltcItems },
-              {
-                heading: t("nav.childWelfare", "兒少福利"),
-                items: childWelfareItems,
-              },
-              {
-                heading: t("nav.disability", "身心障礙"),
-                items: disabilityItems,
-              },
-              {
-                heading: t("nav.publicServices", "便民服務"),
-                items: publicFacilityItems,
-              },
-              {
-                heading: t("nav.weather", "環境監測"),
-                items: weatherItems,
-              },
-              {
-                heading: t("nav.healthTools", "健康工具"),
-                items: calculatorItems,
-              },
-            ].map((section) => (
+            {categories.map((category) => (
               <div
-                key={section.heading}
+                key={category.id}
                 className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800"
               >
                 <p className="px-2 text-xs font-bold tracking-wider text-slate-400 uppercase dark:text-slate-500">
-                  {section.heading}
+                  {category.label}
                 </p>
                 <div className="mt-1 flex flex-col gap-1">
-                  {section.items.map((item) => (
+                  {category.items.map((item) => (
                     <Link
                       key={item.href}
                       href={item.href}

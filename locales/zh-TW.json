@@ -11,12 +11,19 @@
     "facilities": "醫療院所",
     "ltc": "長照機構",
     "disability": "身心障礙",
-    "childWelfare": "兒少福利",
+    "childWelfare": "兒少福利與教育",
     "healthTools": "健康工具",
     "weather": "環境監測",
     "searchPlaceholder": "搜尋新聞...",
     "publicServices": "便民服務",
-    "heritageMap": "文化資產地圖"
+    "heritageMap": "文化資產地圖",
+    "careFacility": "醫療照護機構",
+    "registry": "藥品食品登錄查詢",
+    "disasterSafety": "防災與安全示警",
+    "transportEnergy": "交通與能源",
+    "environment": "環境品質與綠色生活",
+    "cultureTourism": "文化藝術與觀光",
+    "lifeServices": "公益與生活服務"
   },
   "categories": {
     "allNews": "全部新聞",
