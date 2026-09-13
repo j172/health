@@ -13,9 +13,13 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 67 tools registered", () => {
+test("TOOL_CATALOG has exactly 60 tools registered", () => {
+  // issue #256: 67 → 60 after 5 merges collapsed 11 old slugs into 4 new
+  // ones (child-welfare-institutions, green-certifications, water-conditions,
+  // carbon-footprint) plus family-cultural-activities folding into the
+  // existing cultural-events entry — a net reduction of 7 catalog entries.
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 67, `Expected 67 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 60, `Expected 60 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
@@ -184,7 +188,7 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
   assert.ok(content.includes('facilityType: "vet_clinic"'), "vet-clinics must have facilityType vet_clinic");
 });
 
-test("All 67 tool page files exist on disk", () => {
+test("All tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");
