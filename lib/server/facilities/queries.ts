@@ -168,7 +168,7 @@ export const applyWeeklyHours = async (entries: WeeklyHoursEntry[]): Promise<{ m
 
     await conn.query("DROP TEMPORARY TABLE IF EXISTS tmp_weekly_hours");
     await conn.query(
-      "CREATE TEMPORARY TABLE tmp_weekly_hours (seq INT AUTO_INCREMENT PRIMARY KEY, source_id VARCHAR(100) NOT NULL, weekly_hours JSON NOT NULL, note VARCHAR(500) NULL, UNIQUE KEY uq_source_id (source_id))",
+      "CREATE TEMPORARY TABLE tmp_weekly_hours (seq INT AUTO_INCREMENT PRIMARY KEY, source_id VARCHAR(100) NOT NULL, weekly_hours JSON NOT NULL, note VARCHAR(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL, UNIQUE KEY uq_source_id (source_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
     );
 
     for (let i = 0; i < entries.length; i += WEEKLY_HOURS_BATCH_SIZE) {
