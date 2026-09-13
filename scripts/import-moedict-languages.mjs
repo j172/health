@@ -214,30 +214,13 @@ const CHILD_KEYWORDS = [
 ];
 
 function selectSeedEntries(twblgList, hakkaList) {
-  const isTarget = (item) => {
-    // 1. Direct match on child keywords in title or pinyin or mandarin
-    for (const kw of CHILD_KEYWORDS) {
-      if (item.title.includes(kw) || (item.mandarin_keywords && item.mandarin_keywords.includes(kw))) {
-        return true;
-      }
-    }
-    // 2. Short common words (1 to 3 characters) with audio
-    if (item.title.length <= 2 && item.audio_id && item.definitions.length > 0) {
-      return true;
-    }
-    return false;
-  };
-
-  const selectedTwblg = twblgList.filter(isTarget).slice(0, 1800);
-  const selectedHakka = hakkaList.filter(isTarget).slice(0, 1800);
-
   return {
     version: "1.0",
     generatedAt: new Date().toISOString(),
-    totalCount: selectedTwblg.length + selectedHakka.length,
+    totalCount: twblgList.length + hakkaList.length,
     languages: {
-      twblg: { count: selectedTwblg.length, entries: selectedTwblg },
-      hakka: { count: selectedHakka.length, entries: selectedHakka },
+      twblg: { count: twblgList.length, entries: twblgList },
+      hakka: { count: hakkaList.length, entries: hakkaList },
     },
   };
 }
