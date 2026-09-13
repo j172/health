@@ -4,7 +4,7 @@ import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import TravelEpidemicAlertsContent from "@/components/Epidemic/TravelEpidemicAlertsContent";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/travel-epidemic-alerts`;

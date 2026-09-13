@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { listLatestNews } from "@/lib/server/news/queries";
-import { buildNewsListJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 
 export const revalidate = 60;
@@ -40,11 +40,11 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const items = await listLatestNews(24);
-  const jsonLd = buildNewsListJsonLd(items, "最新新聞");
+  const homeGraph = buildHomeGraphJsonLd(items);
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph) }} />
       <StabloNewsLayout items={items} variant="home" />
     </>
   );

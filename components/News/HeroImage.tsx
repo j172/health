@@ -13,9 +13,9 @@ const PROVIDER_LABELS: Record<HeroImageAttribution["provider"], string> = {
 };
 
 /**
- * News article hero image — a client component (needed to track image-load
- * state for the ImageSkeleton shimmer placeholder) used by
- * app/news/[id]/page.tsx in place of a bare <img>.
+ * News article hero image — client component for tracking image-load
+ * state and displaying ImageSkeleton shimmer placeholder without CLS.
+ * Optimized with Next.js Image (AVIF/WebP, priority, responsive sizes).
  */
 export default function HeroImage({
   src,
@@ -36,47 +36,24 @@ export default function HeroImage({
     return null;
   }
 
-  // Scraped article images are hotlinked from arbitrary RSS-source domains
-  // (see resolveHeroImage's `/^https?:\/\//` check) -- next.config.js only
-  // whitelists cdn.sanity.io/localhost for remote optimization, and adding
-  // every possible news-source hostname isn't practical. Only the locally
-  // cached stock-photo fallback (pixabay/pexels/unsplash, saved under
-  // /images/news/...) can safely go through /_next/image.
-  const isExternal = /^https?:\/\//i.test(src);
   const imgClass = `absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`;
 
   return (
     <figure className="mt-8">
-      {/* Fixed aspect box so the skeleton (and the eventual image) always
-          occupies real layout space -- previously this div had no intrinsic
-          height, so the ImageSkeleton (absolutely positioned) rendered at
-          0x0 until the image loaded and the box's height popped in, a CLS
-          hit hiding behind the fade transition. */}
+      {/* Fixed aspect box so skeleton and eventual image occupy identical layout space (0 CLS) */}
       <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
         {!loaded && <ImageSkeleton className="absolute inset-0" />}
-        {isExternal ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={src}
-            alt={alt}
-            fetchPriority="high"
-            onLoad={() => setLoaded(true)}
-            onError={() => setHasError(true)}
-            className={imgClass}
-          />
-        ) : (
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            sizes="(min-width: 896px) 896px, 100vw"
-            priority
-            unoptimized={src.startsWith("/images/news/flickr/")}
-            onLoad={() => setLoaded(true)}
-            onError={() => setHasError(true)}
-            className={imgClass}
-          />
-        )}
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          priority
+          sizes="(min-width: 896px) 896px, 100vw"
+          unoptimized={src.startsWith("/images/news/flickr/") || src.endsWith(".svg")}
+          onLoad={() => setLoaded(true)}
+          onError={() => setHasError(true)}
+          className={imgClass}
+        />
       </div>
       {attribution ? (
         <figcaption className="mt-3 text-center text-xs text-slate-400">

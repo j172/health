@@ -7,7 +7,7 @@ import {
   listRelatedNews,
 } from "@/lib/server/news/queries";
 import {
-  buildArticleJsonLd,
+  buildArticleGraphJsonLd,
   buildArticleMetadata,
 } from "@/lib/server/news/seo";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
@@ -109,19 +109,16 @@ export default async function NewsDetailPage({
     news.detail_html ||
     news.description_html ||
     "<p>此則新聞目前沒有可顯示的完整內容。</p>";
-  const jsonLd = buildArticleJsonLd(news);
+  const articleGraph = buildArticleGraphJsonLd(news);
   const authorLabel = resolveAuthorLabel(news);
   const badgeStyle = getSourceBadgeStyle(news.source_name);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
-      {jsonLd.map((schema, index) => (
-        <script
-          key={index}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      ))}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleGraph) }}
+      />
       <ArticleViewTracker newsId={news.id} />
       <StabloHeader />
 

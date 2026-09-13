@@ -5,7 +5,7 @@ import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EarthquakeContent from "./EarthquakeContent";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/earthquakes`;

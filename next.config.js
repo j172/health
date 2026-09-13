@@ -4,19 +4,18 @@ const nextConfig = {
   reactStrictMode: true,
   distDir: ".next3",
   images: {
+    formats: ["image/avif", "image/webp"],
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "cdn.sanity.io",
-        port: "",
+        hostname: "**",
       },
       {
         protocol: "http",
-        hostname: "localhost",
-        port: "",
+        hostname: "**",
       },
     ],
   },

@@ -6,7 +6,7 @@ import BMICalculator from "./BMICalculator";
 
 // StabloHeader renders a live DB-backed weather-alert bar (same as /news),
 // so this page can't be statically prerendered at build time either.
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/bmi`;

@@ -9,7 +9,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import WeatherRainfallLocator from "@/components/Tools/WeatherRainfallLocator";
 import WeatherAlertsList from "@/components/Tools/WeatherAlertsList";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 export const runtime = "nodejs";
 
 // Issue #157: the alerts list now paginates client-side (30/50/100 per page) over
