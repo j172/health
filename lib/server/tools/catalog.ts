@@ -1489,6 +1489,51 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "child-native-languages",
+    group: "child-welfare",
+    schemaType: "WebPage",
+    title: "兒少本土語言辭典（閩南語／客語）",
+    description:
+      "整合教育部《臺灣閩南語常用詞辭典》與《臺灣客家語常用詞辭典》，收錄數萬筆詞目、臺羅與客拼標音、六大客語腔調、生活例句與真人線上發音朗讀，支援華語意譯反查。",
+    directAnswer:
+      "整合教育部與 g0v 萌典開放資料，提供國中小學童與親子臺灣閩南語及客家語字詞、拼音、真人發音與生活例句查詢。",
+    scientificBasis: [
+      {
+        title: "教育部臺灣閩南語常用詞辭典",
+        authority: "教育部終身教育司 (MOE)",
+        url: "https://twblg.dict.edu.tw",
+      },
+      {
+        title: "教育部臺灣客家語常用詞辭典",
+        authority: "教育部終身教育司 (MOE)",
+        url: "https://hakkadict.moe.edu.tw",
+      },
+      {
+        title: "g0v 萌典開放資料專案 (moedict-data-twblg, moedict-data-hakka)",
+        authority: "g0v 零時政府",
+        url: "https://www.moedict.tw",
+      },
+    ],
+    relatedSlugs: ["family-cultural-activities", "kindergartens", "cram-schools"],
+    faqs: [
+      {
+        question: "兒少本土語言辭典收錄哪些語言與腔調？",
+        answer:
+          "收錄教育部臺灣閩南語常用詞辭典（優勢腔/臺羅拼音）與臺灣客家語常用詞辭典（涵蓋四縣、海陸、大埔、饒平、詔安、南四縣六大腔調）。",
+      },
+      {
+        question: "如果不知道母語漢字，可以輸入華語（國語）查詢嗎？",
+        answer:
+          "可以。辭典支援多維度檢索，輸入日常華語意譯（例如「洗澡」、「彩虹」、「謝謝」）即可自動反查對應之閩南語與客語說法。",
+      },
+      {
+        question: "詞條是否提供標準真人發音？",
+        answer:
+          "是。每個收錄詞條均附有真人發音播放功能，串接教育部與 g0v 萌典音檔 CDN，方便學童與家長跟讀學習。",
+      },
+    ],
+  },
+  {
     slug: "npo-organizations",
     group: "public-facility",
     schemaType: "WebPage",

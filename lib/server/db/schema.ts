@@ -1259,6 +1259,27 @@ export const TABLE_DDL = {
       KEY idx_power_radiation_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 教育部與 g0v 萌典開放資料：臺灣閩南語常用詞辭典與臺灣客家語常用詞辭典
+  nativeDictEntries: `
+    CREATE TABLE IF NOT EXISTS native_dict_entries (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      lang VARCHAR(10) NOT NULL,
+      title VARCHAR(100) NOT NULL,
+      pinyin VARCHAR(255) NOT NULL,
+      dialect VARCHAR(50) NULL,
+      mandarin_keywords TEXT NULL,
+      audio_id VARCHAR(50) NULL,
+      definitions_json LONGTEXT NOT NULL,
+      stroke_count INT NULL,
+      radical VARCHAR(20) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_native_dict_lang_title (lang, title),
+      KEY idx_native_dict_lang_pinyin (lang, pinyin(100)),
+      KEY idx_native_dict_lang_dialect (lang, dialect)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

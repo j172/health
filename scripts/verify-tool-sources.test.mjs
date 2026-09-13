@@ -13,9 +13,9 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 64 tools registered", () => {
+test("TOOL_CATALOG has exactly 65 tools registered", () => {
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 64, `Expected 64 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 65, `Expected 65 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
@@ -151,6 +151,10 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   // 14. Pest alerts seed
   const pestPath = path.join(ROOT_DIR, "data", "pest-alerts-seed.json");
   assert.ok(fs.existsSync(pestPath), "pest-alerts-seed.json must exist");
+
+  // 15. Child native languages seed
+  const nativeLangPath = path.join(ROOT_DIR, "data", "child-native-languages-seed.json");
+  assert.ok(fs.existsSync(nativeLangPath), "child-native-languages-seed.json must exist");
 });
 
 test("facilityConfigs has matching configurations for all facility tool pages", () => {
@@ -168,7 +172,7 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
   assert.ok(content.includes('facilityType: "vet_clinic"'), "vet-clinics must have facilityType vet_clinic");
 });
 
-test("All 64 tool page files exist on disk", () => {
+test("All 65 tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");
