@@ -2,9 +2,9 @@
 
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { useEffect, useMemo } from "react";
-import { Circle, MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-import { userLocationIcon } from "@/components/Common/MapViewController";
+import { useMemo } from "react";
+import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
 
 // Webpack/Turbopack default marker fix
@@ -14,14 +14,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
-
-function MapController({ center, zoom }: { center: [number, number]; zoom?: number }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, zoom || map.getZoom());
-  }, [center, zoom, map]);
-  return null;
-}
 
 export interface CpcStationMapProps {
   stations: CpcStationItem[];
@@ -54,7 +46,7 @@ export default function CpcStationMap({
         className="h-full w-full z-0"
         scrollWheelZoom={true}
       >
-        <MapController center={center} />
+        <MapViewController center={center} zoom={13} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
