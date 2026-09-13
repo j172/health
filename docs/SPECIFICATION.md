@@ -98,32 +98,88 @@
 
 ---
 
-## 5. Tool Catalog & First-Character Collation Specification
+## 5. Tool Catalog & Collation Specification
+
+_Superseded 2026-09-14 (issue #256): the 7-group taxonomy and plain
+`zh-Hant` collation this section originally documented were replaced by a
+9-group taxonomy, a stroke-order collation rule, and 5 tool merges. What
+follows documents the current state; see
+`docs/specs/navbar-footer-reclassification-and-merges.md` for the full
+rationale._
 
 ### 5.1 Sorting Rule
 
-All 55 entries in `TOOL_CATALOG` (`lib/server/tools/catalog.ts`), every category on `/tools`, and all 7 link columns in `SiteFooter` (`components/News/SiteFooter.tsx`) are sorted by the first character using standard Traditional Chinese collation. The comparator is exported once as `compareToolTitles`, and `toolsInGroup(group, label)` applies it to a group — passing the _localized_ label, so the English footer is collated by what it actually renders:
+Every category on `/tools`, both `SiteNav.tsx`'s dropdown/mobile-drawer sections,
+and every `SiteFooter.tsx` link column apply the same rule (spec:
+navbar-footer-reclassification-and-merges §0.2), to both the category order
+and the tool order within a category: Latin-named items form one alphabetical
+block ahead of every Chinese label, then Chinese items sort by first-character
+stroke count ascending. The comparator is exported once as
+`compareByStrokeOrder` (`lib/server/tools/strokeOrder.ts`), backed by a
+generated `STROKE_COUNTS` first-character lookup table (regenerate with
+`node scripts/generate-stroke-table.mjs` whenever a new category label or tool
+`title`/`navLabel` introduces an uncovered first character — it throws loudly
+at runtime otherwise, rather than silently mis-sorting). `toolsInGroup(group,
+label)` applies it to a group, passing the _localized_ label so the English
+UI is collated by what it actually renders:
 
 ```ts
-items.sort((a, b) =>
-  a.title.localeCompare(b.title, "zh-Hant", { numeric: true }),
-);
+export function compareByStrokeOrder(a: string, b: string): number {
+  const aEnglish = isEnglishLabel(a);
+  const bEnglish = isEnglishLabel(b);
+  if (aEnglish !== bEnglish) return aEnglish ? -1 : 1;
+  if (aEnglish && bEnglish) return a.localeCompare(b, "en", { numeric: true });
+  const strokeDiff = strokeCountOf(a) - strokeCountOf(b);
+  if (strokeDiff !== 0) return strokeDiff;
+  return a.localeCompare(b, "zh-Hant", { numeric: true });
+}
 ```
+
+`ToolCatalogEntry.navLabel` (optional) is what gets sorted/displayed in the
+Nav and Footer when set — a shorter or differently-worded name than the SEO
+`title` the tool page itself renders in `<title>`/meta/JSON-LD, which
+`navLabel` never touches.
 
 ### 5.2 Category Ordering
 
-Eight footer columns total: 全站總覽 (static links, not tied to a `ToolGroup`) plus one column for each of the 7 `ToolGroup` members that render their own footer section — every group except `disaster-preparedness`, whose 1 entry surfaces as a single link inside 環境監測 (weather) rather than a column of its own. Ordering within a column is the 5.1 comparator applied to the **displayed** label, via `toolsInGroup(group, label)` — which is what keeps the English footer collated by the English titles it renders.
+`TOOL_GROUP_META` (`lib/server/tools/catalog.ts`) is the single source of
+truth for the 9 `ToolGroup` buckets — `SiteNav.tsx`, `SiteFooter.tsx` and the
+`/tools` index page (`app/tools/page.tsx`) all derive their category list from
+it instead of each hardcoding their own, so the three can't drift out of sync.
+10 footer columns total: 全站總覽 (static links, not tied to a `ToolGroup`)
+plus one column per group. 60 tools across the 9 groups as of the 2026-09-14
+reclassification:
 
-1. **全站總覽 (Overview)**: 首頁 ➔ 健康新聞列表 ➔ 隱私權政策
-2. **醫療院所 (Medical Facilities)** (5): 健康檢查機構查詢 ➔ 居家醫療查詢 ➔ 藥品查詢 ➔ 藥局查詢 ➔ 醫療院所查詢
-3. **長照機構 (LTC Facilities)** (4): 客家委員會「伯公照護站」查詢 ➔ 老人福利機構查詢 ➔ 長照機構查詢 ➔ 長照特約服務機構查詢
-4. **身心障礙 (Disability Services)** (2): 信用合作社無障礙ATM查詢 ➔ 身心障礙福利機構查詢
-5. **兒少福利 (Child & Youth Welfare)** (7): 兒少福利中心查詢 ➔ 全國幼兒園查詢 ➔ 全國短期補習班查詢 ➔ 全國親子館查詢 ➔ 全國親子藝文活動查詢 ➔ 婦幼安全警示地點查詢 ➔ 兒少本土語言辭典（閩南語／客語）
-6. **便民服務 (Public Services)** (12): 文化資產地圖：古蹟／歷史建築／考古遺址查詢 ➔ 全國公共藝術地圖查詢 ➔ 全國公廁查詢 ➔ 全國涼適點查詢 ➔ 全國藝文展覽與活動查詢 ➔ 地方清潔隊聯絡資訊查詢 ➔ 非營利組織(NPO)查詢 ➔ 室內空氣品質法公告場所查詢 ➔ 國際旅遊疫情與即時情報地圖 ➔ 產品碳足跡標籤查詢 ➔ 碳足跡排放係數查詢 ➔ 綠色商店查詢
-7. **環境監測 (Weather & Hazards)** (10): 台灣與全球顯著地震查詢 ➔ 全台水位站即時水位查詢 ➔ 全台水庫即時營運狀況查詢 ➔ 全台即時紫外線指數 (UV) ➔ 即時氣象警報與降雨資訊 ➔ 空氣品質延伸監測資料查詢（AQX 系列）➔ 環保標章旅館與綠色住宿查詢 ➔ 環保標章產品查詢 ➔ 環保餐廳查詢 ➔ AQI 空氣品質即時查詢
-8. **健康算盤與工具 (Health Tools)** (14): 卡路里需求計算器 ➔ 去脂體重 (LBM) 計算器 ➔ 目標心率計算器 ➔ 血壓分析器 ➔ 每日營養素建議計算器 ➔ 食品業者登錄查詢 ➔ 食品營養成分查詢 ➔ 飲水量計算器 ➔ 睡眠品質評估 ➔ 腰臀比計算器 ➔ 壓力評估測驗 ➔ 體脂率計算器 ➔ BMI 計算器 ➔ VO2Max 估算器
+| `ToolGroup` | 分類名稱 | 工具數 |
+|---|---|---|
+| `calculator` | 健康工具 | 12 |
+| `care-facility` | 醫療照護機構 | 9 |
+| `registry` | 藥品食品登錄查詢 | 3 |
+| `child-welfare` | 兒少福利與教育 | 4 |
+| `disaster-safety` | 防災與安全示警 | 7 |
+| `transport-energy` | 交通與能源 | 5 |
+| `environment` | 環境品質與綠色生活 | 7 |
+| `culture-tourism` | 文化藝術與觀光 | 6 |
+| `life-services` | 公益與生活服務 | 7 |
 
-Total: 55 tools across 8 `ToolGroup` values — the 7 listed above plus `disaster-preparedness` (1 entry, no dedicated footer column). (Listed here in codepoint order for readability; the exact runtime order is whatever `localeCompare(…, "zh-Hant", { numeric: true })` yields.)
+(No group exceeds 20% of the catalog — the old 7-group layout had one
+(`public-facility`) holding 36%.) The exact per-group tool list and order is
+whatever `toolsInGroup(group, label)` yields at runtime — not hand-copied
+here, so this table can't go stale the way the pre-#256 per-tool listing did.
+
+### 5.3 Tool Merges
+
+5 groups of previously-separate, same-shape tools were merged into one route
+each behind a type-filter tab (`components/Tools/ToolTypeTabs.tsx`), with
+every old slug 301-redirected (`next.config.js`) to the merged slug:
+
+| 舊 slug(s) | 新 slug |
+|---|---|
+| `child-welfare-nurseries`, `child-welfare-centers` | `child-welfare-institutions` |
+| `green-shops`, `green-hotels`, `green-products`, `green-restaurants` | `green-certifications` |
+| `water-level-stations`, `reservoir-status` | `water-conditions` |
+| `family-cultural-activities` (folded into existing) | `cultural-events` |
+| `carbon-footprint-products`, `carbon-footprint-coefficients` | `carbon-footprint` |
 
 ---
 
