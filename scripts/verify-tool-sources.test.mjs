@@ -13,13 +13,14 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 60 tools registered", () => {
+test("TOOL_CATALOG has exactly 61 tools registered", () => {
   // issue #256: 67 → 60 after 5 merges collapsed 11 old slugs into 4 new
   // ones (child-welfare-institutions, green-certifications, water-conditions,
   // carbon-footprint) plus family-cultural-activities folding into the
   // existing cultural-events entry — a net reduction of 7 catalog entries.
+  // issue #269: 60 → 61 with the new dengue-mosquito-map tool.
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 60, `Expected 60 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 61, `Expected 61 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
