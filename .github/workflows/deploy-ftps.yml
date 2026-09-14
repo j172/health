@@ -10,7 +10,18 @@ on:
         default: false
 
 concurrency:
-  group: host-tw123457-server
+  # Deliberately its own group, not host-tw123457-server (issue #264): that
+  # group is shared with facilities-geocode-batch.yml (every 30 min) and
+  # news-og-backfill.yml (7,37 * * * *), both cancel-in-progress: true — a
+  # deploy in flight when either fires gets silently cancelled (conclusion
+  # "cancelled", not "failure", easy to mistake for a completed deploy while
+  # main's latest merge never actually goes live). Observed twice in one
+  # evening (2026-09-13 17:31 and 21:35). Deploys are low-frequency,
+  # workflow_dispatch-only, and this repo already schedules them in the
+  # :15-:30 / :45-:00 windows to avoid colliding with ingestion runs — that
+  # existing convention already covers the resource-contention concern this
+  # shared group was for, so there's no upside to keeping deploys cancellable.
+  group: deploy-ftps
   cancel-in-progress: false
 
 jobs:
