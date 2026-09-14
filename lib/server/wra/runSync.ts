@@ -2,6 +2,10 @@ import { fetchWaterLevelStations } from "@/lib/server/wra/fetchWaterLevelStation
 import { upsertWaterLevelReadings } from "@/lib/server/wra/waterLevelQueries";
 import { fetchReservoirStatus } from "@/lib/server/wra/fetchReservoirStatus";
 import { upsertReservoirStatus } from "@/lib/server/wra/reservoirQueries";
+import { fetchDamStructureStations } from "@/lib/server/wra/fetchDamStructureStations";
+import { upsertDamStructureStations } from "@/lib/server/wra/damStructureQueries";
+import { fetchGroundwaterLevelStations } from "@/lib/server/wra/fetchGroundwaterLevelStations";
+import { upsertGroundwaterStations } from "@/lib/server/wra/groundwaterQueries";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface WraSyncResult {
@@ -35,6 +39,34 @@ export async function runWraSync(): Promise<WraSyncResult[]> {
     await runSource("wra_reservoir_status", ZERO_COUNTS, async () => {
       const records = await fetchReservoirStatus();
       const { inserted, updated } = await upsertReservoirStatus(records);
+      return { fetched: records.length, inserted, updated };
+    }),
+  );
+
+  return results;
+}
+
+/**
+ * Syncs iot.wra.gov.tw's real-time IoT sensor sources (issue #270) — 堤防結構
+ * 安全監測站 and 地下水位監測站. Kept as its own runner (rather than folded
+ * into runWraSync) so it can be cron'd more frequently — these are per-minute
+ * telemetry, unlike the 30-minute-cadence opendata.wra.gov.tw sources above.
+ */
+export async function runWraIotSync(): Promise<WraSyncResult[]> {
+  const results: WraSyncResult[] = [];
+
+  results.push(
+    await runSource("wra_dam_structure", ZERO_COUNTS, async () => {
+      const records = await fetchDamStructureStations();
+      const { inserted, updated } = await upsertDamStructureStations(records);
+      return { fetched: records.length, inserted, updated };
+    }),
+  );
+
+  results.push(
+    await runSource("wra_groundwater", ZERO_COUNTS, async () => {
+      const records = await fetchGroundwaterLevelStations();
+      const { inserted, updated } = await upsertGroundwaterStations(records);
       return { fetched: records.length, inserted, updated };
     }),
   );
