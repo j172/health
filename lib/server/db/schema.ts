@@ -1306,6 +1306,71 @@ export const TABLE_DDL = {
       KEY idx_cpc_price_eff (effective_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 經濟部水利署水資源物聯網 (iot.wra.gov.tw) — 堤防結構安全監測站, issue #270.
+  // Confirmed live (2026-09-15): no API key required. Latest-snapshot upsert
+  // keyed by station_id (same convention as power_radiation_stations) — each
+  // station reports one or more axis-tilt sensors (X/Z 軸角度) with their own
+  // per-measurement timestamps, so the full Measurements array is kept as
+  // measurements_json rather than flattened to one column; recorded_at is the
+  // max timestamp across that station's measurements. See
+  // lib/server/wra/fetchDamStructureStations.ts.
+  wraDamStructureStations: `
+    CREATE TABLE IF NOT EXISTS wra_dam_structure_stations (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(50) NOT NULL,
+      iow_station_id VARCHAR(50) NULL,
+      name VARCHAR(150) NOT NULL,
+      county_code VARCHAR(20) NULL,
+      county_name VARCHAR(100) NULL,
+      town_code VARCHAR(20) NULL,
+      town_name VARCHAR(100) NULL,
+      admin_name VARCHAR(150) NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      measurement_count INT NOT NULL DEFAULT 0,
+      measurements_json JSON NULL,
+      recorded_at DATETIME NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_dam_structure_station (station_id),
+      KEY idx_wra_dam_structure_geo (lat, lng),
+      KEY idx_wra_dam_structure_recorded (recorded_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 經濟部水利署水資源物聯網 (iot.wra.gov.tw) — 地下水位監測站, issue #270.
+  // Confirmed live (2026-09-15): no API key required. Latest-snapshot upsert
+  // keyed by station_id. Each station's payload carries one 地下水位
+  // measurement; water_level_m/recorded_at are flattened out of it for direct
+  // querying, while the raw Measurements array is also kept as
+  // measurements_json for forward compatibility. See
+  // lib/server/wra/fetchGroundwaterLevelStations.ts.
+  wraGroundwaterStations: `
+    CREATE TABLE IF NOT EXISTS wra_groundwater_stations (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      station_id VARCHAR(50) NOT NULL,
+      iow_station_id VARCHAR(50) NULL,
+      name VARCHAR(150) NOT NULL,
+      county_code VARCHAR(20) NULL,
+      county_name VARCHAR(100) NULL,
+      town_code VARCHAR(20) NULL,
+      town_name VARCHAR(100) NULL,
+      admin_name VARCHAR(150) NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      water_level_m DECIMAL(10,3) NULL,
+      measurements_json JSON NULL,
+      recorded_at DATETIME NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_wra_groundwater_station (station_id),
+      KEY idx_wra_groundwater_geo (lat, lng),
+      KEY idx_wra_groundwater_recorded (recorded_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

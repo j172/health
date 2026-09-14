@@ -20,7 +20,7 @@ import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProd
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
 import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
-import { runWraSync, runWraCatalogSync } from "@/lib/server/wra/runSync";
+import { runWraSync, runWraCatalogSync, runWraIotSync } from "@/lib/server/wra/runSync";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
@@ -193,6 +193,18 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "8,38 * * * *",
     runGuarded("wra-sync-cron.log", () => runWraSync()),
+  );
+  // WRA 水資源物聯網 (iot.wra.gov.tw) 堤防結構安全監測 + 地下水位監測 (issue
+  // #270) — real per-minute IoT telemetry (each measurement carries its own
+  // TimeStamp), so this runs more often than the 30-minute wra-sync above:
+  // every 15 minutes. Minutes 12/27/42/57 are picked to sit clear of every
+  // other job's grid in this file — not on :00/:15/:30/:45, not on
+  // wra-sync's 8/38, not on aqx-sync's 10/40 or earthquake-sync's
+  // 3/13/23/33/43/53, and not a multiple of 5 (youbike-sync's every-5-minute
+  // grid) — so this doesn't stack onto an already-busy tick.
+  cron.schedule(
+    "12,27,42,57 * * * *",
+    runGuarded("wra-iot-sync-cron.log", () => runWraIotSync()),
   );
   // IndexNow daily refresh at 5:00am — submits latest 100 news articles to IndexNow / Bing
   cron.schedule(
