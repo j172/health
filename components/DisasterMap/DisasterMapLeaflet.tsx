@@ -56,6 +56,8 @@ const boolLabel = (v: boolean | null): string | null => {
 };
 
 import type { InundationPoint } from "@/lib/server/wra/inundation";
+import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries";
+import type { GroundwaterMapPoint } from "@/lib/server/wra/groundwaterQueries";
 
 const makeInundationIcon = (status: "normal" | "warning" | "critical") => {
   const color = status === "critical" ? "#dc2626" : status === "warning" ? "#d97706" : "#0284c7";
@@ -68,9 +70,28 @@ const makeInundationIcon = (status: "normal" | "warning" | "critical") => {
   });
 };
 
+// 水利署水資源物聯網 (iot.wra.gov.tw) 圖層 icons — issue #270.
+const damStructureIcon = new L.DivIcon({
+  className: "",
+  html: `<div style="width:18px;height:18px;border-radius:50%;background:#d97706;border:2px solid #fff;box-shadow:0 0 0 1.5px #d97706;display:flex;align-items:center;justify-content:center;font-size:10px;">🧱</div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+  popupAnchor: [0, -9],
+});
+
+const groundwaterIcon = new L.DivIcon({
+  className: "",
+  html: `<div style="width:18px;height:18px;border-radius:50%;background:#0d9488;border:2px solid #fff;box-shadow:0 0 0 1.5px #0d9488;display:flex;align-items:center;justify-content:center;font-size:10px;">💧</div>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+  popupAnchor: [0, -9],
+});
+
 export interface DisasterMapProps {
   points: DisasterPoint[];
   inundationPoints?: InundationPoint[];
+  damStructurePoints?: DamStructureMapPoint[];
+  groundwaterPoints?: GroundwaterMapPoint[];
   userLocation?: { lat: number; lng: number; isDefault: boolean };
   center?: [number, number];
   zoom?: number;
@@ -80,6 +101,8 @@ export interface DisasterMapProps {
 export default function DisasterMapLeaflet({
   points,
   inundationPoints = [],
+  damStructurePoints = [],
+  groundwaterPoints = [],
   userLocation,
   center = [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng],
   zoom = 13,
@@ -116,6 +139,50 @@ export default function DisasterMapLeaflet({
               </div>
               <p className="mt-1 text-xs text-neutral-600">{ip.county} {ip.district} {ip.address}</p>
               <p className="mt-1 text-[10px] text-neutral-400">資料來源：{ip.source}</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {damStructurePoints.map((s) => (
+        <Marker key={`dam-structure-${s.stationId}`} position={[s.lat, s.lng]} icon={damStructureIcon}>
+          <Popup>
+            <div className="text-sm leading-relaxed">
+              <p className="text-xs font-bold text-amber-600">🧱 堤防結構安全監測</p>
+              <p className="font-semibold text-neutral-900">{s.name}</p>
+              <p className="mt-1 text-xs text-neutral-600">
+                {s.countyName} {s.townName}
+              </p>
+              {s.measurements.length > 0 && (
+                <div className="mt-1.5 space-y-0.5 border-t border-neutral-100 pt-1.5 text-xs text-neutral-700">
+                  {s.measurements.map((m, i) => (
+                    <p key={i}>
+                      {m.fullName || m.name}：{m.value ?? "—"} {m.unit ?? ""}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {s.recordedAt && <p className="mt-1 text-[10px] text-neutral-400">觀測時間：{s.recordedAt}</p>}
+              <p className="mt-1 text-[10px] text-neutral-400">資料來源：經濟部水利署水資源物聯網</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {groundwaterPoints.map((s) => (
+        <Marker key={`groundwater-${s.stationId}`} position={[s.lat, s.lng]} icon={groundwaterIcon}>
+          <Popup>
+            <div className="text-sm leading-relaxed">
+              <p className="text-xs font-bold text-teal-600">💧 地下水位監測</p>
+              <p className="font-semibold text-neutral-900">{s.name}</p>
+              <p className="mt-1 text-xs text-neutral-600">
+                {s.countyName} {s.townName}
+              </p>
+              <p className="mt-1 text-xs text-neutral-700">
+                地下水位：{s.waterLevelM !== null ? `${s.waterLevelM} m` : "無資料"}
+              </p>
+              {s.recordedAt && <p className="mt-1 text-[10px] text-neutral-400">觀測時間：{s.recordedAt}</p>}
+              <p className="mt-1 text-[10px] text-neutral-400">資料來源：經濟部水利署水資源物聯網</p>
             </div>
           </Popup>
         </Marker>

@@ -8,6 +8,9 @@ import type { DisasterPoint } from "@/lib/server/disaster/queries";
 
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import type { InundationPoint } from "@/lib/server/wra/inundation";
+import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries";
+import type { GroundwaterMapPoint } from "@/lib/server/wra/groundwaterQueries";
+import type { InundationRegion } from "@/lib/server/wra/fetchInundationRegions";
 
 const DisasterMapLeaflet = dynamic(() => import("@/components/DisasterMap/DisasterMapLeaflet"), { ssr: false });
 
@@ -53,6 +56,11 @@ export default function DisasterMapContent() {
   const [points, setPoints] = useState<DisasterPoint[]>([]);
   const [inundationPoints, setInundationPoints] = useState<InundationPoint[]>([]);
   const [showInundation, setShowInundation] = useState(true);
+  const [damStructurePoints, setDamStructurePoints] = useState<DamStructureMapPoint[]>([]);
+  const [groundwaterPoints, setGroundwaterPoints] = useState<GroundwaterMapPoint[]>([]);
+  const [inundationRegions, setInundationRegions] = useState<InundationRegion[]>([]);
+  const [showDamStructure, setShowDamStructure] = useState(false);
+  const [showGroundwater, setShowGroundwater] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -64,9 +72,10 @@ export default function DisasterMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const [disasterRes, inundationRes] = await Promise.allSettled([
+        const [disasterRes, inundationRes, wraIotRes] = await Promise.allSettled([
           fetch("/api/disaster-map").then((r) => r.json()),
           fetch("/api/disaster/inundation").then((r) => r.json()),
+          fetch("/api/disaster/wra-iot").then((r) => r.json()),
         ]);
 
         if (cancelled) return;
@@ -80,6 +89,12 @@ export default function DisasterMapContent() {
 
         if (inundationRes.status === "fulfilled" && inundationRes.value.ok) {
           setInundationPoints(inundationRes.value.points ?? []);
+        }
+
+        if (wraIotRes.status === "fulfilled" && wraIotRes.value.ok) {
+          setDamStructurePoints(wraIotRes.value.damStructurePoints ?? []);
+          setGroundwaterPoints(wraIotRes.value.groundwaterPoints ?? []);
+          setInundationRegions(wraIotRes.value.inundationRegions ?? []);
         }
       } catch (err: any) {
         if (!cancelled) setError(err?.message || "資料載入失敗");
@@ -113,7 +128,7 @@ export default function DisasterMapContent() {
           🆘 防災地圖
         </h1>
         <p className="text-neutral-600 dark:text-slate-300">
-          整合內政部開放資料：避難收容處所、消防救援單位與縣市應變中心點位，可切換圖層查詢地點詳細資訊。
+          整合內政部開放資料（避難收容處所、消防救援單位、縣市應變中心）與經濟部水利署即時水情／水資源物聯網（河川水位警戒、堤防安全監測、地下水位），可切換圖層查詢地點詳細資訊。
         </p>
       </div>
 
@@ -166,7 +181,48 @@ export default function DisasterMapContent() {
             {inundationPoints.length}
           </span>
         </label>
+
+        {/* 水利署水資源物聯網 (iot.wra.gov.tw) 即時圖層 — 堤防安全監測、地下水位 (issue #270) */}
+        <label
+          className="flex cursor-pointer items-center gap-2 rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2 text-sm font-medium text-amber-800 transition-colors hover:bg-amber-100/60 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200 dark:hover:bg-amber-900/40"
+        >
+          <input
+            type="checkbox"
+            checked={showDamStructure}
+            onChange={() => setShowDamStructure(!showDamStructure)}
+            className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+          />
+          <span aria-hidden="true">🧱</span>
+          <span>堤防安全監測</span>
+          <span className="rounded-full bg-amber-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            {damStructurePoints.length}
+          </span>
+        </label>
+
+        <label
+          className="flex cursor-pointer items-center gap-2 rounded-lg border border-teal-200 bg-teal-50/50 px-3 py-2 text-sm font-medium text-teal-800 transition-colors hover:bg-teal-100/60 dark:border-teal-800/60 dark:bg-teal-950/30 dark:text-teal-200 dark:hover:bg-teal-900/40"
+        >
+          <input
+            type="checkbox"
+            checked={showGroundwater}
+            onChange={() => setShowGroundwater(!showGroundwater)}
+            className="h-4 w-4 rounded border-teal-300 text-teal-600 focus:ring-teal-500"
+          />
+          <span aria-hidden="true">💧</span>
+          <span>地下水位</span>
+          <span className="rounded-full bg-teal-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            {groundwaterPoints.length}
+          </span>
+        </label>
       </div>
+
+      {inundationRegions.length > 0 && (
+        <p className="text-xs text-neutral-500 dark:text-slate-400">
+          即時淹水範圍圖（水利署水資源物聯網）目前有資料的縣市：
+          {inundationRegions.map((r) => r.label).join("、")}
+          　— 尚未提供地圖疊圖，僅供參考是否有範圍圖可查。
+        </p>
+      )}
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
@@ -184,6 +240,8 @@ export default function DisasterMapContent() {
           <DisasterMapLeaflet
             points={visiblePoints}
             inundationPoints={showInundation ? inundationPoints : []}
+            damStructurePoints={showDamStructure ? damStructurePoints : []}
+            groundwaterPoints={showGroundwater ? groundwaterPoints : []}
             userLocation={location}
           />
         )}
