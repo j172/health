@@ -1,6 +1,8 @@
+import { z } from "zod";
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { normalizeAddress, toHalfwidthDigits } from "@/lib/server/facilities/csv";
+import { validateImportRows } from "@/lib/server/validation/importSchema";
 
 // 勞動部職業傷病防治網絡醫院開放資料
 // https://apiservice.mol.gov.tw/OdService/download/A17000000J-030081-puW
@@ -15,6 +17,20 @@ interface MolOccupationalRaw {
   聯絡人: string;
   地址: string;
 }
+
+// Critical-field schema for the raw rows. `sourceId` (see
+// docs/specs/mol-occupational-injury-source-id-migration.md — the original
+// incident this validation exists to catch a recurrence of) is derived from
+// 醫療機構名稱/地址/直轄市或省轄縣市, so those three are validated for
+// presence+type here; the rest (phone/contact fields) aren't identity-
+// bearing and are left unchecked. `.nullable()` (not `.optional()`) so a
+// field entirely absent from every row (renamed/removed upstream) fails
+// loudly, while one row's legitimately empty value still passes.
+export const molOccupationalInjuryRawSchema = z.object({
+  醫療機構名稱: z.string().nullable(),
+  地址: z.string().nullable(),
+  直轄市或省轄縣市: z.string().nullable(),
+});
 
 // 3 of the 39 rows' 地址 doesn't already carry the county/city name from
 // 直轄市或省轄縣市 (confirmed live: the 宜蘭縣/苗栗縣 rows give addresses
@@ -41,6 +57,7 @@ export async function fetchMolOccupationalInjuryHospitals(): Promise<FacilityRec
   if (status < 200 || status >= 300) throw new Error(`MOL occupational-injury hospitals request failed: HTTP ${status}`);
 
   const raw: MolOccupationalRaw[] = JSON.parse(text);
+  validateImportRows("MOL occupational-injury hospitals", molOccupationalInjuryRawSchema, raw);
 
   return raw
     .filter((r) => r.醫療機構名稱)

@@ -1,6 +1,8 @@
+import { z } from "zod";
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { normalizeAddress } from "@/lib/server/facilities/csv";
+import { validateImportRows } from "@/lib/server/validation/importSchema";
 
 // 客家委員會「伯公照護站」名冊 — single national JSON file, no
 // coordinates (geocoded via the usual facilities-geocode backfill) and no
@@ -15,6 +17,21 @@ interface HakkaCommunityRow {
   Address: string;
 }
 
+// Critical-field schema for the raw rows. This source previously caused a
+// live incident (docs/specs/fix-facility-cross-county-coordinate-mismatch.md
+// §1 point 5): some rows' `Address` doesn't repeat the county/city from
+// `city_name`, and the code below has to compensate for that by prepending
+// it — so all three fields it depends on (`Unit_name`, `Address`,
+// `city_name`) are validated for presence+type here. `.nullable()` (not
+// `.optional()`) so a field entirely absent from every row (renamed/removed
+// upstream) fails loudly, while one row's legitimately empty value still
+// passes.
+export const hakkaCommunityRawSchema = z.object({
+  Unit_name: z.string().nullable(),
+  Address: z.string().nullable(),
+  city_name: z.string().nullable(),
+});
+
 export async function fetchHakkaCommunity(): Promise<FacilityRecord[]> {
   // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
   // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
@@ -22,6 +39,7 @@ export async function fetchHakkaCommunity(): Promise<FacilityRecord[]> {
   if (status < 200 || status >= 300) throw new Error(`Hakka Affairs Council Bo-Gong care station request failed: HTTP ${status}`);
 
   const rows: HakkaCommunityRow[] = JSON.parse(text.replace(/^﻿/, ""));
+  validateImportRows("Hakka Affairs Council Bo-Gong care stations", hakkaCommunityRawSchema, rows);
 
   return rows
     .filter((r) => r.Unit_name && r.Address)
