@@ -174,7 +174,7 @@ export default function SiteFooter() {
             <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
               {t(
                 "footer.tagline",
-                "彙整衛福部、疾管署、食藥署及各大健康新聞媒體公開資訊，協助您一手掌握全台最新公衛醫療動態與空氣品質。",
+                "彙整衛福部、疾管署、中央氣象署等官方機構與各大新聞媒體公開資訊，並提供健康計算、醫療照護、交通能源、防災示警等便民生活工具，協助您一手掌握公衛醫療動態與日常生活資訊。",
               )}
             </p>
           </div>
