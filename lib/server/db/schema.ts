@@ -1418,6 +1418,108 @@ export const TABLE_DDL = {
       KEY idx_wra_groundwater_recorded (recorded_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 內政部 (MOI) 防救災點位 — 消防救援單位 (770 rows)、應變中心 (25 rows,
+  // 一縣市一筆)、避難收容處所點位檔案 v9 (5,973 rows), issue #168. All three
+  // source CSVs already carry usable decimal lon/lat, so this deliberately
+  // bypasses the facilities table and its geocode batch pipeline entirely —
+  // no OpenCage/Nominatim budget contention with the 22 facility sources that
+  // do need geocoding. One table + a `layer` enum rather than three tables:
+  // the columns are almost identical, only shelter rows populate the
+  // shelter-only fields (capacity/disaster_types/indoor/outdoor/
+  // weak_suitable/manager_*). Each sync is a full truncate-and-replace of its
+  // own layer (see lib/server/disaster/ingestDisasterPoints.ts) — the source
+  // has no stable cross-run identifier to upsert against, and this project
+  // has already been burned once by an accumulating/upsert-style ingestion
+  // count silently drifting from the real row count (see memory:
+  // ops_ingestion_counters_and_deploy_timing.md) — so `inserted` reported by
+  // each sync function is always a post-write COUNT(*) for that layer, never
+  // the length of the batch it tried to insert.
+  //
+  // RESTORED 2026-09-15 (issue #274): this table's DDL and the sibling
+  // heritageAssets DDL below it were both accidentally deleted by commit
+  // 92fd282 (2026-09-09, an unrelated WRA reservoir feature) — CREATE TABLE
+  // IF NOT EXISTS meant existing production tables kept working, so this
+  // went unnoticed until a 2026-09-15 audit (while building the dengue map,
+  // issue #269) diffed this file against its pre-92fd282 state and found the
+  // gap. A from-scratch DB rebuild (disaster recovery, a fresh environment)
+  // would otherwise have silently missed these two tables and broken
+  // disaster-map and heritage-map. Content below is restored verbatim from
+  // the pre-92fd282 revision, not rewritten.
+  disasterResponsePoints: `
+    CREATE TABLE IF NOT EXISTS disaster_response_points (
+      id INT NOT NULL AUTO_INCREMENT,
+      layer ENUM('shelter','rescue_unit','eoc_center') NOT NULL,
+      name VARCHAR(255) NOT NULL,
+      county VARCHAR(50) NOT NULL,
+      district VARCHAR(50) NULL,
+      village VARCHAR(50) NULL,
+      address VARCHAR(255) NULL,
+      phone VARCHAR(100) NULL,
+      longitude DECIMAL(10,7) NOT NULL,
+      latitude DECIMAL(10,7) NOT NULL,
+      capacity INT NULL,
+      disaster_types VARCHAR(255) NULL,
+      indoor BOOLEAN NULL,
+      outdoor BOOLEAN NULL,
+      weak_suitable BOOLEAN NULL,
+      manager_name VARCHAR(100) NULL,
+      manager_phone VARCHAR(100) NULL,
+      source_updated_at DATETIME NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_disaster_point_layer (layer),
+      KEY idx_disaster_point_geo (latitude, longitude),
+      KEY idx_disaster_point_county (county)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 文化部文化資產局 (BOCH) 開放資料 — 文化資產個案，建築類 (古蹟／歷史建築,
+  // assetsCase/1.2.json, ~1,789 rows) 與考古遺址類 (assetsCase/2.1.json, ~58
+  // rows), issue #170. Both source JSON documents already carry usable decimal
+  // longitude/latitude, so — same as disaster_response_points (issue #168) —
+  // this deliberately bypasses the facilities table and its geocode batch
+  // pipeline entirely. One table + a `category` enum rather than two tables:
+  // the two source datasets' fields are a near-total union of each other, with
+  // only a handful of columns exclusive to one side (assets_type_names is
+  // building-only; classify_code/classify_name are archaeological-site-only).
+  // Unlike disaster_response_points, this source DOES carry a stable
+  // cross-run identifier (`caseId`), so the sync is a plain upsert
+  // (INSERT ... ON DUPLICATE KEY UPDATE) against `case_id`, not a
+  // truncate-and-replace — see lib/server/culture/ingestHeritageAssets.ts.
+  // past_history and register_reason are both nullable on both categories:
+  // real-world building records were found to often carry both fields, not
+  // just registerReason as originally assumed (see docs/specs/
+  // heritage-assets-map.md 1.1). image_source (representImageSource) is only
+  // ever populated by the archaeological-site dataset — the building dataset
+  // never sends that field at all, confirmed live 2026-09-09.
+  heritageAssets: `
+    CREATE TABLE IF NOT EXISTS heritage_assets (
+      id INT NOT NULL AUTO_INCREMENT,
+      case_id VARCHAR(50) NOT NULL,
+      category ENUM('building','archaeological_site') NOT NULL,
+      case_name VARCHAR(255) NOT NULL,
+      assets_type_names VARCHAR(255) NULL,
+      classify_code VARCHAR(20) NULL,
+      classify_name VARCHAR(100) NULL,
+      city_name VARCHAR(50) NULL,
+      dist_name VARCHAR(50) NULL,
+      address VARCHAR(255) NULL,
+      past_history MEDIUMTEXT NULL,
+      register_reason MEDIUMTEXT NULL,
+      gov_institution_name VARCHAR(100) NULL,
+      longitude DECIMAL(10,7) NULL,
+      latitude DECIMAL(10,7) NULL,
+      image_url VARCHAR(500) NULL,
+      image_source VARCHAR(255) NULL,
+      source_updated_at DATETIME NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_heritage_asset_case_id (case_id),
+      KEY idx_heritage_asset_category (category),
+      KEY idx_heritage_asset_geo (latitude, longitude)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 
