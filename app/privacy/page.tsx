@@ -5,7 +5,7 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const LAST_UPDATED = "2026-09-08";
+const LAST_UPDATED = "2026-09-14";
 
 export default function PrivacyPage() {
   const baseUrl = getBaseUrl();
@@ -47,7 +47,7 @@ export default function PrivacyPage() {
               <ul className="list-inside list-disc space-y-2">
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">地理位置資訊：</span>
-                  部分功能（如附近空氣品質／紫外線指數、鄰近醫療院所查詢、在地區域天氣）會請求您瀏覽器的定位權限。這項授權由您的瀏覽器直接管理，本站僅在您同意後取得當下的經緯度，用於即時查詢「離您最近」的結果，查詢後不會將座標與任何足以識別您身分的資訊一併儲存於本站伺服器資料庫。
+                  站內各項地圖與定位型工具（例如鄰近設施查詢、防災與安全地圖等）會請求您瀏覽器的定位權限，用於計算「離您最近」的結果；隨網站功能持續增加，這類工具的項目可能隨時調整，恕不逐一列舉。這項授權由您的瀏覽器直接管理，本站僅在您同意後取得當下的經緯度，查詢後不會將座標與任何足以識別您身分的資訊一併儲存於本站伺服器資料庫。
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">健康小工具的輸入內容：</span>
