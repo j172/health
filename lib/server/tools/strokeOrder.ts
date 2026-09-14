@@ -36,6 +36,7 @@ export const STROKE_COUNTS: Record<string, number> = {
   "無": 12,
   "環": 17,
   "目": 5,
+  "登": 12,
   "睡": 13,
   "碳": 14,
   "空": 8,
