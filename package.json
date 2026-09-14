@@ -56,7 +56,8 @@
     "react-hot-toast": "^2.6.0",
     "react-leaflet": "^5.0.0",
     "segmentit": "^2.0.3",
-    "swiper": "^14.0.7"
+    "swiper": "^14.0.7",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

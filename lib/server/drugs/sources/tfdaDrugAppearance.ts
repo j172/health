@@ -1,6 +1,8 @@
 import AdmZip from "adm-zip";
+import { z } from "zod";
 import type { DrugRecord } from "@/lib/server/drugs/queries";
 import { httpRequest } from "@/lib/server/net/httpClient";
+import { validateImportRows } from "@/lib/server/validation/importSchema";
 
 // 衛福部食藥署藥品許可證與外觀資料集（ZIP 包裝的 JSON）
 // https://data.fda.gov.tw/data/opendata/export/42/json
@@ -21,6 +23,22 @@ interface TfdaDrugRaw {
   外觀圖檔連結: string | null;
 }
 
+// Critical-field schema for the raw rows. This is the same data.fda.gov.tw
+// TFDA drug-data family whose thin/incomplete field coverage is documented
+// in docs/specs/drug-label-source-blocked.md (the drug package-insert
+// feature was blocked precisely because TFDA's structured exports don't
+// carry the fields that would be needed) — the exact class of "upstream
+// dataset doesn't have the field you assumed it did" risk this validation
+// guards against. `許可證字號`/`中文品名` are the identity fields the
+// `.filter()` below and downstream `upsertDrugs()` keying depend on.
+// `.nullable()` (not `.optional()`) so a field entirely absent from every
+// row (renamed/removed upstream) fails loudly, while one row's legitimately
+// empty value still passes.
+export const tfdaDrugAppearanceRawSchema = z.object({
+  許可證字號: z.string().nullable(),
+  中文品名: z.string().nullable(),
+});
+
 const nullify = (s: string | null | undefined): string | null => (s && s.trim() ? s.trim() : null);
 
 export async function fetchTfdaDrugAppearance(): Promise<DrugRecord[]> {
@@ -35,6 +53,7 @@ export async function fetchTfdaDrugAppearance(): Promise<DrugRecord[]> {
   if (!entry) throw new Error("TFDA drug appearance ZIP contained no .json entry");
 
   const raw: TfdaDrugRaw[] = JSON.parse(entry.getData().toString("utf-8"));
+  validateImportRows("TFDA drug appearance", tfdaDrugAppearanceRawSchema, raw);
 
   return raw
     .filter((item) => item.許可證字號 && item.中文品名)
