@@ -39,6 +39,7 @@ import {
   fetchPchomePet,
   fetchPchomeLiving,
 } from "@/lib/server/rss/fetchExpandedSources";
+import { fetchMocNews } from "@/lib/server/rss/fetchMocNews";
 import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
 import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
 import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
@@ -999,6 +1000,15 @@ export const runRssIngestion = async (
             sourceName: "pchome",
           },
           fetchFn: fetchPchomeLiving,
+        },
+        {
+          meta: {
+            code: "moc_news" as FeedCode,
+            name: "文化部",
+            url: "https://www.moc.gov.tw/OpenData.aspx?SN=154A1DF113F52308",
+            sourceName: "moc",
+          },
+          fetchFn: fetchMocNews,
         },
       ];
 

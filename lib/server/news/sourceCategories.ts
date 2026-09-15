@@ -38,6 +38,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "moe_familyedu", label: "教育部家庭教育網" },
       { sourceName: "sfaa", label: "衛生福利部社會及家庭署" },
       { sourceName: "ncl", label: "國家圖書館" },
+      { sourceName: "moc", label: "文化部" },
     ],
   },
   {

@@ -91,6 +91,7 @@ const SOURCE_LABELS: Record<string, string> = {
   thenewslens: "關鍵評論網",
   pchome: "PChome 新聞",
   ncl: "國家圖書館",
+  moc: "文化部",
   apatw: "社團法人中華民國保護動物協會",
   seinsights: "社企流",
   mygopen: "MyGoPen 查核中心",

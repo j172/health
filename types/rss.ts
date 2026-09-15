@@ -113,6 +113,7 @@ export type FeedCode =
   | "pchome_living"
   | "ettoday_pet"
   | "ncl_fmevents"
+  | "moc_news"
   | "apatw_news"
   | "seinsights_news"
   | "mygopen_news";
