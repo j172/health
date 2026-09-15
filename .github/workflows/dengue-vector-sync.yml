@@ -80,3 +80,23 @@ jobs:
             SSH_USER="$SSH_USER" \
             RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
             node scripts/gha-dengue-vector-sync.mjs
+
+      # healthchecks.io dead-man's-switch: pings the "dengue-vector-sync"
+      # check on success. continue-on-error/timeout-minutes keep a
+      # healthchecks.io-side hiccup from ever failing or hanging this job.
+      - name: Ping healthchecks.io (success)
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_DENGUE_VECTOR_SYNC: ${{ secrets.HEALTHCHECKS_URL_DENGUE_VECTOR_SYNC }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_DENGUE_VECTOR_SYNC"
+
+      # Marks the same check as failed immediately, rather than waiting for
+      # healthchecks.io's timeout+grace to notice the missing success ping.
+      - name: Ping healthchecks.io (failure)
+        if: failure()
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_DENGUE_VECTOR_SYNC: ${{ secrets.HEALTHCHECKS_URL_DENGUE_VECTOR_SYNC }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_DENGUE_VECTOR_SYNC/fail"

@@ -77,3 +77,25 @@ jobs:
         env:
           RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
         run: node scripts/backfill-child-safety-spots-geo.mjs
+
+      # healthchecks.io dead-man's-switch: pings the "opendata-geo-backfill"
+      # check only once all three backfill steps above have succeeded.
+      # continue-on-error/timeout-minutes keep a healthchecks.io-side hiccup
+      # from ever failing or hanging this job.
+      - name: Ping healthchecks.io (success)
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_OPENDATA_GEO_BACKFILL: ${{ secrets.HEALTHCHECKS_URL_OPENDATA_GEO_BACKFILL }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_OPENDATA_GEO_BACKFILL"
+
+      # Marks the same check as failed immediately if any of the three
+      # backfill steps above failed, rather than waiting for healthchecks.io's
+      # timeout+grace to notice the missing success ping.
+      - name: Ping healthchecks.io (failure)
+        if: failure()
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_OPENDATA_GEO_BACKFILL: ${{ secrets.HEALTHCHECKS_URL_OPENDATA_GEO_BACKFILL }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_OPENDATA_GEO_BACKFILL/fail"
