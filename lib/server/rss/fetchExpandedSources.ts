@@ -390,10 +390,20 @@ export const parseSfaaNewsHtml = (html: string, baseUrl = "https://www.sfaa.gov.
   const items: EnrichedRssItem[] = [];
   const seen = new Set<string>();
 
-  const rows = $("table tr, .list-item, a[href*='/sfaa/detail/'], a[href*='/detail/']").toArray();
+  const rows = $("table tr, .list-item, .item, a[href*='/sfaa/detail/'], a[href*='/detail/']").toArray();
   for (const el of rows) {
     const $el = $(el);
-    const anchor = $el.is("a") ? $el : $el.find("a[href*='/detail/'], a[href*='/sfaa/']").first();
+    const tds = $el.find("td");
+    let anchor = $el.is("a") ? $el : $el.find("a[href*='detail'], a[href*='/sfaa/']").first();
+    let dateText = "";
+
+    if (tds.length >= 3) {
+      anchor = tds.eq(1).find("a").first();
+      dateText = tds.eq(2).text().trim();
+    } else {
+      dateText = $el.find(".date, time, span").first().text().trim() || $el.find("td").first().text().trim();
+    }
+
     const rawHref = anchor.attr("href");
     if (!rawHref || rawHref === "/sfaa/list/5cX" || !rawHref.includes("detail")) continue;
 
@@ -404,7 +414,6 @@ export const parseSfaaNewsHtml = (html: string, baseUrl = "https://www.sfaa.gov.
     if (!title || title.length < 4) continue;
     seen.add(canonicalUrl);
 
-    const dateText = $el.find("td, .date, time, span").text();
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const externalId = canonicalUrl.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "") || sha256(canonicalUrl).slice(0, 16);
@@ -692,15 +701,99 @@ export const parseTheNewsLensHtml = (
   return items;
 };
 
+export const parseTheNewsLensRss = (
+  xmlText: string,
+  feedCode: "thenewslens_health" | "thenewslens_lifestyle" | "thenewslens_elderly",
+  feedName: string,
+): EnrichedRssItem[] => {
+  const $ = load(xmlText, { xmlMode: true });
+  const items: EnrichedRssItem[] = [];
+  const seen = new Set<string>();
+
+  const healthKeywords = ["健康", "醫療", "癌症", "疾病", "心理", "照護", "生醫", "長照", "性別", "身體", "醫學", "疫苗", "少子化", "生育", "精神"];
+  const elderlyKeywords = ["熟齡", "銀髮", "長照", "高齡", "養老", "退休", "老年", "照顧", "失能", "長者"];
+  const lifestyleKeywords = ["生活", "文化", "教育", "閱讀", "環境", "飲食", "社會", "藝術", "旅遊", "科技", "設計"];
+
+  const filterKeywords =
+    feedCode === "thenewslens_health"
+      ? healthKeywords
+      : feedCode === "thenewslens_elderly"
+        ? elderlyKeywords
+        : lifestyleKeywords;
+
+  $("item").each((_, el) => {
+    const $el = $(el);
+    const title = $el.find("title").text().trim().replace(/\s+/g, " ");
+    const canonicalUrl = $el.find("link").text().trim();
+    if (!title || !canonicalUrl || seen.has(canonicalUrl)) return;
+
+    const cats = $el.find("category").map((_, c) => $(c).text().trim()).get();
+    const matchesFilter =
+      cats.some((c) => filterKeywords.some((k) => c.includes(k))) ||
+      filterKeywords.some((k) => title.includes(k));
+
+    if (!matchesFilter && items.length >= 5) return;
+
+    seen.add(canonicalUrl);
+    const pubDateStr = $el.find("pubDate").text().trim();
+    const publishedAtUtc = pubDateStr ? new Date(pubDateStr) : null;
+    const descText = $el.find("description").text().trim().replace(/\s+/g, " ");
+
+    const externalId = canonicalUrl.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "") || sha256(canonicalUrl).slice(0, 16);
+    const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, publishedAtUtc }));
+
+    items.push({
+      sourceName: "thenewslens",
+      feedCode,
+      feedName,
+      externalId,
+      canonicalUrl,
+      sourceUrl: canonicalUrl,
+      title,
+      descriptionHtml: descText,
+      descriptionText: descText,
+      detailHtml: null,
+      detailText: null,
+      deptName: null,
+      categoryRaw: cats.join(", ") || null,
+      displayType: null,
+      publishedAtUtc: publishedAtUtc && !isNaN(publishedAtUtc.getTime()) ? publishedAtUtc : null,
+      publicBeginAtTaipei: null,
+      publicEndAtTaipei: null,
+      payloadHash,
+      assets: [],
+      metaTitle: "",
+      metaDescription: "",
+      keywords: cats.join(", "),
+      geoSummary: "",
+    });
+  });
+
+  return items;
+};
+
 export async function fetchTheNewsLensHealth(): Promise<ExpandedSourceFetchResult> {
   const url = "https://www.thenewslens.com/category/health";
+  const rssUrl = "https://feeds.feedburner.com/TheNewsLens";
   try {
     const res = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
-    if (res.status < 200 || res.status >= 300) {
-      return { ok: false, httpStatus: res.status, itemCount: 0, items: [], errorMessage: `HTTP ${res.status}` };
+    if (res.status === 200) {
+      const items = parseTheNewsLensHtml(res.text, "thenewslens_health", "關鍵評論網－健康");
+      if (items.length > 0) {
+        return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
+      }
     }
-    const items = parseTheNewsLensHtml(res.text, "thenewslens_health", "關鍵評論網－健康");
-    return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
+  } catch {
+    // HTML scraping failed or blocked by Cloudflare, fall back to official FeedBurner RSS
+  }
+
+  try {
+    const resRss = await httpGetText(rssUrl, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (resRss.status >= 200 && resRss.status < 300) {
+      const items = parseTheNewsLensRss(resRss.text, "thenewslens_health", "關鍵評論網－健康");
+      return { ok: true, httpStatus: resRss.status, itemCount: items.length, items, errorMessage: null };
+    }
+    return { ok: false, httpStatus: resRss.status, itemCount: 0, items: [], errorMessage: `HTTP ${resRss.status}` };
   } catch (error: any) {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
   }
@@ -708,13 +801,26 @@ export async function fetchTheNewsLensHealth(): Promise<ExpandedSourceFetchResul
 
 export async function fetchTheNewsLensLifestyle(): Promise<ExpandedSourceFetchResult> {
   const url = "https://www.thenewslens.com/category/lifestyle";
+  const rssUrl = "https://feeds.feedburner.com/TheNewsLens";
   try {
     const res = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
-    if (res.status < 200 || res.status >= 300) {
-      return { ok: false, httpStatus: res.status, itemCount: 0, items: [], errorMessage: `HTTP ${res.status}` };
+    if (res.status === 200) {
+      const items = parseTheNewsLensHtml(res.text, "thenewslens_lifestyle", "關鍵評論網－生活");
+      if (items.length > 0) {
+        return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
+      }
     }
-    const items = parseTheNewsLensHtml(res.text, "thenewslens_lifestyle", "關鍵評論網－生活");
-    return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
+  } catch {
+    // HTML scraping failed or blocked by Cloudflare, fall back to official FeedBurner RSS
+  }
+
+  try {
+    const resRss = await httpGetText(rssUrl, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (resRss.status >= 200 && resRss.status < 300) {
+      const items = parseTheNewsLensRss(resRss.text, "thenewslens_lifestyle", "關鍵評論網－生活");
+      return { ok: true, httpStatus: resRss.status, itemCount: items.length, items, errorMessage: null };
+    }
+    return { ok: false, httpStatus: resRss.status, itemCount: 0, items: [], errorMessage: `HTTP ${resRss.status}` };
   } catch (error: any) {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
   }
@@ -722,13 +828,26 @@ export async function fetchTheNewsLensLifestyle(): Promise<ExpandedSourceFetchRe
 
 export async function fetchTheNewsLensElderly(): Promise<ExpandedSourceFetchResult> {
   const url = "https://www.thenewslens.com/category/elderly";
+  const rssUrl = "https://feeds.feedburner.com/TheNewsLens";
   try {
     const res = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
-    if (res.status < 200 || res.status >= 300) {
-      return { ok: false, httpStatus: res.status, itemCount: 0, items: [], errorMessage: `HTTP ${res.status}` };
+    if (res.status === 200) {
+      const items = parseTheNewsLensHtml(res.text, "thenewslens_elderly", "關鍵評論網－銀髮");
+      if (items.length > 0) {
+        return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
+      }
     }
-    const items = parseTheNewsLensHtml(res.text, "thenewslens_elderly", "關鍵評論網－銀髮");
-    return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
+  } catch {
+    // HTML scraping failed or blocked by Cloudflare, fall back to official FeedBurner RSS
+  }
+
+  try {
+    const resRss = await httpGetText(rssUrl, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
+    if (resRss.status >= 200 && resRss.status < 300) {
+      const items = parseTheNewsLensRss(resRss.text, "thenewslens_elderly", "關鍵評論網－銀髮");
+      return { ok: true, httpStatus: resRss.status, itemCount: items.length, items, errorMessage: null };
+    }
+    return { ok: false, httpStatus: resRss.status, itemCount: 0, items: [], errorMessage: `HTTP ${resRss.status}` };
   } catch (error: any) {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
   }
@@ -747,12 +866,12 @@ export const parsePchomeHtml = (
   const items: EnrichedRssItem[] = [];
   const seen = new Set<string>();
 
-  const cards = $("a[href*='/article/'], a[href*='/cat/'], .news_list li").toArray();
+  const cards = $("a[href*='index-'], a[href*='/article/'], a[href*='/cat/'], .news_list li").toArray();
   for (const el of cards) {
     const $el = $(el);
-    const anchor = $el.is("a") ? $el : $el.find("a[href*='/article/'], a[href*='news.pchome']").first();
+    const anchor = $el.is("a") ? $el : $el.find("a[href*='index-'], a[href*='/article/'], a[href*='news.pchome']").first();
     const rawHref = anchor.attr("href");
-    if (!rawHref || !rawHref.includes("article")) continue;
+    if (!rawHref || (!rawHref.includes("index-") && !rawHref.includes("article"))) continue;
 
     const canonicalUrl = toAbsoluteUrl(rawHref, baseUrl);
     if (seen.has(canonicalUrl)) continue;
@@ -767,7 +886,13 @@ export const parsePchomeHtml = (
     seen.add(canonicalUrl);
 
     const dateText = $el.find(".date, time, .time, span").text() || anchor.text();
-    const publishedAtUtc = parseTaiwanDateToUtc(dateText);
+    let publishedAtUtc = parseTaiwanDateToUtc(dateText);
+    if (!publishedAtUtc) {
+      const m = rawHref.match(/\/(\d{4})(\d{2})(\d{2})\/index-/);
+      if (m) {
+        publishedAtUtc = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 0, 0, 0));
+      }
+    }
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
     const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
