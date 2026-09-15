@@ -43,6 +43,11 @@ export const getMysqlPool = (): Pool => {
     timezone: "Z",
     supportBigNumbers: true,
     dateStrings: false,
+    // Without this, mysql2 returns DECIMAL columns as strings, which
+    // silently disagrees with every TS interface in this repo declaring
+    // them `number | null` — e.g. `row.volt.toFixed(1)` throws at runtime
+    // because `row.volt` is `"12.500"`, not 12.5. See issue #280.
+    decimalNumbers: true,
   });
 
   return pool;
