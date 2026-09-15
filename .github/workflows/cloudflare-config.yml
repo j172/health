@@ -1,0 +1,67 @@
+name: Cloudflare zone config (manual)
+
+# One-off/occasional manual utility for toggling Cloudflare zone-level
+# settings via API, using the same CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID
+# environment secrets deploy-ftps.yml already uses for cache purging (see
+# docs/specs/free-tier-tooling-recommendations-20260914.md §5). Kept as a
+# version-controlled workflow rather than a one-time ad-hoc curl so the
+# change is auditable and repeatable (e.g. if the setting ever needs to be
+# re-applied after a zone reset).
+on:
+  workflow_dispatch:
+    inputs:
+      setting:
+        description: "Which zone setting to apply"
+        required: true
+        type: choice
+        options:
+          - smart_tiered_cache_on
+        default: smart_tiered_cache_on
+
+concurrency:
+  group: cloudflare-config
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Enable Smart Tiered Cache
+        if: inputs.setting == 'smart_tiered_cache_on'
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$CLOUDFLARE_ZONE_ID" ] || [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Missing CLOUDFLARE_ZONE_ID or CLOUDFLARE_API_TOKEN."
+            exit 1
+          fi
+
+          HTTP_OUTPUT="$(curl --show-error --silent \
+            --request PATCH \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            --header "Content-Type: application/json" \
+            --data '{"value":"on"}' \
+            --write-out "\n__HTTP_STATUS__:%{http_code}" \
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/cache/tiered_cache_smart_topology_enable")"
+
+          HTTP_CODE="$(printf '%s\n' "$HTTP_OUTPUT" | grep '^__HTTP_STATUS__:' | cut -d':' -f2)"
+          RESPONSE_BODY="$(printf '%s\n' "$HTTP_OUTPUT" | sed '/^__HTTP_STATUS__:/d')"
+
+          echo "$RESPONSE_BODY" | jq . || echo "$RESPONSE_BODY"
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Cloudflare API returned HTTP $HTTP_CODE — Smart Tiered Cache was NOT enabled. Common cause: CLOUDFLARE_API_TOKEN lacks the 'Zone Settings: Edit' permission (it was originally scoped only for cache purging)."
+            exit 1
+          fi
+
+          SUCCESS="$(echo "$RESPONSE_BODY" | jq -r '.success')"
+          if [ "$SUCCESS" != "true" ]; then
+            echo "::error::Cloudflare API responded 200 but success=false — see errors above."
+            exit 1
+          fi
+
+          echo "Smart Tiered Cache enabled successfully."
