@@ -78,3 +78,23 @@ jobs:
             OG_BACKFILL_LIMIT=20 \
             OG_BACKFILL_ROUNDS=12 \
             node scripts/gha-og-external-backfill.mjs
+
+      # healthchecks.io dead-man's-switch: pings the "news-og-backfill" check
+      # on success. continue-on-error/timeout-minutes keep a healthchecks.io-
+      # side hiccup from ever failing or hanging this job.
+      - name: Ping healthchecks.io (success)
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_NEWS_OG_BACKFILL: ${{ secrets.HEALTHCHECKS_URL_NEWS_OG_BACKFILL }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_NEWS_OG_BACKFILL"
+
+      # Marks the same check as failed immediately, rather than waiting for
+      # healthchecks.io's timeout+grace to notice the missing success ping.
+      - name: Ping healthchecks.io (failure)
+        if: failure()
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_NEWS_OG_BACKFILL: ${{ secrets.HEALTHCHECKS_URL_NEWS_OG_BACKFILL }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_NEWS_OG_BACKFILL/fail"

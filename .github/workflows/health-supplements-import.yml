@@ -82,6 +82,28 @@ jobs:
           SSH_KEY_FILE: ${{ runner.temp }}/deploy_key
         run: node scripts/import-tfda-health-supplements.mjs
 
+      # healthchecks.io dead-man's-switch: pings the
+      # "health-supplements-import" check on success. continue-on-error/
+      # timeout-minutes keep a healthchecks.io-side hiccup from ever failing
+      # or hanging this job. Placed before the SSH key cleanup so that
+      # cleanup (if: always()) still runs last regardless of ping outcome.
+      - name: Ping healthchecks.io (success)
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_HEALTH_SUPPLEMENTS_IMPORT: ${{ secrets.HEALTHCHECKS_URL_HEALTH_SUPPLEMENTS_IMPORT }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_HEALTH_SUPPLEMENTS_IMPORT"
+
+      # Marks the same check as failed immediately, rather than waiting for
+      # healthchecks.io's timeout+grace to notice the missing success ping.
+      - name: Ping healthchecks.io (failure)
+        if: failure()
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_HEALTH_SUPPLEMENTS_IMPORT: ${{ secrets.HEALTHCHECKS_URL_HEALTH_SUPPLEMENTS_IMPORT }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_HEALTH_SUPPLEMENTS_IMPORT/fail"
+
       - name: Clean up SSH key
         if: always()
         run: rm -f "$RUNNER_TEMP/deploy_key"

@@ -61,3 +61,23 @@ jobs:
             RSS_SYNC_ADMIN_SECRET="$RSS_SYNC_ADMIN_SECRET" \
             GEOCODE_BATCH_ROUNDS=30 \
             node scripts/gha-facilities-geocode-batch.mjs
+
+      # healthchecks.io dead-man's-switch: pings the "facilities-geocode-batch"
+      # check on success. continue-on-error/timeout-minutes keep a
+      # healthchecks.io-side hiccup from ever failing or hanging this job.
+      - name: Ping healthchecks.io (success)
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_FACILITIES_GEOCODE_BATCH: ${{ secrets.HEALTHCHECKS_URL_FACILITIES_GEOCODE_BATCH }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_FACILITIES_GEOCODE_BATCH"
+
+      # Marks the same check as failed immediately, rather than waiting for
+      # healthchecks.io's timeout+grace to notice the missing success ping.
+      - name: Ping healthchecks.io (failure)
+        if: failure()
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_FACILITIES_GEOCODE_BATCH: ${{ secrets.HEALTHCHECKS_URL_FACILITIES_GEOCODE_BATCH }}
+        run: curl -fsS --retry 3 "$HEALTHCHECKS_URL_FACILITIES_GEOCODE_BATCH/fail"

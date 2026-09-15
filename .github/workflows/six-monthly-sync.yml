@@ -206,6 +206,26 @@ jobs:
           fi
           rm -f "$RUNNER_TEMP/deploy_key"
 
+      # healthchecks.io dead-man's-switch，對應 "six-monthly-sync" check。
+      # 這個 workflow 的失敗情境複雜（多個獨立 step 各自依 SYNC_TYPE 決定要不要
+      # 跑、也各自可能失敗），不逐一在每個 step 後插入 ping，改用
+      # if: always() + job.status 在整個 job 結束時判斷一次要 ping 成功端點還是
+      # /fail 端點。continue-on-error/timeout-minutes 確保 healthchecks.io
+      # 本身的問題不會讓這個 job 被誤判失敗或卡住。
+      - name: Ping healthchecks.io (job status)
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 1
+        env:
+          HEALTHCHECKS_URL_SIX_MONTHLY_SYNC: ${{ secrets.HEALTHCHECKS_URL_SIX_MONTHLY_SYNC }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ "$JOB_STATUS" = "success" ]; then
+            curl -fsS --retry 3 "$HEALTHCHECKS_URL_SIX_MONTHLY_SYNC"
+          else
+            curl -fsS --retry 3 "$HEALTHCHECKS_URL_SIX_MONTHLY_SYNC/fail"
+          fi
+
       # NOT run here: the 4 MOHW imports that fetch from ltcpap.mohw.gov.tw /
       # www.opendata.mohw.gov.tw. Empirically confirmed unreachable from the
       # production host too (re-verified 2026-08-01 via direct SSH: both
