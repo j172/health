@@ -7,18 +7,15 @@
 #   ADMIN_SECRET=<x-rss-sync-admin-secret value> bash scripts/run-six-monthly-sync.sh
 #
 # What this does NOT cover:
-# - The MOHW long-term-care/health-check facility CSVs, the MOHW LTC
-#   contracted-service registry, and the MOHW disability/elder welfare
-#   institution directories (ltcpap.mohw.gov.tw / opendata.mohw.gov.tw —
-#   same mohw.gov.tw apex domain). Empirically confirmed unreachable from
-#   BOTH the production host and GitHub Actions runners (20s timeout, HTTP
-#   000, on all three hosts tested) — there's no automated path for these
-#   four, they can only be imported by running scripts/import-mohw-
-#   facilities.mjs, import-mohw-ltc-contracted.mjs, import-mohw-disability-
-#   welfare.mjs, and import-mohw-elder-welfare.mjs by hand from a regular
-#   residential/office network, every ~6 months. This script still handles
-#   the geocoding backfill for whichever of these were last imported that
-#   way (LTC contracted excepted — it ships its own lat/lng).
+# - The MOHW long-term-care GIS ecosystem CSVs, and the MOHW disability/elder
+#   welfare institution directories (ltcpgis.mohw.gov.tw / opendata.mohw.gov.tw).
+#   Empirically confirmed unreachable from BOTH the production host and GitHub
+#   Actions runners (timeout/IP block on server hosts) — they can be imported
+#   by running scripts/import-mohw-ltc-gis.mjs, import-mohw-disability-welfare.mjs,
+#   and import-mohw-elder-welfare.mjs by hand from a regular residential/office
+#   network, every ~6 months. This script still handles the geocoding backfill
+#   for whichever of these were last imported that way (LTC GIS already ships
+#   98%+ coordinates directly).
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-

@@ -3,6 +3,32 @@ import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import { coerceCoords } from "@/lib/server/db/coords";
 import { populateCoordinatesFromCache, triggerBackgroundGeocode } from "@/lib/server/facilities/autoGeocode";
+import type { FacilityPenaltyInfo } from "@/lib/server/facilities/sources/nhiPenalties";
+
+export interface FacilityEvaluation {
+  year: string;
+  result: string;
+  validUntil: string;
+  start?: string;
+  end?: string;
+}
+
+export interface FacilityExtraJson {
+  weeklyHours?: Record<string, string[]>;
+  weeklyHoursNote?: string;
+  penalty?: FacilityPenaltyInfo | Record<string, unknown>;
+  charityUrl?: string;
+  charityName?: string;
+  openBeds?: number | string | null;
+  currentResidents?: number | string | null;
+  emptySeats?: number | string | null;
+  abcLevel?: string | null;
+  evaluations?: FacilityEvaluation[];
+  respiteCodes?: string[];
+  serviceDistrict?: string | null;
+  serviceObject?: string | null;
+  [key: string]: unknown;
+}
 
 export interface FacilityRecord {
   facilityType: string;
@@ -16,7 +42,7 @@ export interface FacilityRecord {
   serviceItem: string | null;
   serviceTime: string | null;
   dataOrg: string | null;
-  extra?: Record<string, unknown>;
+  extra?: FacilityExtraJson;
 }
 
 export interface FacilityListItem {
@@ -31,7 +57,7 @@ export interface FacilityListItem {
   service_item: string | null;
   service_time: string | null;
   data_org: string | null;
-  extra_json: { weeklyHours?: Record<string, string[]> } | null;
+  extra_json: FacilityExtraJson | null;
   /**
    * Only selected on a GPS search (lat/lng supplied) — the Haversine distance the rows were ordered by.
    *
@@ -370,3 +396,14 @@ export const countFacilities = async (facilityType: string): Promise<number> =>
     const [rows] = await conn.query<RowDataPacket[]>("SELECT COUNT(*) AS total FROM facilities WHERE facility_type = ?", [facilityType]);
     return Number(rows[0]?.total ?? 0);
   });
+
+/**
+ * Deletes all facilities of a given facilityType (used when cleaning up an obsolete
+ * source or completing a full replacement).
+ */
+export const deleteFacilitiesByType = async (facilityType: string): Promise<number> =>
+  withConnection(async (conn) => {
+    const [result] = await conn.query("DELETE FROM facilities WHERE facility_type = ?", [facilityType]);
+    return (result as { affectedRows: number }).affectedRows;
+  });
+

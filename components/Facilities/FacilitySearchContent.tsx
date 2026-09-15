@@ -52,6 +52,20 @@ interface FacilityItem {
     charityUrl?: string;
     charityName?: string;
     penalty?: FacilityPenaltyInfo;
+    openBeds?: number | string | null;
+    currentResidents?: number | string | null;
+    emptySeats?: number | string | null;
+    abcLevel?: string | null;
+    evaluations?: Array<{
+      year: string;
+      result: string;
+      validUntil: string;
+      start?: string;
+      end?: string;
+    }>;
+    respiteCodes?: string[];
+    serviceDistrict?: string | null;
+    serviceObject?: string | null;
   } | null;
   /**
    * Only present on GPS searches — the Haversine distance the API sorted the list by.
@@ -388,10 +402,50 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                           <span className="text-[10px]">↗</span>
                         </a>
                       )}
+                      {f.extra_json?.abcLevel && (
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          f.extra_json.abcLevel === "A"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300"
+                            : f.extra_json.abcLevel === "B"
+                            ? "bg-teal-100 text-teal-800 dark:bg-teal-900/40 dark:text-teal-300"
+                            : "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                        }`}>
+                          {f.extra_json.abcLevel === "A" ? "A 級旗艦" : f.extra_json.abcLevel === "B" ? "B 級特約" : "C 級巷弄站"}
+                        </span>
+                      )}
+                      {f.extra_json?.emptySeats !== undefined && f.extra_json?.emptySeats !== null && (
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          f.extra_json.emptySeats === "滿床" || f.extra_json.emptySeats === 0
+                            ? "bg-neutral-100 text-neutral-600 dark:bg-slate-800 dark:text-slate-300"
+                            : "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300"
+                        }`}>
+                          <span>🛏️</span>
+                          <span>
+                            {f.extra_json.emptySeats === "滿床"
+                              ? "滿床"
+                              : `空床 ${f.extra_json.emptySeats} 床${f.extra_json.openBeds ? `（總 ${f.extra_json.openBeds} 床）` : ""}`}
+                          </span>
+                        </span>
+                      )}
+                      {f.extra_json?.evaluations && f.extra_json.evaluations.length > 0 && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300"
+                          title={f.extra_json.evaluations[0].validUntil ? `有效期限：${f.extra_json.evaluations[0].validUntil}` : undefined}
+                        >
+                          <span>🏅</span>
+                          <span>評鑑 {f.extra_json.evaluations[0].year ? `${f.extra_json.evaluations[0].year}年 ` : ""}{f.extra_json.evaluations[0].result}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                   {f.address && <p className="mt-1 text-sm text-neutral-600 dark:text-slate-300">{f.address}</p>}
                   {f.phone && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">📞 {f.phone}</p>}
+                  {f.extra_json?.serviceDistrict && (
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
+                      📍 服務區域：{f.extra_json.serviceDistrict}
+                      {f.extra_json.serviceObject ? ` ｜ 服務對象：${f.extra_json.serviceObject}` : ""}
+                    </p>
+                  )}
                   {typeof serviceItem === "object" && f.service_item && (
                     <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
                       {serviceItem.label}
