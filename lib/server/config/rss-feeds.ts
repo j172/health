@@ -85,6 +85,12 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "cdc",
   },
   {
+    code: "cdc_clarify",
+    name: "疾病管制署－澄清專區",
+    url: "https://www.cdc.gov.tw/RSS/RssXml/VYgwM0EtOqAhCmd0iJrhfg?type=4",
+    sourceName: "cdc",
+  },
+  {
     code: "tfda",
     name: "食品藥物管理署－本署公告",
     url: "https://www.fda.gov.tw/tc/rssAnnouncement.ashx",

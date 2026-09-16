@@ -40,6 +40,7 @@ import {
   fetchPchomeLiving,
 } from "@/lib/server/rss/fetchExpandedSources";
 import { fetchMocNews } from "@/lib/server/rss/fetchMocNews";
+import { fetchShihHsinNews } from "@/lib/server/rss/fetchShihHsinNews";
 import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
 import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
 import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
@@ -1009,6 +1010,15 @@ export const runRssIngestion = async (
             sourceName: "moc",
           },
           fetchFn: fetchMocNews,
+        },
+        {
+          meta: {
+            code: "shih_hsin" as FeedCode,
+            name: "世新大學",
+            url: "https://www.shu.edu.tw/Spotlight-List.aspx",
+            sourceName: "shih_hsin",
+          },
+          fetchFn: fetchShihHsinNews,
         },
       ];
 

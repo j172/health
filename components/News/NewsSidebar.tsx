@@ -33,29 +33,66 @@ export default function NewsSidebar({
 
   return (
     <aside className="space-y-6" aria-label="側邊資訊欄">
-      {/* 1. Instant Location Weather with SVG Icon (CWA O-A0001-001) */}
+      {/* 1. 所在位置即時天氣 (CWA O-A0001-001) */}
       <LocalWeatherSvgWidget />
 
-      {/* 2. Weather Alert Card Widget */}
+      {/* 2. 氣象災害特警報 */}
       <WeatherAlertSidebarWidget alerts={cwaAlerts} />
 
-      {/* 3. Instant UV Index Widget */}
-      <UvSidebarWidget />
+      {/* 3. 全台急診即時看板 */}
+      <ErStatusSidebarWidget />
 
-      {/* 4. Earthquake Card Widget */}
+      {/* 4. 有感地震即時速報 */}
       <EarthquakeSidebarWidget earthquakes={earthquakes} />
 
-      {/* 5. "Live conditions" group (unnamed in the reorder request — kept in
-         their prior relative order, moved as a block after Earthquake and
-         before Source Categories; see issue #129) */}
+      {/* 5. 空氣品質 AQI */}
       <AqiSidebarWidget />
-      <ErStatusSidebarWidget />
-      <WaterOutageSidebarWidget />
-      <CdcAlertSidebarWidget />
-      <PestAlertSidebarWidget />
+
+      {/* 6. 即時紫外線指數 */}
+      <UvSidebarWidget />
+
+      {/* 7. 中油油價預測 */}
       <CpcPriceSidebarWidget />
 
-      {/* 6. Source Categories Cloud (公衛與新聞來源) */}
+      {/* 8. 自來水即時停水通知 */}
+      <WaterOutageSidebarWidget />
+
+      {/* 9. 疾管署國際旅遊疫情 */}
+      <CdcAlertSidebarWidget />
+
+      {/* 10. 農業動植物疫情警報 */}
+      <PestAlertSidebarWidget />
+
+      {/* 11. 熱門焦點新聞 (依瀏覽量排序) */}
+      {trendingNews.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h3 className="mb-4 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
+          </h3>
+          <div className="space-y-4">
+            {trendingNews.slice(0, 10).map((item, idx) => (
+              <article key={item.id} className="group flex items-start gap-3">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                  {idx + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h4 className="line-clamp-2 text-xs leading-snug font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
+                    <Link href={`/news/${item.id}`}>
+                      {tDynamic(item.title)}
+                    </Link>
+                  </h4>
+                  <p className="mt-1 text-[11px] text-slate-600">
+                    {item.feed_name} ·{" "}
+                    {toTaipei(displayDate(item), "short")}
+                  </p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 12. 公衛與新聞來源標籤雲 */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-3.5 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {t("categories.sourcesHeading", "公衛與新聞來源")}
@@ -88,35 +125,6 @@ export default function NewsSidebar({
           ))}
         </div>
       </div>
-
-      {/* 7. Trending News List (by real view count — see getTopViewedNews) */}
-      {trendingNews.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <h3 className="mb-4 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
-          </h3>
-          <div className="space-y-4">
-            {trendingNews.slice(0, 10).map((item, idx) => (
-              <article key={item.id} className="group flex items-start gap-3">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                  {idx + 1}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h4 className="line-clamp-2 text-xs leading-snug font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
-                    <Link href={`/news/${item.id}`}>
-                      {tDynamic(item.title)}
-                    </Link>
-                  </h4>
-                  <p className="mt-1 text-[11px] text-slate-600">
-                    {item.feed_name} ·{" "}
-                    {toTaipei(displayDate(item), "short")}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      )}
     </aside>
   );
 }

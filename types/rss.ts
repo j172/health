@@ -122,6 +122,8 @@ export type FeedCode =
   | "motc_news"
   | "freeway_news"
   | "thb_news"
+  | "cdc_clarify"
+  | "shih_hsin"
   | (string & {});
 
 export interface FeedConfig {
