@@ -38,7 +38,9 @@
     "earthquakes": "即時全球地震",
     "uv": "紫外線指數 (UV)",
     "aqi": "空氣品質 (AQI)",
-    "facilities": "健保院所診所"
+    "facilities": "健保院所診所",
+    "er-status": "全台急診即時看板",
+    "aed": "全國公共場所 AED 急救地圖"
   },
   "common": {
     "language": "語言",

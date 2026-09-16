@@ -2620,6 +2620,88 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "er-status",
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    title: "全台急救責任醫院急診即時看板",
+    navLabel: "急診即時看板",
+    description:
+      "即時連線衛生福利部與全台各重度級、中度級急救責任醫院急診即時訊息，提供等待看診人數、等待推床人數、等待住院人數、等待加護病房 (ICU) 人數與 119 滿線暫停後送通報，並繪製 24 小時人潮波動趨勢圖提供錯峰就醫參考。",
+    directAnswer:
+      "本站即時彙整全台 200+ 家急救責任醫院急診數據，每 15 分鐘自動同步候診人數、推床數、加護病房空缺與 119 滿線通報，並提供近 24 小時走勢圖供民眾錯峰就診參考。",
+    scientificBasis: [
+      {
+        title: "緊急醫療救護法與急救責任醫院分級標準",
+        authority: "衛生福利部醫事司",
+        url: "https://dep.mohw.gov.tw/DOMA/",
+      },
+      {
+        title: "重度級急救責任醫院急診即時訊息通報規範",
+        authority: "衛生福利部中央健康保險署",
+        url: "https://info.nhi.gov.tw",
+      },
+    ],
+    relatedSlugs: ["clinics", "aed", "health-checks"],
+    faqs: [
+      {
+        question: "急診即時資訊多久更新一次？",
+        answer:
+          "本站資料每 15 分鐘自動同步衛福部健保署及各急救責任醫院最新通報資訊，反映現場等待看診、等待推床與住院人數。",
+      },
+      {
+        question: "什麼是「119 滿線通報」？",
+        answer:
+          "當醫院急診室處於極度壅塞、醫護人力與急救推床已滿載時，會向各縣市消防局 119 救護指揮中心通報滿線，請救護車將非即刻危及生命之傷患改送其他責任醫院分流。",
+      },
+      {
+        question: "什麼情況應該去急診？",
+        answer:
+          "急診依檢傷分類優先搶救生命垂危病患。若為持續高燒、嚴重胸痛、急性呼吸困難、意識不清、嚴重創傷等應立即就醫；若屬一般感冒輕微不適，建議白天至基層診所就醫，以獲得更充裕的診治時間並減輕急診壅塞。",
+      },
+    ],
+  },
+  {
+    slug: "aed",
+    group: "disaster-safety",
+    schemaType: "MedicalWebPage",
+    title: "全國公共場所 AED 急救地圖",
+    navLabel: "AED急救地圖",
+    description:
+      "即時查詢全國公共場所自動體外心臟電擊去顫器 (AED) 設置地點、詳細放置位置、開放使用時間與緊急管理聯絡電話，結合 GPS 定位爭取黃金 4 分鐘急救時間，支援動態營業時間鎖定。",
+    directAnswer:
+      "AED（自動體外心臟電擊去顫器）是搶救心因性休克的關鍵設備。本工具即時定位身邊最近的 AED，顯示詳細放置樓層位置（如服務台旁），並動態標註目前是否開放可立即取得。",
+    scientificBasis: [
+      {
+        title: "公共場所必要設置自動體外心臟電擊去顫器之場所規範",
+        authority: "衛生福利部醫事司",
+        url: "https://tw-aed.mohw.gov.tw/",
+      },
+      {
+        title: "心肺復甦術與自動體外心臟去顫器 (CPR+AED) 操作指引",
+        authority: "中華民國急救加護醫學會 / 台灣急診醫學會",
+        url: "https://www.sem.org.tw",
+      },
+    ],
+    relatedSlugs: ["er-status", "disaster-map", "clinics"],
+    faqs: [
+      {
+        question: "AED 是什麼？誰可以使用？",
+        answer:
+          "AED（Automated External Defibrillator）是專為非醫事人員設計的心臟電擊器。只要開啟電源，機具會自動語音導引「貼上貼片」、「離患者」、「按電擊鈕」，法律設有緊急救護免責保護（善良撒瑪利亞人原則），一般民眾均可大膽施救。",
+      },
+      {
+        question: "為什麼要過濾「目前開放中」？",
+        answer:
+          "部分 AED 設置於學校、機關大樓或特定運動場館內，在深夜或例假日會上鎖閉館。本工具能動態計算當下時間與營業時段，避免急救人員跑去上鎖場所撲空，爭取寶貴的黃金 4 分鐘。",
+      },
+      {
+        question: "AED 急救口訣是什麼？",
+        answer:
+          "急救口訣為「叫、叫、C、D」：叫（確認意識呼吸）、叫（指定旁人叫 119 與拿 AED）、C（CPR 持續胸外按壓）、D（Defibrillation 開啟 AED 遵從語音電擊）。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -2692,6 +2774,8 @@ const INDEXABLE_SLUGS = new Set([
   // Real content that happens to share a group with registry-lookup pages.
   "disaster-map",
   "dengue-mosquito-map",
+  "er-status",
+  "aed",
 ]);
 
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>

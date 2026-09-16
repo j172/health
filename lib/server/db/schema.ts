@@ -1520,6 +1520,54 @@ export const TABLE_DDL = {
       KEY idx_heritage_asset_geo (latitude, longitude)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  emergencyRoomStatus: `
+    CREATE TABLE IF NOT EXISTS emergency_room_status (
+      id INT NOT NULL AUTO_INCREMENT,
+      hospital_code VARCHAR(50) NOT NULL,
+      hospital_name VARCHAR(100) NOT NULL,
+      city_code VARCHAR(10) NOT NULL,
+      city_name VARCHAR(50) NOT NULL,
+      area_name VARCHAR(50) NULL,
+      address VARCHAR(255) NULL,
+      phone VARCHAR(50) NULL,
+      lat DECIMAL(10,7) NULL,
+      lng DECIMAL(10,7) NULL,
+      hospital_level VARCHAR(50) NOT NULL DEFAULT '重度級急救責任醫院',
+      waiting_consultation INT NOT NULL DEFAULT 0,
+      waiting_bed INT NOT NULL DEFAULT 0,
+      waiting_admission INT NOT NULL DEFAULT 0,
+      waiting_icu INT NOT NULL DEFAULT 0,
+      is_full_reported TINYINT(1) NOT NULL DEFAULT 0,
+      full_reported_note VARCHAR(255) NULL,
+      congestion_level VARCHAR(20) NOT NULL DEFAULT 'normal',
+      reported_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_er_hospital_code (hospital_code),
+      KEY idx_er_city (city_code),
+      KEY idx_er_congestion (congestion_level),
+      KEY idx_er_reported_at (reported_at),
+      KEY idx_er_geo (lat, lng)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  emergencyRoomLogs: `
+    CREATE TABLE IF NOT EXISTS emergency_room_logs (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      hospital_code VARCHAR(50) NOT NULL,
+      waiting_consultation INT NOT NULL DEFAULT 0,
+      waiting_bed INT NOT NULL DEFAULT 0,
+      waiting_admission INT NOT NULL DEFAULT 0,
+      waiting_icu INT NOT NULL DEFAULT 0,
+      is_full_reported TINYINT(1) NOT NULL DEFAULT 0,
+      congestion_level VARCHAR(20) NOT NULL DEFAULT 'normal',
+      reported_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      KEY idx_er_log_hospital_time (hospital_code, reported_at),
+      KEY idx_er_log_reported_at (reported_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

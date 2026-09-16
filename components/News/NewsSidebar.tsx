@@ -11,6 +11,7 @@ import EarthquakeSidebarWidget from "@/components/Tools/EarthquakeSidebarWidget"
 import LocalWeatherSvgWidget from "@/components/Tools/LocalWeatherSvgWidget";
 import WaterOutageSidebarWidget from "@/components/Tools/WaterOutageSidebarWidget";
 import CdcAlertSidebarWidget from "@/components/Tools/CdcAlertSidebarWidget";
+import ErStatusSidebarWidget from "@/components/Tools/ErStatusSidebarWidget";
 import PestAlertSidebarWidget from "@/components/Tools/PestAlertSidebarWidget";
 import CpcPriceSidebarWidget from "@/components/Tools/CpcPriceSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -48,6 +49,7 @@ export default function NewsSidebar({
          their prior relative order, moved as a block after Earthquake and
          before Source Categories; see issue #129) */}
       <AqiSidebarWidget />
+      <ErStatusSidebarWidget />
       <WaterOutageSidebarWidget />
       <CdcAlertSidebarWidget />
       <PestAlertSidebarWidget />
