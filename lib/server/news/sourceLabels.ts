@@ -95,6 +95,12 @@ const SOURCE_LABELS: Record<string, string> = {
   apatw: "社團法人中華民國保護動物協會",
   seinsights: "社企流",
   mygopen: "MyGoPen 查核中心",
+  gov_opendata: "政府開放資料",
+  moa: "農業部",
+  nfa: "內政部消防署",
+  motc: "交通部",
+  freeway: "交通部高速公路局",
+  thb: "交通部公路局",
 };
 
 export interface SourceLabelInput {

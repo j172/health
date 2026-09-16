@@ -2,7 +2,7 @@ import Link from "next/link";
 import LocalizedText from "@/components/ui/LocalizedText";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
-import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
+import { getSourceBadgeStyle, isGovSource } from "@/lib/server/news/sourceCategories";
 import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
 import CardThumb from "@/components/News/CardThumb";
 
@@ -77,6 +77,11 @@ export default function NewsCard({
             >
               {item.feed_name}
             </span>
+            {isGovSource(item.source_name) ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600/10 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                🏛️ 政府開放資料
+              </span>
+            ) : null}
             {item.location_name ? (
               <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
                 📍 {item.location_name}

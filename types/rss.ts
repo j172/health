@@ -115,8 +115,14 @@ export type FeedCode =
   | "ncl_fmevents"
   | "moc_news"
   | "apatw_news"
-  | "seinsights_news"
-  | "mygopen_news";
+  | "mygopen_news"
+  | "gov_opendata"
+  | "moa_news"
+  | "moi_nfa"
+  | "motc_news"
+  | "freeway_news"
+  | "thb_news"
+  | (string & {});
 
 export interface FeedConfig {
   code: FeedCode;

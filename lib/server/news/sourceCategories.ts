@@ -39,6 +39,12 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "sfaa", label: "衛生福利部社會及家庭署" },
       { sourceName: "ncl", label: "國家圖書館" },
       { sourceName: "moc", label: "文化部" },
+      { sourceName: "gov_opendata", label: "政府開放資料" },
+      { sourceName: "moa", label: "農業部" },
+      { sourceName: "nfa", label: "內政部消防署" },
+      { sourceName: "motc", label: "交通部" },
+      { sourceName: "freeway", label: "交通部高速公路局" },
+      { sourceName: "thb", label: "交通部公路局" },
     ],
   },
   {

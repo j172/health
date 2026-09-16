@@ -26,8 +26,13 @@ export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: 
       : { bg: "from-indigo-50 to-slate-100 dark:from-indigo-950/40 dark:to-slate-900", text: "text-indigo-600 dark:text-indigo-400" };
     return (
       <div className={`flex h-full w-full flex-col items-center justify-center bg-gradient-to-br ${theme.bg} p-4 text-center`}>
-        <span className={`text-sm font-bold tracking-wide ${theme.text}`}>{label}</span>
-        <span className="mt-1.5 text-[10px] font-medium tracking-wider text-slate-600 dark:text-slate-500 opacity-70">j172tw Healthz</span>
+        <div className="flex items-center gap-1.5">
+          {isGov ? <span className="text-base">🏛️</span> : null}
+          <span className={`text-sm font-bold tracking-wide ${theme.text}`}>{label}</span>
+        </div>
+        <span className="mt-1.5 text-[10px] font-medium tracking-wider text-slate-600 dark:text-slate-400 opacity-80">
+          {isGov ? "政府公開資訊 • 官方公報" : "j172tw Healthz"}
+        </span>
       </div>
     );
   }
