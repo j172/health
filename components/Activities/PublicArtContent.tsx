@@ -4,7 +4,8 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import type { PublicArtItem } from "@/app/api/culture/public-art/route";
-import { resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
+import { useGeolocation, resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -77,6 +78,7 @@ const TAIWAN_CITIES = [
 const FIELD_TYPES = ["全部場域", "交通建設", "教育機構", "休閒運動", "政府機關", "醫療院所", "其他場域"];
 
 export default function PublicArtContent() {
+  const geo = useGeolocation();
   const [items, setItems] = useState<PublicArtItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -346,18 +348,23 @@ export default function PublicArtContent() {
       </div>
 
       {/* Map View */}
-      {viewMode === "map" && !loading && (
-        <div className="h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
-          <FacilityMap
-            userLocation={{
-              lat: userGps?.lat ?? 25.0478,
-              lng: userGps?.lng ?? 121.517,
-              isDefault: !userGps,
-            }}
-            markers={mapMarkers}
-            showRadius={Boolean(userGps)}
-            radiusMeters={50000}
-          />
+      {viewMode === "map" && (
+        <div className="space-y-4">
+          <MapLocationBanner location={geo} facilityTypeName="公共藝術與演藝場所" />
+          {!loading && (
+            <div className="h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <FacilityMap
+                userLocation={{
+                  lat: userGps?.lat ?? geo.lat ?? 25.0478,
+                  lng: userGps?.lng ?? geo.lng ?? 121.517,
+                  isDefault: userGps ? false : geo.isDefault,
+                }}
+                markers={mapMarkers}
+                showRadius={Boolean(userGps || !geo.isDefault)}
+                radiusMeters={50000}
+              />
+            </div>
+          )}
         </div>
       )}
 

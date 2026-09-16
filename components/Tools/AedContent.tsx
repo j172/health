@@ -1,8 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
+
+const AedMapLeaflet = dynamic(() => import("@/components/Tools/AedMapLeaflet"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[380px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+      載入 AED 互動式地圖中…
+    </div>
+  ),
+});
 
 interface AedExtra {
   locationDesc?: string;
@@ -53,6 +64,7 @@ export default function AedContent({
   const geo = useGeolocation();
   const [facilities, setFacilities] = useState<FacilityListItem[]>(initialFacilities);
   const [loading, setLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [keyword, setKeyword] = useState("");
   const [onlyOpenNow, setOnlyOpenNow] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -60,6 +72,7 @@ export default function AedContent({
   const fetchAeds = useCallback(
     async (params: { kw?: string; lat?: number; lng?: number }) => {
       setLoading(true);
+      setIsExpanded(false);
       try {
         const query = new URLSearchParams();
         query.set("type", "aed");
@@ -74,9 +87,23 @@ export default function AedContent({
         const res = await fetch(`/api/facilities?${query.toString()}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.ok && Array.isArray(data.facilities)) {
-            setFacilities(data.facilities);
+          let list = Array.isArray(data.facilities) ? data.facilities : [];
+
+          // 若5km內無資料，自動放大半徑搜尋全區離使用者最近的AED，避免顯示空畫面
+          if (list.length === 0 && params.lat !== undefined && params.lng !== undefined && !params.kw) {
+            query.delete("radius");
+            query.set("sort", "distance");
+            const retryRes = await fetch(`/api/facilities?${query.toString()}`);
+            if (retryRes.ok) {
+              const retryData = await retryRes.json();
+              if (Array.isArray(retryData.facilities) && retryData.facilities.length > 0) {
+                list = retryData.facilities;
+                setIsExpanded(true);
+              }
+            }
           }
+
+          setFacilities(list);
         }
       } catch (err) {
         console.error("Failed to fetch AED facilities:", err);
@@ -127,7 +154,7 @@ export default function AedContent({
   }, [processedFacilities]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* 1. 緊急救命置頂宣導條 */}
       <div className="rounded-2xl border-2 border-red-500 bg-red-50 p-5 shadow-md dark:border-red-600 dark:bg-red-950/40">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -155,7 +182,29 @@ export default function AedContent({
         </div>
       </div>
 
-      {/* 2. 黃金 4 分鐘 - 距離您最近的 3 台 AED */}
+      {/* 2. 地圖定位權限與狀態指引條 */}
+      <MapLocationBanner location={geo} facilityTypeName="AED 設備" />
+
+      {/* 3. 互動式 AED 設施地圖 */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+          <span className="font-bold flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
+            <span>🗺️</span>
+            <span>全國公共場所 AED 即時地圖</span>
+            {isExpanded && (
+              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                周邊5km無設備，已自動擴大範圍
+              </span>
+            )}
+          </span>
+          <span>標示半徑 5km 搜尋範圍與詳細放置位置</span>
+        </div>
+        <div className="h-[380px] sm:h-[440px] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800">
+          <AedMapLeaflet facilities={processedFacilities} userLocation={geo} radiusMeters={5000} />
+        </div>
+      </div>
+
+      {/* 4. 黃金 4 分鐘 - 距離您最近的 3 台 AED */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-slate-100">

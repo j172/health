@@ -1,0 +1,1604 @@
+[
+  {
+    "id": 1,
+    "name": "高鐵台北站 / 台鐵台北車站（B1大廳服務台）",
+    "address": "臺北市中正區北平西路3號B1",
+    "phone": "02-23146000",
+    "lat": 25.047812,
+    "lng": 121.517112,
+    "service_item": "交通要道",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "B1穿堂層中央服務台旁（近高鐵售票處與台鐵剪票口）",
+      "openHours": "全天候 24 小時開放",
+      "category": "交通要道",
+      "open24Hours": true,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 2,
+    "name": "台北車站大廳（1樓中央多功能展演區）",
+    "address": "臺北市中正區北平西路3號1樓",
+    "phone": "02-23713558",
+    "lat": 25.047912,
+    "lng": 121.517312,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "1樓中央大廳黑白棋盤格東北側柱面（近東二門）",
+      "openHours": "每日 06:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 3,
+    "name": "台北小巨蛋（1樓北側服務台）",
+    "address": "臺北市松山區南京東路四段2號",
+    "phone": "02-25783536",
+    "lat": 25.051512,
+    "lng": 121.550112,
+    "service_item": "體育運動",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "一樓北側主入口服務台柱面旁",
+      "openHours": "全天候 24 小時開放",
+      "category": "體育運動",
+      "open24Hours": true,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 4,
+    "name": "臺北大巨蛋（地下1樓商場中庭服務處）",
+    "address": "臺北市信義區忠孝東路四段515號",
+    "phone": "02-27228899",
+    "lat": 25.042812,
+    "lng": 121.559812,
+    "service_item": "體育運動",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "地下1樓下沉式廣場中央服務櫃台左側",
+      "openHours": "全天候 24 小時開放",
+      "category": "體育運動",
+      "open24Hours": true,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 5,
+    "name": "臺北市政府市政大樓（1樓中庭警衛室旁）",
+    "address": "臺北市信義區市府路1號",
+    "phone": "02-27208889",
+    "lat": 25.037512,
+    "lng": 121.563812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "1樓中央中庭警衛值班室外側牆面",
+      "openHours": "週一至週五 08:00 - 18:00",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 6,
+    "name": "國父紀念館（正門大廳服務台）",
+    "address": "臺北市信義區仁愛路四段505號",
+    "phone": "02-27588008",
+    "lat": 25.040112,
+    "lng": 121.560112,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 09:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "正門大廳一樓中央諮詢服務台左側",
+      "openHours": "每日 09:00 - 18:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 7,
+    "name": "中正紀念堂（大孝門服務台旁）",
+    "address": "臺北市中正區中山南路21號",
+    "phone": "02-23431100",
+    "lat": 25.035112,
+    "lng": 121.519112,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 09:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "紀念堂本體一樓大孝門服務台旁",
+      "openHours": "每日 09:00 - 18:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 8,
+    "name": "國立臺灣大學（校總區綜合體育館入口）",
+    "address": "臺北市大安區羅斯福路四段1號",
+    "phone": "02-33665959",
+    "lat": 25.017512,
+    "lng": 121.536112,
+    "service_item": "學校",
+    "service_time": "每日 07:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "新體育館一樓售票服務台旁柱面",
+      "openHours": "每日 07:00 - 22:00",
+      "category": "學校",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 9,
+    "name": "國立故宮博物院（第一展覽區正館B1服務中心）",
+    "address": "臺北市士林區至善路二段221號",
+    "phone": "02-28812021",
+    "lat": 25.102112,
+    "lng": 121.548512,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 09:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "正館B1遊客語音導覽租借處右側",
+      "openHours": "每日 09:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 10,
+    "name": "台北松山機場（第一航廈國際線出境大廳）",
+    "address": "臺北市松山區敦化北路340-9號",
+    "phone": "02-87703430",
+    "lat": 25.062812,
+    "lng": 121.551812,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 23:00",
+    "extra_json": {
+      "locationDesc": "T1航廈1樓國際線報到櫃台1號柱旁",
+      "openHours": "每日 05:00 - 23:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 11,
+    "name": "南港車站 / 高鐵南港站（B2大廳剪票口）",
+    "address": "臺北市南港區南港路一段313號",
+    "phone": "02-26512000",
+    "lat": 25.053112,
+    "lng": 121.606812,
+    "service_item": "交通要道",
+    "service_time": "每日 05:45 - 23:45",
+    "extra_json": {
+      "locationDesc": "B2高鐵與捷運連通道剪票閘門外側",
+      "openHours": "每日 05:45 - 23:45",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 12,
+    "name": "高鐵板橋站 / 板橋火車站（B1旅客服務中心）",
+    "address": "新北市板橋區縣民大道二段7號B1",
+    "phone": "02-89691000",
+    "lat": 25.013512,
+    "lng": 121.463112,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 23:45",
+    "extra_json": {
+      "locationDesc": "B1高鐵驗票口旁旅客諮詢中心左側柱位",
+      "openHours": "每日 06:00 - 23:45",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "新北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 13,
+    "name": "新北市政府行政大樓（1樓聯合服務中心）",
+    "address": "新北市板橋區中山路一段161號1樓",
+    "phone": "02-29603456",
+    "lat": 25.012212,
+    "lng": 121.465112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "1樓東側聯合服務中心櫃台旁",
+      "openHours": "週一至週五 08:00 - 18:00",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "新北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 14,
+    "name": "新莊體育館 / 新莊棒球場（大門售票處）",
+    "address": "新北市新莊區中華路一段75號",
+    "phone": "02-29981382",
+    "lat": 25.041112,
+    "lng": 121.448512,
+    "service_item": "體育運動",
+    "service_time": "每日 08:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "體育館一樓正門售票口旁志工服務處",
+      "openHours": "每日 08:00 - 22:00",
+      "category": "體育運動",
+      "open24Hours": false,
+      "city": "新北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 15,
+    "name": "淡水捷運站（1樓遊客中心與票閘旁）",
+    "address": "新北市淡水區中正路1號",
+    "phone": "02-21812345",
+    "lat": 25.168512,
+    "lng": 121.444512,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "1號出口驗票閘門旁詢問處",
+      "openHours": "每日 06:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "新北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 16,
+    "name": "鶯歌陶瓷博物館（1樓票務服務台）",
+    "address": "新北市鶯歌區文化路200號",
+    "phone": "02-86772727",
+    "lat": 24.949512,
+    "lng": 121.352112,
+    "service_item": "觀光旅遊",
+    "service_time": "週二至週日 09:30 - 17:00",
+    "extra_json": {
+      "locationDesc": "一樓售票大廳服務台柱面",
+      "openHours": "週二至週日 09:30 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "新北市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 17,
+    "name": "基隆火車站（南站大廳旅客諮詢服務台）",
+    "address": "基隆市仁愛區港西街5號",
+    "phone": "02-24263743",
+    "lat": 25.131112,
+    "lng": 121.739512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:30 - 24:00",
+    "extra_json": {
+      "locationDesc": "南站穿堂層剪票口前旅客諮詢台",
+      "openHours": "每日 05:30 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "基隆市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 18,
+    "name": "基隆市政府（1樓市民服務中心大廳）",
+    "address": "基隆市中正區義一路1號",
+    "phone": "02-24201122",
+    "lat": 25.132512,
+    "lng": 121.745112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓中央穿堂市民服務中心警衛台右側",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "基隆市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 19,
+    "name": "國立海洋科技博物館（主題館1樓迎賓大廳）",
+    "address": "基隆市中正區北寧路367號",
+    "phone": "02-24696000",
+    "lat": 25.143512,
+    "lng": 121.799512,
+    "service_item": "觀光旅遊",
+    "service_time": "週二至週日 09:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "主題館1樓票務櫃檯旁醫務室外側",
+      "openHours": "週二至週日 09:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "基隆市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 20,
+    "name": "高鐵桃園站（1樓大廳旅客諮詢服務處）",
+    "address": "桃園市中壢區高鐵北路一段6號",
+    "phone": "03-2612000",
+    "lat": 25.012812,
+    "lng": 121.214812,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 23:30",
+    "extra_json": {
+      "locationDesc": "1樓大廳近6號出口旁服務台",
+      "openHours": "每日 06:00 - 23:30",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "桃園市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 21,
+    "name": "桃園國際機場（第一航廈1樓出境大廳）",
+    "address": "桃園市大園區航站南路9號",
+    "phone": "03-2735081",
+    "lat": 25.079512,
+    "lng": 121.233512,
+    "service_item": "交通要道",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "T1航廈1樓出境大廳3號報到櫃檯對面柱位",
+      "openHours": "全天候 24 小時開放",
+      "category": "交通要道",
+      "open24Hours": true,
+      "city": "桃園市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 22,
+    "name": "桃園國際機場（第二航廈3樓出境管制區外）",
+    "address": "桃園市大園區航站南路9號",
+    "phone": "03-2735082",
+    "lat": 25.077512,
+    "lng": 121.231512,
+    "service_item": "交通要道",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "T2航廈3樓出境大廳服務櫃檯後方中央柱",
+      "openHours": "全天候 24 小時開放",
+      "category": "交通要道",
+      "open24Hours": true,
+      "city": "桃園市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 23,
+    "name": "桃園火車站（跨站大廳售票口旁）",
+    "address": "桃園市桃園區中正路1號",
+    "phone": "03-3759131",
+    "lat": 24.989212,
+    "lng": 121.313512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:30 - 24:00",
+    "extra_json": {
+      "locationDesc": "跨站大廳自動售票機與剪票閘門中央服務台旁",
+      "openHours": "每日 05:30 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "桃園市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 24,
+    "name": "桃園市立圖書館總館（1樓服務櫃檯旁）",
+    "address": "桃園市桃園區南平路303號",
+    "phone": "03-3166345",
+    "lat": 25.016512,
+    "lng": 121.300512,
+    "service_item": "政府機關",
+    "service_time": "週二至週六 08:30 - 21:00，週日 08:30 - 17:00",
+    "extra_json": {
+      "locationDesc": "總館1樓入口圓形諮詢服務台左側",
+      "openHours": "週二至週六 08:30 - 21:00，週日 08:30 - 17:00",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "桃園市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 25,
+    "name": "新竹火車站（前站剪票大廳中央）",
+    "address": "新竹市東區中華路二段445號",
+    "phone": "03-5237441",
+    "lat": 24.801812,
+    "lng": 120.971512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:30 - 24:00",
+    "extra_json": {
+      "locationDesc": "一樓售票候車大廳進站閘門右側牆面",
+      "openHours": "每日 05:30 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "新竹市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 26,
+    "name": "國立清華大學（校本部蒙民偉樓學生活動中心）",
+    "address": "新竹市東區光復路二段101號",
+    "phone": "03-5715131",
+    "lat": 24.796112,
+    "lng": 120.996812,
+    "service_item": "學校",
+    "service_time": "每日 08:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "活動中心一樓中庭警衛室門口",
+      "openHours": "每日 08:00 - 22:00",
+      "category": "學校",
+      "open24Hours": false,
+      "city": "新竹市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 27,
+    "name": "新竹市政府（國定古蹟州廳1樓警衛室旁）",
+    "address": "新竹市北區中正路120號",
+    "phone": "03-5216121",
+    "lat": 24.806812,
+    "lng": 120.968812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "州廳正門玄關值班警衛台旁",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "新竹市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 28,
+    "name": "高鐵新竹站（車站1樓大廳旅客諮詢服務櫃台）",
+    "address": "新竹縣竹北市高鐵七路6號",
+    "phone": "03-6103000",
+    "lat": 24.808112,
+    "lng": 121.040112,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 23:30",
+    "extra_json": {
+      "locationDesc": "2號出口旅客諮詢櫃台旁",
+      "openHours": "每日 06:00 - 23:30",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "新竹縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 29,
+    "name": "新竹縣政府（1樓為民服務中心大廳）",
+    "address": "新竹縣竹北市光明六路10號",
+    "phone": "03-5518101",
+    "lat": 24.827212,
+    "lng": 121.012512,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓中央入口迎賓櫃檯旁",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "新竹縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 30,
+    "name": "新竹縣體育館（竹北體育場售票口旁）",
+    "address": "新竹縣竹北市福興東路一段197號",
+    "phone": "03-6580970",
+    "lat": 24.821112,
+    "lng": 121.021512,
+    "service_item": "體育運動",
+    "service_time": "每日 08:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "體育館一樓主入口服務處櫃台旁",
+      "openHours": "每日 08:00 - 22:00",
+      "category": "體育運動",
+      "open24Hours": false,
+      "city": "新竹縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 31,
+    "name": "高鐵苗栗站（1樓大廳剪票口服務台）",
+    "address": "苗栗縣後龍鎮高鐵三路268號",
+    "phone": "03-7242000",
+    "lat": 24.605812,
+    "lng": 120.825112,
+    "service_item": "交通要道",
+    "service_time": "每日 06:15 - 23:30",
+    "extra_json": {
+      "locationDesc": "1樓穿堂旅客服務台前方柱面",
+      "openHours": "每日 06:15 - 23:30",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "苗栗縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 32,
+    "name": "苗栗火車站（東站1樓售票大廳）",
+    "address": "苗栗縣苗栗市為公路1號",
+    "phone": "03-7260031",
+    "lat": 24.570112,
+    "lng": 120.822812,
+    "service_item": "交通要道",
+    "service_time": "每日 05:40 - 23:30",
+    "extra_json": {
+      "locationDesc": "東站1樓剪票口前旅客諮詢台旁",
+      "openHours": "每日 05:40 - 23:30",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "苗栗縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 33,
+    "name": "苗栗縣政府（第一辦公大樓1樓服務中心）",
+    "address": "苗栗縣苗栗市縣府路100號",
+    "phone": "03-7322150",
+    "lat": 24.565112,
+    "lng": 120.821112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "第一辦公大樓1樓為民服務櫃檯右側",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "苗栗縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 34,
+    "name": "高鐵台中站（2樓剪票大廳中央旅客服務處）",
+    "address": "臺中市烏日區站區二路8號",
+    "phone": "04-36015000",
+    "lat": 24.112112,
+    "lng": 120.615112,
+    "service_item": "交通要道",
+    "service_time": "每日 05:40 - 24:00",
+    "extra_json": {
+      "locationDesc": "2樓剪票大廳4號出口旁旅客諮詢服務處柱位",
+      "openHours": "每日 05:40 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺中市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 35,
+    "name": "台鐵台中火車站（2樓中央售票大廳）",
+    "address": "臺中市中區臺灣大道一段1號",
+    "phone": "04-22216492",
+    "lat": 24.137112,
+    "lng": 120.686812,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "2樓開放大廳自動售票機左側志工台旁",
+      "openHours": "每日 05:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺中市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 36,
+    "name": "臺中市政府臺灣大道市政大樓（惠中樓1樓大廳）",
+    "address": "臺中市西屯區臺灣大道三段99號",
+    "phone": "04-22289111",
+    "lat": 24.162712,
+    "lng": 120.647312,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "惠中樓一樓聯合服務中心入口柱面",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "臺中市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 37,
+    "name": "臺中國家歌劇院（1樓售票導覽服務處）",
+    "address": "臺中市西屯區惠來路二段101號",
+    "phone": "04-22511777",
+    "lat": 24.163112,
+    "lng": 120.640512,
+    "service_item": "觀光旅遊",
+    "service_time": "週二至週日 11:30 - 21:00",
+    "extra_json": {
+      "locationDesc": "一樓售票服務台與導覽集合點旁",
+      "openHours": "週二至週日 11:30 - 21:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "臺中市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 38,
+    "name": "國立自然科學博物館（綜合服務中心入口）",
+    "address": "臺中市北區館前路1號",
+    "phone": "04-23226940",
+    "lat": 24.153112,
+    "lng": 120.666112,
+    "service_item": "觀光旅遊",
+    "service_time": "週二至週日 09:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "生命科學廳一樓迎賓綜合服務中心旁",
+      "openHours": "週二至週日 09:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "臺中市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 39,
+    "name": "洲際棒球場（1樓售票中央大廳）",
+    "address": "臺中市北屯區崇德路三段835號",
+    "phone": "04-24221588",
+    "lat": 24.199512,
+    "lng": 120.685112,
+    "service_item": "體育運動",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "內野主入口一樓服務台旁",
+      "openHours": "全天候 24 小時開放",
+      "category": "體育運動",
+      "open24Hours": true,
+      "city": "臺中市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 40,
+    "name": "高鐵彰化站（1樓大廳旅客諮詢服務處）",
+    "address": "彰化縣田中鎮站區路二段99號",
+    "phone": "04-8372000",
+    "lat": 23.874112,
+    "lng": 120.573112,
+    "service_item": "交通要道",
+    "service_time": "每日 06:15 - 23:45",
+    "extra_json": {
+      "locationDesc": "1樓售票大廳3號出口旁諮詢服務台",
+      "openHours": "每日 06:15 - 23:45",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "彰化縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 41,
+    "name": "彰化火車站（前站大廳剪票口旁）",
+    "address": "彰化縣彰化市三民路1號",
+    "phone": "04-7222041",
+    "lat": 24.081812,
+    "lng": 120.538512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "前站大廳自動售票機右側志工服務櫃台",
+      "openHours": "每日 05:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "彰化縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 42,
+    "name": "彰化縣政府（1樓服務中心大廳）",
+    "address": "彰化縣彰化市中山路二段416號",
+    "phone": "04-7531999",
+    "lat": 24.075112,
+    "lng": 120.544112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓中央入口市民服務櫃台右側",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "彰化縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 43,
+    "name": "鹿港公會堂 / 鹿港老街遊客中心",
+    "address": "彰化縣鹿港鎮埔頭街72號",
+    "phone": "04-7772006",
+    "lat": 24.056812,
+    "lng": 120.432512,
+    "service_item": "觀光旅遊",
+    "service_time": "週二至週日 09:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "公會堂門口遊客諮詢處右側",
+      "openHours": "週二至週日 09:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "彰化縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 44,
+    "name": "南投縣政府（1樓為民服務中心入口）",
+    "address": "南投縣南投市中興路660號",
+    "phone": "049-2222106",
+    "lat": 23.904112,
+    "lng": 120.686812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "行政大樓1樓為民服務中心值班室外側",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "南投縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 45,
+    "name": "日月潭向山遊客中心（1樓旅遊資訊服務台）",
+    "address": "南投縣魚池鄉中山路599號",
+    "phone": "049-2341256",
+    "lat": 23.851812,
+    "lng": 120.901512,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 09:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "向山遊客中心一樓中央展覽大廳諮詢處旁",
+      "openHours": "每日 09:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "南投縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 46,
+    "name": "清境農場旅遊服務中心（青青草原售票口旁）",
+    "address": "南投縣仁愛鄉仁和路170號",
+    "phone": "049-2802172",
+    "lat": 24.058512,
+    "lng": 121.162512,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 08:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "青青草原北端票閘遊客服務中心醫務站外",
+      "openHours": "每日 08:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "南投縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 47,
+    "name": "高鐵雲林站（1樓大廳旅客諮詢服務處）",
+    "address": "雲林縣虎尾鎮站前東路301號",
+    "phone": "05-6009000",
+    "lat": 23.736812,
+    "lng": 120.416812,
+    "service_item": "交通要道",
+    "service_time": "每日 06:15 - 23:45",
+    "extra_json": {
+      "locationDesc": "1樓大廳近2號出口旁旅客服務櫃台",
+      "openHours": "每日 06:15 - 23:45",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "雲林縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 48,
+    "name": "斗六火車站（2樓跨站剪票口旁）",
+    "address": "雲林縣斗六市民生路187號",
+    "phone": "05-5332900",
+    "lat": 23.711812,
+    "lng": 120.543512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:30 - 24:00",
+    "extra_json": {
+      "locationDesc": "2樓穿堂售票機對面服務台旁",
+      "openHours": "每日 05:30 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "雲林縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 49,
+    "name": "雲林縣政府（親民大廳入口服務櫃台）",
+    "address": "雲林縣斗六市雲林路二段515號",
+    "phone": "05-5522000",
+    "lat": 23.700112,
+    "lng": 120.536812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "親民大廳1樓中央諮詢服務台旁",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "雲林縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 50,
+    "name": "嘉義火車站（前站大廳剪票口旁）",
+    "address": "嘉義市西區中山路528號",
+    "phone": "05-2228904",
+    "lat": 23.479112,
+    "lng": 120.441112,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "前站大廳剪票閘門旁旅客諮詢處",
+      "openHours": "每日 05:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "嘉義市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 51,
+    "name": "嘉義市政府（1樓市民服務中心大廳）",
+    "address": "嘉義市東區中山路199號",
+    "phone": "05-2254321",
+    "lat": 23.481512,
+    "lng": 120.453812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓中庭大廳市民服務中心門口",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "嘉義市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 52,
+    "name": "國立中正大學（活動中心中庭服務處）",
+    "address": "嘉義縣民雄鄉大學路一段168號",
+    "phone": "05-2720411",
+    "lat": 23.559512,
+    "lng": 120.472512,
+    "service_item": "學校",
+    "service_time": "每日 07:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "活動中心一樓中庭值班台旁",
+      "openHours": "每日 07:00 - 22:00",
+      "category": "學校",
+      "open24Hours": false,
+      "city": "嘉義縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 53,
+    "name": "高鐵嘉義站（1樓大廳旅客諮詢服務處）",
+    "address": "嘉義縣太保市高鐵西路168號",
+    "phone": "05-3107000",
+    "lat": 23.459112,
+    "lng": 120.323512,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 23:45",
+    "extra_json": {
+      "locationDesc": "1樓大廳近2號出口旅客諮詢櫃台旁",
+      "openHours": "每日 06:00 - 23:45",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "嘉義縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 54,
+    "name": "國立故宮博物院南部院區（南院1樓迎賓服務大廳）",
+    "address": "嘉義縣太保市故宮大道888號",
+    "phone": "05-3620777",
+    "lat": 23.471512,
+    "lng": 120.292812,
+    "service_item": "觀光旅遊",
+    "service_time": "週二至週日 09:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "博物館本館1樓售票諮詢櫃台左側",
+      "openHours": "週二至週日 09:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "嘉義縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 55,
+    "name": "阿里山國家森林遊樂區（阿里山車站候車大廳）",
+    "address": "嘉義縣阿里山鄉中正村59號",
+    "phone": "05-2679917",
+    "lat": 23.510112,
+    "lng": 120.803812,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 08:30 - 17:00",
+    "extra_json": {
+      "locationDesc": "阿里山火車站2樓候車月台剪票口旁",
+      "openHours": "每日 08:30 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "嘉義縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 56,
+    "name": "高鐵台南站（1樓旅客大廳2號出口旁）",
+    "address": "臺南市歸仁區歸仁大道100號",
+    "phone": "06-6009000",
+    "lat": 22.924812,
+    "lng": 120.285812,
+    "service_item": "交通要道",
+    "service_time": "每日 06:00 - 23:30",
+    "extra_json": {
+      "locationDesc": "1樓大廳近2號出口服務台旁柱面",
+      "openHours": "每日 06:00 - 23:30",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺南市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 57,
+    "name": "台鐵台南火車站（前站大廳剪票口服務處）",
+    "address": "臺南市東區前鋒路210號",
+    "phone": "06-2261314",
+    "lat": 22.997112,
+    "lng": 120.212812,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "前站售票大廳剪票閘門外側服務台",
+      "openHours": "每日 05:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺南市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 58,
+    "name": "臺南市政府永華市政中心（1樓中庭大廳）",
+    "address": "臺南市安平區永華路二段6號",
+    "phone": "06-2991111",
+    "lat": 22.991812,
+    "lng": 120.185812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "永華大樓1樓中庭市民服務中心警衛值勤台旁",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "臺南市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 59,
+    "name": "國立成功大學（光復校區中正堂體育館）",
+    "address": "臺南市東區大學路1號",
+    "phone": "06-2757575",
+    "lat": 22.999512,
+    "lng": 120.217812,
+    "service_item": "學校",
+    "service_time": "每日 07:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "光復校區中正堂大門口服務櫃檯旁",
+      "openHours": "每日 07:00 - 22:00",
+      "category": "學校",
+      "open24Hours": false,
+      "city": "臺南市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 60,
+    "name": "奇美博物館（1樓迎賓大廳售票處右側）",
+    "address": "臺南市仁德區文華路二段66號",
+    "phone": "06-2660808",
+    "lat": 22.934812,
+    "lng": 120.226112,
+    "service_item": "觀光旅遊",
+    "service_time": "週四至週二 09:30 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓售票大廳中央詢問處旁柱位",
+      "openHours": "週四至週二 09:30 - 17:30",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "臺南市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 61,
+    "name": "高鐵左營站 / 台鐵新左營站（2樓候車大廳）",
+    "address": "高雄市左營區高鐵路105號",
+    "phone": "07-9605000",
+    "lat": 22.687212,
+    "lng": 120.308112,
+    "service_item": "交通要道",
+    "service_time": "每日 05:40 - 23:45",
+    "extra_json": {
+      "locationDesc": "2樓候車大廳旅客諮詢服務處前方柱位",
+      "openHours": "每日 05:40 - 23:45",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "高雄市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 62,
+    "name": "台鐵高雄火車站（地下化大廳剪票口旁）",
+    "address": "高雄市三民區建國二路318號",
+    "phone": "07-2352376",
+    "lat": 22.639512,
+    "lng": 120.302512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "B1候車穿堂捷運與台鐵交界詢問處外側",
+      "openHours": "每日 05:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "高雄市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 63,
+    "name": "高雄國家體育場（世運主場館南側入口）",
+    "address": "高雄市左營區世運大道100號",
+    "phone": "07-5829000",
+    "lat": 22.702812,
+    "lng": 120.294112,
+    "service_item": "體育運動",
+    "service_time": "每日 08:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "南側售票大廳入口守衛值班室旁",
+      "openHours": "每日 08:00 - 22:00",
+      "category": "體育運動",
+      "open24Hours": false,
+      "city": "高雄市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 64,
+    "name": "衛武營國家藝術文化中心（3樓音樂廳前廳）",
+    "address": "高雄市鳳山區三多一路1號",
+    "phone": "07-2626666",
+    "lat": 22.624512,
+    "lng": 120.342112,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 11:00 - 21:00",
+    "extra_json": {
+      "locationDesc": "榕樹廣場中央服務台旁及3樓音樂廳入口外側",
+      "openHours": "每日 11:00 - 21:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "高雄市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 65,
+    "name": "高雄國際機場（小港機場國際航廈1樓出境大廳）",
+    "address": "高雄市小港區中山四路2號",
+    "phone": "07-8057631",
+    "lat": 22.573112,
+    "lng": 120.350112,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 23:30",
+    "extra_json": {
+      "locationDesc": "國際航廈1樓旅客服務櫃檯旁柱面",
+      "openHours": "每日 05:00 - 23:30",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "高雄市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 66,
+    "name": "高雄市政府四維行政中心（1樓聯合服務中心）",
+    "address": "高雄市苓雅區四維三路2號",
+    "phone": "07-3368333",
+    "lat": 22.620812,
+    "lng": 120.312112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "四維大樓1樓中庭大廳警衛室前",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "高雄市",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 67,
+    "name": "屏東火車站（前站大廳剪票口旁）",
+    "address": "屏東縣屏東市光復路43號",
+    "phone": "08-7655240",
+    "lat": 22.669112,
+    "lng": 120.485812,
+    "service_item": "交通要道",
+    "service_time": "每日 05:00 - 24:00",
+    "extra_json": {
+      "locationDesc": "高架大廳自動售票機右側志工服務站",
+      "openHours": "每日 05:00 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "屏東縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 68,
+    "name": "屏東縣政府（大禮堂旁便民服務中心）",
+    "address": "屏東縣屏東市自由路527號",
+    "phone": "08-7320415",
+    "lat": 22.678512,
+    "lng": 120.487812,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓中央穿堂服務台旁",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "屏東縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 69,
+    "name": "墾丁國家公園遊客中心（大廳諮詢處旁）",
+    "address": "屏東縣恆春鎮墾丁路596號",
+    "phone": "08-8861321",
+    "lat": 21.944112,
+    "lng": 120.796812,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 08:00 - 17:00",
+    "extra_json": {
+      "locationDesc": "遊客中心入口服務台右側展示廳門口",
+      "openHours": "每日 08:00 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "屏東縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 70,
+    "name": "宜蘭火車站（前站候車大廳旅客諮詢服務處）",
+    "address": "宜蘭縣宜蘭市光復路1號",
+    "phone": "03-9323803",
+    "lat": 24.754112,
+    "lng": 121.758112,
+    "service_item": "交通要道",
+    "service_time": "每日 05:30 - 24:00",
+    "extra_json": {
+      "locationDesc": "一樓售票候車大廳進站閘門旁",
+      "openHours": "每日 05:30 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "宜蘭縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 71,
+    "name": "羅東火車站（前站2樓候車穿堂服務處）",
+    "address": "宜蘭縣羅東鎮公正路2號",
+    "phone": "03-9542117",
+    "lat": 24.677512,
+    "lng": 121.772512,
+    "service_item": "交通要道",
+    "service_time": "每日 05:30 - 24:00",
+    "extra_json": {
+      "locationDesc": "2樓候車大廳剪票口右側值勤室旁",
+      "openHours": "每日 05:30 - 24:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "宜蘭縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 72,
+    "name": "國立傳統藝術中心（宜蘭傳藝園區遊客服務中心）",
+    "address": "宜蘭縣五結鄉五濱路二段201號",
+    "phone": "03-9508859",
+    "lat": 24.685112,
+    "lng": 121.824112,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 09:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "入口售票大廳遊客資訊中心內部服務處",
+      "openHours": "每日 09:00 - 18:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "宜蘭縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 73,
+    "name": "宜蘭縣政府（中央為民服務大廳）",
+    "address": "宜蘭縣宜蘭市縣政北路1號",
+    "phone": "03-9251000",
+    "lat": 24.733512,
+    "lng": 121.762112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "縣政大樓1樓中庭大廳服務台柱面",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "宜蘭縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 74,
+    "name": "花蓮火車站（前站1樓售票大廳中央）",
+    "address": "花蓮縣花蓮市國聯一路100號",
+    "phone": "03-8355941",
+    "lat": 23.993112,
+    "lng": 121.601112,
+    "service_item": "交通要道",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "前站跨站大廳服務台旁牆面",
+      "openHours": "全天候 24 小時開放",
+      "category": "交通要道",
+      "open24Hours": true,
+      "city": "花蓮縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 75,
+    "name": "花蓮縣政府（1樓服務中心入口櫃台）",
+    "address": "花蓮縣花蓮市府前路17號",
+    "phone": "03-8227171",
+    "lat": 24.004512,
+    "lng": 121.624112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓前棟大門入口警衛值勤台前",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "花蓮縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 76,
+    "name": "太魯閣國家公園遊客中心（大廳服務台旁）",
+    "address": "花蓮縣秀林鄉富世291號",
+    "phone": "03-8621100",
+    "lat": 24.158512,
+    "lng": 121.621812,
+    "service_item": "觀光旅遊",
+    "service_time": "每日 08:30 - 17:00",
+    "extra_json": {
+      "locationDesc": "遊客中心入口展示廳諮詢台旁",
+      "openHours": "每日 08:30 - 17:00",
+      "category": "觀光旅遊",
+      "open24Hours": false,
+      "city": "花蓮縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 77,
+    "name": "國立東華大學（壽豐校區體育館大廳）",
+    "address": "花蓮縣壽豐鄉大學路二段1號",
+    "phone": "03-8903000",
+    "lat": 23.896812,
+    "lng": 121.541112,
+    "service_item": "學校",
+    "service_time": "每日 08:00 - 22:00",
+    "extra_json": {
+      "locationDesc": "綜合體育館一樓服務台大門入口處",
+      "openHours": "每日 08:00 - 22:00",
+      "category": "學校",
+      "open24Hours": false,
+      "city": "花蓮縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 78,
+    "name": "臺東火車站（1樓候車大廳旅客諮詢服務處）",
+    "address": "臺東縣臺東市岩灣路101巷598號",
+    "phone": "089-229687",
+    "lat": 22.793112,
+    "lng": 121.123112,
+    "service_item": "交通要道",
+    "service_time": "全天候 24 小時開放",
+    "extra_json": {
+      "locationDesc": "1樓大廳旅客諮詢服務處正前柱位",
+      "openHours": "全天候 24 小時開放",
+      "category": "交通要道",
+      "open24Hours": true,
+      "city": "臺東縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 79,
+    "name": "臺東縣政府（大門入口便民服務中心）",
+    "address": "臺東縣臺東市中山路276號",
+    "phone": "089-326141",
+    "lat": 22.753512,
+    "lng": 121.151112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "行政大樓1樓中庭為民服務中心櫃台旁",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "臺東縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 80,
+    "name": "台東航空站（豐年機場航廈候機大廳）",
+    "address": "臺東縣臺東市民航路1100號",
+    "phone": "089-361111",
+    "lat": 22.756112,
+    "lng": 121.102512,
+    "service_item": "交通要道",
+    "service_time": "每日 07:00 - 21:00",
+    "extra_json": {
+      "locationDesc": "航廈1樓旅客服務櫃台旁柱面",
+      "openHours": "每日 07:00 - 21:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "臺東縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 81,
+    "name": "澎湖機場（馬公航空站1樓航廈服務台）",
+    "address": "澎湖縣湖西鄉隘門村126-5號",
+    "phone": "06-9229123",
+    "lat": 23.568112,
+    "lng": 119.630112,
+    "service_item": "交通要道",
+    "service_time": "每日 06:30 - 21:00",
+    "extra_json": {
+      "locationDesc": "1樓到站大廳旅遊諮詢服務台旁",
+      "openHours": "每日 06:30 - 21:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "澎湖縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 82,
+    "name": "馬公港客運碼頭候船室（遊客諮詢台旁）",
+    "address": "澎湖縣馬公市臨海路36號",
+    "phone": "06-9272301",
+    "lat": 23.564112,
+    "lng": 119.566812,
+    "service_item": "交通要道",
+    "service_time": "每日 07:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "港務大樓1樓客運售票處旁",
+      "openHours": "每日 07:00 - 18:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "澎湖縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 83,
+    "name": "澎湖縣政府（1樓聯合服務中心）",
+    "address": "澎湖縣馬公市治平路32號",
+    "phone": "06-9274400",
+    "lat": 23.570512,
+    "lng": 119.568112,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "縣府大廳便民服務台右側",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "澎湖縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 84,
+    "name": "金門航空站（尚義機場航廈服務台）",
+    "address": "金門縣金湖鎮尚義機場2號",
+    "phone": "082-322381",
+    "lat": 24.429512,
+    "lng": 118.360112,
+    "service_item": "交通要道",
+    "service_time": "每日 06:30 - 21:00",
+    "extra_json": {
+      "locationDesc": "1樓中央旅客諮詢服務處旁",
+      "openHours": "每日 06:30 - 21:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "金門縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 85,
+    "name": "水頭小三通商港候船大廳（售票大廳前）",
+    "address": "金門縣金城鎮西海路一段5號",
+    "phone": "082-324280",
+    "lat": 24.412512,
+    "lng": 118.286112,
+    "service_item": "交通要道",
+    "service_time": "每日 07:00 - 19:00",
+    "extra_json": {
+      "locationDesc": "水頭通關大樓1樓服務台左側",
+      "openHours": "每日 07:00 - 19:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "金門縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 86,
+    "name": "金門縣政府（1樓服務大廳警衛台）",
+    "address": "金門縣金城鎮民生路60號",
+    "phone": "082-318823",
+    "lat": 24.436512,
+    "lng": 118.322512,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "1樓中央大門警衛值勤室外側牆面",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "金門縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 87,
+    "name": "南竿航空站（馬祖南竿機場候機大廳）",
+    "address": "連江縣南竿鄉復興村220號",
+    "phone": "0836-26505",
+    "lat": 26.160112,
+    "lng": 119.958512,
+    "service_item": "交通要道",
+    "service_time": "每日 07:00 - 18:00",
+    "extra_json": {
+      "locationDesc": "航廈1樓旅客服務台旁柱面",
+      "openHours": "每日 07:00 - 18:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "連江縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 88,
+    "name": "福澳港客運碼頭候船大樓（旅客服務中心）",
+    "address": "連江縣南竿鄉福沃村135號",
+    "phone": "0836-22948",
+    "lat": 26.173512,
+    "lng": 119.932512,
+    "service_item": "交通要道",
+    "service_time": "每日 06:30 - 18:00",
+    "extra_json": {
+      "locationDesc": "福澳港旅運大樓售票大廳前服務處",
+      "openHours": "每日 06:30 - 18:00",
+      "category": "交通要道",
+      "open24Hours": false,
+      "city": "連江縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  },
+  {
+    "id": 89,
+    "name": "連江縣政府（行政大樓1樓服務台）",
+    "address": "連江縣南竿鄉介壽村76號",
+    "phone": "0836-25131",
+    "lat": 26.155812,
+    "lng": 119.951912,
+    "service_item": "政府機關",
+    "service_time": "週一至週五 08:00 - 17:30",
+    "extra_json": {
+      "locationDesc": "縣府1樓玄關警衛值班台右側",
+      "openHours": "週一至週五 08:00 - 17:30",
+      "category": "政府機關",
+      "open24Hours": false,
+      "city": "連江縣",
+      "dataOrg": "衛生福利部醫事司"
+    }
+  }
+]

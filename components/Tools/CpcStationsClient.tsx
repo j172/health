@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
 
 const CpcStationMap = dynamic(() => import("@/components/Tools/CpcStationMap"), {
@@ -210,6 +211,8 @@ export default function CpcStationsClient({
           </div>
         </div>
 
+        <MapLocationBanner location={geo} facilityTypeName="中油加油站" />
+
         {/* Search Input */}
         <div className="relative">
           <input
@@ -339,6 +342,7 @@ export default function CpcStationsClient({
           userLocation={userLocation}
           selectedStationId={selectedStationId}
           onSelectStation={(st) => setSelectedStationId(st.id)}
+          onRecenter={() => geo.refresh()}
         />
         <div className="mt-2 text-right text-[11px] text-slate-600">
           地圖預設標記前 150 筆符合條件站點 · 點擊圖標可展開導航與詳細服務

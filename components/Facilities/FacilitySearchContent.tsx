@@ -11,6 +11,8 @@ import { usePagination } from "@/lib/hooks/usePagination";
 import { FacilityPenaltyBadge, FacilityPenaltyAccordion } from "@/components/Facilities/FacilityPenaltySection";
 import type { FacilityPenaltyInfo } from "@/lib/server/facilities/sources/nhiPenalties";
 
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
+
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
 export type ServiceItemDisplay = "none" | "badge" | { label: string };
@@ -371,7 +373,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         )}
       </form>
 
-      {locationDefaultWarning && !keyword && location.isDefault && !location.loading && <p className="text-xs text-neutral-500 dark:text-slate-400">{locationDefaultWarning}</p>}
+      <MapLocationBanner location={location} facilityTypeName={title || "機構據點"} />
 
       {(loading || location.loading) && (
         <div className="flex justify-center py-8">

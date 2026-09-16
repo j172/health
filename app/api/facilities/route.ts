@@ -7,6 +7,8 @@ import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
 import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
 import contraceptionSeed from "@/data/contraception-map-seed.json";
 import cpcGasStationSeed from "@/data/facilities-seeds/cpc_gas_station.json";
+import aedSeed from "@/data/facilities-seeds/aed.json";
+import vetClinicSeedRaw from "@/data/facilities-seeds/vet_clinic.json";
 
 export const runtime = "nodejs";
 
@@ -18,14 +20,29 @@ interface SeedFacilityItem {
   lat: number | null;
   lng: number | null;
   service_item: string | null;
+  service_time?: string | null;
   extra_json?: any;
   distance_km?: number;
 }
+
+const vetClinicSeed: SeedFacilityItem[] = ((vetClinicSeedRaw as any).records || []).map((r: any, idx: number) => ({
+  id: idx + 1,
+  name: r.name,
+  address: r.address || null,
+  phone: r.phone || null,
+  lat: r.lat ? Number(r.lat) : null,
+  lng: r.lng ? Number(r.lng) : null,
+  service_item: r.serviceItem || null,
+  service_time: r.serviceTime || null,
+  extra_json: r.extra || null,
+}));
 
 const SEED_FACILITIES: Record<string, SeedFacilityItem[]> = {
   tourism_factory: tourismFactorySeed as unknown as SeedFacilityItem[],
   bookstore: bookstoreSeed as unknown as SeedFacilityItem[],
   cpc_gas_station: cpcGasStationSeed as unknown as SeedFacilityItem[],
+  aed: aedSeed as unknown as SeedFacilityItem[],
+  vet_clinic: vetClinicSeed,
 };
 
 function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -103,6 +120,7 @@ function getFacilitySeedFallback(
           lat: item.lat ?? null,
           lng: item.lng ?? null,
           service_item: item.service_item ?? item.serviceItem ?? null,
+          service_time: item.service_time ?? item.serviceTime ?? item.extra_json?.openHours ?? null,
           extra_json: item.extra_json ?? item.extra ?? null,
         }));
       }
