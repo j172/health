@@ -3,6 +3,7 @@ import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EmergencyRoomContent from "@/components/Tools/EmergencyRoomContent";
+import { getEmergencyRoomOverview } from "@/lib/server/emergencyRooms/queries";
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -31,10 +32,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ErStatusPage() {
+export default async function ErStatusPage() {
+  let initialData;
+  try {
+    initialData = await getEmergencyRoomOverview();
+  } catch (err) {
+    console.warn("Failed to fetch initial ER data on server:", err);
+  }
+
   return (
     <ToolPageShell slug="er-status" title={catalogEntry.title} maxWidthClassName="max-w-6xl">
-      <EmergencyRoomContent />
+      <EmergencyRoomContent initialData={initialData} />
     </ToolPageShell>
   );
 }

@@ -51,7 +51,11 @@ export async function getEmergencyRoomOverview(params?: {
       "SELECT COUNT(*) as cnt FROM emergency_room_status"
     );
     if ((countCheck[0]?.cnt || 0) === 0) {
-      await runEmergencyRoomSync();
+      try {
+        await runEmergencyRoomSync();
+      } catch (err) {
+        console.warn("Auto-sync emergency rooms failed:", err);
+      }
     }
 
     const whereClauses: string[] = ["1=1"];
@@ -122,28 +126,32 @@ export async function getEmergencyRoomOverview(params?: {
 
     const stats = statsRows[0] || {};
 
-    // 取得前 20 家醫院的 24 小時走勢圖資料 (Sparkline)
+    // 取得前 25 家醫院的 24 小時走勢圖資料 (Sparkline)
     const topCodes = rows.slice(0, 25).map((r) => r.hospital_code);
     const sparklineMap = new Map<string, number[]>();
 
     if (topCodes.length > 0) {
-      const [logRows] = await conn.query<ErLogRow[]>(
-        `
-        SELECT hospital_code, waiting_consultation, reported_at
-        FROM emergency_room_logs
-        WHERE hospital_code IN (?)
-        ORDER BY reported_at ASC
-        `,
-        [topCodes]
-      );
+      try {
+        const [logRows] = await conn.query<ErLogRow[]>(
+          `
+          SELECT hospital_code, waiting_consultation, reported_at
+          FROM emergency_room_logs
+          WHERE hospital_code IN (?)
+          ORDER BY reported_at ASC
+          `,
+          [topCodes]
+        );
 
-      for (const log of logRows) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const code = (log as any).hospital_code;
-        if (!sparklineMap.has(code)) {
-          sparklineMap.set(code, []);
+        for (const log of logRows) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const code = (log as any).hospital_code;
+          if (!sparklineMap.has(code)) {
+            sparklineMap.set(code, []);
+          }
+          sparklineMap.get(code)!.push(log.waiting_consultation);
         }
-        sparklineMap.get(code)!.push(log.waiting_consultation);
+      } catch (err) {
+        console.warn("Failed to query emergency_room_logs sparklines:", err);
       }
     }
 
