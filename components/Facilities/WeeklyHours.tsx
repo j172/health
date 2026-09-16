@@ -33,9 +33,11 @@ export default function WeeklyHoursLine({
     // Compute current day of week on client to avoid SSR hydration mismatch
     // JavaScript getDay(): 0 (Sun), 1 (Mon), ..., 6 (Sat)
     // Map to Monday=0 ... Sunday=6
-    const jsDay = new Date().getDay();
-    const dayIndex = (jsDay + 6) % 7;
-    setTodayDayName(DAYS[dayIndex] ?? null);
+    queueMicrotask(() => {
+      const jsDay = new Date().getDay();
+      const dayIndex = (jsDay + 6) % 7;
+      setTodayDayName(DAYS[dayIndex] ?? null);
+    });
   }, []);
 
   const hasValidNote = isDisplayableNote(note);

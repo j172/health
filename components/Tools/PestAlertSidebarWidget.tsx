@@ -28,13 +28,17 @@ export default function PestAlertSidebarWidget() {
   };
 
   useEffect(() => {
-    fetchAlerts();
+    queueMicrotask(() => {
+      fetchAlerts();
+    });
   }, []);
 
   const handleRefresh = () => {
     setRefreshing(true);
     fetchAlerts();
   };
+
+  const [mountTime] = useState(() => Date.now());
 
   const isRecentOrUrgent = (item: PestAlertItem) => {
     const isUrgent = item.warningLevel === "紅燈" || item.warningLevel === "黃燈";
@@ -43,7 +47,7 @@ export default function PestAlertSidebarWidget() {
     const t = new Date(item.alertTime).getTime();
     if (isNaN(t)) return true;
     const fourteenDaysMs = 14 * 24 * 60 * 60 * 1000;
-    return Date.now() - t <= fourteenDaysMs;
+    return mountTime - t <= fourteenDaysMs;
   };
 
   const displayedAlerts = alerts.filter(isRecentOrUrgent).slice(0, 5);

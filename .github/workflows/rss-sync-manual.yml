@@ -38,7 +38,8 @@ jobs:
 
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "Triggering /api/admin/rss-sync via remote loopback..."
+          echo "Triggering /api/admin/rss-sync via remote loopback (async mode)..."
           printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
             ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 300 -X POST http://127.0.0.1:3000/api/admin/rss-sync" | jq .
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/rss-sync?async=1'" | jq .
+
