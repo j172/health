@@ -76,7 +76,7 @@ export default function EmergencyRoomContent({
   initialData?: EmergencyOverviewResult;
 }) {
   const [data, setData] = useState<EmergencyOverviewResult | undefined>(initialData);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!initialData);
   const [keyword, setKeyword] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [onlyCritical, setOnlyCritical] = useState(false);
@@ -97,6 +97,15 @@ export default function EmergencyRoomContent({
       setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (initialData) {
+      setData(initialData);
+      setLoading(false);
+    } else {
+      refreshData();
+    }
+  }, [initialData, refreshData]);
 
   const filteredHospitals = useMemo(() => {
     if (!data?.items) return [];
@@ -246,7 +255,19 @@ export default function EmergencyRoomContent({
           <span>依 119 通報狀態與等待看診人數自動排序</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
+        {loading && (!data || !data.items || data.items.length === 0) ? (
+          <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+            <div className="inline-block w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">正在即時連線衛福部與全台急救責任醫院看板...</p>
+          </div>
+        ) : filteredHospitals.length === 0 ? (
+          <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+            <span className="text-3xl">🏥</span>
+            <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">查無符合條件的急救責任醫院</p>
+            <p className="mt-1 text-xs text-slate-400">請嘗試清除關鍵字或切換區域篩選</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
           {filteredHospitals.map((hospital) => {
             const isCritical = hospital.congestion_level === "critical";
             const isBusy = hospital.congestion_level === "busy";
@@ -405,7 +426,8 @@ export default function EmergencyRoomContent({
               </div>
             );
           })}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
