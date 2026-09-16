@@ -2702,6 +2702,86 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "food-safety",
+    group: "registry",
+    title: "全台蔬果農藥殘留與食安檢驗透明看板",
+    navLabel: "食安檢驗看板",
+    description:
+      "彙整農業部最新蔬果質譜快檢與食藥署邊境抽驗數據，提供台灣常見蔬果合格率排行、常見超標違規農藥與毒物專家黃金流水清洗指南。",
+    directAnswer:
+      "輸入常見蔬菜或水果名稱，即時掌握半年官方抽驗合格率、常見違規超標農藥種類及正確清洗指引，避開高殘留風險蔬果。",
+    scientificBasis: [
+      {
+        title: "農藥殘留質譜快檢技術標準與檢驗規範",
+        authority: "農業部農業試驗所 (TARI)",
+        url: "https://www.tari.gov.tw",
+      },
+      {
+        title: "農藥殘留容許量標準與人體每日容許攝取量 (ADI)",
+        authority: "衛生福利部食品藥物管理署 (TFDA)",
+        url: "https://www.fda.gov.tw",
+      },
+    ],
+    relatedSlugs: ["food-nutrition", "food-operators", "drugs"],
+    faqs: [
+      {
+        question: "用鹽水或小蘇打洗菜真的能去除更多農藥嗎？",
+        answer:
+          "農業部與毒物專家實驗證實：流動的自來水洗淨效果最好！鹽水會使蔬果表皮細胞脫水甚至讓水溶性農藥逆滲透；小蘇打雖對酸性農藥稍有中和，但一般民眾調配比例不當反而容易破壞營養。使用流動清水浸洗 10~15 分鐘是最科學安全的做法。",
+      },
+      {
+        question: "為什麼洗草莓不能先摘掉蒂頭？",
+        answer:
+          "若先拔除蒂頭再清洗，蒂頭處的傷口會讓原本附著在表皮的農藥與髒水趁機滲透進草莓果肉內部，反而越洗越毒。正確做法是連同蒂頭在流水下浸洗沖刷 15 分鐘，食用前才摘除蒂頭。",
+      },
+      {
+        question: "什麼是連續採收作物？為什麼農藥風險較高？",
+        answer:
+          "像四季豆、小黃瓜、番茄等作物屬於連續開花結果、連續採收。採收時同一植株上往往同時有成熟果實與幼小花苞，噴灑農藥保護幼果時，成熟果實容易被噴到而來不及經過安全採收期，因此需要特別加強清洗與川燙。",
+      },
+    ],
+  },
+  {
+    slug: "outdoor-safety",
+    group: "environment",
+    title: "全台戶外運動與放電安全指數",
+    navLabel: "戶外安全指數",
+    description:
+      "跨表聚合即時氣象測站熱指數、空氣品質 AQI、紫外線 UV 與登革熱警戒，為跑者單車族、親子戶外放電與銀髮長輩提供今日戶外活動安全評分與黃金時段建議。",
+    directAnswer:
+      "整合環境部、氣象署與疾管署最新環境數據，為全台 22 縣市計算 0~100 戶外綜合安全分數，並給予路跑最佳時段、共融公園放電與長輩散步防護指南。",
+    scientificBasis: [
+      {
+        title: "中暑危險熱指數評估與高溫防護指引",
+        authority: "交通部中央氣象署 (CWA)",
+        url: "https://www.cwa.gov.tw",
+      },
+      {
+        title: "空氣品質指標 (AQI) 與各族群活動建議",
+        authority: "環境部大氣環境司",
+        url: "https://airtw.moenv.gov.tw",
+      },
+    ],
+    relatedSlugs: ["aqi", "uv", "weather-alerts", "dengue-mosquito-map"],
+    faqs: [
+      {
+        question: "戶外活動安全指數是如何計算出來的？",
+        answer:
+          "本指標以 100 分為基準，綜合扣除空氣品質危害（AQI/PM2.5）、熱傷害風險係數（氣溫與濕度計算之中暑指數）、紫外線危險等級（UV 指數）與蚊媒疾病警戒。85 分以上為極佳，65 分以上良好，45 分以下建議改為室內運動。",
+      },
+      {
+        question: "夏季路跑或騎單車的最佳時段是幾點？",
+        answer:
+          "夏秋季上午 10:00 至下午 16:00 紫外線與熱指數皆處於危險高峰，且午後臭氧濃度上升。建議跑者把握清晨 05:30~08:00 或日落後 18:30~20:30 之黃金練跑窗口，並每 15 分鐘補水 150ml。",
+      },
+      {
+        question: "帶孩子去公園放電時，幾級紫外線需要防曬？",
+        answer:
+          "當紫外線指數達到 6（高量級）以上時，無防護暴露 30 分鐘即會曬傷；達到 8（過量級）以上時 20 分鐘即會受損。建議在樹蔭或溜滑梯遮陽棚下活動，並於出門前 20 分鐘為孩子塗抹溫和物理防曬乳。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -2776,6 +2856,8 @@ const INDEXABLE_SLUGS = new Set([
   "dengue-mosquito-map",
   "er-status",
   "aed",
+  "food-safety",
+  "outdoor-safety",
 ]);
 
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>

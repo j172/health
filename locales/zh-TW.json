@@ -40,7 +40,9 @@
     "aqi": "空氣品質 (AQI)",
     "facilities": "健保院所診所",
     "er-status": "全台急診即時看板",
-    "aed": "全國公共場所 AED 急救地圖"
+    "aed": "全國公共場所 AED 急救地圖",
+    "food-safety": "食安檢驗看板",
+    "outdoor-safety": "戶外安全指數"
   },
   "common": {
     "language": "語言",

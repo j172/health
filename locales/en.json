@@ -35,7 +35,9 @@
     "aqi": "Air Quality (AQI)",
     "facilities": "Healthcare Facilities",
     "er-status": "Real-Time Emergency Room Congestion",
-    "aed": "Public Access AED Map"
+    "aed": "Public Access AED Map",
+    "food-safety": "Food Pesticide & Safety Dashboard",
+    "outdoor-safety": "Outdoor Activity Safety Index"
   },
   "catalog": {
     "uv": "Taiwan Real-Time UV Index",
@@ -91,7 +93,9 @@
     "tourism-factories": "Certified Tourism Factory & Cultural Center Finder",
     "pet-adoption": "National Public Animal Shelter Pet Adoption Finder",
     "er-status": "Real-Time Emergency Room Congestion Dashboard",
-    "aed": "National Public Access AED Map"
+    "aed": "National Public Access AED Map",
+    "food-safety": "Taiwan Food Pesticide Residue & Safety Inspection Dashboard",
+    "outdoor-safety": "Taiwan Outdoor Activity & Exercise Safety Index"
   },
   "categories": {
     "gov": "Government Agencies",

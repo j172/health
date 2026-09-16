@@ -91,6 +91,19 @@ export default function AqiContent() {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200">
+        <div className="flex items-center gap-2 font-medium">
+          <span className="text-base">🏃</span>
+          <span>今日想出門跑步、騎單車或帶孩子去公園？即刻查詢結合空品、熱指數與 UV 的<strong>全台戶外安全指數</strong>。</span>
+        </div>
+        <a
+          href="/tools/outdoor-safety"
+          className="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2.5 py-1 font-semibold text-sky-800 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-200"
+        >
+          戶外安全指數 ↗
+        </a>
+      </div>
+
       <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-xl dark:bg-indigo-950">
