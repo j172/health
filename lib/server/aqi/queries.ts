@@ -1,5 +1,5 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { withConnection, withConnectionFallback, utcNowSql } from "@/lib/server/db/mysql";
 import type { AqiSiteSnapshot } from "@/lib/server/aqi/fetchAqi";
 import { memoizeQuery } from "@/lib/server/cache/memo";
 import { coerceCoords } from "@/lib/server/db/coords";
@@ -108,29 +108,34 @@ export const getLatestAqiReadings = async (
 export const getNearestAqiReading = async (
   lat: number,
   lng: number,
-): Promise<(AqiReadingRow & { distance_km: number }) | null> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT r.site_id, r.site_name, r.county, r.lat, r.lng, r.aqi_value, r.aqi_status, r.pm25, r.pm10, r.o3, r.no2, r.so2, r.co, r.recorded_at,
-        (6371 * acos(
-          cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
-          sin(radians(?)) * sin(radians(r.lat))
-        )) AS distance_km
-      FROM aqi_readings r
-      INNER JOIN (
-        SELECT site_id, MAX(recorded_at) AS max_recorded_at
-        FROM aqi_readings
-        GROUP BY site_id
-      ) latest ON latest.site_id = r.site_id AND latest.max_recorded_at = r.recorded_at
-      WHERE r.lat IS NOT NULL AND r.lng IS NOT NULL
-      ORDER BY distance_km ASC
-      LIMIT 1
-      `,
-      [lat, lng, lat],
-    );
-    if (!rows[0]) return null;
-    return coerceCoords([rows[0]])[0] as unknown as AqiReadingRow & {
-      distance_km: number;
-    };
-  });
+): Promise<(AqiReadingRow & { distance_km: number }) | null> => {
+  const cacheKey = `nearest_aqi_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+  return await memoizeQuery(
+    cacheKey,
+    async () =>
+      withConnectionFallback(null, async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
+          SELECT r.site_id, r.site_name, r.county, r.lat, r.lng, r.aqi_value, r.aqi_status, r.pm25, r.pm10, r.o3, r.no2, r.so2, r.co, r.recorded_at,
+            (6371 * acos(
+              LEAST(1, GREATEST(-1,
+                cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
+                sin(radians(?)) * sin(radians(r.lat))
+              ))
+            )) AS distance_km
+          FROM aqi_readings r
+          WHERE r.recorded_at = (SELECT MAX(recorded_at) FROM aqi_readings WHERE lat IS NOT NULL)
+            AND r.lat IS NOT NULL AND r.lng IS NOT NULL
+          ORDER BY distance_km ASC
+          LIMIT 1
+          `,
+          [lat, lng, lat],
+        );
+        if (!rows[0]) return null;
+        return coerceCoords([rows[0]])[0] as unknown as AqiReadingRow & {
+          distance_km: number;
+        };
+      }),
+    60_000,
+  );
+};

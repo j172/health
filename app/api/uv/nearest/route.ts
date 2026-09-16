@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ station });
   } catch (error) {
-    console.error("GET /api/uv/nearest failed:", error);
-    return NextResponse.json({ error: "查詢最近測站資料失敗" }, { status: 502 });
+    console.warn("GET /api/uv/nearest failed, returning null fallback:", error);
+    return NextResponse.json({ station: null });
   }
 }
