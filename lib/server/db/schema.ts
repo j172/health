@@ -1626,6 +1626,58 @@ export const TABLE_DDL = {
       KEY idx_outdoor_score (overall_score)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  accessibleTransitRoutes: `
+    CREATE TABLE IF NOT EXISTS accessible_transit_routes (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      county VARCHAR(32) NOT NULL,
+      route_id VARCHAR(64) NOT NULL,
+      route_name VARCHAR(128) NOT NULL,
+      operator_name VARCHAR(128) NOT NULL,
+      low_floor_ratio DECIMAL(5, 2) NOT NULL DEFAULT 0.00,
+      is_all_low_floor TINYINT(1) NOT NULL DEFAULT 0,
+      wheelchair_slots INT NOT NULL DEFAULT 2,
+      description TEXT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_county (county),
+      INDEX idx_route_name (route_name)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  accessibleTransitFacilities: `
+    CREATE TABLE IF NOT EXISTS accessible_transit_facilities (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      county VARCHAR(32) NOT NULL,
+      system_type VARCHAR(32) NOT NULL,
+      station_or_agency VARCHAR(128) NOT NULL,
+      facility_name VARCHAR(128) NOT NULL,
+      service_phone VARCHAR(64) NULL,
+      booking_rules TEXT NULL,
+      features_json JSON NULL,
+      lat DECIMAL(10, 7) NULL,
+      lng DECIMAL(10, 7) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_county_system (county, system_type)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  wraInundationSensors: `
+    CREATE TABLE IF NOT EXISTS wra_inundation_sensors (
+      sensor_id VARCHAR(64) PRIMARY KEY,
+      sensor_name VARCHAR(128) NOT NULL,
+      county VARCHAR(32) NOT NULL,
+      township VARCHAR(32) NOT NULL,
+      address VARCHAR(255) NULL,
+      water_depth_cm DECIMAL(5, 1) NOT NULL DEFAULT 0.0,
+      warning_depth_cm DECIMAL(5, 1) NOT NULL DEFAULT 10.0,
+      alert_level VARCHAR(20) NOT NULL DEFAULT 'normal',
+      lat DECIMAL(10, 7) NOT NULL,
+      lng DECIMAL(10, 7) NOT NULL,
+      source VARCHAR(64) NOT NULL DEFAULT 'WRA IoT',
+      recorded_at DATETIME NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_county_town (county, township),
+      INDEX idx_alert_level (alert_level)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 
