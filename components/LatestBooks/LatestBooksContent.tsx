@@ -25,38 +25,42 @@ export default function LatestBooksContent() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
-    const params = new URLSearchParams();
-    if (platform !== "all") params.set("platform", platform);
-    if (selectedCategory !== "all") params.set("categoryId", selectedCategory);
-    if (activeQuery) params.set("q", activeQuery);
-    if (sortBy) params.set("sortBy", sortBy);
-    params.set("page", String(page));
-    params.set("limit", String(pageSize));
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
 
-    fetch(`/api/books?${params.toString()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setBooks(data.books || []);
-          setTotal(data.total || 0);
-          if (data.categories) setCategories(data.categories);
-          setDataSource(data.source || "database");
-          setError(false);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          console.error("Fetch books failed:", err);
-          setError(true);
-          setLoading(false);
-        }
-      });
+      const params = new URLSearchParams();
+      if (platform !== "all") params.set("platform", platform);
+      if (selectedCategory !== "all") params.set("categoryId", selectedCategory);
+      if (activeQuery) params.set("q", activeQuery);
+      if (sortBy) params.set("sortBy", sortBy);
+      params.set("page", String(page));
+      params.set("limit", String(pageSize));
+
+      fetch(`/api/books?${params.toString()}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          if (!cancelled) {
+            setBooks(data.books || []);
+            setTotal(data.total || 0);
+            if (data.categories) setCategories(data.categories);
+            setDataSource(data.source || "database");
+            setError(false);
+            setLoading(false);
+          }
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            console.error("Fetch books failed:", err);
+            setError(true);
+            setLoading(false);
+          }
+        });
+    });
 
     return () => {
       cancelled = true;

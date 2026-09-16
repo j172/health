@@ -26,7 +26,9 @@ export default function CpcPriceSidebarWidget() {
   };
 
   useEffect(() => {
-    fetchSummary();
+    queueMicrotask(() => {
+      fetchSummary();
+    });
   }, []);
 
   const handleRefresh = () => {

@@ -74,14 +74,16 @@ export default function CpcStationsClient({
   // Update user location from hook
   useEffect(() => {
     if (geo.lat && geo.lng) {
-      setUserLocation({
-        lat: geo.lat,
-        lng: geo.lng,
-        isDefault: geo.isDefault,
+      queueMicrotask(() => {
+        setUserLocation({
+          lat: geo.lat,
+          lng: geo.lng,
+          isDefault: geo.isDefault,
+        });
+        if (!geo.isDefault) {
+          setSortByDistance(true);
+        }
       });
-      if (!geo.isDefault) {
-        setSortByDistance(true);
-      }
     }
   }, [geo.lat, geo.lng, geo.isDefault]);
 

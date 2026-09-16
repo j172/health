@@ -51,37 +51,41 @@ export default function PetAdoptionContent() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
 
-    const query = new URLSearchParams();
-    if (kind !== "all") query.set("kind", kind);
-    if (sex !== "all") query.set("sex", sex);
-    if (bodytype !== "all") query.set("bodytype", bodytype);
-    if (city !== "全台縣市") query.set("city", city);
-    if (keyword) query.set("keyword", keyword);
-    query.set("page", String(page));
-    query.set("limit", String(pageSize));
+    queueMicrotask(() => {
+      if (cancelled) return;
+      setLoading(true);
 
-    fetch(`/api/pet-adoptions?${query.toString()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setItems(data.items || []);
-          setTotal(data.total || 0);
-          setTotalAll(data.totalAll || 0);
-          setError(false);
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError(true);
-          setLoading(false);
-        }
-      });
+      const query = new URLSearchParams();
+      if (kind !== "all") query.set("kind", kind);
+      if (sex !== "all") query.set("sex", sex);
+      if (bodytype !== "all") query.set("bodytype", bodytype);
+      if (city !== "全台縣市") query.set("city", city);
+      if (keyword) query.set("keyword", keyword);
+      query.set("page", String(page));
+      query.set("limit", String(pageSize));
+
+      fetch(`/api/pet-adoptions?${query.toString()}`)
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          if (!cancelled) {
+            setItems(data.items || []);
+            setTotal(data.total || 0);
+            setTotalAll(data.totalAll || 0);
+            setError(false);
+            setLoading(false);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            setError(true);
+            setLoading(false);
+          }
+        });
+    });
 
     return () => {
       cancelled = true;
