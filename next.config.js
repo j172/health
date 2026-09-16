@@ -80,11 +80,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: "/tools/green-shops",
-        destination: "/tools/green-certifications",
-        permanent: true,
-      },
-      {
         source: "/tools/green-hotels",
         destination: "/tools/green-certifications",
         permanent: true,
