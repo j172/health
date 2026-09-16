@@ -3,7 +3,7 @@
 - **作者**：Antigravity Agent
 - **日期**：2026-09-16
 - **狀態**：Implemented & Verified
-- **關聯 Issue**：https://github.com/j172/health/issues/304 (#304)
+- **關聯 Issue**：#303
 
 ---
 
