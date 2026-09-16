@@ -6,6 +6,7 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { DengueVillagePoint } from "@/lib/server/dengue/queries";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const DengueMosquitoMapLeaflet = dynamic(
   () => import("@/components/DengueMosquitoMap/DengueMosquitoMapLeaflet"),
@@ -55,7 +56,7 @@ export default function DengueMosquitoMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res: ApiResponse = await fetch("/api/dengue-map").then((r) => r.json());
+        const res: ApiResponse = await fetchWithTimeout("/api/dengue-map", { timeoutMs: 5000 }).then((r) => r.json());
         if (cancelled) return;
         if (res.ok) {
           setPoints(res.points ?? []);

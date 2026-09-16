@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
 
 const AedMapLeaflet = dynamic(() => import("@/components/Tools/AedMapLeaflet"), {
@@ -84,7 +85,7 @@ export default function AedContent({
         }
         query.set("limit", "80");
 
-        const res = await fetch(`/api/facilities?${query.toString()}`);
+        const res = await fetchWithTimeout(`/api/facilities?${query.toString()}`, { timeoutMs: 5000 });
         if (res.ok) {
           const data = await res.json();
           let list = Array.isArray(data.facilities) ? data.facilities : [];
@@ -93,7 +94,7 @@ export default function AedContent({
           if (list.length === 0 && params.lat !== undefined && params.lng !== undefined && !params.kw) {
             query.delete("radius");
             query.set("sort", "distance");
-            const retryRes = await fetch(`/api/facilities?${query.toString()}`);
+            const retryRes = await fetchWithTimeout(`/api/facilities?${query.toString()}`, { timeoutMs: 5000 });
             if (retryRes.ok) {
               const retryData = await retryRes.json();
               if (Array.isArray(retryData.facilities) && retryData.facilities.length > 0) {
@@ -115,10 +116,8 @@ export default function AedContent({
   );
 
   useEffect(() => {
-    if (!geo.loading && geo.lat && geo.lng) {
-      fetchAeds({ lat: geo.lat, lng: geo.lng });
-    }
-  }, [geo.loading, geo.lat, geo.lng, fetchAeds]);
+    fetchAeds({ lat: geo.lat || GEO_DEFAULTS.lat, lng: geo.lng || GEO_DEFAULTS.lng });
+  }, [geo.lat, geo.lng, fetchAeds]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

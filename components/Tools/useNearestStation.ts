@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 interface ResolvedStation<T> {
   lat: number;
@@ -26,28 +27,35 @@ export interface NearestStationResult<T> {
 export function useNearestStation<T>(endpoint: string): NearestStationResult<T> {
   const location = useGeolocation();
   const [resolved, setResolved] = useState<ResolvedStation<T> | null>(null);
+  const [isFetching, setIsFetching] = useState(false);
 
   useEffect(() => {
-    if (location.loading) return;
     let isMounted = true;
-    fetch(`${endpoint}?lat=${location.lat}&lng=${location.lng}`)
+    setIsFetching(true);
+    fetchWithTimeout(`${endpoint}?lat=${location.lat}&lng=${location.lng}`, { timeoutMs: 5000 })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (isMounted) setResolved({ lat: location.lat, lng: location.lng, station: data?.station ?? null });
+        if (isMounted) {
+          setResolved({ lat: location.lat, lng: location.lng, station: data?.station ?? null });
+          setIsFetching(false);
+        }
       })
       .catch((err) => {
         console.error(`Nearest station fetch error (${endpoint}):`, err);
-        if (isMounted) setResolved({ lat: location.lat, lng: location.lng, station: null });
+        if (isMounted) {
+          setResolved({ lat: location.lat, lng: location.lng, station: null });
+          setIsFetching(false);
+        }
       });
     return () => {
       isMounted = false;
     };
-  }, [location.loading, location.lat, location.lng, endpoint]);
+  }, [location.lat, location.lng, endpoint]);
 
   const station = resolved?.station ?? null;
-  // 座標已更新（例如剛完成一次定位）但這組座標的測站資料還沒抓回來
-  const isFetchingStation = !location.loading && (!resolved || resolved.lat !== location.lat || resolved.lng !== location.lng);
-  const showSpinner = (location.loading || isFetchingStation) && !station;
+  // 座標已更新但這組座標的測站資料還在抓
+  const isFetchingStation = isFetching || (!resolved || resolved.lat !== location.lat || resolved.lng !== location.lng);
+  const showSpinner = isFetchingStation && !station;
   const isRefreshing = location.refreshing || (isFetchingStation && station !== null);
 
   return {

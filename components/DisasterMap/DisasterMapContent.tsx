@@ -9,6 +9,7 @@ import type { DisasterPoint } from "@/lib/server/disaster/queries";
 
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { InundationPoint } from "@/lib/server/wra/inundation";
 import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries";
 import type { GroundwaterMapPoint } from "@/lib/server/wra/groundwaterQueries";
@@ -107,9 +108,9 @@ export default function DisasterMapContent() {
     (async () => {
       try {
         const [disasterRes, inundationRes, wraIotRes] = await Promise.allSettled([
-          fetch("/api/disaster-map").then((r) => r.json()),
-          fetch("/api/disaster/inundation").then((r) => r.json()),
-          fetch("/api/disaster/wra-iot").then((r) => r.json()),
+          fetchWithTimeout("/api/disaster-map", { timeoutMs: 5000 }).then((r) => r.json()),
+          fetchWithTimeout("/api/disaster/inundation", { timeoutMs: 5000 }).then((r) => r.json()),
+          fetchWithTimeout("/api/disaster/wra-iot", { timeoutMs: 5000 }).then((r) => r.json()),
         ]);
 
         if (cancelled) return;
@@ -120,7 +121,7 @@ export default function DisasterMapContent() {
         } else {
           // 備援機制：如果後端暫時超時或無資料，嘗試從靜態 fallback 讀取
           console.warn("Disaster API failed or empty, loading local seed fallback...");
-          const resFallback = await fetch("/api/facilities?type=disaster_shelter&limit=200");
+          const resFallback = await fetchWithTimeout("/api/facilities?type=disaster_shelter&limit=200", { timeoutMs: 5000 });
           if (resFallback.ok) {
             const data = await resFallback.json();
             if (Array.isArray(data.facilities) && data.facilities.length > 0) {

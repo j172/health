@@ -6,16 +6,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export const GEO_DEFAULTS = { lat: 25.033, lng: 121.5654 };
 
 /** 權限已有結果（granted/denied）時的定位逾時 — 兩者都幾乎立刻回應，不需要久等。 */
-const DECIDED_TIMEOUT_MS = 8000;
+const DECIDED_TIMEOUT_MS = 6000;
 /**
- * 權限尚未決定（prompt）時的定位逾時。這種狀態代表瀏覽器原生的授權彈窗才剛
- * 跳出來，使用者可能還沒注意到、或正在猶豫——不該用一個猜測的短秒數去跟
- * 使用者的反應時間賽跑：8 秒一到就判定「取得失敗」、直接退回預設位置開始
- * 顯示資料，等使用者真的點下「允許」時已經來不及、也不會自動重試（2026-09-09
- * 使用者回報：「還沒選擇竟直接定位在台北101」）。仍保留一個寬鬆的保險值，
- * 避免彈窗被晾在那邊時頁面永遠停在等待狀態。
+ * 權限尚未決定（prompt）時的定位逾時。給予適當時間讓使用者注意原生彈窗，
+ * 超時後自動結束等待進入預設模式。
  */
-const PROMPT_TIMEOUT_MS = 60_000;
+const PROMPT_TIMEOUT_MS = 12_000;
 
 export interface GeolocationTimeoutResolution {
   timeoutMs: number;

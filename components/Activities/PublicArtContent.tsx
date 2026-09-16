@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import type { PublicArtItem } from "@/app/api/culture/public-art/route";
 import { useGeolocation, resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -107,7 +108,7 @@ export default function PublicArtContent() {
       const qs = params.toString();
       if (qs) url += `?${qs}`;
 
-      const res = await fetch(url);
+      const res = await fetchWithTimeout(url, { timeoutMs: 5000 });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
       if (!json.ok) throw new Error(json.error || "載入公共藝術與演藝場所資料失敗");

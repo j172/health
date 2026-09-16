@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type {
   AccessibleTransitRoute,
   AccessibleTransitFacility,
@@ -37,7 +38,7 @@ export default function AccessibleTransitContent() {
         if (selectedSystem !== "all") params.set("systemType", selectedSystem);
         if (searchQuery.trim()) params.set("query", searchQuery.trim());
 
-        const res = await fetch(`/api/accessible-transit?${params.toString()}`);
+        const res = await fetchWithTimeout(`/api/accessible-transit?${params.toString()}`, { timeoutMs: 5000 });
         if (res.ok) {
           const json = await res.json();
           setData(json);

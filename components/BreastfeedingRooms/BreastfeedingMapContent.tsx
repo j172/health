@@ -6,6 +6,7 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { BreastfeedingRoomPoint } from "./BreastfeedingMapLeaflet";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const BreastfeedingMapLeaflet = dynamic(
   () => import("./BreastfeedingMapLeaflet"),
@@ -57,7 +58,7 @@ export default function BreastfeedingMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/breastfeeding-rooms");
+        const res = await fetchWithTimeout("/api/breastfeeding-rooms", { timeoutMs: 5000 });
         const json = await res.json();
         if (cancelled) return;
         if (!json.ok) {

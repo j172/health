@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import {
   type NearestRainfallStation,
@@ -54,9 +55,8 @@ export default function NearbyRainfallCard() {
   } | null>(null);
 
   useEffect(() => {
-    if (location.loading) return;
     let active = true;
-    fetch(`/api/rainfall/nearest?lat=${location.lat}&lng=${location.lng}`)
+    fetchWithTimeout(`/api/rainfall/nearest?lat=${location.lat}&lng=${location.lng}`, { timeoutMs: 5000 })
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => {
         if (active)
@@ -72,11 +72,11 @@ export default function NearbyRainfallCard() {
     return () => {
       active = false;
     };
-  }, [location.loading, location.lat, location.lng]);
+  }, [location.lat, location.lng]);
 
   const station = data?.station ?? null;
   const totals = data?.totals ?? null;
-  const showSpinner = (location.loading || data === null) && !station;
+  const showSpinner = data === null && !station;
   const isRefreshing = location.refreshing;
   const isDefault = location.isDefault;
   const refresh = location.refresh;
