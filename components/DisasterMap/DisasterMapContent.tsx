@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { DisasterLayer } from "@/lib/server/disaster/ingestDisasterPoints";
@@ -140,6 +141,24 @@ export default function DisasterMapContent() {
         <p className="mt-1">
           本頁資料非即時，僅供平時查詢參考；災害發生時之避難收容所開設狀態，請以地方政府（消防局／區公所）正式公告為準。
         </p>
+      </div>
+
+      {/* 導流至全台積淹水即時感測地圖 */}
+      <div className="rounded-xl bg-gradient-to-r from-sky-50 to-blue-50 dark:from-slate-800 dark:to-blue-950/40 p-4 border border-sky-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xl">🌊</span>
+          <div>
+            <div className="text-xs font-bold text-sky-950 dark:text-sky-300">需要查詢地下道與道路積水即時深度？</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">水利署 IoT 即時路面感測地圖已上線，提供全台易積水路口公分級水深與防汛警戒</div>
+          </div>
+        </div>
+        <Link
+          href="/tools/inundation-map"
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold whitespace-nowrap transition shadow-sm"
+        >
+          <span>查看淹水感測地圖</span>
+          <span>→</span>
+        </Link>
       </div>
 
       {/* Layer toggles */}

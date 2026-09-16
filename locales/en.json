@@ -37,7 +37,9 @@
     "er-status": "Real-Time Emergency Room Congestion",
     "aed": "Public Access AED Map",
     "food-safety": "Food Pesticide & Safety Dashboard",
-    "outdoor-safety": "Outdoor Activity Safety Index"
+    "outdoor-safety": "Outdoor Activity Safety Index",
+    "accessible-transit": "Taiwan Accessible Transit Map",
+    "inundation-map": "Taiwan Real-Time Inundation & Flood Map"
   },
   "catalog": {
     "uv": "Taiwan Real-Time UV Index",
@@ -95,7 +97,9 @@
     "er-status": "Real-Time Emergency Room Congestion Dashboard",
     "aed": "National Public Access AED Map",
     "food-safety": "Taiwan Food Pesticide Residue & Safety Inspection Dashboard",
-    "outdoor-safety": "Taiwan Outdoor Activity & Exercise Safety Index"
+    "outdoor-safety": "Taiwan Outdoor Activity & Exercise Safety Index",
+    "accessible-transit": "Taiwan Accessible Transit & Low-Floor Bus Map",
+    "inundation-map": "Taiwan Real-Time Inundation & Flood Sensor Map"
   },
   "categories": {
     "gov": "Government Agencies",

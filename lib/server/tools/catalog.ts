@@ -2782,6 +2782,86 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "accessible-transit",
+    group: "transport-energy",
+    navLabel: "全台無障礙交通地圖",
+    title: "全台無障礙交通地圖：低地板公車／捷運無障礙／通用計程車／復康巴士",
+    description:
+      "即時查詢全台 22 縣市低地板公車比率、台北與高雄捷運及雙鐵無障礙乘車渡板預約、全台通用無障礙計程車叫車平台與各縣市復康巴士派車專線。",
+    directAnswer:
+      "全台無障礙交通地圖整合交通部 TDX 與各直轄市低地板公車幹線、台鐵高鐵捷運無障礙愛心導引設施，以及全台 22 縣市復康巴士與通用計程車專線，保障身障者與長者安全無障礙出行。",
+    scientificBasis: [
+      {
+        title: "交通部運輸資料流通服務 (TDX) 大眾運輸無障礙資訊",
+        authority: "交通部",
+        url: "https://tdx.transportdata.tw",
+      },
+      {
+        title: "身心障礙者權益保障法與大眾運輸通用設計規範",
+        authority: "衛生福利部社會及家庭署",
+        url: "https://www.sfaa.gov.tw",
+      },
+    ],
+    relatedSlugs: ["metro-alerts", "youbike", "disability-atm", "long-term-care"],
+    faqs: [
+      {
+        question: "如何預約捷運或台鐵的無障礙愛心乘車渡板服務？",
+        answer:
+          "搭乘捷運可於抵達前撥打站務電話或至詢問處提出需求，站務員將攜帶手動渡板於車廂月台端協助上下車；搭乘台鐵請於發車前 2 小時撥打客服專線 0800-765888 預約愛心接送。",
+      },
+      {
+        question: "搭乘低地板公車輪椅族該注意哪些事項？",
+        answer:
+          "於公車站揮手示意並告知司機搭乘輪椅，司機將手動降下車身並拉出後門斜坡板；上車後請將輪椅背向車頭停放於專屬輪椅席，扣緊安全帶並固定煞車。",
+      },
+      {
+        question: "復康巴士與長照交通接送（長照 2.0）有何不同？",
+        answer:
+          "復康巴士主要服務持有身心障礙證明者，由社會局補貼，採點對點計程車費率約三分之一計費；長照交通接送則針對長照失能等級第 4 級以上之高齡長輩，補助點對點往返醫療院所看診復健。",
+      },
+    ],
+  },
+  {
+    slug: "inundation-map",
+    group: "disaster-safety",
+    navLabel: "全台積淹水即時感測地圖",
+    title: "全台積淹水即時感測地圖：路面淹水／水位防汛警戒／避難收容處所",
+    description:
+      "整合經濟部水利署各河川分署 IoT 路面即時公分級水深感測器、河川水位站一至三級防汛溢堤警戒，以及周邊緊急避難收容處所。遇颱風豪雨，提供用路人低窪涵洞避災與疏散指引。",
+    directAnswer:
+      "全台積淹水即時感測地圖整合水利署路面 IoT 感測器即時水深、370 個河川水位站警戒狀態與鄰近避難收容學校，警示積水深度超過 10cm 與 30cm 之危險路段。",
+    scientificBasis: [
+      {
+        title: "經濟部水利署水資源物聯網 (WRA IoT) 開放資料平台",
+        authority: "經濟部水利署 (WRA)",
+        url: "https://iot.wra.gov.tw",
+      },
+      {
+        title: "天然災害應變水情與避難收容作業規範",
+        authority: "國家災害防救科技中心 (NCDR)",
+        url: "https://www.ncdr.nat.gov.tw",
+      },
+    ],
+    relatedSlugs: ["water-conditions", "disaster-map", "weather-alerts", "outdoor-safety"],
+    faqs: [
+      {
+        question: "路面淹水感測器的水深是如何測量的？",
+        answer:
+          "水利署於全台易積水路口、地下道與涵洞安裝超音波或壓力式液位感測器，以 IoT 無線通訊即時回傳公分級（cm）水深數據，每 5 至 10 分鐘更新一次。",
+      },
+      {
+        question: "積水多深時汽車就不可以強行開過去？",
+        answer:
+          "一般自小客車輪胎直徑約 60cm，當路面積水達到輪胎半徑（約 15~20cm）時，極易湧入排氣管或進氣口導致引擎熄火；當積水達到 30cm 時，車身浮力將使車輛失控漂流，切勿冒險涉水。",
+      },
+      {
+        question: "車輛若不幸於低窪地下道泡水熄火該如何處置？",
+        answer:
+          "千萬不可再次發動引擎（會將積水直接吸入汽缸造成嚴重毀損）；應立即解開安全帶、開啟車門或破窗移往高處安全避難，並撥打 119 或道路救援求助。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -2858,6 +2938,8 @@ const INDEXABLE_SLUGS = new Set([
   "aed",
   "food-safety",
   "outdoor-safety",
+  "accessible-transit",
+  "inundation-map",
 ]);
 
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>
