@@ -6,6 +6,7 @@ import type {
   TopRainfallStation,
 } from "@/lib/server/cwa/queries";
 import { resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const TAIWAN_COUNTIES = [
   "臺北市",
@@ -113,7 +114,7 @@ export default function WeatherRainfallLocator({
         query.set("county", params.county);
       }
 
-      const res = await fetch(`/api/weather/rainfall?${query.toString()}`);
+      const res = await fetchWithTimeout(`/api/weather/rainfall?${query.toString()}`, { timeoutMs: 5000 });
       const json = await res.json();
 
       if (json.success && json.data) {
@@ -169,9 +170,13 @@ export default function WeatherRainfallLocator({
     }
   };
 
-  // Initial load: attempt GPS geolocation, otherwise fallback to Taipei
+  // 雙軌即時渲染：初次載入立即抓台北雨量顯示，同時間非同步查詢 GPS，若允許則平滑切換
   useEffect(() => {
     let active = true;
+
+    setSelectedCounty("臺北市");
+    setLocationName("臺北市");
+    fetchRainfall({ county: "臺北市" });
 
     if (navigator?.geolocation) {
       resolveGeolocationTimeout(6000).then(({ timeoutMs }) => {
@@ -180,28 +185,13 @@ export default function WeatherRainfallLocator({
           (pos) => {
             if (!active) return;
             setLocationName("您的目前位置");
+            setSelectedCounty("");
             fetchRainfall({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           },
-          () => {
-            if (!active) return;
-            setSelectedCounty("臺北市");
-            setLocationName("臺北市");
-            fetchRainfall({ county: "臺北市" });
-          },
+          () => {},
           { timeout: timeoutMs, enableHighAccuracy: false },
         );
       });
-    } else {
-      const timer = setTimeout(() => {
-        if (!active) return;
-        setSelectedCounty("臺北市");
-        setLocationName("臺北市");
-        fetchRainfall({ county: "臺北市" });
-      }, 0);
-      return () => {
-        active = false;
-        clearTimeout(timer);
-      };
     }
 
     return () => {

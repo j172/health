@@ -12,6 +12,7 @@ import { FacilityPenaltyBadge, FacilityPenaltyAccordion } from "@/components/Fac
 import type { FacilityPenaltyInfo } from "@/lib/server/facilities/sources/nhiPenalties";
 
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -157,7 +158,6 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   const effectiveSort = keyword && sort === "distance" ? "name" : sort;
 
   useEffect(() => {
-    if (location.loading) return;
     let cancelled = false;
 
     const load = async (radius: number): Promise<{ facilities: FacilityItem[]; total?: number }> => {
@@ -175,7 +175,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
       if (onlyCharity) params.set("charity", "1");
       if (effectiveSort) params.set("sort", effectiveSort);
 
-      const res = await fetch(`/api/facilities?${params.toString()}`);
+      const res = await fetchWithTimeout(`/api/facilities?${params.toString()}`, { timeoutMs: 5000 });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     };
@@ -220,7 +220,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     return () => {
       cancelled = true;
     };
-  }, [location.loading, location.lat, location.lng, keyword, facilityType, radiusMeters, category, onlyCharity, effectiveSort, pageSize]);
+  }, [location.lat, location.lng, keyword, facilityType, radiusMeters, category, onlyCharity, effectiveSort, pageSize]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,7 +375,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
 
       <MapLocationBanner location={location} facilityTypeName={title || "機構據點"} />
 
-      {(loading || location.loading) && (
+      {loading && (
         <div className="flex justify-center py-8">
           <LoadingOrb size={32} />
         </div>
@@ -383,7 +383,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
 
       {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{errorText}</div>}
 
-      {!loading && !location.loading && !error && facilities && (
+      {!loading && !error && facilities && (
         <>
           {markers.length > 0 && (
             <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200 dark:border-slate-800">

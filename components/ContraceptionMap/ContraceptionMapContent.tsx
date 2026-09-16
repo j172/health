@@ -6,6 +6,7 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { ContraceptionPoint } from "./ContraceptionMapLeaflet";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const ContraceptionMapLeaflet = dynamic(
   () => import("./ContraceptionMapLeaflet"),
@@ -58,7 +59,7 @@ export default function ContraceptionMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/contraception-map");
+        const res = await fetchWithTimeout("/api/contraception-map", { timeoutMs: 5000 });
         const json = await res.json();
         if (cancelled) return;
         if (!json.ok) {

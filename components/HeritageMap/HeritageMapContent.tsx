@@ -8,6 +8,7 @@ import type { HeritageAssetPoint } from "@/lib/server/culture/queries";
 
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const HeritageMapLeaflet = dynamic(() => import("@/components/HeritageMap/HeritageMapLeaflet"), { ssr: false });
 
@@ -66,7 +67,7 @@ export default function HeritageMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/heritage-map");
+        const res = await fetchWithTimeout("/api/heritage-map", { timeoutMs: 5000 });
         const json: ApiResponse = await res.json();
         if (cancelled) return;
         if (!json.ok) {

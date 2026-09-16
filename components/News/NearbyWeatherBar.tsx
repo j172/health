@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 interface NearbyWeatherResponse {
   aqi: {
@@ -63,10 +64,9 @@ export default function NearbyWeatherBar() {
   const [data, setData] = useState<NearbyWeatherResponse | null>(null);
 
   useEffect(() => {
-    if (location.loading) return;
     let cancelled = false;
 
-    fetch(`/api/weather-nearby?lat=${location.lat}&lng=${location.lng}`)
+    fetchWithTimeout(`/api/weather-nearby?lat=${location.lat}&lng=${location.lng}`, { timeoutMs: 5000 })
       .then((res) => (res.ok ? res.json() : null))
       .then((json) => {
         if (!cancelled) setData(json);
@@ -78,7 +78,7 @@ export default function NearbyWeatherBar() {
     return () => {
       cancelled = true;
     };
-  }, [location.loading, location.lat, location.lng]);
+  }, [location.lat, location.lng]);
 
   if (
     !data ||

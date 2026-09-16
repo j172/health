@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import type { YouBikeStation } from "@/lib/server/youbike/types";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const CITIES = [
   { code: "", label: "附近 3km" },
@@ -46,7 +47,7 @@ export default function YoubikeContent({
         }
         query.set("limit", "100");
 
-        const res = await fetch(`/api/youbike?${query.toString()}`);
+        const res = await fetchWithTimeout(`/api/youbike?${query.toString()}`, { timeoutMs: 5000 });
         if (res.ok) {
           const data = await res.json();
           if (data.ok && Array.isArray(data.stations)) {
@@ -62,18 +63,27 @@ export default function YoubikeContent({
     []
   );
 
-  // 當定位完成（允許或逾時退回台北101）且尚未發起查詢時，自動帶出周圍 3km 站點
+  // 雙軌即時渲染：初次載入立即以當前座標（預設或即時）發起查詢，不用乾等 GPS 授權視窗
   useEffect(() => {
-    if (!location.loading && !initialFetchDone.current) {
+    if (!initialFetchDone.current) {
       initialFetchDone.current = true;
       fetchStations({
         city: selectedCity,
         kw: keyword,
+        lat: location.lat || GEO_DEFAULTS.lat,
+        lng: location.lng || GEO_DEFAULTS.lng,
+      });
+      return;
+    }
+
+    // 若使用者未手動選擇特定縣市或關鍵字，且 GPS 座標更新了，則平滑刷新周圍站點
+    if (!selectedCity && !keyword && location.lat && location.lng) {
+      fetchStations({
         lat: location.lat,
         lng: location.lng,
       });
     }
-  }, [location.loading, location.lat, location.lng, selectedCity, keyword, fetchStations]);
+  }, [location.lat, location.lng, selectedCity, keyword, fetchStations]);
 
   const handleCityChange = (cityCode: string) => {
     setSelectedCity(cityCode);

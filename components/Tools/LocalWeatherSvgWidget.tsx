@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SidebarWidgetShell from "./SidebarWidgetShell";
 import { GEO_DEFAULTS, resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
+import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 interface StationWeather {
   station_id: string;
@@ -98,7 +99,7 @@ export default function LocalWeatherSvgWidget() {
 
     const fetchWeather = async (lat: number, lng: number) => {
       try {
-        const res = await fetch(`/api/weather-nearby?lat=${lat}&lng=${lng}`);
+        const res = await fetchWithTimeout(`/api/weather-nearby?lat=${lat}&lng=${lng}`, { timeoutMs: 5000 });
         if (!res.ok) return;
         const data = await res.json();
         if (isMounted && data.stationWeather) {
@@ -111,17 +112,18 @@ export default function LocalWeatherSvgWidget() {
       }
     };
 
+    // 雙軌即時渲染：初次載入立即抓預設座標（台北101）的天氣，避免卡在 GPS 授權視窗
+    fetchWeather(GEO_DEFAULTS.lat, GEO_DEFAULTS.lng);
+
     if (navigator.geolocation) {
-      resolveGeolocationTimeout(8000).then(({ timeoutMs }) => {
+      resolveGeolocationTimeout(6000).then(({ timeoutMs }) => {
         if (!isMounted) return;
         navigator.geolocation.getCurrentPosition(
           (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude),
-          () => fetchWeather(GEO_DEFAULTS.lat, GEO_DEFAULTS.lng),
+          () => {},
           { timeout: timeoutMs }
         );
       });
-    } else {
-      fetchWeather(GEO_DEFAULTS.lat, GEO_DEFAULTS.lng);
     }
 
     return () => {
@@ -134,7 +136,7 @@ export default function LocalWeatherSvgWidget() {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          fetch(`/api/weather-nearby?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`)
+          fetchWithTimeout(`/api/weather-nearby?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`, { timeoutMs: 5000 })
             .then((r) => r.json())
             .then((data) => {
               if (data.stationWeather) setWeather(data.stationWeather);
