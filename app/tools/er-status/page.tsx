@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EmergencyRoomContent from "@/components/Tools/EmergencyRoomContent";
 import { getEmergencyRoomOverview } from "@/lib/server/emergencyRooms/queries";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/er-status`;
