@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "name": "國立臺灣大學醫學院附設醫院（器官捐贈移植中心）",
+    "address": "臺北市中正區中山南路7號",
+    "phone": "02-23123456",
+    "lat": 25.040182,
+    "lng": 121.519782,
+    "service_item": "器官捐贈勸募網絡責任醫院、器捐意願簽署諮詢窗口、心肝腎肺移植中心",
+    "extra_json": {
+      "networkZone": "第一責任區（基北北桃）",
+      "pledgeSignAvailable": true
+    }
+  },
+  {
+    "id": 2,
+    "name": "台北榮民總醫院（器官移植與勸募小組）",
+    "address": "臺北市北投區石牌路二段201號",
+    "phone": "02-28712121",
+    "lat": 25.120541,
+    "lng": 121.520145,
+    "service_item": "器官捐贈勸募指定醫院、器官捐贈移植協調師駐點、健保卡器捐意願註記諮詢",
+    "extra_json": {
+      "networkZone": "第一責任區",
+      "pledgeSignAvailable": true
+    }
+  },
+  {
+    "id": 3,
+    "name": "林口長庚紀念醫院（器官捐贈聯合委員會）",
+    "address": "桃園市龜山區復興街5號",
+    "phone": "03-3281200",
+    "lat": 25.021541,
+    "lng": 121.368541,
+    "service_item": "器官捐贈勸募責任醫院、活體與大愛器官移植中心、大愛器官捐贈紀念園區",
+    "extra_json": {
+      "networkZone": "第一責任區",
+      "pledgeSignAvailable": true
+    }
+  },
+  {
+    "id": 4,
+    "name": "臺中榮民總醫院（器官捐贈移植中心）",
+    "address": "臺中市西屯區臺灣大道四段1650號",
+    "phone": "04-23592525",
+    "lat": 24.186521,
+    "lng": 120.601245,
+    "service_item": "中部器官捐贈勸募網絡責任醫院、腦死判定與器捐流程專案諮詢",
+    "extra_json": {
+      "networkZone": "第二責任區（中彰投苗）",
+      "pledgeSignAvailable": true
+    }
+  },
+  {
+    "id": 5,
+    "name": "高雄長庚紀念醫院（器官移植中心）",
+    "address": "高雄市鳥松區大埤路123號",
+    "phone": "07-7317123",
+    "lat": 22.653541,
+    "lng": 120.354125,
+    "service_item": "南區器官捐贈勸募責任醫院、活體肝臟移植權威機構、安寧器捐諮詢",
+    "extra_json": {
+      "networkZone": "第四責任區（雲嘉南高屏澎）",
+      "pledgeSignAvailable": true
+    }
+  }
+]

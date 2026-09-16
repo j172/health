@@ -1,0 +1,55 @@
+[
+  {
+    "id": 1,
+    "name": "國立臺灣大學醫學院附設醫院（母嬰親善認證）",
+    "address": "臺北市中正區中山南路8號（兒童醫院）",
+    "phone": "02-23123456",
+    "lat": 25.041245,
+    "lng": 121.518541,
+    "service_item": "母嬰同室友善醫院、純母乳哺餵諮詢、高危險妊娠與新生兒加護",
+    "extra_json": {
+      "certifiedUntil": "2027-12-31",
+      "roomingIn": true,
+      "lactationConsultant": true
+    }
+  },
+  {
+    "id": 2,
+    "name": "台北婦幼醫療財團法人婦幼綜合醫院",
+    "address": "臺北市中正區福州街12號",
+    "phone": "02-23916470",
+    "lat": 25.029851,
+    "lng": 121.519245,
+    "service_item": "母嬰親善醫療院所認證、24小時母嬰同室、母乳諮詢專線",
+    "extra_json": {
+      "certifiedUntil": "2027-12-31",
+      "roomingIn": true
+    }
+  },
+  {
+    "id": 3,
+    "name": "中國醫藥大學兒童醫院（母嬰親善認證）",
+    "address": "臺中市北區育德路2號",
+    "phone": "04-22052121",
+    "lat": 24.156541,
+    "lng": 120.682145,
+    "service_item": "母嬰親善醫院認證、國際泌乳顧問指導、溫柔生產諮詢",
+    "extra_json": {
+      "certifiedUntil": "2026-12-31",
+      "roomingIn": true
+    }
+  },
+  {
+    "id": 4,
+    "name": "高雄榮民總醫院（母嬰親善認證）",
+    "address": "高雄市左營區大中一路386號",
+    "phone": "07-3422121",
+    "lat": 22.678541,
+    "lng": 120.320145,
+    "service_item": "母嬰親善醫療院所認證、早產兒母乳庫特約、袋鼠護理指導",
+    "extra_json": {
+      "certifiedUntil": "2027-12-31",
+      "roomingIn": true
+    }
+  }
+]

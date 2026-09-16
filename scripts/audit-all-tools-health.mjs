@@ -138,6 +138,6 @@ if (errors > 0) {
     });
   process.exit(1);
 } else {
-  console.log("\n🎉 全站工具核心審查全數通過！全數 67 款核心工具皆符合零等待、健全 SEO 與完整結構化資料標準。");
+  console.log(`\n🎉 全站工具核心審查全數通過！全數 ${TOOL_CATALOG.length} 款核心工具皆符合零等待、健全 SEO 與完整結構化資料標準。`);
   process.exit(0);
 }

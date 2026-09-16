@@ -2862,6 +2862,409 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "health-supplements",
+    title: "健康食品認證查詢：衛福部食藥署健字號許可登記",
+    navLabel: "健康食品認證",
+    description:
+      "即時查詢衛生福利部食品藥物管理署審查通過之健康食品（小綠人標章）與許可證字號，包含審定保健功效、成分、申請廠商與警語。",
+    directAnswer:
+      "健康食品係指具有實質科學證據之保健功效，並向衛福部申請查驗登記發給許可證（健字號）之食品，非屬治療疾病之藥品。",
+    scientificBasis: [
+      {
+        title: "衛生福利部食品藥物管理署《健康食品管理法》",
+        authority: "衛生福利部食品藥物管理署",
+        url: "https://www.fda.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["food-safety", "nutrition", "food-nutrition", "food-operators"],
+    group: "registry",
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "「健康食品」與一般口語常說的「保健食品」有何法律區別？",
+        answer:
+          "在台灣只有依《健康食品管理法》經食藥署審查通過並取得「健字號」許可證的產品才可合法稱為「健康食品」並宣稱特定保健功效；一般市售保健食品僅是一般食品，依法不得宣稱任何療效或保健功效。",
+      },
+      {
+        question: "健康食品（健字號）常見的核可保健功效有哪些？",
+        answer:
+          "目前食藥署公告核可的功效項目包括：調節血脂、胃腸功能改善、護肝功能、免疫調節、骨質保健、不易形成體脂肪、輔助調節血糖、延緩衰老等 13 項。",
+      },
+    ],
+  },
+  {
+    slug: "sheltered-workshops",
+    title: "全國庇護工場地圖：身障手作商品與公益據點查詢",
+    navLabel: "庇護工場地圖",
+    description:
+      "即時查詢全國各縣市身心障礙者庇護工場、公益烘焙伴手禮、手工皂及庇護就業服務據點。資料來源：勞動部勞動力發展署。",
+    directAnswer:
+      "庇護工場是為具有就業意願但就業能力不足的身心障礙者設立之支持性就業場所，提供庇護性工作機會與職業技能培力。",
+    scientificBasis: [
+      {
+        title: "勞動部勞動力發展署《身心障礙者權益保障法》庇護工場管理規範",
+        authority: "勞動部勞動力發展署",
+        url: "https://www.wda.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["disability-welfare", "disability-atm", "npo-organizations"],
+    group: "life-services",
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "什麼是身心障礙庇護工場？",
+        answer:
+          "庇護工場是由政府立案輔導之機構，提供身心障礙者適應性就業環境與工作訓練，常見業務包括烘焙甜點、咖啡包裝、洗車美容、清潔勞務與文創手工藝。",
+      },
+      {
+        question: "民眾或企業購買庇護工場商品有哪些意義？",
+        answer:
+          "購買庇護商品能直接支持身心障礙學員自立更生、獲得勞動薪資與成就感，企業採購亦可申報符合政府進用身心障礙者相關差額補助或公益採購指標。",
+      },
+    ],
+  },
+  {
+    slug: "mental-health",
+    title: "全國心理諮商所地圖：合格心理諮商與心衛中心查詢",
+    navLabel: "心理諮商所地圖",
+    description:
+      "查詢衛福部合法立案之公私立心理諮商所、臨床心理所與各縣市社區心理衛生中心，支援 1925 安心專線與專業晤談預約。",
+    directAnswer:
+      "心理諮商係由考選部及格、領有執照之諮商或臨床心理師所提供之專業心理晤談與評估，協助處理情緒困擾、創傷及人際議題。",
+    scientificBasis: [
+      {
+        title: "衛生福利部心理健康司《心理師法》及立案機構規範",
+        authority: "衛生福利部心理健康司",
+        url: "https://dep.mohw.gov.tw/DOMHAOH/",
+      },
+    ],
+    relatedSlugs: ["stress", "sleep", "clinics"],
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "遇有心理低潮或情緒困擾，有哪些免費官方求助管道？",
+        answer:
+          "衛福部設有 24 小時免付費心理諮詢「1925 安心專線」（依舊愛我），各縣市亦設有社區心理衛生中心提供免費或平價的駐點心理晤談諮詢服務。",
+      },
+      {
+        question: "諮商心理師與臨床心理師有何不同？",
+        answer:
+          "兩者皆為國家高等考試及格之專業心理師；臨床心理師側重於精神病理衡鑑、腦部認知功能評估與重大精神疾患心理治療，諮商心理師則專精於人際關係、職涯、情緒探索與壓力調適。",
+      },
+    ],
+  },
+  {
+    slug: "smoking-cessation",
+    title: "戒菸門診特約院所查詢：二代戒菸補助與戒菸衛教",
+    navLabel: "戒菸門診查詢",
+    description:
+      "查詢全國提供衛生福利部國民健康署二代戒菸治療與戒菸衛教補助之特約醫院、基層診所與社區藥局，享藥品免部分負擔。",
+    directAnswer:
+      "二代戒菸服務由國健署補助戒菸門診診察費與戒菸藥品費用，透過專業醫師評估與尼古丁替代療法大幅提升戒菸成功率。",
+    scientificBasis: [
+      {
+        title: "衛生福利部國民健康署《菸害防制法》二代戒菸治療試辦計畫",
+        authority: "衛生福利部國民健康署",
+        url: "https://www.hpa.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["clinics", "pharmacies", "health-checks"],
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "什麼是二代戒菸服務？補助內容有哪些？",
+        answer:
+          "政府補助每人每年最多 2 個療程（每療程 8 週），包含戒菸門診診察費、專業戒菸衛教與戒菸藥品，目前戒菸藥品已免收部分負擔費用。",
+      },
+      {
+        question: "自行戒菸與到戒菸門診求助成功率有何差異？",
+        answer:
+          "單靠個人意志力戒菸之年成功率通常僅約 3~5%，而在專業醫師指導並搭配尼古丁貼片或口服藥物輔助下，成功率可大幅提升至 30% 以上。",
+      },
+    ],
+  },
+  {
+    slug: "adult-preventive-care",
+    title: "成人健檢與公費癌症篩檢院所查詢",
+    navLabel: "成人健檢與癌篩",
+    description:
+      "查詢全國提供 40 歲以上公費成人健康檢查與子宮頸抹片、乳房X光、大腸癌糞便潛血及口腔黏膜四癌篩檢特約院所名冊。",
+    directAnswer:
+      "公費成人健檢提供40至64歲民眾每3年一次、65歲以上每年一次之身體檢查與血液生化檢驗，並涵蓋衛福部公費四癌早期篩檢。",
+    scientificBasis: [
+      {
+        title: "衛生福利部國民健康署成人預防保健服務作業指引",
+        authority: "衛生福利部國民健康署",
+        url: "https://www.hpa.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["health-checks", "clinics", "blood-pressure"],
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "公費成人預防保健檢查的補助資格與頻率？",
+        answer:
+          "40至64歲民眾每 3 年享有 1 次公費檢查；65歲以上長者、55歲以上原住民及35歲以上罹患小兒麻痺者，則每年享有 1 次公費成人健檢服務。",
+      },
+      {
+        question: "衛福部提供的公費四癌篩檢包含哪些對象？",
+        answer:
+          "包含：子宮頸抹片（30歲以上女性每年1次）、乳房X光攝影（45至69歲或40至44歲具家族史女性每2年1次）、糞便潛血檢查（50至74歲民眾每2年1次）、口腔黏膜檢查（30歲以上嚼檳榔或吸菸者每2年1次）。",
+      },
+    ],
+  },
+  {
+    slug: "baby-friendly-hospitals",
+    title: "母嬰親善醫療院所地圖：母嬰同室與母乳哺育認證醫院",
+    navLabel: "母嬰親善醫療院所",
+    description:
+      "查詢國健署評鑑通過之母嬰親善醫療院所名冊，提供 24 小時母嬰同室、母乳庫合作與專業國際泌乳顧問指導之友善生產環境。",
+    directAnswer:
+      "母嬰親善醫院係指符合世界衛生組織及國健署標準，支持母親自主決定生產方式、落實母嬰同室並全面推廣純母乳哺育之醫療院所。",
+    scientificBasis: [
+      {
+        title: "衛生福利部國民健康署母嬰親善醫療院所認證基準",
+        authority: "衛生福利部國民健康署",
+        url: "https://www.hpa.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["breastfeeding-rooms", "contraception-map", "child-welfare-institutions"],
+    group: "child-welfare",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "什麼是母嬰親善醫療院所認證？",
+        answer:
+          "係依據 WHO 促進母乳哺育成功十大原則評核之認證標章，要求院所實施產後即刻肌膚接觸、24小時母嬰同室、不主動推銷配方奶，並有專業醫護提供母乳哺育技術輔導。",
+      },
+      {
+        question: "實施「24小時母嬰同室」對新生兒與產婦有何益處？",
+        answer:
+          "母嬰同室能讓母親即時辨識新生兒飢餓訊號並依需求餵食，促進母乳分泌並建立安全依附感，同時降低新生兒院內交叉感染風險。",
+      },
+    ],
+  },
+  {
+    slug: "rare-disease-care",
+    title: "罕見疾病照護諮詢中心與確診醫院查詢",
+    navLabel: "罕病照護中心",
+    description:
+      "查詢國民健康署指定之全台罕見疾病照護諮詢中心、遺傳醫學諮詢窗口與重大罕見疾病確診醫療機構名冊與服務專線。",
+    directAnswer:
+      "罕見疾病照護諮詢中心由專科醫療團隊提供罕病患者全人照護、營養諮詢、基因診斷、心理支持及生育遺傳衛教服務。",
+    scientificBasis: [
+      {
+        title: "衛生福利部國民健康署《罕見疾病防治及藥物法》照護諮詢中心計畫",
+        authority: "衛生福利部國民健康署",
+        url: "https://www.hpa.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["clinics", "er-status", "health-checks"],
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "罕見疾病照護諮詢中心提供哪些具體服務？",
+        answer:
+          "中心提供罕病患者與家屬就醫諮詢、疾病相關知識衛教、心理諮商、營養評估、生育遺傳諮詢及社會福利資源媒合服務。",
+      },
+      {
+        question: "罕見疾病確診後可享有何種健保與政府補助權益？",
+        answer:
+          "經國健署公告之罕見疾病患者，可申請重大傷病卡免除該疾病就醫之部分負擔，並可申請罕見疾病特殊營養品及維持生命所需之昂貴罕病用藥補助。",
+      },
+    ],
+  },
+  {
+    slug: "organ-donation-hospitals",
+    title: "器官捐贈指定責任醫院查詢：器捐意願簽署與勸募網絡",
+    navLabel: "器捐責任醫院",
+    description:
+      "查詢衛福部器官捐贈勸募網絡指定責任醫院名冊，提供大愛器捐諮詢、健保卡器捐意願註記簽署與安寧緩和諮詢窗口。",
+    directAnswer:
+      "器官捐贈勸募責任醫院負責腦死判定、大愛器官勸募、移植配對協調與家屬關懷撫慰，並受理民眾健保卡器官捐贈意願書簽署。",
+    scientificBasis: [
+      {
+        title: "衛生福利部醫事司《人體器官移植條例》與國家器官捐贈網絡",
+        authority: "衛生福利部醫事司",
+        url: "https://dep.mohw.gov.tw/DOMA/",
+      },
+    ],
+    relatedSlugs: ["clinics", "long-term-care", "er-status"],
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "如何簽署器官捐贈同意書並註記於健保IC卡？",
+        answer:
+          "凡成年人皆可至全台各大醫院社服室、志工服務台或線上透過自然人憑證填寫「器官捐贈同意書」，審核通過後即會註記於健保卡晶片中。",
+      },
+      {
+        question: "簽署器捐意願後，若發生緊急狀況醫師會不會放棄搶救？",
+        answer:
+          "絕對不會。醫療團隊的首要任務是全力搶救病患生命；只有在經兩次嚴格腦死判定程序確定腦死，且無法挽回生命時，才會啟動器捐確認程序。",
+      },
+    ],
+  },
+  {
+    slug: "home-emergency-care",
+    title: "健保在宅急症照護特約機構查詢：在宅施打抗生素醫療",
+    navLabel: "在宅急症特約機構",
+    description:
+      "查詢中央健保署在宅急症照護試辦計畫特約院所，針對肺炎、尿路感染、軟組織感染長者提供到宅施打抗生素與遠距生理監控。",
+    directAnswer:
+      "在宅急症照護由醫師、護理師與藥師組成行動團隊，針對符合適應症之感染症病患到宅治療與監測，讓長輩免於急診奔波。",
+    scientificBasis: [
+      {
+        title: "衛生福利部中央健康保險署在宅急症照護試辦計畫實施要點",
+        authority: "衛生福利部中央健康保險署",
+        url: "https://www.nhi.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["home-healthcare", "long-term-care", "clinics"],
+    group: "care-facility",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "在宅急症照護主要收治哪些病症？",
+        answer:
+          "主要涵蓋三類常見感染症：肺炎、泌尿道感染以及軟組織感染（如蜂窩性組織炎），經醫師評估病情穩定者可在自家或安養機構在家住院接受治療。",
+      },
+      {
+        question: "在宅急症照護期間如何掌握病患生理變化？",
+        answer:
+          "行動醫療團隊每日到宅訪視與注射抗生素，並搭配連續體溫、血壓、血氧遠距生理監控設備，結合綠色通道後送機制，兼顧照護品質與安全。",
+      },
+    ],
+  },
+  {
+    slug: "pesticide-sales",
+    title: "合法農藥販賣業執照據點查詢：植物保護資材地圖",
+    navLabel: "合法農藥資材據點",
+    description:
+      "查詢農業部動植物防疫檢疫署核發合法農藥販賣業執照之經銷門市、植物保護資材營業據點，保障農作安全用藥與資材來源。",
+    directAnswer:
+      "合法農藥販賣業須經農業主管機關審查核發執照，並由專任管理人員管理農藥儲放，確保農作安全採收期與合規用藥指引。",
+    scientificBasis: [
+      {
+        title: "農業部動植物防疫檢疫署《農藥管理法》農藥販賣業管理準則",
+        authority: "農業部動植物防疫檢疫署",
+        url: "https://www.aphia.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["food-safety", "pest-alerts", "green-certifications"],
+    group: "environment",
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "為何農友購買植物保護資材應選擇合法農藥販賣業者？",
+        answer:
+          "合法業者販售經農業部登記許可、來源明確之正牌藥劑，並備有合格植物保護專業諮詢人員，避免農民誤用未核准偽劣農藥導致農藥殘留超標或罰鍰。",
+      },
+      {
+        question: "購買農藥時依法需要配合哪些實名制規定？",
+        answer:
+          "依農藥管理法規定，農民購買農藥時應出示身分證明文件，業者需登錄購買人身分、購買品項與數量，並上傳防檢署農藥銷售管理系統備查。",
+      },
+    ],
+  },
+  {
+    slug: "green-shops",
+    title: "全國綠色商店與環保標章商品地圖",
+    navLabel: "綠色商店地圖",
+    description:
+      "查詢環境部認證之綠色商店、環保餐廳與碳足跡標籤商品販售通路，提供自備容器優惠、環保集點與友善低碳綠生活據點。",
+    directAnswer:
+      "綠色商店係指設置環保標章或碳足跡商品專區，並推動節能減塑、自備購物袋優惠措施之環境部認證綠色消費據點。",
+    scientificBasis: [
+      {
+        title: "環境部資源循環署全民綠生活與綠色商店推廣要點",
+        authority: "環境部",
+        url: "https://www.moenv.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["green-certifications", "carbon-footprint", "cool-spots"],
+    group: "environment",
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "什麼是環境部認證的「綠色商店」？",
+        answer:
+          "綠色商店是指販售環保標章、節能標章、省水標章或綠建材標章商品，並承諾落實自身節能減碳、減少包裝廢棄物之實體通路或連鎖超市。",
+      },
+      {
+        question: "在綠色商店消費能享有什麼好處？",
+        answer:
+          "消費者於綠色商店購買具環保標章產品，除可搭配環境部「環保集點 (GreenPoint)」累積綠點折抵消費外，許多據點亦提供自備購物袋或容器折價之實質獎勵。",
+      },
+    ],
+  },
+  {
+    slug: "hearing-aid-subsidies",
+    title: "助聽器評估特約醫療院所查詢：公費聽力輔具評估",
+    navLabel: "助聽器評估院所",
+    description:
+      "查詢衛生福利部社會及家庭署身心障礙輔具補助指定之助聽器聽力檢查與效益驗證特約醫學中心、耳鼻喉專科醫療機構名冊。",
+    directAnswer:
+      "助聽器評估特約院所由合格聽力師進行純音聽力檢查與助聽器選配驗證，開立輔具評估報告書以申領政府身心障礙輔具補助。",
+    scientificBasis: [
+      {
+        title: "衛生福利部社會及家庭署身心障礙者輔具費用補助基準表",
+        authority: "衛生福利部社會及家庭署",
+        url: "https://www.sfaa.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["clinics", "disability-welfare", "elder-welfare"],
+    group: "life-services",
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "申請助聽器政府公費補助的基本流程？",
+        answer:
+          "申請流程為：1. 至特約醫療院所進行聽力檢查開立輔具評估報告書（第9號或第25號）；2. 向戶籍所在地社會局或輔具中心提出申請核定；3. 購買助聽器後回院所進行效益驗證並檢據核銷。",
+      },
+      {
+        question: "助聽器補助金額與資格限制？",
+        answer:
+          "領有身心障礙證明（聽覺障礙或聽力障礙多重障礙者），依身心障礙程度與福利身分（低收、中低收、一般戶），單耳補助最高從數千元至兩萬元不等，雙耳可分別申請。",
+      },
+    ],
+  },
+  {
+    slug: "funeral-facilities",
+    title: "全國合法公私立殯葬設施地圖：公墓／納骨塔／禮儀業者",
+    navLabel: "合法殯葬設施",
+    description:
+      "查詢內政部全國殯葬資訊網登記立案之合法公立與私立公墓、納骨塔（骨灰骸存放設施）、火化場與合法生命禮儀服務公司。",
+    directAnswer:
+      "合法殯葬設施受地方殯葬管理條例規範，提供合規之殯儀館設施、火化爐具、骨灰骸存放與環保自然葬登記，防杜未立案設施紛爭。",
+    scientificBasis: [
+      {
+        title: "內政部《殯葬管理條例》全國合法殯葬設施透明化規範",
+        authority: "內政部民政司",
+        url: "https://mort.moi.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["life-services", "npo-organizations", "public-toilets"],
+    group: "life-services",
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "選擇合法公墓與合法骨灰骸存放設施（納骨塔）的重要性？",
+        answer:
+          "未經核准之非法墓地或違建納骨塔可能面臨主管機關強制取締拆遷、無法取得合法使用憑證或產權糾紛，選擇民政局立案之合法設施才能保障長久權益。",
+      },
+      {
+        question: "近年推廣的「環保自然葬」包含哪些形式？",
+        answer:
+          "常見包含樹葬、花葬、植存、草葬以及海葬，遺體火化後將骨灰研磨處理植入土壤回歸自然，不立碑、不造墳，多數縣市公立自然葬園區免收規費或提供實質補助。",
+      },
+    ],
+  },
 ];
 
 /**

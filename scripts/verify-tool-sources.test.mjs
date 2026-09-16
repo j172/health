@@ -13,11 +13,9 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 67 tools registered", () => {
-  // issue #256: 67 → 60, issue #269: 60 → 61
-  // issue #290, #292: 61 → 67 tools in catalog
+test("TOOL_CATALOG has exactly 80 tools registered", () => {
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 67, `Expected 67 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 80, `Expected 80 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
