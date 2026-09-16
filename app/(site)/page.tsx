@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const items = await listLatestNews(24);
+  const items = await listLatestNews(54);
   const homeGraph = buildHomeGraphJsonLd(items);
 
   return (

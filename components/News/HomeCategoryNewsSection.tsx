@@ -11,7 +11,7 @@ interface HomeSourceCategory {
   sourceNames: string[];
 }
 
-const HOME_CARD_LIMIT = 21;
+const HOME_CARD_LIMIT = 51;
 
 export default function HomeCategoryNewsSection({
   items,
@@ -42,12 +42,8 @@ export default function HomeCategoryNewsSection({
 
   const visibleItems = useMemo(() => {
     if (activeCategoryKey === "all") {
-      const limit = Math.min(items.length, HOME_CARD_LIMIT);
-      if (effectiveBlogItems.length > 0 && limit > 0) {
-        const takeNewsCount = Math.max(0, limit - effectiveBlogItems.length);
-        return [...items.slice(0, takeNewsCount), ...effectiveBlogItems];
-      }
-      return items.slice(0, HOME_CARD_LIMIT);
+      const newsSlice = items.slice(0, HOME_CARD_LIMIT);
+      return [...newsSlice, ...effectiveBlogItems];
     }
     const active = categories.find((cat) => cat.key === activeCategoryKey);
     if (!active) return items.slice(0, HOME_CARD_LIMIT);

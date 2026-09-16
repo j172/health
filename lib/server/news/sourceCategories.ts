@@ -99,6 +99,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "grinews", label: "草根影響力新視野" },
       { sourceName: "thenewslens", label: "關鍵評論網" },
       { sourceName: "pchome", label: "PChome 新聞" },
+      { sourceName: "shih_hsin", label: "世新大學" },
     ],
   },
   {
