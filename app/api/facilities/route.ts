@@ -226,7 +226,7 @@ function getFacilitySeedFallback(
 
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
-  const facilityType = params.get("type")?.trim();
+  const facilityType = params.get("type")?.trim() || params.get("facilityType")?.trim();
   if (!facilityType) {
     return NextResponse.json({ error: "Missing required 'type' query param" }, { status: 400 });
   }
