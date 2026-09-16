@@ -29,6 +29,7 @@ export interface CpcStationMapProps {
   userLocation: { lat: number; lng: number; isDefault: boolean };
   selectedStationId?: number | null;
   onSelectStation?: (station: CpcStationItem) => void;
+  onRecenter?: () => void;
 }
 
 export default function CpcStationMap({
@@ -36,6 +37,7 @@ export default function CpcStationMap({
   userLocation,
   selectedStationId,
   onSelectStation,
+  onRecenter,
 }: CpcStationMapProps) {
   const center: [number, number] = useMemo(() => {
     if (selectedStationId) {
@@ -49,6 +51,17 @@ export default function CpcStationMap({
 
   return (
     <div className="relative h-[480px] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800">
+      {onRecenter && (
+        <button
+          type="button"
+          onClick={onRecenter}
+          className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-blue-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-blue-300 border border-slate-200 dark:border-slate-800"
+          title="重新取得精準定位並移至我的位置"
+        >
+          <span>🎯</span>
+          <span>我的位置</span>
+        </button>
+      )}
       <MapContainer
         center={center}
         zoom={13}

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import type {
   InundationSensorItem,
   RiverWaterLevelAlert,
@@ -10,6 +12,7 @@ import type {
 } from "@/lib/server/inundation/types";
 
 export default function InundationMapContent() {
+  const location = useGeolocation();
   const [data, setData] = useState<InundationMapOverview | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
@@ -84,6 +87,8 @@ export default function InundationMapContent() {
           </div>
         </div>
       </div>
+
+      <MapLocationBanner location={location} facilityTypeName="低窪積淹水測站與避難所" />
 
       {/* 摘要概況卡片 */}
       {data?.summary && (

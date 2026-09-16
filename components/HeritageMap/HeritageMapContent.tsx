@@ -7,6 +7,7 @@ import type { HeritageCategory } from "@/lib/server/culture/ingestHeritageAssets
 import type { HeritageAssetPoint } from "@/lib/server/culture/queries";
 
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 
 const HeritageMapLeaflet = dynamic(() => import("@/components/HeritageMap/HeritageMapLeaflet"), { ssr: false });
 
@@ -130,6 +131,8 @@ export default function HeritageMapContent() {
         </p>
       </div>
 
+      <MapLocationBanner location={location} facilityTypeName="文化資產據點" />
+
       {/* Layer toggles */}
       <div className="flex flex-wrap gap-3 rounded-2xl border border-neutral-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900">
         {LAYERS.map((l) => (
@@ -162,7 +165,17 @@ export default function HeritageMapContent() {
       )}
 
       {/* Map */}
-      <div className="h-[60vh] min-h-[420px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800">
+      <div className="relative h-[60vh] min-h-[420px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800">
+        <button
+          type="button"
+          onClick={() => location.refresh()}
+          disabled={location.refreshing}
+          className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-amber-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-amber-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
+          title="重新取得精準定位並移至我的位置"
+        >
+          <span>🎯</span>
+          <span>{location.refreshing ? "定位中…" : "我的位置"}</span>
+        </button>
         {loading ? (
           <div className="flex h-full items-center justify-center">
             <LoadingOrb />

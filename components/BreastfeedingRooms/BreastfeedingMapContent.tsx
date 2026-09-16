@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { BreastfeedingRoomPoint } from "./BreastfeedingMapLeaflet";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 
 const BreastfeedingMapLeaflet = dynamic(
   () => import("./BreastfeedingMapLeaflet"),
@@ -126,6 +127,8 @@ export default function BreastfeedingMapContent() {
         </p>
       </div>
 
+      <MapLocationBanner location={location} facilityTypeName="哺集乳室" />
+
       {/* Filter controls */}
       <div className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-3">
@@ -225,7 +228,17 @@ export default function BreastfeedingMapContent() {
 
       {/* Main content display */}
       {viewMode === "map" ? (
-        <div className="h-[65vh] min-h-[450px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800">
+        <div className="relative h-[65vh] min-h-[450px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => location.refresh()}
+            disabled={location.refreshing}
+            className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-pink-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-pink-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
+            title="重新取得精準定位並移至我的位置"
+          >
+            <span>🎯</span>
+            <span>{location.refreshing ? "定位中…" : "我的位置"}</span>
+          </button>
           {loading ? (
             <div className="flex h-full items-center justify-center">
               <LoadingOrb />
