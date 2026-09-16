@@ -23,6 +23,7 @@ import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
 import { runWraSync, runWraCatalogSync, runWraIotSync } from "@/lib/server/wra/runSync";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
+import { syncGovOpenDataNews } from "@/lib/server/news/fetchGovOpenDataNews";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
@@ -103,6 +104,10 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "3,13,23,33,43,53 * * * *",
     runGuarded("earthquakes-sync-cron.log", () => runEarthquakeSync()),
+  );
+  cron.schedule(
+    "12,42 * * * *",
+    runGuarded("gov-news-sync-cron.log", () => syncGovOpenDataNews({ limit: 50 })),
   );
   // Once daily — no specific business requirement on exact hour, 8am
   // server-local keeps it clear of the denser :00-ish traffic from the jobs

@@ -13,7 +13,7 @@ import {
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { resolveHeroImage } from "@/lib/server/news/heroImage";
 import { classifyLocationPrecision } from "@/lib/server/news/geoExtractor";
-import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
+import { getSourceBadgeStyle, isGovSource } from "@/lib/server/news/sourceCategories";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import NewsArticleBody from "@/components/News/NewsArticleBody";
 import ArticleReaderToolbar from "@/components/News/ArticleReaderToolbar";
@@ -112,6 +112,7 @@ export default async function NewsDetailPage({
   const articleGraph = buildArticleGraphJsonLd(news);
   const authorLabel = resolveAuthorLabel(news);
   const badgeStyle = getSourceBadgeStyle(news.source_name);
+  const isGov = isGovSource(news.source_name);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
@@ -302,6 +303,41 @@ export default async function NewsDetailPage({
                     </li>
                   ))}
                 </ul>
+              </div>
+            ) : null}
+
+            {/* Government Open Data Information Card */}
+            {isGov ? (
+              <div className="mt-8 rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-5 text-xs text-slate-800 shadow-2xs dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-slate-200">
+                <div className="flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300">
+                  <span className="text-base">🏛️</span>
+                  <span className="text-sm">中華民國政府公部門開放資料資訊</span>
+                </div>
+                <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-slate-600 dark:text-slate-400">
+                  <div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">發布機關：</span>
+                    {news.dept_name || authorLabel}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">資料來源：</span>
+                    {news.feed_name}
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">授權條款：</span>
+                    政府資料開放授權條款 (Open Government Data License)
+                  </div>
+                  <div>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">原始公告：</span>
+                    <a
+                      href={buildOutboundLink(news.canonical_url)}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-0.5 font-medium"
+                    >
+                      查看官方公報 ↗
+                    </a>
+                  </div>
+                </div>
               </div>
             ) : null}
 
