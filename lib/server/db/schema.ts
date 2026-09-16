@@ -1568,6 +1568,64 @@ export const TABLE_DDL = {
       KEY idx_er_log_reported_at (reported_at)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  foodPesticideStandards: `
+    CREATE TABLE IF NOT EXISTS food_pesticide_standards (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      category VARCHAR(32) NOT NULL,
+      crop_name VARCHAR(64) NOT NULL,
+      crop_name_en VARCHAR(64) NULL,
+      common_names VARCHAR(128) NULL,
+      pass_rate DECIMAL(5, 2) NOT NULL DEFAULT 95.0,
+      sample_count INT NOT NULL DEFAULT 0,
+      risk_level VARCHAR(16) NOT NULL DEFAULT 'low',
+      top_pesticides JSON NULL,
+      washing_guide TEXT NOT NULL,
+      seasonal_months VARCHAR(64) NULL,
+      avg_wholesale_price DECIMAL(7, 2) NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      UNIQUE KEY uk_crop_name (crop_name),
+      KEY idx_food_category (category),
+      KEY idx_food_risk (risk_level)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  foodPesticideRecords: `
+    CREATE TABLE IF NOT EXISTS food_pesticide_records (
+      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+      crop_name VARCHAR(64) NOT NULL,
+      origin_location VARCHAR(128) NULL,
+      inspection_date DATE NOT NULL,
+      pesticide_name VARCHAR(64) NOT NULL,
+      detected_value DECIMAL(8, 4) NOT NULL,
+      standard_limit DECIMAL(8, 4) NOT NULL,
+      over_ratio DECIMAL(8, 2) NOT NULL,
+      action_status VARCHAR(64) NULL,
+      created_at DATETIME NOT NULL,
+      KEY idx_pesticide_crop (crop_name),
+      KEY idx_pesticide_date (inspection_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  outdoorSafetyIndices: `
+    CREATE TABLE IF NOT EXISTS outdoor_safety_indices (
+      city_code VARCHAR(16) NOT NULL,
+      city_name VARCHAR(32) NOT NULL,
+      overall_score INT NOT NULL,
+      safety_level VARCHAR(16) NOT NULL,
+      heat_risk_level VARCHAR(16) NOT NULL,
+      aqi_value INT NOT NULL DEFAULT 0,
+      pm25_value DECIMAL(6, 2) NOT NULL DEFAULT 0,
+      uv_index DECIMAL(4, 1) NOT NULL DEFAULT 0,
+      temperature DECIMAL(4, 1) NOT NULL DEFAULT 25.0,
+      humidity INT NOT NULL DEFAULT 60,
+      runner_best_window VARCHAR(64) NULL,
+      family_park_recommendation VARCHAR(128) NULL,
+      dengue_risk_level VARCHAR(16) NOT NULL DEFAULT 'low',
+      advisory_tips JSON NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (city_code),
+      KEY idx_outdoor_score (overall_score)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

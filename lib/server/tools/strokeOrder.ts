@@ -21,6 +21,7 @@ export const STROKE_COUNTS: Record<string, number> = {
   "即": 7,
   "去": 5,
   "台": 5,
+  "戶": 4,
   "急": 9,
   "國": 11,
   "地": 6,

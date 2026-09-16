@@ -99,6 +99,19 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
 
   return (
     <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200">
+        <div className="flex items-center gap-2 font-medium">
+          <span className="text-base">🏃</span>
+          <span>規劃晨跑、單車運動或帶孩子公園放電？立即查看結合紫外線與熱指數的<strong>全台戶外安全指數</strong>。</span>
+        </div>
+        <a
+          href="/tools/outdoor-safety"
+          className="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2.5 py-1 font-semibold text-sky-800 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-200"
+        >
+          戶外安全指數 ↗
+        </a>
+      </div>
+
       {/* UV Level Legend Banner */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-3 text-sm font-extrabold tracking-tight text-slate-900 dark:text-slate-100">

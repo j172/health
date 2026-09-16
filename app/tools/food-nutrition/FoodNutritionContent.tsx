@@ -128,6 +128,19 @@ export default function FoodNutritionContent() {
         <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">⚠️ 資料為實測分析數據，同一品項不同批次可能有所差異，僅供參考。</p>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3.5 text-xs text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">
+        <div className="flex items-center gap-2 font-medium">
+          <span className="text-base">🥦</span>
+          <span>顧營養更要顧食安！想知道特定蔬果最新農藥抽檢合格率與專家流水清洗步驟？</span>
+        </div>
+        <a
+          href="/tools/food-safety"
+          className="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-2.5 py-1 font-semibold text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-200"
+        >
+          食安檢驗看板 ↗
+        </a>
+      </div>
+
       <div className="flex flex-wrap gap-1 rounded-lg bg-neutral-100 p-1 text-sm font-semibold dark:bg-slate-800">
         {TABS.map((tab) => (
           <button
