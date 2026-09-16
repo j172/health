@@ -7,6 +7,8 @@ import type { PublicArtItem } from "@/app/api/culture/public-art/route";
 import { useGeolocation, resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -93,6 +95,8 @@ export default function PublicArtContent() {
   const [userGps, setUserGps] = useState<{ lat: number; lng: number } | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
 
+  const { page, pageSize, setPage, setPageSize } = usePagination();
+
   const loadData = useCallback(async (lat?: number, lng?: number) => {
     setLoading(true);
     setError(null);
@@ -128,24 +132,34 @@ export default function PublicArtContent() {
 
   const handleUseGps = async () => {
     if (!navigator.geolocation) {
-      alert("您的瀏覽器不支援定位功能。");
+      alert("您的裝置不支援地理位置定位");
       return;
     }
     setGpsLoading(true);
-    const { timeoutMs } = await resolveGeolocationTimeout(10000);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setUserGps(coords);
-        setGpsLoading(false);
-        loadData(coords.lat, coords.lng);
-      },
-      (err) => {
-        setGpsLoading(false);
-        alert(`無法取得位置：${err.message}`);
-      },
-      { timeout: timeoutMs, enableHighAccuracy: true }
-    );
+    try {
+      const { timeoutMs } = await resolveGeolocationTimeout(8000);
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: false,
+          timeout: timeoutMs,
+        });
+      });
+      const { latitude, longitude } = pos.coords;
+      setUserGps({ lat: latitude, lng: longitude });
+      await loadData(latitude, longitude);
+      setPage(1);
+    } catch (e: any) {
+      console.warn("GPS 定位失敗:", e);
+      alert("定位逾時或未取得授權，請手動依縣市查詢。");
+    } finally {
+      setGpsLoading(false);
+    }
+  };
+
+  const handleClearGps = () => {
+    setUserGps(null);
+    loadData();
+    setPage(1);
   };
 
   const filteredItems = useMemo(() => {
@@ -189,8 +203,15 @@ export default function PublicArtContent() {
     });
   }, [items, artType, keyword, selectedCity, selectedField]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const clampedPage = Math.min(Math.max(1, page), totalPages);
+  const pagedItems = useMemo(() => {
+    return filteredItems.slice((clampedPage - 1) * pageSize, clampedPage * pageSize);
+  }, [filteredItems, clampedPage, pageSize]);
+
   const mapMarkers = useMemo(() => {
-    return filteredItems
+    const listToMap = viewMode === "grid" ? pagedItems : filteredItems;
+    return listToMap
       .filter((i) => i.lat !== null && i.lng !== null)
       .slice(0, 100)
       .map((i) => ({
@@ -200,7 +221,7 @@ export default function PublicArtContent() {
         name: i.title,
         address: `${i.artist}｜${i.location}`,
       }));
-  }, [filteredItems]);
+  }, [viewMode, pagedItems, filteredItems]);
 
   return (
     <div className="space-y-6">
@@ -409,132 +430,143 @@ export default function PublicArtContent() {
 
       {/* Artworks Grid */}
       {viewMode === "grid" && !loading && !error && filteredItems.length > 0 && (
-        <div className="grid gap-5 sm:grid-cols-2">
-          {filteredItems.map((item) => {
-            return (
-              <div
-                key={item.id}
-                className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700/60"
-              >
-                <div>
-                  {/* Artwork Image if available */}
-                  {item.imageUrl && (
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-                      <ArtworkImage src={item.imageUrl} alt={item.title} />
-                    </div>
-                  )}
-
-                  <div className="p-5">
-                    {/* Badges */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span
-                        className={`rounded-md px-2 py-0.5 text-xs font-bold ${
-                          item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")
-                            ? "bg-purple-50 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300"
-                            : "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300"
-                        }`}
-                      >
-                        {item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_") ? "🎭 演藝場所" : `🎨 ${item.artist}`}
-                      </span>
-                      {item.fieldType && item.fieldType !== "演藝活動場所" && (
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {item.fieldType}
-                        </span>
-                      )}
-                      {(item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")) && item.artist && (
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          🏛️ {item.artist}
-                        </span>
-                      )}
-                      {item.year && (
-                        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                          {item.year} 年
-                        </span>
-                      )}
-                      {item.distanceKm !== undefined && (
-                        <span className="ml-auto rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                          距您 {item.distanceKm} km
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Artwork Title */}
-                    <h3 className="mt-2.5 text-base font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                      {item.title}
-                    </h3>
-
-                    {/* Setting location */}
-                    <div className="mt-2 flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300">
-                      <span className="shrink-0 text-slate-600">📍</span>
-                      <span className="font-medium">{item.location}</span>
-                    </div>
-
-                    {/* Venue Phone / Contact if available */}
-                    {item.extraJson && (Boolean(item.extraJson.phone) || Boolean(item.extraJson.register)) ? (
-                      <div className="mt-2 space-y-1 rounded-xl bg-slate-50 p-2.5 text-xs dark:bg-slate-800/60">
-                        {item.extraJson.phone ? (
-                          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
-                            <span>📞</span>
-                            <a href={`tel:${String(item.extraJson.phone).split("#")[0]}`} className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
-                              {String(item.extraJson.phone)}
-                            </a>
-                          </div>
-                        ) : null}
-                        {item.extraJson.register ? (
-                          <div className="line-clamp-2 text-[11px] text-slate-600 dark:text-slate-400">
-                            <span>📋 </span>
-                            <span>{String(item.extraJson.register)}</span>
-                          </div>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    {/* Material & Dimensions */}
-                    {(item.material || item.dimensions) && (
-                      <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-400">
-                        {item.material && <span>材質：{item.material} </span>}
-                        {item.dimensions && <span>({item.dimensions})</span>}
+        <div className="space-y-6">
+          <div className="grid gap-5 sm:grid-cols-2">
+            {pagedItems.map((item) => {
+              return (
+                <div
+                  key={item.id}
+                  className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700/60"
+                >
+                  <div>
+                    {/* Artwork Image if available */}
+                    {item.imageUrl && (
+                      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 dark:bg-slate-800">
+                        <ArtworkImage src={item.imageUrl} alt={item.title} />
                       </div>
                     )}
 
-                    {/* Description preview */}
-                    {item.description && (
-                      <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        {item.description}
-                      </p>
+                    <div className="p-5">
+                      {/* Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span
+                          className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+                            item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")
+                              ? "bg-purple-50 text-purple-700 dark:bg-purple-950/70 dark:text-purple-300"
+                              : "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/70 dark:text-indigo-300"
+                          }`}
+                        >
+                          {item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_") ? "🎭 演藝場所" : `🎨 ${item.artist}`}
+                        </span>
+                        {item.fieldType && item.fieldType !== "演藝活動場所" && (
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            {item.fieldType}
+                          </span>
+                        )}
+                        {(item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")) && item.artist && (
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                            🏛️ {item.artist}
+                          </span>
+                        )}
+                        {item.year && (
+                          <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            {item.year} 年
+                          </span>
+                        )}
+                        {item.distanceKm !== undefined && (
+                          <span className="ml-auto rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                            距您 {item.distanceKm} km
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Artwork Title */}
+                      <h3 className="mt-2.5 text-base font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                        {item.title}
+                      </h3>
+
+                      {/* Setting location */}
+                      <div className="mt-2 flex items-start gap-1.5 text-xs text-slate-600 dark:text-slate-300">
+                        <span className="shrink-0 text-slate-600">📍</span>
+                        <span className="font-medium">{item.location}</span>
+                      </div>
+
+                      {/* Venue Phone / Contact if available */}
+                      {item.extraJson && (Boolean(item.extraJson.phone) || Boolean(item.extraJson.register)) ? (
+                        <div className="mt-2 space-y-1 rounded-xl bg-slate-50 p-2.5 text-xs dark:bg-slate-800/60">
+                          {item.extraJson.phone ? (
+                            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
+                              <span>📞</span>
+                              <a href={`tel:${String(item.extraJson.phone).split("#")[0]}`} className="font-semibold text-indigo-600 hover:underline dark:text-indigo-400">
+                                {String(item.extraJson.phone)}
+                              </a>
+                            </div>
+                          ) : null}
+                          {item.extraJson.register ? (
+                            <div className="line-clamp-2 text-[11px] text-slate-600 dark:text-slate-400">
+                              <span>📋 </span>
+                              <span>{String(item.extraJson.register)}</span>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {/* Material & Dimensions */}
+                      {(item.material || item.dimensions) && (
+                        <div className="mt-2 text-[11px] text-slate-600 dark:text-slate-400">
+                          {item.material && <span>材質：{item.material} </span>}
+                          {item.dimensions && <span>({item.dimensions})</span>}
+                        </div>
+                      )}
+
+                      {/* Description preview */}
+                      {item.description && (
+                        <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Footer action buttons */}
+                  <div className="flex items-center gap-2 border-t border-slate-100 p-4 pt-3 dark:border-slate-800">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        `${item.city} ${item.location}`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
+                    >
+                      🗺️ Google 地圖導航
+                    </a>
+
+                    {item.sourceUrl && (
+                      <a
+                        href={item.sourceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-500"
+                      >
+                        {item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")
+                          ? "📝 線上登記/官網 ↗"
+                          : "🏛️ 文化部典藏頁 ↗"}
+                      </a>
                     )}
                   </div>
                 </div>
+              );
+            })}
+          </div>
 
-                {/* Footer action buttons */}
-                <div className="flex items-center gap-2 border-t border-slate-100 p-4 pt-3 dark:border-slate-800">
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${item.city} ${item.location}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
-                  >
-                    🗺️ Google 地圖導航
-                  </a>
-
-                  {item.sourceUrl && (
-                    <a
-                      href={item.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-500"
-                    >
-                      {item.fieldType === "演藝活動場所" || item.id.startsWith("VENUE_")
-                        ? "📝 線上登記/官網 ↗"
-                        : "🏛️ 文化部典藏頁 ↗"}
-                    </a>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          <Pagination
+            page={clampedPage}
+            pageSize={pageSize}
+            totalItems={filteredItems.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="件公共藝術/場所"
+          />
         </div>
       )}
     </div>

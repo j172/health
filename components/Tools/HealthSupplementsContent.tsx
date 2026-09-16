@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import defaultSeed from "@/data/health-supplements-seed.json";
+import Pagination from "@/components/Tools/Pagination";
+import { usePagination } from "@/lib/hooks/usePagination";
 
 export interface HealthSupplement {
   license_no: string;
@@ -39,6 +41,8 @@ export default function HealthSupplementsContent() {
   const [activeOnly, setActiveOnly] = useState(true);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
+  const { page, pageSize, setPage, setPageSize } = usePagination();
+
   useEffect(() => {
     let ignore = false;
     const timer = setTimeout(async () => {
@@ -47,7 +51,7 @@ export default function HealthSupplementsContent() {
         const query = new URLSearchParams();
         if (keyword.trim()) query.set("keyword", keyword.trim());
         query.set("activeOnly", activeOnly ? "true" : "false");
-        query.set("limit", "100");
+        query.set("limit", "300");
 
         const res = await fetchWithTimeout(`/api/health-supplements?${query.toString()}`, { timeoutMs: 5000 });
         if (res.ok) {
@@ -77,6 +81,10 @@ export default function HealthSupplementsContent() {
     const name = item.name_zh || "";
     return cat.includes(selectedCategory) || claim.includes(selectedCategory) || name.includes(selectedCategory);
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize));
+  const clampedPage = Math.min(Math.max(1, page), totalPages);
+  const pagedItems = filteredItems.slice((clampedPage - 1) * pageSize, clampedPage * pageSize);
 
   return (
     <div className="space-y-6">
@@ -114,7 +122,10 @@ export default function HealthSupplementsContent() {
               <input
                 type="search"
                 value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
+                onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setPage(1);
+                }}
                 placeholder="搜尋產品名稱、成分（如：紅麴、芝麻素、靈芝、兒茶素）或申請廠商..."
                 className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pr-4 pl-10 text-sm text-slate-900 placeholder:text-slate-600 focus:border-emerald-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-850 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:border-emerald-400"
               />
@@ -123,7 +134,10 @@ export default function HealthSupplementsContent() {
               <input
                 type="checkbox"
                 checked={activeOnly}
-                onChange={(e) => setActiveOnly(e.target.checked)}
+                onChange={(e) => {
+                  setActiveOnly(e.target.checked);
+                  setPage(1);
+                }}
                 className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700"
               />
               僅顯示目前核可有效
@@ -139,7 +153,10 @@ export default function HealthSupplementsContent() {
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setSelectedCategory(cat)}
+                  onClick={() => {
+                    setSelectedCategory(cat);
+                    setPage(1);
+                  }}
                   className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-all ${
                     isSelected
                       ? "bg-emerald-600 text-white shadow-xs"
@@ -158,7 +175,7 @@ export default function HealthSupplementsContent() {
       <div className="flex items-center justify-between px-1">
         <p className="text-xs font-medium text-slate-600 dark:text-slate-400">
           共收錄 <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{filteredItems.length}</span>{" "}
-          項健字號健康食品
+          項健字號健康食品・第 {clampedPage} / {totalPages} 頁（每頁 {pageSize} 筆）
           {loading && <span className="ml-2 animate-pulse text-emerald-600">（載入最新許可中...）</span>}
         </p>
       </div>
@@ -171,98 +188,109 @@ export default function HealthSupplementsContent() {
           <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">請嘗試更換關鍵字或切換「全部」保健功效類別。</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {filteredItems.map((item) => {
-            const isExpanded = expandedItem === item.license_no;
-            return (
-              <div
-                key={item.license_no}
-                className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700"
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                        {item.license_no}
-                      </span>
-                      <h3 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">{item.name_zh}</h3>
-                    </div>
-                    {item.category && (
-                      <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                        {item.category}
-                      </span>
-                    )}
-                  </div>
-
-                  {item.claim && (
-                    <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-700 dark:bg-slate-850 dark:text-slate-300">
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-300">🎯 保健功效：</span>
-                      {item.claim}
-                    </div>
-                  )}
-
-                  <div className="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-400">
-                    <p>
-                      <span className="font-medium text-slate-500">申請廠商：</span>
-                      {item.applicant || "未知"}
-                    </p>
-                    {item.function_ingredients && (
-                      <p>
-                        <span className="font-medium text-slate-500">保健成分：</span>
-                        {item.function_ingredients}
-                      </p>
-                    )}
-                    {item.approved_at && (
-                      <p>
-                        <span className="font-medium text-slate-500">核准日期：</span>
-                        <span className="font-mono">{item.approved_at}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {isExpanded && (
-                    <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-400">
-                      {item.warning && (
-                        <div className="rounded-lg bg-amber-50 p-2.5 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                          <span className="font-bold">⚠️ 警語：</span>
-                          {item.warning}
-                        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {pagedItems.map((item) => {
+              const isExpanded = expandedItem === item.license_no;
+              return (
+                <div
+                  key={item.license_no}
+                  className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-emerald-300 hover:shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:hover:border-emerald-700"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                          {item.license_no}
+                        </span>
+                        <h3 className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">{item.name_zh}</h3>
+                      </div>
+                      {item.category && (
+                        <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
+                          {item.category}
+                        </span>
                       )}
-                      {item.notice && (
+                    </div>
+
+                    {item.claim && (
+                      <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-700 dark:bg-slate-850 dark:text-slate-300">
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-300">🎯 保健功效：</span>
+                        {item.claim}
+                      </div>
+                    )}
+
+                    <div className="mt-3 space-y-1 text-xs text-slate-600 dark:text-slate-400">
+                      <p>
+                        <span className="font-medium text-slate-500">申請廠商：</span>
+                        {item.applicant || "未知"}
+                      </p>
+                      {item.function_ingredients && (
                         <p>
-                          <span className="font-medium text-slate-500">注意事項：</span>
-                          {item.notice}
+                          <span className="font-medium text-slate-500">保健成分：</span>
+                          {item.function_ingredients}
                         </p>
                       )}
-                      {item.source_url && (
+                      {item.approved_at && (
                         <p>
-                          <a
-                            href={item.source_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 font-semibold text-emerald-600 hover:underline dark:text-emerald-400"
-                          >
-                            食藥署官方查驗許可詳細 ↗
-                          </a>
+                          <span className="font-medium text-slate-500">核准日期：</span>
+                          <span className="font-mono">{item.approved_at}</span>
                         </p>
                       )}
                     </div>
-                  )}
-                </div>
 
-                <div className="mt-4 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setExpandedItem(isExpanded ? null : item.license_no)}
-                    className="text-xs font-semibold text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
-                  >
-                    {isExpanded ? "▲ 收合詳細標示" : "▼ 查看警語與詳細說明"}
-                  </button>
+                    {isExpanded && (
+                      <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-xs text-slate-600 dark:border-slate-800 dark:text-slate-400">
+                        {item.warning && (
+                          <div className="rounded-lg bg-amber-50 p-2.5 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                            <span className="font-bold">⚠️ 警語：</span>
+                            {item.warning}
+                          </div>
+                        )}
+                        {item.notice && (
+                          <p>
+                            <span className="font-medium text-slate-500">注意事項：</span>
+                            {item.notice}
+                          </p>
+                        )}
+                        {item.source_url && (
+                          <p>
+                            <a
+                              href={item.source_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-semibold text-emerald-600 hover:underline dark:text-emerald-400"
+                            >
+                              食藥署官方查驗許可詳細 ↗
+                            </a>
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-4 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedItem(isExpanded ? null : item.license_no)}
+                      className="text-xs font-semibold text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400"
+                    >
+                      {isExpanded ? "▲ 收合詳細標示" : "▼ 查看警語與詳細說明"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+
+          <Pagination
+            page={clampedPage}
+            pageSize={pageSize}
+            totalItems={filteredItems.length}
+            onPageChange={setPage}
+            onPageSizeChange={setPageSize}
+            itemLabel="項保健食品"
+          />
+        </>
       )}
     </div>
   );

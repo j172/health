@@ -13,6 +13,8 @@ import type { FacilityPenaltyInfo } from "@/lib/server/facilities/sources/nhiPen
 
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
+import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -135,45 +137,64 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   const location = useGeolocation();
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [county, setCounty] = useState("");
+  const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("");
   const [onlyCharity, setOnlyCharity] = useState(false);
-  const [sort, setSort] = useState<"distance" | "name" | "category">("distance");
+  const [sort, setSort] = useState<"distance" | "newest" | "name" | "category">("distance");
   const [facilities, setFacilities] = useState<FacilityItem[] | null>(null);
-  /** Size of the whole dataset for this facility type, independent of the current filters. */
+  /** Size of the filtered dataset matching current query, used for Pagination. */
   const [total, setTotal] = useState<number | null>(null);
+  /** Size of the whole dataset for this facility type. */
+  const [allTotal, setAllTotal] = useState<number | null>(null);
   /** True when the rendered list came from the widened fallback radius rather than the configured one. */
   const [widenedRadius, setWidenedRadius] = useState(false);
-  /** Number of results found in the initial radius before widening (when fewer than pageSize). */
+  /** Number of results found in the initial radius before widening. */
   const [initialNearbyCount, setInitialNearbyCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  // Issue #157: 地圖/定位類頁面 default to nearest-first 30, switchable to 50/100. Paging
-  // is client-side over whatever `/api/facilities` already returned (see FETCH_LIMIT) —
-  // the server keeps doing the distance sort, this just slices the sorted list.
-  const { page, pageSize, setPage, setPageSize } = usePagination();
+  // Issue #157 / #312: 支援 30 / 50 / 100 分頁器，與後端 API 伺服器端分頁對齊
+  const { page, pageSize, setPage, setPageSize, offset } = usePagination();
 
-  // Keyword search never sends lat/lng (see below), so distance can't be computed —
-  // drop back to name sort rather than let the dropdown keep a now-meaningless selection.
-  const effectiveSort = keyword && sort === "distance" ? "name" : sort;
+  // If keyword or county search is active, and distance sort is selected but no coords available,
+  // fall back gracefully
+  const effectiveSort = sort;
 
   useEffect(() => {
     let cancelled = false;
 
-    const load = async (radius: number): Promise<{ facilities: FacilityItem[]; total?: number }> => {
-      const params = new URLSearchParams({ type: facilityType, limit: String(FETCH_LIMIT) });
-      if (keyword) {
-        // Keyword search browses by name/address regardless of geocoding status.
-        params.set("keyword", keyword);
-      } else {
-        // No keyword — fall back to GPS-nearby (only surfaces already-geocoded rows).
-        params.set("lat", String(location.lat));
-        params.set("lng", String(location.lng));
-        params.set("radius", String(radius));
-      }
+    const load = async (radius: number): Promise<{ facilities: FacilityItem[]; total?: number; allTotal?: number }> => {
+      const params = new URLSearchParams({
+        type: facilityType,
+        limit: String(pageSize),
+        offset: String(offset),
+        page: String(page),
+      });
+
+      if (keyword) params.set("keyword", keyword);
+      if (county) params.set("county", county);
+      if (district) params.set("district", district);
       if (category) params.set("category", category);
       if (onlyCharity) params.set("charity", "1");
       if (effectiveSort) params.set("sort", effectiveSort);
+
+      // Coordinates for distance calculations:
+      // If user selected county, use the county centroid coordinates for distance sort;
+      // otherwise use browser geolocation (or default)
+      if (effectiveSort === "distance") {
+        const centroid = county && TAIWAN_COUNTY_CENTROIDS[county] ? TAIWAN_COUNTY_CENTROIDS[county] : null;
+        const targetLat = centroid ? centroid.lat : location.lat;
+        const targetLng = centroid ? centroid.lng : location.lng;
+        if (targetLat !== undefined && targetLng !== undefined && Number.isFinite(targetLat) && Number.isFinite(targetLng)) {
+          params.set("lat", String(targetLat));
+          params.set("lng", String(targetLng));
+          // Radius constraint applies only when purely browsing nearby without specific county/district/keyword
+          if (!county && !district && !keyword) {
+            params.set("radius", String(radius));
+          }
+        }
+      }
 
       const res = await fetchWithTimeout(`/api/facilities?${params.toString()}`, { timeoutMs: 5000 });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -182,17 +203,13 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
 
     (async () => {
       try {
+        setLoading(true);
         let data = await load(radiusMeters);
         let widened = false;
         let originalCount: number | null = null;
 
-        // A dataset can be nationally large and locally empty at the same time — 伯公照護站
-        // holds ~611 rows but almost none within 10km of Taipei. An empty page there reads as
-        // "this tool has no data", so re-run the same query at a 500km radius and show the
-        // nearest rows instead.
-        // If results within radius are fewer than one page (e.g. only 3 stations), also widen
-        // to fill up to pageSize so readers always get at least a full page of closest stations.
-        if (!keyword && data.facilities.length < pageSize) {
+        // In nearby distance mode without filters, widen if radius yielded 0 results
+        if (!keyword && !county && !district && effectiveSort === "distance" && data.facilities.length === 0) {
           originalCount = data.facilities.length;
           const widenedData = await load(NEARBY_FALLBACK_RADIUS_METERS);
           if (widenedData.facilities.length > data.facilities.length) {
@@ -204,6 +221,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         if (!cancelled) {
           setFacilities(data.facilities);
           setTotal(typeof data.total === "number" ? data.total : null);
+          setAllTotal(typeof data.allTotal === "number" ? data.allTotal : null);
           setWidenedRadius(widened);
           setInitialNearbyCount(widened ? originalCount : null);
           setError(false);
@@ -220,19 +238,53 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     return () => {
       cancelled = true;
     };
-  }, [location.lat, location.lng, keyword, facilityType, radiusMeters, category, onlyCharity, effectiveSort, pageSize]);
+  }, [
+    location.lat,
+    location.lng,
+    keyword,
+    county,
+    district,
+    facilityType,
+    radiusMeters,
+    category,
+    onlyCharity,
+    effectiveSort,
+    pageSize,
+    offset,
+    page,
+  ]);
+
+  const handleCountyChange = (c: string) => {
+    setCounty(c);
+    setDistrict("");
+    setPage(1);
+  };
+
+  const handleDistrictChange = (d: string) => {
+    setDistrict(d);
+    setPage(1);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = searchInput.trim();
     setKeyword(trimmed);
-    if (trimmed && sort === "distance") {
-      setSort("name");
-    }
     setPage(1);
   };
 
-  const geocoded = (facilities ?? []).filter((f): f is FacilityItem & { lat: number; lng: number } => f.lat !== null && f.lng !== null);
+  const handleResetAll = () => {
+    setKeyword("");
+    setSearchInput("");
+    setCounty("");
+    setDistrict("");
+    setCategory("");
+    setOnlyCharity(false);
+    setSort("distance");
+    setPage(1);
+  };
+
+  const pagedFacilities = facilities ?? [];
+  const geocoded = pagedFacilities.filter((f): f is FacilityItem & { lat: number; lng: number } => f.lat !== null && f.lng !== null);
   const markers: MapMarker[] = geocoded.map((f) => ({
     id: String(f.id),
     lat: f.lat,
@@ -244,14 +296,11 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     charityName: f.extra_json?.charityName,
   }));
 
-  // Naming both numbers — the radius that found nothing and how far the closest row actually
-  // is — is what turns "we found nothing near you" into useful information.
   const noun = facilityNoun(emptyStateNoKeyword, title);
-  const nearestKm = (facilities ?? []).reduce((min, f) => {
+  const nearestKm = pagedFacilities.reduce((min, f) => {
     const km = Number(f.distance_km);
     return Number.isFinite(km) && km < min ? km : min;
   }, Infinity);
-  // Infinity when no row carried a distance (a non-GPS list) — drop the clause rather than guess.
   const nearestText = Number.isFinite(nearestKm) ? `（最近一處約 ${Math.round(nearestKm)} 公里）` : "";
   const fallbackNotice = widenedRadius
     ? (initialNearbyCount && initialNearbyCount > 0
@@ -259,13 +308,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         : `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。`)
     : null;
 
-  // Client-side slice of whatever the API already returned (see FETCH_LIMIT above).
-  // Clamp defensively rather than trust the URL's `page` — a filter change can shrink
-  // the result set out from under a page number that was valid a moment ago.
-  const facilityList = facilities ?? [];
-  const totalPages = Math.max(1, Math.ceil(facilityList.length / pageSize));
-  const clampedPage = Math.min(Math.max(1, page), totalPages);
-  const pagedFacilities = facilityList.slice((clampedPage - 1) * pageSize, clampedPage * pageSize);
+  const totalCount = total !== null ? total : pagedFacilities.length;
 
   return (
     <div className="space-y-6">
@@ -300,24 +343,43 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         </div>
       )}
 
-      <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="min-w-[160px] flex-1 rounded-lg border border-neutral-300 bg-white px-4 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-        />
-        {categories && categories.length > 0 && (
-          <>
+      {/* 結構化篩選面板：縣市鄉鎮二級聯動 ＋ 關鍵字 ＋ 類別 ＋ 排序 */}
+      <form onSubmit={handleSearch} className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/60 shadow-xs">
+        {/* 第一列：22 縣市＋368 鄉鎮二級快速篩選 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-slate-300 shrink-0">
+            <span>📍 地區快篩：</span>
+          </div>
+          <CountyDistrictPicker
+            county={county}
+            district={district}
+            onCountyChange={handleCountyChange}
+            onDistrictChange={handleDistrictChange}
+            className="flex-1"
+          />
+        </div>
+
+        {/* 第二列：關鍵字、類別、排序與操作按鈕 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-[180px]">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={searchPlaceholder}
+              className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </div>
+
+          {categories && categories.length > 0 && (
             <select
               value={category}
               onChange={(e) => {
                 setCategory(e.target.value);
                 setPage(1);
               }}
-              aria-label="分類篩解"
-              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              aria-label="業務分類篩選"
+              className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
               <option value="">全部分類</option>
               {categories.map((c) => (
@@ -326,51 +388,55 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                 </option>
               ))}
             </select>
-            <select
-              value={sort}
-              onChange={(e) => {
-                setSort(e.target.value as typeof sort);
-                setPage(1);
-              }}
-              aria-label="排序方式"
-              className="rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm text-neutral-800 focus:border-primary focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-            >
-              {!keyword && <option value="distance">距離最近</option>}
-              <option value="name">名稱 A-Z</option>
-              <option value="category">依分類</option>
-            </select>
-          </>
-        )}
-        {charityFilter && (
-          <label className="flex items-center gap-1.5 rounded-lg border border-neutral-300 px-3 py-2.5 text-sm text-neutral-700 dark:border-slate-700 dark:text-slate-200">
-            <input
-              type="checkbox"
-              checked={onlyCharity}
-              onChange={(e) => {
-                setOnlyCharity(e.target.checked);
-                setPage(1);
-              }}
-              className="h-4 w-4 accent-primary"
-            />
-            {charityFilter.label}
-          </label>
-        )}
-        <button type="submit" className="rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primaryho">
-          搜尋
-        </button>
-        {keyword && (
-          <button
-            type="button"
-            onClick={() => {
-              setKeyword("");
-              setSearchInput("");
+          )}
+
+          <select
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value as typeof sort);
               setPage(1);
             }}
-            className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            aria-label="排序方式"
+            className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
-            清除
+            <option value="distance">📍 距離最近</option>
+            <option value="newest">✨ 最新登記</option>
+            <option value="name">🔤 名稱筆畫</option>
+            {categories && categories.length > 0 && <option value="category">🏷️ 依業務分類</option>}
+          </select>
+
+          {charityFilter && (
+            <label className="flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-700 shadow-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+              <input
+                type="checkbox"
+                checked={onlyCharity}
+                onChange={(e) => {
+                  setOnlyCharity(e.target.checked);
+                  setPage(1);
+                }}
+                className="h-4 w-4 accent-primary"
+              />
+              {charityFilter.label}
+            </label>
+          )}
+
+          <button
+            type="submit"
+            className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-primaryho"
+          >
+            搜尋
           </button>
-        )}
+
+          {(keyword || county || district || category || onlyCharity || searchInput) && (
+            <button
+              type="button"
+              onClick={handleResetAll}
+              className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              重設
+            </button>
+          )}
+        </div>
       </form>
 
       <MapLocationBanner location={location} facilityTypeName={title || "機構據點"} />
@@ -387,9 +453,12 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         <>
           {markers.length > 0 && (
             <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200 dark:border-slate-800">
-              {/* Don't draw the configured radius circle once the fallback widened past it — the
-                  circle would sit empty while every marker on the map lies outside it. */}
-              <FacilityMap userLocation={location} markers={markers} radiusMeters={radiusMeters} showRadius={!keyword && !widenedRadius} />
+              <FacilityMap
+                userLocation={location}
+                markers={markers}
+                radiusMeters={radiusMeters}
+                showRadius={!keyword && !county && !district && effectiveSort === "distance" && !widenedRadius}
+              />
             </div>
           )}
 
@@ -397,15 +466,18 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
             <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">{fallbackNotice}</p>
           )}
 
-          {facilities.length === 0 ? (
-            // Reached only when the widened fallback also came back empty, so this now means
-            // "nothing anywhere in the dataset" rather than "nothing within the radius".
-            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword ? emptyStateWithKeyword : emptyStateNoKeyword}</p>
+          {totalCount === 0 ? (
+            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword || county ? emptyStateWithKeyword : emptyStateNoKeyword}</p>
           ) : (
             <div className="space-y-3">
-              <p className="text-xs text-neutral-500 dark:text-slate-400">
-                顯示 {facilities.length} 筆{total !== null && `／全台共 ${total} 筆`}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-slate-400">
+                <span>
+                  共找到 <strong>{totalCount}</strong> 筆
+                  {allTotal !== null && allTotal > 0 && `（全台共收錄 ${allTotal} 筆）`}
+                  ・第 {page} 頁（每頁 {pageSize} 筆）
+                </span>
+              </div>
+
               {pagedFacilities.map((f) => (
                 <div key={f.id} className="rounded-xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   <div className="flex items-start justify-between gap-3">
@@ -491,7 +563,14 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                   {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">（尚未完成地理定位，暫不顯示於地圖）</p>}
                 </div>
               ))}
-              <Pagination page={page} pageSize={pageSize} totalItems={facilities.length} onPageChange={setPage} onPageSizeChange={setPageSize} itemLabel={`筆${noun}`} />
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                totalItems={totalCount}
+                onPageChange={setPage}
+                onPageSizeChange={setPageSize}
+                itemLabel={`筆${noun}`}
+              />
             </div>
           )}
         </>
