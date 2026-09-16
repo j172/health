@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
-import { countFacilities, searchFacilities } from "@/lib/server/facilities/queries";
+import { countFacilities, countFilteredFacilities, searchFacilities } from "@/lib/server/facilities/queries";
 
 import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
 import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
@@ -60,6 +60,8 @@ function getFacilitySeedFallback(
   facilityType: string,
   options: {
     keyword?: string;
+    county?: string;
+    district?: string;
     lat?: number;
     lng?: number;
     radiusMeters?: number;
@@ -67,8 +69,9 @@ function getFacilitySeedFallback(
     onlyCharity?: boolean;
     sort?: string;
     limit?: number;
+    offset?: number;
   },
-): { facilities: SeedFacilityItem[]; total: number } | null {
+): { facilities: SeedFacilityItem[]; total: number; allTotal: number } | null {
   try {
     let raw = SEED_FACILITIES[facilityType];
 
@@ -142,7 +145,19 @@ function getFacilitySeedFallback(
       });
     }
 
-    // 2. Category / serviceItem filter
+    // 2. County filter
+    if (options.county) {
+      const c = options.county.toLowerCase().trim().replace(/臺/g, "台");
+      list = list.filter((item) => (item.address || "").toLowerCase().replace(/臺/g, "台").includes(c));
+    }
+
+    // 3. District filter
+    if (options.district) {
+      const d = options.district.trim();
+      list = list.filter((item) => (item.address || "").includes(d));
+    }
+
+    // 4. Category / serviceItem filter
     if (options.serviceItem === "違規／停約" || options.serviceItem === "違規" || options.serviceItem === "停約") {
       list = list.filter((item) => Boolean(item.extra_json?.penalty || item.service_item?.includes("違規") || item.service_item?.includes("停約")));
     } else if (options.serviceItem) {
@@ -150,12 +165,12 @@ function getFacilitySeedFallback(
       list = list.filter((item) => item.service_item && item.service_item.includes(cat));
     }
 
-    // 3. Charity filter
+    // 5. Charity filter
     if (options.onlyCharity) {
       list = list.filter((item) => item.extra_json?.charityUrl);
     }
 
-    // 4. GPS Distance calculation & radius filter
+    // 6. GPS Distance calculation & radius filter
     if (
       options.lat !== undefined &&
       options.lng !== undefined &&
@@ -188,17 +203,21 @@ function getFacilitySeedFallback(
       }
     }
 
-    // 5. Explicit name or category sorting
-    if (options.sort === "name") {
+    // 7. Explicit sorting
+    if (options.sort === "newest") {
+      list.sort((a, b) => b.id - a.id);
+    } else if (options.sort === "name") {
       list.sort((a, b) => a.name.localeCompare(b.name, "zh-Hant"));
     } else if (options.sort === "category") {
       list.sort((a, b) => (a.service_item || "").localeCompare(b.service_item || "", "zh-Hant"));
     }
 
-    const limit = options.limit || 200;
-    const facilities = list.slice(0, limit);
+    const totalFiltered = list.length;
+    const offset = options.offset || 0;
+    const limit = options.limit || 30;
+    const facilities = list.slice(offset, offset + limit);
 
-    return { facilities, total: totalAll };
+    return { facilities, total: totalFiltered, allTotal: totalAll };
   } catch (err) {
     console.warn(`Failed to load facility seed fallback for ${facilityType}:`, err);
     return null;
@@ -213,31 +232,35 @@ export async function GET(request: NextRequest) {
   }
 
   const keyword = params.get("keyword")?.trim() || undefined;
+  const county = params.get("county")?.trim() || undefined;
+  const district = params.get("district")?.trim() || undefined;
   const lat = params.get("lat") ? Number(params.get("lat")) : undefined;
   const lng = params.get("lng") ? Number(params.get("lng")) : undefined;
   const radiusMeters = params.get("radius") ? Number(params.get("radius")) : undefined;
   const serviceItem = params.get("category")?.trim() || undefined;
   const onlyCharity = params.get("charity") === "1" || undefined;
   const sortParam = params.get("sort");
-  const sort = sortParam === "distance" || sortParam === "name" || sortParam === "category" ? sortParam : undefined;
-  // Issue #157: FacilitySearchContent paginates client-side (30/50/100 per page) over
-  // whatever this endpoint returns, so its default 200-row cap needs to comfortably
-  // cover a few pages at the largest page size. Callers may ask for more (clamped to
-  // 500 to keep the Haversine-filtered query cheap); anything unparseable falls back
-  // to searchFacilities()'s own default.
-  const rawLimit = params.get("limit") ? Number(params.get("limit")) : undefined;
-  const limit = rawLimit !== undefined && Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 500) : undefined;
+  const sort =
+    sortParam === "distance" || sortParam === "name" || sortParam === "category" || sortParam === "newest"
+      ? sortParam
+      : undefined;
+
+  const pageParam = params.get("page") ? Number(params.get("page")) : 1;
+  const page = Number.isFinite(pageParam) ? Math.max(1, Math.trunc(pageParam)) : 1;
+
+  const pageSizeParam = params.get("pageSize") || params.get("limit");
+  const rawLimit = pageSizeParam ? Number(pageSizeParam) : 30;
+  const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.trunc(rawLimit), 1), 500) : 30;
+
+  const rawOffset = params.get("offset") ? Number(params.get("offset")) : (page - 1) * limit;
+  const offset = Number.isFinite(rawOffset) ? Math.max(0, Math.trunc(rawOffset)) : 0;
 
   try {
-    // `total` deliberately takes nothing but `facilityType` — it is the size of the whole
-    // dataset, not of this result set. The list UI prints the two side by side
-    // (顯示 N 筆／全台共 M 筆) so that a nearby search returning a handful of rows, which is
-    // normal for a geographically concentrated dataset, can't be misread as the dataset
-    // itself being nearly empty. Passing keyword/radius/category in here would collapse
-    // `total` back onto `facilities.length` and destroy the only comparison that matters.
     if (serviceItem === "避孕諮詢") {
       const fallback = getFacilitySeedFallback(facilityType, {
         keyword,
+        county,
+        district,
         lat,
         lng,
         radiusMeters,
@@ -245,24 +268,52 @@ export async function GET(request: NextRequest) {
         onlyCharity,
         sort,
         limit,
+        offset,
       });
       if (fallback) {
-        return NextResponse.json(fallback);
+        return NextResponse.json({ ...fallback, page, pageSize: limit });
       }
     }
 
-    const [facilities, total] = await Promise.all([
-      searchFacilities({ facilityType, keyword, lat, lng, radiusMeters, serviceItem, onlyCharity, sort, limit }),
+    const hasFilters = Boolean(keyword || county || district || serviceItem || onlyCharity);
+
+    const [facilities, allTotal, filteredTotal] = await Promise.all([
+      searchFacilities({
+        facilityType,
+        keyword,
+        county,
+        district,
+        lat,
+        lng,
+        radiusMeters,
+        serviceItem,
+        onlyCharity,
+        sort,
+        limit,
+        offset,
+      }),
       countFacilities(facilityType),
+      hasFilters
+        ? countFilteredFacilities(facilityType, { keyword, county, district, serviceItem, onlyCharity })
+        : Promise.resolve(null),
     ]);
 
-    if (total > 0) {
-      return NextResponse.json({ facilities, total });
+    if (allTotal > 0) {
+      const total = typeof filteredTotal === "number" ? filteredTotal : allTotal;
+      return NextResponse.json({
+        facilities,
+        total,
+        allTotal,
+        page,
+        pageSize: limit,
+      });
     }
 
     // If DB is empty, use bundled seed fallback
     const fallback = getFacilitySeedFallback(facilityType, {
       keyword,
+      county,
+      district,
       lat,
       lng,
       radiusMeters,
@@ -270,16 +321,19 @@ export async function GET(request: NextRequest) {
       onlyCharity,
       sort,
       limit,
+      offset,
     });
     if (fallback) {
-      return NextResponse.json(fallback);
+      return NextResponse.json({ ...fallback, page, pageSize: limit });
     }
 
-    return NextResponse.json({ facilities, total });
+    return NextResponse.json({ facilities, total: 0, allTotal: 0, page, pageSize: limit });
   } catch (error) {
     console.warn("GET /api/facilities DB query failed, attempting seed fallback:", error);
     const fallback = getFacilitySeedFallback(facilityType, {
       keyword,
+      county,
+      district,
       lat,
       lng,
       radiusMeters,
@@ -287,9 +341,10 @@ export async function GET(request: NextRequest) {
       onlyCharity,
       sort,
       limit,
+      offset,
     });
     if (fallback) {
-      return NextResponse.json(fallback);
+      return NextResponse.json({ ...fallback, page, pageSize: limit });
     }
     return NextResponse.json({ error: "查詢機構資料失敗" }, { status: 502 });
   }

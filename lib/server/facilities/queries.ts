@@ -235,15 +235,18 @@ export const applyWeeklyHours = async (entries: WeeklyHoursEntry[]): Promise<{ m
 export interface FacilitySearchParams {
   facilityType: string;
   keyword?: string;
+  county?: string;
+  district?: string;
   lat?: number;
   lng?: number;
   radiusMeters?: number;
   limit?: number;
+  offset?: number;
   /** Substring match against the facilities.service_item column (e.g. a hospital tier, pharmacy contract type, or one badge within a combined multi-badge value). */
   serviceItem?: string;
   /** When true, only rows whose extra_json carries a charityUrl (see scripts/enrich-disability-charity-sales.mjs). */
   onlyCharity?: boolean;
-  sort?: "distance" | "name" | "category";
+  sort?: "distance" | "name" | "category" | "newest";
 }
 
 // Ranks the two known service_item taxonomies (hospital tier, pharmacy contract type) into one
@@ -259,7 +262,20 @@ const CATEGORY_RANK_SQL = `CASE service_item
 END`;
 
 /** Haversine distance filter is applied in SQL directly (facility counts are small enough that this is fine). */
-export const searchFacilities = async ({ facilityType, keyword, lat, lng, radiusMeters = 5000, limit = 200, serviceItem, onlyCharity, sort }: FacilitySearchParams): Promise<FacilityListItem[]> =>
+export const searchFacilities = async ({
+  facilityType,
+  keyword,
+  county,
+  district,
+  lat,
+  lng,
+  radiusMeters = 5000,
+  limit = 30,
+  offset = 0,
+  serviceItem,
+  onlyCharity,
+  sort,
+}: FacilitySearchParams): Promise<FacilityListItem[]> =>
   withConnection(async (conn) => {
     const conditions = ["facility_type = ?"];
     const params: unknown[] = [facilityType];
@@ -267,6 +283,18 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
     if (keyword) {
       conditions.push("(name LIKE ? OR address LIKE ? OR JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.penalty.practitioner')) LIKE ?)");
       params.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
+    }
+
+    if (county) {
+      const c1 = county.replace(/臺/g, "台");
+      const c2 = county.replace(/台/g, "臺");
+      conditions.push("(address LIKE ? OR address LIKE ?)");
+      params.push(`%${c1}%`, `%${c2}%`);
+    }
+
+    if (district) {
+      conditions.push("address LIKE ?");
+      params.push(`%${district}%`);
     }
 
     if (serviceItem === "違規／停約" || serviceItem === "違規" || serviceItem === "停約") {
@@ -288,31 +316,33 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
 
     let distanceSelect = "";
     let havingClause = "";
-    const isGpsSearch = lat !== undefined && lng !== undefined;
+    const isGpsSearch = lat !== undefined && lng !== undefined && Number.isFinite(lat) && Number.isFinite(lng);
     if (isGpsSearch) {
       // Haversine formula (km), Earth radius 6371km. GPS search only makes sense
       // for facilities that have already been geocoded, unlike keyword/browse
       // search which should still surface rows pending geocoding.
       distanceSelect = `,
-        (6371 * acos(
+        (6371 * acos(LEAST(1.0, GREATEST(-1.0,
           cos(radians(?)) * cos(radians(lat)) * cos(radians(lng) - radians(?)) +
           sin(radians(?)) * sin(radians(lat))
-        )) AS distance_km`;
+        )))) AS distance_km`;
       params.unshift(lat, lng, lat);
       havingClause = "HAVING distance_km <= ?";
       conditions.push("lat IS NOT NULL AND lng IS NOT NULL");
     }
 
-    // Explicit sort wins; otherwise fall back to the old implicit default
-    // (distance when GPS coords are present, name otherwise).
+    // Explicit sort wins; otherwise fall back to:
+    // distance if GPS search, newest (id DESC) if general list browsing
     const orderBy =
-      sort === "category"
-        ? `${CATEGORY_RANK_SQL} ASC, name ASC`
-        : sort === "name"
-          ? "name ASC"
-          : isGpsSearch
-            ? "distance_km ASC"
-            : "name ASC";
+      sort === "newest"
+        ? "id DESC"
+        : sort === "category"
+          ? `${CATEGORY_RANK_SQL} ASC, name ASC`
+          : sort === "name"
+            ? "name ASC"
+            : isGpsSearch
+              ? "distance_km ASC"
+              : "id DESC";
 
     const baseSelect = `
       SELECT id, facility_type, source_key, name, address, phone, lat, lng, service_item, service_time, data_org, extra_json
@@ -322,17 +352,9 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
       ${havingClause}
     `;
 
-    // Pharmacy rows come from two overlapping sources by design (see
-    // lib/server/facilities/sources/nhiPharmacies.ts): tfda_pharmacy is the FDA's full
-    // registry (contracted and non-contracted), nhi_pharmacy is NHI's contracted-only
-    // list — so every NHI-contracted pharmacy legitimately gets a row from *both*
-    // sources. Confirmed live (issue #132): ~50 of ~140 distinct pharmacies in one
-    // 200-row sample were an exact tfda_pharmacy/nhi_pharmacy (name, address) pair.
-    // Rather than a fuzzy cross-source dedup at ingest time (the tradeoff the source
-    // file's comment explicitly declined), collapse the pair here at query time via an
-    // exact (name, address) match, keeping the nhi_pharmacy row when both exist — it
-    // carries the richer data (weekly hours from applyWeeklyHours()). A pharmacy that
-    // only exists in one source (not contracted, or not yet matched) is untouched.
+    const hasOffset = typeof offset === "number" && offset > 0;
+    const pagingSql = hasOffset ? "LIMIT ? OFFSET ?" : "LIMIT ?";
+
     const query =
       facilityType === "pharmacy"
         ? `
@@ -346,19 +368,83 @@ export const searchFacilities = async ({ facilityType, keyword, lat, lng, radius
       ) deduped
       WHERE deduped.rn = 1
       ORDER BY ${orderBy}
-      LIMIT ?
+      ${pagingSql}
     `
         : `
       ${baseSelect}
       ORDER BY ${orderBy}
-      LIMIT ?
+      ${pagingSql}
     `;
 
     if (havingClause) params.push(radiusMeters / 1000);
     params.push(limit);
+    if (hasOffset) params.push(offset);
 
     const [rows] = await conn.query<RowDataPacket[]>(query, params);
     return coerceCoords(rows) as unknown as FacilityListItem[];
+  });
+
+export interface FacilityCountFilters {
+  keyword?: string;
+  county?: string;
+  district?: string;
+  serviceItem?: string;
+  onlyCharity?: boolean;
+}
+
+/**
+ * Filtered row count for a facility type, matching specific search criteria
+ * to calculate total pages for server-side pagination.
+ */
+export const countFilteredFacilities = async (
+  facilityType: string,
+  filters: FacilityCountFilters = {},
+): Promise<number> =>
+  withConnection(async (conn) => {
+    const conditions = ["facility_type = ?"];
+    const params: unknown[] = [facilityType];
+
+    if (filters.keyword) {
+      conditions.push("(name LIKE ? OR address LIKE ? OR JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.penalty.practitioner')) LIKE ?)");
+      params.push(`%${filters.keyword}%`, `%${filters.keyword}%`, `%${filters.keyword}%`);
+    }
+
+    if (filters.county) {
+      const c1 = filters.county.replace(/臺/g, "台");
+      const c2 = filters.county.replace(/台/g, "臺");
+      conditions.push("(address LIKE ? OR address LIKE ?)");
+      params.push(`%${c1}%`, `%${c2}%`);
+    }
+
+    if (filters.district) {
+      conditions.push("address LIKE ?");
+      params.push(`%${filters.district}%`);
+    }
+
+    if (filters.serviceItem === "違規／停約" || filters.serviceItem === "違規" || filters.serviceItem === "停約") {
+      conditions.push("(JSON_EXTRACT(extra_json, '$.penalty') IS NOT NULL OR source_key = 'nhi_penalty' OR service_item LIKE '%違規%' OR service_item LIKE '%停約%')");
+    } else if (filters.serviceItem) {
+      conditions.push("service_item LIKE ?");
+      params.push(`%${filters.serviceItem}%`);
+    }
+
+    if (filters.onlyCharity) {
+      conditions.push("JSON_EXTRACT(extra_json, '$.charityUrl') IS NOT NULL");
+    }
+
+    if (facilityType === "pharmacy") {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `SELECT COUNT(DISTINCT name, COALESCE(address, '')) AS total FROM facilities WHERE ${conditions.join(" AND ")}`,
+        params,
+      );
+      return Number(rows[0]?.total ?? 0);
+    }
+
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT COUNT(*) AS total FROM facilities WHERE ${conditions.join(" AND ")}`,
+      params,
+    );
+    return Number(rows[0]?.total ?? 0);
   });
 
 /**
