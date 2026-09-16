@@ -336,38 +336,44 @@ export const getNearestStationWeather = async (
   lng: number,
 ): Promise<NearestStationWeatherRecord | null> => {
   try {
-    return await withConnectionFallback(null, async (conn) => {
-      const [rows] = await conn.query<RowDataPacket[]>(
-        `
-        SELECT s.station_id, s.station_name, s.county_name, s.town_name, s.obs_time,
-               s.weather, s.precipitation, s.wind_speed, s.air_temperature, s.relative_humidity,
-               (6371 * acos(
-                 LEAST(1, GREATEST(-1, cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
-                 sin(radians(?)) * sin(radians(s.lat))))
-               )) AS distance_km
-        FROM cwa_station_weather s
-        WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
-        ORDER BY distance_km ASC
-        LIMIT 1
-        `,
-        [lat, lng, lat],
-      );
-      const row = rows[0];
-      if (!row) return null;
-      return {
-        station_id: String(row.station_id),
-        station_name: row.station_name ? String(row.station_name) : null,
-        county_name: row.county_name ? String(row.county_name) : null,
-        town_name: row.town_name ? String(row.town_name) : null,
-        obs_time: row.obs_time instanceof Date ? row.obs_time.toISOString() : String(row.obs_time || ""),
-        weather: row.weather ? String(row.weather) : null,
-        precipitation: row.precipitation != null ? String(row.precipitation) : null,
-        wind_speed: row.wind_speed != null ? String(row.wind_speed) : null,
-        air_temperature: row.air_temperature != null ? String(row.air_temperature) : null,
-        relative_humidity: row.relative_humidity != null ? String(row.relative_humidity) : null,
-        distance_km: Number(row.distance_km || 0),
-      };
-    });
+    const cacheKey = `nearest_weather_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+    return await memoizeQuery(
+      cacheKey,
+      async () =>
+        withConnectionFallback(null, async (conn) => {
+          const [rows] = await conn.query<RowDataPacket[]>(
+            `
+            SELECT s.station_id, s.station_name, s.county_name, s.town_name, s.obs_time,
+                   s.weather, s.precipitation, s.wind_speed, s.air_temperature, s.relative_humidity,
+                   (6371 * acos(
+                     LEAST(1, GREATEST(-1, cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
+                     sin(radians(?)) * sin(radians(s.lat))))
+                   )) AS distance_km
+            FROM cwa_station_weather s
+            WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
+            ORDER BY distance_km ASC
+            LIMIT 1
+            `,
+            [lat, lng, lat],
+          );
+          const row = rows[0];
+          if (!row) return null;
+          return {
+            station_id: String(row.station_id),
+            station_name: row.station_name ? String(row.station_name) : null,
+            county_name: row.county_name ? String(row.county_name) : null,
+            town_name: row.town_name ? String(row.town_name) : null,
+            obs_time: row.obs_time instanceof Date ? row.obs_time.toISOString() : String(row.obs_time || ""),
+            weather: row.weather ? String(row.weather) : null,
+            precipitation: row.precipitation != null ? String(row.precipitation) : null,
+            wind_speed: row.wind_speed != null ? String(row.wind_speed) : null,
+            air_temperature: row.air_temperature != null ? String(row.air_temperature) : null,
+            relative_humidity: row.relative_humidity != null ? String(row.relative_humidity) : null,
+            distance_km: Number(row.distance_km || 0),
+          };
+        }),
+      60_000,
+    );
   } catch (err) {
     console.warn("getNearestStationWeather error:", err);
     return null;
@@ -470,36 +476,44 @@ export interface LatestUvReading {
 export const getNearestUvReading = async (
   lat: number,
   lng: number,
-): Promise<(LatestUvReading & { distance_km: number }) | null> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT u.station_id, s.station_name, s.county_name, u.uv_index,
-        (6371 * acos(
-          cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
-          sin(radians(?)) * sin(radians(s.lat))
-        )) AS distance_km
-      FROM cwa_uv_index u
-      INNER JOIN cwa_station_weather s ON s.station_id = u.station_id
-      WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index)
-        AND u.uv_index IS NOT NULL
-        AND s.lat IS NOT NULL AND s.lng IS NOT NULL
-      GROUP BY u.station_id, s.station_name, s.county_name, u.uv_index, s.lat, s.lng
-      ORDER BY distance_km ASC
-      LIMIT 1
-      `,
-      [lat, lng, lat],
-    );
-    const row = rows[0];
-    if (!row) return null;
-    return {
-      station_id: String(row.station_id),
-      station_name: row.station_name ?? null,
-      county_name: row.county_name ?? null,
-      uv_index: Number(row.uv_index),
-      distance_km: Number(row.distance_km),
-    };
-  });
+): Promise<(LatestUvReading & { distance_km: number }) | null> => {
+  const cacheKey = `nearest_uv_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+  return await memoizeQuery(
+    cacheKey,
+    async () =>
+      withConnectionFallback(null, async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
+          SELECT u.station_id, s.station_name, s.county_name, u.uv_index,
+            (6371 * acos(
+              LEAST(1, GREATEST(-1,
+                cos(radians(?)) * cos(radians(s.lat)) * cos(radians(s.lng) - radians(?)) +
+                sin(radians(?)) * sin(radians(s.lat))
+              ))
+            )) AS distance_km
+          FROM cwa_uv_index u
+          INNER JOIN cwa_station_weather s ON s.station_id = u.station_id
+          WHERE u.obs_date = (SELECT MAX(obs_date) FROM cwa_uv_index WHERE uv_index IS NOT NULL)
+            AND u.uv_index IS NOT NULL
+            AND s.lat IS NOT NULL AND s.lng IS NOT NULL
+          ORDER BY distance_km ASC
+          LIMIT 1
+          `,
+          [lat, lng, lat],
+        );
+        const row = rows[0];
+        if (!row) return null;
+        return {
+          station_id: String(row.station_id),
+          station_name: row.station_name ?? null,
+          county_name: row.county_name ?? null,
+          uv_index: Number(row.uv_index),
+          distance_km: Number(row.distance_km),
+        };
+      }),
+    60_000,
+  );
+};
 
 export interface UvStationItem {
   station_id: string;
@@ -751,32 +765,39 @@ export interface NearestRainfallReading {
 export const getNearestRainfallReading = async (
   lat: number,
   lng: number,
-): Promise<NearestRainfallReading | null> =>
-  withConnectionFallback(null, async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT r.station_id, r.station_name, r.county_name, r.town_name, r.obs_time,
-             r.precip_now, r.precip_10min, r.precip_1hr, r.precip_3hr, r.precip_6hr,
-             r.precip_12hr, r.precip_24hr, r.precip_2days, r.precip_3days,
-        (6371 * acos(
-          LEAST(1, cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
-          sin(radians(?)) * sin(radians(r.lat)))
-        )) AS distance_km
-      FROM cwa_rainfall r
-      INNER JOIN (
-        SELECT station_id, MAX(obs_time) AS max_obs
-        FROM cwa_rainfall
-        WHERE obs_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 3 HOUR)
-        GROUP BY station_id
-      ) latest ON latest.station_id = r.station_id AND latest.max_obs = r.obs_time
-      WHERE r.lat IS NOT NULL AND r.lng IS NOT NULL
-      ORDER BY distance_km ASC
-      LIMIT 1
-      `,
-      [lat, lng, lat],
-    );
-    return (rows[0] as unknown as NearestRainfallReading) ?? null;
-  });
+): Promise<NearestRainfallReading | null> => {
+  const cacheKey = `nearest_rainfall_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+  return await memoizeQuery(
+    cacheKey,
+    async () =>
+      withConnectionFallback(null, async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
+          SELECT r.station_id, r.station_name, r.county_name, r.town_name, r.obs_time,
+                 r.precip_now, r.precip_10min, r.precip_1hr, r.precip_3hr, r.precip_6hr,
+                 r.precip_12hr, r.precip_24hr, r.precip_2days, r.precip_3days,
+            (6371 * acos(
+              LEAST(1, GREATEST(-1, cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
+              sin(radians(?)) * sin(radians(r.lat))))
+            )) AS distance_km
+          FROM cwa_rainfall r
+          INNER JOIN (
+            SELECT station_id, MAX(obs_time) AS max_obs
+            FROM cwa_rainfall
+            WHERE obs_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 3 HOUR)
+            GROUP BY station_id
+          ) latest ON latest.station_id = r.station_id AND latest.max_obs = r.obs_time
+          WHERE r.lat IS NOT NULL AND r.lng IS NOT NULL
+          ORDER BY distance_km ASC
+          LIMIT 1
+          `,
+          [lat, lng, lat],
+        );
+        return (rows[0] as unknown as NearestRainfallReading) ?? null;
+      }),
+    60_000,
+  );
+};
 
 export interface TopRainfallStation {
   station_id: string;

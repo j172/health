@@ -1,6 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
-import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { withConnection, withConnectionFallback, utcNowSql } from "@/lib/server/db/mysql";
 import type { Pm25SiteSnapshot } from "@/lib/server/aqi/fetchPm25";
+import { memoizeQuery } from "@/lib/server/cache/memo";
 import { coerceCoords } from "@/lib/server/db/coords";
 
 export interface Pm25ReadingRow {
@@ -59,29 +60,37 @@ export const upsertPm25Readings = async (sites: Pm25SiteSnapshot[]): Promise<{ i
   });
 
 /** Nearest station's latest PM2.5 reading to a given point (Haversine, km). Only considers geocoded stations. */
-export const getNearestPm25Reading = async (lat: number, lng: number): Promise<(Pm25ReadingRow & { distance_km: number }) | null> =>
-  withConnection(async (conn) => {
-    const [rows] = await conn.query<RowDataPacket[]>(
-      `
-      SELECT r.site_name, r.county, r.lat, r.lng, r.pm25, r.recorded_at,
-        (6371 * acos(
-          cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
-          sin(radians(?)) * sin(radians(r.lat))
-        )) AS distance_km
-      FROM pm25_readings r
-      INNER JOIN (
-        SELECT site_name, MAX(recorded_at) AS max_recorded_at
-        FROM pm25_readings
-        GROUP BY site_name
-      ) latest ON latest.site_name = r.site_name AND latest.max_recorded_at = r.recorded_at
-      WHERE r.lat IS NOT NULL AND r.lng IS NOT NULL
-      ORDER BY distance_km ASC
-      LIMIT 1
-      `,
-      [lat, lng, lat],
-    );
-    if (!rows[0]) return null;
-    return coerceCoords([rows[0]])[0] as unknown as Pm25ReadingRow & {
-      distance_km: number;
-    };
-  });
+export const getNearestPm25Reading = async (
+  lat: number,
+  lng: number,
+): Promise<(Pm25ReadingRow & { distance_km: number }) | null> => {
+  const cacheKey = `nearest_pm25_${lat.toFixed(2)}_${lng.toFixed(2)}`;
+  return await memoizeQuery(
+    cacheKey,
+    async () =>
+      withConnectionFallback(null, async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
+          SELECT r.site_name, r.county, r.lat, r.lng, r.pm25, r.recorded_at,
+            (6371 * acos(
+              LEAST(1, GREATEST(-1,
+                cos(radians(?)) * cos(radians(r.lat)) * cos(radians(r.lng) - radians(?)) +
+                sin(radians(?)) * sin(radians(r.lat))
+              ))
+            )) AS distance_km
+          FROM pm25_readings r
+          WHERE r.recorded_at = (SELECT MAX(recorded_at) FROM pm25_readings WHERE lat IS NOT NULL)
+            AND r.lat IS NOT NULL AND r.lng IS NOT NULL
+          ORDER BY distance_km ASC
+          LIMIT 1
+          `,
+          [lat, lng, lat],
+        );
+        if (!rows[0]) return null;
+        return coerceCoords([rows[0]])[0] as unknown as Pm25ReadingRow & {
+          distance_km: number;
+        };
+      }),
+    60_000,
+  );
+};

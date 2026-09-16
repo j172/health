@@ -56,21 +56,56 @@ export interface GeoLocation extends GeoState {
   refresh: () => void;
 }
 
-/** 自動觸發瀏覽器定位，失敗則退回台北101預設位置；也可透過 refresh() 手動重新定位。 */
+export function getSavedLocation(): { lat: number; lng: number; name?: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user_selected_location");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed?.lat === "number" && typeof parsed?.lng === "number") {
+      return parsed;
+    }
+  } catch {}
+  return null;
+}
+
+/** 自動觸發瀏覽器定位，失敗則退回偏好位置或台北101；也可透過 refresh() 手動重新定位。 */
 export function useGeolocation(): GeoLocation {
-  const [state, setState] = useState<GeoState>({
-    lat: GEO_DEFAULTS.lat,
-    lng: GEO_DEFAULTS.lng,
-    isDefault: true,
-    loading: true,
-    refreshing: false,
-    awaitingPermission: false,
+  const [state, setState] = useState<GeoState>(() => {
+    const saved = getSavedLocation();
+    if (saved) {
+      return {
+        lat: saved.lat,
+        lng: saved.lng,
+        isDefault: false,
+        loading: false,
+        refreshing: false,
+        awaitingPermission: false,
+      };
+    }
+    return {
+      lat: GEO_DEFAULTS.lat,
+      lng: GEO_DEFAULTS.lng,
+      isDefault: true,
+      loading: true,
+      refreshing: false,
+      awaitingPermission: false,
+    };
   });
   const attempted = useRef(false);
 
   const locate = useCallback(async (maximumAge: number, mode: "initial" | "refresh") => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setState((prev) => ({ ...prev, loading: false, refreshing: false, awaitingPermission: false }));
+      const saved = getSavedLocation();
+      setState((prev) => ({
+        ...prev,
+        lat: saved?.lat ?? prev.lat,
+        lng: saved?.lng ?? prev.lng,
+        isDefault: !saved,
+        loading: false,
+        refreshing: false,
+        awaitingPermission: false,
+      }));
       return;
     }
 
@@ -80,8 +115,16 @@ export function useGeolocation(): GeoLocation {
     navigator.geolocation.getCurrentPosition(
       (pos) => setState({ lat: pos.coords.latitude, lng: pos.coords.longitude, isDefault: false, loading: false, refreshing: false, awaitingPermission: false }),
       () => {
+        const saved = getSavedLocation();
         if (mode === "initial") {
-          setState({ lat: GEO_DEFAULTS.lat, lng: GEO_DEFAULTS.lng, isDefault: true, loading: false, refreshing: false, awaitingPermission: false });
+          setState({
+            lat: saved?.lat ?? GEO_DEFAULTS.lat,
+            lng: saved?.lng ?? GEO_DEFAULTS.lng,
+            isDefault: !saved,
+            loading: false,
+            refreshing: false,
+            awaitingPermission: false,
+          });
         } else {
           // 手動重新定位失敗：保留原本位置，只清掉 refreshing 狀態
           setState((prev) => ({ ...prev, refreshing: false, awaitingPermission: false }));
@@ -96,6 +139,25 @@ export function useGeolocation(): GeoLocation {
     attempted.current = true;
     locate(300_000, "initial");
   }, [locate]);
+
+  useEffect(() => {
+    const handleLocationChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ lat: number; lng: number }>;
+      if (customEvent.detail?.lat && customEvent.detail?.lng) {
+        setState((prev) => ({
+          ...prev,
+          lat: customEvent.detail.lat,
+          lng: customEvent.detail.lng,
+          isDefault: false,
+          loading: false,
+          refreshing: false,
+          awaitingPermission: false,
+        }));
+      }
+    };
+    window.addEventListener("user-location-change", handleLocationChange);
+    return () => window.removeEventListener("user-location-change", handleLocationChange);
+  }, []);
 
   const refresh = useCallback(() => {
     setState((prev) => ({ ...prev, refreshing: true }));
