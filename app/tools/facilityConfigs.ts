@@ -8,6 +8,28 @@ import type { FacilitySearchConfig } from "@/components/Facilities/FacilitySearc
  * configs need state or hooks of their own.
  */
 export const facilitySearchConfigs = {
+  aed: {
+    facilityType: "aed",
+    emoji: "⚡",
+    title: "全國公共場所 AED 急救地圖",
+    description:
+      "即時查詢全國公共場所自動體外心臟電擊去顫器 (AED) 設置地點、詳細放置位置、開放使用時間與緊急管理聯絡電話。資料來源：衛生福利部醫事司公共場所AED急救資訊網。",
+    searchPlaceholder: "輸入場所名稱（如：高鐵、捷運、學校、活動中心）或地址",
+    radiusMeters: 1000,
+    errorText: "查詢 AED 資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近 1 公里內查無收錄的 AED，可改用關鍵字或擴大搜尋範圍。",
+    emptyStateWithKeyword: "查無符合的 AED 設置地點。",
+    serviceItem: { label: "📍 放置位置：" },
+    showGeocodeNote: true,
+    categories: [
+      { value: "交通要道", label: "🚆 交通要道（高鐵/捷運/車站）" },
+      { value: "觀光旅遊", label: "🏞️ 觀光旅遊場所" },
+      { value: "學校", label: "🏫 學校與文教機構" },
+      { value: "政府機關", label: "🏛️ 政府公務機關" },
+      { value: "體育運動", label: "🏟️ 體育運動休閒場所" },
+      { value: "商場", label: "🛒 大型商場與市集" },
+    ],
+  },
   clinics: {
     facilityType: "clinic",
     emoji: "🏥",

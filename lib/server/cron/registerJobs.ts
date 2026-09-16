@@ -31,6 +31,7 @@ import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
+import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -280,5 +281,10 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "5 5 * * *",
     runGuarded("power-mix-sync-cron.log", () => runPowerMixSync()),
+  );
+  // 全國急救責任醫院急診即時訊息每 15 分鐘同步一次 (issue #280)
+  cron.schedule(
+    "7,22,37,52 * * * *",
+    runGuarded("emergency-rooms-sync-cron.log", () => runEmergencyRoomSync()),
   );
 };

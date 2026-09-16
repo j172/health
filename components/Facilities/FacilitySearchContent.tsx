@@ -275,6 +275,29 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
         {noteLine && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">{noteLine}</p>}
       </div>
 
+      {facilityType === "clinic" && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50/70 p-3.5 text-xs text-red-900 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="text-base">🚨</span>
+            <span>突發重症、劇烈胸痛或危及生命情況？請立即撥打 <strong>119</strong> 或查詢即時急診壅塞狀況。</span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href="/tools/er-status"
+              className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 font-semibold text-red-800 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-200"
+            >
+              <span>🚑 全台急診即時看板 ↗</span>
+            </a>
+            <a
+              href="/tools/aed"
+              className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2.5 py-1 font-semibold text-rose-800 hover:bg-rose-200 dark:bg-rose-900/50 dark:text-rose-200"
+            >
+              <span>⚡ AED 急救地圖 ↗</span>
+            </a>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSearch} className="flex flex-wrap gap-2">
         <input
           type="text"
@@ -387,6 +410,15 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                     <p className="font-semibold text-neutral-800 dark:text-slate-100">{f.name}</p>
                     <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                       {f.extra_json?.penalty && <FacilityPenaltyBadge penalty={f.extra_json.penalty} />}
+                      {facilityType === "clinic" && f.name.includes("醫院") && (
+                        <a
+                          href={`/tools/er-status?q=${encodeURIComponent(f.name.replace(/附設.*?醫院|醫療財團法人|醫療社團法人/g, "").slice(0, 4))}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-950/40 dark:border-red-800 dark:text-red-300"
+                          title="查看該院急診即時壅塞資訊與等候走勢"
+                        >
+                          <span>🚑 急診看板 ↗</span>
+                        </a>
+                      )}
                       {serviceItem === "badge" && f.service_item && (
                         <span className="rounded-full bg-zumthor px-2 py-0.5 text-xs text-primary dark:bg-primary/20">{f.service_item}</span>
                       )}

@@ -121,6 +121,8 @@ export const ensureSchema = async (): Promise<void> => {
   // on 2026-09-09, see the comment above disasterResponsePoints in schema.ts.
   await p.query(TABLE_DDL.disasterResponsePoints);
   await p.query(TABLE_DDL.heritageAssets);
+  await p.query(TABLE_DDL.emergencyRoomStatus);
+  await p.query(TABLE_DDL.emergencyRoomLogs);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

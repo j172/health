@@ -33,7 +33,9 @@
     "earthquakes": "Live Earthquakes",
     "uv": "UV Index",
     "aqi": "Air Quality (AQI)",
-    "facilities": "Healthcare Facilities"
+    "facilities": "Healthcare Facilities",
+    "er-status": "Real-Time Emergency Room Congestion",
+    "aed": "Public Access AED Map"
   },
   "catalog": {
     "uv": "Taiwan Real-Time UV Index",
@@ -87,7 +89,9 @@
     "heritage-map": "Heritage Assets Map (Monuments & Archaeological Sites)",
     "bookstores": "National Physical & Independent Bookstore Finder",
     "tourism-factories": "Certified Tourism Factory & Cultural Center Finder",
-    "pet-adoption": "National Public Animal Shelter Pet Adoption Finder"
+    "pet-adoption": "National Public Animal Shelter Pet Adoption Finder",
+    "er-status": "Real-Time Emergency Room Congestion Dashboard",
+    "aed": "National Public Access AED Map"
   },
   "categories": {
     "gov": "Government Agencies",
