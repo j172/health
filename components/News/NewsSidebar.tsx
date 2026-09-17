@@ -17,6 +17,7 @@ import CpcPriceSidebarWidget from "@/components/Tools/CpcPriceSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { toTaipei, displayDate } from "@/lib/format/news";
 import { type CwaAlertItem } from "@/lib/server/cwa/queries";
+import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 
 export default function NewsSidebar({
   trendingNews = [],
@@ -92,7 +93,15 @@ export default function NewsSidebar({
         </div>
       )}
 
-      {/* 12. 公衛與新聞來源標籤雲 */}
+      {/* 12. 資訊免疫力與認知防衛專欄 */}
+      <ContextualPartnerCard
+        partnerId="anti-cw"
+        compact={true}
+        contextTitle="數位免疫力：反認知作戰"
+        contextDescription="閱讀公衛與即時新聞之餘，可前往反認知作戰教育網學習闢謠與假訊息辨識技巧。"
+      />
+
+      {/* 13. 公衛與新聞來源標籤雲 */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-3.5 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {t("categories.sourcesHeading", "公衛與新聞來源")}

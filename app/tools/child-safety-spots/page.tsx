@@ -3,6 +3,7 @@ import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
+import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 import { facilitySearchConfigs } from "../facilityConfigs";
 
 export const revalidate = 300;
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
 export default function ChildSafetySpotsPage() {
   return (
     <ToolPageShell slug="child-safety-spots" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <ContextualPartnerCard
+        partnerId="metawilo"
+        contextTitle="婦幼與人身安全聯防"
+        contextDescription="除警政署公告之路段與治安顧慮點外，建議前往「台灣罪犯圖鑑」查核重大性犯罪公開判決紀錄，落實生活環境全方位防護。"
+      />
       <FacilitySearchContent config={facilitySearchConfigs["child-safety-spots"]} />
     </ToolPageShell>
   );
