@@ -5,6 +5,7 @@ import { getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
 import { getLatestBlogPosts } from "@/lib/server/blog/queries";
 import SiteNav from "@/components/News/SiteNav";
 import SiteFooter from "@/components/News/SiteFooter";
+import CivicPartnersSection from "@/components/Common/CivicPartnersSection";
 import NewsCard from "@/components/News/NewsCard";
 import HeroPost from "@/components/News/HeroPost";
 import NewsSidebar from "@/components/News/NewsSidebar";
@@ -161,6 +162,8 @@ export default async function StabloNewsLayout({
                 />
               </div>
             </div>
+
+            {variant === "home" && <CivicPartnersSection />}
           </>
         )}
       </main>

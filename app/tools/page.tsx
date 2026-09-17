@@ -12,6 +12,7 @@ import {
   type ToolGroup,
 } from "@/lib/server/tools/catalog";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
+import CivicPartnersSection from "@/components/Common/CivicPartnersSection";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
@@ -354,6 +355,9 @@ export default function ToolsIndexPage() {
               );
             })}
           </div>
+
+          {/* Civic Partners Showcase */}
+          <CivicPartnersSection />
         </main>
 
         <StabloFooter />
