@@ -1710,6 +1710,116 @@ export async function fetchMygopenNews(): Promise<NpoFetchResult> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// 27. 黑熊學院 (Kuma Academy)
+// ---------------------------------------------------------------------------
+export async function fetchKumaNews(): Promise<NpoFetchResult> {
+  const feedCode: FeedCode = "kuma_news";
+  const sourceName = "kuma";
+  const feedName = "黑熊學院";
+  const url = "https://api.kuma-academy.org/article?type=news&page=1&rows_per_page=20";
+
+  try {
+    const response = await httpGetText(url, {
+      headers: {
+        ...DEFAULT_HEADERS,
+        Accept: "application/json, text/plain, */*",
+      },
+      timeoutMs: 15_000,
+    });
+
+    if (response.status < 200 || response.status >= 300) {
+      return { ok: false, httpStatus: response.status, itemCount: 0, items: [], errorMessage: `HTTP ${response.status}` };
+    }
+
+    const payload = JSON.parse(response.text);
+    const rawList = Array.isArray(payload?.data?.data) ? payload.data.data : [];
+    const items: EnrichedRssItem[] = [];
+
+    for (const raw of rawList) {
+      if (!raw || !raw.id || !raw.title) continue;
+
+      const title = String(raw.title).trim();
+      const canonicalUrl = `https://kuma-academy.org/article/${raw.id}`;
+      const summary = String(raw.summary || "").trim() || title;
+
+      // Handle published date (Asia/Taipei format "YYYY-MM-DD HH:mm:ss")
+      let publishedAtUtc: Date | null = null;
+      if (raw.publish_at) {
+        const isoLike = String(raw.publish_at).replace(" ", "T") + "+08:00";
+        const d = new Date(isoLike);
+        if (!Number.isNaN(d.getTime())) {
+          publishedAtUtc = d;
+        } else {
+          publishedAtUtc = parseYmdToUtc(raw.publish_at);
+        }
+      }
+      if (!publishedAtUtc) {
+        publishedAtUtc = new Date();
+      }
+
+      // Extract tags & category
+      const tagList: string[] = [];
+      if (raw.category?.name) {
+        tagList.push(String(raw.category.name).trim());
+      }
+      if (Array.isArray(raw.tag)) {
+        for (const t of raw.tag) {
+          if (t?.name) tagList.push(String(t.name).trim());
+        }
+      }
+      const uniqueTags = [...new Set(tagList.filter(Boolean))];
+      const categoryRaw = uniqueTags.join("、") || "民防教育";
+
+      // Download thumbnail image
+      const assets: NewsAsset[] = [];
+      if (raw.thumbnail_url) {
+        const localPath = await downloadArticleImage(raw.thumbnail_url).catch(() => null);
+        assets.push({
+          assetType: "image",
+          title: null,
+          url: localPath || raw.thumbnail_url,
+          sortOrder: 0,
+        });
+      }
+
+      const externalId = `kuma_${raw.id}`;
+      const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, publishedAtUtc }));
+
+      items.push({
+        sourceName,
+        feedCode,
+        feedName,
+        externalId,
+        canonicalUrl,
+        sourceUrl: canonicalUrl,
+        title,
+        descriptionHtml: summary,
+        descriptionText: summary,
+        detailHtml: null,
+        detailText: null,
+        deptName: null,
+        categoryRaw,
+        displayType: null,
+        publishedAtUtc,
+        publicBeginAtTaipei: null,
+        publicEndAtTaipei: null,
+        payloadHash,
+        assets,
+        metaTitle: "",
+        metaDescription: "",
+        keywords: uniqueTags.join(","),
+        geoSummary: "",
+      });
+    }
+
+    return { ok: true, httpStatus: response.status, itemCount: items.length, items, errorMessage: null };
+  } catch (error: any) {
+    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
+  }
+}
+
+
 
 
 

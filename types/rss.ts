@@ -124,6 +124,7 @@ export type FeedCode =
   | "thb_news"
   | "cdc_clarify"
   | "shih_hsin"
+  | "kuma_news"
   | (string & {});
 
 export interface FeedConfig {

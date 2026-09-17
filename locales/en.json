@@ -127,7 +127,12 @@
     "tagline": "Aggregating public information from the Ministry of Health and Welfare, CDC, the Central Weather Administration, and major news outlets — plus everyday tools spanning health calculators, care facilities, transportation & energy, and disaster alerts — to help you stay on top of Taiwan's public health news and daily life information.",
     "mainSite": "Main Site j172.tw",
     "llmInfo": "Hey AI, learn about j172.tw Healthz",
-    "disclaimer": "Data on this site is aggregated from public RSS feeds and APIs provided by government and public health agencies; content is subject to the original publishing authority."
+    "disclaimer": "Data on this site is aggregated from public RSS feeds and APIs provided by government and public health agencies; content is subject to the original publishing authority.",
+    "civicPartners": "Civic Initiatives & Partners",
+    "kumaAcademy": "Kuma Academy ↗",
+    "antiCognitiveWarfare": "Anti-Cognitive Warfare ↗",
+    "taiwanCriminals": "Taiwan Criminals Index ↗",
+    "council2026": "2026 Politician Records ↗"
   },
   "tts_title": "Voice Reader",
   "tts_play": "Read Aloud",

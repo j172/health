@@ -42,6 +42,25 @@ const FooterLink = ({
   </li>
 );
 
+const FooterExternalLink = ({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) => (
+  <li>
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer noopener"
+      className="text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+    >
+      {children}
+    </a>
+  </li>
+);
+
 // Inline SVG (currentColor) rather than next/image + public/images/icon/*.svg
 // files: these need the same hover/dark-mode color transition as FooterLink,
 // which requires the SVG to inherit color from its wrapping <a>'s Tailwind
@@ -135,6 +154,25 @@ export default function SiteFooter() {
     {
       href: "/llm-info",
       label: t("footer.llmInfo", "Hey AI, learn about j172.tw Healthz"),
+    },
+  ];
+
+  const civicPartnerLinks = [
+    {
+      href: "https://kuma-academy.org/",
+      label: t("footer.kumaAcademy", "黑熊學院 ↗"),
+    },
+    {
+      href: "https://cw.yueyuknows.com/",
+      label: t("footer.antiCognitiveWarfare", "反認知作戰 ↗"),
+    },
+    {
+      href: "https://metawilo.com/",
+      label: t("footer.taiwanCriminals", "台灣罪犯圖鑑 ↗"),
+    },
+    {
+      href: "https://council2026.taiwangogo.tw/",
+      label: t("footer.council2026", "2026 政治人物前科 ↗"),
     },
   ];
 
@@ -232,6 +270,14 @@ export default function SiteFooter() {
               ))}
             </FooterColumn>
           ))}
+
+          <FooterColumn label={t("footer.civicPartners", "公民倡議與友站")}>
+            {civicPartnerLinks.map((item) => (
+              <FooterExternalLink key={item.href} href={item.href}>
+                {item.label}
+              </FooterExternalLink>
+            ))}
+          </FooterColumn>
         </div>
 
         {/* Bottom copyright */}

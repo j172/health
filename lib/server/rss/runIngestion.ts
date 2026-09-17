@@ -75,6 +75,7 @@ import {
   fetchApatwNews,
   fetchSeinsightsNews,
   fetchMygopenNews,
+  fetchKumaNews,
 } from "@/lib/server/rss/fetchNpoSources";
 import { persistItems } from "@/lib/server/rss/persistItems";
 import {
@@ -872,6 +873,16 @@ export const runRssIngestion = async (
             skipDetailFetch: true,
           },
           fetchFn: fetchMygopenNews,
+        },
+        {
+          meta: {
+            code: "kuma_news" as FeedCode,
+            name: "黑熊學院",
+            url: "https://api.kuma-academy.org/article?type=news",
+            sourceName: "kuma",
+            skipDetailFetch: true,
+          },
+          fetchFn: fetchKumaNews,
         },
       ];
 
