@@ -1,28 +1,28 @@
 /**
- * 台灣 22 縣市與 368 鄉鎮市區標準常數與幾何中心資料
+ * 臺灣 22 縣市與 368 鄉鎮市區標準常數與幾何中心資料
  * 適用於全端（前端 Client Components 與後端 API）共用之地理標準字典。
  */
 
 export const TAIWAN_COUNTIES = [
-  "台北市",
+  "臺北市",
   "新北市",
   "基隆市",
   "桃園市",
   "新竹市",
   "新竹縣",
   "苗栗縣",
-  "台中市",
+  "臺中市",
   "彰化縣",
   "南投縣",
   "雲林縣",
   "嘉義市",
   "嘉義縣",
-  "台南市",
+  "臺南市",
   "高雄市",
   "屏東縣",
   "宜蘭縣",
   "花蓮縣",
-  "台東縣",
+  "臺東縣",
   "澎湖縣",
   "金門縣",
   "連江縣",
@@ -59,8 +59,8 @@ export const TAIWAN_COUNTY_CENTROIDS: Record<string, { lat: number; lng: number 
   連江縣: { lat: 26.1558, lng: 119.9519 },
 };
 
-export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
-  台北市: [
+const TAIWAN_COUNTY_DISTRICTS_CANONICAL: Record<TaiwanCounty, readonly string[]> = {
+  臺北市: [
     "中正區", "大同區", "中山區", "松山區", "大安區", "萬華區",
     "信義區", "士林區", "北投區", "內湖區", "南港區", "文山區"
   ],
@@ -90,7 +90,7 @@ export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
     "卓蘭鎮", "造橋鄉", "西湖鄉", "頭屋鄉", "公館鄉", "銅鑼鄉",
     "三義鄉", "大湖鄉", "獅潭鄉", "三灣鄉", "南庄鄉", "泰安鄉"
   ],
-  台中市: [
+  臺中市: [
     "中區", "東區", "南區", "西區", "北區", "西屯區",
     "南屯區", "北屯區", "豐原區", "大里區", "太平區", "清水區",
     "沙鹿區", "大甲區", "東勢區", "梧棲區", "烏日區", "神岡區",
@@ -111,7 +111,7 @@ export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
   雲林縣: [
     "斗六市", "斗南鎮", "虎尾鎮", "西螺鎮", "土庫鎮", "北港鎮",
     "古坑鄉", "大埤鄉", "莿桐鄉", "林內鄉", "二崙鄉", "崙背鄉",
-    "麥寮鄉", "東勢鄉", "褒忠鄉", "台西鄉", "元長鄉", "四湖鄉",
+    "麥寮鄉", "東勢鄉", "褒忠鄉", "臺西鄉", "元長鄉", "四湖鄉",
     "口湖鄉", "水林鄉"
   ],
   嘉義市: [
@@ -122,7 +122,7 @@ export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
     "新港鄉", "六腳鄉", "東石鄉", "義竹鄉", "鹿草鄉", "水上鄉",
     "中埔鄉", "竹崎鄉", "梅山鄉", "番路鄉", "大埔鄉", "阿里山鄉"
   ],
-  台南市: [
+  臺南市: [
     "中西區", "東區", "南區", "北區", "安平區", "安南區",
     "永康區", "歸仁區", "新化區", "左鎮區", "玉井區", "楠西區",
     "南化區", "仁德區", "關廟區", "龍崎區", "官田區", "麻豆區",
@@ -144,7 +144,7 @@ export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
     "麟洛鄉", "九如鄉", "里港鄉", "鹽埔鄉", "高樹鄉", "萬巒鄉",
     "內埔鄉", "竹田鄉", "新埤鄉", "枋寮鄉", "新園鄉", "崁頂鄉",
     "林邊鄉", "南州鄉", "佳冬鄉", "琉球鄉", "車城鄉", "滿州鄉",
-    "枋山鄉", "三地門鄉", "霧台鄉", "瑪家鄉", "泰武鄉", "來義鄉",
+    "枋山鄉", "三地門鄉", "霧臺鄉", "瑪家鄉", "泰武鄉", "來義鄉",
     "春日鄉", "獅子鄉", "牡丹鄉"
   ],
   宜蘭縣: [
@@ -155,8 +155,8 @@ export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
     "花蓮市", "鳳林鎮", "玉里鎮", "新城鄉", "吉安鄉", "壽豐鄉",
     "光復鄉", "豐濱鄉", "瑞穗鄉", "富里鄉", "秀林鄉", "萬榮鄉", "卓溪鄉"
   ],
-  台東縣: [
-    "台東市", "成功鎮", "關山鎮", "長濱鄉", "海端鄉", "池上鄉",
+  臺東縣: [
+    "臺東市", "成功鎮", "關山鎮", "長濱鄉", "海端鄉", "池上鄉",
     "東河鄉", "鹿野鄉", "延平鄉", "卑南鄉", "金峰鄉", "大武鄉",
     "達仁鄉", "綠島鄉", "蘭嶼鄉", "太麻里鄉"
   ],
@@ -171,12 +171,21 @@ export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
   ],
 };
 
+export const TAIWAN_COUNTY_DISTRICTS: Record<string, readonly string[]> = {
+  ...TAIWAN_COUNTY_DISTRICTS_CANONICAL,
+  // 舊稱別名容錯映射，確保以「台」查閱時不拋錯
+  台北市: TAIWAN_COUNTY_DISTRICTS_CANONICAL.臺北市,
+  台中市: TAIWAN_COUNTY_DISTRICTS_CANONICAL.臺中市,
+  台南市: TAIWAN_COUNTY_DISTRICTS_CANONICAL.臺南市,
+  台東縣: TAIWAN_COUNTY_DISTRICTS_CANONICAL.臺東縣,
+};
+
 /**
- * 將使用者或資料來源之縣市名稱正規化為標準寫法（統一臺->台）
+ * 將使用者或資料來源之縣市名稱正規化為標準正體寫法（統一台->臺）
  */
 export function normalizeCountyName(raw: string | null | undefined): string {
   if (!raw) return "";
-  const cleaned = raw.trim().replace(/臺/g, "台");
+  const cleaned = raw.trim().replace(/台/g, "臺");
   for (const county of TAIWAN_COUNTIES) {
     if (cleaned.includes(county) || county.includes(cleaned)) {
       return county;
@@ -191,5 +200,5 @@ export function normalizeCountyName(raw: string | null | undefined): string {
 export function getDistrictsForCounty(county: string | null | undefined): readonly string[] {
   if (!county) return [];
   const normalized = normalizeCountyName(county);
-  return TAIWAN_COUNTY_DISTRICTS[normalized] || [];
+  return TAIWAN_COUNTY_DISTRICTS[normalized] || TAIWAN_COUNTY_DISTRICTS[county.trim()] || [];
 }

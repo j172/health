@@ -78,7 +78,7 @@ export default function CpcStationMap({
         <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
           <Popup>
             <div className="text-xs font-semibold">
-              {userLocation.isDefault ? "📍 預設位置（台北）" : "📍 您目前的位置"}
+              {userLocation.isDefault ? "📍 預設位置（臺北）" : "📍 您目前的位置"}
             </div>
           </Popup>
         </Marker>

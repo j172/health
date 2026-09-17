@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/** 預設位置：台北101（找不到定位時的退回點） */
+/** 預設位置：臺北101（找不到定位時的退回點） */
 export const GEO_DEFAULTS = { lat: 25.033, lng: 121.5654 };
 
 /** 權限已有結果（granted/denied）時的定位逾時 — 兩者都幾乎立刻回應，不需要久等。 */
@@ -69,7 +69,7 @@ export function getSavedLocation(): { lat: number; lng: number; name?: string } 
   return null;
 }
 
-/** 自動觸發瀏覽器定位，失敗則退回偏好位置或台北101；也可透過 refresh() 手動重新定位。 */
+/** 自動觸發瀏覽器定位，失敗則退回偏好位置或臺北101；也可透過 refresh() 手動重新定位。 */
 export function useGeolocation(): GeoLocation {
   const [state, setState] = useState<GeoState>(() => {
     const saved = getSavedLocation();

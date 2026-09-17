@@ -74,9 +74,13 @@ for (const label of [...CATEGORY_LABELS, ...titleMatches]) {
   if (isCjk(first)) firstChars.add(first);
 }
 
+const MANUAL_STROKE_OVERRIDES = {
+  臺: 14, // 教育部重編國語辭典：至部，總筆畫 14
+};
+
 const table = {};
 for (const ch of [...firstChars].sort()) {
-  const count = cnchar.stroke(ch);
+  const count = MANUAL_STROKE_OVERRIDES[ch] || cnchar.stroke(ch);
   if (!count || typeof count !== "number") {
     console.error(`No stroke count resolved for "${ch}" — check manually.`);
     process.exitCode = 1;

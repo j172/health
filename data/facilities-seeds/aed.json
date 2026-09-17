@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "name": "高鐵台北站 / 台鐵台北車站（B1大廳服務台）",
+    "name": "高鐵臺北站 / 臺鐵臺北車站（B1大廳服務臺）",
     "address": "臺北市中正區北平西路3號B1",
     "phone": "02-23146000",
     "lat": 25.047812,
@@ -9,7 +9,7 @@
     "service_item": "交通要道",
     "service_time": "全天候 24 小時開放",
     "extra_json": {
-      "locationDesc": "B1穿堂層中央服務台旁（近高鐵售票處與台鐵剪票口）",
+      "locationDesc": "B1穿堂層中央服務臺旁（近高鐵售票處與臺鐵剪票口）",
       "openHours": "全天候 24 小時開放",
       "category": "交通要道",
       "open24Hours": true,
@@ -19,7 +19,7 @@
   },
   {
     "id": 2,
-    "name": "台北車站大廳（1樓中央多功能展演區）",
+    "name": "臺北車站大廳（1樓中央多功能展演區）",
     "address": "臺北市中正區北平西路3號1樓",
     "phone": "02-23713558",
     "lat": 25.047912,
@@ -37,7 +37,7 @@
   },
   {
     "id": 3,
-    "name": "台北小巨蛋（1樓北側服務台）",
+    "name": "臺北小巨蛋（1樓北側服務臺）",
     "address": "臺北市松山區南京東路四段2號",
     "phone": "02-25783536",
     "lat": 25.051512,
@@ -45,7 +45,7 @@
     "service_item": "體育運動",
     "service_time": "全天候 24 小時開放",
     "extra_json": {
-      "locationDesc": "一樓北側主入口服務台柱面旁",
+      "locationDesc": "一樓北側主入口服務臺柱面旁",
       "openHours": "全天候 24 小時開放",
       "category": "體育運動",
       "open24Hours": true,
@@ -63,7 +63,7 @@
     "service_item": "體育運動",
     "service_time": "全天候 24 小時開放",
     "extra_json": {
-      "locationDesc": "地下1樓下沉式廣場中央服務櫃台左側",
+      "locationDesc": "地下1樓下沉式廣場中央服務櫃檯左側",
       "openHours": "全天候 24 小時開放",
       "category": "體育運動",
       "open24Hours": true,
@@ -91,7 +91,7 @@
   },
   {
     "id": 6,
-    "name": "國父紀念館（正門大廳服務台）",
+    "name": "國父紀念館（正門大廳服務臺）",
     "address": "臺北市信義區仁愛路四段505號",
     "phone": "02-27588008",
     "lat": 25.040112,
@@ -99,7 +99,7 @@
     "service_item": "觀光旅遊",
     "service_time": "每日 09:00 - 18:00",
     "extra_json": {
-      "locationDesc": "正門大廳一樓中央諮詢服務台左側",
+      "locationDesc": "正門大廳一樓中央諮詢服務臺左側",
       "openHours": "每日 09:00 - 18:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -109,7 +109,7 @@
   },
   {
     "id": 7,
-    "name": "中正紀念堂（大孝門服務台旁）",
+    "name": "中正紀念堂（大孝門服務臺旁）",
     "address": "臺北市中正區中山南路21號",
     "phone": "02-23431100",
     "lat": 25.035112,
@@ -117,7 +117,7 @@
     "service_item": "觀光旅遊",
     "service_time": "每日 09:00 - 18:00",
     "extra_json": {
-      "locationDesc": "紀念堂本體一樓大孝門服務台旁",
+      "locationDesc": "紀念堂本體一樓大孝門服務臺旁",
       "openHours": "每日 09:00 - 18:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -135,7 +135,7 @@
     "service_item": "學校",
     "service_time": "每日 07:00 - 22:00",
     "extra_json": {
-      "locationDesc": "新體育館一樓售票服務台旁柱面",
+      "locationDesc": "新體育館一樓售票服務臺旁柱面",
       "openHours": "每日 07:00 - 22:00",
       "category": "學校",
       "open24Hours": false,
@@ -163,7 +163,7 @@
   },
   {
     "id": 10,
-    "name": "台北松山機場（第一航廈國際線出境大廳）",
+    "name": "臺北松山機場（第一航廈國際線出境大廳）",
     "address": "臺北市松山區敦化北路340-9號",
     "phone": "02-87703430",
     "lat": 25.062812,
@@ -171,7 +171,7 @@
     "service_item": "交通要道",
     "service_time": "每日 05:00 - 23:00",
     "extra_json": {
-      "locationDesc": "T1航廈1樓國際線報到櫃台1號柱旁",
+      "locationDesc": "T1航廈1樓國際線報到櫃檯1號柱旁",
       "openHours": "每日 05:00 - 23:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -225,7 +225,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 18:00",
     "extra_json": {
-      "locationDesc": "1樓東側聯合服務中心櫃台旁",
+      "locationDesc": "1樓東側聯合服務中心櫃檯旁",
       "openHours": "週一至週五 08:00 - 18:00",
       "category": "政府機關",
       "open24Hours": false,
@@ -271,7 +271,7 @@
   },
   {
     "id": 16,
-    "name": "鶯歌陶瓷博物館（1樓票務服務台）",
+    "name": "鶯歌陶瓷博物館（1樓票務服務臺）",
     "address": "新北市鶯歌區文化路200號",
     "phone": "02-86772727",
     "lat": 24.949512,
@@ -279,7 +279,7 @@
     "service_item": "觀光旅遊",
     "service_time": "週二至週日 09:30 - 17:00",
     "extra_json": {
-      "locationDesc": "一樓售票大廳服務台柱面",
+      "locationDesc": "一樓售票大廳服務臺柱面",
       "openHours": "週二至週日 09:30 - 17:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -289,7 +289,7 @@
   },
   {
     "id": 17,
-    "name": "基隆火車站（南站大廳旅客諮詢服務台）",
+    "name": "基隆火車站（南站大廳旅客諮詢服務臺）",
     "address": "基隆市仁愛區港西街5號",
     "phone": "02-24263743",
     "lat": 25.131112,
@@ -351,7 +351,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:00 - 23:30",
     "extra_json": {
-      "locationDesc": "1樓大廳近6號出口旁服務台",
+      "locationDesc": "1樓大廳近6號出口旁服務臺",
       "openHours": "每日 06:00 - 23:30",
       "category": "交通要道",
       "open24Hours": false,
@@ -405,7 +405,7 @@
     "service_item": "交通要道",
     "service_time": "每日 05:30 - 24:00",
     "extra_json": {
-      "locationDesc": "跨站大廳自動售票機與剪票閘門中央服務台旁",
+      "locationDesc": "跨站大廳自動售票機與剪票閘門中央服務臺旁",
       "openHours": "每日 05:30 - 24:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -423,7 +423,7 @@
     "service_item": "政府機關",
     "service_time": "週二至週六 08:30 - 21:00，週日 08:30 - 17:00",
     "extra_json": {
-      "locationDesc": "總館1樓入口圓形諮詢服務台左側",
+      "locationDesc": "總館1樓入口圓形諮詢服務臺左側",
       "openHours": "週二至週六 08:30 - 21:00，週日 08:30 - 17:00",
       "category": "政府機關",
       "open24Hours": false,
@@ -487,7 +487,7 @@
   },
   {
     "id": 28,
-    "name": "高鐵新竹站（車站1樓大廳旅客諮詢服務櫃台）",
+    "name": "高鐵新竹站（車站1樓大廳旅客諮詢服務櫃檯）",
     "address": "新竹縣竹北市高鐵七路6號",
     "phone": "03-6103000",
     "lat": 24.808112,
@@ -495,7 +495,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:00 - 23:30",
     "extra_json": {
-      "locationDesc": "2號出口旅客諮詢櫃台旁",
+      "locationDesc": "2號出口旅客諮詢櫃檯旁",
       "openHours": "每日 06:00 - 23:30",
       "category": "交通要道",
       "open24Hours": false,
@@ -531,7 +531,7 @@
     "service_item": "體育運動",
     "service_time": "每日 08:00 - 22:00",
     "extra_json": {
-      "locationDesc": "體育館一樓主入口服務處櫃台旁",
+      "locationDesc": "體育館一樓主入口服務處櫃檯旁",
       "openHours": "每日 08:00 - 22:00",
       "category": "體育運動",
       "open24Hours": false,
@@ -541,7 +541,7 @@
   },
   {
     "id": 31,
-    "name": "高鐵苗栗站（1樓大廳剪票口服務台）",
+    "name": "高鐵苗栗站（1樓大廳剪票口服務臺）",
     "address": "苗栗縣後龍鎮高鐵三路268號",
     "phone": "03-7242000",
     "lat": 24.605812,
@@ -549,7 +549,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:15 - 23:30",
     "extra_json": {
-      "locationDesc": "1樓穿堂旅客服務台前方柱面",
+      "locationDesc": "1樓穿堂旅客服務臺前方柱面",
       "openHours": "每日 06:15 - 23:30",
       "category": "交通要道",
       "open24Hours": false,
@@ -595,7 +595,7 @@
   },
   {
     "id": 34,
-    "name": "高鐵台中站（2樓剪票大廳中央旅客服務處）",
+    "name": "高鐵臺中站（2樓剪票大廳中央旅客服務處）",
     "address": "臺中市烏日區站區二路8號",
     "phone": "04-36015000",
     "lat": 24.112112,
@@ -613,7 +613,7 @@
   },
   {
     "id": 35,
-    "name": "台鐵台中火車站（2樓中央售票大廳）",
+    "name": "臺鐵臺中火車站（2樓中央售票大廳）",
     "address": "臺中市中區臺灣大道一段1號",
     "phone": "04-22216492",
     "lat": 24.137112,
@@ -657,7 +657,7 @@
     "service_item": "觀光旅遊",
     "service_time": "週二至週日 11:30 - 21:00",
     "extra_json": {
-      "locationDesc": "一樓售票服務台與導覽集合點旁",
+      "locationDesc": "一樓售票服務臺與導覽集合點旁",
       "openHours": "週二至週日 11:30 - 21:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -693,7 +693,7 @@
     "service_item": "體育運動",
     "service_time": "全天候 24 小時開放",
     "extra_json": {
-      "locationDesc": "內野主入口一樓服務台旁",
+      "locationDesc": "內野主入口一樓服務臺旁",
       "openHours": "全天候 24 小時開放",
       "category": "體育運動",
       "open24Hours": true,
@@ -711,7 +711,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:15 - 23:45",
     "extra_json": {
-      "locationDesc": "1樓售票大廳3號出口旁諮詢服務台",
+      "locationDesc": "1樓售票大廳3號出口旁諮詢服務臺",
       "openHours": "每日 06:15 - 23:45",
       "category": "交通要道",
       "open24Hours": false,
@@ -729,7 +729,7 @@
     "service_item": "交通要道",
     "service_time": "每日 05:00 - 24:00",
     "extra_json": {
-      "locationDesc": "前站大廳自動售票機右側志工服務櫃台",
+      "locationDesc": "前站大廳自動售票機右側志工服務櫃檯",
       "openHours": "每日 05:00 - 24:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -747,7 +747,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 17:30",
     "extra_json": {
-      "locationDesc": "1樓中央入口市民服務櫃台右側",
+      "locationDesc": "1樓中央入口市民服務櫃檯右側",
       "openHours": "週一至週五 08:00 - 17:30",
       "category": "政府機關",
       "open24Hours": false,
@@ -793,7 +793,7 @@
   },
   {
     "id": 45,
-    "name": "日月潭向山遊客中心（1樓旅遊資訊服務台）",
+    "name": "日月潭向山遊客中心（1樓旅遊資訊服務臺）",
     "address": "南投縣魚池鄉中山路599號",
     "phone": "049-2341256",
     "lat": 23.851812,
@@ -837,7 +837,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:15 - 23:45",
     "extra_json": {
-      "locationDesc": "1樓大廳近2號出口旁旅客服務櫃台",
+      "locationDesc": "1樓大廳近2號出口旁旅客服務櫃檯",
       "openHours": "每日 06:15 - 23:45",
       "category": "交通要道",
       "open24Hours": false,
@@ -855,7 +855,7 @@
     "service_item": "交通要道",
     "service_time": "每日 05:30 - 24:00",
     "extra_json": {
-      "locationDesc": "2樓穿堂售票機對面服務台旁",
+      "locationDesc": "2樓穿堂售票機對面服務臺旁",
       "openHours": "每日 05:30 - 24:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -865,7 +865,7 @@
   },
   {
     "id": 49,
-    "name": "雲林縣政府（親民大廳入口服務櫃台）",
+    "name": "雲林縣政府（親民大廳入口服務櫃檯）",
     "address": "雲林縣斗六市雲林路二段515號",
     "phone": "05-5522000",
     "lat": 23.700112,
@@ -873,7 +873,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 17:30",
     "extra_json": {
-      "locationDesc": "親民大廳1樓中央諮詢服務台旁",
+      "locationDesc": "親民大廳1樓中央諮詢服務臺旁",
       "openHours": "週一至週五 08:00 - 17:30",
       "category": "政府機關",
       "open24Hours": false,
@@ -945,7 +945,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:00 - 23:45",
     "extra_json": {
-      "locationDesc": "1樓大廳近2號出口旅客諮詢櫃台旁",
+      "locationDesc": "1樓大廳近2號出口旅客諮詢櫃檯旁",
       "openHours": "每日 06:00 - 23:45",
       "category": "交通要道",
       "open24Hours": false,
@@ -963,7 +963,7 @@
     "service_item": "觀光旅遊",
     "service_time": "週二至週日 09:00 - 17:00",
     "extra_json": {
-      "locationDesc": "博物館本館1樓售票諮詢櫃台左側",
+      "locationDesc": "博物館本館1樓售票諮詢櫃檯左側",
       "openHours": "週二至週日 09:00 - 17:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -981,7 +981,7 @@
     "service_item": "觀光旅遊",
     "service_time": "每日 08:30 - 17:00",
     "extra_json": {
-      "locationDesc": "阿里山火車站2樓候車月台剪票口旁",
+      "locationDesc": "阿里山火車站2樓候車月臺剪票口旁",
       "openHours": "每日 08:30 - 17:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -991,7 +991,7 @@
   },
   {
     "id": 56,
-    "name": "高鐵台南站（1樓旅客大廳2號出口旁）",
+    "name": "高鐵臺南站（1樓旅客大廳2號出口旁）",
     "address": "臺南市歸仁區歸仁大道100號",
     "phone": "06-6009000",
     "lat": 22.924812,
@@ -999,7 +999,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:00 - 23:30",
     "extra_json": {
-      "locationDesc": "1樓大廳近2號出口服務台旁柱面",
+      "locationDesc": "1樓大廳近2號出口服務臺旁柱面",
       "openHours": "每日 06:00 - 23:30",
       "category": "交通要道",
       "open24Hours": false,
@@ -1009,7 +1009,7 @@
   },
   {
     "id": 57,
-    "name": "台鐵台南火車站（前站大廳剪票口服務處）",
+    "name": "臺鐵臺南火車站（前站大廳剪票口服務處）",
     "address": "臺南市東區前鋒路210號",
     "phone": "06-2261314",
     "lat": 22.997112,
@@ -1017,7 +1017,7 @@
     "service_item": "交通要道",
     "service_time": "每日 05:00 - 24:00",
     "extra_json": {
-      "locationDesc": "前站售票大廳剪票閘門外側服務台",
+      "locationDesc": "前站售票大廳剪票閘門外側服務臺",
       "openHours": "每日 05:00 - 24:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -1081,7 +1081,7 @@
   },
   {
     "id": 61,
-    "name": "高鐵左營站 / 台鐵新左營站（2樓候車大廳）",
+    "name": "高鐵左營站 / 臺鐵新左營站（2樓候車大廳）",
     "address": "高雄市左營區高鐵路105號",
     "phone": "07-9605000",
     "lat": 22.687212,
@@ -1099,7 +1099,7 @@
   },
   {
     "id": 62,
-    "name": "台鐵高雄火車站（地下化大廳剪票口旁）",
+    "name": "臺鐵高雄火車站（地下化大廳剪票口旁）",
     "address": "高雄市三民區建國二路318號",
     "phone": "07-2352376",
     "lat": 22.639512,
@@ -1107,7 +1107,7 @@
     "service_item": "交通要道",
     "service_time": "每日 05:00 - 24:00",
     "extra_json": {
-      "locationDesc": "B1候車穿堂捷運與台鐵交界詢問處外側",
+      "locationDesc": "B1候車穿堂捷運與臺鐵交界詢問處外側",
       "openHours": "每日 05:00 - 24:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -1143,7 +1143,7 @@
     "service_item": "觀光旅遊",
     "service_time": "每日 11:00 - 21:00",
     "extra_json": {
-      "locationDesc": "榕樹廣場中央服務台旁及3樓音樂廳入口外側",
+      "locationDesc": "榕樹廣場中央服務臺旁及3樓音樂廳入口外側",
       "openHours": "每日 11:00 - 21:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -1215,7 +1215,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 17:30",
     "extra_json": {
-      "locationDesc": "1樓中央穿堂服務台旁",
+      "locationDesc": "1樓中央穿堂服務臺旁",
       "openHours": "週一至週五 08:00 - 17:30",
       "category": "政府機關",
       "open24Hours": false,
@@ -1233,7 +1233,7 @@
     "service_item": "觀光旅遊",
     "service_time": "每日 08:00 - 17:00",
     "extra_json": {
-      "locationDesc": "遊客中心入口服務台右側展示廳門口",
+      "locationDesc": "遊客中心入口服務臺右側展示廳門口",
       "openHours": "每日 08:00 - 17:00",
       "category": "觀光旅遊",
       "open24Hours": false,
@@ -1305,7 +1305,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 17:30",
     "extra_json": {
-      "locationDesc": "縣政大樓1樓中庭大廳服務台柱面",
+      "locationDesc": "縣政大樓1樓中庭大廳服務臺柱面",
       "openHours": "週一至週五 08:00 - 17:30",
       "category": "政府機關",
       "open24Hours": false,
@@ -1323,7 +1323,7 @@
     "service_item": "交通要道",
     "service_time": "全天候 24 小時開放",
     "extra_json": {
-      "locationDesc": "前站跨站大廳服務台旁牆面",
+      "locationDesc": "前站跨站大廳服務臺旁牆面",
       "openHours": "全天候 24 小時開放",
       "category": "交通要道",
       "open24Hours": true,
@@ -1333,7 +1333,7 @@
   },
   {
     "id": 75,
-    "name": "花蓮縣政府（1樓服務中心入口櫃台）",
+    "name": "花蓮縣政府（1樓服務中心入口櫃檯）",
     "address": "花蓮縣花蓮市府前路17號",
     "phone": "03-8227171",
     "lat": 24.004512,
@@ -1351,7 +1351,7 @@
   },
   {
     "id": 76,
-    "name": "太魯閣國家公園遊客中心（大廳服務台旁）",
+    "name": "太魯閣國家公園遊客中心（大廳服務臺旁）",
     "address": "花蓮縣秀林鄉富世291號",
     "phone": "03-8621100",
     "lat": 24.158512,
@@ -1377,7 +1377,7 @@
     "service_item": "學校",
     "service_time": "每日 08:00 - 22:00",
     "extra_json": {
-      "locationDesc": "綜合體育館一樓服務台大門入口處",
+      "locationDesc": "綜合體育館一樓服務臺大門入口處",
       "openHours": "每日 08:00 - 22:00",
       "category": "學校",
       "open24Hours": false,
@@ -1413,7 +1413,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 17:30",
     "extra_json": {
-      "locationDesc": "行政大樓1樓中庭為民服務中心櫃台旁",
+      "locationDesc": "行政大樓1樓中庭為民服務中心櫃檯旁",
       "openHours": "週一至週五 08:00 - 17:30",
       "category": "政府機關",
       "open24Hours": false,
@@ -1423,7 +1423,7 @@
   },
   {
     "id": 80,
-    "name": "台東航空站（豐年機場航廈候機大廳）",
+    "name": "臺東航空站（豐年機場航廈候機大廳）",
     "address": "臺東縣臺東市民航路1100號",
     "phone": "089-361111",
     "lat": 22.756112,
@@ -1431,7 +1431,7 @@
     "service_item": "交通要道",
     "service_time": "每日 07:00 - 21:00",
     "extra_json": {
-      "locationDesc": "航廈1樓旅客服務櫃台旁柱面",
+      "locationDesc": "航廈1樓旅客服務櫃檯旁柱面",
       "openHours": "每日 07:00 - 21:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -1441,7 +1441,7 @@
   },
   {
     "id": 81,
-    "name": "澎湖機場（馬公航空站1樓航廈服務台）",
+    "name": "澎湖機場（馬公航空站1樓航廈服務臺）",
     "address": "澎湖縣湖西鄉隘門村126-5號",
     "phone": "06-9229123",
     "lat": 23.568112,
@@ -1449,7 +1449,7 @@
     "service_item": "交通要道",
     "service_time": "每日 06:30 - 21:00",
     "extra_json": {
-      "locationDesc": "1樓到站大廳旅遊諮詢服務台旁",
+      "locationDesc": "1樓到站大廳旅遊諮詢服務臺旁",
       "openHours": "每日 06:30 - 21:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -1485,7 +1485,7 @@
     "service_item": "政府機關",
     "service_time": "週一至週五 08:00 - 17:30",
     "extra_json": {
-      "locationDesc": "縣府大廳便民服務台右側",
+      "locationDesc": "縣府大廳便民服務臺右側",
       "openHours": "週一至週五 08:00 - 17:30",
       "category": "政府機關",
       "open24Hours": false,
@@ -1495,7 +1495,7 @@
   },
   {
     "id": 84,
-    "name": "金門航空站（尚義機場航廈服務台）",
+    "name": "金門航空站（尚義機場航廈服務臺）",
     "address": "金門縣金湖鎮尚義機場2號",
     "phone": "082-322381",
     "lat": 24.429512,
@@ -1521,7 +1521,7 @@
     "service_item": "交通要道",
     "service_time": "每日 07:00 - 19:00",
     "extra_json": {
-      "locationDesc": "水頭通關大樓1樓服務台左側",
+      "locationDesc": "水頭通關大樓1樓服務臺左側",
       "openHours": "每日 07:00 - 19:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -1557,7 +1557,7 @@
     "service_item": "交通要道",
     "service_time": "每日 07:00 - 18:00",
     "extra_json": {
-      "locationDesc": "航廈1樓旅客服務台旁柱面",
+      "locationDesc": "航廈1樓旅客服務臺旁柱面",
       "openHours": "每日 07:00 - 18:00",
       "category": "交通要道",
       "open24Hours": false,
@@ -1585,7 +1585,7 @@
   },
   {
     "id": 89,
-    "name": "連江縣政府（行政大樓1樓服務台）",
+    "name": "連江縣政府（行政大樓1樓服務臺）",
     "address": "連江縣南竿鄉介壽村76號",
     "phone": "0836-25131",
     "lat": 26.155812,

@@ -695,7 +695,7 @@
       "facilityType": "heritage",
       "sourceKey": "ntpc_heritage",
       "sourceId": "66fe08602592eba9",
-      "name": "台灣電力公司北部展示館",
+      "name": "臺灣電力公司北部展示館",
       "address": null,
       "phone": null,
       "lat": null,
@@ -704,7 +704,7 @@
       "serviceTime": null,
       "dataOrg": "新北市政府文化局",
       "extra": {
-        "title": "台灣電力公司北部展示館",
+        "title": "臺灣電力公司北部展示館",
         "location": "新北市萬里區野柳里八斗60號",
         "areacode": "10001280",
         "localcallservice": "(02)24985112",

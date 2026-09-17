@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import breastfeedingSeed from "@/data/breastfeeding-rooms-seed.json";
+import { normalizeCountyName } from "@/lib/constants/taiwanDistricts";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,8 @@ export async function GET(request: NextRequest) {
     let points = (breastfeedingSeed as any).points || [];
 
     if (county) {
-      points = points.filter((p: any) => p.county === county);
+      const normalizedCounty = normalizeCountyName(county);
+      points = points.filter((p: any) => normalizeCountyName(p.county) === normalizedCounty);
     }
 
     if (keyword) {

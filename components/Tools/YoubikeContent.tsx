@@ -156,12 +156,12 @@ export default function YoubikeContent({
             </button>
           </div>
 
-          {/* 台北 101 降級友善提示 */}
+          {/* 臺北 101 降級友善提示 */}
           {!location.loading && location.isDefault && (
             <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 px-3.5 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
               <span className="flex items-center gap-1.5">
                 <span>📍</span>
-                <span>定位權限未開啟或逾時，目前已自動切換至<strong>台北 101</strong>周邊 3 公里站點。</span>
+                <span>定位權限未開啟或逾時，目前已自動切換至<strong>臺北 101</strong>周邊 3 公里站點。</span>
               </span>
               <button
                 onClick={handleLocateMe}

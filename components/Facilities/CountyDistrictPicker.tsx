@@ -57,7 +57,7 @@ export default function CountyDistrictPicker({
           aria-label="選擇縣市"
           className={`w-full ${selectClass}`}
         >
-          <option value="">全台灣 (不限縣市)</option>
+          <option value="">全臺灣 (不限縣市)</option>
           {TAIWAN_COUNTIES.map((c) => (
             <option key={c} value={c}>
               {c}

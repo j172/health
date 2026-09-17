@@ -234,8 +234,8 @@ export default function LocalWeatherSvgWidget() {
               </select>
             </div>
             {geo.isDefault && selectedCounty === "auto" && (
-              <span className="text-[10px] text-amber-600 dark:text-amber-400" title="定位權限未開啟，顯示台北101">
-                (顯示台北101)
+              <span className="text-[10px] text-amber-600 dark:text-amber-400" title="定位權限未開啟，顯示臺北101">
+                (顯示臺北101)
               </span>
             )}
           </div>
