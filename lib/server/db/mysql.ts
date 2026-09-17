@@ -129,6 +129,8 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.accessibleTransitRoutes);
   await p.query(TABLE_DDL.accessibleTransitFacilities);
   await p.query(TABLE_DDL.wraInundationSensors);
+  await p.query(TABLE_DDL.wraWaterOutages);
+  await p.query(TABLE_DDL.moaDebrisFlowAlerts);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

@@ -39,7 +39,8 @@
     "food-safety": "Food Pesticide & Safety Dashboard",
     "outdoor-safety": "Outdoor Activity Safety Index",
     "accessible-transit": "Taiwan Accessible Transit Map",
-    "inundation-map": "Taiwan Real-Time Inundation & Flood Map"
+    "inundation-map": "Taiwan Real-Time Inundation & Flood Map",
+    "water-outages": "Taiwan Real-Time Water Outage & Emergency Supply Map"
   },
   "catalog": {
     "uv": "Taiwan Real-Time UV Index",
@@ -99,7 +100,8 @@
     "food-safety": "Taiwan Food Pesticide Residue & Safety Inspection Dashboard",
     "outdoor-safety": "Taiwan Outdoor Activity & Exercise Safety Index",
     "accessible-transit": "Taiwan Accessible Transit & Low-Floor Bus Map",
-    "inundation-map": "Taiwan Real-Time Inundation & Flood Sensor Map"
+    "inundation-map": "Taiwan Real-Time Inundation & Flood Sensor Map",
+    "water-outages": "Taiwan Real-Time Water Outage & Emergency Supply Map"
   },
   "categories": {
     "gov": "Government Agencies",

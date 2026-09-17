@@ -3265,6 +3265,76 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "water-outages",
+    group: "disaster-safety",
+    navLabel: "全臺即時停水查詢",
+    title: "全臺即時停水與供水站地圖：自來水管線修復／計畫停水／取水點查詢",
+    description:
+      "即時查詢臺灣自來水公司與臺北自來水事業處突發管線破裂搶修、定期計畫性施工停水與水壓降低區域，並提供鄰近緊急臨時供水站與取水車地圖定位導航。",
+    directAnswer:
+      "全臺即時停水地圖整合台水與北水即時通報，提供突發破管搶修、預告計畫停水時段、影響戶數與周邊臨時緊急供水站/水車經緯度位置，守護民生用水與防災韌性。",
+    scientificBasis: [
+      {
+        title: "台灣自來水公司即時停水資訊開放資料平臺",
+        authority: "台灣自來水股份有限公司 (TWC)",
+        url: "https://www.water.gov.tw",
+      },
+      {
+        title: "臺北自來水事業處即時停水公告與水質監測系統",
+        authority: "臺北自來水事業處 (TWD)",
+        url: "https://www.water.gov.taipei",
+      },
+      {
+        title: "天然災害自來水應變調度與臨時供水站開設規範",
+        authority: "經濟部水利署 (WRA)",
+        url: "https://www.wra.gov.tw",
+      },
+    ],
+    referenceTable: {
+      title: "停水應變與民生儲水安全指引對照表",
+      headers: ["階段", "應變要點", "抽水設備防護", "水質與衛生須知"],
+      rows: [
+        [
+          "停水前整備",
+          "提前儲備 3 天每人每日 3-5 公升飲用及衛生水源",
+          "提早關閉抽水馬達電源，避免空轉",
+          "使用食品級乾淨有蓋儲水桶密封貯存",
+        ],
+        [
+          "停水期間",
+          "查詢鄰近臨時供水站與水車點位備援取水",
+          "嚴禁開啟加壓抽水機，防止負壓吸入污水",
+          "自備乾淨取水容器，先滿足飲用及炊事需求",
+        ],
+        [
+          "剛復水初期",
+          "檢查水龍頭出水是否混濁或含有泥沙氣泡",
+          "待水壓恢復穩定後再開啟抽水馬達",
+          "先放水 1-2 分鐘排空初期管底水，煮沸後飲用",
+        ],
+      ],
+    },
+    relatedSlugs: ["inundation-map", "water-conditions", "disaster-map", "outdoor-safety"],
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "停水期間為什麼必須立刻關閉抽水馬達電源？",
+        answer:
+          "若停水期間未關閉抽水馬達，馬達感測無水持續空轉極易過熱燒毀，甚至可能引發火災；同時，在地下管線失壓狀態下強行抽水，容易產生負壓虹吸效應將外圍土壤污水吸入自來水管造成二次水質污染。",
+      },
+      {
+        question: "如何查詢離家最近的臨時緊急供水站或水車？",
+        answer:
+          "本工具即時整合台灣自來水公司與北水處開設之臨時供水站點，在地圖上以藍色水龍頭圖標標註，點擊即可查看取水地點、開放取水時間、水車類型並直接啟動 Google 地圖導航前往。",
+      },
+      {
+        question: "剛恢復供水時自來水變白或變黃可以馬上喝嗎？",
+        answer:
+          "剛復水時水質混濁常因管線內空氣溶解產生微小氣泡（呈乳白色，靜置片刻即透明消散）或管壁初期鐵鏽剝落（呈黃褐色）。建議先開啟一般水龍頭流放 1 至 2 分鐘沖洗水管，待出水清澈並煮沸後再安心飲用。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -3343,6 +3413,7 @@ const INDEXABLE_SLUGS = new Set([
   "outdoor-safety",
   "accessible-transit",
   "inundation-map",
+  "water-outages",
 ]);
 
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>

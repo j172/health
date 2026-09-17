@@ -14,6 +14,7 @@ import type { InundationPoint } from "@/lib/server/wra/inundation";
 import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries";
 import type { GroundwaterMapPoint } from "@/lib/server/wra/groundwaterQueries";
 import type { InundationRegion } from "@/lib/server/wra/fetchInundationRegions";
+import type { DebrisFlowAlertItem } from "@/lib/server/moa/types";
 
 const DisasterMapLeaflet = dynamic(() => import("@/components/DisasterMap/DisasterMapLeaflet"), { ssr: false });
 
@@ -90,8 +91,10 @@ export default function DisasterMapContent() {
   const [damStructurePoints, setDamStructurePoints] = useState<DamStructureMapPoint[]>([]);
   const [groundwaterPoints, setGroundwaterPoints] = useState<GroundwaterMapPoint[]>([]);
   const [inundationRegions, setInundationRegions] = useState<InundationRegion[]>([]);
+  const [debrisFlowPoints, setDebrisFlowPoints] = useState<DebrisFlowAlertItem[]>([]);
   const [showDamStructure, setShowDamStructure] = useState(false);
   const [showGroundwater, setShowGroundwater] = useState(false);
+  const [showDebrisFlow, setShowDebrisFlow] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,13 +110,18 @@ export default function DisasterMapContent() {
     let cancelled = false;
     (async () => {
       try {
-        const [disasterRes, inundationRes, wraIotRes] = await Promise.allSettled([
+        const [disasterRes, inundationRes, wraIotRes, debrisRes] = await Promise.allSettled([
           fetchWithTimeout("/api/disaster-map", { timeoutMs: 5000 }).then((r) => r.json()),
           fetchWithTimeout("/api/disaster/inundation", { timeoutMs: 5000 }).then((r) => r.json()),
           fetchWithTimeout("/api/disaster/wra-iot", { timeoutMs: 5000 }).then((r) => r.json()),
+          fetchWithTimeout("/api/disaster/debris-flow", { timeoutMs: 5000 }).then((r) => r.json()),
         ]);
 
         if (cancelled) return;
+
+        if (debrisRes.status === "fulfilled" && debrisRes.value.ok && Array.isArray(debrisRes.value.alerts)) {
+          setDebrisFlowPoints(debrisRes.value.alerts);
+        }
 
         if (disasterRes.status === "fulfilled" && disasterRes.value.ok && Array.isArray(disasterRes.value.points)) {
           setPoints(disasterRes.value.points);
@@ -361,6 +369,20 @@ export default function DisasterMapContent() {
               {groundwaterPoints.length}
             </span>
           </label>
+
+          <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50/50 px-2.5 py-1.5 text-xs font-medium text-amber-900 transition-colors hover:bg-amber-100/60 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
+            <input
+              type="checkbox"
+              checked={showDebrisFlow}
+              onChange={() => setShowDebrisFlow(!showDebrisFlow)}
+              className="h-3.5 w-3.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+            />
+            <span aria-hidden="true">⚠️</span>
+            <span>土石流警戒溪流</span>
+            <span className="rounded-full bg-amber-600 px-1.5 py-0.2 text-[10px] font-semibold text-white">
+              {debrisFlowPoints.length}
+            </span>
+          </label>
         </div>
       </div>
 
@@ -376,6 +398,7 @@ export default function DisasterMapContent() {
             inundationPoints={showInundation ? inundationPoints : []}
             damStructurePoints={showDamStructure ? damStructurePoints : []}
             groundwaterPoints={showGroundwater ? groundwaterPoints : []}
+            debrisFlowPoints={showDebrisFlow ? debrisFlowPoints : []}
             userLocation={location}
             center={customCenter}
           />

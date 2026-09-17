@@ -59,6 +59,7 @@ const boolLabel = (v: boolean | null): string | null => {
 import type { InundationPoint } from "@/lib/server/wra/inundation";
 import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries";
 import type { GroundwaterMapPoint } from "@/lib/server/wra/groundwaterQueries";
+import type { DebrisFlowAlertItem } from "@/lib/server/moa/types";
 
 const makeInundationIcon = (status: "normal" | "warning" | "critical") => {
   const color = status === "critical" ? "#dc2626" : status === "warning" ? "#d97706" : "#0284c7";
@@ -88,11 +89,22 @@ const groundwaterIcon = new L.DivIcon({
   popupAnchor: [0, -9],
 });
 
+// 農業部農村水保署土石流紅黃警戒 icon
+const makeDebrisFlowIcon = (level: "yellow" | "red") =>
+  new L.DivIcon({
+    className: "",
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${level === "red" ? "#dc2626" : "#f59e0b"};border:2px solid #fff;box-shadow:0 0 0 2px ${level === "red" ? "#dc2626" : "#f59e0b"};display:flex;align-items:center;justify-content:center;font-size:11px;">⚠️</div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -11],
+  });
+
 export interface DisasterMapProps {
   points: DisasterPoint[];
   inundationPoints?: InundationPoint[];
   damStructurePoints?: DamStructureMapPoint[];
   groundwaterPoints?: GroundwaterMapPoint[];
+  debrisFlowPoints?: DebrisFlowAlertItem[];
   userLocation?: { lat: number; lng: number; isDefault: boolean; refresh?: () => void; refreshing?: boolean };
   center?: [number, number];
   zoom?: number;
@@ -114,6 +126,7 @@ export default function DisasterMapLeaflet({
   inundationPoints = [],
   damStructurePoints = [],
   groundwaterPoints = [],
+  debrisFlowPoints = [],
   userLocation,
   center,
   zoom = 13,
@@ -260,6 +273,47 @@ export default function DisasterMapLeaflet({
                     撥號
                   </a>
                 )}
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {/* 農業部農村水保署土石流即時警戒溪流 */}
+      {debrisFlowPoints.map((df) => (
+        <Marker
+          key={df.debrisId}
+          position={[df.lat, df.lng]}
+          icon={makeDebrisFlowIcon(df.alertLevel)}
+        >
+          <Popup>
+            <div className="p-1 min-w-[200px] text-xs">
+              <div className="flex items-center gap-1.5 font-bold">
+                <span
+                  className={`rounded px-1.5 py-0.5 text-[10px] text-white ${
+                    df.alertLevel === "red" ? "bg-red-600" : "bg-amber-500"
+                  }`}
+                >
+                  {df.alertLevel === "red" ? "🔴 紅色警戒" : "🟡 黃色警戒"}
+                </span>
+                <span className="truncate">{df.streamName}</span>
+              </div>
+              <div className="mt-1.5 space-y-1 text-slate-600 dark:text-slate-300">
+                <p>📍 {df.county} {df.township} {df.village || ""}</p>
+                <p className="font-medium text-slate-800 dark:text-slate-100">{df.advisory}</p>
+                {df.rainfallThresholdMm && (
+                  <p className="text-[11px] text-slate-500">雨量警戒基準值: {df.rainfallThresholdMm} mm</p>
+                )}
+              </div>
+              <div className="mt-2 pt-1 border-t border-slate-100">
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${df.lat},${df.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded bg-amber-600 py-1 px-2.5 text-[10px] font-bold text-white hover:bg-amber-700 transition"
+                >
+                  路線導航 ↗
+                </a>
               </div>
             </div>
           </Popup>
