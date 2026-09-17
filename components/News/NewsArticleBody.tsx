@@ -1,4 +1,5 @@
 import { load } from "cheerio";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const normalizeText = (value: string): string => value.replace(/\s+/g, " ").trim();
 
@@ -38,7 +39,11 @@ const sanitizeArticleHtml = (html: string, title: string, sourceUrl: string): st
       link.removeAttr("href");
       return;
     }
-    link.attr("href", safeHref);
+    const finalHref = appendOutboundUtm(safeHref, {
+      medium: "news_article_body",
+      campaign: "news_source",
+    });
+    link.attr("href", finalHref);
     link.attr("target", "_blank");
     link.attr("rel", "noopener noreferrer");
   });

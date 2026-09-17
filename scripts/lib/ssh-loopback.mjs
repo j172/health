@@ -105,10 +105,17 @@ export function createSshLoopback({ keyFile, host, port = "22", user }) {
           (result.stderr || result.error?.message || "")
             .trim()
             .split("\n")[0] || `exit=${result.status}`;
+        const isTransientServerRestart =
+          reason.includes("curl: (52) Empty reply") ||
+          reason.includes("curl: (56) Recv failure") ||
+          reason.includes("curl: (7) Failed to connect");
+        const delayMs = isTransientServerRestart
+          ? Math.min(25000, retryDelayMs * Math.pow(2, attempt))
+          : retryDelayMs;
         console.error(
-          `ssh call failed (attempt ${attempt + 1}/${retries + 1}, ${reason}) — retrying in ${retryDelayMs}ms`,
+          `ssh call failed (attempt ${attempt + 1}/${retries + 1}, ${reason}) — retrying in ${delayMs}ms${isTransientServerRestart ? " (server restart backoff)" : ""}`,
         );
-        spawnSync("sleep", [String(retryDelayMs / 1000)]);
+        spawnSync("sleep", [String(delayMs / 1000)]);
       }
     }
     return result;
