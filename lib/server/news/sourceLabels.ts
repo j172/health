@@ -102,6 +102,7 @@ const SOURCE_LABELS: Record<string, string> = {
   freeway: "交通部高速公路局",
   thb: "交通部公路局",
   shih_hsin: "世新大學",
+  kuma: "黑熊學院",
 };
 
 export interface SourceLabelInput {

@@ -13,6 +13,7 @@ import { runNpoActivitiesSync } from "@/lib/server/culture/ingestNpoActivities";
 import { runSeinsightsEventsSync } from "@/lib/server/culture/ingestSeinsightsEvents";
 import { runG0vEventsSync } from "@/lib/server/culture/ingestG0vEvents";
 import { runPresidentialVisitSync } from "@/lib/server/culture/ingestPresidentialVisit";
+import { runKumaEventsSync } from "@/lib/server/culture/ingestKumaEvents";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
@@ -149,7 +150,8 @@ export const registerCronJobs = (): void => {
       const seinsights = await runSeinsightsEventsSync();
       const g0v = await runG0vEventsSync();
       const presidential = await runPresidentialVisitSync();
-      return { shows, npo, seinsights, g0v, presidential };
+      const kuma = await runKumaEventsSync();
+      return { shows, npo, seinsights, g0v, presidential, kuma };
     }),
   );
   // Public art sync daily at 3am

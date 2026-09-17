@@ -131,6 +131,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "apatw", label: "社團法人中華民國保護動物協會" },
       { sourceName: "seinsights", label: "社企流" },
       { sourceName: "mygopen", label: "MyGoPen 查核中心" },
+      { sourceName: "kuma", label: "黑熊學院" },
     ],
   },
 ];
