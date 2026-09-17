@@ -32,6 +32,7 @@ import {
   classifyLocationPrecision,
   extractLocationFromText,
 } from "@/lib/server/news/geoExtractor";
+import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
 const MAX_API_PAGES = 16;
@@ -178,17 +179,30 @@ export const assignMissingNewsCardImages = async (
 
     // The recency restriction is part of the WHERE clause, so it applies before
     // ORDER BY and LIMIT — the endpoint can never fall through to backlog rows.
-    const [missingRows] = await conn.execute<MissingNewsRow[]>(
+    // Official government sources (isGovSource) are excluded from stock photo assignment
+    // because they are displayed with dedicated whitepaper vector covers.
+    const govSources = [
+      "cwa",
+      ...(SOURCE_CATEGORIES.find((c) => c.key === "gov")?.sources.map(
+        (s) => s.sourceName,
+      ) ?? []),
+    ];
+    const govPlaceholders = govSources.map(() => "?").join(", ");
+
+    const [missingRows] = await conn.query<MissingNewsRow[]>(
       `
       SELECT n.id, n.title, n.lat, n.lng, n.location_name, n.facility_id, n.description_text, n.detail_text
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE c.news_item_id IS NULL
+        AND n.source_name NOT IN (${govPlaceholders})
         ${newerThanHours === null ? "" : "AND n.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)"}
       ORDER BY n.image_backfill_attempts ASC, COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
       LIMIT ?
       `,
-      newerThanHours === null ? [limit] : [newerThanHours, limit],
+      newerThanHours === null
+        ? [...govSources, limit]
+        : [...govSources, newerThanHours, limit],
     );
     coerceCoords(missingRows);
 

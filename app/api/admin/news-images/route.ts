@@ -12,6 +12,7 @@ import {
   attachCardImageFromBytes,
   backfillMissingImagesFromOpenGraph,
   listMissingCardImageTargets,
+  markCardImageFailure,
 } from "@/lib/server/news/backfillOgImages";
 
 export const runtime = "nodejs";
@@ -36,6 +37,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       backfillOg?: unknown;
       /** List missing targets for an external OG worker (GHA runner). */
       listMissing?: unknown;
+      /** Mark an article backfill attempt as failed to prevent head-of-line blocking. */
+      markFailed?: unknown;
       /**
        * Attach a direct image URL resolved off-host (og:image CDN).
        * Body: { attachImageUrl: true, newsItemId: number, imageUrl: string, title?: string }
@@ -66,8 +69,21 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const limit = typeof body.limit === "number" ? body.limit : 10;
 
+    if (body.markFailed === true) {
+      const newsItemId =
+        typeof body.newsItemId === "number"
+          ? body.newsItemId
+          : Number(body.newsItemId);
+      const ok = await markCardImageFailure(newsItemId);
+      return NextResponse.json({ ok, mode: "mark-failed", newsItemId });
+    }
+
     if (body.listMissing === true) {
-      const items = await listMissingCardImageTargets(limit);
+      const newerThanHours =
+        typeof body.newerThanHours === "number"
+          ? body.newerThanHours
+          : normalizeNewerThanHours(body.newerThanHours);
+      const items = await listMissingCardImageTargets(limit, newerThanHours);
       return NextResponse.json({ ok: true, mode: "list-missing", items });
     }
 
