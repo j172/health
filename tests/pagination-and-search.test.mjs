@@ -36,14 +36,14 @@ test("Taiwan geographic dictionary coverage", () => {
 });
 
 test("County name normalization handles variations", () => {
-  assert.equal(normalizeCountyName("台北市"), "台北市");
-  assert.equal(normalizeCountyName("臺北市"), "台北市");
-  assert.equal(normalizeCountyName("台中市"), "台中市");
-  assert.equal(normalizeCountyName("臺中市"), "台中市");
-  assert.equal(normalizeCountyName("台南市"), "台南市");
-  assert.equal(normalizeCountyName("臺南市"), "台南市");
-  assert.equal(normalizeCountyName("台東縣"), "台東縣");
-  assert.equal(normalizeCountyName("臺東縣"), "台東縣");
+  assert.equal(normalizeCountyName("台北市"), "臺北市");
+  assert.equal(normalizeCountyName("臺北市"), "臺北市");
+  assert.equal(normalizeCountyName("台中市"), "臺中市");
+  assert.equal(normalizeCountyName("臺中市"), "臺中市");
+  assert.equal(normalizeCountyName("台南市"), "臺南市");
+  assert.equal(normalizeCountyName("臺南市"), "臺南市");
+  assert.equal(normalizeCountyName("台東縣"), "臺東縣");
+  assert.equal(normalizeCountyName("臺東縣"), "臺東縣");
   assert.equal(normalizeCountyName("高雄市"), "高雄市");
   assert.equal(normalizeCountyName(""), "");
 });

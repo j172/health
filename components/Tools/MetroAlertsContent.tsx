@@ -119,7 +119,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="搜尋車站名稱（例：景安、台北車站）或關鍵字..."
+                placeholder="搜尋車站名稱（例：景安、臺北車站）或關鍵字..."
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:focus:bg-slate-900"
               />
               {searchKeyword && (

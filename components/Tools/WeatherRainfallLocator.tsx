@@ -170,7 +170,7 @@ export default function WeatherRainfallLocator({
     }
   };
 
-  // 雙軌即時渲染：初次載入立即抓台北雨量顯示，同時間非同步查詢 GPS，若允許則平滑切換
+  // 雙軌即時渲染：初次載入立即抓臺北雨量顯示，同時間非同步查詢 GPS，若允許則平滑切換
   useEffect(() => {
     let active = true;
 

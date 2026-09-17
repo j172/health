@@ -119,7 +119,7 @@
       "listPrice": 220,
       "salePrice": 198,
       "discount": "9折",
-      "description": "全台權威心臟內科醫師聯手解答：最新降壓飲食準則、運動護心守則與免除長期依賴藥物的科學對策。",
+      "description": "全臺權威心臟內科醫師聯手解答：最新降壓飲食準則、運動護心守則與免除長期依賴藥物的科學對策。",
       "payloadHash": "60d824721da950d48b6d667827a518dc4a834051395bf405a2b494644ccd43e1"
     },
     {
@@ -159,7 +159,7 @@
       "listPrice": 380,
       "salePrice": 300,
       "discount": "79折",
-      "description": "211餐盤發明名醫親自示範：免挨餓、吃得飽、越吃越健康的低醣台灣家常美味常備菜。",
+      "description": "211餐盤發明名醫親自示範：免挨餓、吃得飽、越吃越健康的低醣臺灣家常美味常備菜。",
       "payloadHash": "a8daabe130b995b4115ab50a73997b44f1a4a4333a54ed27f25bec20f65eaac9"
     },
     {
@@ -439,7 +439,7 @@
       "listPrice": 450,
       "salePrice": 356,
       "discount": "79折",
-      "description": "台灣最受家長信賴小兒感染科醫師親撰，嬰幼兒發燒、過敏、腸病毒與各類常見疫苗全攻略。",
+      "description": "臺灣最受家長信賴小兒感染科醫師親撰，嬰幼兒發燒、過敏、腸病毒與各類常見疫苗全攻略。",
       "payloadHash": "ab47de77e415abe9377f498b026add7af284eaabefa88f2e30cbbe39f89a38dd"
     },
     {
@@ -467,7 +467,7 @@
       "categoryId": "cat_3_10",
       "categoryName": "社會議題",
       "ranking": null,
-      "title": "廢墟少年：報導者深入探訪台灣高風險家庭兒少的生存實錄",
+      "title": "廢墟少年：報導者深入探訪臺灣高風險家庭兒少的生存實錄",
       "subtitle": null,
       "author": "報導者採訪團隊",
       "translator": null,
@@ -479,7 +479,7 @@
       "listPrice": 420,
       "salePrice": 332,
       "discount": "79折",
-      "description": "台灣金鼎獎深度專題調查，直視兒少失親、貧困與制度性支持網絡的缺口與反思。",
+      "description": "臺灣金鼎獎深度專題調查，直視兒少失親、貧困與制度性支持網絡的缺口與反思。",
       "payloadHash": "a36607bd4f64902f0a21fea95ccbe44440541579c3f7ce22d30445e1f2508ed8"
     },
     {
@@ -519,7 +519,7 @@
       "listPrice": 360,
       "salePrice": 284,
       "discount": "79折",
-      "description": "匯集台灣數十年性別暴力防治實務，探討性別偏見、情感教育與社會支持系統的再建構。",
+      "description": "匯集臺灣數十年性別暴力防治實務，探討性別偏見、情感教育與社會支持系統的再建構。",
       "payloadHash": "249aac8bf6ce25d96bddef6884102e41cc2a2e3534e76415357c0c56f7621e1c"
     },
     {
@@ -599,7 +599,7 @@
       "listPrice": 420,
       "salePrice": 332,
       "discount": "79折",
-      "description": "台北榮總高齡醫學中心主任系統化指導：從核心肌群、骨質密度到平衡協調的居家防衰老指南。",
+      "description": "臺北榮總高齡醫學中心主任系統化指導：從核心肌群、骨質密度到平衡協調的居家防衰老指南。",
       "payloadHash": "6d3ad526b35f44a7b0f0d6d9f9cb3ca12b9698e0b3cd14a13aa76f5035ab74af"
     },
     {
@@ -619,7 +619,7 @@
       "listPrice": 360,
       "salePrice": 284,
       "discount": "79折",
-      "description": "整合台灣長照2.0資源申請、失智長者非藥物緩和介入與照顧者喘息支持實用攻略手冊。",
+      "description": "整合臺灣長照2.0資源申請、失智長者非藥物緩和介入與照顧者喘息支持實用攻略手冊。",
       "payloadHash": "a8ef023b74c18727e0e31df20e815ed46b743070aa5d6ca36b7bbb8d92824dc6"
     },
     {
@@ -689,7 +689,7 @@
       "ranking": null,
       "title": "兔子與倉鼠新手照護寶典：環境設置、主食牧草與健康疾病觀察",
       "subtitle": null,
-      "author": "台灣愛兔協會 醫療諮詢組",
+      "author": "臺灣愛兔協會 醫療諮詢組",
       "translator": null,
       "publisher": "晨星出版",
       "publishDate": "2024/04/18",
@@ -719,7 +719,7 @@
       "listPrice": 390,
       "salePrice": 308,
       "discount": "79折",
-      "description": "台灣知名訓犬師以零體罰正向響片與肢體訊號，解讀毛孩吠叫、分離焦慮與撲人問題。",
+      "description": "臺灣知名訓犬師以零體罰正向響片與肢體訊號，解讀毛孩吠叫、分離焦慮與撲人問題。",
       "payloadHash": "e2bed1bacdd15caa11ccd8ab28744f6f5d82dee1432a9756a6e1ea460d2cb1d5"
     },
     {
@@ -747,7 +747,7 @@
       "categoryId": "cat_3_65",
       "categoryName": "休閒嗜好",
       "ranking": null,
-      "title": "台灣步道療癒行：深入山林溪谷的森呼吸健行地圖",
+      "title": "臺灣步道療癒行：深入山林溪谷的森呼吸健行地圖",
       "subtitle": null,
       "author": "健行筆記編輯部",
       "translator": null,
@@ -759,7 +759,7 @@
       "listPrice": 420,
       "salePrice": 332,
       "discount": "79折",
-      "description": "嚴選全台30條適合週末散步、芬多精森林浴與初階攀爬的優美綠意步道。",
+      "description": "嚴選全臺30條適合週末散步、芬多精森林浴與初階攀爬的優美綠意步道。",
       "payloadHash": "5b68a6a035f7a5f4fd3f8222c3927e67004613a56eaa2093c8d7f6bc402c1cba"
     },
     {
@@ -1207,7 +1207,7 @@
       "categoryId": "taaze_5_16",
       "categoryName": "注目新書－醫學保健",
       "ranking": 23,
-      "title": "平衡免疫這樣吃！：台大醫師教你聰明攝取好油，簡單吃出好體質",
+      "title": "平衡免疫這樣吃！：臺大醫師教你聰明攝取好油，簡單吃出好體質",
       "subtitle": null,
       "author": null,
       "translator": null,
@@ -5907,7 +5907,7 @@
       "categoryId": "taaze_6_12",
       "categoryName": "編輯推薦－生活風格",
       "ranking": 18,
-      "title": "好吃38： 採集日常，台灣滋味！醬料、香氣、食材、味型",
+      "title": "好吃38： 採集日常，臺灣滋味！醬料、香氣、食材、味型",
       "subtitle": null,
       "author": null,
       "translator": null,
@@ -6507,7 +6507,7 @@
       "categoryId": "taaze_6_17",
       "categoryName": "編輯推薦－少兒親子",
       "ranking": 8,
-      "title": "123轉台灣",
+      "title": "123轉臺灣",
       "subtitle": null,
       "author": null,
       "translator": null,
@@ -6867,7 +6867,7 @@
       "categoryId": "taaze_6_17",
       "categoryName": "編輯推薦－少兒親子",
       "ranking": 26,
-      "title": "非實用野鳥圖鑑：600種鳥類變身搞笑全紀錄（十週年台灣特有版）",
+      "title": "非實用野鳥圖鑑：600種鳥類變身搞笑全紀錄（十週年臺灣特有版）",
       "subtitle": null,
       "author": null,
       "translator": null,
@@ -7407,7 +7407,7 @@
       "categoryId": "taaze_6_18",
       "categoryName": "編輯推薦－教育學習",
       "ranking": 13,
-      "title": "學思達與師生對話︰以學思達為外功、薩提爾為內力，讓教室成為沒有邊界的舞台",
+      "title": "學思達與師生對話︰以學思達為外功、薩提爾為內力，讓教室成為沒有邊界的舞臺",
       "subtitle": null,
       "author": null,
       "translator": null,

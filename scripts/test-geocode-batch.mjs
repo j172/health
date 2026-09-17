@@ -408,12 +408,12 @@ test("dedupByNormalizedAddress: blank address is skipped entirely", () => {
 
 // ─── SOURCES_IN_PRIORITY shape (loaded from the real TS source as text — no
 // TS loader needed since this only checks the list literal, not behavior) ──
-test("SOURCES_IN_PRIORITY: 22 sources, all with non-empty facilityType/sourceKey, no duplicate (facilityType, sourceKey) pair", () => {
+test("SOURCES_IN_PRIORITY: 24 sources, all with non-empty facilityType/sourceKey, no duplicate (facilityType, sourceKey) pair", () => {
   const src = readGeocodeBatchSource();
   const listMatch = src.match(/SOURCES_IN_PRIORITY:.*?=\s*\[([\s\S]*?)\n\];/);
   assert.ok(listMatch, "could not locate SOURCES_IN_PRIORITY literal in geocodeBatch.ts");
   const entries = [...listMatch[1].matchAll(/facilityType:\s*"([^"]+)",\s*sourceKey:\s*"([^"]+)"/g)];
-  assert.equal(entries.length, 22);
+  assert.equal(entries.length, 24);
   const seen = new Set();
   for (const [, facilityType, sourceKey] of entries) {
     assert.ok(facilityType.length > 0);

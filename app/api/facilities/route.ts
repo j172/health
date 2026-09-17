@@ -147,8 +147,8 @@ function getFacilitySeedFallback(
 
     // 2. County filter
     if (options.county) {
-      const c = options.county.toLowerCase().trim().replace(/臺/g, "台");
-      list = list.filter((item) => (item.address || "").toLowerCase().replace(/臺/g, "台").includes(c));
+      const c = options.county.toLowerCase().trim().replace(/台/g, "臺");
+      list = list.filter((item) => (item.address || "").toLowerCase().replace(/台/g, "臺").includes(c));
     }
 
     // 3. District filter

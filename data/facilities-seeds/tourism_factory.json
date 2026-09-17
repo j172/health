@@ -692,7 +692,7 @@
   {
     "id": 47,
     "name": "寶熊漁樂碼頭",
-    "address": "台中市潭子區中山路三段11號",
+    "address": "臺中市潭子區中山路三段11號",
     "phone": "04-35013338",
     "lat": 24.1627,
     "lng": 120.6473,
@@ -700,14 +700,14 @@
     "extra_json": {
       "website": "http://www.okumamuseum.com.tw",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 48,
-    "name": "台灣味噌釀造文化館",
-    "address": "台中市豐原區三村里西勢路701號",
+    "name": "臺灣味噌釀造文化館",
+    "address": "臺中市豐原區三村里西勢路701號",
     "phone": "04-25320279",
     "lat": 24.254,
     "lng": 120.723,
@@ -715,14 +715,14 @@
     "extra_json": {
       "website": "http://www.weijung.com",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 49,
     "name": "伊莎貝爾烘焙觀光工廠",
-    "address": "台中市大雅區中清路三段735號",
+    "address": "臺中市大雅區中清路三段735號",
     "phone": "04-25687890#188",
     "lat": 24.229,
     "lng": 120.648,
@@ -730,14 +730,14 @@
     "extra_json": {
       "website": "https://www.isabellexperience.com.tw/",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 50,
     "name": "丸文觀光工廠",
-    "address": "台中市大里區仁化里工業11路156號",
+    "address": "臺中市大里區仁化里工業11路156號",
     "phone": "04-24953600",
     "lat": 24.102,
     "lng": 120.678,
@@ -745,14 +745,14 @@
     "extra_json": {
       "website": "https://www.wan-wen.com.tw/",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 51,
     "name": "阿聰師芋頭文化館",
-    "address": "台中市大安區福興里興安路168號",
+    "address": "臺中市大安區福興里興安路168號",
     "phone": "04-26713077",
     "lat": 25.026,
     "lng": 121.544,
@@ -760,14 +760,14 @@
     "extra_json": {
       "website": "http://www.o-nongs.com.tw",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 52,
     "name": "烏日啤酒觀光工廠",
-    "address": "台中市烏日區光華街1號",
+    "address": "臺中市烏日區光華街1號",
     "phone": "04-23381216",
     "lat": 24.108,
     "lng": 120.624,
@@ -775,14 +775,14 @@
     "extra_json": {
       "website": "https://event.ttl.com.tw/wz",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 53,
     "name": "張連昌薩克斯風博物館",
-    "address": "台中市后里區公安路330之1號",
+    "address": "臺中市后里區公安路330之1號",
     "phone": "04-25562363 04-25578989",
     "lat": 24.1627,
     "lng": 120.6473,
@@ -790,14 +790,14 @@
     "extra_json": {
       "website": "http://www.sax.org.tw",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 54,
     "name": "微笑秘密口腔保健館",
-    "address": "台中市大甲區日南里幼獅路32號",
+    "address": "臺中市大甲區日南里幼獅路32號",
     "phone": "04-26814585#3105",
     "lat": 24.348,
     "lng": 120.622,
@@ -805,14 +805,14 @@
     "extra_json": {
       "website": "http://www.chinteng.tw",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 55,
     "name": "鞋寶觀光工廠",
-    "address": "台中市西屯區工業區8路11號",
+    "address": "臺中市西屯區工業區8路11號",
     "phone": "04-23505773",
     "lat": 24.181,
     "lng": 120.617,
@@ -820,14 +820,14 @@
     "extra_json": {
       "website": "http://shoeswonderland.bestmotion.com",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 56,
     "name": "臺灣菸酒(股)公司臺中觀光酒廠",
-    "address": "台中市西屯區協和里工業28路2號",
+    "address": "臺中市西屯區協和里工業28路2號",
     "phone": "04-23501318 #448、888",
     "lat": 24.181,
     "lng": 120.617,
@@ -835,7 +835,7 @@
     "extra_json": {
       "website": "http://event.ttl-eshop.com.tw/tc",
       "region": "中部",
-      "city": "台中市",
+      "city": "臺中市",
       "dataOrg": "經濟部產業發展署"
     }
   },
@@ -856,7 +856,7 @@
   },
   {
     "id": 58,
-    "name": "台灣穀堡稻米觀光工廠",
+    "name": "臺灣穀堡稻米觀光工廠",
     "address": "彰化縣埤頭鄉彰水路二段526號",
     "phone": "04-8926088",
     "lat": 23.892,
@@ -871,7 +871,7 @@
   },
   {
     "id": 59,
-    "name": "台灣優格餅乾學院",
+    "name": "臺灣優格餅乾學院",
     "address": "彰化縣線西鄉草豐路501巷5號",
     "phone": "04-7589501 0966-187501",
     "lat": 24.13,
@@ -931,7 +931,7 @@
   },
   {
     "id": 63,
-    "name": "台灣手套博物館",
+    "name": "臺灣手套博物館",
     "address": "彰化縣社頭鄉織襪一路8號",
     "phone": "04-8736168",
     "lat": 23.896,
@@ -946,7 +946,7 @@
   },
   {
     "id": 64,
-    "name": "台灣玻璃館",
+    "name": "臺灣玻璃館",
     "address": "彰化縣鹿港鎮鹿工南四路30號",
     "phone": "04-7811299 #266、#229",
     "lat": 24.057,
@@ -1111,7 +1111,7 @@
   },
   {
     "id": 75,
-    "name": "台灣麻糬主題?",
+    "name": "臺灣麻糬主題?",
     "address": "南投縣南投市自強三路3號",
     "phone": "049-2261123",
     "lat": 23.91,
@@ -1336,7 +1336,7 @@
   },
   {
     "id": 90,
-    "name": "台灣鯛生態創意園區",
+    "name": "臺灣鯛生態創意園區",
     "address": "雲林縣口湖鄉崙東村民生路1-88號",
     "phone": "05-7993996",
     "lat": 23.7093,
@@ -1577,7 +1577,7 @@
   {
     "id": 106,
     "name": "奇美食品幸福工廠",
-    "address": "台南市仁德區機場路1008號",
+    "address": "臺南市仁德區機場路1008號",
     "phone": "06-2698588",
     "lat": 22.971,
     "lng": 120.252,
@@ -1585,14 +1585,14 @@
     "extra_json": {
       "website": "http://www.happychimei.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 107,
     "name": "萬國通路創意觀光工廠",
-    "address": "台南市歸仁區中正南路二段1號",
+    "address": "臺南市歸仁區中正南路二段1號",
     "phone": "06-7007600",
     "lat": 22.967,
     "lng": 120.294,
@@ -1600,14 +1600,14 @@
     "extra_json": {
       "website": "https://tw.eminent.com/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 108,
     "name": "黑橋牌香腸博物館",
-    "address": "台南市南區新忠路2號",
+    "address": "臺南市南區新忠路2號",
     "phone": "06-2616990#12",
     "lat": 24.123,
     "lng": 120.663,
@@ -1615,14 +1615,14 @@
     "extra_json": {
       "website": "http://www.blackbridge.com.tw/mus1.html",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 109,
     "name": "TJCOS台鉅美妝觀光工廠",
-    "address": "台南市仁德區中正路三段589號",
+    "address": "臺南市仁德區中正路三段589號",
     "phone": "0800-567168",
     "lat": 22.971,
     "lng": 120.252,
@@ -1630,14 +1630,14 @@
     "extra_json": {
       "website": "http://tjcos.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 110,
     "name": "天一中藥生活化園區",
-    "address": "台南市官田區二鎮里工業路31號",
+    "address": "臺南市官田區二鎮里工業路31號",
     "phone": "06-6985800",
     "lat": 23.194,
     "lng": 120.316,
@@ -1645,14 +1645,14 @@
     "extra_json": {
       "website": "http://www.itenergy.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 111,
     "name": "卡多良食故事館",
-    "address": "台南市後壁區後壁里42-26號",
+    "address": "臺南市後壁區後壁里42-26號",
     "phone": "06-6874762",
     "lat": 22.9997,
     "lng": 120.227,
@@ -1660,14 +1660,14 @@
     "extra_json": {
       "website": "http://www.cadozea.com.tw/cadozea/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 112,
     "name": "瓜瓜園地瓜生態故事館",
-    "address": "台南市新化區中正路65-1號",
+    "address": "臺南市新化區中正路65-1號",
     "phone": "06-5902966",
     "lat": 22.9997,
     "lng": 120.227,
@@ -1675,14 +1675,14 @@
     "extra_json": {
       "website": "http://www.kky.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 113,
     "name": "立康中草藥產業文化館",
-    "address": "台南市永康區環工路29號",
+    "address": "臺南市永康區環工路29號",
     "phone": "06-2335356",
     "lat": 23.026,
     "lng": 120.257,
@@ -1690,14 +1690,14 @@
     "extra_json": {
       "website": "http://www.herbalmed.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 114,
     "name": "和明織品文化館",
-    "address": "台南市七股區大埕里大埕189號",
+    "address": "臺南市七股區大埕里大埕189號",
     "phone": "06-7875288",
     "lat": 23.143,
     "lng": 120.103,
@@ -1705,14 +1705,14 @@
     "extra_json": {
       "website": "http://www.hermin.com/hmtm/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 115,
     "name": "彼緹娃藝術蛋糕觀光工廠",
-    "address": "台南市佳里區民安里同安寮1之1號",
+    "address": "臺南市佳里區民安里同安寮1之1號",
     "phone": "06-7236328",
     "lat": 23.165,
     "lng": 120.177,
@@ -1720,14 +1720,14 @@
     "extra_json": {
       "website": "http://www.beautiful-baby.com.tw/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 116,
     "name": "東和蜂文化觀光工廠",
-    "address": "台南市東山區東正里東勢1-18號",
+    "address": "臺南市東山區東正里東勢1-18號",
     "phone": "06-6800773",
     "lat": 22.9997,
     "lng": 120.227,
@@ -1735,14 +1735,14 @@
     "extra_json": {
       "website": "http://www.thbc.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 117,
     "name": "美雅家具觀光工廠",
-    "address": "台南市白河區馬稠後里甘宅101-1號",
+    "address": "臺南市白河區馬稠後里甘宅101-1號",
     "phone": "06-6817456",
     "lat": 22.9997,
     "lng": 120.227,
@@ -1750,14 +1750,14 @@
     "extra_json": {
       "website": "http://www.meiyafurniture.com.tw/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 118,
     "name": "虹泰水凝膠世界",
-    "address": "台南市仁德區中正路3段523巷116號",
+    "address": "臺南市仁德區中正路3段523巷116號",
     "phone": "06-2724880",
     "lat": 22.971,
     "lng": 120.252,
@@ -1765,14 +1765,14 @@
     "extra_json": {
       "website": "http://www.hometech.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 119,
     "name": "康那香不織布創意王國",
-    "address": "台南市將軍區將軍里三吉66之1號",
+    "address": "臺南市將軍區將軍里三吉66之1號",
     "phone": "06-7941573",
     "lat": 23.199,
     "lng": 120.157,
@@ -1780,14 +1780,14 @@
     "extra_json": {
       "website": "http://www.knh.com.tw/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 120,
     "name": "善化啤酒廠",
-    "address": "台南市善化區成功路2號",
+    "address": "臺南市善化區成功路2號",
     "phone": "06-5838511#441",
     "lat": 23.132,
     "lng": 120.297,
@@ -1795,14 +1795,14 @@
     "extra_json": {
       "website": "https://event.ttl.com.tw/sh",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 121,
     "name": "港香蘭綠色健康知識館",
-    "address": "台南市新市區南科一路1號",
+    "address": "臺南市新市區南科一路1號",
     "phone": "06-5052505#2312",
     "lat": 23.079,
     "lng": 120.295,
@@ -1810,14 +1810,14 @@
     "extra_json": {
       "website": "http://www.biotanico.com.tw",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 122,
     "name": "華美光學eye玩視界",
-    "address": "台南市安定區中沙里沙崙30號",
+    "address": "臺南市安定區中沙里沙崙30號",
     "phone": "06-5937597#6802",
     "lat": 23.106,
     "lng": 120.237,
@@ -1825,14 +1825,14 @@
     "extra_json": {
       "website": "http://www.eyecol.com",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 123,
     "name": "雅聞湖濱療癒森林",
-    "address": "台南市後壁區上茄苳里12之66號",
+    "address": "臺南市後壁區上茄苳里12之66號",
     "phone": "06-6882888",
     "lat": 22.9997,
     "lng": 120.227,
@@ -1840,14 +1840,14 @@
     "extra_json": {
       "website": "https://app.arwin.com.tw/Shop/StoreDetail/1436/39105",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 124,
     "name": "新百祿燕窩觀光工廠",
-    "address": "台南市南區新和路38號",
+    "address": "臺南市南區新和路38號",
     "phone": "06-2650924",
     "lat": 24.123,
     "lng": 120.663,
@@ -1855,14 +1855,14 @@
     "extra_json": {
       "website": "http://www.facebook.com/sinbailu",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 125,
     "name": "腳的眼鏡足部科學體驗中心\r\n(紅崴觀光工廠)",
-    "address": "台南市安南區鹽田里工業一路23號",
+    "address": "臺南市安南區鹽田里工業一路23號",
     "phone": "06-2380713 #267、316",
     "lat": 23.048,
     "lng": 120.185,
@@ -1870,14 +1870,14 @@
     "extra_json": {
       "website": "http://www.goodarch2u.com/tourism/index.php",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 126,
     "name": "蘭都觀光工廠",
-    "address": "台南市六甲區和平街185-7號",
+    "address": "臺南市六甲區和平街185-7號",
     "phone": "06-6995208",
     "lat": 22.9997,
     "lng": 120.227,
@@ -1885,14 +1885,14 @@
     "extra_json": {
       "website": "https://www.orchid-city.com/pages/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 127,
     "name": "臺灣菸酒(股)公司隆田觀光酒廠",
-    "address": "台南市官田區中華路一段335號",
+    "address": "臺南市官田區中華路一段335號",
     "phone": "06-5791311 #394、443",
     "lat": 23.194,
     "lng": 120.316,
@@ -1900,13 +1900,13 @@
     "extra_json": {
       "website": "http://event.ttl-eshop.com.tw/lt/",
       "region": "南部",
-      "city": "台南市",
+      "city": "臺南市",
       "dataOrg": "經濟部產業發展署"
     }
   },
   {
     "id": 128,
-    "name": "台灣滷味博物館",
+    "name": "臺灣滷味博物館",
     "address": "高雄市岡山區本工一路25號",
     "phone": "07-6229800",
     "lat": 22.796,
@@ -1951,7 +1951,7 @@
   },
   {
     "id": 131,
-    "name": "彪琥台灣鞋故事館",
+    "name": "彪琥臺灣鞋故事館",
     "address": "高雄市三民區民族一路335巷43-1號",
     "phone": "07-3892246 #108、109",
     "lat": 22.6273,
@@ -2086,7 +2086,7 @@
   },
   {
     "id": 140,
-    "name": "台灣足鞋健康知識館",
+    "name": "臺灣足鞋健康知識館",
     "address": "宜蘭縣五結鄉中興村中里路18號",
     "phone": "03-9500551*501",
     "lat": 24.685,
@@ -2357,7 +2357,7 @@
   {
     "id": 158,
     "name": "池上鄉農會觀光工廠金色豐收館",
-    "address": "台東縣池上鄉新興村7鄰85-6號",
+    "address": "臺東縣池上鄉新興村7鄰85-6號",
     "phone": "089-865936",
     "lat": 22.7583,
     "lng": 121.1444,
@@ -2365,7 +2365,7 @@
     "extra_json": {
       "website": "http://csfa.org.tw/",
       "region": "東部",
-      "city": "台東縣",
+      "city": "臺東縣",
       "dataOrg": "經濟部產業發展署"
     }
   }

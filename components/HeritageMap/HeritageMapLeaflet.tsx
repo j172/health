@@ -112,7 +112,7 @@ export default function HeritageMapLeaflet({
 
       {userLocation && (
         <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
-          <Popup>{userLocation.isDefault ? "預設位置：台北101" : "您目前的位置"}</Popup>
+          <Popup>{userLocation.isDefault ? "預設位置：臺北101" : "您目前的位置"}</Popup>
         </Marker>
       )}
 

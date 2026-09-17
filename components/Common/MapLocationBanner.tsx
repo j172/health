@@ -34,7 +34,7 @@ export default function MapLocationBanner({
     );
   }
 
-  // 2. 採用預設定位（台北101）或定位失敗 / 權限遭拒
+  // 2. 採用預設定位（臺北101）或定位失敗 / 權限遭拒
   if (isDefault && !loading) {
     return (
       <div
@@ -45,7 +45,7 @@ export default function MapLocationBanner({
             !
           </span>
           <div className="leading-relaxed">
-            <span className="font-bold">尚未取得精準定位（目前顯示預設位置：台北101）：</span>
+            <span className="font-bold">尚未取得精準定位（目前顯示預設位置：臺北101）：</span>
             <span className="text-amber-800 dark:text-amber-300">
               建議開啟瀏覽器定位權限，以即時規劃最近的{facilityTypeName}與導航路線。
             </span>

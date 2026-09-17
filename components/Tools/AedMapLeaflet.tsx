@@ -97,7 +97,7 @@ export default function AedMapLeaflet({
             <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
               <Popup>
                 <div className="text-xs font-bold leading-relaxed">
-                  {userLocation.isDefault ? "📍 預設位置（台北101）" : "🎯 您的目前位置"}
+                  {userLocation.isDefault ? "📍 預設位置（臺北101）" : "🎯 您的目前位置"}
                 </div>
               </Popup>
             </Marker>
