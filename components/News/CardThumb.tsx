@@ -4,38 +4,53 @@ import { useState } from "react";
 import Image from "next/image";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import ImageSkeleton from "@/components/ui/ImageSkeleton";
-import { getSourcePlaceholderStyle } from "@/lib/server/news/sourcePlaceholder";
+import { isGovSource } from "@/lib/server/news/sourceCategories";
+import ThematicCover from "@/components/News/ThematicCover";
+
+const isStockPhoto = (source: string | null | undefined): boolean =>
+  source === "pixabay" ||
+  source === "pexels" ||
+  source === "unsplash" ||
+  source === "flickr";
 
 /**
- * News card thumbnail — client component with image-load tracking
- * and ImageSkeleton shimmer placeholder (0 CLS).
+ * News card thumbnail — client component with image-load tracking,
+ * ImageSkeleton shimmer placeholder (0 CLS), and authoritative whitepaper
+ * ThematicCover fallback.
  * Uses Next.js Image optimization for both local and external URLs.
  */
-export default function CardThumb({ item, sizes }: { item: NewsListItem; sizes: string }) {
+export default function CardThumb({
+  item,
+  sizes,
+}: {
+  item: NewsListItem;
+  sizes: string;
+}) {
   const [loaded, setLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const src = item.card_image_url;
+  const isCompact = sizes === "80px" || sizes.includes("80px");
+  const isGov = isGovSource(item.source_name);
+
+  // Decision 6: For official government bulletins, override stock photos with
+  // the authoritative whitepaper vector cover, while preserving real article images (news_assets).
+  const shouldOverrideWithCover =
+    !src || hasError || (isGov && isStockPhoto(item.card_image_source));
+
+  if (shouldOverrideWithCover) {
+    return (
+      <ThematicCover
+        sourceName={item.source_name}
+        title={item.title}
+        deptName={item.dept_name}
+        compact={isCompact}
+      />
+    );
+  }
+
   const imgClass =
     "h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]";
   const fadeClass = `transition-opacity duration-300 ease-out ${loaded ? "opacity-100" : "opacity-0"}`;
-
-  if (!src || hasError) {
-    const { label, isGov } = getSourcePlaceholderStyle(item.source_name);
-    const theme = isGov
-      ? { bg: "from-emerald-50 to-slate-100 dark:from-emerald-950/40 dark:to-slate-900", text: "text-emerald-600 dark:text-emerald-400" }
-      : { bg: "from-indigo-50 to-slate-100 dark:from-indigo-950/40 dark:to-slate-900", text: "text-indigo-600 dark:text-indigo-400" };
-    return (
-      <div className={`flex h-full w-full flex-col items-center justify-center bg-gradient-to-br ${theme.bg} p-4 text-center`}>
-        <div className="flex items-center gap-1.5">
-          {isGov ? <span className="text-base">🏛️</span> : null}
-          <span className={`text-sm font-bold tracking-wide ${theme.text}`}>{label}</span>
-        </div>
-        <span className="mt-1.5 text-[10px] font-medium tracking-wider text-slate-600 dark:text-slate-400 opacity-80">
-          {isGov ? "政府公開資訊 • 官方公報" : "j172tw Healthz"}
-        </span>
-      </div>
-    );
-  }
 
   return (
     <>

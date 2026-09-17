@@ -17,6 +17,7 @@ import {
   storeArticleImageBuffer,
   type ArticleImageResult,
 } from "@/lib/server/images/downloadArticleImage";
+import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 
 const LOCK_NAME = "news_og_image_backfill_lock";
 
@@ -44,8 +45,7 @@ export interface OgImageBackfillSummary {
 }
 
 const MISSING_WHERE = `
-  c.news_item_id IS NULL
-  AND NOT EXISTS (
+  NOT EXISTS (
     SELECT 1 FROM news_assets a
     WHERE a.news_item_id = n.id AND a.asset_type = 'image'
   )
@@ -53,23 +53,59 @@ const MISSING_WHERE = `
   AND n.canonical_url NOT LIKE '%news.google.com%'
 `;
 
+/**
+ * Marks an article as having failed an OG image backfill attempt,
+ * deprioritizing it in the queue to avoid head-of-line blocking.
+ */
+export const markCardImageFailure = async (
+  newsItemId: number,
+): Promise<boolean> => {
+  const id = Math.trunc(newsItemId);
+  if (!Number.isFinite(id) || id < 1) return false;
+  await ensureSchema();
+  return withConnection(async (conn) => {
+    const [res] = await conn.execute<ResultSetHeader>(
+      "UPDATE news_items SET image_backfill_attempts = image_backfill_attempts + 1 WHERE id = ?",
+      [id],
+    );
+    return res.affectedRows > 0;
+  });
+};
+
 /** Targets for external OG workers (GHA runner) that can fetch HTML off-host. */
 export const listMissingCardImageTargets = async (
   requestedLimit = 20,
+  requestedNewerThanHours: number | null = 336,
 ): Promise<MissingCardImageTarget[]> => {
   const limit = Math.min(50, Math.max(1, Math.trunc(requestedLimit)));
+  const newerThanHours =
+    requestedNewerThanHours && Number.isFinite(Number(requestedNewerThanHours))
+      ? Number(requestedNewerThanHours)
+      : null;
+
   await ensureSchema();
   return withConnection(async (conn) => {
-    const [rows] = await conn.execute<MissingOgRow[]>(
+    const govSources = [
+      "cwa",
+      ...(SOURCE_CATEGORIES.find((c) => c.key === "gov")?.sources.map(
+        (s) => s.sourceName,
+      ) ?? []),
+    ];
+    const govPlaceholders = govSources.map(() => "?").join(", ");
+
+    const [rows] = await conn.query<MissingOgRow[]>(
       `
       SELECT n.id, n.canonical_url, n.title, n.source_name
       FROM news_items n
-      LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE ${MISSING_WHERE}
+        AND n.source_name NOT IN (${govPlaceholders})
+        ${newerThanHours === null ? "" : "AND n.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)"}
       ORDER BY n.image_backfill_attempts ASC, COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
       LIMIT ?
       `,
-      [limit],
+      newerThanHours === null
+        ? [...govSources, limit]
+        : [...govSources, newerThanHours, limit],
     );
     return rows.map((row) => ({
       id: Number(row.id),
@@ -120,8 +156,8 @@ const attachStoredImage = async (
   await ensureSchema();
   const conn = await getMysqlPool().getConnection();
   try {
-    if (await alreadyHasImage(conn, id)) {
-      return { ok: false, reason: "already has image" };
+    if (await alreadyHasRealImage(conn, id)) {
+      return { ok: false, reason: "already has real image" };
     }
 
     const stored = await store();
@@ -252,7 +288,7 @@ export const backfillMissingImagesFromOpenGraph = async (
 
     for (const news of missingRows) {
       try {
-        if (await alreadyHasImage(conn, news.id)) {
+        if (await alreadyHasRealImage(conn, news.id)) {
           summary.skipped += 1;
           continue;
         }
@@ -312,23 +348,15 @@ export const backfillMissingImagesFromOpenGraph = async (
   }
 };
 
-const alreadyHasImage = async (
+const alreadyHasRealImage = async (
   conn: PoolConnection,
   newsId: number,
 ): Promise<boolean> => {
   const [rows] = await conn.execute<RowDataPacket[]>(
     `
     SELECT 1 AS ok
-    FROM news_items n
-    LEFT JOIN news_card_images c ON c.news_item_id = n.id
-    WHERE n.id = ?
-      AND (
-        c.news_item_id IS NOT NULL
-        OR EXISTS (
-          SELECT 1 FROM news_assets a
-          WHERE a.news_item_id = n.id AND a.asset_type = 'image'
-        )
-      )
+    FROM news_assets a
+    WHERE a.news_item_id = ? AND a.asset_type = 'image'
     LIMIT 1
     `,
     [newsId],

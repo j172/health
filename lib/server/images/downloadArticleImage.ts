@@ -5,6 +5,9 @@ import path from "node:path";
 import { httpRequest } from "@/lib/server/net/httpClient";
 import {
   MAX_IMAGE_BYTES,
+  MIME_EXTENSIONS,
+  normalizeMimeType,
+  detectMimeFromSignature,
   hasExpectedSignature,
 } from "@/lib/server/images/imageBytes";
 
@@ -16,13 +19,6 @@ const PUBLIC_DIRECTORY = path.join(
   "news",
   "articles",
 );
-
-const MIME_EXTENSIONS = new Map([
-  ["image/jpeg", "jpg"],
-  ["image/png", "png"],
-  ["image/webp", "webp"],
-  ["image/gif", "gif"],
-]);
 
 /**
  * Downloads an article's own embedded image and stores it locally under
@@ -150,14 +146,16 @@ export const storeArticleImageBuffer = async (
   buffer: Buffer,
   declaredMime: string,
 ): Promise<ArticleImageResult> => {
-  // Some origins send a bare subtype ("png") instead of a full media type
-  // ("image/png"). Observed live: five backfill items were rejected as
-  // unsupported-mime "png" while serving perfectly valid PNGs.
-  const normalized = declaredMime.trim().toLowerCase();
-  const mime =
-    normalized !== "" && !normalized.includes("/")
-      ? `image/${normalized}`
-      : normalized;
+  let mime = normalizeMimeType(declaredMime);
+  const detected = detectMimeFromSignature(buffer);
+
+  // If the server sends an inaccurate content-type header (e.g. pgw.udn.com.tw
+  // labeling PNG as image/jpeg, or health_gvm sending image/jpg), use the
+  // detected binary signature.
+  if (detected && (detected !== mime || !MIME_EXTENSIONS.has(mime))) {
+    mime = detected;
+  }
+
   const extension = MIME_EXTENSIONS.get(mime);
   if (!extension) {
     return { ok: false, failure: { kind: "unsupported-mime", mime } };

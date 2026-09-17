@@ -229,10 +229,12 @@ const main = async () => {
   let skipped = 0;
 
   try {
+    let consecutiveEmptyRounds = 0;
     for (let round = 1; round <= ROUNDS; round += 1) {
       const { json: listed } = await adminPost({
         listMissing: true,
         limit: LIMIT,
+        newerThanHours: Number(process.env.OG_BACKFILL_HOURS || 336),
       });
       if (listed.hostLveSaturated) {
         console.warn(
@@ -259,10 +261,19 @@ const main = async () => {
           continue;
         }
 
+        const markFailed = async (reason) => {
+          failed += 1;
+          try {
+            await adminPost({ markFailed: true, newsItemId: item.id });
+          } catch {
+            // non-fatal failure reporting
+          }
+        };
+
         try {
           const page = await fetchHtml(item.canonical_url);
           if (!page.ok) {
-            failed += 1;
+            await markFailed(`http ${page.status}`);
             console.log(
               `fail id=${item.id} http=${page.status} src=${item.source_name}`,
             );
@@ -270,7 +281,7 @@ const main = async () => {
           }
           const og = extractOgImage(page.html, item.canonical_url);
           if (!og) {
-            failed += 1;
+            await markFailed("no-og");
             console.log(`fail id=${item.id} no-og src=${item.source_name}`);
             continue;
           }
@@ -305,13 +316,13 @@ const main = async () => {
             roundAssigned += 1;
             console.log(`ok id=${item.id} path=${attached.localPath}`);
           } else {
-            failed += 1;
+            await markFailed(attached.reason || "unknown");
             console.log(
               `fail id=${item.id} src=${item.source_name} attach=${attached.reason || "unknown"}`,
             );
           }
         } catch (err) {
-          failed += 1;
+          await markFailed(err instanceof Error ? err.message : String(err));
           console.log(
             `fail id=${item.id} err=${err instanceof Error ? err.message : err}`,
           );
@@ -319,8 +330,13 @@ const main = async () => {
       }
 
       if (roundAssigned === 0) {
-        console.log("no assignments this round — stopping");
-        break;
+        consecutiveEmptyRounds += 1;
+        if (consecutiveEmptyRounds >= 3) {
+          console.log("3 consecutive rounds without assignments — stopping");
+          break;
+        }
+      } else {
+        consecutiveEmptyRounds = 0;
       }
     }
 
