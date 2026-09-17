@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export interface CivicPartnerItem {
   id: string;
@@ -128,7 +129,10 @@ export default function CivicPartnersSection({
         {CIVIC_PARTNERS.map((partner) => (
           <a
             key={partner.id}
-            href={partner.url}
+            href={appendOutboundUtm(partner.url, {
+              medium: "civic_partner",
+              campaign: "civic_alliance",
+            })}
             target="_blank"
             rel="noreferrer noopener"
             className="group flex flex-col justify-between rounded-2xl border border-slate-200/90 bg-white/90 p-4.5 shadow-2xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-1 hover:border-indigo-400 hover:shadow-md dark:border-slate-800/90 dark:bg-slate-900/90 dark:hover:border-indigo-600"

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { validateOutboundUrl } from "@/lib/format/outboundLink";
+import { validateOutboundUrl, appendOutboundUtm } from "@/lib/format/outboundLink";
 import { StabloFooter, StabloHeader } from "@/components/News/StabloNewsLayout";
 import OutRedirectCountdown from "@/components/Common/OutRedirectCountdown";
 
@@ -30,7 +30,13 @@ export default async function OutPage({
   searchParams: Promise<{ url?: string }>;
 }) {
   const { url } = await searchParams;
-  const targetUrl = validateOutboundUrl(url);
+  const rawTargetUrl = validateOutboundUrl(url);
+  const targetUrl = rawTargetUrl
+    ? appendOutboundUtm(rawTargetUrl, {
+        medium: "news_outbound",
+        campaign: "news_source",
+      })
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">

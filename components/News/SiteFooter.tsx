@@ -9,6 +9,7 @@ import {
 } from "@/lib/server/tools/catalog";
 import { compareByStrokeOrder } from "@/lib/server/tools/strokeOrder";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const FooterColumn = ({
   label,
@@ -159,23 +160,43 @@ export default function SiteFooter() {
 
   const civicPartnerLinks = [
     {
-      href: "https://g0v.tw/intl/zh-TW/",
+      href: appendOutboundUtm("https://g0v.tw/intl/zh-TW/", {
+        medium: "civic_partner",
+        campaign: "civic_alliance",
+        content: "footer",
+      }),
       label: t("footer.g0v", "g0v 零時政府 ↗"),
     },
     {
-      href: "https://kuma-academy.org/",
+      href: appendOutboundUtm("https://kuma-academy.org/", {
+        medium: "civic_partner",
+        campaign: "civic_alliance",
+        content: "footer",
+      }),
       label: t("footer.kumaAcademy", "黑熊學院 ↗"),
     },
     {
-      href: "https://cw.yueyuknows.com/",
+      href: appendOutboundUtm("https://cw.yueyuknows.com/", {
+        medium: "civic_partner",
+        campaign: "civic_alliance",
+        content: "footer",
+      }),
       label: t("footer.antiCognitiveWarfare", "反認知作戰 ↗"),
     },
     {
-      href: "https://metawilo.com/",
+      href: appendOutboundUtm("https://metawilo.com/", {
+        medium: "civic_partner",
+        campaign: "civic_alliance",
+        content: "footer",
+      }),
       label: t("footer.taiwanCriminals", "台灣罪犯圖鑑 ↗"),
     },
     {
-      href: "https://council2026.taiwangogo.tw/",
+      href: appendOutboundUtm("https://council2026.taiwangogo.tw/", {
+        medium: "civic_partner",
+        campaign: "civic_alliance",
+        content: "footer",
+      }),
       label: t("footer.council2026", "2026 政治人物前科 ↗"),
     },
   ];

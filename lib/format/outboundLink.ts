@@ -2,6 +2,14 @@
 // No server-only imports here — these run in both the /out server page and any
 // client component that needs to build or validate an outbound link.
 
+export interface OutboundUtmOptions {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  content?: string;
+  term?: string;
+}
+
 /**
  * Validates a candidate outbound URL for the `/out?url=` interstitial.
  *
@@ -28,6 +36,58 @@ export const validateOutboundUrl = (
   return parsed.href;
 };
 
-/** Builds the site-internal `/out?url=...` redirect link for an external article URL. */
-export const buildOutboundLink = (url: string): string =>
-  `/out?url=${encodeURIComponent(url)}`;
+/**
+ * Appends standard UTM tracking parameters to an external outbound destination URL.
+ * Respects existing UTM parameters if already present in the destination URL.
+ */
+export const appendOutboundUtm = (
+  rawUrl: string,
+  options?: OutboundUtmOptions,
+): string => {
+  if (!rawUrl) return "";
+  try {
+    const parsed = new URL(rawUrl);
+    const source = options?.source || "health.j172.tw";
+    const medium = options?.medium || "referral";
+    const campaign = options?.campaign;
+    const content = options?.content;
+    const term = options?.term;
+
+    // Respect existing utm_source if upstream already defined one
+    if (!parsed.searchParams.has("utm_source")) {
+      parsed.searchParams.set("utm_source", source);
+    }
+    if (medium && !parsed.searchParams.has("utm_medium")) {
+      parsed.searchParams.set("utm_medium", medium);
+    }
+    if (campaign && !parsed.searchParams.has("utm_campaign")) {
+      parsed.searchParams.set("utm_campaign", campaign);
+    }
+    if (content && !parsed.searchParams.has("utm_content")) {
+      parsed.searchParams.set("utm_content", content);
+    }
+    if (term && !parsed.searchParams.has("utm_term")) {
+      parsed.searchParams.set("utm_term", term);
+    }
+
+    return parsed.toString();
+  } catch {
+    return rawUrl;
+  }
+};
+
+/**
+ * Builds the site-internal `/out?url=...` redirect link for an external article URL.
+ * Automatically injects standard UTM source parameters into the destination URL.
+ */
+export const buildOutboundLink = (
+  url: string,
+  options?: OutboundUtmOptions,
+): string => {
+  const taggedUrl = appendOutboundUtm(url, {
+    medium: "news_outbound",
+    campaign: "news_source",
+    ...options,
+  });
+  return `/out?url=${encodeURIComponent(taggedUrl)}`;
+};

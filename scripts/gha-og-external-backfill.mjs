@@ -98,7 +98,11 @@ const adminPostSsh = (body) => {
     "--data-binary @-",
   ].join(" ");
 
-  const result = ssh.call(remote, { input: payload });
+  const result = ssh.call(remote, {
+    input: payload,
+    retries: 4,
+    retryDelayMs: 4000,
+  });
 
   if (result.error) throw result.error;
   if (result.status === 255) {
@@ -119,6 +123,25 @@ const adminPostSsh = (body) => {
   try {
     json = JSON.parse(text);
   } catch {
+    const isTransientRestart =
+      (result.stderr || "").includes("curl: (52) Empty reply") ||
+      (result.stderr || "").includes("curl: (56) Recv failure") ||
+      (result.stderr || "").includes("curl: (7) Failed to connect");
+
+    if (isTransientRestart) {
+      console.warn(
+        `Host server is temporarily restarting/rebooting (curl exit ${result.status}). Returning non-fatal 503 to allow graceful deferral.`,
+      );
+      return {
+        status: 503,
+        json: {
+          ok: false,
+          reason: "host_server_restarting_transient_exit_52",
+          hostServerRestarting: true,
+        },
+      };
+    }
+
     throw new Error(
       `ssh curl non-json exit=${result.status}: ${(result.stderr || "").slice(0, 200)} | ${text.slice(0, 200)}`,
     );
@@ -236,9 +259,9 @@ const main = async () => {
         limit: LIMIT,
         newerThanHours: Number(process.env.OG_BACKFILL_HOURS || 336),
       });
-      if (listed.hostLveSaturated) {
+      if (listed.hostLveSaturated || listed.hostServerRestarting) {
         console.warn(
-          "Host LVE / SSH saturated during listMissing. Exiting batch runner gracefully (exit 0) to allow host recovery.",
+          `Host server saturated or rebooting (${listed.reason || "transient"}). Exiting batch runner gracefully (exit 0) to defer to next schedule.`,
         );
         return;
       }
@@ -304,9 +327,9 @@ const main = async () => {
                 title: item.title || null,
               });
 
-          if (attached.hostLveSaturated) {
+          if (attached.hostLveSaturated || attached.hostServerRestarting) {
             console.warn(
-              "Host LVE / SSH saturated during attachImage. Exiting batch runner gracefully (exit 0) to allow host recovery.",
+              `Host server saturated or rebooting during attachImage (${attached.reason || "transient"}). Exiting batch runner gracefully (exit 0) to allow server recovery.`,
             );
             return;
           }
