@@ -1678,6 +1678,56 @@ export const TABLE_DDL = {
       INDEX idx_alert_level (alert_level)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  wraWaterOutages: `
+    CREATE TABLE IF NOT EXISTS wra_water_outages (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      outage_id VARCHAR(64) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      county VARCHAR(32) NOT NULL,
+      township VARCHAR(32) NOT NULL,
+      outage_type VARCHAR(20) NOT NULL DEFAULT 'planned',
+      start_time DATETIME NOT NULL,
+      end_time DATETIME NOT NULL,
+      affected_areas TEXT NOT NULL,
+      affected_households INT NOT NULL DEFAULT 0,
+      contact_phone VARCHAR(64) NULL,
+      status VARCHAR(20) NOT NULL DEFAULT 'active',
+      water_stations_json JSON NULL,
+      lat DECIMAL(10, 7) NULL,
+      lng DECIMAL(10, 7) NULL,
+      source VARCHAR(64) NOT NULL DEFAULT '台灣自來水公司',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_outage_id (outage_id),
+      INDEX idx_water_outages_county (county, township),
+      INDEX idx_water_outages_status (status),
+      INDEX idx_water_outages_time (start_time, end_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  moaDebrisFlowAlerts: `
+    CREATE TABLE IF NOT EXISTS moa_debris_flow_alerts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      debris_id VARCHAR(64) NOT NULL,
+      stream_code VARCHAR(64) NOT NULL,
+      stream_name VARCHAR(128) NOT NULL,
+      county VARCHAR(32) NOT NULL,
+      township VARCHAR(32) NOT NULL,
+      village VARCHAR(64) NULL,
+      alert_level VARCHAR(20) NOT NULL DEFAULT 'yellow',
+      rainfall_threshold_mm DECIMAL(6, 1) NULL,
+      advisory TEXT NULL,
+      lat DECIMAL(10, 7) NOT NULL,
+      lng DECIMAL(10, 7) NOT NULL,
+      issued_at DATETIME NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_debris_stream (stream_code),
+      INDEX idx_debris_county (county, township),
+      INDEX idx_debris_level (alert_level)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

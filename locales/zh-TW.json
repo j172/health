@@ -44,7 +44,8 @@
     "food-safety": "食安檢驗看板",
     "outdoor-safety": "戶外安全指數",
     "accessible-transit": "全台無障礙交通地圖",
-    "inundation-map": "全台積淹水即時感測地圖"
+    "inundation-map": "全台積淹水即時感測地圖",
+    "water-outages": "全臺即時停水查詢"
   },
   "common": {
     "language": "語言",

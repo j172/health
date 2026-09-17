@@ -5,6 +5,7 @@ import {
   INUNDATION_SENSORS_SEED,
   INUNDATION_SHELTERS_SEED,
 } from "./data/sensorSeed";
+import { fetchLiveInundationSensors } from "@/lib/server/wra/fetchInundationSensorsLive";
 import type {
   InundationSensorItem,
   InundationShelterPoint,
@@ -34,7 +35,8 @@ export async function ensureInundationSeeded(): Promise<void> {
       "SELECT COUNT(*) as cnt FROM wra_inundation_sensors"
     );
     if ((sensorCount[0]?.cnt || 0) === 0) {
-      for (const s of INUNDATION_SENSORS_SEED) {
+      const sensorsToSeed = await fetchLiveInundationSensors();
+      for (const s of sensorsToSeed) {
         await conn.execute(
           `INSERT INTO wra_inundation_sensors 
            (sensor_id, sensor_name, county, township, address, water_depth_cm, warning_depth_cm, alert_level, lat, lng, source, recorded_at)
