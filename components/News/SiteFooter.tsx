@@ -159,6 +159,10 @@ export default function SiteFooter() {
 
   const civicPartnerLinks = [
     {
+      href: "https://g0v.tw/intl/zh-TW/",
+      label: t("footer.g0v", "g0v 零時政府 ↗"),
+    },
+    {
       href: "https://kuma-academy.org/",
       label: t("footer.kumaAcademy", "黑熊學院 ↗"),
     },

@@ -125,11 +125,105 @@ export function parseKktixEventEntry(
   };
 }
 
+export const G0V_CALENDAR_PAGE_URL = "https://g0v.tw/intl/zh-TW/event/";
+export const G0V_CALENDAR_ICS_URL =
+  "https://calendar.google.com/calendar/ical/cpcf6iv5pt9l6gl2ue3svo63e8%40group.calendar.google.com/public/basic.ics";
+
+export function parseIcsDate(raw: string): string | null {
+  if (!raw) return null;
+  const clean = raw.trim();
+  if (/^\d{8}$/.test(clean)) {
+    const y = clean.slice(0, 4);
+    const m = clean.slice(4, 6);
+    const d = clean.slice(6, 8);
+    return `${y}-${m}-${d} 00:00:00`;
+  }
+  const m = clean.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})(Z)?$/);
+  if (m) {
+    const isUtc = Boolean(m[7]);
+    if (isUtc) {
+      const utcDate = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+      const taipeiDate = new Date(utcDate.getTime() + 8 * 60 * 60 * 1000);
+      return taipeiDate.toISOString().replace("T", " ").slice(0, 19);
+    } else {
+      return `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}:${m[6]}`;
+    }
+  }
+  return null;
+}
+
+export function parseG0vCalendarIcs(icsText: string, minStartDate = "2025-01-01"): ParsedG0vEvent[] {
+  if (!icsText) return [];
+  const unfolded = icsText.replace(/\r?\n[ \t]/g, "");
+  const events: ParsedG0vEvent[] = [];
+
+  for (const block of unfolded.split("BEGIN:VEVENT").slice(1)) {
+    const b = block.split("END:VEVENT")[0];
+    const getField = (name: string) => {
+      const m = b.match(new RegExp(`^${name}(?:;[^:]*)?:(.*)$`, "m"));
+      return m ? m[1].trim() : "";
+    };
+
+    const rawSummary = getField("SUMMARY");
+    const summary = rawSummary.replace(/\\([,;nN])/g, (_, c) => (c.toLowerCase() === "n" ? "\n" : c)).trim();
+    if (!summary || summary.includes("[domain]") || summary.includes("到期")) continue;
+
+    const rawStart = getField("DTSTART");
+    const rawEnd = getField("DTEND");
+    const startDate = parseIcsDate(rawStart);
+    const endDate = parseIcsDate(rawEnd) || startDate;
+
+    if (!startDate || startDate < minStartDate) continue;
+
+    const rawLocation = getField("LOCATION");
+    const location = rawLocation.replace(/\\([,;nN])/g, (_, c) => (c.toLowerCase() === "n" ? "\n" : c)).trim();
+
+    const rawDesc = getField("DESCRIPTION");
+    const description = rawDesc.replace(/\\([,;nN])/g, (_, c) => (c.toLowerCase() === "n" ? "\n" : c)).trim() || summary;
+
+    const rawUid = getField("UID") || summary;
+    const uidSlug = rawUid.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 48);
+    const uid = `g0v_cal_${uidSlug}`;
+
+    let city: string | null = null;
+    let locationName = "線上活動";
+    if (location) {
+      const parts = location.split("/").map((s) => s.trim()).filter(Boolean);
+      locationName = parts[0] || location;
+      city = extractCity(location, locationName) || null;
+    }
+
+    if (!location || location.includes("線上") || summary.includes("線上")) {
+      if (!city) {
+        locationName = "線上活動";
+        city = null;
+      }
+    }
+
+    events.push({
+      uid,
+      title: summary,
+      startDate,
+      endDate,
+      description,
+      imageUrl: null,
+      sourceWebPromote: G0V_CALENDAR_PAGE_URL,
+      masterUnit: "g0v 零時政府",
+      city,
+      location: location || "線上活動 / 全國參與",
+      locationName: locationName || "g0v 零時政府",
+    });
+  }
+
+  return events;
+}
+
 export async function runG0vEventsSync(): Promise<IngestG0vEventsResult> {
   try {
     const allActivities: ParsedG0vEvent[] = [];
     const seenUids = new Set<string>();
 
+    // 1. KKTIX Sources
     for (const source of G0V_KKTIX_SOURCES) {
       try {
         const res = await httpGetText(source.url, {
@@ -157,6 +251,27 @@ export async function runG0vEventsSync(): Promise<IngestG0vEventsResult> {
       } catch (srcErr) {
         console.warn(`[g0v Sync] Error fetching source ${source.name}:`, srcErr);
       }
+    }
+
+    // 2. Google Calendar embedded on g0v.tw/event
+    try {
+      const calRes = await httpGetText(G0V_CALENDAR_ICS_URL, {
+        headers: {
+          "User-Agent": DEFAULT_HEADERS["User-Agent"],
+          Accept: "text/calendar,text/plain,*/*",
+        },
+        timeoutMs: 15_000,
+      });
+      if (calRes.status >= 200 && calRes.status < 300 && calRes.text) {
+        const calEvents = parseG0vCalendarIcs(calRes.text);
+        for (const ev of calEvents) {
+          if (seenUids.has(ev.uid)) continue;
+          seenUids.add(ev.uid);
+          allActivities.push(ev);
+        }
+      }
+    } catch (calErr) {
+      console.warn("[g0v Sync] Error fetching Google Calendar ICS:", calErr);
     }
 
     if (allActivities.length === 0) {
