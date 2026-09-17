@@ -3,6 +3,7 @@ import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
+import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 import { facilitySearchConfigs } from "../facilityConfigs";
 
 export const revalidate = 300;
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
 export default function KindergartensPage() {
   return (
     <ToolPageShell slug="kindergartens" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <ContextualPartnerCard
+        partnerId="metawilo"
+        contextTitle="守護幼兒安全防護線"
+        contextDescription="為孩子挑選優質園所：除教育部立案資訊與裁罰紀錄外，建議搭配「台灣罪犯圖鑑」查核重大刑案與司法判決公開紀錄。"
+      />
       <FacilitySearchContent config={facilitySearchConfigs["kindergartens"]} />
     </ToolPageShell>
   );

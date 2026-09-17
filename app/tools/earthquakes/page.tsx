@@ -4,6 +4,7 @@ import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EarthquakeContent from "./EarthquakeContent";
+import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
@@ -32,6 +33,11 @@ export default async function EarthquakesPage() {
 
   return (
     <ToolPageShell slug="earthquakes" title={catalogEntry.title} maxWidthClassName="max-w-5xl">
+      <ContextualPartnerCard
+        partnerId="kuma"
+        contextTitle="震災應變與自主防護"
+        contextDescription="強震發生不可測，掌握第一時間避難原則：可前往「黑熊學院」學習地震避難要領、家具固定防護與災後生存指南。"
+      />
       <EarthquakeContent earthquakes={earthquakes} />
     </ToolPageShell>
   );

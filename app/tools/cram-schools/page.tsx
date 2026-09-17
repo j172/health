@@ -3,6 +3,7 @@ import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
+import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 import { facilitySearchConfigs } from "../facilityConfigs";
 
 export const revalidate = 300;
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
 export default function CramSchoolsPage() {
   return (
     <ToolPageShell slug="cram-schools" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
+      <ContextualPartnerCard
+        partnerId="metawilo"
+        contextTitle="校園與補教環境安全查核"
+        contextDescription="為學子把關課後學習安全：除查驗教育部立案與師資核備外，建議前往「台灣罪犯圖鑑」查核涉及兒少性犯罪公開判決。"
+      />
       <FacilitySearchContent config={facilitySearchConfigs["cram-schools"]} />
     </ToolPageShell>
   );
