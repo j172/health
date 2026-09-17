@@ -7,16 +7,16 @@ const USWG_STATIONS_URL = "https://iot.wra.gov.tw/uswg/stations";
 
 export async function fetchLiveInundationSensors(): Promise<InundationSensorItem[]> {
   try {
-    const raw = await httpGetText(USWG_STATIONS_URL, {
+    const res = await httpGetText(USWG_STATIONS_URL, {
       timeoutMs: 5000,
       headers: { Accept: "application/json" },
     });
 
-    if (!raw || !raw.trim().startsWith("[")) {
+    if (!res || res.status !== 200 || !res.text || !res.text.trim().startsWith("[")) {
       return INUNDATION_SENSORS_SEED;
     }
 
-    const json = JSON.parse(raw);
+    const json = JSON.parse(res.text);
     if (!Array.isArray(json) || json.length === 0) {
       return INUNDATION_SENSORS_SEED;
     }

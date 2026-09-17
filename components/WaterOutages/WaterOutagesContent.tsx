@@ -215,7 +215,7 @@ export default function WaterOutagesContent() {
         <LeafletMap
           outages={data.activeOutages}
           waterStations={data.waterStations}
-          userLocation={location.coords ? { lat: location.coords.latitude, lng: location.coords.longitude } : undefined}
+          userLocation={!location.isDefault ? { lat: location.lat, lng: location.lng } : undefined}
         />
       </div>
 

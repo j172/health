@@ -7,7 +7,7 @@ const MOA_DEBRIS_ALERT_URL =
 
 export async function fetchLiveDebrisFlowAlerts(): Promise<DebrisFlowAlertItem[]> {
   try {
-    const raw = await httpGetText(MOA_DEBRIS_ALERT_URL, {
+    const res = await httpGetText(MOA_DEBRIS_ALERT_URL, {
       timeoutMs: 5000,
       headers: {
         Accept: "application/json",
@@ -15,11 +15,11 @@ export async function fetchLiveDebrisFlowAlerts(): Promise<DebrisFlowAlertItem[]
       },
     });
 
-    if (!raw || !raw.trim().startsWith("[")) {
+    if (!res || res.status !== 200 || !res.text || !res.text.trim().startsWith("[")) {
       return DEBRIS_FLOW_SEED;
     }
 
-    const json = JSON.parse(raw);
+    const json = JSON.parse(res.text);
     if (!Array.isArray(json) || json.length === 0) {
       return DEBRIS_FLOW_SEED;
     }

@@ -12,7 +12,7 @@ export async function fetchLiveWaterOutages(): Promise<{
   waterStations: EmergencyWaterStation[];
 }> {
   try {
-    const raw = await httpGetText(TWC_OPEN_DATA_URL, {
+    const res = await httpGetText(TWC_OPEN_DATA_URL, {
       timeoutMs: 5000,
       headers: {
         Accept: "application/json",
@@ -20,14 +20,14 @@ export async function fetchLiveWaterOutages(): Promise<{
       },
     });
 
-    if (!raw || !raw.trim().startsWith("{")) {
+    if (!res || res.status !== 200 || !res.text || !res.text.trim().startsWith("{")) {
       return {
         outages: WATER_OUTAGES_SEED,
         waterStations: EMERGENCY_WATER_STATIONS_SEED,
       };
     }
 
-    const json = JSON.parse(raw);
+    const json = JSON.parse(res.text);
     if (!json || !Array.isArray(json.records || json.data || json)) {
       return {
         outages: WATER_OUTAGES_SEED,
