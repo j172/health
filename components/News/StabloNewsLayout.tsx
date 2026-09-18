@@ -76,8 +76,15 @@ export default async function StabloNewsLayout({
   // Falls back to the recency list until real view data accumulates (e.g.
   // right after this feature ships) — otherwise the widget would render
   // empty for every article that hasn't been viewed yet.
+  // When falling back, exclude articles already prominently displayed in hero & secondary
+  // so the sidebar doesn't display exact duplicates of the top section.
+  const featuredIds = new Set(
+    [hero?.id, ...secondary.map((s) => s.id)].filter((id): id is number => id !== undefined),
+  );
   const trendingNews =
-    topViewedNews.length > 0 ? topViewedNews : items.slice(0, 10);
+    topViewedNews.length > 0
+      ? topViewedNews
+      : items.filter((item) => !featuredIds.has(item.id)).slice(0, 10);
 
   return (
     <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">

@@ -16,6 +16,7 @@ import PestAlertSidebarWidget from "@/components/Tools/PestAlertSidebarWidget";
 import CpcPriceSidebarWidget from "@/components/Tools/CpcPriceSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { toTaipei, displayDate } from "@/lib/format/news";
+import { getArticleDestination } from "@/lib/format/outboundLink";
 import { type CwaAlertItem } from "@/lib/server/cwa/queries";
 import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 
@@ -71,24 +72,28 @@ export default function NewsSidebar({
             {t("categories.trendingHeading", "🔥 熱門焦點新聞")}
           </h3>
           <div className="space-y-4">
-            {trendingNews.slice(0, 10).map((item, idx) => (
-              <article key={item.id} className="group flex items-start gap-3">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                  {idx + 1}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <h4 className="line-clamp-2 text-xs leading-snug font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
-                    <Link href={`/news/${item.id}`}>
-                      {tDynamic(item.title)}
-                    </Link>
-                  </h4>
-                  <p className="mt-1 text-[11px] text-slate-600">
-                    {item.feed_name} ·{" "}
-                    {toTaipei(displayDate(item), "short")}
-                  </p>
-                </div>
-              </article>
-            ))}
+            {trendingNews.slice(0, 10).map((item, idx) => {
+              const dest = getArticleDestination(item, "news_sidebar_trending");
+              const externalProps = dest.isExternal ? { target: dest.target, rel: dest.rel } : {};
+              return (
+                <article key={item.id} className="group flex items-start gap-3">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-[11px] font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h4 className="line-clamp-2 text-xs leading-snug font-semibold text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
+                      <Link href={dest.href} {...externalProps}>
+                        {tDynamic(item.title)}
+                      </Link>
+                    </h4>
+                    <p className="mt-1 text-[11px] text-slate-600">
+                      {item.feed_name} ·{" "}
+                      {toTaipei(displayDate(item), "short")}
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       )}

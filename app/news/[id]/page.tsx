@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   getNewsById,
   listNewsAssetsByNewsId,
@@ -24,7 +24,7 @@ import NewsMapCard from "@/components/News/NewsMapCard";
 import LocalizedText from "@/components/ui/LocalizedText";
 import GooglePreferredSourceButton from "@/components/News/GooglePreferredSourceButton";
 import { displayDate } from "@/lib/format/news";
-import { buildOutboundLink } from "@/lib/format/outboundLink";
+import { buildOutboundLink, appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export const runtime = "nodejs";
 export const revalidate = 300;
@@ -76,6 +76,16 @@ export default async function NewsDetailPage({
   const news = await getNewsById(numericId);
   if (!news) {
     notFound();
+  }
+
+  // Non-gov articles are routed directly to original external article URL
+  if (!isGovSource(news.source_name) && news.canonical_url) {
+    redirect(
+      appendOutboundUtm(news.canonical_url, {
+        medium: "news_detail_redirect",
+        campaign: "news_source",
+      }),
+    );
   }
 
   const [assets, relatedItems] = await Promise.all([
@@ -246,12 +256,14 @@ export default async function NewsDetailPage({
             <div className="mt-10 flex flex-col items-center gap-3 border-y border-slate-100 py-8 dark:border-slate-800">
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <GooglePreferredSourceButton />
-                <Link
+                <a
                   href={buildOutboundLink(news.canonical_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 rounded-full bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-700"
                 >
                   前往官方原始網頁 ↗
-                </Link>
+                </a>
               </div>
             </div>
 
