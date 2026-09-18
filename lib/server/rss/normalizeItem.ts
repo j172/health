@@ -66,6 +66,98 @@ const htmlToText = (html: string): string => {
 const sha256 = (text: string): string =>
   createHash("sha256").update(text).digest("hex");
 
+const isUsableImageUrl = (url: string): boolean => {
+  if (!/^https?:\/\//i.test(url)) return false;
+  return !/logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking|default_logo/i.test(
+    url,
+  );
+};
+
+const extractImgSrcFromHtml = (html: string): string | null => {
+  if (!html || !html.includes("<img")) return null;
+  const match = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (match && match[1]) {
+    const src = match[1].trim();
+    if (isUsableImageUrl(src)) return src;
+  }
+  return null;
+};
+
+const pickLeadImageUrl = (
+  rawItem: Record<string, unknown>,
+  descriptionHtml: string,
+): string | null => {
+  // 1. Check enclosure
+  const enclosure = rawItem.enclosure;
+  if (enclosure) {
+    const encList = Array.isArray(enclosure) ? enclosure : [enclosure];
+    for (const enc of encList) {
+      if (enc && typeof enc === "object") {
+        const obj = enc as Record<string, unknown>;
+        const url = pickText(obj.url || obj["#text"] || obj["@_url"]);
+        const type = pickText(obj.type || obj["@_type"]).toLowerCase();
+        if (
+          url &&
+          (type.startsWith("image/") ||
+            /\.(jpe?g|png|webp|gif)(\?.*)?$/i.test(url))
+        ) {
+          if (isUsableImageUrl(url)) return url;
+        }
+      }
+    }
+  }
+
+  // 2. Check media:content
+  const mediaContent = rawItem["media:content"];
+  if (mediaContent) {
+    const list = Array.isArray(mediaContent) ? mediaContent : [mediaContent];
+    for (const mc of list) {
+      if (mc && typeof mc === "object") {
+        const obj = mc as Record<string, unknown>;
+        const url = pickText(obj.url || obj["@_url"] || obj["#text"]);
+        if (url && isUsableImageUrl(url)) return url;
+      }
+    }
+  }
+
+  // 3. Check media:thumbnail
+  const mediaThumb = rawItem["media:thumbnail"];
+  if (mediaThumb) {
+    const list = Array.isArray(mediaThumb) ? mediaThumb : [mediaThumb];
+    for (const mt of list) {
+      if (mt && typeof mt === "object") {
+        const obj = mt as Record<string, unknown>;
+        const url = pickText(obj.url || obj["@_url"] || obj["#text"]);
+        if (url && isUsableImageUrl(url)) return url;
+      }
+    }
+  }
+
+  // 4. Check content:encoded (e.g. Yahoo RSS or WordPress full content)
+  const contentEncoded = pickText(
+    rawItem["content:encoded"] || rawItem.encoded,
+  );
+  if (contentEncoded) {
+    // Yahoo often puts raw image URL directly inside <content:encoded>
+    if (
+      /^https?:\/\/\S+\.(?:jpe?g|png|webp|gif)(?:\?\S*)?$/i.test(
+        contentEncoded.trim(),
+      )
+    ) {
+      const url = contentEncoded.trim();
+      if (isUsableImageUrl(url)) return url;
+    }
+    const htmlImg = extractImgSrcFromHtml(contentEncoded);
+    if (htmlImg) return htmlImg;
+  }
+
+  // 5. Check description/summary HTML for <img>
+  const descImg = extractImgSrcFromHtml(descriptionHtml);
+  if (descImg) return descImg;
+
+  return null;
+};
+
 export const normalizeItem = (
   feed: FeedConfig,
   rawItem: Record<string, unknown>,
@@ -91,6 +183,7 @@ export const normalizeItem = (
   );
   const publicBeginAtTaipei = parseTaipeiDateToUtc(rawItem.PublicBeginDate);
   const publicEndAtTaipei = parseTaipeiDateToUtc(rawItem.PublicEndDate);
+  const leadImageUrl = pickLeadImageUrl(rawItem, descriptionHtml);
 
   const payloadHash = sha256(
     JSON.stringify({
@@ -124,5 +217,6 @@ export const normalizeItem = (
     publicBeginAtTaipei,
     publicEndAtTaipei,
     payloadHash,
+    leadImageUrl,
   };
 };

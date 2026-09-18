@@ -93,16 +93,31 @@ const errorMessage = (error: unknown): string =>
  */
 export const downloadArticleImageDetailed = async (
   sourceUrl: string,
+  customReferer?: string,
 ): Promise<ArticleImageResult> => {
   let response;
+  const referer =
+    customReferer ||
+    (() => {
+      try {
+        return new URL(sourceUrl).origin + "/";
+      } catch {
+        return undefined;
+      }
+    })();
+
   try {
     response = await httpRequest(sourceUrl, {
       timeoutMs: DOWNLOAD_TIMEOUT_MS,
       headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
         // Deliberately does NOT advertise avif: MIME_EXTENSIONS cannot store it,
         // so asking for it only invites a response we then reject. Omitting it
         // makes content-negotiating CDNs fall back to webp/jpeg, which we keep.
         Accept: "image/webp,image/png,image/jpeg,image/gif,*/*",
+        "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+        ...(referer ? { Referer: referer } : {}),
       },
     });
   } catch (error) {
@@ -220,7 +235,8 @@ export const storeArticleImageBuffer = async (
 /** Back-compatible wrapper for callers that only need the path. */
 export const downloadArticleImage = async (
   sourceUrl: string,
+  customReferer?: string,
 ): Promise<string | null> => {
-  const result = await downloadArticleImageDetailed(sourceUrl);
+  const result = await downloadArticleImageDetailed(sourceUrl, customReferer);
   return result.ok ? result.localPath : null;
 };

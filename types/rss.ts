@@ -163,6 +163,7 @@ export interface NormalizedRssItem {
   publicBeginAtTaipei: Date | null;
   publicEndAtTaipei: Date | null;
   payloadHash: string;
+  leadImageUrl?: string | null;
 }
 
 export interface NewsAsset {

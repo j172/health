@@ -99,17 +99,21 @@
 | `/api/food-nutrition` | `GET` | 食品營養成分查詢 |
 | `/llms.txt` / `/llms-full.txt` | `GET` | 提供 LLM / AI Crawler 結構化引用內容 |
 
-### 排程同步任務 (Cron Schedule)
+### 排程同步任務 (Cron Schedule & Dual-Track Resilience)
 
-RSS／AQI／CWA／地震這四項是正式站主機上的 **crontab**（不在此 repo 內管理，只能透過 SSH 到主機用 `crontab -l` 查看/修改），全部經 `127.0.0.1` loopback 呼叫，不會經過對外網域，因此也不受站臺前面的防機器人 WAF 影響。`.remote-health-index.php` 另外還有一段訪客觸發的節流邏輯，只是低流量時段的補充，不是主要保證。
+本專案採「In-App node-cron 常駐排程」搭配「GitHub Actions 外部保險心跳」雙軌容錯架構：
+1. **In-App 常駐排程**（`lib/server/cron/registerJobs.ts`）：於 Next.js 伺服器啟動時由 `instrumentation.ts` 掛載，內部直接調用同步邏輯（無 HTTP 回環負擔），涵蓋高頻地震、新聞、氣象、交通與環境監測。
+2. **GitHub Actions 外部心跳**（`.github/workflows/rss-sync-manual.yml` 等）：定時透過 SSH loopback 喚醒後端（`?async=1` 非同步模式），確保即使主機發生重啟或記憶體防護重置，排程依然由外部保險機制定時推動。
+3. **主機守護進程**（`scripts/health-app.crontab`）：維持 `pm2-ensure-running` 自愈守護與 healthchecks.io 存活回報。
 
-| 任務名稱 | 頻率 | Endpoint | 說明 |
+| 任務名稱 | 頻率 | 觸發模式 | 說明 |
 |---|---|---|---|
-| **RSS 新聞採集** | 每 30 分鐘 | `/api/internal/rss-sync` | 增量比對 23 個新聞來源（含元氣網）並持久化 |
-| **AQI 空氣品質** | 每 30 分鐘 | `/api/internal/aqi-sync` | 快照環境部最新監測數據 |
-| **CWA 氣象觀測** | 每 30 分鐘 | `/api/admin/cwa-sync` | 刷新預報、海嘯與氣象觀測 |
-| **全球顯著地震動態** | 每 10 分鐘 | `/api/admin/earthquakes-sync` | 整合 USGS/EMSC/HKO/CWA 多源地震事件 |
-| **機構與藥品備份** | 每 6 個月 | `.github/workflows/six-monthly-sync.yml` | 透過 GitHub Actions 自動同步健保署與食藥署名冊 |
+| **RSS 新聞採集** | 每 30 分鐘 (`:05/:35` + `:18/:48`) | In-App + GHA 雙軌 | 增量比對 50+ 個新聞源並萃取圖片、結構化摘要與標籤 |
+| **真實 OG 圖片回填** | 每 30 分鐘 (`:07/:37`) | GitHub Actions | 透過 runner 乾淨出口繞過防爬蟲，解析真圖並回填 |
+| **AQI 空氣品質** | 每 30 分鐘 (`:20/:50`) | In-App node-cron | 快照環境部最新監測數據 |
+| **CWA 氣象觀測** | 每 30 分鐘 (`:15/:45`) | In-App node-cron | 刷新預報、海嘯與氣象觀測 |
+| **全球顯著地震動態** | 每 10 分鐘 (`3,13..53`) | In-App node-cron | 整合 USGS/EMSC/HKO/CWA 多源地震事件 |
+| **機構與藥品備份** | 每 6 個月 | GitHub Actions | 自動同步健保署特約機構與食藥署名冊 |
 
 ---
 

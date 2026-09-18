@@ -172,7 +172,8 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(`
     ALTER TABLE news_items
       ADD INDEX IF NOT EXISTS idx_news_geo (lat, lng),
-      ADD INDEX IF NOT EXISTS idx_news_facility (facility_id)
+      ADD INDEX IF NOT EXISTS idx_news_facility (facility_id),
+      ADD INDEX IF NOT EXISTS idx_news_source_published (source_name, published_at_utc)
   `);
   // news_card_images was originally Pixabay-only (pixabay_id BIGINT NOT NULL
   // UNIQUE, see TABLE_DDL.newsCardImages above, deliberately left as-is).
