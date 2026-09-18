@@ -1,7 +1,13 @@
-name: Manual RSS Ingestion Sync
+name: RSS Ingestion Sync (Scheduled & Manual)
 
 on:
   workflow_dispatch:
+  schedule:
+    # Runs every 30 minutes as an external heartbeat to guarantee news ingestion
+    # even if in-app node-cron experiences transient host PM2 restarts.
+    # Deliberately offset (:18/:48) to avoid collision with in-app cron (:05/:35),
+    # news-og-backfill (:07/:37), and facilities-geocode-batch (:00/:30).
+    - cron: "18,48 * * * *"
 
 concurrency:
   group: deploy-ftps

@@ -162,14 +162,51 @@ const extractOgImage = (html, baseUrl) => {
     $('meta[property="og:image:url"]').attr("content"),
     $('meta[name="twitter:image"]').attr("content"),
     $('meta[name="twitter:image:src"]').attr("content"),
+    $('link[rel="image_src"]').attr("href"),
   ];
+
+  $('script[type="application/ld+json"]').each((_, el) => {
+    try {
+      const text = $(el).text();
+      if (!text || (!text.includes("image") && !text.includes("thumbnailUrl")))
+        return;
+      const data = JSON.parse(text);
+      const items = Array.isArray(data) ? data : [data];
+      for (const item of items) {
+        if (!item || typeof item !== "object") continue;
+        const img = item.image || item.thumbnailUrl;
+        if (typeof img === "string") {
+          raws.push(img);
+        } else if (Array.isArray(img)) {
+          for (const sub of img) {
+            if (typeof sub === "string") raws.push(sub);
+            else if (
+              sub &&
+              typeof sub === "object" &&
+              typeof sub.url === "string"
+            )
+              raws.push(sub.url);
+          }
+        } else if (
+          img &&
+          typeof img === "object" &&
+          typeof img.url === "string"
+        ) {
+          raws.push(img.url);
+        }
+      }
+    } catch {
+      // ignore
+    }
+  });
+
   for (const raw of raws) {
     if (!raw?.trim()) continue;
     try {
       const abs = new URL(raw.trim(), baseUrl).toString();
       if (!/^https?:\/\//i.test(abs)) continue;
       if (
-        /logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking/i.test(
+        /logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking|default_logo/i.test(
           abs,
         )
       )
@@ -183,11 +220,19 @@ const extractOgImage = (html, baseUrl) => {
 };
 
 const fetchHtml = async (url) => {
+  const referer = (() => {
+    try {
+      return new URL(url).origin + "/";
+    } catch {
+      return undefined;
+    }
+  })();
   const res = await fetch(url, {
     headers: {
       "User-Agent": UA,
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+      ...(referer ? { Referer: referer } : {}),
     },
     redirect: "follow",
     signal: AbortSignal.timeout(20000),

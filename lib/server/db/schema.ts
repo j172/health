@@ -39,6 +39,7 @@ export const TABLE_DDL = {
       KEY idx_news_feed_published (feed_code, published_at_utc),
       KEY idx_news_dept_published (dept_name, published_at_utc),
       KEY idx_news_last_seen (last_seen_at_utc),
+      KEY idx_news_source_published (source_name, published_at_utc),
       KEY idx_news_geo (lat, lng),
       KEY idx_news_facility (facility_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

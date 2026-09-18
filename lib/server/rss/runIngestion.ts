@@ -89,6 +89,7 @@ import {
 } from "@/lib/server/rss/existingHashes";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
+import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { submitToIndexNow } from "@/lib/server/seo/indexnow";
 import { isGovSource } from "@/lib/server/news/sourceCategories";
@@ -116,8 +117,31 @@ const enrichItem = async (
         assets: [],
       }));
 
+  // If leadImageUrl was already extracted from RSS (enclosure, media:content, etc.),
+  // download it directly to have the real article cover immediately on ingestion.
+  if (!detail.assets.some((asset) => asset.assetType === "image") && item.leadImageUrl) {
+    const localPath = await downloadArticleImage(
+      item.leadImageUrl,
+      item.canonicalUrl,
+    ).catch(() => null);
+    if (localPath) {
+      detail = {
+        ...detail,
+        assets: [
+          {
+            assetType: "image",
+            title: item.title,
+            url: localPath,
+            sortOrder: 0,
+          },
+          ...detail.assets,
+        ],
+      };
+    }
+  }
+
   // skipDetailFetch (ltn etc.) never stores body HTML, but cards still need a
-  // thumbnail. Pull og:image only — no article body scrape / republish.
+  // thumbnail. Pull og:image / json-ld only — no article body scrape / republish.
   // Also covers full detail fetches that found zero content images.
   if (!detail.assets.some((asset) => asset.assetType === "image")) {
     const ogAsset = await fetchOpenGraphImageAsset(item.canonicalUrl).catch(

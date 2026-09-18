@@ -99,6 +99,7 @@ export const listMissingCardImageTargets = async (
       FROM news_items n
       WHERE ${MISSING_WHERE}
         AND n.source_name NOT IN (${govPlaceholders})
+        AND n.image_backfill_attempts < 3
         ${newerThanHours === null ? "" : "AND n.created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)"}
       ORDER BY n.image_backfill_attempts ASC, COALESCE(n.published_at_utc, n.created_at) DESC, n.id DESC
       LIMIT ?
