@@ -4,6 +4,7 @@ import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle, isGovSource } from "@/lib/server/news/sourceCategories";
 import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
+import { getArticleDestination } from "@/lib/format/outboundLink";
 import CardThumb from "@/components/News/CardThumb";
 
 export default function NewsCard({
@@ -22,13 +23,10 @@ export default function NewsCard({
 }) {
   const authorLabel = resolveAuthorLabel(item);
   const badgeStyle = getSourceBadgeStyle(item.source_name);
-  const isExternalLink =
-    isExternal ||
-    item.id < 0 ||
-    item.source_name === "blog_j172" ||
-    Boolean(item.canonical_url && /^https?:\/\//i.test(item.canonical_url) && item.id < 0);
-  const href = isExternalLink && item.canonical_url ? item.canonical_url : `/news/${item.id}`;
-  const externalProps = isExternalLink ? { target: "_blank", rel: "noopener noreferrer" } : {};
+  const dest = getArticleDestination(item, "news_card");
+  const href = isExternal && item.canonical_url ? item.canonical_url : dest.href;
+  const isTargetExternal = isExternal || dest.isExternal;
+  const externalProps = isTargetExternal ? { target: "_blank", rel: "noopener noreferrer" } : {};
 
   if (horizontal) {
     return (
@@ -130,7 +128,7 @@ export default function NewsCard({
             className="font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
             {...externalProps}
           >
-            閱讀全文 →
+            {isTargetExternal ? "閱讀全文 ↗" : "閱讀全文 →"}
           </Link>
         </div>
       </div>

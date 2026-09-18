@@ -76,18 +76,67 @@ export const appendOutboundUtm = (
   }
 };
 
+import { isGovSource } from "@/lib/server/news/sourceCategories";
+
+export interface ArticleLinkDestination {
+  href: string;
+  isExternal: boolean;
+  target?: "_blank";
+  rel?: "noopener noreferrer";
+}
+
 /**
- * Builds the site-internal `/out?url=...` redirect link for an external article URL.
- * Automatically injects standard UTM source parameters into the destination URL.
+ * Determines whether a news card should open the internal detail page (official gov sources)
+ * or link out directly in a new tab to the publisher with UTM tracking (non-gov media, blogs, NPOs).
+ */
+export const getArticleDestination = (
+  item: {
+    id: number;
+    source_name?: string | null;
+    canonical_url?: string | null;
+  },
+  medium = "news_card",
+): ArticleLinkDestination => {
+  const isGov = isGovSource(item.source_name || "");
+  if (isGov && item.id > 0) {
+    return {
+      href: `/news/${item.id}`,
+      isExternal: false,
+    };
+  }
+
+  const rawUrl = item.canonical_url;
+  if (rawUrl && /^https?:\/\//i.test(rawUrl)) {
+    const tagged = appendOutboundUtm(rawUrl, {
+      medium,
+      campaign: "news_source",
+    });
+    return {
+      href: tagged,
+      isExternal: true,
+      target: "_blank",
+      rel: "noopener noreferrer",
+    };
+  }
+
+  return {
+    href: item.id > 0 ? `/news/${item.id}` : "/news",
+    isExternal: false,
+  };
+};
+
+/**
+ * Builds direct outbound link for an external article URL with standard UTM parameters.
+ * Links directly to the original publisher without intermediate /out interstitial or delay.
  */
 export const buildOutboundLink = (
   url: string,
   options?: OutboundUtmOptions,
 ): string => {
-  const taggedUrl = appendOutboundUtm(url, {
+  return appendOutboundUtm(url, {
     medium: "news_outbound",
     campaign: "news_source",
     ...options,
   });
-  return `/out?url=${encodeURIComponent(taggedUrl)}`;
 };
+

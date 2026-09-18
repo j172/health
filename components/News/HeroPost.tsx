@@ -5,6 +5,7 @@ import { type NewsListItem } from "@/lib/server/news/queries";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
+import { getArticleDestination } from "@/lib/format/outboundLink";
 
 export default function HeroPost({
   hero,
@@ -18,6 +19,8 @@ export default function HeroPost({
   const src = hero.card_image_url;
   const isExternal = src ? /^https?:\/\//i.test(src) : false;
   const heroBadgeStyle = getSourceBadgeStyle(hero.source_name);
+  const heroDest = getArticleDestination(hero, "news_hero");
+  const heroExternalProps = heroDest.isExternal ? { target: heroDest.target, rel: heroDest.rel } : {};
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -62,8 +65,9 @@ export default function HeroPost({
           <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
             <h1 className="max-w-3xl text-xl leading-snug font-extrabold tracking-tight text-white sm:text-2xl lg:text-3xl">
               <Link
-                href={`/news/${hero.id}`}
+                href={heroDest.href}
                 className="transition-opacity hover:opacity-90"
+                {...heroExternalProps}
               >
                 {hero.title}
               </Link>
@@ -96,10 +100,11 @@ export default function HeroPost({
                 </span>
               </div>
               <Link
-                href={`/news/${hero.id}`}
+                href={heroDest.href}
                 className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-1.5 text-xs font-bold text-slate-900 transition-colors hover:bg-indigo-500 hover:text-white"
+                {...heroExternalProps}
               >
-                閱讀報導 →
+                {heroDest.isExternal ? "閱讀全文 ↗" : "閱讀報導 →"}
               </Link>
             </div>
           </div>
@@ -111,6 +116,8 @@ export default function HeroPost({
         {secondary.slice(0, 2).map((item) => {
           const itemAuthor = resolveAuthorLabel(item);
           const itemBadgeStyle = getSourceBadgeStyle(item.source_name);
+          const itemDest = getArticleDestination(item, "news_secondary");
+          const itemExternalProps = itemDest.isExternal ? { target: itemDest.target, rel: itemDest.rel } : {};
           return (
             <article
               key={item.id}
@@ -144,7 +151,7 @@ export default function HeroPost({
                   </div>
                 </div>
                 <h2 className="mt-3 line-clamp-2 text-base leading-snug font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                  <Link href={`/news/${item.id}`}>
+                  <Link href={itemDest.href} {...itemExternalProps}>
                     <LocalizedText>{item.title}</LocalizedText>
                   </Link>
                 </h2>
@@ -158,10 +165,11 @@ export default function HeroPost({
                   {itemAuthor}
                 </span>
                 <Link
-                  href={`/news/${item.id}`}
+                  href={itemDest.href}
                   className="font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+                  {...itemExternalProps}
                 >
-                  閱讀 →
+                  {itemDest.isExternal ? "閱讀 ↗" : "閱讀 →"}
                 </Link>
               </div>
             </article>

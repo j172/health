@@ -91,6 +91,7 @@ import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { submitToIndexNow } from "@/lib/server/seo/indexnow";
+import { isGovSource } from "@/lib/server/news/sourceCategories";
 import type { NewsAsset } from "@/types/rss";
 
 const LOCK_NAME = "rss_ingestion_lock";
@@ -100,11 +101,14 @@ const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
 const enrichItem = async (
   item: NormalizedRssItem,
 ): Promise<EnrichedRssItem> => {
+  const isGov = isGovSource(item.sourceName);
+  const skipDetail = !isGov || Boolean(FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch);
+
   let detail: {
     detailHtml: string | null;
     detailText: string | null;
     assets: NewsAsset[];
-  } = FEEDS_BY_CODE.get(item.feedCode)?.skipDetailFetch
+  } = skipDetail
     ? { detailHtml: null, detailText: null, assets: [] }
     : await fetchDetailPage(item).catch(() => ({
         detailHtml: null,

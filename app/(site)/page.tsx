@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { listLatestNews } from "@/lib/server/news/queries";
+import { listDiverseHomeNews } from "@/lib/server/news/queries";
 import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const items = await listLatestNews(54);
+  const items = await listDiverseHomeNews(54, 3);
   const homeGraph = buildHomeGraphJsonLd(items);
 
   return (

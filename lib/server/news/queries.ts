@@ -2,6 +2,13 @@ import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import { memoizeQuery } from "@/lib/server/cache/memo";
 import { coerceCoords } from "@/lib/server/db/coords";
+import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+
+const getGovSourceNames = (): string[] => {
+  const govCat = SOURCE_CATEGORIES.find((c) => c.key === "gov");
+  const sources = govCat ? govCat.sources.map((s) => s.sourceName) : [];
+  return Array.from(new Set([...sources, "cwa"]));
+};
 
 export interface NewsListItem {
   id: number;
@@ -117,6 +124,8 @@ export const listRecentNewsForNewsSitemap = async (
   hours = 48,
 ): Promise<NewsSitemapItem[]> =>
   withConnectionFallback([], async (conn) => {
+    const govSources = getGovSourceNames();
+    const placeholders = govSources.map(() => "?").join(", ");
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT n.id, n.title, n.source_name, n.published_at_utc,
@@ -124,10 +133,10 @@ export const listRecentNewsForNewsSitemap = async (
       FROM news_items n
       LEFT JOIN news_card_images c ON c.news_item_id = n.id
       WHERE n.published_at_utc >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
-        AND n.source_name NOT IN ('culture_tw', 'public_art')
+        AND n.source_name IN (${placeholders})
       ORDER BY n.published_at_utc DESC
       `,
-      [hours],
+      [hours, ...govSources],
     );
     return rows as unknown as NewsSitemapItem[];
   });
@@ -233,6 +242,69 @@ export const listLatestNews = async (
     }),
   );
 };
+
+/**
+ * Re-ranks/filters news items with source diversity guarantees.
+ * Caps any single `source_name` to `maxPerSource` to prevent batch-crawled or
+ * high-frequency sources from flooding the front page.
+ *
+ * Backfills gracefully from skipped items if the candidate pool has fewer
+ * diverse items than `limit`.
+ */
+export const applySourceDiversity = (
+  items: NewsListItem[],
+  limit: number,
+  maxPerSource = 3,
+): NewsListItem[] => {
+  if (items.length <= limit && maxPerSource <= 0) {
+    return items;
+  }
+
+  const selected: NewsListItem[] = [];
+  const skipped: NewsListItem[] = [];
+  const counts = new Map<string, number>();
+
+  for (const item of items) {
+    const src = item.source_name || "_unknown";
+    const current = counts.get(src) || 0;
+    if (current < maxPerSource) {
+      counts.set(src, current + 1);
+      selected.push(item);
+      if (selected.length === limit) {
+        return selected;
+      }
+    } else {
+      skipped.push(item);
+    }
+  }
+
+  if (selected.length < limit && skipped.length > 0) {
+    for (const item of skipped) {
+      selected.push(item);
+      if (selected.length === limit) break;
+    }
+  }
+
+  return selected;
+};
+
+/**
+ * Fetches latest news specifically tailored for the homepage with source diversity guarantees.
+ * Caps any single `source_name` to `maxPerSource` (default: 3) so that no individual publisher
+ * or campus crawler dominates the 54 homepage slots.
+ */
+export const listDiverseHomeNews = async (
+  limit = 54,
+  maxPerSource = 3,
+  candidatePoolSize = 120,
+): Promise<NewsListItem[]> => {
+  const cacheKey = `list_diverse_home_news_${limit}_${maxPerSource}_${candidatePoolSize}`;
+  return memoizeQuery(cacheKey, async () => {
+    const candidates = await listLatestNews(candidatePoolSize, 0);
+    return applySourceDiversity(candidates, limit, maxPerSource);
+  });
+};
+
 
 /** Top-N by real view count (see /api/news/[id]/view) for the "熱門焦點
  * 新聞" sidebar widget — excludes zero-view articles so a brand-new deploy
@@ -434,14 +506,17 @@ export const listNewsForSitemap = async (
   const cacheKey = `list_news_sitemap_${limit}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback([], async (conn) => {
+      const govSources = getGovSourceNames();
+      const placeholders = govSources.map(() => "?").join(", ");
       const [rows] = await conn.query<RowDataPacket[]>(
         `
         SELECT n.id, n.published_at_utc
         FROM news_items n
+        WHERE n.source_name IN (${placeholders})
         ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
         LIMIT ?
         `,
-        [limit],
+        [...govSources, limit],
       );
       return rows as unknown as NewsSitemapItem[];
     }),
