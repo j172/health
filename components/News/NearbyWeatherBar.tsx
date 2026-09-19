@@ -46,6 +46,10 @@ interface NearbyWeatherResponse {
   } | null;
 }
 
+// 同一個 /api/weather-nearby 底層資料每 30 分鐘才更新一次，10 分鐘輪詢一次
+// 已足夠讓長時間停留在頁面上的使用者看到最新讀數，不需要抓得更密。
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+
 const formatForecastDate = (isoDate: string): string => {
   const today = new Date();
   const todayStr = today.toISOString().slice(0, 10);
@@ -66,17 +70,26 @@ export default function NearbyWeatherBar() {
   useEffect(() => {
     let cancelled = false;
 
-    fetchWithTimeout(`/api/weather-nearby?lat=${location.lat}&lng=${location.lng}`, { timeoutMs: 5000 })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((json) => {
-        if (!cancelled) setData(json);
-      })
-      .catch(() => {
-        if (!cancelled) setData(null);
-      });
+    const load = () => {
+      fetchWithTimeout(`/api/weather-nearby?lat=${location.lat}&lng=${location.lng}`, { timeoutMs: 5000 })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((json) => {
+          if (!cancelled) setData(json);
+        })
+        .catch(() => {
+          if (!cancelled) setData(null);
+        });
+    };
+
+    load();
+    // 「抓一次就不再更新」：使用者若長時間停留在同一頁、座標也沒變化，
+    // 這個 effect 不會再被重新觸發，數值會停在剛載入當下那一刻。
+    // 用 setInterval 定期重抓，並在 unmount 或座標改變時清除計時器。
+    const interval = setInterval(load, REFRESH_INTERVAL_MS);
 
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, [location.lat, location.lng]);
 
