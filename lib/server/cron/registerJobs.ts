@@ -17,6 +17,7 @@ import { runKumaEventsSync } from "@/lib/server/culture/ingestKumaEvents";
 import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
+import { runWraWaterOutagesSync } from "@/lib/server/waterOutages/ingestWraWaterOutages";
 import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
@@ -168,6 +169,22 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "25 * * * *",
     runGuarded("water-outages-cron.log", () => runWaterOutagesSync()),
+  );
+  // WRA water outages sync (wra_water_outages, the table /tools/water-outages
+  // actually reads) — issue #337 /
+  // docs/specs/water-outages-live-ingestion-gap.md: this table had NO
+  // ingestion anywhere in the repo, so the page always fell back to
+  // WATER_OUTAGES_SEED. Every hour, offset from the legacy water-outages-cron
+  // job's :25 (see above) at :18/:48 — not on any other hourly job's exact
+  // minute in this file (rss 5/35, aqi 20/50, cwa 15/45, earthquakes
+  // 3/13/23/33/43/53, gov-news 12/42, news-card-images+power-realtime
+  // 0/10/20/30/40/50, aqx 10/40, wra-sync 8/38, wra-iot 12/27/42/57, metro
+  // 0/30, emergency-rooms 7/22/37/52) other than youbike's unavoidable
+  // every-5-minute grid. Coordinate further with the
+  // github-actions-cron-decollision ticket if that lands first.
+  cron.schedule(
+    "18,48 * * * *",
+    runGuarded("wra-water-outages-cron.log", () => runWraWaterOutagesSync()),
   );
   // Green products sync daily at 4:30am
   cron.schedule(
