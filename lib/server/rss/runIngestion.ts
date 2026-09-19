@@ -86,6 +86,10 @@ import {
   itemKey,
   isUnchanged,
 } from "@/lib/server/rss/existingHashes";
+import {
+  getRecentImageUrlsForSource,
+  isDuplicateRecentImage,
+} from "@/lib/server/rss/duplicateImageDetection";
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
@@ -261,10 +265,56 @@ const processSpecialSource = async (
   // RSS feed item above.
   const hashes = await getExistingPayloadHashes(fresh);
   let skippedUnchanged = 0;
+
+  // Lazily-populated per source_name, and shared across this whole batch —
+  // a source's recent image URLs don't change mid-loop, and most calls only
+  // ever touch one source_name anyway.
+  const recentImageUrlsBySource = new Map<string, Set<string>>();
+
   for (const item of fresh) {
     if (isUnchanged(hashes, item)) {
       skippedUnchanged += 1;
       continue;
+    }
+
+    let assets = item.assets;
+    const scrapedImage = assets.find((asset) => asset.assetType === "image");
+
+    if (scrapedImage) {
+      let recentUrls = recentImageUrlsBySource.get(item.sourceName);
+      if (!recentUrls) {
+        recentUrls = await getRecentImageUrlsForSource(item.sourceName);
+        recentImageUrlsBySource.set(item.sourceName, recentUrls);
+      }
+
+      if (isDuplicateRecentImage(recentUrls, scrapedImage.url)) {
+        // Some special-source listing pages carry one shared placeholder
+        // thumbnail rather than a per-article image (confirmed live for
+        // PChome's health category). Treat a repeat the same as "scraping
+        // found nothing" so the og:image fallback below gets a chance to
+        // find this article's own photo instead of silently reusing
+        // another article's.
+        assets = assets.filter((asset) => asset.assetType !== "image");
+      }
+    }
+
+    // processSpecialSource's ~51 sourceNames each run their own scraper
+    // with no shared safety net — unlike enrichItem() (the standard RSS
+    // path), which already falls back to og:image when its own detail-page
+    // fetch comes up empty (see the block above, lines ~146-153). Reuse
+    // that exact same fallback here rather than duplicating it.
+    if (!assets.some((asset) => asset.assetType === "image")) {
+      const ogAsset = await fetchOpenGraphImageAsset(item.canonicalUrl).catch(
+        () => null,
+      );
+      if (ogAsset) {
+        assets = [ogAsset, ...assets];
+      }
+    }
+
+    const keptImage = assets.find((asset) => asset.assetType === "image");
+    if (keptImage) {
+      recentImageUrlsBySource.get(item.sourceName)?.add(keptImage.url);
     }
 
     const seo = await generateSeoMetadataWithAi({
@@ -278,6 +328,7 @@ const processSpecialSource = async (
     });
     ctx.enrichedItems.push({
       ...item,
+      assets,
       metaTitle: seo.metaTitle,
       metaDescription: seo.metaDescription,
       keywords: seo.keywords,

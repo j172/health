@@ -22,6 +22,10 @@
  */
 import { load } from "cheerio";
 import { createSshLoopback, shellQuote } from "./lib/ssh-loopback.mjs";
+import {
+  isGoogleNewsUrl,
+  resolveGoogleNewsRedirect,
+} from "../lib/server/net/resolveGoogleNewsRedirect.mjs";
 
 const TRANSPORT = (process.env.NEWS_IMAGES_TRANSPORT || "http").toLowerCase();
 const BASE = (
@@ -321,10 +325,7 @@ const main = async () => {
 
       let roundAssigned = 0;
       for (const item of items) {
-        if (
-          !item?.canonical_url ||
-          /news\.google\.com/i.test(item.canonical_url)
-        ) {
+        if (!item?.canonical_url) {
           skipped += 1;
           continue;
         }
@@ -338,8 +339,28 @@ const main = async () => {
           }
         };
 
+        // Google News RSS <link> values are an "article shell" URL, not the
+        // publisher's — no og:image lives on that page (Google's own logo,
+        // at best). Try to resolve the real article URL first (bounded
+        // hops, short timeout, shared with fetchOpenGraphImage.ts and
+        // backfillOgImages.ts — see resolveGoogleNewsRedirect.mjs); if that
+        // fails, mark the attempt and move on exactly as the old
+        // skip-outright behavior did, just now counted as a real attempt.
+        let targetUrl = item.canonical_url;
+        if (isGoogleNewsUrl(item.canonical_url)) {
+          const resolved = await resolveGoogleNewsRedirect(item.canonical_url);
+          if (!resolved) {
+            await markFailed("google news url unresolved");
+            console.log(
+              `fail id=${item.id} google-news-unresolved src=${item.source_name}`,
+            );
+            continue;
+          }
+          targetUrl = resolved;
+        }
+
         try {
-          const page = await fetchHtml(item.canonical_url);
+          const page = await fetchHtml(targetUrl);
           if (!page.ok) {
             await markFailed(`http ${page.status}`);
             console.log(
@@ -347,7 +368,7 @@ const main = async () => {
             );
             continue;
           }
-          const og = extractOgImage(page.html, item.canonical_url);
+          const og = extractOgImage(page.html, targetUrl);
           if (!og) {
             await markFailed("no-og");
             console.log(`fail id=${item.id} no-og src=${item.source_name}`);
@@ -356,7 +377,7 @@ const main = async () => {
 
           // Prefer runner egress; fall back to asking the host to fetch the
           // URL itself, which still works for CDNs that do not block it.
-          const bytes = await fetchImageBytes(og, item.canonical_url);
+          const bytes = await fetchImageBytes(og, targetUrl);
           const { json: attached } = bytes.ok
             ? await adminPost({
                 attachImageBytes: true,
