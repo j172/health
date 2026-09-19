@@ -182,9 +182,24 @@ async function replaceAll(rows: VillageRow[], sourceUpdatedAtSql: string): Promi
   });
 }
 
-/** 登革熱病媒蚊調查資料同步 (issue #269) — 全國村里級 BI/HI/CI/LI/AI 密度指數. */
-export async function syncDengueVectorSurvey(): Promise<DengueVectorSyncResult> {
-  const records = await fetchCsvRows(NATIONAL_CSV_URL);
+/**
+ * 登革熱病媒蚊調查資料同步 (issue #269) — 全國村里級 BI/HI/CI/LI/AI 密度指數.
+ *
+ * `csvText` is an optional pre-fetched override: od.cdc.gov.tw allowlists
+ * Taiwan-ISP source IPs only and silently drops everything else (confirmed
+ * against the production host, GitHub Actions runners, and Cloudflare WARP
+ * egress alike — see .github/workflows/egress-probe.yml), so the in-process
+ * fetch below never succeeds from this host or from CI. Until that's fixed
+ * upstream (IP whitelist request) or a Taiwan-ISP relay exists, callers pass
+ * the CSV fetched from a machine on a real Taiwan ISP instead — same
+ * payload-override shape as runCdcAlertsSync.
+ */
+export async function syncDengueVectorSurvey(
+  csvText?: string,
+): Promise<DengueVectorSyncResult> {
+  const records = csvText
+    ? parseCsv(csvText)
+    : await fetchCsvRows(NATIONAL_CSV_URL);
   const rows = dedupeLatestPerVillage(records);
   const nowSql = utcNowSql();
 

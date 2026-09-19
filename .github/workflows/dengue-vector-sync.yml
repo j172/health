@@ -2,22 +2,31 @@ name: Dengue vector survey sync
 
 on:
   workflow_dispatch:
-  schedule:
-    # Daily at 04:25 UTC (12:25 Taipei) — inside the deploy-safe :15-:30
-    # window (memory: ops_ingestion_counters_and_deploy_timing.md) so a PM2
-    # restart from a concurrent deploy doesn't kill a mid-flight sync.
-    #
-    # Deliberately off every existing schedule's grid point, per issue #269:
-    #   - facilities-geocode-batch.yml fires every 30 minutes, always on the
-    #     :00/:30 boundary.
-    #   - npo-organizations-sync.yml fires twice daily on :45.
-    #   - disaster-points-sync.yml (the closest sibling — same admin-API/
-    #     SSH-loopback shape, same shared concurrency group below) already
-    #     owns :20; this job picks :25 instead so the two never launch in the
-    #     same minute, even though cancel-in-progress: false on the shared
-    #     group below means a same-minute collision would only queue, not
-    #     cancel, either run.
-    - cron: "25 4 * * *"
+  # Schedule paused 2026-09-19: od.cdc.gov.tw allowlists Taiwan-ISP source
+  # IPs only and silently drops everything else, confirmed against this
+  # runner, the production host, and Cloudflare WARP egress alike (see
+  # .github/workflows/egress-probe.yml and scripts/gha-egress-probe-host.mjs).
+  # No GitHub Actions runner can ever complete this fetch, so a schedule here
+  # was 5/5 guaranteed failures — scripts/local-dengue-relay.mjs (run from a
+  # real Taiwan-ISP machine) is the stopgap until CDC whitelists the prod
+  # host's IP. Re-enable this cron if/when that changes.
+  #
+  # schedule:
+  #   # Daily at 04:25 UTC (12:25 Taipei) — inside the deploy-safe :15-:30
+  #   # window (memory: ops_ingestion_counters_and_deploy_timing.md) so a PM2
+  #   # restart from a concurrent deploy doesn't kill a mid-flight sync.
+  #   #
+  #   # Deliberately off every existing schedule's grid point, per issue #269:
+  #   #   - facilities-geocode-batch.yml fires every 30 minutes, always on the
+  #   #     :00/:30 boundary.
+  #   #   - npo-organizations-sync.yml fires twice daily on :45.
+  #   #   - disaster-points-sync.yml (the closest sibling — same admin-API/
+  #   #     SSH-loopback shape, same shared concurrency group below) already
+  #   #     owns :20; this job picks :25 instead so the two never launch in the
+  #   #     same minute, even though cancel-in-progress: false on the shared
+  #   #     group below means a same-minute collision would only queue, not
+  #   #     cancel, either run.
+  #   - cron: "25 4 * * *"
 
 concurrency:
   # Shared with facilities-geocode-batch.yml, npo-organizations-sync.yml,
