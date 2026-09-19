@@ -25,7 +25,6 @@ import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
 import { runWraSync, runWraCatalogSync, runWraIotSync } from "@/lib/server/wra/runSync";
 import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
-import { syncGovOpenDataNews } from "@/lib/server/news/fetchGovOpenDataNews";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
@@ -107,10 +106,6 @@ export const registerCronJobs = (): void => {
     "3,13,23,33,43,53 * * * *",
     runGuarded("earthquakes-sync-cron.log", () => runEarthquakeSync()),
   );
-  cron.schedule(
-    "12,42 * * * *",
-    runGuarded("gov-news-sync-cron.log", () => syncGovOpenDataNews({ limit: 50 })),
-  );
   // Once daily — no specific business requirement on exact hour, 8am
   // server-local keeps it clear of the denser :00-ish traffic from the jobs
   // above. See docs/specs/social-icons-and-post-drafts.md section 2.3.
@@ -177,7 +172,7 @@ export const registerCronJobs = (): void => {
   // WATER_OUTAGES_SEED. Every hour, offset from the legacy water-outages-cron
   // job's :25 (see above) at :18/:48 — not on any other hourly job's exact
   // minute in this file (rss 5/35, aqi 20/50, cwa 15/45, earthquakes
-  // 3/13/23/33/43/53, gov-news 12/42, news-card-images+power-realtime
+  // 3/13/23/33/43/53, news-card-images+power-realtime
   // 0/10/20/30/40/50, aqx 10/40, wra-sync 8/38, wra-iot 12/27/42/57, metro
   // 0/30, emergency-rooms 7/22/37/52) other than youbike's unavoidable
   // every-5-minute grid. Coordinate further with the

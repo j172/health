@@ -29,7 +29,6 @@ import {
   fetchChildrenEvents,
   fetchChildrenResearch,
   fetchMoeFamilyEdu,
-  fetchSfaaNews,
   fetchHelloYishiHealth,
   fetchCommonHealthClub,
   fetchTheNewsLensHealth,
@@ -959,15 +958,6 @@ export const runRssIngestion = async (
             sourceName: "moe_familyedu",
           },
           fetchFn: fetchMoeFamilyEdu,
-        },
-        {
-          meta: {
-            code: "sfaa_news" as FeedCode,
-            name: "衛福部社家署",
-            url: "https://www.sfaa.gov.tw/sfaa/list/5cX",
-            sourceName: "sfaa",
-          },
-          fetchFn: fetchSfaaNews,
         },
         {
           meta: {
