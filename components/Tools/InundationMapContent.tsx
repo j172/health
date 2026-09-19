@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
@@ -11,6 +12,15 @@ import type {
   InundationShelterPoint,
   InundationMapOverview,
 } from "@/lib/server/inundation/types";
+
+const InundationMapLeaflet = dynamic(() => import("@/components/Tools/InundationMapLeaflet"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[380px] sm:h-[480px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+      載入互動式地圖中…
+    </div>
+  ),
+});
 
 const FALLBACK_INUNDATION_DATA: InundationMapOverview = {
   counties: [
@@ -250,6 +260,26 @@ export default function InundationMapContent() {
         </div>
       ) : (
         <div className="space-y-10">
+          {/* 0. 互動式地圖總覽 */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>🗺️</span>
+                <span>感測站與避難所地圖總覽</span>
+              </h2>
+              <span className="text-xs text-slate-500">
+                點擊圖示查看詳細資訊
+              </span>
+            </div>
+            <div className="h-[380px] sm:h-[480px] w-full overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+              <InundationMapLeaflet
+                sensors={data?.sensors || []}
+                shelters={data?.shelters || []}
+                userLocation={location}
+              />
+            </div>
+          </div>
+
           {/* 1. 路面淹水感測器列表 */}
           <div>
             <div className="flex items-center justify-between mb-4">
