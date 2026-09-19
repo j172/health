@@ -38,6 +38,7 @@ jobs:
           probe "mirrormedia category health"     "https://www.mirrormedia.mg/category/health"
           probe "opendata.wra.gov.tw (bot wall)"  "https://opendata.wra.gov.tw/api/v2/51ea7202-18fd-46e3-adae-4d05bc827a28?format=JSON"
           probe "mohw.gov.tw rss (control, OK)"   "https://www.mohw.gov.tw/rss-16-1.html"
+          probe "od.cdc.gov.tw dengue csv (timing out on host, issue #269)" "https://od.cdc.gov.tw/eic/MosIndex_All_last12m.csv"
 
           echo
           echo "=== nhi.gov.tw header variants — is the 403 really about the IP? ==="
@@ -105,3 +106,35 @@ jobs:
 
       - name: What is inside the WRA warning map layers
         run: node scripts/probe-wra-kml.mjs
+
+  probe-from-host:
+    # Companion to the runner-side probe above: same upstreams, but curled
+    # from the production host's own network over the SSH loopback, to tell
+    # apart "the host's IP is blocked" from "the site itself is flaky"
+    # (dengue-vector-sync.yml has failed on a 60s timeout every run since
+    # issue #269 shipped — see scripts/gha-egress-probe-host.mjs).
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Probe upstreams from the production host
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            node scripts/gha-egress-probe-host.mjs
