@@ -30,6 +30,10 @@ export const TAIWAN_COUNTIES = [
   { name: "連江縣", lat: 26.1602, lng: 119.9515 },
 ];
 
+// 後端排程（runCwaSync）每 30 分鐘同步一次測站資料，這裡抓密一點沒有意義，
+// 10 分鐘輪詢一次即可讓畫面不會停在「打開頁面當下」的舊快照。
+const REFRESH_INTERVAL_MS = 10 * 60 * 1000;
+
 interface StationWeather {
   station_id: string;
   station_name: string | null;
@@ -143,6 +147,19 @@ export default function LocalWeatherSvgWidget() {
     fetchWeather(geo.lat, geo.lng);
   }, [geo.lat, geo.lng, fetchWeather]);
 
+  // 定期自動刷新：使用者若開著頁面沒有互動（不改變地理座標、不切換縣市），
+  // 先前的 effect 不會再被觸發，畫面會停留在打開當下那一刻的舊資料。
+  // 這裡另外用 setInterval 依「目前使用中的座標」（GPS 或使用者選的縣市）
+  // 定期重抓一次，並在 unmount 或座標/縣市改變時清除計時器。
+  useEffect(() => {
+    const found = TAIWAN_COUNTIES.find((c) => c.name === selectedCounty);
+    const { lat, lng } = selectedCounty !== "auto" && found ? found : geo;
+    const interval = setInterval(() => {
+      fetchWeather(lat, lng);
+    }, REFRESH_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [geo.lat, geo.lng, selectedCounty, fetchWeather]);
+
   const handleCountyChange = (countyName: string) => {
     setSelectedCounty(countyName);
     if (countyName === "auto") {
@@ -203,7 +220,7 @@ export default function LocalWeatherSvgWidget() {
                 </span>
               </div>
               <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
-                {locationTitle} · 距離約 {weather.distance_km}km
+                {locationTitle} · 距離約 {weather.distance_km.toFixed(1)}km
               </p>
               {weather.precipitation && Number(weather.precipitation) > 0 && (
                 <p className="mt-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
