@@ -46,7 +46,6 @@ const criticalComponents = [
   "components/DisasterMap/DisasterMapContent.tsx",
   "components/BreastfeedingRooms/BreastfeedingMapContent.tsx",
   "components/ContraceptionMap/ContraceptionMapContent.tsx",
-  "components/DengueMosquitoMap/DengueMosquitoMapContent.tsx",
   "components/HeritageMap/HeritageMapContent.tsx",
   "components/Activities/PublicArtContent.tsx",
   "components/Tools/YoubikeContent.tsx",

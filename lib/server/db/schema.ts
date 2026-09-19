@@ -1307,53 +1307,6 @@ export const TABLE_DDL = {
       KEY idx_cpc_price_eff (effective_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // 衛福部疾病管制署 (CDC) 近12個月登革熱病媒蚊調查資料 (issue #269) —
-  // data.gov.tw/dataset/24161, 全國版, 每日更新. Already carries village-level
-  // decimal lon/lat (VillageLon/VillageLat), so no geocoding step is involved.
-  // The source file is a rolling 12-month *history* (one row per village per
-  // survey date, so a busy village can appear many times); this table only
-  // ever holds the single latest-dated row per village — deduped in
-  // lib/server/dengue/ingestDengueVectorSurvey.ts before the batch insert —
-  // since the map only needs each village's current density reading, not its
-  // full survey history. Same full truncate-and-replace-in-one-transaction
-  // shape as disaster_response_points (see ingestDisasterPoints.ts): the
-  // source has no stable cross-run identifier to upsert against cleanly once
-  // old rows age out of its 12-month window, and this project has already
-  // been burned once by an accumulating ingestion count silently drifting
-  // from the real row count (memory: ops_ingestion_counters_and_deploy_timing.md).
-  // *_lv columns (bi_lv/hi_lv/ci_lv/li_lv) are the CDC's own pre-computed
-  // 0-9 density grade for that index — this app never (re)computes a grade
-  // itself, only stores and displays what CDC's BILv/HILv/CILv/LILv fields
-  // already say.
-  dengueVectorSurveys: `
-    CREATE TABLE IF NOT EXISTS dengue_vector_surveys (
-      id INT NOT NULL AUTO_INCREMENT,
-      village_id VARCHAR(20) NOT NULL,
-      county VARCHAR(50) NOT NULL,
-      town VARCHAR(50) NOT NULL,
-      village VARCHAR(50) NOT NULL,
-      longitude DECIMAL(10,7) NOT NULL,
-      latitude DECIMAL(10,7) NOT NULL,
-      survey_date DATE NOT NULL,
-      bi DECIMAL(10,2) NULL,
-      bi_lv TINYINT NULL,
-      hi DECIMAL(10,2) NULL,
-      hi_lv TINYINT NULL,
-      ci DECIMAL(10,2) NULL,
-      ci_lv TINYINT NULL,
-      li DECIMAL(10,2) NULL,
-      li_lv TINYINT NULL,
-      ai DECIMAL(10,2) NULL,
-      con100hh DECIMAL(10,2) NULL,
-      source_updated_at DATETIME NULL,
-      created_at DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL,
-      PRIMARY KEY (id),
-      UNIQUE KEY uq_dengue_village (village_id),
-      KEY idx_dengue_county_town (county, town),
-      KEY idx_dengue_bi_lv (bi_lv)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
   // 經濟部水利署水資源物聯網 (iot.wra.gov.tw) — 堤防結構安全監測站, issue #270.
   // Confirmed live (2026-09-15): no API key required. Latest-snapshot upsert
   // keyed by station_id (same convention as power_radiation_stations) — each
@@ -1440,12 +1393,13 @@ export const TABLE_DDL = {
   // heritageAssets DDL below it were both accidentally deleted by commit
   // 92fd282 (2026-09-09, an unrelated WRA reservoir feature) — CREATE TABLE
   // IF NOT EXISTS meant existing production tables kept working, so this
-  // went unnoticed until a 2026-09-15 audit (while building the dengue map,
-  // issue #269) diffed this file against its pre-92fd282 state and found the
-  // gap. A from-scratch DB rebuild (disaster recovery, a fresh environment)
-  // would otherwise have silently missed these two tables and broken
-  // disaster-map and heritage-map. Content below is restored verbatim from
-  // the pre-92fd282 revision, not rewritten.
+  // went unnoticed until a 2026-09-15 audit (while building the since-removed
+  // village-level mosquito density map, issue #269) diffed this file against
+  // its pre-92fd282 state and found the gap. A from-scratch DB rebuild
+  // (disaster recovery, a fresh environment) would otherwise have silently
+  // missed these two tables and broken disaster-map and heritage-map.
+  // Content below is restored verbatim from the pre-92fd282 revision, not
+  // rewritten.
   disasterResponsePoints: `
     CREATE TABLE IF NOT EXISTS disaster_response_points (
       id INT NOT NULL AUTO_INCREMENT,

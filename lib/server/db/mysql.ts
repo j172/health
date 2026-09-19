@@ -114,7 +114,6 @@ export const ensureSchema = async (): Promise<void> => {
   await p.query(TABLE_DDL.powerRadiationStations);
   await p.query(TABLE_DDL.nativeDictEntries);
   await p.query(TABLE_DDL.cpcPrices);
-  await p.query(TABLE_DDL.dengueVectorSurveys);
   await p.query(TABLE_DDL.wraDamStructureStations);
   await p.query(TABLE_DDL.wraGroundwaterStations);
   // Restored 2026-09-15 (issue #274) — accidentally dropped by commit 92fd282

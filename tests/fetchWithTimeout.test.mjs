@@ -116,7 +116,6 @@ test("Integration check: all client map and tool components import fetchWithTime
     "components/Activities/PublicArtContent.tsx",
     "components/BreastfeedingRooms/BreastfeedingMapContent.tsx",
     "components/ContraceptionMap/ContraceptionMapContent.tsx",
-    "components/DengueMosquitoMap/DengueMosquitoMapContent.tsx",
     "components/DisasterMap/DisasterMapContent.tsx",
     "components/Facilities/FacilitySearchContent.tsx",
     "components/HeritageMap/HeritageMapContent.tsx",
