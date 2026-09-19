@@ -11,27 +11,34 @@ export default function CdcAlertSidebarWidget() {
   const [epidNews, setEpidNews] = useState<CDCEpidemicNewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchCdc = async () => {
-      try {
-        const res = await fetch("/api/cdc/travel-alerts");
-        if (!res.ok) return;
-        const data = await res.json();
-        if (isMounted) {
-          if (Array.isArray(data.alerts)) setTravelAlerts(data.alerts.slice(0, 5));
-          if (Array.isArray(data.news)) setEpidNews(data.news.slice(0, 5));
-        }
-      } catch (err) {
-        console.warn("CDC alerts fetch failed:", err);
-      } finally {
-        if (isMounted) setLoading(false);
+  // 共用的抓取邏輯：初次掛載與手動重新整理都走這裡，避免像過去那樣
+  // 兩份各自維護的抓取邏輯裡，只有其中一份檢查 res.ok —— 沒檢查的那份
+  // 一旦後端在特定情況下回傳 500（例如資料庫連線瞬斷），仍會把
+  // `{ ok: false, alerts: [], news: [] }` 的錯誤回應內容套用到畫面上，
+  // 把原本已顯示的資料洗成空狀態。
+  const fetchCdc = async (isMountedRef?: { current: boolean }) => {
+    try {
+      const res = await fetch("/api/cdc/travel-alerts");
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!isMountedRef || isMountedRef.current) {
+        if (Array.isArray(data.alerts)) setTravelAlerts(data.alerts.slice(0, 5));
+        if (Array.isArray(data.news)) setEpidNews(data.news.slice(0, 5));
       }
-    };
-    fetchCdc();
+    } catch (err) {
+      console.warn("CDC alerts fetch failed:", err);
+    } finally {
+      if (!isMountedRef || isMountedRef.current) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const isMountedRef = { current: true };
+    fetchCdc(isMountedRef);
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getSeverityBadge = (levelCode: number) => {
@@ -49,13 +56,7 @@ export default function CdcAlertSidebarWidget() {
 
   const handleRefresh = () => {
     setLoading(true);
-    fetch("/api/cdc/travel-alerts")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data.alerts)) setTravelAlerts(data.alerts.slice(0, 5));
-        if (Array.isArray(data.news)) setEpidNews(data.news.slice(0, 5));
-      })
-      .finally(() => setLoading(false));
+    fetchCdc();
   };
 
   return (

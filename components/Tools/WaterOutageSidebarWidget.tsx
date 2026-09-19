@@ -9,36 +9,38 @@ export default function WaterOutageSidebarWidget() {
   const [outages, setOutages] = useState<WaterOutageItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchOutages = async () => {
-      try {
-        const res = await fetch("/api/water-outages");
-        if (!res.ok) return;
-        const data = await res.json();
-        if (isMounted && Array.isArray(data.outages)) {
-          setOutages(data.outages.slice(0, 3));
-        }
-      } catch (err) {
-        console.warn("Water outages fetch failed:", err);
-      } finally {
-        if (isMounted) setLoading(false);
+  // 共用的抓取邏輯：初次掛載與手動重新整理都走這裡，避免像過去那樣
+  // 兩份各自維護的抓取邏輯裡，只有其中一份檢查 res.ok —— 沒檢查的那份
+  // 一旦後端在特定情況下回傳 500（例如資料庫連線瞬斷），仍會把
+  // `{ ok: false, outages: [] }` 的錯誤回應內容套用到畫面上，
+  // 把原本已顯示的資料洗成空狀態。
+  const fetchOutages = async (isMountedRef?: { current: boolean }) => {
+    try {
+      const res = await fetch("/api/water-outages");
+      if (!res.ok) return;
+      const data = await res.json();
+      if ((!isMountedRef || isMountedRef.current) && Array.isArray(data.outages)) {
+        setOutages(data.outages.slice(0, 3));
       }
-    };
-    fetchOutages();
+    } catch (err) {
+      console.warn("Water outages fetch failed:", err);
+    } finally {
+      if (!isMountedRef || isMountedRef.current) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const isMountedRef = { current: true };
+    fetchOutages(isMountedRef);
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleRefresh = () => {
     setLoading(true);
-    fetch("/api/water-outages")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data.outages)) setOutages(data.outages.slice(0, 3));
-      })
-      .finally(() => setLoading(false));
+    fetchOutages();
   };
 
   return (
