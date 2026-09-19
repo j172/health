@@ -8,15 +8,22 @@ on:
     # this only ran as a step inside deploy-ftps.yml, i.e. only at deploy
     # time. See docs/specs/news-card-image-freshness-scheduling.md.
     #
-    # Deliberately offset from :00/:30 (facilities-geocode-batch.yml's
-    # "*/30 * * * *") and :45 (npo-organizations-sync.yml's "45 3,15 * * *")
-    # rather than sharing them — this workflow shares the
-    # host-tw123457-server concurrency group (cancel-in-progress: true) with
-    # facilities-geocode-batch.yml, and a same-grid-point cron here would
-    # reproduce the "scheduled but always preempted/cancelled" bug fixed in
-    # #249 (PR #250), just against this workflow instead. :07/:37 gives a
-    # 7-minute buffer on both sides. See #252.
-    - cron: "7,37 * * * *"
+    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): the
+    # old ":07/:37" offset only left a 7-minute buffer either side of
+    # facilities-geocode-batch.yml's "*/30" grid — and GitHub Actions' own
+    # 5-15 minute schedule-trigger jitter routinely erased that buffer,
+    # landing both workflows' SSH-loopback calls to the production host in
+    # the same window and spiking its process count (see the decollision
+    # spec's SSH-verified evidence). Re-staggered to :10/:40 — together with
+    # facilities-geocode-batch.yml staying at :00/:30 and rss-sync-manual.yml
+    # moving to :20/:50, the three SSH-connecting hourly workflows now sit on
+    # an even 10-minute grid (:00/:10/:20/:30/:40/:50), the maximum spacing
+    # achievable for three every-30-minute schedules sharing one hour. This
+    # workflow still shares the host-tw123457-server concurrency group
+    # (cancel-in-progress: true) with facilities-geocode-batch.yml — see
+    # #249/#250 for why a same-grid-point cron there would silently starve
+    # this workflow via cancellation.
+    - cron: "10,40 * * * *"
 
 concurrency:
   group: host-tw123457-server

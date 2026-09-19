@@ -12,7 +12,7 @@ on:
 concurrency:
   # Deliberately its own group, not host-tw123457-server (issue #264): that
   # group is shared with facilities-geocode-batch.yml (every 30 min) and
-  # news-og-backfill.yml (7,37 * * * *), both cancel-in-progress: true — a
+  # news-og-backfill.yml (10,40 * * * * as of #336), both cancel-in-progress: true — a
   # deploy in flight when either fires gets silently cancelled (conclusion
   # "cancelled", not "failure", easy to mistake for a completed deploy while
   # main's latest merge never actually goes live). Observed twice in one
