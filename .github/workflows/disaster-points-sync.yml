@@ -3,10 +3,21 @@ name: Disaster points sync
 on:
   workflow_dispatch:
   schedule:
-    # Daily at 04:20 UTC (12:20 Taipei) — inside the deploy-safe :15-:30
+    # Daily at 04:25 UTC (12:25 Taipei) — inside the deploy-safe :15-:30
     # window (see memory: ops_ingestion_counters_and_deploy_timing.md) so a
     # PM2 restart from a concurrent deploy doesn't kill a mid-flight sync.
-    - cron: "20 4 * * *"
+    #
+    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): moved
+    # from :20 to :25. Every hour, three other SSH-connecting workflows
+    # (facilities-geocode-batch, news-og-backfill, rss-sync-manual) now fire
+    # on an even :00/:10/:20/:30/:40/:50 grid — with :20 itself now occupied
+    # by rss-sync-manual.yml, the old :20 would have been a direct
+    # same-minute collision. :25 is the midpoint between the :20 and :30
+    # marks (5-minute buffer each side), which is the maximum spacing
+    # available for a 7th mark once those three every-30-minute workflows
+    # already tile the hour at their own max spacing — still comfortably
+    # inside the :15-:30 deploy-safe window above.
+    - cron: "25 4 * * *"
 
 concurrency:
   group: host-tw123457-server

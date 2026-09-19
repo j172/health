@@ -27,6 +27,17 @@ on:
     # grid, comfortably longer than an npo-sync run's typical few-minute
     # duration, without touching the shared group itself (see the group
     # comment below for why it must stay shared).
+    #
+    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): :45
+    # was originally chosen only against facilities-geocode-batch.yml's
+    # :00/:30 grid and happened to land just 3 minutes from
+    # rss-sync-manual.yml's old :48 mark — an accidental near-collision that
+    # was never checked. No change needed here now: rss-sync-manual.yml
+    # moved to :20/:50 and news-og-backfill.yml to :10/:40, so :45 is now
+    # the exact midpoint between news-og-backfill's :40 and rss-sync-manual's
+    # :50 (5-minute buffer each side — the max spacing available for a 7th
+    # mark once those three every-30-minute workflows already tile the hour
+    # at their own max spacing).
     - cron: "45 3,15 * * *"
 
 concurrency:

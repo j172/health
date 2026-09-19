@@ -17,7 +17,16 @@ on:
           - drugs
   schedule:
     # ~03:00 Taipei time on Jan 2 and Jul 2 (cron is UTC).
-    - cron: "0 19 1 1,7 *"
+    #
+    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): moved
+    # minute 0 → 45. This workflow fires only twice a year, but minute 0 is
+    # also facilities-geocode-batch.yml's own every-30-minute mark, so any
+    # year this and Jan 1/Jul 1 19:00 UTC line up would have been a direct
+    # same-minute collision. :45 is the midpoint between news-og-backfill's
+    # :40 and rss-sync-manual's :50 marks on the current SSH-workflow grid
+    # (5-minute buffer each side — the max spacing available for a 7th mark
+    # once those three every-30-minute workflows already tile the hour).
+    - cron: "45 19 1 1,7 *"
 
 concurrency:
   group: six-monthly-sync

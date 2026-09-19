@@ -14,13 +14,21 @@ on:
     #    (upsert keyed on licenseNo), so an accidental double-run wouldn't
     #    corrupt data, but there's no reason to invite a same-day double
     #    import anyway.
-    #  - :17 past the hour, off the common :00/:30/:45 grid points other
-    #    workflows in the host-tw123457-server concurrency group use
-    #    (facilities-geocode-batch.yml's "*/30", news-og-backfill.yml's
-    #    "7,37", npo-organizations-sync.yml's "45 3,15") — this workflow only
-    #    fires 4 days a year so collision odds are already low, but keeping
-    #    it off those grid points costs nothing.
-    - cron: "17 5 15 1,4,7,10 *"
+    #  - :15 past the hour, off the common grid points the other
+    #    SSH-connecting workflows use (facilities-geocode-batch.yml's
+    #    "*/30" → :00/:30, news-og-backfill.yml's "10,40" → :10/:40,
+    #    rss-sync-manual.yml's "20,50" → :20/:50) — this workflow only fires
+    #    4 days a year so collision odds are already low, but keeping it off
+    #    those grid points costs nothing.
+    #
+    #    2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md):
+    #    the old :17 was only checked against facilities-geocode-batch's
+    #    :00/:30 grid and ended up just 1 minute from rss-sync-manual's old
+    #    :18 mark. Moved to :15 — the midpoint between news-og-backfill's
+    #    :10 and rss-sync-manual's :20 marks on the new even grid (5-minute
+    #    buffer each side, the max achievable once those three
+    #    every-30-minute workflows already tile the hour).
+    - cron: "15 5 15 1,4,7,10 *"
 
 # This step also lives inside six-monthly-sync.yml (cron: Jan 1 / Jul 1), but
 # that workflow was only added 2026-07-29 -- after this half's Jan 1/Jul 1

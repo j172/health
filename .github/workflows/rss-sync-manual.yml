@@ -5,9 +5,20 @@ on:
   schedule:
     # Runs every 30 minutes as an external heartbeat to guarantee news ingestion
     # even if in-app node-cron experiences transient host PM2 restarts.
-    # Deliberately offset (:18/:48) to avoid collision with in-app cron (:05/:35),
-    # news-og-backfill (:07/:37), and facilities-geocode-batch (:00/:30).
-    - cron: "18,48 * * * *"
+    #
+    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md):
+    # re-staggered from :18/:48 to :20/:50. The old offset still landed
+    # within a 10-minute window of the other SSH-connecting hourly workflows
+    # once GitHub Actions' 5-15 minute schedule jitter was accounted for, and
+    # it also sat only 1-3 minutes from several lower-frequency SSH
+    # workflows (npo-organizations-sync.yml's old :45, disaster-points-sync
+    # .yml's old :20, health-supplements-import.yml's old :17) that had only
+    # been staggered against facilities-geocode-batch.yml's grid, not this
+    # one. New grid: facilities-geocode-batch (:00/:30, unchanged),
+    # news-og-backfill (:10/:40), this workflow (:20/:50) — an even
+    # 10-minute spacing, the max achievable for three every-30-minute
+    # schedules in one hour. Also still offset from in-app cron (:05/:35).
+    - cron: "20,50 * * * *"
 
 concurrency:
   group: deploy-ftps
