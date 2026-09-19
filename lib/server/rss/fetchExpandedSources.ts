@@ -89,7 +89,11 @@ export const parseYonglinHtml = (html: string, baseUrl = "https://www.yonglin.or
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -173,7 +177,11 @@ export const parseChildrenEventsHtml = (html: string, baseUrl = "https://www.chi
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -257,7 +265,11 @@ export const parseChildrenResearchHtml = (html: string, baseUrl = "https://www.c
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -573,7 +585,11 @@ export const parseCommonHealthClubHtml = (html: string, baseUrl = "https://club.
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -662,7 +678,11 @@ export const parseTheNewsLensHtml = (
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -895,7 +915,11 @@ export const parsePchomeHtml = (
     }
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
