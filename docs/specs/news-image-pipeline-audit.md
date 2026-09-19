@@ -2,7 +2,7 @@
 
 - **作者**：Claude（診斷會話）
 - **日期**：2026-09-20
-- **狀態**：Draft
+- **狀態**：Findings delivered（見 `docs/specs/news-image-pipeline-findings.md`）
 - **對應使用者回報**：「4. 新聞卡片大部分都還是沒有抓到正確圖片」
 
 ## 1. 任務性質
