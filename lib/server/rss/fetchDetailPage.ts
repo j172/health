@@ -70,21 +70,6 @@ const DETAIL_TEXT_SCOPING: Record<string, DetailTextScoping> = {
   // fallback still picks up og:image (…/Data/warning/W29_C.png).
   "cwa.gov.tw": { mode: "skip" },
 
-  // 2026-08-29 — twstreetcorner.org (WordPress) opens every <article> with a
-  // text-to-speech control panel inside .entry-content, and closes it with
-  // Jetpack's sharing and related-posts widgets. All three are interactive
-  // chrome that .text() flattened into detail_text: 「聆聽本文 測試版 ⏮ 上一段 ▶ 朗讀
-  // ⏸ 暫停 ⏭ 下一段 ■ 停止 速度 0.8× 1× …」 and 「分享 分享到 Facebook(在新視窗中開啟) …
-  // 請按讚：喜歡 正在載入... 相關」. ~250 of ~5200 chars, at the two positions that
-  // matter most — the head of the text feeds imageSearchTerms and the SEO
-  // summary. `without`, not `skip`: the rest of the container is genuine
-  // long-form prose and must keep being scraped.
-  "twstreetcorner.org": {
-    mode: "without",
-    selector:
-      "div.streetcorner-tts-player, div.sharedaddy, div.jp-relatedposts",
-  },
-
   // 2026-08-30 (#89) — hpa.gov.tw's Detail.aspx has no <article>/<main>/
   // #maincontent at all, so the projection falls back to <body> and takes the
   // whole page. 1771 chars for /Pages/Detail.aspx?nodeid=5020&pid=20299, of
@@ -140,67 +125,41 @@ const DETAIL_TEXT_SCOPING: Record<string, DetailTextScoping> = {
     selector: "a#gotocenter, div#contentLeft, div.path, div.score, a.backBtn",
   },
 
-  // 2026-08-30 (#89) — mamaclub.com (WordPress/Divi) closes every <article>
-  // with div#extra_article_content: an author box, a 「我要回應 我要留言 X點此登入
-  // 來回應」 comment prompt, and a section#similar-post 「推薦閱讀」 rail carrying
-  // SIX other articles as nested <article> teasers, headline plus a truncated
-  // first paragraph each. That is ~700 of ~2100–3600 chars, and it is other
-  // articles' prose — 「家扶籲關注能源平權 跨國共議弱勢家庭生活用能保障 … 面對全球能源
-  // 轉型與…」 — landing in this article's detail_text. div.meta-author (「發表於
-  // 2026-08-27 看留言討論」) and span.wpfp-span (「收藏文章」, WP Favorite Posts)
-  // are the matching head-of-text chrome. Verified against all 10 items in
-  // https://mamaclub.com/feed/ on 2026-08-30: every one shrinks (2168→1407,
-  // 3598→2876, 4081→3383, …), every one ends on genuine article prose, and
-  // detailHtml and the image/link asset lists are byte-identical in all ten.
-  //
-  // NB: #89 opened reporting mamaclub as projecting 0 characters. It does not,
-  // through the code path that matters. Fetched with the repo's own
-  // httpGetText (node:http) every article returns 200 and a full body; fetched
-  // with global fetch()/undici the same URLs return 403 with
-  // `cf-mitigated: challenge`. Whatever produced the original reading, it was
-  // not this client — which is the argument for measuring through
-  // extractDetailContent rather than through a convenience fetch.
-  "mamaclub.com": {
-    mode: "without",
-    selector: "div.meta-author, span.wpfp-span, div#extra_article_content",
-  },
+  // 2026-09-20 (#353) — femh.org.tw (亞東紀念醫院) research/news_detail.aspx has
+  // no <article>/<main>/#maincontent either, so the projection falls back to
+  // <body> and picks up the whole page: a ~630-char sidebar nav (「院務消息 衛教
+  // 園地 影音專區 智慧醫院 亞東院訊 亞東年報 感謝園地 病人安全 醫病共享決策 聰明就醫
+  // 徵才訊息」) and a duplicated breadcrumb/tab strip (「首頁 亞東訊息 院務消息 …
+  // 最新消息 醫療新聞 活動資訊」) ahead of the actual release. The article prose and
+  // its share icons both live in div.content-box, split into
+  // div.share-content (chrome: FB/Line/mail/print icons) and div.right-box
+  // (the genuine body). `only`, not `without`: div.right-box is the one clean
+  // wrapper around the prose itself, verified as the sole match on two live
+  // articles (NewsNo 16679 & 16678) — whole-body 1548/2235 chars vs. scoped
+  // 1364/2038, both ending on real prose with no chrome mixed in. This source
+  // previously hardcoded detailHtml/detailText to null in
+  // fetchFemhResearchNews.ts; now that it fetches the detail page, this entry
+  // keeps the sidebar's 10-item nav menu out of detail_text (the landmark
+  // extractor / imageSearchTerms input).
+  "femh.org.tw": { mode: "only", selector: "div.right-box" },
 
-  // 2026-08-30 (#89) — ilady.life (WordPress/PenciDesign) closes its <article>
-  // with div.post-pagination (previous/next post) and div.post-related, a
-  // 「Related Posts」 carousel of six other headlines — 「夏日亮白你挑對了嗎？…」,
-  // 「磷蝦油比魚油好嗎？…」 — which is ~200 of ~1000 chars and, again, other
-  // articles. It also OPENS with
-  // <i class="penci-post-countview-number-check" style="display:none">3</i>,
-  // a hidden view counter. Hidden to a browser is not hidden to .text(): that
-  // bare digit was literally the first character of every ilady detail_text,
-  // ahead of the first sentence — the part imageSearchTerms and the SEO summary
-  // weight most. Verified on four items from https://ilady.life/feed/
-  // (1013→771, 1017→763, 1253→969, 1372→1074), detailHtml and the asset lists
-  // identical in all four.
-  "ilady.life": {
-    mode: "without",
-    selector:
-      "i.penci-post-countview-number-check, div.post-pagination, div.post-related",
-  },
-
-  // 2026-08-30 (#89) — lianhonghong.com (臉紅紅, 吾思傳媒) wraps the post in an
-  // <article> whose prose is section.article-body and whose other four sections
-  // are all furniture: section.article-header (title, 「by 讀者創作 2024/07/12
-  // 1.9K 1」 — author, date, view count, comment count), aside.article-actions
-  // (「收藏文章」), div.related-articles-structure (an in-body 「你可能想知道更多：」
-  // link list) and section.article-meta, which carries the 執行編輯／核稿編輯
-  // credits, the 吾思傳媒股份有限公司 disclaimer, the author bio, a five-headline
-  // 「現代愛情，多元樣態」 rail — and unrendered Mustache template source,
-  // 「{{#items.0}} {{/items.0}} {{^items}} {{/items}}」, which the client-side
-  // renderer never filled in and .text() copies out verbatim. 350–490 of
-  // 1800–3900 chars. Verified on four items from
-  // https://feeds.feedburner.com/lianhonghong (1778→1431, 3855→3368,
-  // 1380→826, 1937→1465), detailHtml and the asset lists identical in all four.
-  "lianhonghong.com": {
-    mode: "without",
-    selector:
-      "section.article-header, section.article-meta, aside.article-actions, div.related-articles-structure",
-  },
+  // 2026-09-20 (#353) — familyedu.moe.gov.tw (教育部家庭教育網) docDetail.aspx has
+  // no <article>/<main>/#maincontent, so <body> is taken whole: 876 chars for
+  // uid=28&pid=27&docid=308942, of which 683 is site-wide chrome — a
+  // sitemap-shaped nav (「最新消息教育部公告縣市公告認識家庭教育臺灣家庭教育發展…」) plus
+  // all 22 counties' education-bureau links in a <select>, i.e. the same #65
+  // failure shape (a body-fallback picking up a complete menu of place names)
+  // as CWA/hpa/cdc above, with a different source. div.page-article is the
+  // ASP.NET content placeholder's own class (independent of the
+  // auto-generated ContentPlaceHolder1_… id, which nests one level deeper per
+  // master page and isn't a selector worth hand-maintaining here) and is the
+  // sole match on both docid=308942 and docid=320443 — scoped text 193/43
+  // chars, matching the announcement body exactly (docid=320443 is a one-line
+  // pointer to an attachment). This source previously hardcoded
+  // detailHtml/detailText to null in parseMoeFamilyEduHtml
+  // (fetchExpandedSources.ts); now that it fetches the detail page, `only`
+  // keeps the county-menu noise out of detail_text.
+  "familyedu.moe.gov.tw": { mode: "only", selector: "div.page-article" },
 };
 
 /**
@@ -345,7 +304,7 @@ export const extractDetailContent = (
 };
 
 export const fetchDetailPage = async (
-  item: NormalizedRssItem,
+  item: Pick<NormalizedRssItem, "canonicalUrl">,
 ): Promise<{
   detailHtml: string | null;
   detailText: string | null;

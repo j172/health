@@ -3,6 +3,7 @@ import { load } from "cheerio";
 import type { EnrichedRssItem, FeedCode, NewsAsset } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { sha256, toAbsoluteUrl } from "@/lib/server/rss/scraperUtils";
+import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 
 export interface ExpandedSourceFetchResult {
   ok: boolean;
@@ -376,6 +377,20 @@ export async function fetchMoeFamilyEdu(): Promise<ExpandedSourceFetchResult> {
       return { ok: false, httpStatus: res.status, itemCount: 0, items: [], errorMessage: `HTTP ${res.status}` };
     }
     const items = parseMoeFamilyEduHtml(res.text, "https://familyedu.moe.gov.tw");
+    // parseMoeFamilyEduHtml stays a pure sync parser (it's unit-tested as one)
+    // and only sees the list page, which carries title/date but not the
+    // announcement body. familyedu.moe.gov.tw is a gov source (isGovSource),
+    // so app/news/[id] renders detail_html in-app rather than redirecting
+    // out — without this fetch every article showed the "沒有可顯示的完整內容"
+    // placeholder (#353).
+    for (const item of items) {
+      const detail = await fetchDetailPage({
+        canonicalUrl: item.canonicalUrl,
+      }).catch(() => ({ detailHtml: null, detailText: null, assets: [] }));
+      item.detailHtml = detail.detailHtml;
+      item.detailText = detail.detailText;
+      item.assets = detail.assets;
+    }
     return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
   } catch (error: any) {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
