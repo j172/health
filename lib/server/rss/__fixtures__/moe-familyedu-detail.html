@@ -1,0 +1,74 @@
+<!--
+  Excerpt of
+  https://familyedu.moe.gov.tw/docDetail.aspx?uid=28&pid=27&docid=308942
+  ("【公告】攜手共護網路新世代") saved 2026-09-20 for issue #353.
+
+  Trimmed to the page skeleton: the site's off-canvas menu (a sitemap-shaped
+  list of every top-level section, plus a <select> of each county's education
+  bureau — trimmed to 3 of the real page's 22 <option>s) and the breadcrumb
+  ahead of the article, then the div#…_ContentArticle.page-article content
+  itself (its image slider plus two of the announcement's three paragraphs),
+  the 相關檔案 attachment box and the prev/back/list buttons. Every element is
+  copied verbatim from that response; only the remaining <option>s, the
+  ASP.NET viewstate/validation hidden inputs and the site's <header>/<footer>
+  (both literal tags, already removed by the document-wide strip) were cut.
+
+  What matters about it: familyedu.moe.gov.tw ships no <article>, no <main>
+  and no #maincontent, so the projection falls back to <body> and takes the
+  whole page — the sitemap menu and the 22-county picker included, the same
+  #65 failure shape (a body-fallback picking up a complete menu of place
+  names) as CWA/hpa/cdc. div.page-article is the one clean wrapper around the
+  announcement itself, confirmed as the sole match on this page and on
+  docid=320443.
+-->
+<html lang="zh-Hant-TW">
+  <head>
+    <title>【公告】攜手共護網路新世代 - 教育部家庭教育網</title>
+  </head>
+  <body>
+    <div class="site-menu-dropdown">
+      <div class="site-menu">最新消息教育部公告縣市公告認識家庭教育臺灣家庭教育發展全國家庭教育諮詢專線簡介全國家庭教育中心資訊法規計畫家庭教育相關法規其他與家庭教育相關法規計畫中長程計畫補助計畫成果專區家庭教育成果專區相關網站網站資源常見問答常見問答性平專區學習資源文章出版品圖像漫畫懶人包多媒體影音縣市公告活動訊息相關資料</div>
+      <div class="site-location">
+        各縣市家庭教育中心
+        <select>
+          <option>請選擇</option>
+          <option>臺北市政府教育局</option>
+          <option>新北市政府教育局</option>
+          <option>高雄市政府教育局</option>
+        </select>
+      </div>
+    </div>
+    <div id="container">
+      <div class="path">首頁 &gt; 最新消息 &gt; 教育部公告</div>
+      <h1>最新消息</h1>
+      <div class="page-title-wrap">
+        <strong>【公告】攜手共護網路新世代</strong>
+        <span>更新日期：2025-09-22</span>
+      </div>
+      <div id="ContentPlaceHolder1_ContentPlaceHolder1_ContentArticle" class="page-article">
+        <div class="page-slider-wrap">
+          <div class="page-slider page-slider-for">
+            <div><img src="/upload/cont_att/1/c5532ee4-67ae-496c-a75a-772c536ca426.jpg" alt="攜手共護網路新世代" /></div>
+          </div>
+        </div>
+        <p><span style="font-size:1.625rem;">家長是孩子接觸網路的第一道守門人，您的參與，就是最強的保護力</span></p>
+        <p><span style="font-size:1.25rem;">根據教育部調查，近6成國小生已經擁有智慧型手機了!!</span></p>
+        <p><span style="font-size:1.25rem;">現在，教育部聯合數發部、衛福部、NCC、學校、家長團家和業者，一起守護孩子的數位生活安全。</span></p>
+      </div>
+      <div id="ContentPlaceHolder1_ContentPlaceHolder1_Files_Container" class="page-related page-related-ga">
+        <strong class="page-related-title">相關檔案</strong>
+        <ul class="page-related-list">
+          <li>
+            <div class="file-name"><b class="label">檔案名稱：</b>攜手共護網路新世代</div>
+            <a href="fileRename/fileRename.aspx?uid=28&fid=45636&kid=2&site_id=1" class="item">攜手共護網路新世代.pdf</a>
+          </li>
+        </ul>
+      </div>
+      <div class="page-article-btn">
+        <a href="DocDetail.aspx?uid=28&amp;pid=27&amp;docid=308989" class="return">上一則</a>
+        <a href="javascript:history.back()" class="return">回上頁</a>
+        <a href="DocList.aspx?uid=28&amp;pid=27" class="return">回列表頁</a>
+      </div>
+    </div>
+  </body>
+</html>

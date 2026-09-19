@@ -3,6 +3,7 @@ import type { EnrichedRssItem } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { parseTaipeiDateToUtc } from "@/lib/server/rss/time";
 import { sha256 } from "@/lib/server/rss/scraperUtils";
+import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 
 // ---------------------------------------------------------------------------
 // 亞東紀念醫院 (femh.org.tw) — Far Eastern Memorial Hospital medical news,
@@ -92,6 +93,19 @@ export const fetchFemhResearchNews = async (): Promise<FemhFetchResult> => {
         }),
       );
 
+      // The list page only carries title/date/office; the actual research
+      // write-up lives on news_detail.aspx itself (verified: HTTP 200, ~112KB).
+      // femh.org.tw is a gov source (isGovSource), so app/news/[id] renders
+      // detail_html in-app rather than redirecting out — without this fetch
+      // every femh article showed the "沒有可顯示的完整內容" placeholder (#353).
+      const detail = await fetchDetailPage({ canonicalUrl: fullUrl }).catch(
+        () => ({
+          detailHtml: null,
+          detailText: null,
+          assets: [],
+        }),
+      );
+
       items.push({
         sourceName: SOURCE_NAME,
         feedCode: FEED_CODE,
@@ -102,8 +116,8 @@ export const fetchFemhResearchNews = async (): Promise<FemhFetchResult> => {
         title: title.replace(/\s+/g, " "),
         descriptionHtml: "",
         descriptionText: "",
-        detailHtml: null,
-        detailText: null,
+        detailHtml: detail.detailHtml,
+        detailText: detail.detailText,
         deptName: "醫療研究部",
         categoryRaw: "醫療新知",
         displayType: null,
@@ -111,7 +125,7 @@ export const fetchFemhResearchNews = async (): Promise<FemhFetchResult> => {
         publicBeginAtTaipei: null,
         publicEndAtTaipei: null,
         payloadHash,
-        assets: [],
+        assets: detail.assets,
         metaTitle: "",
         metaDescription: "",
         keywords: "",

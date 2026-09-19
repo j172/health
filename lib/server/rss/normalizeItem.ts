@@ -66,6 +66,9 @@ const htmlToText = (html: string): string => {
 const sha256 = (text: string): string =>
   createHash("sha256").update(text).digest("hex");
 
+/** Yahoo RSS (and a few others) put a bare image URL directly in <content:encoded>. */
+const BARE_IMAGE_URL_RE = /^https?:\/\/\S+\.(?:jpe?g|png|webp|gif)(?:\?\S*)?$/i;
+
 const isUsableImageUrl = (url: string): boolean => {
   if (!/^https?:\/\//i.test(url)) return false;
   return !/logo|favicon|icon|sprite|placeholder|\/aa\.(png|gif)|\/x\.png|1x1|pixel|tracking|default_logo/i.test(
@@ -139,11 +142,7 @@ const pickLeadImageUrl = (
   );
   if (contentEncoded) {
     // Yahoo often puts raw image URL directly inside <content:encoded>
-    if (
-      /^https?:\/\/\S+\.(?:jpe?g|png|webp|gif)(?:\?\S*)?$/i.test(
-        contentEncoded.trim(),
-      )
-    ) {
+    if (BARE_IMAGE_URL_RE.test(contentEncoded.trim())) {
       const url = contentEncoded.trim();
       if (isUsableImageUrl(url)) return url;
     }
@@ -165,9 +164,27 @@ export const normalizeItem = (
   const title = pickText(rawItem.title);
   const link = pickLink(rawItem.link);
   const sourceUrl = pickLink(rawItem.source) || link;
-  const descriptionHtml = pickText(
-    rawItem.description || rawItem.summary || rawItem.content,
+  // Prefer <content:encoded> when the feed populates it: many WordPress feeds
+  // (mamaclub, ilady, lianhonghong, ...) truncate <description> to ~119 chars
+  // plus an ellipsis while content:encoded carries the article's full HTML.
+  // This is not a substitute for the detail-page fetch PR #329 turned off for
+  // non-gov sources (issue #353) — it is only surfacing a full-text field the
+  // source already broadcasts in the feed itself, same as pickLeadImageUrl
+  // above already reads content:encoded for its lead image. Falls back to
+  // today's description/summary/content order when a source doesn't send
+  // content:encoded at all (or sends it empty) — and also when
+  // content:encoded is just a bare image URL (Yahoo RSS's convention, tested
+  // by rssLeadImageExtraction.test.mjs): that is real for leadImageUrl, but
+  // it would make the card summary show a raw URL instead of a description.
+  const contentEncodedRaw = pickText(
+    rawItem["content:encoded"] || rawItem.encoded,
   );
+  const contentEncoded = BARE_IMAGE_URL_RE.test(contentEncodedRaw)
+    ? ""
+    : contentEncodedRaw;
+  const descriptionHtml =
+    contentEncoded ||
+    pickText(rawItem.description || rawItem.summary || rawItem.content);
   const descriptionText = htmlToText(descriptionHtml);
   const externalId =
     pickText(rawItem.NewsID) ||
