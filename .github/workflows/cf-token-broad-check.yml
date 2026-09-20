@@ -1,0 +1,21 @@
+name: CF token broad check (temporary diagnostic)
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Test several Cloudflare API endpoints
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          Z: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          echo "=== /user/tokens/verify ==="
+          curl -sS -H "Authorization: Bearer $T" "https://api.cloudflare.com/client/v4/user/tokens/verify" | jq .
+          echo "=== /zones (list, read-only) ==="
+          curl -sS -H "Authorization: Bearer $T" "https://api.cloudflare.com/client/v4/zones" | jq '.success, .errors, (.result | length)'
+          echo "=== /zones/:id (this specific zone, read-only) ==="
+          curl -sS -H "Authorization: Bearer $T" "https://api.cloudflare.com/client/v4/zones/$Z" | jq '.success, .errors, .result.name'
+          echo "=== /user (account info, read-only) ==="
+          curl -sS -H "Authorization: Bearer $T" "https://api.cloudflare.com/client/v4/user" | jq '.success, .errors'
