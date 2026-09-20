@@ -577,7 +577,39 @@ if (str_starts_with($path, '/__ops/')) {
             $activeApplyPid = (int) trim($applyRaw);
         }
 
-        $keep = static function (array $p) use ($protected, $godPid): bool {
+        // Absolute safety invariant — issue #370, added the day #368's fix was
+        // first exercised with apply=1 and it killed the live health-web
+        // process. $godPid above is only as good as ~/.pm2/pm2.pid, and that
+        // file is a snapshot that repeated apply-prebuilt restarts can leave
+        // pointing at the wrong daemon (see docs/specs/watchdog-reap-must-
+        // protect-live-app-ancestors.md §1 for the incident). Rather than try
+        // to make that identification more precise, this scans for the thing
+        // that is unambiguous — an actually-running next-server process, i.e.
+        // health-web or bid-web really serving requests right now — and walks
+        // up its ancestor chain the same way $protected does above. Every PID
+        // in that chain (the app process and every ancestor, including
+        // whichever God Daemon it turns out to be) is untouchable, full stop,
+        // no matter what any other rule below — duplicate-daemon detection,
+        // the unmanaged-worker heuristic, anything — thinks it can prove.
+        $mustProtect = [];
+        foreach ($procs as $p) {
+            if (stripos($p['cmdline'], 'next-server') === false) {
+                continue;
+            }
+            $walk = (int) $p['pid'];
+            for ($i = 0; $i < 64 && $walk > 1; $i++) {
+                if (isset($mustProtect[$walk])) {
+                    break;
+                }
+                $mustProtect[$walk] = true;
+                $walk = (int) ($byPid[$walk]['ppid'] ?? 0);
+            }
+        }
+
+        $keep = static function (array $p) use ($protected, $godPid, $mustProtect): bool {
+            if (isset($mustProtect[$p['pid']])) {
+                return true;
+            }
             if (isset($protected[$p['pid']])) {
                 return true;
             }
