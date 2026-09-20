@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import Provider from "./(site)/Provider";
 import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
+import InAppBrowserBanner from "@/components/Common/InAppBrowserBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 import GoogleTag from "@/components/Analytics/GoogleTag";
 import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
@@ -75,6 +76,7 @@ export default function RootLayout({
       <body className={`dark:bg-black ${inter.className}`}>
         <GoogleTag />
         <MicrosoftClarity />
+        <InAppBrowserBanner />
         <Provider>{children}</Provider>
         <PrivacyConsentBanner />
         <RegisterServiceWorker />
