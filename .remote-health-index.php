@@ -562,7 +562,7 @@ if (str_starts_with($path, '/__ops/')) {
         $godRaw = @file_get_contents('/home/tw123457/.pm2/pm2.pid');
         if (is_string($godRaw)) {
             $candidatePid = (int) trim($godRaw);
-            if ($candidatePid > 0 && isset($byPid[$candidatePid]) && stripos($byPid[$candidatePid]['cmdline'], 'Daemon.js') !== false) {
+            if ($candidatePid > 0 && isset($byPid[$candidatePid]) && (stripos($byPid[$candidatePid]['cmdline'], 'Daemon.js') !== false || stripos($byPid[$candidatePid]['cmdline'], 'God Daemon') !== false)) {
                 $godPid = $candidatePid;
             }
         }
@@ -617,7 +617,7 @@ if (str_starts_with($path, '/__ops/')) {
             }
             $queue = [];
             foreach ($procs as $p) {
-                if ($p['pid'] !== $godPid && stripos($p['cmdline'], 'Daemon.js') !== false) {
+                if ($p['pid'] !== $godPid && (stripos($p['cmdline'], 'Daemon.js') !== false || stripos($p['cmdline'], 'God Daemon') !== false)) {
                     $add($p, "duplicate pm2 God Daemon (the live one is {$godPid})");
                     $queue[] = $p['pid'];
                 }
