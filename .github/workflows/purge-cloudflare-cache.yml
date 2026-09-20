@@ -16,6 +16,33 @@ jobs:
     runs-on: ubuntu-latest
     environment: FTP_SERVER
     steps:
+      - name: Verify Cloudflare API token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "Missing CLOUDFLARE_API_TOKEN — cannot verify."
+            exit 1
+          fi
+
+          # /user/tokens/verify is the purpose-built diagnostic endpoint for
+          # exactly this: it answers "is this token even valid" independent
+          # of any zone/permission question, and its response body contains
+          # no secret material (id/status only) so it's safe to print in full
+          # in a public log.
+          RESPONSE="$(curl --show-error --silent \
+            --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/user/tokens/verify")"
+
+          echo "$RESPONSE" | jq .
+
+          if ! echo "$RESPONSE" | jq -e '.success == true' >/dev/null; then
+            echo "Token verification failed — the token itself is invalid/inactive/wrong-account, independent of zone or permissions. Fix this in the Cloudflare dashboard before retrying."
+            exit 1
+          fi
+
       - name: Purge Cloudflare cache
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
