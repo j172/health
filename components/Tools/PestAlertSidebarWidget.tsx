@@ -1,42 +1,26 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import type { PestAlertItem } from "@/lib/server/pestAlerts/types";
 
 export default function PestAlertSidebarWidget() {
-  const [alerts, setAlerts] = useState<PestAlertItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchAlerts = async () => {
-    try {
-      const res = await fetch("/api/pest-alerts?limit=4");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.ok && Array.isArray(data.alerts)) {
-          setAlerts(data.alerts);
-        }
+  const { status, data, isRefreshing, refresh } = useSidebarWidgetData<PestAlertItem[]>({
+    buildUrl: () => "/api/pest-alerts?limit=4",
+    parse: (json) => {
+      if (!json?.ok || !Array.isArray(json.alerts)) {
+        throw new Error("Unexpected /api/pest-alerts payload");
       }
-    } catch (err) {
-      console.warn("Pest alerts widget fetch failed:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+      return json.alerts;
+    },
+    deps: [],
+  });
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      fetchAlerts();
-    });
-  }, []);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchAlerts();
-  };
+  const alerts = data ?? [];
+  const hasError = status === "error";
+  const showSpinner = status === "loading";
 
   const [mountTime] = useState(() => Date.now());
 
@@ -58,11 +42,13 @@ export default function PestAlertSidebarWidget() {
     <SidebarWidgetShell
       dotColorClass={dotColorClass}
       title="🌱 作物病蟲害即時預警"
-      onRefresh={handleRefresh}
-      refreshing={refreshing}
-      showSpinner={loading}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
+      showSpinner={showSpinner}
       hasData={displayedAlerts.length > 0}
+      hasError={hasError}
       emptyMessage="暫無病蟲害通報"
+      errorMessage="載入失敗，無法取得病蟲害預警"
       footerHref="/tools/pest-alerts"
       footerLabel="查看全台農作物病蟲害示警"
     >

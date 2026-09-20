@@ -5,27 +5,10 @@ import SidebarWidgetShell from "@/components/Tools/SidebarWidgetShell";
 import { type NearestAqiSite } from "@/app/api/aqi/nearest/route";
 
 export default function AqiSidebarWidget() {
-  const { station, showSpinner, isRefreshing, isDefault, refresh } =
+  const { station, showSpinner, isRefreshing, isDefault, hasError, refresh } =
     useNearestStation<NearestAqiSite>("/api/aqi/nearest");
 
-  const fallbackStation: NearestAqiSite = {
-    siteId: "default",
-    siteName: "即時測站",
-    county: "臺北市",
-    aqiValue: 35,
-    aqiStatus: "良好",
-    aqiColor: "#10B981",
-    pm25: 8,
-    pm10: 22,
-    o3: 28,
-    no2: 12,
-    so2: 1.5,
-    co: 0.25,
-    recordedAt: new Date().toISOString(),
-    distanceKm: 2,
-  };
-
-  const displayStation = station ?? fallbackStation;
+  const hasData = station !== null;
 
   return (
     <SidebarWidgetShell
@@ -34,33 +17,41 @@ export default function AqiSidebarWidget() {
       onRefresh={refresh}
       refreshing={isRefreshing}
       showSpinner={showSpinner}
-      hasData={true}
+      hasData={hasData}
+      hasError={hasError}
+      emptyMessage="附近暫無 AQI 測站資料"
+      errorMessage="載入失敗，無法取得附近測站"
       footerHref="/tools/aqi"
       footerLabel="查看全台 84 個測站 AQI 地圖"
     >
-      <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
-        <div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
-            {displayStation.county} · {displayStation.siteName}測站
-            {displayStation.distanceKm > 0 ? ` · 約 ${displayStation.distanceKm} km` : ""}
-          </p>
-          <div className="mt-1 flex items-center gap-2">
-            <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{displayStation.aqiValue ?? "--"}</span>
-            <span
-              className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-xs"
-              style={{ backgroundColor: displayStation.aqiColor || "#10B981" }}
-            >
-              {displayStation.aqiStatus || "良好"}
-            </span>
+      {station && (
+        <div className="flex items-baseline justify-between rounded-xl bg-slate-50 p-3.5 dark:bg-slate-800/60">
+          <div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+              {station.county} · {station.siteName}測站
+              {station.distanceKm > 0 ? ` · 約 ${station.distanceKm} km` : ""}
+            </p>
+            <div className="mt-1 flex items-center gap-2">
+              <span className="text-2xl font-extrabold text-slate-900 dark:text-slate-100">{station.aqiValue ?? "--"}</span>
+              <span
+                className="rounded-full px-2.5 py-0.5 text-xs font-bold text-white shadow-xs"
+                style={{ backgroundColor: station.aqiColor || "#10B981" }}
+              >
+                {station.aqiStatus || "良好"}
+              </span>
+            </div>
           </div>
+          {station.pm25 !== null && (
+            <div className="text-right">
+              <span className="block text-[10px] uppercase font-semibold text-slate-600">PM2.5</span>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{station.pm25} μg/m³</span>
+            </div>
+          )}
         </div>
-        {displayStation.pm25 !== null && (
-          <div className="text-right">
-            <span className="block text-[10px] uppercase font-semibold text-slate-600">PM2.5</span>
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{displayStation.pm25} μg/m³</span>
-          </div>
-        )}
-      </div>
+      )}
+      {hasError && station && (
+        <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">重新整理失敗，顯示的可能是過期資料</p>
+      )}
       {isDefault && (
         <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">定位權限未開啟，顯示預設地區資料</p>
       )}

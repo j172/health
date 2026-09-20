@@ -42,8 +42,11 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json({ station });
-  } catch (error) {
-    console.warn("GET /api/uv/nearest failed, returning null fallback:", error);
-    return NextResponse.json({ station: null });
+  } catch (error: any) {
+    console.error("GET /api/uv/nearest error:", error);
+    return NextResponse.json(
+      { station: null, error: error?.message || "Failed to query nearest UV station" },
+      { status: 500 },
+    );
   }
 }

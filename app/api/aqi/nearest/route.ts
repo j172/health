@@ -44,8 +44,11 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json({ station });
-  } catch (error) {
-    console.warn("GET /api/aqi/nearest failed, returning null fallback:", error);
-    return NextResponse.json({ station: null });
+  } catch (error: any) {
+    console.error("GET /api/aqi/nearest error:", error);
+    return NextResponse.json(
+      { station: null, error: error?.message || "Failed to query nearest AQI station" },
+      { status: 500 },
+    );
   }
 }

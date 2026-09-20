@@ -123,12 +123,10 @@ test("Integration check: all client map and tool components import fetchWithTime
     "components/Tools/AedContent.tsx",
     "components/Tools/FoodSafetyContent.tsx",
     "components/Tools/InundationMapContent.tsx",
-    "components/Tools/LocalWeatherSvgWidget.tsx",
     "components/Tools/NearbyRainfallCard.tsx",
     "components/Tools/OutdoorSafetyContent.tsx",
     "components/Tools/WeatherRainfallLocator.tsx",
     "components/Tools/YoubikeContent.tsx",
-    "components/Tools/useNearestStation.ts",
   ];
 
   for (const relPath of requiredFiles) {
@@ -138,6 +136,36 @@ test("Integration check: all client map and tool components import fetchWithTime
     assert.ok(
       content.includes("fetchWithTimeout"),
       `${relPath} should import and use fetchWithTimeout`
+    );
+  }
+});
+
+test("Integration check: sidebar widgets that fetch their own data go through the shared useSidebarWidgetData hook (which itself wraps fetchWithTimeout — see components/Tools/useSidebarWidgetData.ts)", () => {
+  const sharedHookPath = path.join(process.cwd(), "components/Tools/useSidebarWidgetData.ts");
+  assert.ok(fs.existsSync(sharedHookPath), "components/Tools/useSidebarWidgetData.ts should exist");
+  const sharedHookContent = fs.readFileSync(sharedHookPath, "utf-8");
+  assert.ok(
+    sharedHookContent.includes("fetchWithTimeout"),
+    "useSidebarWidgetData should import and use fetchWithTimeout"
+  );
+
+  const requiredFiles = [
+    "components/Tools/LocalWeatherSvgWidget.tsx",
+    "components/Tools/useNearestStation.ts",
+    "components/Tools/ErStatusSidebarWidget.tsx",
+    "components/Tools/CpcPriceSidebarWidget.tsx",
+    "components/Tools/WaterOutageSidebarWidget.tsx",
+    "components/Tools/CdcAlertSidebarWidget.tsx",
+    "components/Tools/PestAlertSidebarWidget.tsx",
+  ];
+
+  for (const relPath of requiredFiles) {
+    const fullPath = path.join(process.cwd(), relPath);
+    assert.ok(fs.existsSync(fullPath), `${relPath} should exist`);
+    const content = fs.readFileSync(fullPath, "utf-8");
+    assert.ok(
+      content.includes("useSidebarWidgetData"),
+      `${relPath} should use the shared useSidebarWidgetData hook`
     );
   }
 });
