@@ -1,45 +1,35 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useState } from "react";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import { type CDCTravelAlertItem, type CDCEpidemicNewsItem } from "@/app/api/cdc/travel-alerts/route";
+
+interface CdcData {
+  travelAlerts: CDCTravelAlertItem[];
+  epidNews: CDCEpidemicNewsItem[];
+}
 
 export default function CdcAlertSidebarWidget() {
   const [activeTab, setActiveTab] = useState<"epid" | "travel">("epid");
-  const [travelAlerts, setTravelAlerts] = useState<CDCTravelAlertItem[]>([]);
-  const [epidNews, setEpidNews] = useState<CDCEpidemicNewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // 共用的抓取邏輯：初次掛載與手動重新整理都走這裡，避免像過去那樣
-  // 兩份各自維護的抓取邏輯裡，只有其中一份檢查 res.ok —— 沒檢查的那份
-  // 一旦後端在特定情況下回傳 500（例如資料庫連線瞬斷），仍會把
-  // `{ ok: false, alerts: [], news: [] }` 的錯誤回應內容套用到畫面上，
-  // 把原本已顯示的資料洗成空狀態。
-  const fetchCdc = async (isMountedRef?: { current: boolean }) => {
-    try {
-      const res = await fetch("/api/cdc/travel-alerts");
-      if (!res.ok) return;
-      const data = await res.json();
-      if (!isMountedRef || isMountedRef.current) {
-        if (Array.isArray(data.alerts)) setTravelAlerts(data.alerts.slice(0, 5));
-        if (Array.isArray(data.news)) setEpidNews(data.news.slice(0, 5));
-      }
-    } catch (err) {
-      console.warn("CDC alerts fetch failed:", err);
-    } finally {
-      if (!isMountedRef || isMountedRef.current) setLoading(false);
-    }
-  };
+  const { status, data, isRefreshing, refresh } = useSidebarWidgetData<CdcData>({
+    buildUrl: () => "/api/cdc/travel-alerts",
+    parse: (json) => {
+      if (!json?.ok) throw new Error("Unexpected /api/cdc/travel-alerts payload");
+      return {
+        travelAlerts: Array.isArray(json.alerts) ? json.alerts.slice(0, 5) : [],
+        epidNews: Array.isArray(json.news) ? json.news.slice(0, 5) : [],
+      };
+    },
+    deps: [],
+  });
 
-  useEffect(() => {
-    const isMountedRef = { current: true };
-    fetchCdc(isMountedRef);
-    return () => {
-      isMountedRef.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const travelAlerts = data?.travelAlerts ?? [];
+  const epidNews = data?.epidNews ?? [];
+  const hasData = travelAlerts.length > 0 || epidNews.length > 0;
+  const hasError = status === "error";
+  const showSpinner = status === "loading";
 
   const getSeverityBadge = (levelCode: number) => {
     switch (levelCode) {
@@ -54,20 +44,17 @@ export default function CdcAlertSidebarWidget() {
     }
   };
 
-  const handleRefresh = () => {
-    setLoading(true);
-    fetchCdc();
-  };
-
   return (
     <SidebarWidgetShell
       dotColorClass="bg-rose-500"
       title="🌍 疾管署公衛與旅遊警示"
-      onRefresh={handleRefresh}
-      refreshing={loading}
-      showSpinner={loading && travelAlerts.length === 0 && epidNews.length === 0}
-      hasData={travelAlerts.length > 0 || epidNews.length > 0}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
+      showSpinner={showSpinner}
+      hasData={hasData}
+      hasError={hasError}
       emptyMessage="暫無疾管署最新警示資料"
+      errorMessage="載入失敗，無法取得疾管署警示"
       footerHref="/tools/travel-epidemic-alerts"
       footerLabel="前往疾管署國際旅遊疫情地圖 →"
     >
@@ -96,12 +83,7 @@ export default function CdcAlertSidebarWidget() {
         </button>
       </div>
 
-      {loading ? (
-        <div className="space-y-2 animate-pulse">
-          <div className="h-4 w-3/4 rounded bg-slate-200 dark:bg-slate-700" />
-          <div className="h-3 w-1/2 rounded bg-slate-200 dark:bg-slate-700" />
-        </div>
-      ) : activeTab === "epid" ? (
+      {activeTab === "epid" ? (
         <div className="space-y-3">
           {epidNews.length === 0 ? (
             <p className="text-xs text-slate-600">暫無國際疫情資訊。</p>

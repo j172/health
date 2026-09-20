@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import { useGeolocation, getSavedLocation } from "@/components/Facilities/useGeolocation";
-import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 export const TAIWAN_COUNTIES = [
   { name: "基隆市", lat: 25.1276, lng: 121.7392 },
@@ -120,45 +120,38 @@ function WeatherSvgIcon({ condition }: { condition: string | null }) {
 
 export default function LocalWeatherSvgWidget() {
   const geo = useGeolocation();
-  const [weather, setWeather] = useState<StationWeather | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedCounty, setSelectedCounty] = useState<string>(() => {
     const saved = getSavedLocation();
     return saved?.name ?? "auto";
   });
 
-  const fetchWeather = useCallback(async (lat: number, lng: number) => {
-    setLoading(true);
-    try {
-      const res = await fetchWithTimeout(`/api/weather-nearby?lat=${lat}&lng=${lng}`, { timeoutMs: 5000 });
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.stationWeather) {
-        setWeather(data.stationWeather);
-      }
-    } catch (err) {
-      console.warn("Local weather fetch failed:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const activeCoords = useMemo(() => {
+    const found = TAIWAN_COUNTIES.find((c) => c.name === selectedCounty);
+    return selectedCounty !== "auto" && found ? found : { lat: geo.lat, lng: geo.lng };
+  }, [selectedCounty, geo.lat, geo.lng]);
 
-  useEffect(() => {
-    fetchWeather(geo.lat, geo.lng);
-  }, [geo.lat, geo.lng, fetchWeather]);
+  const { status, data: weather, isRefreshing, refresh } = useSidebarWidgetData<StationWeather>({
+    buildUrl: () => `/api/weather-nearby?lat=${activeCoords.lat}&lng=${activeCoords.lng}`,
+    parse: (json) => {
+      if (!json?.stationWeather) throw new Error("No stationWeather in /api/weather-nearby response");
+      return json.stationWeather as StationWeather;
+    },
+    deps: [activeCoords.lat, activeCoords.lng],
+  });
+
+  const hasError = status === "error";
+  const showSpinner = status === "loading" && !weather;
 
   // 定期自動刷新：使用者若開著頁面沒有互動（不改變地理座標、不切換縣市），
-  // 先前的 effect 不會再被觸發，畫面會停留在打開當下那一刻的舊資料。
-  // 這裡另外用 setInterval 依「目前使用中的座標」（GPS 或使用者選的縣市）
-  // 定期重抓一次，並在 unmount 或座標/縣市改變時清除計時器。
+  // 上面依座標變化觸發的 effect 不會再被觸發，畫面會停留在打開當下那一刻的
+  // 舊資料。這裡另外用 setInterval 定期呼叫 refresh()——跟手動重新整理走
+  // 同一條路徑——並在 unmount 時清除計時器。
   useEffect(() => {
-    const found = TAIWAN_COUNTIES.find((c) => c.name === selectedCounty);
-    const { lat, lng } = selectedCounty !== "auto" && found ? found : geo;
     const interval = setInterval(() => {
-      fetchWeather(lat, lng);
+      refresh();
     }, REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [geo.lat, geo.lng, selectedCounty, fetchWeather]);
+  }, [refresh]);
 
   const handleCountyChange = (countyName: string) => {
     setSelectedCounty(countyName);
@@ -178,7 +171,8 @@ export default function LocalWeatherSvgWidget() {
       window.dispatchEvent(
         new CustomEvent("user-location-change", { detail: { lat: found.lat, lng: found.lng } }),
       );
-      fetchWeather(found.lat, found.lng);
+      // activeCoords 會因 selectedCounty 改變而重新計算，共用 hook 的 mount
+      // effect 會偵測到 deps 變化並自動重新抓取，不需要在這裡手動呼叫。
     }
   };
 
@@ -186,8 +180,7 @@ export default function LocalWeatherSvgWidget() {
     if (selectedCounty === "auto") {
       geo.refresh();
     } else {
-      const found = TAIWAN_COUNTIES.find((c) => c.name === selectedCounty);
-      if (found) fetchWeather(found.lat, found.lng);
+      refresh();
     }
   };
 
@@ -200,10 +193,12 @@ export default function LocalWeatherSvgWidget() {
       dotColorClass="bg-amber-500"
       title="📍 即時在地天氣"
       onRefresh={handleRefresh}
-      refreshing={loading || geo.refreshing}
-      showSpinner={loading && !weather}
+      refreshing={isRefreshing || geo.refreshing}
+      showSpinner={showSpinner}
       hasData={Boolean(weather)}
+      hasError={hasError}
       emptyMessage="暫無測站即時天氣觀測資料"
+      errorMessage="載入失敗，無法取得即時天氣觀測"
       footerHref="/tools/weather-alerts"
       footerLabel="查詢全台即時降雨與測站 →"
     >
@@ -256,6 +251,9 @@ export default function LocalWeatherSvgWidget() {
               </span>
             )}
           </div>
+          {hasError && (
+            <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">重新整理失敗，顯示的可能是過期資料</p>
+          )}
         </div>
       )}
     </SidebarWidgetShell>

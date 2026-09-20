@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import type { CongestionLevel } from "@/lib/server/emergencyRooms/types";
 
 interface SidebarHospital {
@@ -12,42 +12,34 @@ interface SidebarHospital {
   isFull: boolean;
 }
 
+interface ErWidgetData {
+  hospitals: SidebarHospital[];
+  cityName: string;
+  hasFullReported: boolean;
+}
+
 export default function ErStatusSidebarWidget() {
-  const [hospitals, setHospitals] = useState<SidebarHospital[]>([]);
-  const [cityName, setCityName] = useState("雙北");
-  const [hasFullReported, setHasFullReported] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchErWidget = async () => {
-    try {
-      const res = await fetch("/api/emergency-rooms?widget=true&city=TPE");
-      if (res.ok) {
-        const json = await res.json();
-        if (json.ok && Array.isArray(json.hospitals)) {
-          setHospitals(json.hospitals);
-          if (json.cityName) setCityName(json.cityName);
-          setHasFullReported(!!json.hasFullReported);
-        }
+  const { status, data, isRefreshing, refresh } = useSidebarWidgetData<ErWidgetData>({
+    buildUrl: () => "/api/emergency-rooms?widget=true&city=TPE",
+    parse: (json) => {
+      if (!json?.ok || !Array.isArray(json.hospitals)) {
+        throw new Error("Unexpected /api/emergency-rooms payload");
       }
-    } catch (err) {
-      console.warn("ER widget fetch failed:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+      return {
+        hospitals: json.hospitals,
+        cityName: json.cityName || "雙北",
+        hasFullReported: !!json.hasFullReported,
+      };
+    },
+    deps: [],
+  });
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      fetchErWidget();
-    });
-  }, []);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchErWidget();
-  };
+  const hospitals = data?.hospitals ?? [];
+  const cityName = data?.cityName ?? "雙北";
+  const hasFullReported = !!data?.hasFullReported;
+  const hasData = hospitals.length > 0;
+  const hasError = status === "error";
+  const showSpinner = status === "loading";
 
   const hasCritical = hospitals.some((h) => h.congestion === "critical" || h.isFull);
   const dotColorClass = hasFullReported
@@ -60,11 +52,13 @@ export default function ErStatusSidebarWidget() {
     <SidebarWidgetShell
       dotColorClass={dotColorClass}
       title="🚨 急診即時就醫即時看板"
-      onRefresh={handleRefresh}
-      refreshing={refreshing}
-      showSpinner={loading}
-      hasData={hospitals.length > 0}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
+      showSpinner={showSpinner}
+      hasData={hasData}
+      hasError={hasError}
       emptyMessage="暫無急診通報資料"
+      errorMessage="載入失敗，無法取得急診看板資料"
       footerHref="/tools/er-status"
       footerLabel="查看全台急診即時擁擠度看板"
     >

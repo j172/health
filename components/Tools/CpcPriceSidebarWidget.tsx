@@ -1,54 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import type { CpcPriceSummary } from "@/lib/server/cpc/prices";
 
 export default function CpcPriceSidebarWidget() {
-  const [summary, setSummary] = useState<CpcPriceSummary | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  const fetchSummary = async () => {
-    try {
-      const res = await fetch("/api/cpc-prices?summary=true");
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.ok) {
-        setSummary(data);
-      }
-    } catch (err) {
-      console.warn("CPC price widget fetch failed:", err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    queueMicrotask(() => {
-      fetchSummary();
-    });
-  }, []);
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchSummary();
-  };
+  const { status, data: summary, isRefreshing, refresh } = useSidebarWidgetData<CpcPriceSummary>({
+    buildUrl: () => "/api/cpc-prices?summary=true",
+    parse: (json) => {
+      if (!json?.ok) throw new Error("Unexpected /api/cpc-prices payload");
+      return json as CpcPriceSummary;
+    },
+    deps: [],
+  });
 
   const gas = summary?.gasoline;
   const ng = summary?.naturalGas;
   const hasData = Boolean(gas?.unleaded95 || gas?.unleaded92 || ng?.ng1);
+  const hasError = status === "error";
+  const showSpinner = status === "loading";
 
   return (
     <SidebarWidgetShell
       dotColorClass="bg-blue-600 dark:bg-blue-400"
       title="⛽ 中油即時油價與天然氣"
-      onRefresh={handleRefresh}
-      refreshing={refreshing}
-      showSpinner={loading && !hasData}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
+      showSpinner={showSpinner}
       hasData={hasData}
+      hasError={hasError}
       emptyMessage="暫無最新中油牌價資料"
+      errorMessage="載入失敗，無法取得最新牌價"
       footerHref="/tools/cpc-prices"
       footerLabel="查看完整 9 類油氣牌價表 →"
     >

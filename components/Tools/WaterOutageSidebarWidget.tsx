@@ -1,57 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
 import SidebarWidgetShell from "./SidebarWidgetShell";
+import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import { type WaterOutageItem } from "@/app/api/water-outages/route";
 
 export default function WaterOutageSidebarWidget() {
-  const [outages, setOutages] = useState<WaterOutageItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // 共用的抓取邏輯：初次掛載與手動重新整理都走這裡，避免像過去那樣
-  // 兩份各自維護的抓取邏輯裡，只有其中一份檢查 res.ok —— 沒檢查的那份
-  // 一旦後端在特定情況下回傳 500（例如資料庫連線瞬斷），仍會把
-  // `{ ok: false, outages: [] }` 的錯誤回應內容套用到畫面上，
-  // 把原本已顯示的資料洗成空狀態。
-  const fetchOutages = async (isMountedRef?: { current: boolean }) => {
-    try {
-      const res = await fetch("/api/water-outages");
-      if (!res.ok) return;
-      const data = await res.json();
-      if ((!isMountedRef || isMountedRef.current) && Array.isArray(data.outages)) {
-        setOutages(data.outages.slice(0, 3));
+  const { status, data, isRefreshing, refresh } = useSidebarWidgetData<WaterOutageItem[]>({
+    buildUrl: () => "/api/water-outages",
+    parse: (json) => {
+      if (!json?.ok || !Array.isArray(json.outages)) {
+        throw new Error("Unexpected /api/water-outages payload");
       }
-    } catch (err) {
-      console.warn("Water outages fetch failed:", err);
-    } finally {
-      if (!isMountedRef || isMountedRef.current) setLoading(false);
-    }
-  };
+      return json.outages.slice(0, 3);
+    },
+    deps: [],
+  });
 
-  useEffect(() => {
-    const isMountedRef = { current: true };
-    fetchOutages(isMountedRef);
-    return () => {
-      isMountedRef.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleRefresh = () => {
-    setLoading(true);
-    fetchOutages();
-  };
+  const outages = data ?? [];
+  const hasData = outages.length > 0;
+  const hasError = status === "error";
+  const showSpinner = status === "loading";
 
   return (
     <SidebarWidgetShell
       dotColorClass="bg-blue-500"
       title="🚰 台水停水資訊"
-      onRefresh={handleRefresh}
-      refreshing={loading}
-      showSpinner={loading && outages.length === 0}
-      hasData={outages.length > 0}
+      onRefresh={refresh}
+      refreshing={isRefreshing}
+      showSpinner={showSpinner}
+      hasData={hasData}
+      hasError={hasError}
       emptyMessage="一週內全台無重大突發或大規模停水通報。"
+      errorMessage="載入失敗，無法取得停水通報"
       footerHref="https://web.water.gov.tw/wateroffmap/"
       footerLabel="前往台水即時停水地圖 →"
     >
