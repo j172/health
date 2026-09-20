@@ -274,6 +274,7 @@ export const upsertCwaStationWeather = (records: CwaStationWeatherRecord[]) =>
        lat = VALUES(lat),
        lng = VALUES(lng),
        altitude = VALUES(altitude),
+       obs_time = VALUES(obs_time),
        weather = VALUES(weather),
        precipitation = VALUES(precipitation),
        wind_direction = VALUES(wind_direction),
