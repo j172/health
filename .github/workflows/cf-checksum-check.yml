@@ -1,0 +1,21 @@
+name: CF token checksum check (temporary diagnostic)
+on:
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checksum the secret as GH Actions sees it
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          printf '%s' "$T" > /tmp/t.txt
+          echo "runner cksum: $(cksum /tmp/t.txt)"
+          echo "runner length: $(wc -c < /tmp/t.txt)"
+          rm -f /tmp/t.txt
+      - name: Now actually call Cloudflare with it, and show full response headers too
+        env:
+          T: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          curl -sS -D - -H "Authorization: Bearer $T" -H "User-Agent: curl/8.0" "https://api.cloudflare.com/client/v4/user/tokens/verify"
