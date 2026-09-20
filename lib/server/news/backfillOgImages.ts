@@ -18,6 +18,7 @@ import {
   type ArticleImageResult,
 } from "@/lib/server/images/downloadArticleImage";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+import { revalidateArticlePath } from "@/lib/server/news/revalidateArticle";
 
 const LOCK_NAME = "news_og_image_backfill_lock";
 
@@ -197,6 +198,9 @@ const attachStoredImage = async (
     if (insertResult.affectedRows !== 1) {
       return { ok: false, reason: "insert skipped (race)" };
     }
+    // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+    // the article's ISR cache now instead of waiting on organic traffic.
+    revalidateArticlePath(id);
     return { ok: true, localPath };
   } finally {
     conn.release();
@@ -333,6 +337,9 @@ export const backfillMissingImagesFromOpenGraph = async (
 
         if (insertResult.affectedRows === 1) {
           summary.assigned += 1;
+          // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+          // the article's ISR cache now instead of waiting on organic traffic.
+          revalidateArticlePath(news.id);
         } else {
           summary.skipped += 1;
         }
