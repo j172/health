@@ -33,6 +33,7 @@ import {
   extractLocationFromText,
 } from "@/lib/server/news/geoExtractor";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+import { revalidateArticlePath } from "@/lib/server/news/revalidateArticle";
 
 const LOCK_NAME = "news_card_image_assignment_lock";
 const MAX_API_PAGES = 16;
@@ -344,6 +345,9 @@ export const assignMissingNewsCardImages = async (
           usedIds.add(candidate.id);
           await recordProviderSuccess(conn, cooldownState, provider.name);
           summary.assigned += 1;
+          // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+          // the article's ISR cache now instead of waiting on organic traffic.
+          revalidateArticlePath(news.id);
           return "assigned";
         } catch (error) {
           if (downloaded) await provider.remove(downloaded.absolutePath);
@@ -449,6 +453,9 @@ export const assignMissingNewsCardImages = async (
             if (mapAssigned) {
               assignedThisNews = true;
               summary.assigned += 1;
+              // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+              // the article's ISR cache now instead of waiting on organic traffic.
+              revalidateArticlePath(news.id);
             }
           } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
