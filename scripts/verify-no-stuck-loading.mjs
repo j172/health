@@ -50,7 +50,6 @@ const criticalComponents = [
   "components/Activities/PublicArtContent.tsx",
   "components/Tools/YoubikeContent.tsx",
   "components/Tools/useNearestStation.ts",
-  "components/News/NearbyWeatherBar.tsx",
   "components/Tools/LocalWeatherSvgWidget.tsx",
   "components/Tools/WeatherRainfallLocator.tsx",
 ];
