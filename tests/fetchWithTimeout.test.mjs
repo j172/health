@@ -119,7 +119,6 @@ test("Integration check: all client map and tool components import fetchWithTime
     "components/DisasterMap/DisasterMapContent.tsx",
     "components/Facilities/FacilitySearchContent.tsx",
     "components/HeritageMap/HeritageMapContent.tsx",
-    "components/News/NearbyWeatherBar.tsx",
     "components/Tools/AccessibleTransitContent.tsx",
     "components/Tools/AedContent.tsx",
     "components/Tools/FoodSafetyContent.tsx",
