@@ -331,6 +331,14 @@ export interface NearestStationWeatherRecord {
 
 /**
  * Queries nearest CWA weather station (O-A0001-001) to given coordinates.
+ *
+ * cwa_station_weather's unique key is (dataset_id, station_id, obs_time), so
+ * each sync with a genuinely new obs_time INSERTs a fresh row rather than
+ * updating one in place — a station accumulates one row per sync cycle, all
+ * sharing the same lat/lng and therefore the same computed distance_km. The
+ * secondary `s.obs_time DESC` sort breaks that tie in favor of the most
+ * recent observation; without it, LIMIT 1 could stably return an old row
+ * (see docs/specs/cwa-station-weather-obstime-update-fix.md).
  */
 export const getNearestStationWeather = async (
   lat: number,
@@ -352,7 +360,7 @@ export const getNearestStationWeather = async (
                    )) AS distance_km
             FROM cwa_station_weather s
             WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
-            ORDER BY distance_km ASC
+            ORDER BY distance_km ASC, s.obs_time DESC
             LIMIT 1
             `,
             [lat, lng, lat],
