@@ -44,13 +44,22 @@ export interface OgImageBackfillSummary {
   errors: string[];
 }
 
+// news.google.com "article shell" URLs used to be excluded outright here —
+// their canonical_url has no og:image of its own, only Google's logo. Both
+// consumers of this query now know how to try past that: local backfill
+// (backfillMissingImagesFromOpenGraph) calls fetchOpenGraphImageAsset, which
+// resolves the shell to its real publisher URL before extracting og:image
+// (see lib/server/net/resolveGoogleNewsRedirect.mjs); the external-worker
+// path (listMissingCardImageTargets -> scripts/gha-og-external-backfill.mjs)
+// does the same resolution itself. Either way, failure to resolve still
+// fails safe — image_backfill_attempts increments and the row falls back in
+// the queue exactly as before this existed.
 const MISSING_WHERE = `
   NOT EXISTS (
     SELECT 1 FROM news_assets a
     WHERE a.news_item_id = n.id AND a.asset_type = 'image'
   )
   AND n.canonical_url IS NOT NULL
-  AND n.canonical_url NOT LIKE '%news.google.com%'
 `;
 
 /**

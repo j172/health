@@ -3,6 +3,7 @@ import { load } from "cheerio";
 import type { EnrichedRssItem, FeedCode, NewsAsset } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { sha256, toAbsoluteUrl } from "@/lib/server/rss/scraperUtils";
+import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 
 export interface ExpandedSourceFetchResult {
   ok: boolean;
@@ -89,7 +90,11 @@ export const parseYonglinHtml = (html: string, baseUrl = "https://www.yonglin.or
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -173,7 +178,11 @@ export const parseChildrenEventsHtml = (html: string, baseUrl = "https://www.chi
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -257,7 +266,11 @@ export const parseChildrenResearchHtml = (html: string, baseUrl = "https://www.c
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -376,6 +389,20 @@ export async function fetchMoeFamilyEdu(): Promise<ExpandedSourceFetchResult> {
       return { ok: false, httpStatus: res.status, itemCount: 0, items: [], errorMessage: `HTTP ${res.status}` };
     }
     const items = parseMoeFamilyEduHtml(res.text, "https://familyedu.moe.gov.tw");
+    // parseMoeFamilyEduHtml stays a pure sync parser (it's unit-tested as one)
+    // and only sees the list page, which carries title/date but not the
+    // announcement body. familyedu.moe.gov.tw is a gov source (isGovSource),
+    // so app/news/[id] renders detail_html in-app rather than redirecting
+    // out — without this fetch every article showed the "沒有可顯示的完整內容"
+    // placeholder (#353).
+    for (const item of items) {
+      const detail = await fetchDetailPage({
+        canonicalUrl: item.canonicalUrl,
+      }).catch(() => ({ detailHtml: null, detailText: null, assets: [] }));
+      item.detailHtml = detail.detailHtml;
+      item.detailText = detail.detailText;
+      item.assets = detail.assets;
+    }
     return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
   } catch (error: any) {
     return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
@@ -383,88 +410,7 @@ export async function fetchMoeFamilyEdu(): Promise<ExpandedSourceFetchResult> {
 }
 
 // ---------------------------------------------------------------------------
-// 5. 衛福部社家署－最新消息 (SFAA - Social and Family Affairs Administration)
-// ---------------------------------------------------------------------------
-export const parseSfaaNewsHtml = (html: string, baseUrl = "https://www.sfaa.gov.tw"): EnrichedRssItem[] => {
-  const $ = load(html);
-  const items: EnrichedRssItem[] = [];
-  const seen = new Set<string>();
-
-  const rows = $("table tr, .list-item, .item, a[href*='/sfaa/detail/'], a[href*='/detail/']").toArray();
-  for (const el of rows) {
-    const $el = $(el);
-    const tds = $el.find("td");
-    let anchor = $el.is("a") ? $el : $el.find("a[href*='detail'], a[href*='/sfaa/']").first();
-    let dateText = "";
-
-    if (tds.length >= 3) {
-      anchor = tds.eq(1).find("a").first();
-      dateText = tds.eq(2).text().trim();
-    } else {
-      dateText = $el.find(".date, time, span").first().text().trim() || $el.find("td").first().text().trim();
-    }
-
-    const rawHref = anchor.attr("href");
-    if (!rawHref || rawHref === "/sfaa/list/5cX" || !rawHref.includes("detail")) continue;
-
-    const canonicalUrl = toAbsoluteUrl(rawHref, baseUrl);
-    if (seen.has(canonicalUrl)) continue;
-
-    const title = (anchor.attr("title") || anchor.text()).trim().replace(/\s+/g, " ");
-    if (!title || title.length < 4) continue;
-    seen.add(canonicalUrl);
-
-    const publishedAtUtc = parseTaiwanDateToUtc(dateText);
-
-    const externalId = canonicalUrl.replace(/^https?:\/\/[^/]+/, "").replace(/^\//, "") || sha256(canonicalUrl).slice(0, 16);
-    const payloadHash = sha256(JSON.stringify({ title, canonicalUrl, publishedAtUtc }));
-
-    items.push({
-      sourceName: "sfaa",
-      feedCode: "sfaa_news",
-      feedName: "衛福部社家署",
-      externalId,
-      canonicalUrl,
-      sourceUrl: canonicalUrl,
-      title,
-      descriptionHtml: "",
-      descriptionText: "",
-      detailHtml: null,
-      detailText: null,
-      deptName: "衛生福利部社會及家庭署",
-      categoryRaw: null,
-      displayType: null,
-      publishedAtUtc: publishedAtUtc && !isNaN(publishedAtUtc.getTime()) ? publishedAtUtc : null,
-      publicBeginAtTaipei: null,
-      publicEndAtTaipei: null,
-      payloadHash,
-      assets: [],
-      metaTitle: "",
-      metaDescription: "",
-      keywords: "",
-      geoSummary: "",
-    });
-  }
-
-  return items;
-};
-
-export async function fetchSfaaNews(): Promise<ExpandedSourceFetchResult> {
-  const url = "https://www.sfaa.gov.tw/sfaa/list/5cX";
-  try {
-    const res = await httpGetText(url, { headers: DEFAULT_HEADERS, timeoutMs: 15_000 });
-    if (res.status < 200 || res.status >= 300) {
-      return { ok: false, httpStatus: res.status, itemCount: 0, items: [], errorMessage: `HTTP ${res.status}` };
-    }
-    const items = parseSfaaNewsHtml(res.text, "https://www.sfaa.gov.tw");
-    return { ok: true, httpStatus: res.status, itemCount: items.length, items, errorMessage: null };
-  } catch (error: any) {
-    return { ok: false, httpStatus: null, itemCount: 0, items: [], errorMessage: error.message || "Unknown error" };
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 6. Hello 醫師 (Hello Yishi Health) - Commercial Media
+// 5. Hello 醫師 (Hello Yishi Health) - Commercial Media
 // ---------------------------------------------------------------------------
 export const parseHelloYishiHealthHtml = (html: string, baseUrl = "https://helloyishi.com.tw"): EnrichedRssItem[] => {
   const $ = load(html);
@@ -543,7 +489,7 @@ export async function fetchHelloYishiHealth(): Promise<ExpandedSourceFetchResult
 }
 
 // ---------------------------------------------------------------------------
-// 7. 康健大人社團 (CommonHealth Club) - Commercial Media
+// 6. 康健大人社團 (CommonHealth Club) - Commercial Media
 // ---------------------------------------------------------------------------
 export const parseCommonHealthClubHtml = (html: string, baseUrl = "https://club.commonhealth.com.tw"): EnrichedRssItem[] => {
   const $ = load(html);
@@ -573,7 +519,11 @@ export const parseCommonHealthClubHtml = (html: string, baseUrl = "https://club.
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -627,7 +577,7 @@ export async function fetchCommonHealthClub(): Promise<ExpandedSourceFetchResult
 }
 
 // ---------------------------------------------------------------------------
-// 8, 9, 10. 關鍵評論網 (The News Lens) - Commercial Media
+// 7, 8, 9. 關鍵評論網 (The News Lens) - Commercial Media
 // ---------------------------------------------------------------------------
 export const parseTheNewsLensHtml = (
   html: string,
@@ -662,7 +612,11 @@ export const parseTheNewsLensHtml = (
     const publishedAtUtc = parseTaiwanDateToUtc(dateText);
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });
@@ -854,7 +808,7 @@ export async function fetchTheNewsLensElderly(): Promise<ExpandedSourceFetchResu
 }
 
 // ---------------------------------------------------------------------------
-// 11, 12, 13. PChome 新聞 (PChome News) - Commercial Media
+// 10, 11, 12. PChome 新聞 (PChome News) - Commercial Media
 // ---------------------------------------------------------------------------
 export const parsePchomeHtml = (
   html: string,
@@ -895,7 +849,11 @@ export const parsePchomeHtml = (
     }
 
     const descText = ($el.find("p, .desc, .summary").first().text() || "").trim().replace(/\s+/g, " ");
-    const imgSrc = anchor.find("img").attr("src") || $el.find("img").attr("src");
+    const imgSrc =
+      anchor.find("img").attr("src") ||
+      anchor.find("img").attr("data-src") ||
+      $el.find("img").attr("src") ||
+      $el.find("img").attr("data-src");
     const assets: NewsAsset[] = [];
     if (imgSrc) {
       assets.push({ assetType: "image", title: null, url: toAbsoluteUrl(imgSrc, baseUrl), sortOrder: 0 });

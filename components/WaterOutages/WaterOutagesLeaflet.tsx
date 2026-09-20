@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import type {
   WaterOutageItem,
   EmergencyWaterStation,
 } from "@/lib/server/waterOutages/types";
+import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 
 // Fix leaflet icon default path issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -32,28 +33,6 @@ const waterStationIcon = new L.DivIcon({
   iconAnchor: [12, 12],
   popupAnchor: [0, -12],
 });
-
-const userLocationIcon = new L.DivIcon({
-  className: "",
-  html: `<div style="width:18px;height:18px;border-radius:50%;background:#6366f1;border:2.5px solid #fff;box-shadow:0 0 8px rgba(99,102,241,0.8);"></div>`,
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-  popupAnchor: [0, -9],
-});
-
-function MapViewController({
-  center,
-  zoom,
-}: {
-  center: [number, number];
-  zoom: number;
-}) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, zoom);
-  }, [map, center, zoom]);
-  return null;
-}
 
 export interface WaterOutagesLeafletProps {
   outages: WaterOutageItem[];

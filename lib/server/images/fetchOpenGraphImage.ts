@@ -3,6 +3,10 @@ import { load } from "cheerio";
 import type { NewsAsset } from "@/types/rss";
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
+import {
+  isGoogleNewsUrl,
+  resolveGoogleNewsRedirect,
+} from "@/lib/server/net/resolveGoogleNewsRedirect.mjs";
 
 const FETCH_TIMEOUT_MS = 12_000;
 
@@ -67,9 +71,24 @@ const extractLdJsonImages = ($: ReturnType<typeof load>): string[] => {
 export const fetchOpenGraphImageAsset = async (
   canonicalUrl: string,
 ): Promise<NewsAsset | null> => {
-  if (!canonicalUrl || /news\.google\.com/i.test(canonicalUrl)) return null;
+  if (!canonicalUrl) return null;
 
-  const response = await httpGetText(canonicalUrl, {
+  // news.google.com "article shell" links (the <link> Google News RSS feeds
+  // hand back) have no og:image of their own — Google's own logo, at best.
+  // Try to resolve the real publisher URL first (bounded hops, short
+  // timeout, fails safe to null on any problem — see
+  // resolveGoogleNewsRedirect.mjs); only bail out for good if that fails,
+  // same as before this existed.
+  let targetUrl = canonicalUrl;
+  if (isGoogleNewsUrl(canonicalUrl)) {
+    const resolved = await resolveGoogleNewsRedirect(canonicalUrl).catch(
+      () => null,
+    );
+    if (!resolved) return null;
+    targetUrl = resolved;
+  }
+
+  const response = await httpGetText(targetUrl, {
     headers: {
       // Browser-like UA: some publishers (and WAFs) 403 the bare bot string.
       "User-Agent":
@@ -95,7 +114,7 @@ export const fetchOpenGraphImageAsset = async (
 
   for (const raw of rawCandidates) {
     if (!raw?.trim()) continue;
-    const absolute = toAbsoluteUrl(raw.trim(), canonicalUrl);
+    const absolute = toAbsoluteUrl(raw.trim(), targetUrl);
     if (
       !absolute ||
       !/^https?:\/\//i.test(absolute) ||
@@ -103,7 +122,7 @@ export const fetchOpenGraphImageAsset = async (
     )
       continue;
 
-    const localPath = await downloadArticleImage(absolute, canonicalUrl);
+    const localPath = await downloadArticleImage(absolute, targetUrl);
     if (!localPath) continue;
 
     return {

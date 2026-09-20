@@ -383,4 +383,25 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "ncl",
     skipDetailFetch: false,
   },
+  // Migrated 2026-09-20 (issue #355) from the retired independent gov-opendata
+  // pipeline (`lib/server/config/gov-opendata-news-sources.ts`, see
+  // docs/specs/retire-gov-opendata-news-pipeline.md). freeway was the only one
+  // of that pipeline's 12 sources that was both healthy and not already
+  // duplicated here, so it moves over as-is (same feedCode/URL, verified
+  // HTTP 200). sfaa replaces the HTML-list-page scrape below
+  // (fetchExpandedSources.ts's `fetchSfaaNews`, same feedCode `sfaa_news`)
+  // with this pipeline's healthier, full-text-yielding RSS URL instead of
+  // running both against the same feedCode.
+  {
+    code: "freeway_news",
+    name: "高公局即時路況與最新消息",
+    url: "https://www.freeway.gov.tw/rss.aspx",
+    sourceName: "freeway",
+  },
+  {
+    code: "sfaa_news",
+    name: "社家署最新消息",
+    url: "https://www.sfaa.gov.tw/SFAA/RSS.aspx?type=1",
+    sourceName: "sfaa",
+  },
 ];
