@@ -1,4 +1,3 @@
-import { fetchCwaForecasts } from "@/lib/server/cwa/sources/forecast";
 import { fetchCwaEarthquakes } from "@/lib/server/cwa/sources/earthquake";
 import { fetchCwaTsunamis } from "@/lib/server/cwa/sources/tsunami";
 import { fetchCwaAlerts } from "@/lib/server/cwa/sources/alerts";
@@ -10,7 +9,6 @@ import { fetchCwaRainfall } from "@/lib/server/cwa/sources/rainfall";
 import { fetchCwaUvIndex } from "@/lib/server/cwa/sources/uvIndex";
 import { fetchCwaDailyRainfall } from "@/lib/server/cwa/sources/dailyRainfall";
 import {
-  upsertCwaForecasts,
   upsertCwaEarthquakes,
   upsertCwaTsunamis,
   upsertCwaAlerts,
@@ -35,16 +33,6 @@ const CWA_ERROR_FALLBACK = "Unknown CWA sync error";
 
 export async function runCwaSync(): Promise<CwaSyncResult[]> {
   return [
-    await runSource(
-      "cwa_forecasts",
-      ZERO_COUNTS,
-      async () => {
-        const records = await fetchCwaForecasts();
-        const { inserted, updated } = await upsertCwaForecasts(records);
-        return { fetched: records.length, inserted, updated };
-      },
-      CWA_ERROR_FALLBACK,
-    ),
     await runSource(
       "cwa_earthquakes",
       ZERO_COUNTS,
