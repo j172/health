@@ -3,43 +3,6 @@ import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import { memoizeQuery } from "@/lib/server/cache/memo";
 
-export interface CwaForecastRecord {
-  countyName: string;
-  elementName: string;
-  startTime: string;
-  endTime: string;
-  parameterName: string | null;
-  parameterValue: string | null;
-  parameterUnit: string | null;
-}
-
-export const upsertCwaForecasts = (records: CwaForecastRecord[]) =>
-  chunkedUpsert(
-    records,
-    `INSERT INTO cwa_forecasts
-       (county_name, element_name, start_time, end_time, parameter_name, parameter_value, parameter_unit, synced_at, created_at, updated_at)
-     VALUES ?
-     ON DUPLICATE KEY UPDATE
-       end_time = VALUES(end_time),
-       parameter_name = VALUES(parameter_name),
-       parameter_value = VALUES(parameter_value),
-       parameter_unit = VALUES(parameter_unit),
-       synced_at = VALUES(synced_at),
-       updated_at = VALUES(updated_at)`,
-    (r, now) => [
-      r.countyName,
-      r.elementName,
-      r.startTime,
-      r.endTime,
-      r.parameterName,
-      r.parameterValue,
-      r.parameterUnit,
-      now,
-      now,
-      now,
-    ],
-  );
-
 export interface CwaEarthquakeRecord {
   earthquakeNo: number;
   reportType: string | null;

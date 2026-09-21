@@ -364,24 +364,6 @@ export const TABLE_DDL = {
   `,
   // 中央氣象署 (CWA) open-data ingestion — opendata.cwa.gov.tw, hourly cron.
   // See lib/server/cwa/runSync.ts for the source registry.
-  cwaForecasts: `
-    CREATE TABLE IF NOT EXISTS cwa_forecasts (
-      id BIGINT NOT NULL AUTO_INCREMENT,
-      county_name VARCHAR(20) NOT NULL,
-      element_name VARCHAR(20) NOT NULL,
-      start_time DATETIME NOT NULL,
-      end_time DATETIME NOT NULL,
-      parameter_name VARCHAR(100) NULL,
-      parameter_value VARCHAR(100) NULL,
-      parameter_unit VARCHAR(50) NULL,
-      synced_at DATETIME NOT NULL,
-      created_at DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL,
-      PRIMARY KEY (id),
-      UNIQUE KEY uq_cwa_forecast (county_name, element_name, start_time),
-      KEY idx_cwa_forecast_county (county_name)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
   cwaEarthquakes: `
     CREATE TABLE IF NOT EXISTS cwa_earthquakes (
       id BIGINT NOT NULL AUTO_INCREMENT,
