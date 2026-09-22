@@ -26,16 +26,7 @@ jobs:
           OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== /__ops/pm2-status ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/pm2-status?key=$OPS_KEY_CLEAN'"
-
-          echo
-          echo "==== /__ops/reap-stragglers (APPLY=1 — signals the confirmed-safe pm2-logrotate straggler only) ===="
+          echo "==== ONE call only: /__ops/reap-stragglers apply=1 ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
             "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY_CLEAN&apply=1'"
-
-          echo
-          echo "==== /__ops/pm2-status (post-reap confirmation) ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/pm2-status?key=$OPS_KEY_CLEAN'"
+          echo "==== curl exit code: $? ===="
