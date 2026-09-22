@@ -1,4 +1,4 @@
-name: DEBUG - check for new site-wide crash (one-off, delete after use)
+name: DEBUG - check sharp native binary (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: pm2 describe + latest error log via SSH
+      - name: Check sharp native binding via SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -23,11 +23,21 @@ jobs:
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== pm2 describe health-web ===="
+          echo "==== sharp node_modules subtree ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 describe health-web 2>&1 | grep -E 'status|restarts|created at'"
+            "find ~/health_app/node_modules -maxdepth 1 -iname '*sharp*' -o -iname '@img' 2>&1"
 
           echo
-          echo "==== most recently modified error log, mtime + last 40 lines ===="
+          echo "==== @img/sharp-* platform packages (the actual native binaries) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "LATEST=\$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1); echo \"file: \$LATEST\"; echo \"mtime: \$(stat -c '%y' \"\$LATEST\" 2>/dev/null)\"; echo \"now: \$(date -u)\"; tail -n 40 \"\$LATEST\" 2>&1"
+            "ls ~/health_app/node_modules/@img/ 2>&1 || echo '@img directory missing entirely'"
+
+          echo
+          echo "==== try requiring sharp directly ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node -e \"try { const s = require('sharp'); console.log('sharp loaded OK, version', s.versions); } catch(e) { console.log('sharp require FAILED:', e.message); }\""
+
+          echo
+          echo "==== npm config: ignore-scripts / .npmrc on server ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "cat ~/health_app/.npmrc 2>&1 || echo 'no .npmrc'; cat ~/.npmrc 2>&1 || echo 'no user .npmrc'"
