@@ -100,7 +100,6 @@ const GOV_SOURCES = new Set([
   "moenv",
   "water_gov",
   "cwa",
-  "moe_familyedu",
   "sfaa",
   "ncl",
 ]);

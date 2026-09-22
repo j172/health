@@ -85,7 +85,6 @@ const SOURCE_LABELS: Record<string, string> = {
   anews: "愛傳媒",
   yonglin: "永齡基金會",
   children: "兒童福利聯盟",
-  moe_familyedu: "教育部家庭教育網",
   sfaa: "衛生福利部社會及家庭署",
   grinews: "草根影響力新視野",
   thenewslens: "關鍵評論網",

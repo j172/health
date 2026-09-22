@@ -23,24 +23,17 @@ import { fetchHealthnewsNews } from "@/lib/server/rss/fetchHealthnewsNews";
 import { fetchFiftyplusHealthNews } from "@/lib/server/rss/fetchFiftyplusHealthNews";
 import { fetchBusinessweeklyHealthNews } from "@/lib/server/rss/fetchBusinessweeklyHealthNews";
 import { fetchEdhNews } from "@/lib/server/rss/fetchEdhNews";
-import { fetchNhiNewsHtml } from "@/lib/server/rss/fetchNhiNews";
 import {
   fetchYonglinNews,
   fetchChildrenEvents,
   fetchChildrenResearch,
-  fetchMoeFamilyEdu,
   fetchHelloYishiHealth,
   fetchCommonHealthClub,
   fetchTheNewsLensHealth,
   fetchTheNewsLensLifestyle,
   fetchTheNewsLensElderly,
-  fetchPchomeHealth,
-  fetchPchomePet,
-  fetchPchomeLiving,
 } from "@/lib/server/rss/fetchExpandedSources";
-import { fetchMocNews } from "@/lib/server/rss/fetchMocNews";
 import { fetchShihHsinNews } from "@/lib/server/rss/fetchShihHsinNews";
-import { fetchUniqmanBlogs } from "@/lib/server/rss/fetchUniqmanBlogs";
 import { fetchSfunhkPosts } from "@/lib/server/rss/fetchSfunhkPosts";
 import { fetchHaruArticles } from "@/lib/server/rss/fetchHaruArticles";
 import { fetchFemhResearchNews } from "@/lib/server/rss/fetchFemhResearchNews";
@@ -62,7 +55,6 @@ import {
   fetchWorldPeaceNews,
   fetchGreenpeaceNews,
   fetchCcfNews,
-  fetchUnitedWayNews,
   fetchEdenNews,
   fetchElderNews,
   fetchSaveDogsNews,
@@ -571,35 +563,9 @@ export const runRssIngestion = async (
       skippedUnchanged += edhResult.skippedUnchanged;
       staleRejected += edhResult.staleRejected;
 
-      const nhiHtmlResult = await processSpecialSource(
-        {
-          code: "nhi_web" as FeedCode,
-          name: "中央健康保險署－新聞發布",
-          url: "https://www.nhi.gov.tw/ch/lp-3255-1.html",
-          sourceName: "nhi",
-        },
-        fetchNhiNewsHtml,
-        specialSourceCtx,
-      );
-      skippedUnchanged += nhiHtmlResult.skippedUnchanged;
-      staleRejected += nhiHtmlResult.staleRejected;
-
       // -----------------------------------------------------------------------
       // Phase 12: Expanded Media and Health News Special Sources
       // -----------------------------------------------------------------------
-      const uniqmanResult = await processSpecialSource(
-        {
-          code: "uniqman_blog",
-          name: "UNIQMAN",
-          url: "https://www.uniqman.com.tw/blogs",
-          sourceName: "uniqman",
-        },
-        fetchUniqmanBlogs,
-        specialSourceCtx,
-      );
-      skippedUnchanged += uniqmanResult.skippedUnchanged;
-      staleRejected += uniqmanResult.staleRejected;
-
       const sfunhkResult = await processSpecialSource(
         {
           code: "sfunhk_blog",
@@ -844,15 +810,6 @@ export const runRssIngestion = async (
         },
         {
           meta: {
-            code: "unitedway_news" as FeedCode,
-            name: "聯合勸募",
-            url: "https://www.unitedway.org.tw/news.aspx?NewsType=1",
-            sourceName: "unitedway",
-          },
-          fetchFn: fetchUnitedWayNews,
-        },
-        {
-          meta: {
             code: "eden_news" as FeedCode,
             name: "伊甸基金會",
             url: "https://www.eden.org.tw/news/news-release/",
@@ -1003,15 +960,6 @@ export const runRssIngestion = async (
         },
         {
           meta: {
-            code: "moe_familyedu" as FeedCode,
-            name: "教育部家庭教育網",
-            url: "https://familyedu.moe.gov.tw/docList.aspx?uid=28&pid=27",
-            sourceName: "moe_familyedu",
-          },
-          fetchFn: fetchMoeFamilyEdu,
-        },
-        {
-          meta: {
             code: "helloyishi_health" as FeedCode,
             name: "Hello 醫師",
             url: "https://helloyishi.com.tw/health/",
@@ -1054,42 +1002,6 @@ export const runRssIngestion = async (
             sourceName: "thenewslens",
           },
           fetchFn: fetchTheNewsLensElderly,
-        },
-        {
-          meta: {
-            code: "pchome_health" as FeedCode,
-            name: "PChome－健康新聞",
-            url: "https://news.pchome.com.tw/cat/healthcare",
-            sourceName: "pchome",
-          },
-          fetchFn: fetchPchomeHealth,
-        },
-        {
-          meta: {
-            code: "pchome_pet" as FeedCode,
-            name: "PChome－熱門寵物",
-            url: "https://news.pchome.com.tw/cat/pet/hot",
-            sourceName: "pchome",
-          },
-          fetchFn: fetchPchomePet,
-        },
-        {
-          meta: {
-            code: "pchome_living" as FeedCode,
-            name: "PChome－生活休閒",
-            url: "https://news.pchome.com.tw/cat/living",
-            sourceName: "pchome",
-          },
-          fetchFn: fetchPchomeLiving,
-        },
-        {
-          meta: {
-            code: "moc_news" as FeedCode,
-            name: "文化部",
-            url: "https://www.moc.gov.tw/OpenData.aspx?SN=154A1DF113F52308",
-            sourceName: "moc",
-          },
-          fetchFn: fetchMocNews,
         },
         {
           meta: {

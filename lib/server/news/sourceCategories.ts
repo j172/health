@@ -35,7 +35,6 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "femh", label: "亞東紀念醫院" },
       { sourceName: "cgmh", label: "長庚紀念醫院" },
       { sourceName: "vghtpe", label: "臺北榮總" },
-      { sourceName: "moe_familyedu", label: "教育部家庭教育網" },
       { sourceName: "sfaa", label: "衛生福利部社會及家庭署" },
       { sourceName: "ncl", label: "國家圖書館" },
       { sourceName: "moc", label: "文化部" },
