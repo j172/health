@@ -31,6 +31,11 @@ jobs:
             "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/pm2-status?key=$OPS_KEY_CLEAN'"
 
           echo
-          echo "==== /__ops/reap-stragglers (DRY RUN, no apply) ===="
+          echo "==== /__ops/reap-stragglers (APPLY=1 — signals the confirmed-safe pm2-logrotate straggler only) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY_CLEAN'"
+            "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY_CLEAN&apply=1'"
+
+          echo
+          echo "==== /__ops/pm2-status (post-reap confirmation) ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/pm2-status?key=$OPS_KEY_CLEAN'"
