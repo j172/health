@@ -11,9 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Fetch ingestion_runs via SSH
+      - name: Check process list via SSH
         env:
-          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          OPS_KEY: ${{ secrets.OPS_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -25,7 +25,6 @@ jobs:
 
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== /api/admin/ingestion-runs ===="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 30 'http://127.0.0.1:3000/api/admin/ingestion-runs'" | jq '.rows[0:5]'
+          echo "==== ps -o pid,ppid,etimes,cmd for this account's node/php processes ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "ps -U \$(whoami) -o pid,ppid,etimes,cmd --sort=-etimes 2>/dev/null | grep -E 'node|lsphp|next-server' | grep -v grep"
