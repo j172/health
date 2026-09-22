@@ -1,4 +1,4 @@
-name: DEBUG - clean poisoned image cache (one-off, delete after use)
+name: DEBUG - final restart check after cache clean (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Find and remove 0-byte image cache files via SSH
+      - name: pm2 describe via SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -22,22 +22,5 @@ jobs:
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
-
-          echo "==== locate the image cache directory ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "find ~/health_app -maxdepth 3 -type d -iname 'images' -path '*cache*' 2>&1"
-
-          echo
-          echo "==== count of 0-byte files under any cache/images dir ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "find ~/health_app -path '*cache/images*' -type f -size 0 2>/dev/null | wc -l"
-
-          echo
-          echo "==== deleting them ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "find ~/health_app -path '*cache/images*' -type f -size 0 -delete -print 2>&1 | wc -l"
-
-          echo
-          echo "==== confirm 0 remain ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "find ~/health_app -path '*cache/images*' -type f -size 0 2>/dev/null | wc -l"
+            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 describe health-web 2>&1 | grep -E 'status|restarts|created at'"
