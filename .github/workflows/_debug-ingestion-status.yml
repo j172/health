@@ -1,4 +1,4 @@
-name: DEBUG - check for new OOM since deploy (one-off, delete after use)
+name: DEBUG - check current-only error log (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Check error log and apply-prebuilt log via SSH
+      - name: Check current pm2 id's error log via SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -23,11 +23,16 @@ jobs:
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== health-web error log, last 100 lines ===="
+          echo "==== error logs modified in the last 20 minutes, with mtimes ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "tail -n 100 ~/.pm2/logs/health-web-error-*.log 2>&1 || true"
+            "find ~/.pm2/logs -name 'health-web-error-*.log' -mmin -20 -exec ls -la {} \;"
 
           echo
-          echo "==== apply-prebuilt.log, last 60 lines (shows if deploy retried/restarted) ===="
+          echo "==== current pm2 describe (to confirm the live id/pid) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "tail -n 60 ~/health_app/.apply-prebuilt.log 2>&1 || true"
+            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 describe health-web 2>&1 | head -30"
+
+          echo
+          echo "==== tail of the most-recently-modified health-web error log ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "LATEST=\$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1); echo \"file: \$LATEST\"; echo \"mtime: \$(stat -c '%y' \"\$LATEST\" 2>/dev/null)\"; tail -n 60 \"\$LATEST\" 2>&1"
