@@ -21,7 +21,7 @@ export interface AqiReadingRow {
   recorded_at: Date;
 }
 
-/** Upserts one hourly snapshot per site, keyed by (site_id, recorded_at) — re-running the same hour is a no-op update, not a duplicate row. */
+/** Upserts the latest snapshot per site, keyed by site_id — a genuinely new recorded_at overwrites the previous row in place rather than accumulating a new one (see docs/specs/aqi-pm25-narrow-unique-key-migration.md). */
 export const upsertAqiReadings = async (
   sites: AqiSiteSnapshot[],
 ): Promise<{ inserted: number; updated: number }> =>
@@ -67,6 +67,7 @@ export const upsertAqiReadings = async (
         no2 = VALUES(no2),
         so2 = VALUES(so2),
         co = VALUES(co),
+        recorded_at = VALUES(recorded_at),
         synced_at = VALUES(synced_at),
         updated_at = VALUES(updated_at)
       `,

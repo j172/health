@@ -14,11 +14,12 @@ export interface Pm25ReadingRow {
 }
 
 /**
- * Upserts one reading per site, keyed by (site_name, recorded_at). The
- * AQX_P_02 payload carries no coordinates of its own — this shares the same
- * ~79-station network as aqi_readings (AQX_P_432), so lat/lng is resolved by
- * matching (site_name, county) against that table and stored here directly
- * (avoids a runtime cross-table join on every nearest-station lookup).
+ * Upserts the latest reading per site, keyed by site_name (see
+ * docs/specs/aqi-pm25-narrow-unique-key-migration.md). The AQX_P_02 payload
+ * carries no coordinates of its own — this shares the same ~79-station
+ * network as aqi_readings (AQX_P_432), so lat/lng is resolved by matching
+ * (site_name, county) against that table and stored here directly (avoids a
+ * runtime cross-table join on every nearest-station lookup).
  */
 export const upsertPm25Readings = async (sites: Pm25SiteSnapshot[]): Promise<{ inserted: number; updated: number }> =>
   withConnection(async (conn) => {
@@ -47,6 +48,7 @@ export const upsertPm25Readings = async (sites: Pm25SiteSnapshot[]): Promise<{ i
         lat = VALUES(lat),
         lng = VALUES(lng),
         pm25 = VALUES(pm25),
+        recorded_at = VALUES(recorded_at),
         synced_at = VALUES(synced_at),
         updated_at = VALUES(updated_at)
       `,
