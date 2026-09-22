@@ -102,6 +102,9 @@ const SOURCE_LABELS: Record<string, string> = {
   thb: "交通部公路局",
   shih_hsin: "世新大學",
   kuma: "黑熊學院",
+  dgpa: "行政院人事行政總處",
+  hakka: "客家委員會",
+  moi: "內政部",
   moe: "教育部",
 };
 

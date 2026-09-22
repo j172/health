@@ -46,6 +46,16 @@ import type { FeedConfig } from "@/types/rss";
  *     404 or (nhri.edu.tw) soft-404 HTML with HTTP 200. Would need an
  *     HTML-scraping special source, deliberately not built here — left for a
  *     separate ticket if wanted.
+ *
+ * Candidate verification 2026-09-22 (issue #389): of 11 more user-supplied
+ * URLs, 4 (`www.mohw.gov.tw/rss-16-1.html`/`rss-17-1.html`/`rss-18-1.html`/
+ * `rss-101-1.html`) were exact duplicates of the `16`/`17`/`18`/`101` feeds
+ * already below, 6 were added (`dgpa_news`/`dgpa_clarify`/`hakka_news`/
+ * `hakka_clarify`/`moi_news`/`moi_clarify`), and 1 was excluded:
+ *   - `siteapi.sports.gov.tw/1/News/309?handler=OpenDataRSS`（運動部）回傳的不
+ *     是一般新聞 feed，而是 1,871 筆、6.7MB、橫跨 2020-2026 年的全量歷史傾印；
+ *     `$top`/`pageSize`/`top` 等常見分頁參數測試皆無效，跟上面 hpa.gov.tw 那筆
+ *     同一種反模式，2026-09-22 先不採用，需要客製截斷邏輯才值得考慮，另開票。
  */
 export const RSS_FEEDS: FeedConfig[] = [
   {
@@ -388,6 +398,48 @@ export const RSS_FEEDS: FeedConfig[] = [
     name: "高公局即時路況與最新消息",
     url: "https://www.freeway.gov.tw/rss.aspx",
     sourceName: "freeway",
+  },
+  {
+    code: "dgpa_news",
+    name: "行政院人事行政總處－最新消息",
+    url: "https://www.dgpa.gov.tw/rsscon?uid=2",
+    sourceName: "dgpa",
+    skipDetailFetch: true,
+  },
+  {
+    code: "dgpa_clarify",
+    name: "行政院人事行政總處－即時新聞澄清",
+    url: "https://www.dgpa.gov.tw/rsscon?uid=427",
+    sourceName: "dgpa",
+    skipDetailFetch: true,
+  },
+  {
+    code: "hakka_news",
+    name: "客家委員會－最新消息",
+    url: "https://www.hakka.gov.tw/chhakka/app/rss/News",
+    sourceName: "hakka",
+    skipDetailFetch: true,
+  },
+  {
+    code: "hakka_clarify",
+    name: "客家委員會－即時新聞澄清",
+    url: "https://www.hakka.gov.tw/chhakka/app/rss/NewsClarification",
+    sourceName: "hakka",
+    skipDetailFetch: true,
+  },
+  {
+    code: "moi_news",
+    name: "內政部－新聞發布",
+    url: "https://www.moi.gov.tw/OpenData.aspx?SN=76F358C679FAD4CF",
+    sourceName: "moi",
+    skipDetailFetch: true,
+  },
+  {
+    code: "moi_clarify",
+    name: "內政部－即時新聞澄清",
+    url: "https://www.moi.gov.tw/OpenData.aspx?SN=3A12AED6B50A9C18",
+    sourceName: "moi",
+    skipDetailFetch: true,
   },
   {
     code: "moe_news",
