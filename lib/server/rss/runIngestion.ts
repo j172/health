@@ -94,6 +94,46 @@ const LOCK_NAME = "rss_ingestion_lock";
 
 const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
 
+/**
+ * Running totals across every persistItems() call this run makes. Replaces
+ * the single end-of-run persistItems(enrichedItems) call, which used to
+ * accumulate every enriched item from all ~120 feeds/special sources (detail
+ * HTML, images, AI SEO text) in one array for the whole ~11 minute run —
+ * confirmed via production logs (2026-09-22, issue #391) to be the direct
+ * trigger for repeated V8 heap OOM crashes once the source count grew past
+ * ~85. Persisting per-feed/per-source bounds peak memory to roughly one
+ * batch's worth of items, and — as a side benefit — a mid-run crash no
+ * longer loses every article enriched before it, only the batch in flight.
+ */
+interface RunningPersistStats {
+  inserted: number;
+  updated: number;
+  unchanged: number;
+  externalIdDrift: number;
+  insertedIds: number[];
+}
+
+const newRunningStats = (): RunningPersistStats => ({
+  inserted: 0,
+  updated: 0,
+  unchanged: 0,
+  externalIdDrift: 0,
+  insertedIds: [],
+});
+
+const mergePersistStats = (
+  running: RunningPersistStats,
+  batch: Awaited<ReturnType<typeof persistItems>>,
+): void => {
+  running.inserted += batch.inserted;
+  running.updated += batch.updated;
+  running.unchanged += batch.unchanged;
+  running.externalIdDrift += batch.externalIdDrift;
+  if (batch.insertedIds.length > 0) {
+    running.insertedIds.push(...batch.insertedIds);
+  }
+};
+
 const enrichItem = async (
   item: NormalizedRssItem,
 ): Promise<EnrichedRssItem> => {
@@ -199,7 +239,7 @@ interface SpecialSourceFetchResult {
 interface SpecialSourceContext {
   runId: number;
   feedResults: FeedFetchResult[];
-  enrichedItems: EnrichedRssItem[];
+  stats: RunningPersistStats;
   /** Fixed for the whole run so every feed is judged against the same clock. */
   now: Date;
 }
@@ -263,6 +303,10 @@ const processSpecialSource = async (
   // ever touch one source_name anyway.
   const recentImageUrlsBySource = new Map<string, Set<string>>();
 
+  // Scoped to this one source's fresh items — persisted immediately below
+  // instead of accumulating into a run-wide array (see RunningPersistStats).
+  const sourceEnrichedItems: EnrichedRssItem[] = [];
+
   for (const item of fresh) {
     if (isUnchanged(hashes, item)) {
       skippedUnchanged += 1;
@@ -318,7 +362,7 @@ const processSpecialSource = async (
       sourceName: item.sourceName,
       publishedAtUtc: item.publishedAtUtc,
     });
-    ctx.enrichedItems.push({
+    sourceEnrichedItems.push({
       ...item,
       assets,
       metaTitle: seo.metaTitle,
@@ -327,6 +371,9 @@ const processSpecialSource = async (
       geoSummary: seo.geoSummary,
     });
   }
+
+  const persisted = await persistItems(sourceEnrichedItems);
+  mergePersistStats(ctx.stats, persisted);
 
   return { skippedUnchanged, staleRejected: rejected.length };
 };
@@ -339,8 +386,9 @@ export const runRssIngestion = async (
 
   const lockResult = await withAdvisoryLock(LOCK_NAME, 1, async () => {
     const feedResults: FeedFetchResult[] = [];
-    const normalizedItems: NormalizedRssItem[] = [];
+    const stats = newRunningStats();
     let staleRejected = 0;
+    let skippedUnchanged = 0;
 
     // Everything every feed and special source handed us, before the freshness
     // gate. `fetched` used to read normalizedItems.length, which the gate now
@@ -351,7 +399,14 @@ export const runRssIngestion = async (
       feedResults.reduce((sum, result) => sum + result.itemCount, 0);
 
     try {
+      // Fetch, freshness-gate, hash-check, enrich and persist one feed at a
+      // time — not fetch-everything-then-enrich-everything-then-persist-once.
+      // The old shape held every fresh item from all ~70 RSS feeds (detail
+      // HTML, images, AI SEO text) in memory for the whole ~11 minute run;
+      // per-feed persistence bounds peak memory to one feed's items instead
+      // (see RunningPersistStats above for the full rationale).
       for (const feed of RSS_FEEDS) {
+        let fresh: NormalizedRssItem[] = [];
         try {
           const response = await fetchFeedXml(feed);
           const items = parseFeedXml(feed, response.xml);
@@ -362,16 +417,16 @@ export const runRssIngestion = async (
           // detail-page fetch, the og:image download, the AI SEO call, the geo
           // extraction and the upsert. A stale item now costs one XML parse
           // and nothing else.
-          const { fresh, rejected } = partitionByFreshness(items, started);
-          normalizedItems.push(...fresh);
-          staleRejected += rejected.length;
+          const gated = partitionByFreshness(items, started);
+          fresh = gated.fresh;
+          staleRejected += gated.rejected.length;
 
           feedResults.push({
             feed,
             ok: true,
             httpStatus: response.status,
             itemCount: items.length,
-            staleRejectedCount: rejected.length,
+            staleRejectedCount: gated.rejected.length,
             errorMessage: null,
           });
         } catch (error) {
@@ -408,29 +463,33 @@ export const runRssIngestion = async (
             message,
             detail: { error },
           });
-        }
-      }
-
-      const existingHashes = await getExistingPayloadHashes(normalizedItems);
-      let skippedUnchanged = 0;
-
-      const enrichedItems: EnrichedRssItem[] = [];
-      for (const item of normalizedItems) {
-        if (isUnchanged(existingHashes, item)) {
-          // Already stored with an identical payload — skip the expensive detail-page
-          // fetch/parse entirely instead of redoing it on every run just to no-op.
-          skippedUnchanged += 1;
           continue;
         }
 
-        const enriched = await enrichItem(item);
-        enrichedItems.push(enriched);
+        if (fresh.length === 0) continue;
+
+        const feedHashes = await getExistingPayloadHashes(fresh);
+        const feedEnrichedItems: EnrichedRssItem[] = [];
+        for (const item of fresh) {
+          if (isUnchanged(feedHashes, item)) {
+            // Already stored with an identical payload — skip the expensive detail-page
+            // fetch/parse entirely instead of redoing it on every run just to no-op.
+            skippedUnchanged += 1;
+            continue;
+          }
+
+          const enriched = await enrichItem(item);
+          feedEnrichedItems.push(enriched);
+        }
+
+        const persisted = await persistItems(feedEnrichedItems);
+        mergePersistStats(stats, persisted);
       }
 
       const specialSourceCtx: SpecialSourceContext = {
         runId,
         feedResults,
-        enrichedItems,
+        stats,
         now: started,
       };
 
@@ -1020,12 +1079,11 @@ export const runRssIngestion = async (
         staleRejected += res.staleRejected;
       }
 
-      const persisted = await persistItems(enrichedItems);
-      persisted.unchanged += skippedUnchanged;
+      stats.unchanged += skippedUnchanged;
 
-      if (persisted.insertedIds && persisted.insertedIds.length > 0) {
+      if (stats.insertedIds.length > 0) {
         const baseUrl = getBaseUrl();
-        const newUrls = persisted.insertedIds.map((id) => `${baseUrl}/news/${id}`);
+        const newUrls = stats.insertedIds.map((id) => `${baseUrl}/news/${id}`);
         submitToIndexNow(newUrls)
           .then((res) => {
             if (res.ok) {
@@ -1046,10 +1104,10 @@ export const runRssIngestion = async (
         endedAt: ended.toISOString(),
         durationMs: ended.getTime() - started.getTime(),
         fetched: totalFetched(),
-        inserted: persisted.inserted,
-        updated: persisted.updated,
-        unchanged: persisted.unchanged,
-        externalIdDrift: persisted.externalIdDrift,
+        inserted: stats.inserted,
+        updated: stats.updated,
+        unchanged: stats.unchanged,
+        externalIdDrift: stats.externalIdDrift,
         staleRejected,
         failedFeeds: feedResults.filter((f) => !f.ok).length,
         feedResults,

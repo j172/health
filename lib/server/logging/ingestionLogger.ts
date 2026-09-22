@@ -12,8 +12,11 @@ import {
 /**
  * A run older than this that is still marked `running` cannot be running.
  * Real runs take about eight minutes; the ceiling is generous on purpose.
+ * Lowered from 45 to 20 on 2026-09-22 (issue #391 investigation) — a full
+ * run now takes ~11 minutes with the added sources, so 20 still leaves
+ * roughly a 2x buffer while surfacing genuinely abandoned rows sooner.
  */
-const ORPHAN_RUN_AFTER_MINUTES = 45;
+const ORPHAN_RUN_AFTER_MINUTES = 20;
 
 /**
  * Marks abandoned runs as aborted.

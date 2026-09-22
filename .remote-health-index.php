@@ -606,6 +606,39 @@ if (str_starts_with($path, '/__ops/')) {
             }
         }
 
+        // Cross-check ~/.pm2/pm2.pid against the ancestor walk above — issue
+        // #391 (2026-09-22): a repeated pm2 delete+start cycle can leave
+        // pm2.pid pointing at a stale daemon while a *different* God Daemon
+        // is the one actually parenting the live health-web/bid-web
+        // processes (visible in $mustProtect). Before this check, that split
+        // meant BOTH daemons stayed permanently protected forever — the
+        // stale one because $godPid blindly trusted pm2.pid and never
+        // treated it as a "duplicate" candidate, the live one because
+        // $mustProtect (correctly) protects whatever actually parents the
+        // app — so the real duplicate was never reaped, only its
+        // non-app descendants (e.g. pm2-logrotate) were, and they kept
+        // respawning under it every few minutes. Find whichever God-Daemon-
+        // looking pid IS in $mustProtect and treat that as the real one for
+        // candidate detection; if it disagrees with pm2.pid, the pm2.pid
+        // value is stale and becomes reapable like any other duplicate.
+        $realGodPidFromApps = 0;
+        foreach ($procs as $p) {
+            if (
+                isset($mustProtect[$p['pid']])
+                && (stripos($p['cmdline'], 'Daemon.js') !== false || stripos($p['cmdline'], 'God Daemon') !== false)
+            ) {
+                $realGodPidFromApps = (int) $p['pid'];
+                break;
+            }
+        }
+        $godPidStale = false;
+        if ($realGodPidFromApps > 0 && $realGodPidFromApps !== $godPid) {
+            $godPidStale = true;
+            $result['notes'][] = "~/.pm2/pm2.pid pointed at {$godPid}, but {$realGodPidFromApps} is the daemon actually parenting a live app — using {$realGodPidFromApps} as the real god_pid for this reap";
+            $godPid = $realGodPidFromApps;
+            $result['god_pid'] = $godPid;
+        }
+
         $keep = static function (array $p) use ($protected, $godPid, $mustProtect): bool {
             if (isset($mustProtect[$p['pid']])) {
                 return true;
@@ -773,6 +806,20 @@ if (str_starts_with($path, '/__ops/')) {
             if (!$procIsDead((int) $pid)) {
                 $result['notes'][] = "pid {$pid} STILL ALIVE after SIGKILL, state " . $describeProcState((int) $pid) . " — the signal did not land";
             }
+        }
+
+        // The stale entry is what caused this whole reap to be needed in the
+        // first place — leaving it in place means the next reap (5 minutes
+        // from now, or the next time this is dry-run-inspected) goes through
+        // the exact same "which one is real" confusion again. Only rewritten
+        // once the actual kill above has run, and only to the pid this same
+        // request already proved is correct ($realGodPidFromApps, backed by
+        // a live next-server ancestor walk) — never a guess.
+        if ($godPidStale && $realGodPidFromApps > 0) {
+            $written = @file_put_contents('/home/tw123457/.pm2/pm2.pid', (string) $realGodPidFromApps);
+            $result['notes'][] = $written !== false
+                ? "~/.pm2/pm2.pid corrected to {$realGodPidFromApps}"
+                : "~/.pm2/pm2.pid correction FAILED (not writable?) — will need reaping again next cycle";
         }
 
         return $result;
@@ -1080,6 +1127,20 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& rmdir \$STAGE_DIR >> .apply-prebuilt.log 2>&1 "
             . "&& SWAPPED=1 "
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
+            // Diagnostic only — does not change what runs next either way.
+            // `pm2 start` below auto-spawns a fresh God Daemon when it can't
+            // reach the existing one fast enough (known PM2 upstream race,
+            // see docs/specs/pm2-duplicate-daemon-and-ingestion-memory.md and
+            // issue #391); this just leaves a marker in the log so a
+            // duplicate-daemon sighting can be correlated back
+            // to "daemon was already unresponsive going into this delete
+            // +start" instead of staying a mystery. Not acted on here because
+            // the account-wide daemon is shared with bid-web (a separate,
+            // independently-deployed app) — see the reap-stragglers daemon
+            // dedup below for the actual cleanup, which is careful not to
+            // touch a daemon that still has any live app under it.
+            . "&& (timeout 5 {$pm2Bin} ping >> .apply-prebuilt.log 2>&1 "
+            . "|| echo \"[\$(date -u +%FT%TZ)] WARNING: pm2 daemon did not respond to ping before delete+start\" >> .apply-prebuilt.log) "
             . "&& ({$pm2Bin} delete health-web >> .apply-prebuilt.log 2>&1 || true) "
             . "&& setsid {$pm2Bin} start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
             // Was 60 attempts (~60s worst case, raised from an original 30) —
