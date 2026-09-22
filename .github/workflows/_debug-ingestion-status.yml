@@ -1,4 +1,4 @@
-name: DEBUG - verify PM2 dedup fix (one-off, delete after use)
+name: DEBUG - check current process list (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,9 +11,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: pm2-status then reap-stragglers dry-run via SSH
+      - name: ps + pm2.pid via SSH
         env:
-          OPS_KEY: ${{ secrets.OPS_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -23,9 +22,13 @@ jobs:
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
 
-          OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== /__ops/reap-stragglers apply=1 (kill the confirmed-stale duplicate daemon 3032876) ===="
+          echo "==== ps for God Daemon / next-server processes ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "curl -sS --max-time 30 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY_CLEAN&apply=1'"
+            "ps -U \$(whoami) -o pid,ppid,etimes,cmd --sort=-etimes 2>/dev/null | grep -E 'Daemon|next-server' | grep -v grep"
+
+          echo
+          echo "==== pm2.pid content ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "cat ~/.pm2/pm2.pid 2>&1 || true"
