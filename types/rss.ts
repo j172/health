@@ -116,6 +116,12 @@ export type FeedCode =
   | "cdc_clarify"
   | "shih_hsin"
   | "kuma_news"
+  | "dgpa_news"
+  | "dgpa_clarify"
+  | "hakka_news"
+  | "hakka_clarify"
+  | "moi_news"
+  | "moi_clarify"
   | (string & {});
 
 export interface FeedConfig {
