@@ -1,0 +1,37 @@
+name: DEBUG - check live incident (one-off, delete after use)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check ingestion_runs and pm2-status via SSH
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          OPS_KEY: ${{ secrets.OPS_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          echo "==== /api/admin/ingestion-runs (last 5) ===="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 15 'http://127.0.0.1:3000/api/admin/ingestion-runs'" | jq '.rows[0:5]' || echo "(timed out or failed)"
+
+          echo
+          OPS_KEY_CLEAN="$(printf '%s' "$OPS_KEY" | tr -d '\r\n')"
+          echo "==== /__ops/pm2-status ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "curl -sS --max-time 20 --insecure --resolve 'health.j172.tw:443:103.21.221.12' 'https://health.j172.tw/__ops/pm2-status?key=$OPS_KEY_CLEAN'" || echo "(pm2-status timed out)"
