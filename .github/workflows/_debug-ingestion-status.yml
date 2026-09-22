@@ -1,4 +1,4 @@
-name: DEBUG - check sharp native binary (one-off, delete after use)
+name: DEBUG - clean poisoned image cache (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Check sharp native binding via SSH
+      - name: Find and remove 0-byte image cache files via SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -23,21 +23,21 @@ jobs:
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== sharp node_modules subtree ===="
+          echo "==== locate the image cache directory ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "find ~/health_app/node_modules -maxdepth 1 -iname '*sharp*' -o -iname '@img' 2>&1"
+            "find ~/health_app -maxdepth 3 -type d -iname 'images' -path '*cache*' 2>&1"
 
           echo
-          echo "==== @img/sharp-* platform packages (the actual native binaries) ===="
+          echo "==== count of 0-byte files under any cache/images dir ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "ls ~/health_app/node_modules/@img/ 2>&1 || echo '@img directory missing entirely'"
+            "find ~/health_app -path '*cache/images*' -type f -size 0 2>/dev/null | wc -l"
 
           echo
-          echo "==== try requiring sharp directly ===="
+          echo "==== deleting them ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node -e \"try { const s = require('sharp'); console.log('sharp loaded OK, version', s.versions); } catch(e) { console.log('sharp require FAILED:', e.message); }\""
+            "find ~/health_app -path '*cache/images*' -type f -size 0 -delete -print 2>&1 | wc -l"
 
           echo
-          echo "==== npm config: ignore-scripts / .npmrc on server ===="
+          echo "==== confirm 0 remain ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "cat ~/health_app/.npmrc 2>&1 || echo 'no .npmrc'; cat ~/.npmrc 2>&1 || echo 'no user .npmrc'"
+            "find ~/health_app -path '*cache/images*' -type f -size 0 2>/dev/null | wc -l"
