@@ -1,4 +1,4 @@
-name: DEBUG - final verify sharp fix (one-off, delete after use)
+name: DEBUG - post-traffic restart check (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: pm2 describe + check sharp installed + fresh error log
+      - name: pm2 describe via SSH
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -22,17 +22,5 @@ jobs:
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
-
-          echo "==== sharp installed? ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "ls ~/health_app/node_modules/sharp/package.json 2>&1 && cat ~/health_app/node_modules/sharp/package.json | grep '\"version\"'"
-
-          echo
-          echo "==== pm2 describe health-web ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 describe health-web 2>&1 | grep -E 'status|restarts|created at|error log'"
-
-          echo
-          echo "==== most recently modified error log, last 30 lines ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "LATEST=\$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1); echo \"file: \$LATEST\"; echo \"mtime: \$(stat -c '%y' \"\$LATEST\" 2>/dev/null)\"; tail -n 30 \"\$LATEST\" 2>&1"
+            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 describe health-web 2>&1 | grep -E 'status|restarts|created at'"
