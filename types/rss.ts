@@ -122,6 +122,7 @@ export type FeedCode =
   | "hakka_clarify"
   | "moi_news"
   | "moi_clarify"
+  | "moe_news"
   | (string & {});
 
 export interface FeedConfig {

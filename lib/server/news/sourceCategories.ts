@@ -47,6 +47,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "dgpa", label: "行政院人事行政總處" },
       { sourceName: "hakka", label: "客家委員會" },
       { sourceName: "moi", label: "內政部" },
+      { sourceName: "moe", label: "教育部" },
     ],
   },
   {

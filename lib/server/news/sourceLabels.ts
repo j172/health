@@ -105,6 +105,7 @@ const SOURCE_LABELS: Record<string, string> = {
   dgpa: "行政院人事行政總處",
   hakka: "客家委員會",
   moi: "內政部",
+  moe: "教育部",
 };
 
 export interface SourceLabelInput {
