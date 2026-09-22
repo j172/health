@@ -294,21 +294,6 @@ export interface NearestStationWeatherRecord {
 
 /**
  * Queries nearest CWA weather station (O-A0001-001) to given coordinates.
- *
- * TEMPORARY REVERT (2026-09-21): cwa_station_weather's unique key is
- * (dataset_id, station_id, obs_time), so each sync with a genuinely new
- * obs_time INSERTs a fresh row rather than updating one in place — the table
- * has been silently accumulating one row per station per sync cycle for
- * ~3 weeks. Adding a secondary `s.obs_time DESC` sort here (to correctly
- * break the resulting distance_km ties) made this endpoint start returning
- * `stationWeather: null` in production immediately after deploy, on every
- * request, for every county tested — almost certainly the query timing out
- * or erroring on the now-bloated table and getting silently swallowed by
- * `withConnectionFallback`/the outer catch below. Reverted the ORDER BY to
- * the known-good pre-existing form (stale-but-present data) to stop the
- * regression while the actual dedup/perf fix gets investigated with real
- * production DB access (see docs/specs/cwa-station-weather-obstime-update-fix.md
- * and the follow-up issue tracking this revert).
  */
 export const getNearestStationWeather = async (
   lat: number,
