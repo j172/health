@@ -389,4 +389,11 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://www.freeway.gov.tw/rss.aspx",
     sourceName: "freeway",
   },
+  {
+    code: "moe_news",
+    name: "教育部即時新聞",
+    url: "https://www.edu.tw/Rss_News.aspx?n=9E7AC85F1954DDA8",
+    sourceName: "moe",
+    skipDetailFetch: true,
+  },
 ];

@@ -44,6 +44,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "motc", label: "交通部" },
       { sourceName: "freeway", label: "交通部高速公路局" },
       { sourceName: "thb", label: "交通部公路局" },
+      { sourceName: "moe", label: "教育部" },
     ],
   },
   {
