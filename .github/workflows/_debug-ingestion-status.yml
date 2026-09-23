@@ -1,4 +1,4 @@
-name: DEBUG - live-test Cloudflare Workers AI token from prod (one-off, delete after use)
+name: DEBUG - check new error log content and reap duplicate daemon (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,46 +11,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Test the deployed CLOUDFLARE_API_TOKEN against Workers AI
+      - name: Inspect new error log and clean up duplicate daemon
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          OPS_KEY: ${{ secrets.OPS_KEY }}
         run: |
           set -euo pipefail
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== which .env file(s) actually have CLOUDFLARE_ACCOUNT_ID/CLOUDFLARE_API_TOKEN set (names only, no values) ===="
+          echo "==== health-web-error-4.log: full content (should be empty/tiny if just touched on start, not a real crash) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "cd ~/health_app && for f in .env .pixabay.env; do if [ -f \"\$f\" ]; then echo \"\$f: \$(grep -c '^CLOUDFLARE_ACCOUNT_ID=' \"\$f\" 2>/dev/null || echo 0) account_id line(s), \$(grep -c '^CLOUDFLARE_API_TOKEN=' \"\$f\" 2>/dev/null || echo 0) api_token line(s), mtime=\$(stat -c '%y' \"\$f\")\"; else echo \"\$f: missing\"; fi; done"
+            "wc -l ~/.pm2/logs/health-web-error-4.log; echo ---; cat ~/.pm2/logs/health-web-error-4.log"
 
           echo
-          echo "==== live curl test against Workers AI using the server's own env, from the server itself ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" '
-            cd ~/health_app
-            set -a
-            [ -f .env ] && source .env
-            [ -f .pixabay.env ] && source .pixabay.env
-            set +a
-            if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-              echo "CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_API_TOKEN not set after sourcing env files"
-              exit 0
-            fi
-            echo "account id prefix: ${CLOUDFLARE_ACCOUNT_ID:0:6}... (len=${#CLOUDFLARE_ACCOUNT_ID})"
-            echo "api token prefix: ${CLOUDFLARE_API_TOKEN:0:6}... (len=${#CLOUDFLARE_API_TOKEN})"
-            echo "--- verify-token endpoint (confirms the token itself, independent of any specific permission) ---"
-            curl -sS --request GET \
-              "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
-            echo
-            echo "--- workers ai run endpoint (the actual call that has been failing) ---"
-            curl -sS --request POST \
-              "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/ai/run/@cf/meta/llama-3.1-8b-instruct" \
-              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-              -H "Content-Type: application/json" \
-              -d "{\"messages\":[{\"role\":\"user\",\"content\":\"say ok\"}]}"
-            echo
-          '
+          echo "==== dry-run reap-stragglers (read-only) ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' \"https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY\""
+
+          echo
+          echo "==== apply reap-stragglers (kills any daemon with no live app underneath) ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' \"https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY&apply=1\""
+
+          echo
+          echo "==== god daemon count after reap ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "ps -eo pid,cmd | grep -i 'God Daemon' | grep -v grep || echo 'none found'"
+
+          echo
+          echo "==== pm2 describe health-web after reap ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "pm2 jlist 2>/dev/null | node -e 'const d=JSON.parse(require(\"fs\").readFileSync(0,\"utf8\"));for(const p of d){if(p.name===\"health-web\"){console.log(JSON.stringify({pid:p.pid,restarts:p.pm2_env.restart_time,status:p.pm2_env.status},null,2))}}'"
