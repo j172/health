@@ -6,6 +6,10 @@ export const revalidate = 1800; // 30 mins cache
 
 export type { CDCTravelAlertItem, CDCEpidemicNewsItem };
 
+const CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=7200",
+};
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -28,7 +32,7 @@ export async function GET(request: Request) {
       epidemicNews: data.epidemicNews,
       stats: data.stats,
       updatedAt: data.updatedAt,
-    });
+    }, { headers: CACHE_HEADERS });
   } catch (error: any) {
     console.error("GET /api/cdc/travel-alerts error:", error);
     return NextResponse.json(

@@ -65,7 +65,8 @@ export default function CardThumb({
           src.endsWith(".svg") ||
           src.startsWith("/images/news/maps/") ||
           src.startsWith("/uploads/maps/") ||
-          src.startsWith("/images/news/flickr/")
+          src.startsWith("/images/news/flickr/") ||
+          /^https?:\/\//i.test(src)
         }
         onLoad={() => setLoaded(true)}
         onError={() => setHasError(true)}

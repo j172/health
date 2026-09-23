@@ -46,7 +46,7 @@ export default function NewsCard({
               <LocalizedText>{item.title}</LocalizedText>
             </Link>
           </h3>
-          <p className="mt-1 text-[11px] text-slate-600">
+          <p className="mt-1 text-[11px] text-slate-600" suppressHydrationWarning>
             {toTaipei(displayDate(item))}
           </p>
         </div>
@@ -87,7 +87,7 @@ export default function NewsCard({
             ) : null}
           </div>
           <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-500">
-            <span>{toTaipei(displayDate(item))}</span>
+            <span suppressHydrationWarning>{toTaipei(displayDate(item))}</span>
             <span aria-hidden="true">•</span>
             <span className="inline-flex items-center gap-1">
               <svg

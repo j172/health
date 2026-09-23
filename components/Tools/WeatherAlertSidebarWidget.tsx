@@ -147,7 +147,7 @@ export default function WeatherAlertSidebarWidget({
                   ) : null}
 
                   {until ? (
-                    <p className="mt-1 text-[10px] font-medium text-slate-600 dark:text-slate-500">
+                    <p className="mt-1 text-[10px] font-medium text-slate-600 dark:text-slate-500" suppressHydrationWarning>
                       有效至 {until}
                     </p>
                   ) : null}

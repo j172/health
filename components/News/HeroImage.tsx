@@ -49,7 +49,7 @@ export default function HeroImage({
           fill
           priority
           sizes="(min-width: 896px) 896px, 100vw"
-          unoptimized={src.startsWith("/images/news/flickr/") || src.endsWith(".svg")}
+          unoptimized={src.startsWith("/images/news/flickr/") || src.endsWith(".svg") || /^https?:\/\//i.test(src)}
           onLoad={() => setLoaded(true)}
           onError={() => setHasError(true)}
           className={imgClass}

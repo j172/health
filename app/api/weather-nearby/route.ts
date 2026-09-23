@@ -114,6 +114,10 @@ export async function GET(request: NextRequest) {
         }
       : null;
 
+    const CACHE_HEADERS = {
+      "Cache-Control": "public, s-maxage=180, stale-while-revalidate=600",
+    };
+
     return NextResponse.json({
       stationWeather,
       aqi: aqiResult,
@@ -121,7 +125,7 @@ export async function GET(request: NextRequest) {
       uv: uvResult,
       rainfall: rainfallResult,
       forecast: forecastResult,
-    });
+    }, { headers: CACHE_HEADERS });
   } catch (error) {
     console.error("GET /api/weather-nearby failed:", error);
     return NextResponse.json(

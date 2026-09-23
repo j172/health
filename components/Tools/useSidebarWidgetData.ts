@@ -48,7 +48,7 @@ export interface UseSidebarWidgetDataOptions<T> {
    * treats a thrown parse error exactly like a network/timeout/HTTP error.
    */
   parse: (json: any) => T;
-  /** Passed straight through to `fetchWithTimeout`. Default 5000ms. */
+  /** Passed straight through to `fetchWithTimeout`. Default 10000ms. */
   timeoutMs?: number;
   /** Re-run the fetch whenever any entry changes, same semantics as useEffect's dependency list. */
   deps: DependencyList;
@@ -73,7 +73,7 @@ export interface UseSidebarWidgetDataOptions<T> {
 export function useSidebarWidgetData<T>({
   buildUrl,
   parse,
-  timeoutMs = 5000,
+  timeoutMs = 10000,
   deps,
 }: UseSidebarWidgetDataOptions<T>): UseSidebarWidgetDataResult<T> {
   const [status, setStatus] = useState<SidebarWidgetStatus>("loading");

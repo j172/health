@@ -21,8 +21,12 @@ export async function GET(request: NextRequest) {
 
   try {
     const r = await getNearestAqiReading(lat, lng);
+    const CACHE_HEADERS = {
+      "Cache-Control": "public, s-maxage=180, stale-while-revalidate=600",
+    };
+
     if (!r) {
-      return NextResponse.json({ station: null });
+      return NextResponse.json({ station: null }, { headers: CACHE_HEADERS });
     }
 
     const { status, color } = getAqiStatusAndColor(r.aqi_value);
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
       distanceKm: Math.round(r.distance_km * 10) / 10,
     };
 
-    return NextResponse.json({ station });
+    return NextResponse.json({ station }, { headers: CACHE_HEADERS });
   } catch (error: any) {
     console.error("GET /api/aqi/nearest error:", error);
     return NextResponse.json(

@@ -71,27 +71,14 @@ export function getSavedLocation(): { lat: number; lng: number; name?: string } 
 
 /** 自動觸發瀏覽器定位，失敗則退回偏好位置或臺北101；也可透過 refresh() 手動重新定位。 */
 export function useGeolocation(): GeoLocation {
-  const [state, setState] = useState<GeoState>(() => {
-    const saved = getSavedLocation();
-    if (saved) {
-      return {
-        lat: saved.lat,
-        lng: saved.lng,
-        isDefault: false,
-        loading: false,
-        refreshing: false,
-        awaitingPermission: false,
-      };
-    }
-    return {
-      lat: GEO_DEFAULTS.lat,
-      lng: GEO_DEFAULTS.lng,
-      isDefault: true,
-      loading: true,
-      refreshing: false,
-      awaitingPermission: false,
-    };
-  });
+  const [state, setState] = useState<GeoState>(() => ({
+    lat: GEO_DEFAULTS.lat,
+    lng: GEO_DEFAULTS.lng,
+    isDefault: true,
+    loading: true,
+    refreshing: false,
+    awaitingPermission: false,
+  }));
   const attempted = useRef(false);
 
   const locate = useCallback(async (maximumAge: number, mode: "initial" | "refresh") => {
@@ -137,6 +124,16 @@ export function useGeolocation(): GeoLocation {
   useEffect(() => {
     if (attempted.current) return;
     attempted.current = true;
+    const saved = getSavedLocation();
+    if (saved) {
+      setState((prev) => ({
+        ...prev,
+        lat: saved.lat,
+        lng: saved.lng,
+        isDefault: false,
+        loading: false,
+      }));
+    }
     locate(300_000, "initial");
   }, [locate]);
 
