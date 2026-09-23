@@ -1,0 +1,31 @@
+{
+  "name": "j172tw Healthz",
+  "short_name": "j172tw Healthz",
+  "description": "彙整台灣官方機構公衛醫療新聞、ESG永續發展報導與中央氣象署即時警報，並提供健康計算、醫療照護、交通能源、防災示警等便民生活工具，打造繁體中文公共資訊與便民服務總覽。",
+  "start_url": "/news",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#625df5",
+  "lang": "zh-TW",
+  "icons": [
+    {
+      "src": "/images/icon/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icon/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icon/pwa-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
