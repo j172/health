@@ -1,4 +1,4 @@
-name: DEBUG - diagnose live 502 single-connection (one-off, delete after use)
+name: DEBUG - final verification for ensureSchema fix deploy (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,12 +11,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Single-connection status check
+      - name: Reap stragglers and verify final state
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          OPS_KEY: ${{ secrets.OPS_KEY }}
         run: |
           set -euo pipefail
           source scripts/lib/ssh-key-stage.sh
@@ -30,21 +31,17 @@ jobs:
             echo
             echo "==== god daemon count ===="
             ps -eo pid,cmd | grep -i "God Daemon" | grep -v grep || echo "none found"
-
-            echo
-            echo "==== total process count ===="
-            ps -e | wc -l
-
-            echo
-            echo "==== newest error log mtime ===="
-            ls -t --time-style=full-iso ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1 | xargs -I{} stat -c "%y  {}" {} || echo "none"
-
-            echo
-            echo "==== newest error log, last 60 lines ===="
-            NEWEST=$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1)
-            tail -n 60 "$NEWEST" 2>&1
-
-            echo
-            echo "==== apply-prebuilt.log tail ===="
-            tail -n 30 ~/health_app/.apply-prebuilt.log 2>&1 || true
           '
+
+          echo
+          echo "==== reap-stragglers apply ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' \"https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY&apply=1\""
+
+          echo
+          echo "==== live HTTP check ===="
+          curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' -o /dev/null -w 'status=%{http_code} time=%{time_total}s\n' 'https://health.j172.tw/'
+
+          echo
+          echo "==== live news article page (exercises the ensureSchema/generateMetadata path) ===="
+          curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' -o /dev/null -w 'status=%{http_code} time=%{time_total}s\n' 'https://health.j172.tw/news' --max-time 20
