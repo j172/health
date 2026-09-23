@@ -1,4 +1,4 @@
-name: DEBUG - find crash that preceded latest restart (one-off, delete after use)
+name: DEBUG - verify post-deploy health (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Inspect logs and apply-prebuilt history via SSH
+      - name: Verify deploy landed and check for new crashes
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -23,21 +23,25 @@ jobs:
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== last 3 modified health-web error logs, newest first, with mtimes ===="
+          echo "==== confirm the deployed source contains the circuit-breaker fix ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "ls -t --time-style=full-iso ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -3 | xargs -I{} sh -c 'echo ===={}====; stat -c \"%y\" {}'"
+            "grep -n 'quotaExceededOnUtcDay' ~/health_app/lib/server/cloudflare/aiClient.js 2>&1 || grep -rn 'quotaExceededOnUtcDay' ~/health_app/.next/server/ 2>&1 | head -5 || echo 'NOT FOUND (bundled/minified — trying grep across .next)'"
 
           echo
-          echo "==== second-most-recent error log (the one BEFORE the current fresh restart), last 80 lines ===="
+          echo "==== pm2 describe health-web: restarts / created at / uptime ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "SECOND=\$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | sed -n 2p); echo \"file: \$SECOND\"; tail -n 80 \"\$SECOND\" 2>&1"
+            "pm2 jlist 2>/dev/null | node -e 'const d=JSON.parse(require(\"fs\").readFileSync(0,\"utf8\"));for(const p of d){if(p.name===\"health-web\"){console.log(JSON.stringify({pid:p.pid,restarts:p.pm2_env.restart_time,status:p.pm2_env.status,created:new Date(p.pm2_env.created_at).toISOString(),uptime_s:Math.round((Date.now()-p.pm2_env.pm_uptime)/1000)},null,2))}}' || echo 'pm2 jlist failed'"
 
           echo
-          echo "==== apply-prebuilt.log, last 100 lines (shows watchdog-triggered restarts) ===="
+          echo "==== god daemon count (should be 1) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "tail -n 100 ~/health_app/.apply-prebuilt.log 2>&1 || true"
+            "ps -eo pid,cmd | grep -i 'God Daemon' | grep -v grep || echo 'none found'"
 
           echo
-          echo "==== watchdog cron log, last 40 lines ===="
+          echo "==== newest health-web-error log mtime (should predate this deploy if no new crash yet) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "tail -n 40 ~/health_app/.rebuild-homepage.log 2>&1 || echo 'no rebuild-homepage.log'; find ~/health_app -maxdepth 1 -iname '*watchdog*' -o -iname '*.log' 2>&1"
+            "ls -t --time-style=full-iso ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1 | xargs -I{} stat -c '%y  {}' {} || echo 'no error logs'"
+
+          echo
+          echo "==== live HTTP check via Cloudflare origin IP pin ===="
+          curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' -o /dev/null -w 'status=%{http_code} time=%{time_total}s\n' 'https://health.j172.tw/' || echo 'curl failed'
