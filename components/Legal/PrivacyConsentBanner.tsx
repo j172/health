@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "j172-health-privacy-notice-ack";
 
@@ -27,8 +27,13 @@ declare global {
 }
 
 export default function PrivacyConsentBanner() {
+  const [mounted, setMounted] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const isAcked = useSyncExternalStore(subscribeToStorage, getAckSnapshot, () => true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleConsent = (grantAnalytics: boolean) => {
     setDismissed(true);
@@ -50,7 +55,7 @@ export default function PrivacyConsentBanner() {
     }
   };
 
-  if (isAcked || dismissed) return null;
+  if (!mounted || isAcked || dismissed) return null;
 
   return (
     <div role="region" aria-label="隱私權與 Cookie 同意提示" className="fixed inset-x-0 bottom-0 z-50 border-t border-neutral-200 bg-white/95 px-4 py-4 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/95 sm:px-6">
