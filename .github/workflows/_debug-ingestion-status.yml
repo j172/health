@@ -1,4 +1,4 @@
-name: DEBUG - investigate recurring full outage (one-off, delete after use)
+name: DEBUG - find crash that preceded latest restart (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,9 +11,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Full diagnostics via SSH
+      - name: Inspect logs and apply-prebuilt history via SSH
         env:
-          OPS_KEY: ${{ secrets.OPS_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -24,21 +23,21 @@ jobs:
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== pm2 describe health-web ===="
+          echo "==== last 3 modified health-web error logs, newest first, with mtimes ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "cd ~/health_app && /home/tw123457/.nvm/versions/node/v20.20.2/bin/node /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2 describe health-web 2>&1 | grep -E 'status|restarts|created at'"
+            "ls -t --time-style=full-iso ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -3 | xargs -I{} sh -c 'echo ===={}====; stat -c \"%y\" {}'"
 
           echo
-          echo "==== any 0-byte files back in image cache? ===="
+          echo "==== second-most-recent error log (the one BEFORE the current fresh restart), last 80 lines ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "find ~/health_app -path '*cache/images*' -type f -size 0 2>/dev/null | wc -l"
+            "SECOND=\$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | sed -n 2p); echo \"file: \$SECOND\"; tail -n 80 \"\$SECOND\" 2>&1"
 
           echo
-          echo "==== current process memory (RSS) ===="
+          echo "==== apply-prebuilt.log, last 100 lines (shows watchdog-triggered restarts) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "ps -U \$(whoami) -o pid,rss,etimes,cmd 2>/dev/null | grep -E 'next-server|PID' | grep -v grep"
+            "tail -n 100 ~/health_app/.apply-prebuilt.log 2>&1 || true"
 
           echo
-          echo "==== most recently modified error log, mtime + last 50 lines ===="
+          echo "==== watchdog cron log, last 40 lines ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "LATEST=\$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1); echo \"file: \$LATEST\"; echo \"mtime: \$(stat -c '%y' \"\$LATEST\" 2>/dev/null)\"; echo \"now: \$(date -u)\"; tail -n 50 \"\$LATEST\" 2>&1"
+            "tail -n 40 ~/health_app/.rebuild-homepage.log 2>&1 || echo 'no rebuild-homepage.log'; find ~/health_app -maxdepth 1 -iname '*watchdog*' -o -iname '*.log' 2>&1"
