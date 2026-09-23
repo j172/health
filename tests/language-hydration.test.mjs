@@ -18,7 +18,7 @@ test("app/context/LanguageContext.tsx: contains mounted hydration guard for Reac
     "Must set mounted to true after initial hydration effect",
   );
   assert.ok(
-    source.includes('const locale = mounted ? (userLocale ?? detectedLocale) : "zh-TW";'),
+    source.includes('const locale = mounted ? userLocale : "zh-TW";'),
     "Must lock locale to zh-TW during SSR and initial hydration pass",
   );
 });

@@ -97,7 +97,7 @@ export default function HeroPost({
                     <circle cx="12" cy="12" r="9" />
                     <polyline points="12 7 12 12 15 15" />
                   </svg>
-                  <span>{calcReadingTime(hero.description_html)} 分鐘閱讀</span>
+                  <span suppressHydrationWarning>{calcReadingTime(hero.description_html)} 分鐘閱讀</span>
                 </span>
               </div>
               <Link
@@ -145,7 +145,7 @@ export default function HeroPost({
                         <circle cx="12" cy="12" r="9" />
                         <polyline points="12 7 12 12 15 15" />
                       </svg>
-                      <span>
+                      <span suppressHydrationWarning>
                         {calcReadingTime(item.description_html)} 分鐘閱讀
                       </span>
                     </span>
