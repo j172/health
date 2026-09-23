@@ -6,6 +6,10 @@ export const revalidate = 1800; // 30 minutes
 
 export type { WaterOutageItem };
 
+const CACHE_HEADERS = {
+  "Cache-Control": "public, s-maxage=300, stale-while-revalidate=1800",
+};
+
 export async function GET() {
   try {
     const data = await getWaterOutages(50);
@@ -14,7 +18,7 @@ export async function GET() {
       totalCount: data.totalCount,
       outages: data.outages,
       updatedAt: data.updatedAt,
-    });
+    }, { headers: CACHE_HEADERS });
   } catch (error: any) {
     console.error("GET /api/water-outages error:", error);
     return NextResponse.json(

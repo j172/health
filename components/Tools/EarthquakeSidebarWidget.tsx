@@ -87,7 +87,7 @@ export default function EarthquakeSidebarWidget({
                     <span className="rounded bg-slate-200/70 px-1.5 py-0.5 font-bold uppercase text-slate-600 dark:bg-slate-700/70 dark:text-slate-400">
                       {sourceLabel(q.primary_source)}
                     </span>
-                    <span>{toTaipeiShort(q.event_time)}</span>
+                    <span suppressHydrationWarning>{toTaipeiShort(q.event_time)}</span>
                   </div>
                 </li>
               );

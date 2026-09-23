@@ -11,11 +11,15 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "*.j172.tw",
       },
       {
-        protocol: "http",
-        hostname: "**",
+        protocol: "https",
+        hostname: "blog.j172.tw",
+      },
+      {
+        protocol: "https",
+        hostname: "health.j172.tw",
       },
     ],
   },

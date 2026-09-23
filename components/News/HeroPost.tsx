@@ -41,7 +41,8 @@ export default function HeroPost({
                 src.endsWith(".svg") ||
                 src.startsWith("/images/news/maps/") ||
                 src.startsWith("/uploads/maps/") ||
-                src.startsWith("/images/news/flickr/")
+                src.startsWith("/images/news/flickr/") ||
+                /^https?:\/\//i.test(src)
               }
               sizes="(max-width: 1024px) 100vw, 66vw"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -83,7 +84,7 @@ export default function HeroPost({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-semibold text-white">{authorLabel}</span>
                 <span>·</span>
-                <span>{toTaipei(displayDate(hero))}</span>
+                <span suppressHydrationWarning>{toTaipei(displayDate(hero))}</span>
                 <span>·</span>
                 <span className="inline-flex items-center gap-1">
                   <svg
@@ -131,7 +132,7 @@ export default function HeroPost({
                     {item.feed_name}
                   </span>
                   <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-500">
-                    <span>{toTaipei(displayDate(item))}</span>
+                    <span suppressHydrationWarning>{toTaipei(displayDate(item))}</span>
                     <span aria-hidden="true">•</span>
                     <span className="inline-flex items-center gap-1">
                       <svg

@@ -120,10 +120,14 @@ function WeatherSvgIcon({ condition }: { condition: string | null }) {
 
 export default function LocalWeatherSvgWidget() {
   const geo = useGeolocation();
-  const [selectedCounty, setSelectedCounty] = useState<string>(() => {
+  const [selectedCounty, setSelectedCounty] = useState<string>("auto");
+
+  useEffect(() => {
     const saved = getSavedLocation();
-    return saved?.name ?? "auto";
-  });
+    if (saved?.name) {
+      setSelectedCounty(saved.name);
+    }
+  }, []);
 
   const activeCoords = useMemo(() => {
     const found = TAIWAN_COUNTIES.find((c) => c.name === selectedCounty);
