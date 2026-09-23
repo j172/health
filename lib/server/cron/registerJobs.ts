@@ -49,21 +49,66 @@ const appendLog = async (fileName: string, line: unknown): Promise<void> => {
 };
 
 /**
+ * Names of jobs currently mid-run, shared across every runGuarded() closure
+ * — lets memory-monitor.log show not just "how much memory did this one job
+ * use" but "were N jobs overlapping when memory spiked", since this process
+ * runs 25+ of these on a shared 768MB heap (see docs/specs/
+ * cron-memory-monitoring.md, opened after a WASM OOM crash loop whose exact
+ * memory-pressure source was never pinned down).
+ */
+const activeJobNames = new Set<string>();
+
+const jobNameFromLogFile = (logFile: string): string =>
+  logFile.replace(/-cron\.log$/, "");
+
+interface MemorySnapshotMb {
+  rss: number;
+  heapUsed: number;
+  external: number;
+  arrayBuffers: number;
+}
+
+const snapshotMemoryMb = (): MemorySnapshotMb => {
+  const m = process.memoryUsage();
+  const toMb = (bytes: number) => Math.round((bytes / 1024 / 1024) * 10) / 10;
+  return {
+    rss: toMb(m.rss),
+    heapUsed: toMb(m.heapUsed),
+    external: toMb(m.external),
+    arrayBuffers: toMb(m.arrayBuffers ?? 0),
+  };
+};
+
+/**
  * Wraps a sync job with an in-memory overlap guard — if the previous tick is
  * still running when the next one fires, the new tick is skipped rather than
  * running concurrently — and JSON-summary logging to the job's log file.
  * Replaces the crontab's `curl --max-time`, which only abandoned the client
  * side of the request while the server handler kept running past the
  * timeout.
+ *
+ * Also brackets every run with a memory-monitor.log entry (job name, memory
+ * snapshot, and which other jobs were concurrently active) so a future OOM
+ * can be traced to a specific job or a specific overlap, instead of guessing.
  */
 const runGuarded = (
   logFile: string,
   run: () => Promise<unknown>,
 ): (() => Promise<void>) => {
+  const jobName = jobNameFromLogFile(logFile);
   let running = false;
   return async () => {
     if (running) return;
     running = true;
+    activeJobNames.add(jobName);
+    const startedAt = Date.now();
+    const before = snapshotMemoryMb();
+    await appendLog("memory-monitor.log", {
+      event: "start",
+      job: jobName,
+      activeJobs: [...activeJobNames],
+      memoryMb: before,
+    });
     try {
       const summary = await run();
       await appendLog(logFile, { ok: true, summary });
@@ -73,6 +118,19 @@ const runGuarded = (
         error: error instanceof Error ? error.message : String(error),
       });
     } finally {
+      const after = snapshotMemoryMb();
+      activeJobNames.delete(jobName);
+      await appendLog("memory-monitor.log", {
+        event: "end",
+        job: jobName,
+        durationMs: Date.now() - startedAt,
+        activeJobs: [...activeJobNames],
+        memoryMb: after,
+        memoryDeltaMb: {
+          rss: Math.round((after.rss - before.rss) * 10) / 10,
+          heapUsed: Math.round((after.heapUsed - before.heapUsed) * 10) / 10,
+        },
+      });
       running = false;
     }
   };
