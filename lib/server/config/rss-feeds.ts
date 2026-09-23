@@ -106,36 +106,12 @@ export const RSS_FEEDS: FeedConfig[] = [
     url: "https://www.fda.gov.tw/tc/rssAnnouncement.ashx",
     sourceName: "tfda",
   },
-  {
-    code: "hpa",
-    name: "國民健康署－本署新聞",
-    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=124",
-    sourceName: "hpa",
-  },
-  {
-    code: "hpa_clarify",
-    name: "國民健康署－真相說明",
-    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=126",
-    sourceName: "hpa",
-  },
-  {
-    code: "hpa_rumor",
-    name: "國民健康署－保健闢謠",
-    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=127",
-    sourceName: "hpa",
-  },
-  {
-    code: "hpa_activity",
-    name: "國民健康署－活動熱訊",
-    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=128",
-    sourceName: "hpa",
-  },
-  {
-    code: "hpa_announcement",
-    name: "國民健康署－本署公告",
-    url: "https://www.hpa.gov.tw/Pages/ashx/rsspage.ashx?nodeid=129",
-    sourceName: "hpa",
-  },
+  // hpa (國民健康署) nodeid 124/126/127/128/129 removed 2026-09-23 (issue
+  // TBD): all five timed out (>20s, no response) in a live check across the
+  // board — not a transient blip, every one of them. Rows in news_items are
+  // deliberately NOT deleted (same convention as the 2026-08-31 retirements
+  // above), so sourceCategories.ts's "hpa" -> "國民健康署" label and
+  // types/rss.ts's "hpa" FeedCode literal stay for the historical articles.
   {
     code: "gnews",
     name: "Google 新聞－台灣健康專區",
