@@ -10,7 +10,15 @@ import { TABLE_DDL } from "@/lib/server/db/schema";
 import { readSeedJson } from "./seedReader";
 
 let pool: Pool | null = null;
-let schemaReady = false;
+/** In-flight/completed promise for the migration run below, or null before the
+ * first call. A plain boolean here previously let concurrent callers (e.g. a
+ * page render's generateMetadata racing a background backfill job, right
+ * after a cold start) all see "not ready yet" and each kick off the full
+ * 100+-statement migration block in parallel — two of those running
+ * overlapping UPDATEs against the same rows is what deadlocked MySQL
+ * (issue #397). Caching the promise itself means every concurrent caller
+ * awaits the same single run. */
+let schemaReadyPromise: Promise<void> | null = null;
 
 /** Formats a Date as MySQL DATETIME (`YYYY-MM-DD HH:MM:SS`, UTC). */
 export const toSqlDateTime = (value: Date): string =>
@@ -55,8 +63,7 @@ export const getMysqlPool = (): Pool => {
 
 export const getPool = getMysqlPool;
 
-export const ensureSchema = async (): Promise<void> => {
-  if (schemaReady) return;
+const runSchemaMigrations = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
   await p.query(TABLE_DDL.newsAssets);
@@ -561,8 +568,18 @@ export const ensureSchema = async (): Promise<void> => {
   } catch (err) {
     console.warn("[ensureSchema] pest_alerts seed warning:", err);
   }
+};
 
-  schemaReady = true;
+export const ensureSchema = async (): Promise<void> => {
+  if (schemaReadyPromise) return schemaReadyPromise;
+  schemaReadyPromise = runSchemaMigrations().catch((error: unknown) => {
+    // Let a later call retry from scratch instead of permanently wedging
+    // every ensureSchema() caller on a one-time failure (e.g. a transient
+    // connection error during the migration run).
+    schemaReadyPromise = null;
+    throw error;
+  });
+  return schemaReadyPromise;
 };
 
 export const withConnection = async <T>(
