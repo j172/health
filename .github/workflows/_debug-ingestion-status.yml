@@ -1,4 +1,4 @@
-name: DEBUG - check live apply-prebuilt progress (one-off, delete after use)
+name: DEBUG - final post-deploy verification and daemon cleanup (one-off, delete after use)
 
 on:
   workflow_dispatch:
@@ -11,28 +11,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Tail apply-prebuilt log and check health-web status
+      - name: Reap duplicate daemon and do final verification
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          OPS_KEY: ${{ secrets.OPS_KEY }}
         run: |
           set -euo pipefail
           source scripts/lib/ssh-key-stage.sh
           stage_ssh_key
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          echo "==== .apply-prebuilt.log, last 60 lines ===="
+          echo "==== apply reap-stragglers ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "tail -n 60 ~/health_app/.apply-prebuilt.log 2>&1 || true"
+            "curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' \"https://health.j172.tw/__ops/reap-stragglers?key=$OPS_KEY&apply=1\""
 
           echo
-          echo "==== pm2 describe health-web right now ===="
+          echo "==== god daemon count after reap (should be 1) ===="
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+            "ps -eo pid,cmd | grep -i 'God Daemon' | grep -v grep || echo 'none found'"
+
+          echo
+          echo "==== pm2 describe health-web (final) ===="
           ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
             "pm2 jlist 2>/dev/null | node -e 'const d=JSON.parse(require(\"fs\").readFileSync(0,\"utf8\"));for(const p of d){if(p.name===\"health-web\"){console.log(JSON.stringify({pid:p.pid,restarts:p.pm2_env.restart_time,status:p.pm2_env.status,uptime_s:Math.round((Date.now()-p.pm2_env.pm_uptime)/1000)},null,2))}}'"
 
           echo
-          echo "==== is anything else eating CPU/mem right now (top 10 by mem) ===="
-          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-            "ps -eo pid,ppid,%mem,%cpu,cmd --sort=-%mem | head -12"
+          echo "==== live HTTP check ===="
+          curl -sS --insecure --resolve 'health.j172.tw:443:103.21.221.12' -o /dev/null -w 'status=%{http_code} time=%{time_total}s\n' 'https://health.j172.tw/'
