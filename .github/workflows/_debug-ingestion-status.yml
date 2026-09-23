@@ -1,0 +1,24 @@
+name: DEBUG - time each RSS source's HTTP response (one-off, delete after use)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Time each RSS feed URL
+        run: |
+          set -uo pipefail
+          grep -oP '(?<=url:\s")[^"]+' lib/server/config/rss-feeds.ts > /tmp/urls.txt
+          echo "Testing $(wc -l < /tmp/urls.txt) URLs..."
+          echo "time_s,http_code,url" > /tmp/results.csv
+          while IFS= read -r url; do
+            result=$(curl -sS -o /dev/null -w '%{time_total},%{http_code}' --max-time 20 "$url" 2>/dev/null || echo "TIMEOUT,000")
+            echo "${result},${url}" >> /tmp/results.csv
+          done < /tmp/urls.txt
+          echo "==== sorted by time, slowest first ===="
+          sort -t, -k1 -rn /tmp/results.csv | head -60
