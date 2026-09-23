@@ -100,7 +100,7 @@ export default function NewsCard({
                 <circle cx="12" cy="12" r="9" />
                 <polyline points="12 7 12 12 15 15" />
               </svg>
-              <span>{calcReadingTime(item.description_html)} 分鐘閱讀</span>
+              <span suppressHydrationWarning>{calcReadingTime(item.description_html)} 分鐘閱讀</span>
             </span>
           </div>
         </div>

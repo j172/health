@@ -6,7 +6,6 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useSyncExternalStore,
 } from "react";
 import zhTW from "@/locales/zh-TW.json";
 import en from "@/locales/en.json";
@@ -40,7 +39,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 
-const getClientLocale = (): Locale => {
+const resolveStoredLocale = (): Locale => {
   if (typeof window === "undefined") return "zh-TW";
   try {
     const storedLocale = localStorage.getItem("locale");
@@ -55,32 +54,32 @@ const getClientLocale = (): Locale => {
   return "zh-TW";
 };
 
-const subscribeToStorage = (callback: () => void) => {
-  window.addEventListener("storage", callback);
-  return () => window.removeEventListener("storage", callback);
-};
-
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [userLocale, setUserLocale] = useState<Locale | null>(null);
+  const [userLocale, setUserLocale] = useState<Locale>("zh-TW");
   const [mounted, setMounted] = useState(false);
 
+  // SSR and initial client hydration always render strictly in "zh-TW".
+  // Post-hydration, load stored or browser-detected locale smoothly without
+  // ever causing React 19 Error #418 hydration mismatch.
   useEffect(() => {
     setMounted(true);
+    const detected = resolveStoredLocale();
+    if (detected !== "zh-TW") {
+      setUserLocale(detected);
+    }
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "locale" && isSupportedLocale(e.newValue)) {
+        setUserLocale(e.newValue);
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const detectedLocale = useSyncExternalStore(
-    subscribeToStorage,
-    getClientLocale,
-    () => "zh-TW" as Locale,
-  );
-
-  // During SSR and the initial client hydration pass (!mounted), lock locale
-  // strictly to "zh-TW" so text nodes match the server HTML byte-for-byte.
-  // After hydration completes, switch to user-selected or detected locale.
-  // Prevents React 19 Minified Error #418 (hydration text mismatch).
-  const locale = mounted ? (userLocale ?? detectedLocale) : "zh-TW";
+  const locale = mounted ? userLocale : "zh-TW";
 
   const setLocale = useCallback((newLocale: Locale) => {
     setUserLocale(newLocale);
