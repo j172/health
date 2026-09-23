@@ -33,7 +33,7 @@
  * fallback direction.
  */
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { detectInAppBrowser, type InAppBrowserApp } from "@/lib/client/inAppBrowser";
 
@@ -95,12 +95,7 @@ function persistDismissed() {
 }
 
 export default function InAppBrowserBanner() {
-  // Server-rendered/first-hydration-pass state is always "nothing" (the
-  // *ServerSnapshot values below), which is what keeps this component from
-  // taking any layout space, or causing a hydration mismatch, for the
-  // overwhelming majority of visitors who are not in one of these in-app
-  // browsers. React schedules the follow-up client render itself once real
-  // snapshots are available post-hydration.
+  const [mounted, setMounted] = useState(false);
   const app = useSyncExternalStore(noopSubscribe, getAppSnapshot, getAppServerSnapshot);
   const dismissedInStorage = useSyncExternalStore(
     subscribeToStorage,
@@ -113,6 +108,10 @@ export default function InAppBrowserBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // `/admin/*` is internal ops tooling, not a consumer-facing page, so it's
   // exempt (per the spec). This component is mounted from the true root
   // layout (app/layout.tsx) because that's the only layout that already
@@ -123,7 +122,7 @@ export default function InAppBrowserBanner() {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin") ?? false;
 
-  if (isAdminRoute || !app || dismissedInStorage || dismissed) return null;
+  if (!mounted || isAdminRoute || !app || dismissedInStorage || dismissed) return null;
 
   const handleDismiss = () => {
     persistDismissed();

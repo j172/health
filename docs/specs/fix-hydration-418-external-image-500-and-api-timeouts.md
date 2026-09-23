@@ -41,6 +41,11 @@ Post-deployment browser console inspection on `https://health.j172.tw/` revealed
   - `/api/cdc/travel-alerts`, `/api/pest-alerts`: `s-maxage=1800, stale-while-revalidate=7200`
   - `/api/weather-nearby`, `/api/aqi/nearest`, `/api/uv/nearest`: `s-maxage=180, stale-while-revalidate=600`
 
+### Decision 5: Mounted Guard for Root Layout Banners (PrivacyConsentBanner & InAppBrowserBanner)
+- `PrivacyConsentBanner.tsx` and `InAppBrowserBanner.tsx` previously used `useSyncExternalStore(..., ..., () => true)`. On SSR, the server snapshot returned `true` (rendering `null`). On initial client hydration, `localStorage` has no acknowledgment key, so `getAckSnapshot()` returned `false`. This rendered the banner DOM tree on the client while the server DOM was empty, triggering React 19 Error #418 (`args[]=text&args[]=`).
+- Fix: Introduce `const [mounted, setMounted] = useState(false); useEffect(() => setMounted(true), []);`. If `!mounted`, return `null`.
+- Result: Server renders `null`, initial client hydration renders `null` (100% byte-for-byte DOM match), and immediately after hydration the client mounts the banner seamlessly without errors.
+
 ---
 
 ## 3. Verification & Guardrails
@@ -49,4 +54,6 @@ Post-deployment browser console inspection on `https://health.j172.tw/` revealed
   2. External URLs activate `unoptimized` across image components.
   3. API routes define valid edge `Cache-Control` headers.
   4. Date containers include `suppressHydrationWarning`.
+  5. `PrivacyConsentBanner` and `InAppBrowserBanner` guard against hydration mismatch with `mounted` check.
 - Live verification on `https://health.j172.tw/` using browser subagent.
+

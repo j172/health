@@ -112,3 +112,28 @@ test("useSidebarWidgetData default timeout is at least 10000ms", () => {
     "useSidebarWidgetData default timeoutMs should be at least 10000ms",
   );
 });
+
+test("PrivacyConsentBanner and InAppBrowserBanner defer rendering with mounted guard to prevent React 418 hydration mismatch", () => {
+  const privacyFile = path.join(process.cwd(), "components/Legal/PrivacyConsentBanner.tsx");
+  const privacyContent = fs.readFileSync(privacyFile, "utf8");
+  assert.ok(
+    privacyContent.includes("const [mounted, setMounted] = useState(false);"),
+    "PrivacyConsentBanner must define mounted state",
+  );
+  assert.ok(
+    privacyContent.includes("if (!mounted || isAcked || dismissed) return null;"),
+    "PrivacyConsentBanner must return null before mount to prevent client/server HTML mismatch",
+  );
+
+  const inAppFile = path.join(process.cwd(), "components/Common/InAppBrowserBanner.tsx");
+  const inAppContent = fs.readFileSync(inAppFile, "utf8");
+  assert.ok(
+    inAppContent.includes("const [mounted, setMounted] = useState(false);"),
+    "InAppBrowserBanner must define mounted state",
+  );
+  assert.ok(
+    inAppContent.includes("if (!mounted || isAdminRoute || !app || dismissedInStorage || dismissed) return null;"),
+    "InAppBrowserBanner must return null before mount to prevent in-app browser hydration mismatch",
+  );
+});
+
