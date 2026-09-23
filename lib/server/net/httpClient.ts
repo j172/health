@@ -183,36 +183,6 @@ const TRUSTED_CAS = [
   TWCA_CYBER_ROOT_CA,
 ];
 
-/**
- * Shared keep-alive agents so the TLS SecureContext built from TRUSTED_CAS
- * (Node's root store + 4 custom PEMs, ~170 certs) is constructed once per
- * process instead of once per request. The previous code passed `ca:
- * TRUSTED_CAS` inline on every individual request options object with no
- * `agent`, which forces Node to rebuild that SecureContext from scratch
- * every single call. Under enough concurrent HTTPS traffic (ingestion
- * hitting many sources, repeated AI-call retries, etc.) that repeated
- * rebuild is what threw a native `std::bad_alloc` inside OpenSSL's
- * `SSL_CTX_add_client_CA`/`AddCACert` and crashed the whole process —
- * multiple occurrences 2026-09-23, see docs/memory/ops_health_502_watchdog.md
- * and issues #395/#396. keepAlive also lets sockets to the same host be
- * reused across calls instead of a fresh TCP+TLS handshake every time.
- * maxSockets caps how many concurrent connections *to a single host* this
- * keeps open — it doesn't limit total concurrency across different hosts,
- * which is (as before) up to each caller's own batching.
- */
-const httpsAgent = new https.Agent({
-  ca: TRUSTED_CAS,
-  keepAlive: true,
-  keepAliveMsecs: 30_000,
-  maxSockets: 50,
-});
-
-const httpAgent = new http.Agent({
-  keepAlive: true,
-  keepAliveMsecs: 30_000,
-  maxSockets: 50,
-});
-
 export interface HttpRequestOptions {
   method?: string;
   headers?: Record<string, string>;
@@ -291,7 +261,7 @@ const requestOnce = (
           ...options.headers,
         },
         timeout: options.timeoutMs ?? 15_000,
-        agent: parsed.protocol === "https:" ? httpsAgent : httpAgent,
+        ...(parsed.protocol === "https:" ? { ca: TRUSTED_CAS } : {}),
       },
       (res) => {
         const limit = options.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
