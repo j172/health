@@ -4,6 +4,7 @@ import React, {
   createContext,
   useContext,
   useState,
+  useEffect,
   useCallback,
   useSyncExternalStore,
 } from "react";
@@ -63,12 +64,23 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [userLocale, setUserLocale] = useState<Locale | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const detectedLocale = useSyncExternalStore(
     subscribeToStorage,
     getClientLocale,
     () => "zh-TW" as Locale,
   );
-  const locale = userLocale ?? detectedLocale;
+
+  // During SSR and the initial client hydration pass (!mounted), lock locale
+  // strictly to "zh-TW" so text nodes match the server HTML byte-for-byte.
+  // After hydration completes, switch to user-selected or detected locale.
+  // Prevents React 19 Minified Error #418 (hydration text mismatch).
+  const locale = mounted ? (userLocale ?? detectedLocale) : "zh-TW";
 
   const setLocale = useCallback((newLocale: Locale) => {
     setUserLocale(newLocale);

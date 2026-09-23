@@ -61,14 +61,14 @@ const activeJobNames = new Set<string>();
 const jobNameFromLogFile = (logFile: string): string =>
   logFile.replace(/-cron\.log$/, "");
 
-interface MemorySnapshotMb {
+export interface MemorySnapshotMb {
   rss: number;
   heapUsed: number;
   external: number;
   arrayBuffers: number;
 }
 
-const snapshotMemoryMb = (): MemorySnapshotMb => {
+export const snapshotMemoryMb = (): MemorySnapshotMb => {
   const m = process.memoryUsage();
   const toMb = (bytes: number) => Math.round((bytes / 1024 / 1024) * 10) / 10;
   return {
@@ -78,6 +78,21 @@ const snapshotMemoryMb = (): MemorySnapshotMb => {
     arrayBuffers: toMb(m.arrayBuffers ?? 0),
   };
 };
+
+/**
+ * Memory safety limits (in MB). When process memory crosses either threshold,
+ * in-app cron jobs skip their execution tick rather than piling more memory
+ * pressure onto the 768MB capped heap. This protects the live website from
+ * RangeError: WebAssembly.instantiate() OOM crashes and 502 Bad Gateway outages.
+ */
+export const CRON_MEMORY_CEILING_RSS_MB = 620;
+export const CRON_MEMORY_CEILING_HEAP_USED_MB = 550;
+
+export const isMemoryUnderPressure = (
+  mem: MemorySnapshotMb = snapshotMemoryMb(),
+  rssLimit = CRON_MEMORY_CEILING_RSS_MB,
+  heapLimit = CRON_MEMORY_CEILING_HEAP_USED_MB,
+): boolean => mem.rss >= rssLimit || mem.heapUsed >= heapLimit;
 
 /**
  * Wraps a sync job with an in-memory overlap guard — if the previous tick is
@@ -91,7 +106,7 @@ const snapshotMemoryMb = (): MemorySnapshotMb => {
  * snapshot, and which other jobs were concurrently active) so a future OOM
  * can be traced to a specific job or a specific overlap, instead of guessing.
  */
-const runGuarded = (
+export const runGuarded = (
   logFile: string,
   run: () => Promise<unknown>,
 ): (() => Promise<void>) => {
@@ -99,10 +114,22 @@ const runGuarded = (
   let running = false;
   return async () => {
     if (running) return;
+
+    const before = snapshotMemoryMb();
+    if (isMemoryUnderPressure(before)) {
+      await appendLog("memory-monitor.log", {
+        event: "skipped_memory_pressure",
+        job: jobName,
+        activeJobs: [...activeJobNames],
+        memoryMb: before,
+        reason: `Memory pressure trip-wire: rss=${before.rss}MB (limit ${CRON_MEMORY_CEILING_RSS_MB}MB), heapUsed=${before.heapUsed}MB (limit ${CRON_MEMORY_CEILING_HEAP_USED_MB}MB)`,
+      });
+      return;
+    }
+
     running = true;
     activeJobNames.add(jobName);
     const startedAt = Date.now();
-    const before = snapshotMemoryMb();
     await appendLog("memory-monitor.log", {
       event: "start",
       job: jobName,

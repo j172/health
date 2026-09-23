@@ -2084,6 +2084,17 @@ if ($path === '/favicon.ico' || $path === '/images/favicon.ico') {
         exit;
     }
 }
+
+if ($path === '/manifest.webmanifest' || $path === '/site.webmanifest') {
+    $manifest = '/home/tw123457/health_app/public/manifest.webmanifest';
+    if (is_file($manifest)) {
+        header('Content-Type: application/manifest+json; charset=utf-8');
+        header('Cache-Control: public, max-age=86400');
+        header('Access-Control-Allow-Origin: *');
+        readfile($manifest);
+        exit;
+    }
+}
 $headers = [];
 foreach ($_SERVER as $key => $value) {
     if (strpos($key, 'HTTP_') === 0) {
