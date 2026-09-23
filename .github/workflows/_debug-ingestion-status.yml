@@ -1,0 +1,46 @@
+name: DEBUG - check crash after httpClient agent deploy (one-off, delete after use)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check newest crash and health-web status
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" '
+            echo "==== pm2 jlist: health-web ===="
+            pm2 jlist 2>/dev/null | node -e "const d=JSON.parse(require(\"fs\").readFileSync(0,\"utf8\"));for(const p of d){if(p.name===\"health-web\"){console.log(JSON.stringify({pid:p.pid,restarts:p.pm2_env.restart_time,status:p.pm2_env.status,uptime_s:Math.round((Date.now()-p.pm2_env.pm_uptime)/1000)},null,2))}}"
+
+            echo
+            echo "==== last 3 error logs, mtimes ===="
+            ls -t --time-style=full-iso ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -3 | xargs -I{} sh -c "echo ===={}====; stat -c \"%y\" {}"
+
+            echo
+            echo "==== newest error log, last 80 lines ===="
+            NEWEST=$(ls -t ~/.pm2/logs/health-web-error-*.log 2>/dev/null | head -1)
+            tail -n 80 "$NEWEST" 2>&1
+
+            echo
+            echo "==== apply-prebuilt.log tail ===="
+            tail -n 40 ~/health_app/.apply-prebuilt.log 2>&1 || true
+
+            echo
+            echo "==== current server time ===="
+            date -u
+          '
