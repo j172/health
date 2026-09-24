@@ -1,4 +1,6 @@
 import "server-only";
+import { existsSync } from "node:fs";
+import path from "node:path";
 import type {
   PoolConnection,
   ResultSetHeader,
@@ -40,8 +42,10 @@ const MAX_API_PAGES = 16;
 const MAX_CANDIDATE_ATTEMPTS_PER_NEWS = 5;
 /** How many recent card-image assignments to consider when de-duplicating provider images. */
 const USED_IMAGE_LOOKBACK = 20_000;
+/** Maximum lookback for collision prevention when reusing archived stock images in Tier 3 */
+export const RECENCY_COLLISION_WINDOW = 100;
 
-interface MissingNewsRow extends RowDataPacket {
+export interface MissingNewsRow extends RowDataPacket {
   id: number;
   title: string;
   lat: number | null;
@@ -51,6 +55,112 @@ interface MissingNewsRow extends RowDataPacket {
   description_text: string | null;
   detail_text: string | null;
 }
+
+export interface ArchivedStockRow extends RowDataPacket {
+  provider: string;
+  provider_image_id: string | null;
+  pixabay_id: number | null;
+  local_path: string;
+  source_page_url: string;
+  contributor_name: string | null;
+  content_sha256: string;
+  width: number;
+  height: number;
+}
+
+/**
+ * Tier 3: Attempt to assign an image from previously collected stock images
+ * matching topic keywords, protected by a 100-article recency anti-collision window.
+ */
+export const tryAssignArchivedStockImage = async (
+  conn: PoolConnection,
+  news: MissingNewsRow,
+  termsToTry: string[],
+  recentUsedPaths: Set<string>,
+): Promise<boolean> => {
+  // Extract Chinese topic tokens from title (length >= 2, skipping punctuation/numbers)
+  const titleTokens = (news.title || "")
+    .split(/[\s，、。：；！？「」『』（）()\[\]—\-—\/\\]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length >= 2 && s.length <= 12 && !/^\d+$/.test(s));
+
+  // Build query list: title tokens first (high relevance), followed by English category terms
+  const searchQueries: string[] = [];
+  for (const token of titleTokens) {
+    if (!searchQueries.includes(token)) searchQueries.push(token);
+  }
+  for (const term of termsToTry) {
+    if (term && !searchQueries.includes(term)) searchQueries.push(term);
+  }
+
+  for (const query of searchQueries) {
+    if (!query || query.length < 2) continue;
+
+    const [candidates] = await conn.query<ArchivedStockRow[]>(
+      `SELECT c.provider, c.provider_image_id, c.pixabay_id, c.local_path,
+              c.source_page_url, c.contributor_name, c.content_sha256, c.width, c.height
+       FROM news_card_images c
+       JOIN news_items n ON n.id = c.news_item_id
+       WHERE c.local_path IS NOT NULL
+         AND c.local_path NOT LIKE '/images/news/maps/%'
+         AND c.provider IN ('pixabay', 'pexels', 'unsplash', 'flickr')
+         AND (
+           n.title LIKE CONCAT('%', ?, '%')
+           OR (n.keywords IS NOT NULL AND n.keywords LIKE CONCAT('%', ?, '%'))
+         )
+       ORDER BY c.id DESC
+       LIMIT 20`,
+      [query, query],
+    );
+
+    for (const candidate of candidates) {
+      if (!candidate.local_path) continue;
+      // 100-article recency anti-collision guard: skip if seen recently
+      if (recentUsedPaths.has(candidate.local_path)) continue;
+
+      // Verify the file physically exists in public directory
+      const cleanPath = candidate.local_path.replace(/^\//, "");
+      const fullDiskPath = path.join(process.cwd(), "public", cleanPath);
+      if (!existsSync(fullDiskPath)) continue;
+
+      const now = utcNowSql();
+      const [insertResult] = await conn.execute<ResultSetHeader>(
+        `
+        INSERT IGNORE INTO news_card_images (
+          news_item_id, provider, provider_image_id, pixabay_id, local_path, source_page_url,
+          contributor_name, content_sha256, width, height, created_at, updated_at
+        )
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        WHERE NOT EXISTS (
+          SELECT 1 FROM news_card_images c WHERE c.news_item_id = ?
+        )
+        `,
+        [
+          news.id,
+          candidate.provider,
+          candidate.provider_image_id,
+          candidate.pixabay_id,
+          candidate.local_path,
+          candidate.source_page_url,
+          candidate.contributor_name,
+          candidate.content_sha256,
+          candidate.width,
+          candidate.height,
+          now,
+          now,
+          news.id,
+        ],
+      );
+
+      if (insertResult.affectedRows === 1) {
+        recentUsedPaths.add(candidate.local_path);
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
 
 interface UsedProviderImageRow extends RowDataPacket {
   provider: string;
@@ -218,11 +328,23 @@ export const assignMissingNewsCardImages = async (
     const configuredProviders = IMAGE_PROVIDERS.filter((provider) =>
       provider.isConfigured(),
     );
-    if (configuredProviders.length === 0) {
-      summary.skipped = missingRows.length;
-      summary.reason =
-        "No image provider API keys are configured (PIXABAY_API_KEY / PEXELS_API_KEY / UNSPLASH_ACCESS_KEY).";
-      return summary;
+
+    // Build the recency anti-collision window from the most recent 100 articles
+    // to prevent reader fatigue from seeing the exact same stock image on adjacent cards.
+    const [recentPathRows] = await conn.query<RowDataPacket[]>(
+      `SELECT c.local_path
+       FROM news_card_images c
+       JOIN news_items n ON n.id = c.news_item_id
+       WHERE c.local_path IS NOT NULL
+       ORDER BY COALESCE(n.published_at_utc, n.created_at) DESC
+       LIMIT ?`,
+      [RECENCY_COLLISION_WINDOW],
+    );
+    const recentUsedPaths = new Set<string>();
+    for (const row of recentPathRows) {
+      if (row.local_path) {
+        recentUsedPaths.add(String(row.local_path));
+      }
     }
 
     // Bounded on purpose. This set exists to stop the same provider image being
@@ -343,6 +465,7 @@ export const assignMissingNewsCardImages = async (
             return "assigned";
           }
           usedIds.add(candidate.id);
+          recentUsedPaths.add(downloaded.localPath);
           await recordProviderSuccess(conn, cooldownState, provider.name);
           summary.assigned += 1;
           // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
@@ -393,17 +516,45 @@ export const assignMissingNewsCardImages = async (
       }
 
       let assignedThisNews = false;
-      termLoop: for (const term of termsToTry) {
-        // Pixabay → Pexels → Unsplash, skipping any provider currently in
-        // cooldown (see docs/specs/news-card-image-multi-provider-fallback.md
-        // section 1) — one provider being rate-limited or unconfigured no
-        // longer stalls articles the other two can still serve.
-        for (const provider of configuredProviders) {
-          const outcome = await tryAssignWithProviderTerm(news, term, provider);
-          if (outcome === "assigned") {
-            assignedThisNews = true;
-            break termLoop;
+
+      // Tier 2: Search and download fresh stock images from external provider APIs (if configured)
+      if (configuredProviders.length > 0) {
+        termLoop: for (const term of termsToTry) {
+          // Pixabay → Pexels → Unsplash, skipping any provider currently in
+          // cooldown (see docs/specs/news-card-image-multi-provider-fallback.md
+          // section 1) — one provider being rate-limited or unconfigured no
+          // longer stalls articles the other two can still serve.
+          for (const provider of configuredProviders) {
+            const outcome = await tryAssignWithProviderTerm(news, term, provider);
+            if (outcome === "assigned") {
+              assignedThisNews = true;
+              break termLoop;
+            }
           }
+        }
+      }
+
+      // Tier 3: Attempt to reuse previously collected stock images from local database
+      // matching topic keywords, protected by the 100-article recency anti-collision window.
+      if (!assignedThisNews) {
+        try {
+          const archivedAssigned = await tryAssignArchivedStockImage(
+            conn,
+            news,
+            termsToTry,
+            recentUsedPaths,
+          );
+          if (archivedAssigned) {
+            assignedThisNews = true;
+            summary.assigned += 1;
+            // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+            // the article's ISR cache now instead of waiting on organic traffic.
+            revalidateArticlePath(news.id);
+          }
+        } catch (error) {
+          const msg = error instanceof Error ? error.message : String(error);
+          if (summary.errors.length < 10)
+            summary.errors.push(`news ${news.id} [archived_stock]: ${msg}`);
         }
       }
 
@@ -483,8 +634,13 @@ export const assignMissingNewsCardImages = async (
       summary.rateLimited = true;
       summary.reason = `Rate-limited this run (now cooling down per its backoff schedule): ${[...rateLimitedProviders].join(", ")}.`;
     } else if (summary.failed > 0 && !anyCandidatesSeen) {
-      summary.reason =
-        "No unused candidates are available from any configured provider.";
+      if (configuredProviders.length === 0) {
+        summary.reason =
+          "No image provider API keys are configured and no matching archived stock images found.";
+      } else {
+        summary.reason =
+          "No unused candidates are available from any configured provider or archived stock.";
+      }
     }
 
     return summary;

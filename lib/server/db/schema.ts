@@ -78,9 +78,9 @@ export const TABLE_DDL = {
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
       UNIQUE KEY uq_card_image_news (news_item_id),
-      UNIQUE KEY uq_card_image_pixabay (pixabay_id),
-      UNIQUE KEY uq_card_image_hash (content_sha256),
-      UNIQUE KEY uq_card_image_path (local_path),
+      KEY idx_card_image_pixabay (pixabay_id),
+      KEY idx_card_image_hash (content_sha256),
+      KEY idx_card_image_path (local_path(255)),
       CONSTRAINT fk_card_image_news_item FOREIGN KEY (news_item_id)
         REFERENCES news_items(id)
         ON DELETE CASCADE

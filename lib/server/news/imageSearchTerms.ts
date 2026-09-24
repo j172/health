@@ -1,15 +1,23 @@
-import { Segment, useDefault as initDefaultSegmentit } from "segmentit";
+import segmentitPkg from "segmentit";
+import type { Segment as SegmentType } from "segmentit";
 import { lookupChineseWord } from "@/lib/server/news/cedict";
+
+const SegmentClass =
+  (segmentitPkg as any).Segment ||
+  (segmentitPkg as any).default?.Segment;
+const initDefaultSegmentit =
+  (segmentitPkg as any).useDefault ||
+  (segmentitPkg as any).default?.useDefault;
 
 // Built on first use rather than at module load. useDefault() constructs a full
 // segmentation dictionary, and this module is pulled into any route that touches
 // news card images — paying that allocation on a cold request path (and holding it
 // for the process lifetime) is what the ~768MB heap cap on the host cannot afford
 // when nothing on the route ever segments a title.
-let segmentitInstance: Segment | null = null;
-const getSegmentit = (): Segment => {
+let segmentitInstance: SegmentType | null = null;
+const getSegmentit = (): SegmentType => {
   if (!segmentitInstance)
-    segmentitInstance = initDefaultSegmentit(new Segment());
+    segmentitInstance = initDefaultSegmentit(new SegmentClass());
   return segmentitInstance;
 };
 
@@ -129,15 +137,23 @@ const KEYWORD_TERMS: [RegExp, string][] = [
   [/繪畫|比賽|得獎|作畫|作品/, "painting"],
   [/父親節|重陽節|母親節|節慶|紀念日/, "family"],
 
-  // ─── 6. 氣象、環境、天然災害、能源 ─────────────────────────────────────────
+  // ─── 6. 氣象、環境、天然災害、永續能源 ─────────────────────────────────────
   [/颱風|白海豚颱風|低壓系統|風雨/, "storm"],
   [/雨彈|豪雨|大雨|豪雨特報|淹水|積水/, "rain"],
   [/雷雨|大雷雨|閃電/, "thunderstorm"],
   [/高溫|高溫資訊|熱浪|酷暑/, "heatwave"],
   [/空氣品質|空污|霧霾|PM2.5/, "air pollution"],
   [/能源|虛擬電廠|節能|綠能|太陽能/, "solar energy"],
+  [/淨零|碳排|減碳|循環經濟|ESG|永續|生態循環|碳權|綠色供應鏈/, "sustainability"],
 
-  // ─── 7. 活動主題、美食節慶 (次要優先級) ──────────────────────────────────
+  // ─── 7. 科技醫療、前瞻健康、政策社福 ─────────────────────────────────────
+  [/AI|生醫|智慧醫療|智慧醫院|遠距醫療|達文西|手術機器人|智慧照護/i, "digital health"],
+  [/托育|托嬰|育兒津貼|早產兒|小兒科|親子家庭|母嬰/, "baby care"],
+  [/健保署|健保給付|新藥給付|藥價|公費補助|衛政政策|罕病給付/, "healthcare policy"],
+  [/長照2\.0|日間照顧|日照中心|銀髮樂活|高齡社會|安養/, "elderly care"],
+  [/正念|冥想|身心療癒|諮商|心理諮商|心靈成長|紓壓/, "meditation"],
+
+  // ─── 8. 活動主題、美食節慶 (次要優先級) ──────────────────────────────────
   [
     /美食展|美食節|美食|小吃|佳餚|名店|名廚|美饌|餐飲|傳統美食|在地美食/,
     "delicious food",
@@ -151,7 +167,7 @@ const KEYWORD_TERMS: [RegExp, string][] = [
   [/藥局|藥師|調劑/, "pharmacy"],
   [/健檢|體檢|抽血|篩檢|健檢中心/, "medical checkup"],
 
-  // ─── 8. 公共機構、地標、展覽 (通用優先級) ──────────────────────────────────
+  // ─── 9. 公共機構、地標、展覽 (通用優先級) ──────────────────────────────────
   [/捐贈|善行|公益|傳承|愛心|捐款/, "charity"],
   [/志工|義工|服務隊/, "volunteer"],
   [/健保|補助|津貼|社會局|重撥款/, "subsidy"],
@@ -167,9 +183,18 @@ export const FALLBACK_TERMS = ["health", "life", "nature"] as const;
  */
 export function deriveJiebaSearchTerm(title: string): string | null {
   if (!title) return null;
-  const tokens = getSegmentit().doSegment(title);
 
-  // Check each segmented token against the keyword map
+  // 1. Priority check: evaluated in KEYWORD_TERMS priority order against the full title string.
+  // This guarantees high-priority domain patterns (e.g. food safety, disaster, digital health,
+  // baby care) take precedence over low-priority generic tokens (e.g. subsidy, hospital, doctor).
+  for (const [pattern, englishTerm] of KEYWORD_TERMS) {
+    if (pattern.test(title)) {
+      return englishTerm;
+    }
+  }
+
+  // 2. Token segmentation check for segmented words
+  const tokens = getSegmentit().doSegment(title);
   for (const token of tokens) {
     const word = token.w;
     if (word.length < 2 && !/[a-zA-Z0-9]/.test(word)) continue; // skip single Chinese characters
@@ -177,13 +202,6 @@ export function deriveJiebaSearchTerm(title: string): string | null {
       if (pattern.test(word)) {
         return englishTerm;
       }
-    }
-  }
-
-  // Fallback check on full title string if token segmentation didn't hit regex
-  for (const [pattern, englishTerm] of KEYWORD_TERMS) {
-    if (pattern.test(title)) {
-      return englishTerm;
     }
   }
 

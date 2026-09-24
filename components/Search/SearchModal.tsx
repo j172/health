@@ -7,6 +7,7 @@ import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
 import { toTaipei, stripHtml, displayDate } from "@/lib/format/news";
 import { useModalA11y } from "@/components/ui/useModalA11y";
 import { useLanguage } from "@/app/context/LanguageContext";
+import CardThumb from "@/components/News/CardThumb";
 
 export default function SearchModal({
   isOpen,
@@ -181,23 +182,9 @@ export default function SearchModal({
                     onClick={onClose}
                     className="group flex items-start gap-3 rounded-xl p-3 transition-colors hover:bg-indigo-50/70 dark:hover:bg-slate-800/80"
                   >
-                    {item.card_image_url ? (
-                      /* Remote news thumbnails stay a plain <img>, as everywhere
-                         else in this codebase (CardThumb, HeroImage, HeroPost) —
-                         they come from many uncontrolled hosts and routing them
-                         through next/image would put the optimizer on the request
-                         path of a memory-constrained shared host. */
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={item.card_image_url}
-                        alt=""
-                        className="h-14 w-20 shrink-0 rounded-lg bg-slate-100 object-cover dark:bg-slate-800"
-                      />
-                    ) : (
-                      <div className="flex h-14 w-20 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-xs font-bold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-                        Health
-                      </div>
-                    )}
+                    <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                      <CardThumb item={item} sizes="80px" />
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span

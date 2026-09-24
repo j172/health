@@ -7,6 +7,7 @@ export interface ThematicCoverProps {
   title: string;
   deptName?: string | null;
   compact?: boolean;
+  heroMode?: boolean;
 }
 
 interface ThemeConfig {
@@ -215,6 +216,189 @@ const THEMES: Record<string, ThemeConfig> = {
       </svg>
     ),
   },
+
+  // 天下雜誌 CSR (CSR@天下) - 永續循環與生態葉脈
+  csr_cw: {
+    gradientClass: "from-slate-950 via-emerald-950 to-teal-950",
+    accentColor: "#34d399",
+    agencyBadge: "CSR@天下",
+    categoryLabel: "永續發展 • 企業社會責任",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <path d="M50 20 C33 20 20 33 20 50 C20 67 33 80 50 80 C67 80 80 67 80 50" stroke={accent} strokeWidth="3" strokeLinecap="round" strokeDasharray="12 4" />
+        <path d="M50 28 C50 28 35 45 50 65 C65 45 50 28 50 28 Z" stroke={accent} strokeWidth="3" strokeLinejoin="round" fill={accent} fillOpacity="0.15" />
+        <path d="M50 36 V58" stroke={accent} strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+
+  // 康健雜誌 (Common Health) - 身心靈全人健康與樂活蓮華
+  commonhealth: {
+    gradientClass: "from-amber-950 via-orange-950 to-slate-900",
+    accentColor: "#f97316",
+    agencyBadge: "康健雜誌",
+    categoryLabel: "健康生活 • 全人身心靈",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="32" stroke={accent} strokeWidth="2" strokeDasharray="4 4" />
+        <path d="M50 24 C40 38 40 54 50 68 C60 54 60 38 50 24 Z" stroke={accent} strokeWidth="3" fill={accent} fillOpacity="0.2" />
+        <path d="M30 52 C44 42 60 42 70 52" stroke={accent} strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  commonhealth_club: {
+    gradientClass: "from-amber-950 via-orange-950 to-slate-900",
+    accentColor: "#fb923c",
+    agencyBadge: "康健大人社團",
+    categoryLabel: "熟齡生活 • 活力身心學堂",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="34" stroke={accent} strokeWidth="2.5" />
+        <path d="M35 55 C45 42 55 42 65 55" stroke={accent} strokeWidth="3" strokeLinecap="round" />
+        <circle cx="50" cy="38" r="8" stroke={accent} strokeWidth="2.5" fill={accent} fillOpacity="0.2" />
+      </svg>
+    ),
+  },
+
+  // 早安健康 (EDH) - 晨曦日光與預防養生
+  edh: {
+    gradientClass: "from-emerald-950 via-teal-950 to-slate-900",
+    accentColor: "#10b981",
+    agencyBadge: "早安健康",
+    categoryLabel: "預防醫學 • 每日健康養生",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="46" r="18" stroke={accent} strokeWidth="3" fill={accent} fillOpacity="0.2" />
+        <path d="M22 68 Q50 54 78 68" stroke={accent} strokeWidth="3.5" strokeLinecap="round" />
+        <path d="M50 18 V26 M28 26 L34 32 M72 26 L66 32" stroke={accent} strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+
+  // 遠見健康 / ESG 遠見 (GVM) - 前瞻趨勢視野
+  health_gvm: {
+    gradientClass: "from-slate-950 via-cyan-950 to-blue-950",
+    accentColor: "#06b6d4",
+    agencyBadge: "健康遠見",
+    categoryLabel: "前瞻趨勢 • 深度專題報導",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="32" stroke={accent} strokeWidth="3" />
+        <polygon points="50,26 56,44 74,50 56,56 50,74 44,56 26,50 44,44" stroke={accent} strokeWidth="2" fill={accent} fillOpacity="0.2" />
+      </svg>
+    ),
+  },
+  esg_gvm: {
+    gradientClass: "from-slate-950 via-teal-950 to-slate-900",
+    accentColor: "#14b8a6",
+    agencyBadge: "ESG遠見",
+    categoryLabel: "永續前瞻 • 綠色策略專題",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="30" stroke={accent} strokeWidth="2.5" strokeDasharray="6 3" />
+        <path d="M38 58 L50 32 L62 58 Z" stroke={accent} strokeWidth="3" strokeLinejoin="round" fill={accent} fillOpacity="0.15" />
+      </svg>
+    ),
+  },
+
+  // 關鍵評論網 (The News Lens) - 深度透鏡與公共時事
+  thenewslens: {
+    gradientClass: "from-rose-950 via-slate-900 to-slate-950",
+    accentColor: "#f43f5e",
+    agencyBadge: "關鍵評論網",
+    categoryLabel: "公共議題 • 深度觀點剖析",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="45" cy="45" r="22" stroke={accent} strokeWidth="3.5" />
+        <path d="M61 61 L78 78" stroke={accent} strokeWidth="4.5" strokeLinecap="round" />
+        <path d="M36 45 H54 M45 36 V54" stroke={accent} strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+
+  // 元氣網（聯合報健康）/ 倡議家 - 活力心律與長照新知
+  udn_health: {
+    gradientClass: "from-slate-950 via-orange-950 to-slate-900",
+    accentColor: "#fb923c",
+    agencyBadge: "元氣網",
+    categoryLabel: "醫藥新知 • 專業長照指引",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="34" stroke={accent} strokeWidth="2.5" />
+        <path d="M26 50 H38 L44 34 L54 66 L62 50 H74" stroke={accent} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  ubrand_udn: {
+    gradientClass: "from-slate-950 via-amber-950 to-slate-900",
+    accentColor: "#f59e0b",
+    agencyBadge: "倡議家",
+    categoryLabel: "永續倡議 • 社會共好行動",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <polygon points="50,22 76,70 24,70" stroke={accent} strokeWidth="3" strokeLinejoin="round" fill={accent} fillOpacity="0.15" />
+        <circle cx="50" cy="52" r="6" fill={accent} />
+      </svg>
+    ),
+  },
+
+  // 健康醫療網 - 臨床醫藥與權威專訊
+  healthnews: {
+    gradientClass: "from-blue-950 via-indigo-950 to-slate-950",
+    accentColor: "#60a5fa",
+    agencyBadge: "健康醫療網",
+    categoryLabel: "臨床醫學 • 權威醫藥焦點",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <rect x="25" y="25" width="50" height="50" rx="8" stroke={accent} strokeWidth="3" />
+        <path d="M50 35 V65 M35 50 H65" stroke={accent} strokeWidth="4" strokeLinecap="round" />
+        <circle cx="50" cy="50" r="18" stroke={accent} strokeWidth="1.5" strokeDasharray="3 3" />
+      </svg>
+    ),
+  },
+
+  // 50+（熟齡世代）- 年輪智慧與優雅慢老
+  fiftyplus: {
+    gradientClass: "from-amber-950 via-yellow-950 to-slate-900",
+    accentColor: "#eab308",
+    agencyBadge: "50+ 熟齡專區",
+    categoryLabel: "熟齡生活 • 優雅慢老智慧",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="35" stroke={accent} strokeWidth="2.5" />
+        <circle cx="50" cy="50" r="25" stroke={accent} strokeWidth="2" strokeDasharray="4 2" />
+        <circle cx="50" cy="50" r="15" stroke={accent} strokeWidth="1.5" />
+      </svg>
+    ),
+  },
+
+  // TVBS 健康2.0 - 名醫養生與電視生活醫學
+  tvbs_health: {
+    gradientClass: "from-slate-950 via-red-950 to-slate-900",
+    accentColor: "#ef4444",
+    agencyBadge: "TVBS 健康2.0",
+    categoryLabel: "生活醫學 • 名醫養生指南",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <rect x="22" y="26" width="56" height="48" rx="8" stroke={accent} strokeWidth="3" />
+        <polygon points="44,38 62,50 44,62" fill={accent} fillOpacity="0.4" stroke={accent} strokeWidth="2" />
+      </svg>
+    ),
+  },
+
+  // Heho健康 - 健康圖解與實用醫學
+  heho: {
+    gradientClass: "from-teal-950 via-cyan-950 to-slate-950",
+    accentColor: "#2dd4bf",
+    agencyBadge: "Heho健康",
+    categoryLabel: "健康圖解 • 實用醫學生活",
+    iconSvg: (accent) => (
+      <svg className="h-full w-full opacity-35" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="32" stroke={accent} strokeWidth="3" />
+        <path d="M34 50 L46 62 L66 38" stroke={accent} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
 };
 
 // 預設官方公報風格
@@ -253,6 +437,7 @@ export default function ThematicCover({
   title,
   deptName,
   compact = false,
+  heroMode = false,
 }: ThematicCoverProps) {
   const isGov = isGovSource(sourceName);
   const theme = useMemo(() => {
@@ -272,6 +457,22 @@ export default function ThematicCover({
       agencyBadge: label || DEFAULT_MEDIA_THEME.agencyBadge,
     };
   }, [sourceName, isGov]);
+
+  if (heroMode) {
+    return (
+      <div
+        className={`relative flex h-full w-full overflow-hidden bg-gradient-to-br ${theme.gradientClass} select-none`}
+      >
+        {/* Background SVG Grid pattern */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#ffffff0e_1px,transparent_1px)] [background-size:16px_16px] opacity-75" />
+
+        {/* Large Thematic Watermark Vector in the background */}
+        <div className="pointer-events-none absolute -right-6 -bottom-6 h-64 w-64 sm:h-80 sm:w-80 opacity-40">
+          {theme.iconSvg(theme.accentColor)}
+        </div>
+      </div>
+    );
+  }
 
   if (compact) {
     return (

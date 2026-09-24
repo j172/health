@@ -197,15 +197,38 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(`
     UPDATE news_card_images SET provider_image_id = pixabay_id WHERE provider_image_id IS NULL
   `);
+  // Unlock single-use uniqueness on news_card_images (local_path, provider_image_id,
+  // content_sha256, pixabay_id) so previously collected stock images can be safely
+  // reused across different news articles (Tier 3 fallback).
+  const dropIndexSafely = async (table: string, indexName: string) => {
+    try {
+      const [rows] = await p.query<RowDataPacket[]>(
+        `SELECT 1 FROM information_schema.statistics
+         WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ? LIMIT 1`,
+        [table, indexName]
+      );
+      if (rows && rows.length > 0) {
+        await p.query(`ALTER TABLE \`${table}\` DROP INDEX \`${indexName}\``);
+      }
+    } catch {
+      // safe fallback if already dropped or no permission
+    }
+  };
+
+  await dropIndexSafely("news_card_images", "uq_card_image_path");
+  await dropIndexSafely("news_card_images", "uq_card_image_provider_image");
+  await dropIndexSafely("news_card_images", "uq_card_image_hash");
+  await dropIndexSafely("news_card_images", "uq_card_image_pixabay");
+
   await p.query(`
     ALTER TABLE news_card_images
-      ADD UNIQUE KEY IF NOT EXISTS uq_card_image_provider_image (provider, provider_image_id)
+      ADD INDEX IF NOT EXISTS idx_card_image_provider_image (provider, provider_image_id),
+      ADD INDEX IF NOT EXISTS idx_card_image_path (local_path(255))
   `);
+
   // pixabay_id was NOT NULL UNIQUE back when this table only ever held
   // Pixabay rows. Pexels/Unsplash rows have no pixabay_id at all, so the
-  // column has to accept NULL (uq_card_image_pixabay's UNIQUE KEY still
-  // works fine with multiple NULLs — MySQL doesn't treat those as
-  // duplicates). Safe to re-run: a no-op once already nullable.
+  // column has to accept NULL. Safe to re-run: a no-op once already nullable.
   await p.query(`
     ALTER TABLE news_card_images
       MODIFY COLUMN pixabay_id BIGINT NULL

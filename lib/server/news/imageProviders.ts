@@ -65,9 +65,12 @@ export interface ImageProvider {
 
 /** Thrown by ImageProvider.download() on HTTP 429, wrapping each provider's own *RateLimitError class into one type cardImages.ts can check uniformly. */
 export class ProviderRateLimitError extends Error {
-  constructor(public readonly provider: ProviderName) {
+  readonly provider: ProviderName;
+
+  constructor(provider: ProviderName) {
     super(`${provider} image download was rate-limited (HTTP 429).`);
     this.name = "ProviderRateLimitError";
+    this.provider = provider;
   }
 }
 
