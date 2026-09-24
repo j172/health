@@ -4,6 +4,7 @@ const nextConfig = {
   reactStrictMode: true,
   distDir: ".next3",
   images: {
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     dangerouslyAllowSVG: true,
     contentDispositionType: "attachment",
