@@ -2,7 +2,7 @@ import Link from "next/link";
 import { buildBreadcrumbJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
 export const runtime = "nodejs";
 
 const LAST_UPDATED = "2026-09-14";

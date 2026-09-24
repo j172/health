@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type { EmergencyRoomItem, EmergencyOverviewResult } from "@/lib/server/emergencyRooms/types";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const REGION_TABS = [
   { id: "", label: "全台責任醫院" },
@@ -75,6 +77,7 @@ export default function EmergencyRoomContent({
 }: {
   initialData?: EmergencyOverviewResult;
 }) {
+  const { locale } = useLanguage();
   const [data, setData] = useState<EmergencyOverviewResult | undefined>(initialData);
   const [loading, setLoading] = useState(!initialData);
   const [keyword, setKeyword] = useState("");
@@ -387,12 +390,17 @@ export default function EmergencyRoomContent({
                     <div className="flex items-center gap-2">
                       {hospital.lat && hospital.lng && (
                         <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${hospital.lat},${hospital.lng}`}
+                          href={buildGoogleMapsDirUrl({
+                            name: hospital.hospital_name,
+                            lat: hospital.lat,
+                            lng: hospital.lng,
+                          })}
                           target="_blank"
                           rel="noreferrer noopener"
                           className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                         >
-                          🗺️ 路線導航
+                          <span>{getNavigationButtonLabel(locale)}</span>
+                          <span className="text-[10px]">↗</span>
                         </a>
                       )}
                       {hospital.phone && (

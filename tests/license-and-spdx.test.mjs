@@ -66,4 +66,14 @@ test("locales contain footer license string definitions", () => {
   assert.ok(en.footer?.license, "en.json must have footer.license");
   assert.match(en.footer.license, /MIT/);
   assert.match(en.footer.license, /CC0-1\.0/);
+
+  const ja = JSON.parse(fs.readFileSync("locales/ja.json", "utf8"));
+  assert.ok(ja.footer?.license, "ja.json must have footer.license");
+  assert.match(ja.footer.license, /MIT/);
+  assert.match(ja.footer.license, /CC0-1\.0/);
+
+  const ko = JSON.parse(fs.readFileSync("locales/ko.json", "utf8"));
+  assert.ok(ko.footer?.license, "ko.json must have footer.license");
+  assert.match(ko.footer.license, /MIT/);
+  assert.match(ko.footer.license, /CC0-1\.0/);
 });

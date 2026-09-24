@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import CpcPricesClient from "@/components/Tools/CpcPricesClient";
 import { getCpcPrices, getCpcPriceSummary } from "@/lib/server/cpc/prices";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/cpc-prices`;

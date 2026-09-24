@@ -6,6 +6,8 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination, type PageSizeOption } from "@/lib/hooks/usePagination";
 import type { PetAdoptionItem } from "@/lib/server/petAdoption/types";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const TAIWAN_CITIES = [
   "全台縣市",
@@ -34,6 +36,7 @@ const TAIWAN_CITIES = [
 ];
 
 export default function PetAdoptionContent() {
+  const { locale } = useLanguage();
   const [kind, setKind] = useState<string>("all");
   const [sex, setSex] = useState<string>("all");
   const [bodytype, setBodytype] = useState<string>("all");
@@ -351,15 +354,16 @@ export default function PetAdoptionContent() {
                       ) : null}
                       {pet.shelter_address ? (
                         <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                            (pet.shelter_name ? pet.shelter_name + " " : "") + pet.shelter_address
-                          )}`}
+                          href={buildGoogleMapsDirUrl({
+                            name: pet.shelter_name || "動物收容所",
+                            address: pet.shelter_address,
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
                           title="在 Google Maps 查看位置"
                         >
-                          🧭 導航
+                          {getNavigationButtonLabel(locale)}
                         </a>
                       ) : null}
                     </div>

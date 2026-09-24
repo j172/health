@@ -6,6 +6,8 @@ import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeoloca
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const AedMapLeaflet = dynamic(() => import("@/components/Tools/AedMapLeaflet"), {
   ssr: false,
@@ -62,6 +64,7 @@ export default function AedContent({
 }: {
   initialFacilities?: FacilityListItem[];
 }) {
+  const { locale } = useLanguage();
   const geo = useGeolocation();
   const [facilities, setFacilities] = useState<FacilityListItem[]>(initialFacilities);
   const [loading, setLoading] = useState(false);
@@ -268,12 +271,18 @@ export default function AedContent({
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2 dark:border-slate-800">
                 {item.lat && item.lng ? (
                   <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`}
+                    href={buildGoogleMapsDirUrl({
+                      name: item.name,
+                      address: item.address,
+                      lat: item.lat,
+                      lng: item.lng,
+                    })}
                     target="_blank"
                     rel="noreferrer noopener"
                     className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700"
                   >
-                    🗺️ 一鍵導航
+                    <span>{getNavigationButtonLabel(locale)}</span>
+                    <span className="text-[10px]">↗</span>
                   </a>
                 ) : null}
                 {item.phone && (
@@ -394,12 +403,18 @@ export default function AedContent({
                   )}
                   {item.lat && item.lng && (
                     <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`}
+                      href={buildGoogleMapsDirUrl({
+                        name: item.name,
+                        address: item.address,
+                        lat: item.lat,
+                        lng: item.lng,
+                      })}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     >
-                      導航 ↗
+                      <span>{getNavigationButtonLabel(locale)}</span>
+                      <span className="text-[10px]">↗</span>
                     </a>
                   )}
                 </div>

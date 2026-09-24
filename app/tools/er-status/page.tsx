@@ -6,7 +6,7 @@ import EmergencyRoomContent from "@/components/Tools/EmergencyRoomContent";
 import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 import { getEmergencyRoomOverview } from "@/lib/server/emergencyRooms/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/er-status`;

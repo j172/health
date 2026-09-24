@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import type { YouBikeStation } from "@/lib/server/youbike/types";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const CITIES = [
   { code: "", label: "附近 3km" },
@@ -25,6 +27,7 @@ export default function YoubikeContent({
 }: {
   initialStations?: YouBikeStation[];
 }) {
+  const { locale } = useLanguage();
   const location = useGeolocation();
   const [stations, setStations] = useState<YouBikeStation[]>(initialStations);
   const [loading, setLoading] = useState(false);
@@ -394,12 +397,18 @@ export default function YoubikeContent({
                       </div>
                       {station.lat && station.lng && (
                         <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`}
+                          href={buildGoogleMapsDirUrl({
+                            name: station.nameTw,
+                            address: station.addressTw,
+                            lat: station.lat,
+                            lng: station.lng,
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-1 font-medium text-yellow-600 hover:text-yellow-700 dark:text-yellow-400"
+                          className="inline-flex items-center gap-1 rounded-lg border border-yellow-200 bg-yellow-50/50 px-2.5 py-1 text-xs font-semibold text-yellow-700 hover:bg-yellow-100 dark:border-yellow-800 dark:bg-yellow-950/30 dark:text-yellow-300"
                         >
-                          <span>🗺️ 導航路線</span>
+                          <span>{getNavigationButtonLabel(locale)}</span>
+                          <span className="text-[10px]">↗</span>
                         </a>
                       )}
                     </div>

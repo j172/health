@@ -7,6 +7,8 @@ import type { ContraceptionPoint } from "./ContraceptionMapLeaflet";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const ContraceptionMapLeaflet = dynamic(
   () => import("./ContraceptionMapLeaflet"),
@@ -49,6 +51,7 @@ const COUNTY_COORDINATES: Record<string, [number, number]> = {
 };
 
 export default function ContraceptionMapContent() {
+  const { locale } = useLanguage();
   const location = useGeolocation();
   const [points, setPoints] = useState<ContraceptionPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -300,14 +303,18 @@ export default function ContraceptionMapContent() {
                         </span>
                       </div>
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          `${p.name} ${p.address}`,
-                        )}`}
+                        href={buildGoogleMapsDirUrl({
+                          name: p.name,
+                          address: p.address,
+                          lat: p.lat,
+                          lng: p.lng,
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-semibold text-sky-600 hover:underline"
+                        className="inline-flex items-center gap-1 rounded-lg border border-sky-200 bg-sky-50/60 px-2.5 py-1 text-xs font-semibold text-sky-700 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300"
                       >
-                        導航 ↗
+                        <span>{getNavigationButtonLabel(locale)}</span>
+                        <span className="text-[10px]">↗</span>
                       </a>
                     </div>
                     <h3 className="mt-2 text-base font-bold text-neutral-800 dark:text-slate-100">

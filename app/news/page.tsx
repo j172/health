@@ -5,7 +5,7 @@ import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import StabloNewsLayout, { NEWS_PAGE_SIZE_OPTIONS, DEFAULT_NEWS_PAGE_SIZE } from "@/components/News/StabloNewsLayout";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const runtime = "nodejs";
 
 const resolvePageSize = (sizeParam?: string): number => {

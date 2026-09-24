@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 import type {
   WaterOutageItem,
   EmergencyWaterStation,
@@ -45,6 +47,7 @@ const FALLBACK_DATA: WaterOutagesOverview = {
 };
 
 export default function WaterOutagesContent() {
+  const { locale } = useLanguage();
   const location = useGeolocation();
   const [data, setData] = useState<WaterOutagesOverview>(FALLBACK_DATA);
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
@@ -288,12 +291,18 @@ export default function WaterOutagesContent() {
                     {station.contactPhone ? `電話: ${station.contactPhone}` : "免付費客服: 1910"}
                   </span>
                   <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${station.lat},${station.lng}`}
+                    href={buildGoogleMapsDirUrl({
+                      name: station.name,
+                      address: station.address,
+                      lat: station.lat,
+                      lng: station.lng,
+                    })}
                     target="_blank"
                     rel="noreferrer noopener"
                     className="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
                   >
-                    路線導航 ↗
+                    <span>{getNavigationButtonLabel(locale)}</span>
+                    <span className="text-[10px]">↗</span>
                   </a>
                 </div>
               </div>
