@@ -309,7 +309,7 @@ export default function SiteFooter() {
         <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-600 sm:flex-row sm:items-center dark:border-slate-900">
           <p suppressHydrationWarning>
             &copy; {new Date().getFullYear()} j172tw Healthz.{" "}
-            {t("footer.rights", "版權所有。")}
+            {t("footer.license", "程式碼採 MIT 授權 · 結構化資料採 CC0-1.0 釋出")}
           </p>
           <p>
             {t(

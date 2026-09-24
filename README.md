@@ -144,3 +144,19 @@ cmd /c npm run build
 ## 📄 專案文件與規格 (Documentation)
 
 * 完整的技術設計與多語言規格說明請參閱 [docs/SPECIFICATION.md](docs/SPECIFICATION.md)。
+* 授權規格請參閱 [docs/specs/dual-license-mit-and-cc0-spdx.md](docs/specs/dual-license-mit-and-cc0-spdx.md)。
+
+---
+
+## ⚖️ 授權條款與資料權益 (License & Attribution)
+
+本專案採行複合式雙重授權機制（SPDX: `MIT AND CC0-1.0`），明確劃分軟體原始碼與衍生結構化資料：
+
+* **原始程式碼 (Code)**：採用 [MIT License](LICENSE)。涵蓋所有 Next.js、React、TypeScript、Node.js 邏輯與樣式表。
+  * Copyright (c) 2023 Next.js Templates
+  * Copyright (c) 2026 j172tw (https://health.j172.tw)
+* **資料庫結構、中繼資料與 AI 摘要 (Data & Schemas)**：以 [CC0-1.0 Universal](https://spdx.org/licenses/CC0-1.0)（公眾領域貢獻宣告）釋出。包含本平臺原創之資料庫 Schema、清洗正規化規則、地理座標補全（Geocoding）、AI 結構化新聞摘要（`geo_summary`）與健康試算常數表，鼓勵 AI Agent 與開放資料社群自由利用。
+* **上游政府與第三方權益宣告**：
+  * **臺灣政府開放資料**：底層公衛機構、新聞、氣象、空品與停水等數據源自政府公開資料，下游使用者利用該等原始資料時仍應依《政府資料開放授權條款-第1版》（OGDL-Taiwan-1.0）標記來源機關。
+  * **媒體新聞引述**：外部媒體新聞標題與摘要受原著作權保護，本平臺依合理使用原則進行公衛資訊彙整。
+
