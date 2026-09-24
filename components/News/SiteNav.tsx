@@ -130,16 +130,16 @@ export default function SiteNav() {
         const zhLabel = tool.navLabel ?? tool.title;
         return {
           href: `/tools/${tool.slug}`,
-          label: locale === "en" ? t(`catalog.${tool.slug}`, zhLabel) : zhLabel,
+          label: locale !== "zh-TW" ? t(`catalog.${tool.slug}`, zhLabel) : zhLabel,
         };
       })
-      .sort((a, b) => compareByStrokeOrder(a.label, b.label));
+      .sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
     return {
       id: meta.group,
       label: t(meta.labelKey, meta.labelDefault),
       items,
     };
-  }).sort((a, b) => compareByStrokeOrder(a.label, b.label));
+  }).sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);

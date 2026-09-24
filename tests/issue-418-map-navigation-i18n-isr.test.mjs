@@ -106,3 +106,28 @@ test("ISR performance optimizations are properly configured", () => {
   assert.ok(!powerGridSrc.includes('export const dynamic = "force-dynamic";'));
   assert.ok(powerGridSrc.includes("export const revalidate = 60;"));
 });
+
+test("compareByStrokeOrder handles Japanese, Korean, and unknown characters without throwing", async () => {
+  const { compareByStrokeOrder } = await import("../lib/server/tools/strokeOrder.ts");
+  
+  // Previously crashed with: No stroke count for "医" (from label "医療・介護施設")
+  assert.doesNotThrow(() => {
+    compareByStrokeOrder("医療・介護施設", "生活・安全ツール");
+  });
+
+  assert.doesNotThrow(() => {
+    compareByStrokeOrder("의료 및 돌봄", "생활 안전");
+  });
+
+  // Supports locale-based sorting
+  const jaSorted = ["生活・安全ツール", "医療・介護施設"].sort((a, b) =>
+    compareByStrokeOrder(a, b, "ja")
+  );
+  assert.ok(Array.isArray(jaSorted));
+
+  const koSorted = ["생활 안전", "의료 및 돌봄"].sort((a, b) =>
+    compareByStrokeOrder(a, b, "ko")
+  );
+  assert.ok(Array.isArray(koSorted));
+});
+

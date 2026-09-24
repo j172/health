@@ -145,7 +145,7 @@ export default function SiteFooter() {
   // the SEO title when not set. Never affects the tool page's own metadata.
   const localizeTitle = (item: ToolCatalogEntry) => {
     const zhLabel = item.navLabel ?? item.title;
-    return locale === "en" ? t(`catalog.${item.slug}`, zhLabel) : zhLabel;
+    return locale !== "zh-TW" ? t(`catalog.${item.slug}`, zhLabel) : zhLabel;
   };
 
   const overviewLinks = [
@@ -210,8 +210,8 @@ export default function SiteFooter() {
   const categoryColumns = TOOL_GROUP_META.map((meta) => ({
     id: meta.group,
     label: t(meta.labelKey, meta.labelDefault),
-    tools: toolsInGroup(meta.group, localizeTitle),
-  })).sort((a, b) => compareByStrokeOrder(a.label, b.label));
+    tools: toolsInGroup(meta.group, localizeTitle, locale),
+  })).sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
 
   return (
     <footer className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">

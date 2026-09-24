@@ -3352,9 +3352,10 @@ export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>
 export function toolsInGroup(
   group: ToolGroup,
   label: (tool: ToolCatalogEntry) => string = (tool) => tool.title,
+  locale?: string,
 ): ToolCatalogEntry[] {
   return TOOL_CATALOG.filter((tool) => tool.group === group).sort((a, b) =>
-    compareByStrokeOrder(label(a), label(b)),
+    compareByStrokeOrder(label(a), label(b), locale),
   );
 }
 
