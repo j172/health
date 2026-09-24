@@ -58,6 +58,7 @@
     "loading": "載入中..."
   },
   "footer": {
+    "license": "程式碼採 MIT 授權 · 結構化資料採 CC0-1.0 釋出",
     "rights": "版權所有。",
     "privacy": "隱私權政策",
     "overview": "全站總覽",

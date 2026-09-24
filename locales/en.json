@@ -164,5 +164,9 @@
     "lineLoose": "Loose",
     "dialogLabel": "Immersive reading mode",
     "summary": "Key summary"
+  },
+  "footer": {
+    "license": "Code licensed under MIT · Structured data under CC0-1.0",
+    "disclaimer": "Data aggregated from government and public health open APIs and RSS feeds. Official agency announcements prevail."
   }
 }

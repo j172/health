@@ -36,6 +36,9 @@ export async function GET(): Promise<Response> {
     `- XML Sitemap: ${baseUrl}/sitemap.xml`,
     `- Google News Sitemap: ${baseUrl}/news-sitemap.xml`,
     "",
+    "## 授權與 AI 取用條款 (License & Open Access)",
+    `- [SPDX: MIT AND CC0-1.0](${baseUrl}/LICENSE): 專案程式碼採 MIT License；本全量知識庫、結構化中繼資料與計算公式採 CC0-1.0 Universal 公眾領域宣告，供 AI 與研究人員自由取用。`,
+    "",
     "## 30+ 款健康計算工具、評估量表與公衛資料庫完整規格",
     "",
   ];
