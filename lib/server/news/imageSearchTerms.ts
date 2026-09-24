@@ -1,13 +1,13 @@
-import segmentitPkg from "segmentit";
+import * as segmentit from "segmentit";
 import type { Segment as SegmentType } from "segmentit";
 import { lookupChineseWord } from "@/lib/server/news/cedict";
 
 const SegmentClass =
-  (segmentitPkg as any).Segment ||
-  (segmentitPkg as any).default?.Segment;
+  (segmentit as any).Segment ||
+  (segmentit as any).default?.Segment;
 const initDefaultSegmentit =
-  (segmentitPkg as any).useDefault ||
-  (segmentitPkg as any).default?.useDefault;
+  (segmentit as any).useDefault ||
+  (segmentit as any).default?.useDefault;
 
 // Built on first use rather than at module load. useDefault() constructs a full
 // segmentation dictionary, and this module is pulled into any route that touches
