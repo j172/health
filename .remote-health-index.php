@@ -2073,6 +2073,52 @@ if (str_starts_with($path, '/images/')) {
     }
 }
 
+if (str_starts_with($path, '/_next/image')) {
+    $imgUrl = $_GET['url'] ?? '';
+    // 1. External HTTP(S) image -> 302 redirect directly to source
+    if (str_starts_with($imgUrl, 'http://') || str_starts_with($imgUrl, 'https://')) {
+        header('Location: ' . $imgUrl, true, 302);
+        header('Cache-Control: public, max-age=86400');
+        exit;
+    }
+
+    // 2. Local /images/... file -> serve directly from disk
+    if (str_starts_with($imgUrl, '/images/')) {
+        $relative = rawurldecode(substr($imgUrl, strlen('/images/')));
+        if ($relative !== '' && !str_contains($relative, "\0") && !str_contains($relative, '..')) {
+            $publicReal = realpath('/home/tw123457/health_app/public/images');
+            $fileReal = realpath('/home/tw123457/health_app/public/images/' . $relative);
+            if ($fileReal !== false && $publicReal !== false && is_file($fileReal) && str_starts_with($fileReal, $publicReal . DIRECTORY_SEPARATOR)) {
+                $ext = strtolower(pathinfo($fileReal, PATHINFO_EXTENSION));
+                $mimeTypes = [
+                    'png' => 'image/png',
+                    'jpg' => 'image/jpeg',
+                    'jpeg' => 'image/jpeg',
+                    'gif' => 'image/gif',
+                    'webp' => 'image/webp',
+                    'svg' => 'image/svg+xml',
+                    'ico' => 'image/x-icon',
+                ];
+                header('Content-Type: ' . ($mimeTypes[$ext] ?? 'application/octet-stream'));
+                header('Cache-Control: public, max-age=31536000, immutable');
+                header('Access-Control-Allow-Origin: *');
+                header('Content-Length: ' . filesize($fileReal));
+                if ($method !== 'HEAD') {
+                    readfile($fileReal);
+                }
+                exit;
+            }
+        }
+    }
+
+    // 3. Fallback: Unknown or nonexistent image requests must not touch Node.js
+    http_response_code(404);
+    header('Content-Type: text/plain; charset=utf-8');
+    header('Cache-Control: public, max-age=3600');
+    echo 'Image not found';
+    exit;
+}
+
 $target = 'http://127.0.0.1:3000' . $uri;
 
 if ($path === '/favicon.ico' || $path === '/images/favicon.ico') {
