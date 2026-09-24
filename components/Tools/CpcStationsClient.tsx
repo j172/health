@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const CpcStationMap = dynamic(() => import("@/components/Tools/CpcStationMap"), {
   ssr: false,
@@ -57,6 +59,7 @@ export default function CpcStationsClient({
   initialStations,
   allServices,
 }: CpcStationsClientProps) {
+  const { locale } = useLanguage();
   const geo = useGeolocation();
   const [userLocation, setUserLocation] = useState({
     lat: GEO_DEFAULTS.lat,
@@ -504,15 +507,19 @@ export default function CpcStationsClient({
                     </button>
 
                     <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                        st.address || `${st.lat},${st.lng}`,
-                      )}`}
+                      href={buildGoogleMapsDirUrl({
+                        name: st.name,
+                        address: st.address,
+                        lat: st.lat,
+                        lng: st.lng,
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-300"
                     >
-                      Google Maps 導航 ↗
+                      <span>{getNavigationButtonLabel(locale)}</span>
+                      <span className="text-[10px]">↗</span>
                     </a>
                   </div>
                 </div>

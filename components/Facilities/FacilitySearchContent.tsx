@@ -15,6 +15,8 @@ import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -134,6 +136,7 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
     charityFilter,
   } = config;
 
+  const { locale } = useLanguage();
   const location = useGeolocation();
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -561,6 +564,24 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
                   {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">（尚未完成地理定位，暫不顯示於地圖）</p>}
+
+                  {/* Google 地圖導航按鈕 */}
+                  <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-slate-800">
+                    <a
+                      href={buildGoogleMapsDirUrl({
+                        name: f.name,
+                        address: f.address,
+                        lat: f.lat,
+                        lng: f.lng,
+                      })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
+                    >
+                      <span>{getNavigationButtonLabel(locale)}</span>
+                      <span className="text-[10px] text-slate-400">↗</span>
+                    </a>
+                  </div>
                 </div>
               ))}
               <Pagination

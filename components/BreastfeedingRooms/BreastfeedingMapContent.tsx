@@ -7,6 +7,8 @@ import type { BreastfeedingRoomPoint } from "./BreastfeedingMapLeaflet";
 import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const BreastfeedingMapLeaflet = dynamic(
   () => import("./BreastfeedingMapLeaflet"),
@@ -45,6 +47,7 @@ const COUNTY_COORDINATES: Record<string, [number, number]> = {
 };
 
 export default function BreastfeedingMapContent() {
+  const { locale } = useLanguage();
   const location = useGeolocation();
   const [points, setPoints] = useState<BreastfeedingRoomPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -285,14 +288,18 @@ export default function BreastfeedingMapContent() {
                       </span>
                     </div>
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        `${p.name} ${p.address}`,
-                      )}`}
+                      href={buildGoogleMapsDirUrl({
+                        name: p.name,
+                        address: p.address,
+                        lat: p.lat,
+                        lng: p.lng,
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-pink-600 hover:underline"
+                      className="inline-flex items-center gap-1 rounded-lg border border-pink-200 bg-pink-50/60 px-2.5 py-1 text-xs font-semibold text-pink-700 hover:bg-pink-100 dark:border-pink-800 dark:bg-pink-950/40 dark:text-pink-300"
                     >
-                      導航 ↗
+                      <span>{getNavigationButtonLabel(locale)}</span>
+                      <span className="text-[10px]">↗</span>
                     </a>
                   </div>
                   <h3 className="mt-2 text-base font-bold text-neutral-800 dark:text-slate-100">

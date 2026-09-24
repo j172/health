@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo } from "react";
 import type { CulturalActivityItem } from "@/app/api/culture/shows/route";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const TAIWAN_CITIES = [
   "全部縣市",
@@ -63,6 +65,7 @@ const CATEGORY_TABS = [
 ];
 
 export default function CulturalEventsContent() {
+  const { locale } = useLanguage();
   const [items, setItems] = useState<CulturalActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -431,14 +434,15 @@ export default function CulturalEventsContent() {
                   <div className="mt-4 flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
                     {firstShow?.location && (
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                          firstShow.locationName || firstShow.location
-                        )}`}
+                        href={buildGoogleMapsDirUrl({
+                          name: firstShow.locationName || item.title,
+                          address: firstShow.location,
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
                       >
-                        🗺️ 場館導航
+                        {getNavigationButtonLabel(locale)}
                       </a>
                     )}
 

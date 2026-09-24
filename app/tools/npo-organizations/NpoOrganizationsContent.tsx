@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import type { NpoOrganizationItem } from "@/lib/server/npoOrganizations/queries";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const TAIWAN_CITIES = [
   "全部縣市",
@@ -48,6 +50,7 @@ const NPO_ATTRIBUTES = [
 ];
 
 export default function NpoOrganizationsContent() {
+  const { locale } = useLanguage();
   const [items, setItems] = useState<NpoOrganizationItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -485,6 +488,18 @@ export default function NpoOrganizationsContent() {
                       <span>
                         {item.website.includes("facebook.com") ? "Facebook 粉專" : "官方網站"}
                       </span>
+                    </a>
+                  )}
+
+                  {item.address && (
+                    <a
+                      href={buildGoogleMapsDirUrl({ name: item.name, address: item.address })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                      <span>{getNavigationButtonLabel(locale)}</span>
+                      <span className="text-[10px]">↗</span>
                     </a>
                   )}
 

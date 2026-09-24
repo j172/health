@@ -42,12 +42,41 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${baseUrl}/tools/${tool.slug}`,
     changeFrequency: "monthly" as const,
     priority: 0.6,
+    alternates: {
+      languages: {
+        "zh-TW": `${baseUrl}/tools/${tool.slug}`,
+        en: `${baseUrl}/tools/${tool.slug}?lang=en`,
+        ja: `${baseUrl}/tools/${tool.slug}?lang=ja`,
+        ko: `${baseUrl}/tools/${tool.slug}?lang=ko`,
+      },
+    },
   }));
 
+  const homeAlternates = {
+    languages: {
+      "zh-TW": baseUrl,
+      en: `${baseUrl}?lang=en`,
+      ja: `${baseUrl}?lang=ja`,
+      ko: `${baseUrl}?lang=ko`,
+    },
+  };
+
   return [
-    { url: baseUrl, changeFrequency: "daily", priority: 1 },
+    { url: baseUrl, changeFrequency: "daily", priority: 1, alternates: homeAlternates },
     { url: `${baseUrl}/news`, changeFrequency: "hourly", priority: 0.9 },
-    { url: `${baseUrl}/tools`, changeFrequency: "monthly", priority: 0.8 },
+    {
+      url: `${baseUrl}/tools`,
+      changeFrequency: "monthly",
+      priority: 0.8,
+      alternates: {
+        languages: {
+          "zh-TW": `${baseUrl}/tools`,
+          en: `${baseUrl}/tools?lang=en`,
+          ja: `${baseUrl}/tools?lang=ja`,
+          ko: `${baseUrl}/tools?lang=ko`,
+        },
+      },
+    },
     { url: `${baseUrl}/llm-info`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
     ...toolEntries,

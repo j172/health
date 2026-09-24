@@ -44,13 +44,23 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  alternates: {
+    canonical: getBaseUrl(),
+    languages: {
+      "zh-TW": getBaseUrl(),
+      en: `${getBaseUrl()}?lang=en`,
+      ja: `${getBaseUrl()}?lang=ja`,
+      ko: `${getBaseUrl()}?lang=ko`,
+      "x-default": getBaseUrl(),
+    },
+  },
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
     locale: "zh_TW",
-    alternateLocale: ["en_US"],
+    alternateLocale: ["en_US", "ja_JP", "ko_KR"],
     images: [{ url: `${getBaseUrl()}/images/og/home.png`, width: 1200, height: 630, alt: SITE_NAME }],
   },
   twitter: {

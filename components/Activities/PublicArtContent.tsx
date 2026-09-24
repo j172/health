@@ -9,6 +9,8 @@ import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -81,6 +83,7 @@ const TAIWAN_CITIES = [
 const FIELD_TYPES = ["全部場域", "交通建設", "教育機構", "休閒運動", "政府機關", "醫療院所", "其他場域"];
 
 export default function PublicArtContent() {
+  const { locale } = useLanguage();
   const geo = useGeolocation();
   const [items, setItems] = useState<PublicArtItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -531,14 +534,15 @@ export default function PublicArtContent() {
                   {/* Footer action buttons */}
                   <div className="flex items-center gap-2 border-t border-slate-100 p-4 pt-3 dark:border-slate-800">
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        `${item.city} ${item.location}`
-                      )}`}
+                      href={buildGoogleMapsDirUrl({
+                        name: item.title,
+                        address: `${item.city} ${item.location}`,
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
                     >
-                      🗺️ Google 地圖導航
+                      {getNavigationButtonLabel(locale)}
                     </a>
 
                     {item.sourceUrl && (

@@ -9,11 +9,13 @@ import React, {
 } from "react";
 import zhTW from "@/locales/zh-TW.json";
 import en from "@/locales/en.json";
+import ja from "@/locales/ja.json";
+import ko from "@/locales/ko.json";
 
-export type Locale = "zh-TW" | "en";
+export type Locale = "zh-TW" | "en" | "ja" | "ko";
 
 /** The locales this app ships. Order is display order. */
-export const SUPPORTED_LOCALES: Locale[] = ["zh-TW", "en"];
+export const SUPPORTED_LOCALES: Locale[] = ["zh-TW", "en", "ja", "ko"];
 
 const isSupportedLocale = (value: string | null | undefined): value is Locale =>
   typeof value === "string" && (SUPPORTED_LOCALES as string[]).includes(value);
@@ -21,6 +23,8 @@ const isSupportedLocale = (value: string | null | undefined): value is Locale =>
 const dictionaries: Record<Locale, Record<string, unknown>> = {
   "zh-TW": zhTW,
   en: en,
+  ja: ja,
+  ko: ko,
 };
 
 interface LanguageContextType {
@@ -42,13 +46,27 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 const resolveStoredLocale = (): Locale => {
   if (typeof window === "undefined") return "zh-TW";
   try {
+    // 1. Check URL query param (?lang=ja / ?lang=ko / ?lang=en / ?lang=zh-tw)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get("lang")?.toLowerCase();
+    if (urlLang) {
+      if (urlLang === "ja" || urlLang === "ja-jp") return "ja";
+      if (urlLang === "ko" || urlLang === "ko-kr") return "ko";
+      if (urlLang === "en" || urlLang === "en-us") return "en";
+      if (urlLang === "zh-tw" || urlLang === "zh" || urlLang === "zh-hant") return "zh-TW";
+    }
+
+    // 2. Check stored preference in localStorage or cookie
     const storedLocale = localStorage.getItem("locale");
     if (isSupportedLocale(storedLocale)) return storedLocale;
 
     const cookieMatch = document.cookie.match(/(?:^|; )locale=([^;]*)/);
     if (cookieMatch && isSupportedLocale(cookieMatch[1])) return cookieMatch[1];
 
+    // 3. Auto-detect browser language
     const navLang = navigator.language.toLowerCase();
+    if (navLang.startsWith("ja")) return "ja";
+    if (navLang.startsWith("ko")) return "ko";
     if (navLang.startsWith("en")) return "en";
   } catch {}
   return "zh-TW";
@@ -68,6 +86,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({
     const detected = resolveStoredLocale();
     if (detected !== "zh-TW") {
       setUserLocale(detected);
+      try {
+        localStorage.setItem("locale", detected);
+        document.cookie = `locale=${detected}; path=/; max-age=31536000; SameSite=Lax`;
+      } catch {}
     }
 
     const onStorage = (e: StorageEvent) => {

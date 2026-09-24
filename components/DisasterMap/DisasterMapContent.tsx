@@ -15,6 +15,8 @@ import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries"
 import type { GroundwaterMapPoint } from "@/lib/server/wra/groundwaterQueries";
 import type { InundationRegion } from "@/lib/server/wra/fetchInundationRegions";
 import type { DebrisFlowAlertItem } from "@/lib/server/moa/types";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
 const DisasterMapLeaflet = dynamic(() => import("@/components/DisasterMap/DisasterMapLeaflet"), { ssr: false });
 
@@ -84,6 +86,7 @@ const formatUpdatedAt = (iso: string | null): string => {
 };
 
 export default function DisasterMapContent() {
+  const { locale } = useLanguage();
   const location = useGeolocation();
   const [points, setPoints] = useState<DisasterPoint[]>([]);
   const [inundationPoints, setInundationPoints] = useState<InundationPoint[]>([]);
@@ -468,12 +471,18 @@ export default function DisasterMapContent() {
                   <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center gap-2 dark:border-slate-800">
                     {item.lat && item.lng && (
                       <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${item.lat},${item.lng}`}
+                        href={buildGoogleMapsDirUrl({
+                          name: item.name,
+                          address: item.address,
+                          lat: item.lat,
+                          lng: item.lng,
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-indigo-600 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-indigo-700"
                       >
-                        🗺️ 路線
+                        <span>{getNavigationButtonLabel(locale)}</span>
+                        <span className="text-[10px]">↗</span>
                       </a>
                     )}
                     {item.phone && (

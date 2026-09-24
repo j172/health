@@ -5,7 +5,7 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import PowerGridOverviewContent from "@/components/Tools/PowerGridOverviewContent";
 import { getGenerationUnits, getGenerationMix, getRadiationStations } from "@/lib/server/power/queries";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 export const runtime = "nodejs";
 
 const canonical = `${getBaseUrl()}/tools/power-grid-overview`;

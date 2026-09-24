@@ -5,6 +5,7 @@ import {
   getNewsById,
   listNewsAssetsByNewsId,
   listRelatedNews,
+  listNewsForSitemap,
 } from "@/lib/server/news/queries";
 import {
   buildArticleGraphJsonLd,
@@ -33,6 +34,17 @@ export const runtime = "nodejs";
 // lib/server/cron/registerJobs.ts — matching the 60s edge s-maxage already
 // applied to /news/:path* in next.config.js.
 export const revalidate = 60;
+
+export async function generateStaticParams() {
+  try {
+    const items = await listNewsForSitemap(60);
+    return items.map((item) => ({
+      id: String(item.id),
+    }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
