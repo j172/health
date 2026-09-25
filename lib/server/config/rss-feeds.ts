@@ -304,7 +304,7 @@ export const RSS_FEEDS: FeedConfig[] = [
   {
     code: "udn_woman",
     name: "udn 女子漾",
-    url: "https://woman.udn.com/woman/rssfeed/123166",
+    url: "https://woman.udn.com/woman/rssfeed",
     sourceName: "udn_woman",
     skipDetailFetch: true,
   },
