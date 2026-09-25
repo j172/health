@@ -42,6 +42,7 @@ import { fetchTvbsHealthNews } from "@/lib/server/rss/fetchTvbsHealthNews";
 import { fetchUhoNews } from "@/lib/server/rss/fetchUhoNews";
 import { fetchCgmhNews } from "@/lib/server/rss/fetchCgmhNews";
 import { fetchCgmhPressNews } from "@/lib/server/rss/fetchCgmhPressNews";
+import { fetchModaNews } from "@/lib/server/rss/fetchModaNews";
 import { fetchSungfulKnowledge } from "@/lib/server/rss/fetchSungfulKnowledge";
 import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
 import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
@@ -734,6 +735,19 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += cgmhPressResult.skippedUnchanged;
       staleRejected += cgmhPressResult.staleRejected;
+
+      const modaResult = await processSpecialSource(
+        {
+          code: "moda_press",
+          name: "數位發展部－新聞發布",
+          url: "https://moda.gov.tw/press/press-releases/372",
+          sourceName: "moda",
+        },
+        fetchModaNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += modaResult.skippedUnchanged;
+      staleRejected += modaResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // Phase 15: Expanded Sexology, Family & Community Health Special Sources

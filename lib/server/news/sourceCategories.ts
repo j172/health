@@ -48,6 +48,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "hakka", label: "客家委員會" },
       { sourceName: "moi", label: "內政部" },
       { sourceName: "moe", label: "教育部" },
+      { sourceName: "moda", label: "數位發展部" },
     ],
   },
   {

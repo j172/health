@@ -160,6 +160,12 @@ const DETAIL_TEXT_SCOPING: Record<string, DetailTextScoping> = {
   // (fetchExpandedSources.ts); now that it fetches the detail page, `only`
   // keeps the county-menu noise out of detail_text.
   "familyedu.moe.gov.tw": { mode: "only", selector: "div.page-article" },
+
+  // 2026-09-26 (#420) — moda.gov.tw (數位發展部) press releases. The body prose
+  // sits cleanly inside div.article1.cpArticle. Restricting to this block removes
+  // the sidebar navigation, breadcrumbs, social share controls, rating buttons
+  // and the footer sitemap.
+  "moda.gov.tw": { mode: "only", selector: "div.article1.cpArticle" },
 };
 
 /**
