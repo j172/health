@@ -207,6 +207,13 @@ jobs:
           HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-moc-bookstores.mjs
 
+      - name: Import Taiwan Government Hotlines (~47 hotlines)
+        if: env.SYNC_TYPE == 'all' || env.SYNC_TYPE == 'facilities'
+        env:
+          ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          HEALTH_BASE_URL: http://127.0.0.1:18080
+        run: node scripts/import-government-hotlines.mjs
+
       - name: Stop SSH loopback bridge
         if: always()
         run: |

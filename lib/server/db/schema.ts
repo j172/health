@@ -1665,6 +1665,27 @@ export const TABLE_DDL = {
       INDEX idx_debris_level (alert_level)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  governmentHotlines: `
+    CREATE TABLE IF NOT EXISTS government_hotlines (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      number VARCHAR(32) NOT NULL,
+      name VARCHAR(128) NOT NULL,
+      agency VARCHAR(128) NOT NULL,
+      category VARCHAR(64) NOT NULL,
+      billing VARCHAR(128) NOT NULL,
+      service_hours VARCHAR(128) NOT NULL,
+      geographic_scope VARCHAR(128) NOT NULL,
+      alternative_number VARCHAR(255) NULL,
+      description TEXT NULL,
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_hotline_number (number),
+      INDEX idx_hotline_category (category),
+      INDEX idx_hotline_agency (agency)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

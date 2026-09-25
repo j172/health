@@ -136,6 +136,7 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.wraInundationSensors);
   await p.query(TABLE_DDL.wraWaterOutages);
   await p.query(TABLE_DDL.moaDebrisFlowAlerts);
+  await p.query(TABLE_DDL.governmentHotlines);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`
