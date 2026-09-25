@@ -61,6 +61,7 @@
     "license": "程式碼採 MIT 授權 · 結構化資料採 CC0-1.0 釋出",
     "rights": "版權所有。",
     "privacy": "隱私權政策",
+    "accessibility": "無障礙宣告",
     "overview": "全站總覽",
     "calculatorTools": "健康算盤與工具",
     "newsList": "健康新聞列表",
@@ -102,5 +103,13 @@
     "lineLoose": "寬鬆",
     "dialogLabel": "沉浸閱讀模式",
     "summary": "核心摘要"
+  },
+  "a11y": {
+    "skipRegion": "快速鍵與無障礙跳轉區塊",
+    "skipToMain": "跳至主要內容 (Alt+C)",
+    "skipToNav": "上方主要導覽 (Alt+U)",
+    "skipToFooter": "下方資訊區 (Alt+Z)",
+    "statementLink": "無障礙宣告與快捷鍵說明",
+    "accessibility": "無障礙宣告"
   }
 }

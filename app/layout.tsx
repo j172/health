@@ -8,6 +8,7 @@ import InAppBrowserBanner from "@/components/Common/InAppBrowserBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 import GoogleTag from "@/components/Analytics/GoogleTag";
 import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
+import SkipToContent from "@/components/Accessibility/SkipToContent";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -86,8 +87,13 @@ export default function RootLayout({
       <body className={`dark:bg-black ${inter.className}`} suppressHydrationWarning>
         <GoogleTag />
         <MicrosoftClarity />
+        <SkipToContent />
         <InAppBrowserBanner />
-        <Provider>{children}</Provider>
+        <Provider>
+          <div id="main-content" tabIndex={-1} className="outline-none">
+            {children}
+          </div>
+        </Provider>
         <PrivacyConsentBanner />
         <RegisterServiceWorker />
       </body>

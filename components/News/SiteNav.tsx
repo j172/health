@@ -162,7 +162,9 @@ export default function SiteNav() {
 
   return (
     <>
-      <div
+      <header
+        id="header-nav"
+        role="banner"
         className={`sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md transition-all duration-300 dark:bg-slate-950/90 ${
           scrolled
             ? "border-slate-200 shadow-xs dark:border-slate-800"
@@ -170,6 +172,15 @@ export default function SiteNav() {
         }`}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <a
+            href="#header-nav"
+            id="accesskey-u"
+            accessKey="U"
+            title="上方導覽區 (Alt+U)"
+            className="sr-only"
+          >
+            ::: 上方導覽區
+          </a>
           <div className="flex h-16 items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5">
@@ -222,6 +233,10 @@ export default function SiteNav() {
             <div className="flex items-center gap-3">
               {/* Cmd+K Search Trigger */}
               <button
+                id="search-trigger"
+                accessKey="S"
+                aria-label="搜尋新聞與工具 (Alt+S)"
+                title="搜尋新聞與工具 (Alt+S 或 ⌘K)"
                 onClick={() => setSearchOpen(true)}
                 className="dark:hover:bg-slate-850 flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs text-slate-600 shadow-xs transition-all hover:border-indigo-300 hover:bg-white hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700 dark:hover:text-indigo-400"
               >
@@ -337,7 +352,7 @@ export default function SiteNav() {
             ))}
           </div>
         )}
-      </div>
+      </header>
 
       {/* Modal Search */}
       {searchOpen ? (

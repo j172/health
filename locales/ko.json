@@ -139,7 +139,8 @@
     "antiCognitiveWarfare": "인지전 대응 ↗",
     "taiwanCriminals": "대만 범죄자 인덱스 ↗",
     "council2026": "2026 정치인 전과 기록 ↗",
-    "license": "소스코드는 MIT 라이선스 · 구조화 데이터는 CC0-1.0 적용"
+    "license": "소스코드는 MIT 라이선스 · 구조화 데이터는 CC0-1.0 적용",
+    "accessibility": "웹 접근성 선언"
   },
   "tts_title": "음성 낭독",
   "tts_play": "기사 낭독",
@@ -168,5 +169,13 @@
     "lineLoose": "넓게",
     "dialogLabel": "몰입형 리더 모드",
     "summary": "핵심 요약"
+  },
+  "a11y": {
+    "skipRegion": "단축키 및 웹 접근성 건너뛰기 링크",
+    "skipToMain": "본문 바로가기 (Alt+C)",
+    "skipToNav": "주요 탐색 바로가기 (Alt+U)",
+    "skipToFooter": "하단 정보 바로가기 (Alt+Z)",
+    "statementLink": "웹 접근성 선언 및 단축키 안내",
+    "accessibility": "웹 접근성 선언"
   }
 }

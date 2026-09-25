@@ -139,7 +139,8 @@
     "antiCognitiveWarfare": "認知戦対策 ↗",
     "taiwanCriminals": "台湾犯罪者名鑑 ↗",
     "council2026": "2026年 政治家経歴 ↗",
-    "license": "ソースコードは MIT ライセンス · 構造化データは CC0-1.0 で公開"
+    "license": "ソースコードは MIT ライセンス · 構造化データは CC0-1.0 で公開",
+    "accessibility": "アクセシビリティ宣言"
   },
   "tts_title": "音声読み上げ",
   "tts_play": "記事を読み上げる",
@@ -168,5 +169,13 @@
     "lineLoose": "広い",
     "dialogLabel": "イマーシブ読書モード",
     "summary": "要約・キーポイント"
+  },
+  "a11y": {
+    "skipRegion": "ショートカットとアクセシビリティスキップリンク",
+    "skipToMain": "メインコンテンツへスキップ (Alt+C)",
+    "skipToNav": "メインナビゲーションへスキップ (Alt+U)",
+    "skipToFooter": "フッター情報へスキップ (Alt+Z)",
+    "statementLink": "アクセシビリティ宣言とショートカット案内",
+    "accessibility": "アクセシビリティ宣言"
   }
 }

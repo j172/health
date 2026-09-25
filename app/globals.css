@@ -463,3 +463,15 @@ pre {
 .active-tab {
   @apply bg-stroke text-black dark:bg-blackho dark:text-white;
 }
+
+/* Accessibility Focus Rings (WCAG 2.1 AA 2.4.7 Focus Visible) */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+.dark :focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 2px;
+}
+

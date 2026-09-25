@@ -167,6 +167,15 @@
   },
   "footer": {
     "license": "Code licensed under MIT · Structured data under CC0-1.0",
-    "disclaimer": "Data aggregated from government and public health open APIs and RSS feeds. Official agency announcements prevail."
+    "disclaimer": "Data aggregated from government and public health open APIs and RSS feeds. Official agency announcements prevail.",
+    "accessibility": "Accessibility Statement"
+  },
+  "a11y": {
+    "skipRegion": "Keyboard Shortcuts & Accessibility Skip Links",
+    "skipToMain": "Skip to main content (Alt+C)",
+    "skipToNav": "Skip to navigation (Alt+U)",
+    "skipToFooter": "Skip to footer (Alt+Z)",
+    "statementLink": "Accessibility statement and shortcuts",
+    "accessibility": "Accessibility Statement"
   }
 }

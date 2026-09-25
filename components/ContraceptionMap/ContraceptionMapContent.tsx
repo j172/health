@@ -204,7 +204,11 @@ export default function ContraceptionMapContent() {
             className="w-40 sm:w-56 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs text-neutral-800 placeholder-neutral-400 shadow-sm focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           />
 
-          <span className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/70 dark:text-sky-300">
+          <span
+            role="status"
+            aria-live="polite"
+            className="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/70 dark:text-sky-300"
+          >
             符合 {filteredPoints.length} 處
           </span>
         </div>
@@ -238,6 +242,19 @@ export default function ContraceptionMapContent() {
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
           {error}
+        </div>
+      )}
+
+      {/* Skip map link for screen reader and keyboard users */}
+      {viewMode === "map" && (
+        <div className="sr-only focus-within:not-sr-only focus-within:mb-3">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          >
+            ⏩ 跳過地圖直接以無障礙清單模式瀏覽據點
+          </button>
         </div>
       )}
 

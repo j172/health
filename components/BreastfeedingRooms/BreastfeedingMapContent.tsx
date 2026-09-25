@@ -193,7 +193,11 @@ export default function BreastfeedingMapContent() {
             </button>
           </div>
 
-          <span className="rounded-full bg-pink-100 px-2.5 py-1 text-xs font-semibold text-pink-700 dark:bg-pink-950/70 dark:text-pink-300">
+          <span
+            role="status"
+            aria-live="polite"
+            className="rounded-full bg-pink-100 px-2.5 py-1 text-xs font-semibold text-pink-700 dark:bg-pink-950/70 dark:text-pink-300"
+          >
             符合 {filteredPoints.length} 處
           </span>
         </div>
@@ -227,6 +231,19 @@ export default function BreastfeedingMapContent() {
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
           {error}
+        </div>
+      )}
+
+      {/* Skip map link for screen reader and keyboard users */}
+      {viewMode === "map" && (
+        <div className="sr-only focus-within:not-sr-only focus-within:mb-3">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className="rounded-lg bg-pink-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500"
+          >
+            ⏩ 跳過地圖直接以無障礙清單模式瀏覽據點
+          </button>
         </div>
       )}
 

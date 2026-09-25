@@ -152,6 +152,7 @@ export default function SiteFooter() {
     { href: "/", label: t("nav.home", "首頁") },
     { href: "/news", label: t("footer.newsList", "健康新聞列表") },
     { href: "/privacy", label: t("footer.privacy", "隱私權政策") },
+    { href: "/accessibility", label: t("footer.accessibility", "無障礙宣告") },
     {
       href: "/llm-info",
       label: t("footer.llmInfo", "Hey AI, learn about j172.tw Healthz"),
@@ -214,8 +215,20 @@ export default function SiteFooter() {
   })).sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
 
   return (
-    <footer className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+    <footer
+      id="footer-info"
+      className="mt-20 border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+    >
       <div className="mx-auto max-w-7xl px-4 pt-14 pb-10 sm:px-6 lg:px-8">
+        <a
+          href="#footer-info"
+          id="accesskey-z"
+          accessKey="Z"
+          title="下方資訊區 (Alt+Z)"
+          className="sr-only"
+        >
+          ::: 下方資訊區
+        </a>
         {/* Brand Row */}
         <div className="mb-12 flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="max-w-sm">
