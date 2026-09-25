@@ -2119,6 +2119,12 @@ if (str_starts_with($path, '/_next/image')) {
     exit;
 }
 
+if ($path === '/emergency' || $path === '/emergency/') {
+    header('Location: /tools/emergency-hotlines', true, 307);
+    header('Cache-Control: public, max-age=86400');
+    exit;
+}
+
 $target = 'http://127.0.0.1:3000' . $uri;
 
 if ($path === '/favicon.ico' || $path === '/images/favicon.ico') {
