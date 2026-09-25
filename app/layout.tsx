@@ -87,9 +87,9 @@ export default function RootLayout({
       <body className={`dark:bg-black ${inter.className}`} suppressHydrationWarning>
         <GoogleTag />
         <MicrosoftClarity />
-        <SkipToContent />
-        <InAppBrowserBanner />
         <Provider>
+          <SkipToContent />
+          <InAppBrowserBanner />
           <div id="main-content" tabIndex={-1} className="outline-none">
             {children}
           </div>

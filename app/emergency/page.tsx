@@ -1,5 +1,1 @@
-import { redirect } from "next/navigation";
-
-export default function EmergencyRedirectPage() {
-  redirect("/tools/emergency-hotlines");
-}
+export { default, metadata } from "@/app/tools/emergency-hotlines/page";

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useLanguage } from "@/app/context/LanguageContext";
+import { useContext } from "react";
+import { LanguageContext } from "@/app/context/LanguageContext";
 
 /**
  * SkipToContent Component
@@ -18,7 +19,8 @@ import { useLanguage } from "@/app/context/LanguageContext";
  * - Direct link to /accessibility statement page.
  */
 export default function SkipToContent() {
-  const { t } = useLanguage();
+  const langContext = useContext(LanguageContext);
+  const t = langContext?.t ?? ((_key: string, fallback: string) => fallback);
 
   return (
     <div

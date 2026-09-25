@@ -39,7 +39,7 @@ interface LanguageContextType {
   tDynamic: (text: string | null | undefined) => string;
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(
+export const LanguageContext = createContext<LanguageContextType | undefined>(
   undefined,
 );
 

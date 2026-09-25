@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOutdoorSafetyOverview, getCityOutdoorSafety } from "@/lib/server/outdoorSafety/queries";
 
 export const revalidate = 180;
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
