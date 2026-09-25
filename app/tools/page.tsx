@@ -119,6 +119,7 @@ const TOOL_ICONS: Record<string, string> = {
   "pest-alerts": "🌱",
   "vet-clinics": "🐾",
   "latest-books": "📖",
+  "emergency-hotlines": "🚨",
 };
 
 interface ToolCategory {

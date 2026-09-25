@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTopViewedNews, type NewsListItem } from "@/lib/server/news/queries";
 import { listActiveCwaAlerts } from "@/lib/server/cwa/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
@@ -93,6 +94,65 @@ export default async function StabloNewsLayout({
       <main className="mx-auto max-w-7xl px-4 pt-8 pb-20 sm:px-6 lg:px-8">
         {variant === "home" && hero ? (
           <>
+            {/* Urgent Public Safety Hotline Quick Access */}
+            <section
+              className="mb-8 overflow-hidden rounded-2xl border border-rose-200/80 bg-linear-to-r from-rose-50/90 via-amber-50/70 to-orange-50/80 p-4 shadow-xs sm:p-5 dark:border-rose-900/60 dark:from-rose-950/40 dark:via-amber-950/30 dark:to-orange-950/30"
+              aria-label="急用緊急求助電話快捷直撥"
+            >
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl bg-rose-600 text-white shadow-md shadow-rose-500/20">
+                    <span className="text-xl">🚨</span>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-bold text-rose-700 dark:bg-rose-900/60 dark:text-rose-300">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                        </span>
+                        重要民生急救資訊
+                      </span>
+                      <h2 className="text-base font-extrabold tracking-tight text-slate-900 sm:text-lg dark:text-slate-100">
+                        全臺急用緊急專線速查與直撥目錄
+                      </h2>
+                    </div>
+                    <p className="mt-1 text-xs text-slate-600 sm:text-sm dark:text-slate-400">
+                      彙整 110、119、112、113、118 及全台 22 縣市 1999 直撥代表號，提供即時撥號與離線應急查詢。
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href="tel:110"
+                    className="inline-flex items-center gap-1 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-blue-700"
+                  >
+                    <span>🚔</span> 110 警政
+                  </a>
+                  <a
+                    href="tel:119"
+                    className="inline-flex items-center gap-1 rounded-xl bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-red-700"
+                  >
+                    <span>🚒</span> 119 救護
+                  </a>
+                  <a
+                    href="tel:112"
+                    className="inline-flex items-center gap-1 rounded-xl bg-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-amber-700"
+                  >
+                    <span>📶</span> 112 求救
+                  </a>
+                  <Link
+                    href="/tools/emergency-hotlines"
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-white px-3.5 py-1.5 text-xs font-extrabold text-rose-700 shadow-xs transition-colors hover:bg-rose-50 dark:border-rose-800 dark:bg-slate-900 dark:text-rose-300 dark:hover:bg-slate-800"
+                  >
+                    <span>47組完整專線與 1999 直撥</span>
+                    <span>➔</span>
+                  </Link>
+                </div>
+              </div>
+            </section>
+
             {/* NextBlog Hero Section */}
             <section className="mb-12" aria-label="焦點頭條新聞">
               <HeroPost hero={hero} secondary={secondary} />

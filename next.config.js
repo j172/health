@@ -63,6 +63,11 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/emergency",
+        destination: "/tools/emergency-hotlines",
+        permanent: false,
+      },
+      {
         source: "/tools/hakka-community",
         destination: "/tools/hakka-bogong",
         permanent: true,

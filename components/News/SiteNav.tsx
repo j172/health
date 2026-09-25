@@ -230,7 +230,20 @@ export default function SiteNav() {
             </nav>
 
             {/* Right Actions (Search Button + Theme Toggler) */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              {/* Emergency Hotlines Quick Entry */}
+              <Link
+                href="/tools/emergency-hotlines"
+                className="flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50/90 px-2.5 py-1 text-xs font-bold text-rose-700 shadow-2xs transition-all hover:bg-rose-100 hover:border-rose-400 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60"
+                title="全臺急用緊急專線速查與直撥 (110, 119, 112, 1999)"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500"></span>
+                </span>
+                <span className="whitespace-nowrap">🚨 <span className="hidden xs:inline">緊急電話</span></span>
+              </Link>
+
               {/* Cmd+K Search Trigger */}
               <button
                 id="search-trigger"
@@ -311,6 +324,21 @@ export default function SiteNav() {
             id={mobilePanelId}
             className="max-h-[75vh] overflow-y-auto border-t border-slate-100 bg-white p-4 xl:hidden dark:border-slate-800 dark:bg-slate-950"
           >
+            {/* Pinned Emergency Quick Dial in Mobile Drawer */}
+            <div className="mb-3">
+              <Link
+                href="/tools/emergency-hotlines"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between rounded-xl border border-rose-300 bg-rose-50 px-3.5 py-2.5 text-sm font-bold text-rose-700 shadow-2xs transition-all hover:bg-rose-100 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="text-base">🚨</span>
+                  <span>全臺急用緊急電話速查 (110/119/1999)</span>
+                </span>
+                <span className="text-xs font-semibold text-rose-500">直撥 ➔</span>
+              </Link>
+            </div>
+
             <div className="flex flex-col gap-2 text-sm font-semibold">
               <Link
                 href="/"
