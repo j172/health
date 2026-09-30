@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect } from "react";
+import Link from "next/link";
 import type { HotlineRecord } from "@/lib/server/hotlines/hotlinesQueries";
 import { COUNTY_1999_LIST, type County1999Info } from "@/lib/server/hotlines/county1999";
 import { useGeolocation } from "@/components/Facilities/useGeolocation";
@@ -73,7 +74,9 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
           closestCode = code;
         }
       }
-      setSelectedCountyCode(closestCode);
+      queueMicrotask(() => {
+        setSelectedCountyCode(closestCode);
+      });
     }
   }, [geo.loading, geo.isDefault, geo.lat, geo.lng]);
 
@@ -143,6 +146,29 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
 
   return (
     <div className="space-y-8">
+      {/* 防災物資與避難包推薦橫幅 */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-rose-600 to-indigo-700 p-4 sm:p-5 text-white shadow-lg">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-semibold backdrop-blur-md">
+              <span>🎒</span> 國防部全民安全指引對策
+            </div>
+            <h3 className="text-base sm:text-lg font-bold">
+              防災物資準備好了嗎？緊急避難包與居家儲備計算機
+            </h3>
+            <p className="text-xs sm:text-sm text-amber-100/90 max-w-2xl">
+              提供個人隨身避難包 (Go-Bag) 檢核表，並可依家庭人數動態計算 3~14 天飲水、乾糧與常備藥品需求，支援離線暫存。
+            </p>
+          </div>
+          <Link
+            href="/tools/emergency-supplies"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-900 shadow transition hover:bg-amber-50 shrink-0"
+          >
+            立即檢核儲備 →
+          </Link>
+        </div>
+      </div>
+
       {/* ========================================================= */}
       {/* 1. TOP CRITICAL ACTIONS: 五大極限急難卡片 (High Contrast) */}
       {/* ========================================================= */}
