@@ -352,14 +352,20 @@ const runSchemaMigrations = async (): Promise<void> => {
           if (item.productNote) extra.productNote = item.productNote;
 
           if (existing[0]) {
+            // Match is by source_id (unique to this script) OR exact name equality — narrower
+            // than the fuzzy LIKE/normalizeOrgName matching in ingest-sheltered-workshops.mjs,
+            // but an exact-name collision with a genuine elder_welfare/disability_welfare
+            // institution is still possible. Only reclassify rows left over as 'npo' from this
+            // same script's original bug (#422); a real institution of another type must keep
+            // its facility_type and only receive extra_json/address/phone enrichment.
             await p.query(
-              "UPDATE facilities SET extra_json = ?, phone = COALESCE(phone, ?), address = COALESCE(address, ?), lat = COALESCE(lat, ?), lng = COALESCE(lng, ?), updated_at = NOW() WHERE id = ?",
+              "UPDATE facilities SET facility_type = CASE WHEN facility_type = 'npo' THEN 'sheltered_workshop' ELSE facility_type END, extra_json = ?, phone = COALESCE(phone, ?), address = COALESCE(address, ?), lat = COALESCE(lat, ?), lng = COALESCE(lng, ?), updated_at = NOW() WHERE id = ?",
               [JSON.stringify(extra), item.phone || null, item.address || null, item.lat || null, item.lng || null, existing[0].id]
             );
           } else {
             await p.query(
               `INSERT INTO facilities (facility_type, source_key, source_id, name, address, phone, lat, lng, extra_json, created_at, updated_at)
-               VALUES ('npo', 'sheltered_workshop', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+               VALUES ('sheltered_workshop', 'sheltered_workshop', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
               [sourceId, item.name, item.address || null, item.phone || null, item.lat || null, item.lng || null, JSON.stringify(extra)]
             );
           }

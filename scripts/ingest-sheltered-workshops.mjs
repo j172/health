@@ -120,8 +120,16 @@ async function runLocalIngestion(workshops) {
       };
 
       if (matchedId) {
+        // Only reclassify facility_type when the matched row is leftover 'npo'-typed
+        // data from this same script's original bug (see issue #422). The matching
+        // SELECT above uses fuzzy name matching (LIKE / normalizeOrgName) with no
+        // facility_type filter, so it can match a genuine elder_welfare / disability_welfare
+        // institution whose name happens to resemble a sheltered workshop's — those rows
+        // must keep their real facility_type and only receive extra_json/address/phone
+        // enrichment (per sibling spec #423 §3.3).
         await conn.query(
           `UPDATE facilities SET
+            facility_type = CASE WHEN facility_type = 'npo' THEN 'sheltered_workshop' ELSE facility_type END,
             address = COALESCE(?, address),
             phone = COALESCE(?, phone),
             lat = COALESCE(?, lat),
@@ -149,6 +157,7 @@ async function runLocalIngestion(workshops) {
             service_item, data_org, extra_json, synced_at, created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
           ON DUPLICATE KEY UPDATE
+            facility_type = VALUES(facility_type),
             name = VALUES(name),
             address = COALESCE(VALUES(address), address),
             phone = COALESCE(VALUES(phone), phone),
@@ -158,7 +167,7 @@ async function runLocalIngestion(workshops) {
             extra_json = VALUES(extra_json),
             updated_at = NOW()`,
           [
-            "npo",
+            "sheltered_workshop",
             "sheltered_workshop",
             String(item.id),
             item.name,
@@ -256,8 +265,14 @@ async function runRemoteIngestion(workshops) {
           };
 
           if (matchedId) {
+            // Same guard as the local path: only reclassify rows that are leftover
+            // 'npo'-typed data from this script's original bug. A fuzzy name match
+            // (LIKE / normalizeOrgName, no facility_type filter above) can hit a real
+            // elder_welfare / disability_welfare institution, which must keep its
+            // real facility_type and only get extra_json/address/phone enrichment.
             await conn.query(
               \`UPDATE facilities SET
+                facility_type = CASE WHEN facility_type = 'npo' THEN 'sheltered_workshop' ELSE facility_type END,
                 address = COALESCE(?, address),
                 phone = COALESCE(?, phone),
                 lat = COALESCE(?, lat),
@@ -285,6 +300,7 @@ async function runRemoteIngestion(workshops) {
                 service_item, data_org, extra_json, synced_at, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
               ON DUPLICATE KEY UPDATE
+                facility_type = VALUES(facility_type),
                 name = VALUES(name),
                 address = COALESCE(VALUES(address), address),
                 phone = COALESCE(VALUES(phone), phone),
@@ -294,7 +310,7 @@ async function runRemoteIngestion(workshops) {
                 extra_json = VALUES(extra_json),
                 updated_at = NOW()\`,
               [
-                "npo",
+                "sheltered_workshop",
                 "sheltered_workshop",
                 String(item.id),
                 item.name,
