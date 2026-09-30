@@ -83,8 +83,14 @@ async function runLocalIngestion(workshops) {
       let matchedId = null;
       let matchedExtra = {};
 
+      // The source_key/source_id branch re-matches rows this script already
+      // classified as 'sheltered_workshop' on a prior run (idempotent re-run
+      // support), so it intentionally has no facility_type filter. The fuzzy
+      // name-matching branches are scoped to facility_type = 'npo' only, so a
+      // name collision can no longer pull in an elder_welfare / disability_welfare
+      // (or any other type) row — see SPEC-20260930-NPO-ORGANIZATIONS-DEDUP-AND-SCOPE.md §3.3.
       const [rows] = await conn.query(
-        "SELECT id, name, extra_json FROM facilities WHERE (source_key = 'sheltered_workshop' AND source_id = ?) OR name = ? OR name LIKE ? LIMIT 10",
+        "SELECT id, name, extra_json FROM facilities WHERE (source_key = 'sheltered_workshop' AND source_id = ?) OR (facility_type = 'npo' AND (name = ? OR name LIKE ?)) LIMIT 10",
         [String(item.id), item.name, `%${normalized.slice(0, 5)}%`],
       );
 
@@ -121,12 +127,13 @@ async function runLocalIngestion(workshops) {
 
       if (matchedId) {
         // Only reclassify facility_type when the matched row is leftover 'npo'-typed
-        // data from this same script's original bug (see issue #422). The matching
-        // SELECT above uses fuzzy name matching (LIKE / normalizeOrgName) with no
-        // facility_type filter, so it can match a genuine elder_welfare / disability_welfare
-        // institution whose name happens to resemble a sheltered workshop's — those rows
-        // must keep their real facility_type and only receive extra_json/address/phone
-        // enrichment (per sibling spec #423 §3.3).
+        // data from this same script's original bug (see issue #422). The fuzzy
+        // name-matching branches of the SELECT above are now scoped to
+        // facility_type = 'npo' (per #423 §3.3), so they can no longer newly match a
+        // genuine elder_welfare / disability_welfare institution; this CASE WHEN is
+        // kept as defense-in-depth because the source_key/source_id branch is
+        // intentionally unrestricted (for idempotent re-runs) and pre-#423 data may
+        // still carry the old cross-type hasProducts enrichment.
         await conn.query(
           `UPDATE facilities SET
             facility_type = CASE WHEN facility_type = 'npo' THEN 'sheltered_workshop' ELSE facility_type END,
@@ -228,8 +235,13 @@ async function runRemoteIngestion(workshops) {
           let matchedId = null;
           let matchedExtra = {};
 
+          // Same scoping as the local path: source_key/source_id re-matches this
+          // script's own prior output (unrestricted, for idempotent re-runs); the
+          // fuzzy name-matching branches are scoped to facility_type = 'npo' only
+          // so they can no longer pull in elder_welfare / disability_welfare / other
+          // types — see SPEC-20260930-NPO-ORGANIZATIONS-DEDUP-AND-SCOPE.md §3.3.
           const [rows] = await conn.query(
-            "SELECT id, name, extra_json FROM facilities WHERE (source_key = 'sheltered_workshop' AND source_id = ?) OR name = ? OR name LIKE ? LIMIT 10",
+            "SELECT id, name, extra_json FROM facilities WHERE (source_key = 'sheltered_workshop' AND source_id = ?) OR (facility_type = 'npo' AND (name = ? OR name LIKE ?)) LIMIT 10",
             [String(item.id), item.name, \`%\${normalized.slice(0, 5)}%\`]
           );
 
@@ -266,10 +278,11 @@ async function runRemoteIngestion(workshops) {
 
           if (matchedId) {
             // Same guard as the local path: only reclassify rows that are leftover
-            // 'npo'-typed data from this script's original bug. A fuzzy name match
-            // (LIKE / normalizeOrgName, no facility_type filter above) can hit a real
-            // elder_welfare / disability_welfare institution, which must keep its
-            // real facility_type and only get extra_json/address/phone enrichment.
+            // 'npo'-typed data from this script's original bug. The fuzzy name-matching
+            // branches above are now scoped to facility_type = 'npo' (per #423 §3.3), so
+            // they can no longer newly hit a real elder_welfare / disability_welfare
+            // institution; this CASE WHEN is kept as defense-in-depth for the
+            // unrestricted source_key/source_id re-run branch and pre-#423 data.
             await conn.query(
               \`UPDATE facilities SET
                 facility_type = CASE WHEN facility_type = 'npo' THEN 'sheltered_workshop' ELSE facility_type END,
