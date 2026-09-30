@@ -123,10 +123,17 @@ export const mapRowToNpoItem = (r: RowDataPacket): NpoOrganizationItem => {
   };
 };
 
+// Still used for sorting priority (ORDER_BY_PRIORITY below) and as optional
+// filters (hasProducts/hasBadges params on the search/count functions), but
+// no longer folded into NPO_FACILITY_TYPES_SQL's scope determination — see
+// SPEC-20260930-NPO-ORGANIZATIONS-DEDUP-AND-SCOPE.md §3.3.
 const HAS_PRODUCTS_SQL = `(extra_json LIKE '%"hasProducts":true%' OR extra_json LIKE '%"hasProducts":"true"%')`;
 const HAS_BADGES_SQL = `(extra_json LIKE '%"trustBadges"%' OR extra_json LIKE '%"certifications"%')`;
 const IS_NPO_CENTER_SQL = `(source_key = 'npo_tw' OR extra_json LIKE '%"npoCenterOrgid"%')`;
-const NPO_FACILITY_TYPES_SQL = `(facility_type IN ('npo', 'tax_organization', 'disability_welfare') OR ${HAS_PRODUCTS_SQL})`;
+// `tax_organization` (MOF tax-donee registry, ~50%+ non-NPO by live sampling)
+// and `disability_welfare` (duplicates the dedicated disability-welfare tool)
+// are deliberately excluded — see SPEC-20260930-NPO-ORGANIZATIONS-DEDUP-AND-SCOPE.md.
+const NPO_FACILITY_TYPES_SQL = `facility_type = 'npo'`;
 
 const ORDER_BY_PRIORITY = `
   ORDER BY
