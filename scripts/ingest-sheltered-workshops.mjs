@@ -122,6 +122,7 @@ async function runLocalIngestion(workshops) {
       if (matchedId) {
         await conn.query(
           `UPDATE facilities SET
+            facility_type = 'sheltered_workshop',
             address = COALESCE(?, address),
             phone = COALESCE(?, phone),
             lat = COALESCE(?, lat),
@@ -149,6 +150,7 @@ async function runLocalIngestion(workshops) {
             service_item, data_org, extra_json, synced_at, created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
           ON DUPLICATE KEY UPDATE
+            facility_type = VALUES(facility_type),
             name = VALUES(name),
             address = COALESCE(VALUES(address), address),
             phone = COALESCE(VALUES(phone), phone),
@@ -158,7 +160,7 @@ async function runLocalIngestion(workshops) {
             extra_json = VALUES(extra_json),
             updated_at = NOW()`,
           [
-            "npo",
+            "sheltered_workshop",
             "sheltered_workshop",
             String(item.id),
             item.name,
@@ -258,6 +260,7 @@ async function runRemoteIngestion(workshops) {
           if (matchedId) {
             await conn.query(
               \`UPDATE facilities SET
+                facility_type = 'sheltered_workshop',
                 address = COALESCE(?, address),
                 phone = COALESCE(?, phone),
                 lat = COALESCE(?, lat),
@@ -285,6 +288,7 @@ async function runRemoteIngestion(workshops) {
                 service_item, data_org, extra_json, synced_at, created_at, updated_at
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), NOW())
               ON DUPLICATE KEY UPDATE
+                facility_type = VALUES(facility_type),
                 name = VALUES(name),
                 address = COALESCE(VALUES(address), address),
                 phone = COALESCE(VALUES(phone), phone),
@@ -294,7 +298,7 @@ async function runRemoteIngestion(workshops) {
                 extra_json = VALUES(extra_json),
                 updated_at = NOW()\`,
               [
-                "npo",
+                "sheltered_workshop",
                 "sheltered_workshop",
                 String(item.id),
                 item.name,

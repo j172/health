@@ -353,13 +353,13 @@ const runSchemaMigrations = async (): Promise<void> => {
 
           if (existing[0]) {
             await p.query(
-              "UPDATE facilities SET extra_json = ?, phone = COALESCE(phone, ?), address = COALESCE(address, ?), lat = COALESCE(lat, ?), lng = COALESCE(lng, ?), updated_at = NOW() WHERE id = ?",
+              "UPDATE facilities SET facility_type = 'sheltered_workshop', extra_json = ?, phone = COALESCE(phone, ?), address = COALESCE(address, ?), lat = COALESCE(lat, ?), lng = COALESCE(lng, ?), updated_at = NOW() WHERE id = ?",
               [JSON.stringify(extra), item.phone || null, item.address || null, item.lat || null, item.lng || null, existing[0].id]
             );
           } else {
             await p.query(
               `INSERT INTO facilities (facility_type, source_key, source_id, name, address, phone, lat, lng, extra_json, created_at, updated_at)
-               VALUES ('npo', 'sheltered_workshop', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+               VALUES ('sheltered_workshop', 'sheltered_workshop', ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
               [sourceId, item.name, item.address || null, item.phone || null, item.lat || null, item.lng || null, JSON.stringify(extra)]
             );
           }
