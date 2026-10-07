@@ -258,6 +258,15 @@ jobs:
             --upload-file "next.config.js" \
             --url "ftp://${FTP_SERVER_CLEAN}:21/health_app/next.config.js"
 
+          for GUARD_URL in \
+            "ftp://${FTP_SERVER_CLEAN}:21/.pm2-recovery-guard.php" \
+            "ftp://${FTP_SERVER_CLEAN}:21/health.j172.tw/.pm2-recovery-guard.php"
+          do
+            curl "${CURL_FTPS_OPTS[@]}" \
+              --upload-file ".pm2-recovery-guard.php" \
+              --url "$GUARD_URL"
+          done
+
           for HANDLER_URL in \
             "ftp://${FTP_SERVER_CLEAN}:21/index.php" \
             "ftp://${FTP_SERVER_CLEAN}:21/health.j172.tw/index.php"

@@ -45,3 +45,8 @@ jobs:
             echo "No PHP files found — the path filter and this job disagree."
             exit 1
           fi
+
+      - name: Test PM2 recovery guard and NPROC task gate
+        run: |
+          php tests/pm2-recovery-guard.test.php
+          php tests/pm2-watchdog-contract.test.php

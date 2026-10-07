@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/.pm2-recovery-guard.php';
+
 $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
@@ -58,62 +60,35 @@ $ntfyUrl = ($ntfyTopic = $readEnvVar('NTFY_TOPIC')) !== '' ? 'https://ntfy.sh/' 
 // of 2026-08-31 that is ~56 escalations x 5 spawns: the daemons then held the
 // slots the next escalation needed, so the recovery mechanism became the load.
 //
-// So: before anything that spawns a process, count this account's processes and
-// refuse to spawn when the table is already crowded. The count MUST be readable
-// when nothing can fork — that is the only condition it exists for — so it comes
-// from listing /proc and reading /proc/<pid>/status, which are a directory read
-// and a file read. Nothing here shells out to ps, wc, pgrep or anything else.
+// So: before anything that spawns a process, count this account's Linux tasks
+// (threads, not only process leaders) and refuse when too little NPROC headroom
+// remains. Node can fail pthread_create while the process-leader count still
+// looks safe. The count MUST be readable when nothing can fork, so it comes from
+// listing /proc and reading /proc/<pid>/status. Nothing shells out to ps, wc,
+// pgrep or anything else.
 //
 // This is deliberately NOT a "give up after N failures" cap (explicitly rejected
-// in the spec): the gate closes only while the process table is actually full
-// and reopens by itself the moment the count drops, so a recoverable app whose
-// process table is healthy is never abandoned.
+// in the spec): the gate closes only while measured NPROC headroom is insufficient
+// (or cannot be measured) and reopens by itself once safe. An unknown count is
+// fail-closed because spawning blindly was the failure amplifier being fixed.
 $nprocLimit = 100;
-// Headroom threshold.
+// Preserve 35 NPROC slots for one recovery attempt after the gate closes.
 //
-// MEASURED BASELINE = 7. This is the number the ceiling is derived from, and
-// the reason it changed. /__ops/pm2-status, first production reading, taken
-// immediately after the 2026-08-31 13:45 deploy with the site healthy:
+// A 2026-10-07 account sample had 8 process leaders but 52 total threads. The
+// 2026-10-07 outage had 31 process leaders, still below the old 35-process
+// threshold, while logs recorded pthread_create / uv_thread_create EAGAIN.
+// Counting process leaders therefore did not measure the constrained resource.
 //
-//   process_count = 7   ceiling = 70   nproc_limit = 100   blocking = no
-//     1449687  lsphp
-//     1449721  PM2 God Daemon
-//     1449746  pm2-logrotate
-//     1452121  next-server (v16.3.0)    <- bid-web
-//     1682033  next-server (v16.2.12)   <- health-web
+// The recovery path is now a single serialized PM2 startOrRestart operation.
+// A conservative 35-task budget covers a PM2 CLI/daemon (up to 11 threads),
+// replacement Node app (up to 11 threads), and transient wrapper/probe work
+// plus slack. With the confirmed NPROC limit of 100, close the gate at 65:
 //
-// The original 70 was sized against an ESTIMATED steady state of 25-40, on the
-// reasoning that a healthy account sat at roughly half the ceiling. The
-// estimate was wrong by 4-6x: the real healthy account is 7 processes, so 70
-// let it reach TEN TIMES its healthy size before declining to spawn. A gate
-// that only fires at 10x baseline fires long after the accumulation it exists
-// to stop has started, and (in the 2026-08-31 incident) after the slots a
-// permitted escalation needs are already spoken for.
+//   task ceiling 65 = 100 - 35 reserved recovery tasks.
 //
-// Re-derived from the measurement:
-//
-//   worst legitimate concurrent occupancy
-//     7   measured healthy baseline
-//   + 5   one watchdog escalation: pm2 jlist, pm2 kill, pkill, pm2 resurrect,
-//         a second pm2 jlist — each a node process
-//   + 15  the apply-prebuilt run it triggers, at peak: the nohup wrapper shell,
-//         tar, find/grep, pm2 delete, setsid pm2 start, the new next-server and
-//         its node threads, two curls (10-15 concurrent tasks)
-//   + 3   lsphp workers that must keep serving this very request and cron
-//   = 30  everything legitimate, all at once, worst case
-//
-//   ceiling 35  = 30 + 5 slots of slack, so the gate can never block a healthy
-//                 account even mid-escalation. 5x the measured baseline of 7
-//                 (the old 70 was 10x).
-//   100 - 35    = 65 free slots at the instant the gate closes, ~2.8x the ~23
-//                 an escalation-plus-apply needs at peak. So a PERMITTED
-//                 escalation (count just under 35) always has room to finish —
-//                 the constraint the old comment cited for keeping 70 high is
-//                 satisfied with a large margin at 35.
-//
-// If you change this number, change the measurement above it first. The last
-// time it was set from an estimate rather than a reading it was out by 10x.
-$nprocEscalationCeiling = 35;
+// This is a measured-task gate, not a claim that every provider limit is NPROC:
+// the original pthread_create failures may also reflect provider-side limits.
+$nprocEscalationCeiling = 65;
 
 // Reads one "Key:\tvalue" line out of a /proc status-style file. A file read;
 // it spawns nothing. $maxLen keeps this cheap when it runs over every pid.
@@ -241,10 +216,9 @@ $ownUid = static function () use ($readProcField): ?int {
     return $uid;
 };
 
-// Every process owned by this account, read straight out of /proc. Returns null
-// — never a wrong number — when the answer cannot be trusted, so every caller
-// can fail OPEN: a gate that blocks on a bad reading would keep a recoverable
-// app down, which is worse than the problem it guards against.
+// Every process owned by this account, including its task count, read straight
+// out of /proc. Returns null when the answer cannot be trusted; the gate then
+// fails closed to avoid adding more load when resource use is unknown.
 //
 // 'age' comes from the mtime of /proc/<pid>, which on Linux is the process start
 // time. A stat(), so still no fork.
@@ -279,6 +253,10 @@ $scanOwnProcesses = static function () use ($ownUid, $readProcField): ?array {
         if (!isset($uidParts[0]) || (int) $uidParts[0] !== $uid) {
             continue;
         }
+        $threadsLine = $readProcField($statusFile, 'Threads:');
+        if ($threadsLine === null || !ctype_digit($threadsLine) || (int) $threadsLine < 1) {
+            return null;
+        }
         $cmdRaw = @file_get_contents($dir . '/cmdline', false, null, 0, 4096);
         $cmdline = is_string($cmdRaw) ? trim(str_replace("\0", ' ', $cmdRaw)) : '';
         if ($cmdline === '') {
@@ -292,13 +270,14 @@ $scanOwnProcesses = static function () use ($ownUid, $readProcField): ?array {
             'ppid' => $ppidLine === null ? 0 : (int) $ppidLine,
             'cmdline' => $cmdline,
             'age' => is_int($started) ? max(0, $now - $started) : 0,
+            'threads' => (int) $threadsLine,
         ];
     }
     return $procs;
 };
 
 // The gate itself. Memoised per request (pass true to re-read after reaping).
-// 'count' === null means "unknown", and 'blocking' is then false — fail open.
+// Unknown process/task counts fail closed; callers must not spawn blindly.
 $processGate = static function (bool $refresh = false) use ($scanOwnProcesses, $nprocLimit, $nprocEscalationCeiling): array {
     static $cache = null;
     if ($cache !== null && !$refresh) {
@@ -308,30 +287,38 @@ $processGate = static function (bool $refresh = false) use ($scanOwnProcesses, $
     if ($procs === null) {
         $cache = [
             'count' => null,
+            'task_count' => null,
             'procs' => [],
             'limit' => $nprocLimit,
             'ceiling' => $nprocEscalationCeiling,
-            'blocking' => false,
-            'note' => "process count UNAVAILABLE (/proc unreadable or uid undetermined) — failing open, escalation allowed (ceiling {$nprocEscalationCeiling}, NPROC {$nprocLimit})",
+            'blocking' => true,
+            'note' => "process/task count UNAVAILABLE (/proc unreadable or task count unknown) — escalation BLOCKED until it can be measured (task ceiling {$nprocEscalationCeiling}, NPROC {$nprocLimit})",
         ];
         return $cache;
     }
     $count = count($procs);
-    $blocking = ($count >= $nprocEscalationCeiling);
+    $taskCount = Pm2RecoveryGuard::countTasks($procs);
+    $blocking = Pm2RecoveryGuard::isGateClosed($taskCount, $nprocEscalationCeiling);
     $cache = [
         'count' => $count,
+        'task_count' => $taskCount,
         'procs' => $procs,
         'limit' => $nprocLimit,
         'ceiling' => $nprocEscalationCeiling,
         'blocking' => $blocking,
-        'note' => $blocking
-            ? "process count {$count} >= ceiling {$nprocEscalationCeiling} (NPROC {$nprocLimit}) — escalation BLOCKED; it resumes by itself once the count drops"
-            : "process count {$count} < ceiling {$nprocEscalationCeiling} (NPROC {$nprocLimit}) — escalation allowed",
+        'note' => $taskCount === null
+            ? "task count UNAVAILABLE — escalation BLOCKED until it can be measured"
+            : ($blocking
+                ? "task count {$taskCount} >= ceiling {$nprocEscalationCeiling} (NPROC {$nprocLimit}) — escalation BLOCKED; it resumes by itself once the count drops"
+                : "task count {$taskCount} < ceiling {$nprocEscalationCeiling} (NPROC {$nprocLimit}) — escalation allowed"),
     ];
     return $cache;
 };
 
 if (str_starts_with($path, '/__ops/')) {
+    header('Cache-Control: private, no-store, max-age=0');
+    header('Pragma: no-cache');
+
     // An empty $opsKey (e.g. OPS_KEY missing from .env) must never grant
     // access — otherwise an empty ?key= would satisfy '' !== '' === false.
     if ($opsKey === '' || !hash_equals($opsKey, (string) ($_GET['key'] ?? ''))) {
@@ -362,6 +349,8 @@ if (str_starts_with($path, '/__ops/')) {
     $prebuiltPidFile = $appDir . '/.apply-prebuilt.pid';
     $nodeBin = '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node';
     $pm2Bin = $nodeBin . ' /home/tw123457/.nvm/versions/node/v20.20.2/lib/node_modules/pm2/bin/pm2';
+    $pm2RecoveryLockFile = '/home/tw123457/.pm2/recovery.lock';
+    $pm2RecoveryLastAttemptFile = $appDir . '/.pm2-recovery-last-attempt';
 
     // True if the PID last recorded by a spawned apply-prebuilt run is still
     // a live process. Read from /proc without depending on the posix/pcntl
@@ -861,11 +850,9 @@ if (str_starts_with($path, '/__ops/')) {
     // "force" means "make sure exactly one instance ends up running", never
     // "spawn regardless".
     //
-    // Returns -1 (TRIGGER_GATE_REFUSED) when the nproc gate is closed: the
-    // account already has too many processes for another apply run to be
-    // anything but more load. That is a different answer from "one is already
-    // running" (a positive pid), so callers can report it honestly instead of
-    // blaming a run that does not exist.
+    // Returns -1 (TRIGGER_GATE_REFUSED) when the NPROC gate is closed, -2
+    // (TRIGGER_LOCK_REFUSED) when the single-run lock cannot be acquired, a
+    // positive PID when a run already exists, or null after spawning a run.
     //
     // $outcome receives the gate reading and, on a successful spawn, whether the
     // new run's pid actually became visible. #97's lesson is that a recovery
@@ -876,9 +863,8 @@ if (str_starts_with($path, '/__ops/')) {
         $killPrebuiltRun,
         $processGate
     ): ?int {
-        // Re-read rather than reuse the memoised value: this is the last check
-        // before the most expensive spawn in the file, and the caller may have
-        // spent slots (jlist, pm2 kill, resurrect) since it last looked.
+        // Re-read rather than reuse the memoised value: task usage may change
+        // while this request waits for the single-run lock.
         $gate = $processGate(true);
         $outcome = [
             'gate' => $gate,
@@ -886,6 +872,7 @@ if (str_starts_with($path, '/__ops/')) {
             'observed_pid' => 0,
             'wait_ms' => 0,
             'locked' => true,
+            'lock_error' => null,
             // Set only when $force had to kill a live run. Carries the state
             // $killPrebuiltRun last observed, so the caller's refusal message
             // can name it — #97's reconstruction cost two days and a support
@@ -897,17 +884,24 @@ if (str_starts_with($path, '/__ops/')) {
             return -1;
         }
 
-        $fh = fopen($prebuiltLockFile, 'c');
+        $fh = @fopen($prebuiltLockFile, 'c');
         if ($fh === false) {
-            // Can't lock — fail open (spawn anyway) rather than block all
-            // deploys forever over a filesystem hiccup.
             $outcome['locked'] = false;
-            @exec($cmd);
-            $outcome['spawned'] = true;
-            return null;
+            $outcome['lock_error'] = 'open';
+            return -2;
+        }
+        if (!flock($fh, LOCK_EX)) {
+            fclose($fh);
+            $outcome['locked'] = false;
+            $outcome['lock_error'] = 'flock';
+            return -2;
         }
         try {
-            flock($fh, LOCK_EX);
+            $gate = $processGate(true);
+            $outcome['gate'] = $gate;
+            if ($gate['blocking']) {
+                return -1;
+            }
             $runningPid = $isPrebuiltRunning();
             if ($runningPid !== 0) {
                 if (!$force) {
@@ -920,7 +914,7 @@ if (str_starts_with($path, '/__ops/')) {
                     // The wrapper is genuinely still executing — verified
                     // against /proc/<pid>/stat's state character, so a zombie
                     // is no longer mistaken for it. Refuse rather than add
-                    // another wrapper to a process table that is already full.
+                    // another wrapper when task headroom is already low.
                     // The caller reports this the same way it reports an
                     // ordinary "one is already running", which is the honest
                     // answer: one still is.
@@ -967,7 +961,7 @@ if (str_starts_with($path, '/__ops/')) {
         }
     };
 
-    $buildPrebuiltCommand = static function (bool $force) use ($appDir, $nodeBin, $pm2Bin, $ntfyUrl): string {
+    $buildPrebuiltCommand = static function (bool $force) use ($appDir, $nodeBin, $pm2Bin, $pm2RecoveryLockFile, $ntfyUrl): string {
         $startMarker = $force ? '[START-FORCE-V4]' : '[START-V4]';
         $doneMarker = $force ? '[DONE-FORCE-V4]' : '[DONE-V4]';
         $failMarker = $force ? '[FAIL-FORCE-V4]' : '[FAIL-V4]';
@@ -1039,9 +1033,9 @@ if (str_starts_with($path, '/__ops/')) {
             // always in the log even when an earlier stage fails. Read once;
             // the success path below reuses $PREV_FAILS rather than cat-ing the
             // file a second time. The case guard turns a truncated or garbage
-            // fail-count file into 0 (the generous budget) instead of letting
-            // `[ "$PREV_FAILS" -ge 3 ]` abort on a syntax error — failing OPEN,
-            // the same rule the nproc gate follows.
+            // fail-count file into 0 (the generous first-attempt budget) instead
+            // of letting `[ "$PREV_FAILS" -ge 3 ]` abort on a syntax error. This
+            // counter intentionally fails open; the independent NPROC gate fails closed.
             . "PREV_FAILS=$(cat .apply-prebuilt-fail-count 2>/dev/null || echo 0); "
             . "case \"\$PREV_FAILS\" in ''|*[!0-9]*) PREV_FAILS=0 ;; esac; "
             . "if [ \"\$PREV_FAILS\" -ge 3 ]; then PROBE_MAX={$probeMaxAfter3}; "
@@ -1127,22 +1121,17 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& rmdir \$STAGE_DIR >> .apply-prebuilt.log 2>&1 "
             . "&& SWAPPED=1 "
             . "&& echo '[BUILD_ID] '$(cat .next3/BUILD_ID) >> .apply-prebuilt.log "
-            // Diagnostic only — does not change what runs next either way.
-            // `pm2 start` below auto-spawns a fresh God Daemon when it can't
-            // reach the existing one fast enough (known PM2 upstream race,
-            // see docs/specs/pm2-duplicate-daemon-and-ingestion-memory.md and
-            // issue #391); this just leaves a marker in the log so a
-            // duplicate-daemon sighting can be correlated back
-            // to "daemon was already unresponsive going into this delete
-            // +start" instead of staying a mystery. Not acted on here because
-            // the account-wide daemon is shared with bid-web (a separate,
-            // independently-deployed app) — see the reap-stragglers daemon
-            // dedup below for the actual cleanup, which is careful not to
-            // touch a daemon that still has any live app under it.
-            . "&& (timeout 5 {$pm2Bin} ping >> .apply-prebuilt.log 2>&1 "
-            . "|| echo \"[\$(date -u +%FT%TZ)] WARNING: pm2 daemon did not respond to ping before delete+start\" >> .apply-prebuilt.log) "
-            . "&& ({$pm2Bin} delete health-web >> .apply-prebuilt.log 2>&1 || true) "
-            . "&& setsid {$pm2Bin} start ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1 "
+            // startOrRestart is one PM2 invocation rather than ping -> delete
+            // -> start. It runs under the host-wide lock shared with both
+            // watchdog entry points, so concurrent cron ticks cannot race PM2
+            // into spawning extra God Daemons.
+            . "&& /usr/bin/flock -x " . escapeshellarg($pm2RecoveryLockFile) . " /bin/sh -c "
+            . escapeshellarg(
+                "cd {$appDir} "
+                . "&& export PM2_HOME=/home/tw123457/.pm2 "
+                . "&& export PATH=" . dirname($nodeBin) . ":\$PATH "
+                . "&& timeout 30 {$pm2Bin} startOrRestart ecosystem.config.cjs --only health-web >> .apply-prebuilt.log 2>&1"
+            ) . " "
             // Was 60 attempts (~60s worst case, raised from an original 30) —
             // still failed 3 real cold starts in a row on 2026-08-02 (the
             // GH Actions side that polls this same restart was separately
@@ -1175,7 +1164,15 @@ if (str_starts_with($path, '/__ops/')) {
             . "&& echo '{$doneMarker} '$(date) >> .apply-prebuilt.log; "
             . "} || { "
             . "echo '[ROLLBACK] apply or health probe failed' >> .apply-prebuilt.log; "
-            . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; {$pm2Bin} restart health-web >> .apply-prebuilt.log 2>&1 || true; fi; "
+            . "if [ \"\$SWAPPED\" = 1 ] && [ -d .next3_previous ]; then rm -rf .next3_failed; mv .next3 .next3_failed; mv .next3_previous .next3; "
+            . "/usr/bin/flock -x " . escapeshellarg($pm2RecoveryLockFile) . " /bin/sh -c "
+            . escapeshellarg(
+                "cd {$appDir} "
+                . "&& export PM2_HOME=/home/tw123457/.pm2 "
+                . "&& export PATH=" . dirname($nodeBin) . ":\$PATH "
+                . "&& timeout 30 {$pm2Bin} startOrRestart ecosystem.config.cjs --only health-web"
+            )
+            . " >> .apply-prebuilt.log 2>&1 || echo '[ROLLBACK-RESTART-FAILED] PM2 could not restart health-web' >> .apply-prebuilt.log; fi; "
             . "FAILS=$(( $(cat .apply-prebuilt-fail-count 2>/dev/null || echo 0) + 1 )); echo \"\$FAILS\" > .apply-prebuilt-fail-count; "
             . (
                 $ntfyUrl !== ''
@@ -1191,8 +1188,8 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/rebuild') {
         // A full `next build` is the single most expensive thing this file can
-        // start. If the process table is already crowded it will not finish, it
-        // will only take the last slots with it.
+        // start. If NPROC task headroom is already low it will not finish; it
+        // will only take the remaining slots with it.
         $rebuildGate = $processGate();
         if ($rebuildGate['blocking']) {
             http_response_code(503);
@@ -1229,7 +1226,12 @@ if (str_starts_with($path, '/__ops/')) {
                 . "&& export UV_THREADPOOL_SIZE=1 "
                 . "&& export BROWSERSLIST_IGNORE_OLD_DATA=1 "
                 . "&& {$nodeBin} ./node_modules/next/dist/bin/next build --webpack >> .rebuild-homepage.log 2>&1 "
-                . "&& ({$pm2Bin} restart health-web >> .rebuild-homepage.log 2>&1 || {$pm2Bin} restart all >> .rebuild-homepage.log 2>&1) "
+                . "&& /usr/bin/flock -x " . escapeshellarg($pm2RecoveryLockFile) . " /bin/sh -c "
+                . escapeshellarg(
+                    "export PM2_HOME=/home/tw123457/.pm2 "
+                    . "&& timeout 30 {$pm2Bin} restart health-web >> .rebuild-homepage.log 2>&1 "
+                    . "|| timeout 30 {$pm2Bin} restart all >> .rebuild-homepage.log 2>&1"
+                ) . " "
                 . "&& echo '[DONE] '$(date) >> .rebuild-homepage.log "
                 . "|| echo '[FAIL] '$(date) >> .rebuild-homepage.log "
                 . "; rm -f .rebuild-homepage.lock"
@@ -1272,6 +1274,12 @@ if (str_starts_with($path, '/__ops/')) {
             echo "Apply prebuilt REFUSED by the nproc gate.\n";
             echo $applyOutcome['gate']['note'] . "\n";
             echo "Nothing was spawned. Escalation resumes automatically once the count drops.\n";
+            exit;
+        }
+        if ($alreadyRunningPid === -2) {
+            http_response_code(503);
+            echo "Apply prebuilt REFUSED: could not acquire the single-run lock ({$applyOutcome['lock_error']}).\n";
+            echo "Nothing was spawned; check lock-file ownership and filesystem availability.\n";
             exit;
         }
         if ($alreadyRunningPid !== null) {
@@ -1317,6 +1325,12 @@ if (str_starts_with($path, '/__ops/')) {
             echo "or wait — the gate reopens by itself once the count drops below the ceiling.\n";
             exit;
         }
+        if ($refusedPid === -2) {
+            http_response_code(503);
+            echo "Apply prebuilt REFUSED: could not acquire the single-run lock ({$forceOutcome['lock_error']}).\n";
+            echo "Nothing was spawned; check lock-file ownership and filesystem availability.\n";
+            exit;
+        }
         if ($refusedPid !== null) {
             // force can now decline — see $killPrebuiltRun. Say so plainly:
             // the deploy workflow reads this body, and reporting a trigger
@@ -1337,8 +1351,8 @@ if (str_starts_with($path, '/__ops/')) {
             }
             echo "Starting another run while the wrapper is genuinely still executing would stack two\n";
             echo "concurrent extract+restart runs on an account that is already short of process slots.\n";
-            echo "Free process slots first (see /__ops/reap-stragglers?key=...&apply=1), or check\n";
-            echo "/__ops/pm2-status?key=... for the current process count and gate state.\n";
+            echo "Free task slots first (see /__ops/reap-stragglers?key=...&apply=1), or check\n";
+            echo "/__ops/pm2-status?key=... for the current process/task counts and gate state.\n";
             exit;
         }
 
@@ -1351,91 +1365,82 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/pm2-ensure-running') {
         header('Content-Type: text/plain; charset=utf-8');
-        $now = date('Y-m-d H:i:s');
+        $now = date('c');
         $watchdogLog = $appDir . '/.pm2-watchdog.log';
-
-        // `pm2 jlist` talks to the pm2 daemon over its socket; if the daemon
-        // itself is dead (not just health-web), a plain shell_exec() call
-        // can hang indefinitely waiting for a socket nothing is listening
-        // on, silently timing out this whole PHP request before it ever
-        // reaches the restart logic below. That's exactly what happened
-        // during the 2026-08-01 outage: this watchdog fired reliably ~14
-        // times over the prior 4 days for ordinary "app got killed" events,
-        // then went completely silent once the pm2 daemon itself died.
-        // `timeout 5` turns that hang into a fast, detectable failure
-        // (exit 124) instead of a silent no-op.
-        // Fast path first, and it spawns nothing.
-        //
-        // `pm2 jlist` is a full Node process. This endpoint runs from cron
-        // every 5 minutes, and bid.j172.tw's handler does the same thing on
-        // the same account, so the old unconditional jlist cost ~24 process
-        // spawns an hour purely to be told everything was fine. On a 20
-        // Entry Process account that is most of the budget; worse, when the
-        // host is busy `timeout 5` kills the wrapper while the Node children
-        // it already spawned survive as orphans. On 2026-08-23 the account
-        // filled up with exactly those idle pm2 helpers and wedged so hard
-        // that this watchdog could no longer spawn the process it needed to
-        // fix things — a deadlock that took host-side intervention to break.
-        //
-        // fsockopen costs zero processes, so the healthy case — which is
-        // almost every tick — now runs entirely inside PHP.
-        //
-        // This is a fast path, NOT a replacement for the pm2 check. Anything
-        // other than a clean HTTP response falls through to the original
-        // logic below, so a slow-but-healthy app costs exactly what it used
-        // to and still cannot trigger a spurious restart: the jlist path will
-        // see health-web online and take no action.
-        //
-        // Deliberate trade-off: while the app answers on :3000 this no longer
-        // notices a dead pm2 daemon. That is the right call — a dead daemon
-        // with a healthy app is not an outage, and the escalation below still
-        // rebuilds the daemon the moment the app actually stops answering.
-        $probe = @fsockopen('127.0.0.1', 3000, $probeErrno, $probeErrstr, 2);
-        if ($probe !== false) {
-            // A connect alone only proves something holds the port; ask for a
-            // status line so a wedged listener still escalates.
-            $servingHttp = false;
-            @stream_set_timeout($probe, 5);
-            if (@fwrite($probe, "HEAD / HTTP/1.0\r\nHost: health.j172.tw\r\nConnection: close\r\n\r\n")) {
-                $statusLine = (string) @fgets($probe, 128);
-                $servingHttp = (stripos($statusLine, 'HTTP/') === 0);
+        $watchdogFailureFile = $appDir . '/.pm2-watchdog-fail-count';
+        $probeLocalHttp = static function (int $port, string $host): bool {
+            $socket = @fsockopen('127.0.0.1', $port, $errno, $errstr, 2);
+            if ($socket === false) {
+                return false;
             }
-            @fclose($probe);
 
-            if ($servingHttp) {
-                echo "[{$now}] health-web is online (socket probe, no process spawned). No action taken.\n";
+            @stream_set_timeout($socket, 5);
+            $statusLine = false;
+            if (@fwrite($socket, "HEAD / HTTP/1.0\r\nHost: {$host}\r\nConnection: close\r\n\r\n")) {
+                $statusLine = fgets($socket, 128);
+            }
+            fclose($socket);
+
+            return is_string($statusLine)
+                && preg_match('/^HTTP\/\S+\s+([0-9]{3})\b/i', $statusLine, $matches) === 1
+                && (int) $matches[1] >= 200
+                && (int) $matches[1] < 400;
+        };
+        $clearFailureState = static function () use ($appDir, $pm2RecoveryLastAttemptFile, $watchdogFailureFile, $watchdogLog, $now): void {
+            if (!Pm2RecoveryGuard::clearFiles(
+                $appDir . '/.apply-prebuilt-fail-count',
+                $watchdogFailureFile,
+                $pm2RecoveryLastAttemptFile
+            )) {
+                @file_put_contents($watchdogLog, "[{$now}] WARNING: recovered app, but could not clear recovery backoff files\n", FILE_APPEND);
+            }
+        };
+        $clearFailureStateIfIdle = static function () use ($isPrebuiltRunning, $clearFailureState, $watchdogLog, $now): void {
+            $runningPid = $isPrebuiltRunning();
+            if ($runningPid !== 0) {
+                @file_put_contents($watchdogLog, "[{$now}] Apps respond, but recovery state was retained while apply-prebuilt pid {$runningPid} is active.\n", FILE_APPEND);
+                return;
+            }
+            $clearFailureState();
+        };
+        $healthOnline = $probeLocalHttp(3000, 'health.j172.tw');
+        $mallOnline = $probeLocalHttp(3300, 'mall.j172.tw');
+
+        if ($healthOnline && $mallOnline) {
+            $recoveryLock = Pm2RecoveryGuard::acquire($pm2RecoveryLockFile);
+            if ($recoveryLock === null) {
+                http_response_code(202);
+                echo "[{$now}] Both apps are online. No process was spawned; recovery state was retained because the shared lock is unavailable.\n";
                 exit;
             }
+            register_shutdown_function(static function () use ($recoveryLock): void {
+                Pm2RecoveryGuard::release($recoveryLock);
+            });
+            $clearFailureStateIfIdle();
+            echo "[{$now}] health-web (:3000) and mall (:3300) are online. No process spawned.\n";
+            exit;
         }
 
-        // ------------------------------------------------------------------
-        // Everything from here on spawns processes. This is the failure path,
-        // which is exactly when process slots are scarcest — and, until #98, it
-        // was unconditional: five pm2 spawns per escalation, every five minutes,
-        // for as long as the app stayed down. Over the 4h39m outage of
-        // 2026-08-31 that is ~56 escalations, and the daemons they left behind
-        // held the slots the next escalation needed.
-        //
-        // So before spawning anything: survey what is already stuck, then read
-        // the process count out of /proc and refuse to escalate if the table is
-        // already crowded.
-        //
-        // OBSERVE-ONLY on this path, deliberately. The reaper signals processes
-        // on a live host, it is new, and this repo has no PHP test setup — the
-        // only automated check on this file is `php -l` in CI, which proves it
-        // parses and nothing more. One of its rules can in principle reach an
-        // unmanaged bid-web worker, i.e. the *other* site. So it runs here in
-        // dry-run and writes what it *would* have killed to the watchdog log;
-        // `/__ops/reap-stragglers?...&apply=1` remains available to act on that
-        // evidence by hand.
-        //
-        // The precedent for this caution is #97: posix_kill was shipped as a
-        // recovery path, silently fell back to exec(), and stayed a no-op for
-        // two days because nothing reported whether it was working. Reading a
-        // real incident's log before granting this kill authority is the cheap
-        // version of that lesson. Flip to true once the logged decisions have
-        // been checked against a real accumulation.
-        // ------------------------------------------------------------------
+        $recoveryLock = Pm2RecoveryGuard::acquire($pm2RecoveryLockFile);
+        if ($recoveryLock === null) {
+            http_response_code(202);
+            echo "[{$now}] Another recovery holds the shared PM2 lock, or the lock file is unavailable. No PM2 command was run.\n";
+            exit;
+        }
+        register_shutdown_function(static function () use ($recoveryLock): void {
+            Pm2RecoveryGuard::release($recoveryLock);
+        });
+
+        $healthOnline = $probeLocalHttp(3000, 'health.j172.tw');
+        $mallOnline = $probeLocalHttp(3300, 'mall.j172.tw');
+        if ($healthOnline && $mallOnline) {
+            $clearFailureStateIfIdle();
+            echo "[{$now}] Both apps recovered while waiting for the lock. No process spawned.\n";
+            exit;
+        }
+
+        // Keep the reaper in observe-only mode. The shared PM2 lock serializes
+        // both watchdogs without granting this endpoint kill authority.
         $reap = $reapStragglers(false);
         @file_put_contents($watchdogLog, "[{$now}] (observe-only) " . $reapSummary($reap) . "\n", FILE_APPEND);
 
@@ -1445,73 +1450,84 @@ if (str_starts_with($path, '/__ops/')) {
         @file_put_contents($watchdogLog, "[{$now}] nproc-gate: " . $gate['note'] . "\n", FILE_APPEND);
 
         if ($gate['blocking']) {
-            // No jlist, no pm2 kill, no pkill, no resurrect, no apply-prebuilt.
-            // Nothing below this point runs, so this tick costs zero spawns.
+            // No PM2 command or apply-prebuilt is attempted. This tick costs
+            // zero recovery spawns until the measured task headroom is safe.
             //
             // Note what this is NOT: it is not "give up after N failures". The
-            // next cron tick five minutes from now re-reads the count, and the
-            // moment it is under the ceiling the full escalation runs again —
+            // next cron tick five minutes from now re-reads task use, and the
+            // moment it is under the ceiling the bounded recovery runs again —
             // no counter to reset, no state to clear, nothing to un-latch.
             http_response_code(503);
-            echo "[{$now}] health-web is not answering, but escalation is BLOCKED by the nproc gate.\n";
+            echo "[{$now}] " . ($healthOnline ? 'mall is not answering' : 'health-web is not answering') . ", but escalation is BLOCKED by the nproc gate.\n";
             echo $gate['note'] . "\n";
             echo "No process was spawned this tick. Escalation resumes automatically once the count drops.\n";
             echo $reapSummary($reap) . "\n";
             exit;
         }
 
-        exec('timeout 5 ' . $pm2Bin . ' jlist 2>/dev/null', $jlistOutput, $jlistExit);
-        $daemonResponsive = ($jlistExit === 0);
-
-        if (!$daemonResponsive) {
-            @file_put_contents(
-                $watchdogLog,
-                "[{$now}] pm2 jlist did not respond (exit={$jlistExit}) — pm2 daemon itself appears dead, rebuilding it before restarting app.\n",
-                FILE_APPEND
-            );
-
-            // Best-effort graceful shutdown first (harmless if the daemon is
-            // actually still alive and just slow), then forcibly clear its
-            // runtime files so the next pm2 invocation is forced to spawn a
-            // brand new daemon rather than talking to a half-dead one.
-            exec('timeout 5 ' . $pm2Bin . ' kill 2>&1', $killOutput, $killExit);
-            exec('pkill -9 -f "PM2 v" 2>&1', $pkillOutput, $pkillExit);
-            @unlink('/home/tw123457/.pm2/pm2.pid');
-            @unlink('/home/tw123457/.pm2/rpc.sock');
-            @unlink('/home/tw123457/.pm2/pub.sock');
-
-            // Spawns a fresh daemon and restores every process from the
-            // last `pm2 save` — health-web and bid-web share this daemon on
-            // this host, so this brings both back, not just this one.
-            exec('timeout 20 ' . $pm2Bin . ' resurrect 2>&1', $resurrectOutput, $resurrectExit);
-            @file_put_contents(
-                $watchdogLog,
-                "[{$now}] daemon rebuild: kill_exit={$killExit} resurrect_exit={$resurrectExit}\n" . implode("\n", $resurrectOutput) . "\n",
-                FILE_APPEND
-            );
-
-            // Re-check with the now-hopefully-fresh daemon before deciding
-            // whether health-web still needs the full apply-prebuilt restart.
-            exec('timeout 5 ' . $pm2Bin . ' jlist 2>/dev/null', $jlistOutput, $jlistExit);
-            $daemonResponsive = ($jlistExit === 0);
+        $runningPid = $isPrebuiltRunning();
+        if ($runningPid !== 0) {
+            echo "[{$now}] apply-prebuilt is already running as pid {$runningPid}; no PM2 command was run.\n";
+            exit;
         }
 
-        $isOnline = false;
-        if ($daemonResponsive) {
-            $procs = json_decode(implode("\n", $jlistOutput) ?: '[]', true);
-            if (!is_array($procs)) {
-                $procs = [];
-            }
-            foreach ($procs as $proc) {
-                if (($proc['name'] ?? '') === 'health-web' && ($proc['pm2_env']['status'] ?? '') === 'online') {
-                    $isOnline = true;
-                    break;
-                }
-            }
+        $applyFailures = Pm2RecoveryGuard::readPositiveInteger($appDir . '/.apply-prebuilt-fail-count');
+        $watchdogFailures = Pm2RecoveryGuard::readPositiveInteger($watchdogFailureFile);
+        $failureCount = max($applyFailures, $watchdogFailures);
+        $lastAttemptAt = Pm2RecoveryGuard::readPositiveInteger($pm2RecoveryLastAttemptFile);
+        $retryDelay = Pm2RecoveryGuard::retryDelaySeconds($failureCount);
+        if (Pm2RecoveryGuard::isCoolingDown($lastAttemptAt, $failureCount, time())) {
+            $remaining = max(1, $retryDelay - (time() - $lastAttemptAt));
+            @file_put_contents(
+                $watchdogLog,
+                "[{$now}] Recovery backoff active after {$failureCount} consecutive failure(s); retry in {$remaining}s.\n",
+                FILE_APPEND
+            );
+            http_response_code(503);
+            echo "[{$now}] Recovery backoff active after {$failureCount} consecutive failure(s); retry in {$remaining}s.\n";
+            echo "No PM2 command was run. The cron watchdog will retry automatically.\n";
+            exit;
         }
 
-        if ($isOnline) {
-            echo "[{$now}] health-web is online. No action taken.\n";
+        if (!Pm2RecoveryGuard::writeTimestamp($pm2RecoveryLastAttemptFile, time())) {
+            http_response_code(503);
+            echo "[{$now}] Could not persist recovery-attempt state; refusing to spawn PM2.\n";
+            exit;
+        }
+
+        if ($healthOnline) {
+            $gate = $processGate(true);
+            if ($gate['blocking']) {
+                http_response_code(503);
+                @file_put_contents($watchdogLog, "[{$now}] mall start not attempted: " . $gate['note'] . "\n", FILE_APPEND);
+                echo "[{$now}] mall is offline, but its restart was BLOCKED by the nproc task gate.\n";
+                echo $gate['note'] . "\n";
+                exit;
+            }
+
+            $mallStartCommand = 'cd /home/tw123457/mall_app'
+                . ' && export PM2_HOME=/home/tw123457/.pm2'
+                . ' && export PATH=' . dirname($nodeBin) . ':$PATH'
+                . ' && timeout 30 ' . $pm2Bin . ' startOrRestart ecosystem.config.cjs --only mall 2>&1';
+            exec($mallStartCommand, $mallStartOutput, $mallStartExit);
+            @file_put_contents(
+                $watchdogLog,
+                "[{$now}] mall was offline; startOrRestart exit={$mallStartExit}\n" . implode("\n", $mallStartOutput) . "\n",
+                FILE_APPEND
+            );
+            if ($probeLocalHttp(3300, 'mall.j172.tw')) {
+                $clearFailureState();
+                echo "[{$now}] mall recovered on port 3300.\n";
+                exit;
+            }
+
+            $watchdogFailures++;
+            if (!Pm2RecoveryGuard::writeTimestamp($watchdogFailureFile, $watchdogFailures)) {
+                @file_put_contents($watchdogLog, "[{$now}] ERROR: could not persist mall recovery failure count\n", FILE_APPEND);
+            }
+            http_response_code(503);
+            echo "[{$now}] mall remains offline after one bounded, serialized start attempt (exit={$mallStartExit}).\n";
+            echo "The next attempt is rate-limited; inspect the watchdog and PM2 logs if it persists.\n";
             exit;
         }
 
@@ -1541,12 +1557,23 @@ if (str_starts_with($path, '/__ops/')) {
         $watchdogOutcome = null;
         $alreadyRunningPid = $triggerPrebuiltRun(false, $buildPrebuiltCommand(true), $watchdogOutcome);
         if ($alreadyRunningPid === -1) {
-            // The gate closed between the check above and here (the jlist /
-            // resurrect calls we just made can themselves push the count over).
+            // The gate closed between the initial check and the final
+            // serialized spawn check.
             http_response_code(503);
             @file_put_contents($watchdogLog, "[{$now}] apply-prebuilt not started: " . $watchdogOutcome['gate']['note'] . "\n", FILE_APPEND);
             echo "[{$now}] health-web was not online, but the restart was BLOCKED by the nproc gate.\n";
             echo $watchdogOutcome['gate']['note'] . "\n";
+            exit;
+        }
+        if ($alreadyRunningPid === -2) {
+            http_response_code(503);
+            @file_put_contents(
+                $watchdogLog,
+                "[{$now}] apply-prebuilt not started: single-run lock unavailable ({$watchdogOutcome['lock_error']})\n",
+                FILE_APPEND
+            );
+            echo "[{$now}] health-web was not online, but the restart was BLOCKED because its single-run lock is unavailable.\n";
+            echo "No process was spawned; check lock-file ownership and filesystem availability.\n";
             exit;
         }
         if ($alreadyRunningPid !== null) {
@@ -1558,6 +1585,10 @@ if (str_starts_with($path, '/__ops/')) {
         }
 
         if ($watchdogOutcome['observed_pid'] === 0) {
+            $watchdogFailures++;
+            if (!Pm2RecoveryGuard::writeTimestamp($watchdogFailureFile, $watchdogFailures)) {
+                @file_put_contents($watchdogLog, "[{$now}] ERROR: could not persist recovery failure count\n", FILE_APPEND);
+            }
             // The spawn produced no observable pid within the wait. Say so in
             // the log rather than letting it look like a successful restart —
             // #97 spent two days looking at a fix that had silently no-opped.
@@ -1566,6 +1597,9 @@ if (str_starts_with($path, '/__ops/')) {
                 "[{$now}] apply-prebuilt spawned but NO pid appeared in /proc within {$watchdogOutcome['wait_ms']}ms — exec() may not have been able to fork.\n",
                 FILE_APPEND
             );
+            http_response_code(503);
+            echo "[{$now}] Recovery process could not be confirmed; no additional PM2 command will be launched this tick.\n";
+            exit;
         }
 
         echo "[{$now}] health-web was not online. Restart triggered — check /__ops/apply-prebuilt-status?key=...\n";
@@ -1606,7 +1640,8 @@ if (str_starts_with($path, '/__ops/')) {
         $gate = $processGate(true);
         echo "==== nproc gate (issue #98) ====\n";
         echo "process_count = " . ($gate['count'] === null ? 'UNAVAILABLE' : $gate['count']) . "\n";
-        echo "ceiling       = {$gate['ceiling']}\n";
+        echo "task_count    = " . ($gate['task_count'] === null ? 'UNAVAILABLE' : $gate['task_count']) . "\n";
+        echo "task_ceiling  = {$gate['ceiling']}\n";
         echo "nproc_limit   = {$gate['limit']}\n";
         echo "blocking      = " . ($gate['blocking'] ? 'YES — escalation is being refused right now' : 'no') . "\n";
         echo $gate['note'] . "\n\n";
@@ -1643,15 +1678,16 @@ if (str_starts_with($path, '/__ops/')) {
 
         echo "==== this account's processes (/proc, no fork) ====\n";
         if ($gate['count'] === null) {
-            echo "unavailable — /proc unreadable or uid undetermined\n\n";
+            echo "unavailable — /proc unreadable or one or more task counts unknown\n\n";
         } else {
             $listing = $gate['procs'];
             usort($listing, static fn(array $a, array $b): int => $b['age'] <=> $a['age']);
-            echo str_pad('PID', 9) . str_pad('PPID', 9) . str_pad('AGE(s)', 10) . "CMDLINE\n";
+            echo str_pad('PID', 9) . str_pad('PPID', 9) . str_pad('AGE(s)', 10) . str_pad('THREADS', 10) . "CMDLINE\n";
             foreach ($listing as $proc) {
                 echo str_pad((string) $proc['pid'], 9)
                     . str_pad((string) $proc['ppid'], 9)
                     . str_pad((string) $proc['age'], 10)
+                    . str_pad((string) $proc['threads'], 10)
                     . substr($proc['cmdline'], 0, 140) . "\n";
             }
             echo "\n";
@@ -1685,20 +1721,17 @@ if (str_starts_with($path, '/__ops/')) {
         if ($fp) fclose($fp);
         echo "\n";
 
-        // Fork-heavy sections last, and skipped while the gate is closed: this
-        // is a diagnostic page, and running six subprocesses on an account that
-        // has none to spare would make the incident it is diagnosing worse.
-        if ($gate['blocking'] && ($_GET['full'] ?? '') !== '1') {
+        // Fork-heavy sections last, and always skipped while the gate is
+        // closed. No query parameter may override the resource safety guard.
+        if ($gate['blocking']) {
             echo "==== shell diagnostics SKIPPED ====\n";
-            echo "The nproc gate is blocking, and pm2 list / describe / curl / ss / netstat / ps\n";
-            echo "each need a fork. Add &full=1 to run them anyway.\n";
+            echo "The NPROC task gate is blocking or unavailable. curl / ss / netstat / ps need forks,\n";
+            echo "so they are skipped to avoid consuming the recovery headroom.\n";
             exit;
         }
 
         echo "==== pm2 list ====\n";
-        echo shell_exec($pm2Bin . ' list 2>&1') . "\n";
-        echo "==== pm2 describe health-web ====\n";
-        echo shell_exec($pm2Bin . ' describe health-web 2>&1') . "\n";
+        echo "PM2 CLI omitted: a failed PM2 RPC call may create another daemon. See /proc process listing and raw PM2 logs above.\n";
         echo "==== curl -v http://127.0.0.1:3000/news ====\n";
         echo shell_exec('curl -v --max-time 8 http://127.0.0.1:3000/news 2>&1') . "\n";
         echo "==== ss -tlnp (port listeners) ====\n";
@@ -1715,13 +1748,18 @@ if (str_starts_with($path, '/__ops/')) {
     if ($path === '/__ops/pm2-logs') {
         header('Content-Type: text/plain; charset=utf-8');
         $lines = max(1, min(500, (int) ($_GET['lines'] ?? 200)));
-        echo "==== pm2 logs health-web --lines {$lines} --nostream ====\n";
-        echo shell_exec($pm2Bin . ' logs health-web --lines ' . $lines . ' --nostream 2>&1') . "\n";
-        echo "==== raw log files under ~/.pm2/logs matching health-web* ====\n";
-        echo shell_exec('ls -la /home/tw123457/.pm2/logs/ 2>&1 | grep health-web') . "\n";
-        foreach (glob('/home/tw123457/.pm2/logs/health-web*') as $logPath) {
-            echo "---- {$logPath} ----\n";
-            echo shell_exec('tail -n ' . $lines . ' ' . escapeshellarg($logPath)) . "\n";
+        echo "==== PM2 CLI omitted; reading raw log files only ====\n";
+        $logPaths = glob('/home/tw123457/.pm2/logs/{health-web,mall}*', GLOB_BRACE) ?: [];
+        if ($logPaths === []) {
+            echo "No health-web or mall PM2 log files found.\n";
+            exit;
+        }
+        echo "==== raw log files under ~/.pm2/logs (forkless tail) ====\n";
+        foreach ($logPaths as $logPath) {
+            $stat = @stat($logPath);
+            echo "---- {$logPath} (" . ($stat === false ? 'metadata unavailable' : $stat['size'] . ' bytes') . ") ----\n";
+            $tail = Pm2RecoveryGuard::readTail($logPath, $lines);
+            echo $tail === null ? "Could not read this log file.\n" : $tail . "\n";
         }
         exit;
     }
@@ -1883,6 +1921,13 @@ if (str_starts_with($path, '/__ops/')) {
 
     if ($path === '/__ops/net-test') {
         header('Content-Type: text/plain; charset=utf-8');
+        $gate = $processGate(true);
+        if ($gate['blocking']) {
+            http_response_code(503);
+            echo "Network diagnostics REFUSED by the NPROC task gate.\n";
+            echo $gate['note'] . "\n";
+            exit;
+        }
         $testUrl = 'https://www.mohw.gov.tw/rss-16-1.html';
 
         echo "==== PHP curl to {$testUrl} ====\n";
@@ -2169,25 +2214,46 @@ $triggerPm2Watchdog = static function () use ($opsKey, $processGate): void {
         return;
     }
 
-    // Subject to the same nproc gate as the watchdog itself, and for a sharper
-    // reason: this fires once per *failed visitor request*. During the 4h39m
-    // outage, with bot traffic against a 502ing site, that is one curl spawned
-    // per request on an account that had no slots left — the single largest
-    // amplifier in this file. The 5-minute cron still calls the watchdog
-    // endpoint directly, so nothing is lost by skipping the opportunistic
-    // version while the process table is full.
+    // This can be reached once per failed visitor request, so serialize and
+    // rate-limit it as well as checking NPROC. During the 4h39m outage, bot
+    // traffic against a 502ing site made this path spawn one curl per request.
+    // The independent 5-minute cron remains the guaranteed retry path.
     $gate = $processGate();
     if ($gate['blocking']) {
         return;
     }
 
-    // Fire-and-forget: ask the existing watchdog endpoint to revive PM2/app
-    // if needed, then let the current request retry once.
-    $url = 'https://health.j172.tw/__ops/pm2-ensure-running?key=' . rawurlencode($opsKey) . '&cb=' . time();
-    $cmd = 'nohup curl -k -fsS --max-time 8 --resolve health.j172.tw:443:103.21.221.12 '
-        . escapeshellarg($url)
-        . ' >/dev/null 2>&1 &';
-    @exec($cmd);
+    $selfHealLock = Pm2RecoveryGuard::acquire('/home/tw123457/health_app/.pm2-self-heal.lock');
+    if ($selfHealLock === null) {
+        return;
+    }
+
+    try {
+        $gate = $processGate(true);
+        if ($gate['blocking']) {
+            return;
+        }
+
+        $lastAttemptFile = '/home/tw123457/health_app/.pm2-self-heal-last-attempt';
+        $lastAttemptAt = Pm2RecoveryGuard::readPositiveInteger($lastAttemptFile);
+        if (Pm2RecoveryGuard::isCoolingDown($lastAttemptAt, 1, time())) {
+            return;
+        }
+        if (!Pm2RecoveryGuard::writeTimestamp($lastAttemptFile, time())) {
+            error_log('PM2 opportunistic watchdog skipped: could not persist its 5-minute throttle.');
+            return;
+        }
+
+        // Fire-and-forget: ask the existing watchdog endpoint to revive PM2/app
+        // if needed, then let the current request retry once.
+        $url = 'https://health.j172.tw/__ops/pm2-ensure-running?key=' . rawurlencode($opsKey) . '&cb=' . time();
+        $cmd = 'nohup curl -k -fsS --max-time 8 --resolve health.j172.tw:443:103.21.221.12 '
+            . escapeshellarg($url)
+            . ' >/dev/null 2>&1 &';
+        @exec($cmd);
+    } finally {
+        Pm2RecoveryGuard::release($selfHealLock);
+    }
 };
 
 $maxAttempts = $allowSelfHealRetry ? 2 : 1;
