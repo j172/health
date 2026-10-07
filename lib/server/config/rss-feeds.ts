@@ -424,4 +424,11 @@ export const RSS_FEEDS: FeedConfig[] = [
     sourceName: "moe",
     skipDetailFetch: true,
   },
+  {
+    code: "twreporter_news",
+    name: "報導者",
+    url: "https://www.twreporter.org/a/rss2.xml",
+    sourceName: "twreporter",
+    skipDetailFetch: true,
+  },
 ];

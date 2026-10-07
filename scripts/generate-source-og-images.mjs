@@ -115,6 +115,7 @@ const SOURCE_LABELS = {
   apatw: "社團法人中華民國保護動物協會",
   seinsights: "社企流",
   mygopen: "MyGoPen 查核中心",
+  twreporter: "報導者",
 };
 
 const GOV_SOURCE_NAMES = new Set([

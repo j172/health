@@ -124,6 +124,7 @@ export type FeedCode =
   | "moi_clarify"
   | "moe_news"
   | "moda_press"
+  | "twreporter_news"
   | (string & {});
 
 export interface FeedConfig {
