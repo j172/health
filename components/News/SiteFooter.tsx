@@ -201,6 +201,17 @@ export default function SiteFooter() {
       label: t("footer.sportsCoach", "運動部不適任教練 ↗"),
     },
     {
+      href: appendOutboundUtm(
+        "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
+        {
+          medium: "civic_partner",
+          campaign: "civic_alliance",
+          content: "footer",
+        }
+      ),
+      label: t("footer.mohwVio", "衛福部醫事性平專區 ↗"),
+    },
+    {
       href: appendOutboundUtm("https://council2026.taiwangogo.tw/", {
         medium: "civic_partner",
         campaign: "civic_alliance",

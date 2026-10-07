@@ -98,6 +98,7 @@
     "er-status": "Real-Time Emergency Room Congestion Dashboard",
     "aed": "National Public Access AED Map",
     "food-safety": "Taiwan Food Pesticide Residue & Safety Inspection Dashboard",
+    "medical-violators": "Medical Personnel Gender Violation Records",
     "outdoor-safety": "Taiwan Outdoor Activity & Exercise Safety Index",
     "accessible-transit": "Taiwan Accessible Transit & Low-Floor Bus Map",
     "inundation-map": "Taiwan Real-Time Inundation & Flood Sensor Map",
@@ -138,6 +139,7 @@
     "antiCognitiveWarfare": "Anti-Cognitive Warfare ↗",
     "taiwanCriminals": "Taiwan Criminals Index ↗",
     "sportsCoach": "Sports Administration Ineligible Coaches ↗",
+    "mohwVio": "MOHW Medical Gender Violation Search ↗",
     "council2026": "2026 Politician Records ↗"
   },
   "tts_title": "Voice Reader",

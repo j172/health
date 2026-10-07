@@ -3406,6 +3406,80 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "medical-violators",
+    group: "care-facility",
+    title: "醫事人員性別事件查詢（狼醫專區）",
+    navLabel: "醫事性平查詢",
+    description:
+      "即時查詢衛生福利部官方公告經法院確定判決或醫事審議懲戒之涉及性平事件醫事人員名冊（涵蓋醫師、中醫師、放射師、藥事及護理人員），落實就醫安全與病患防護知情權。",
+    directAnswer:
+      "衛福部「醫事人員性別事件資訊專區」（狼醫平台）彙整性平三法修法後判決確定之違法醫事人員名單，揭露姓名、類別、專科、執業縣市與裁判/懲戒處分書，供民眾就醫前主動查驗。",
+    scientificBasis: [
+      {
+        title: "醫事人員性別事件資訊專區",
+        authority: "衛生福利部醫事司",
+        url: "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
+      },
+      {
+        title: "司法院法學資料檢索系統（裁判書查詢）",
+        authority: "司法院",
+        url: "https://judgment.judicial.gov.tw",
+      },
+      {
+        title: "性別平等工作法與性騷擾防治法（性平三法）",
+        authority: "全國法規資料庫",
+        url: "https://law.moj.gov.tw",
+      },
+    ],
+    referenceTable: {
+      title: "衛福部醫事人員性別事件專區查核指引與法律依據",
+      headers: ["查核項目", "收錄標準", "法規依據", "資料更新與歷審裁判確認"],
+      rows: [
+        [
+          "收錄對象",
+          "經法院判決或醫事審議懲戒確定之醫事人員",
+          "個人資料保護法第 16 條第 2 款（公益必要）",
+          "目前以 112 年性平三法修正迄今確定判決為主",
+        ],
+        [
+          "涵蓋專業類別",
+          "醫師、中醫師、牙醫師、藥師、放射師、護理師等 18 類",
+          "各類醫事人員法規（醫師法、護理人員法等）",
+          "依司法院判決書介接與衛福部定期審議更新",
+        ],
+        [
+          "執業狀態標註",
+          "執業中、歇業、已廢止執業執照/證書",
+          "各縣市衛生局醫事人員執業登錄系統",
+          "動態異動由地方主管機關公報即時核定",
+        ],
+      ],
+    },
+    relatedSlugs: ["clinics", "baby-friendly-hospitals", "adult-preventive-care", "home-healthcare"],
+    faqs: [
+      {
+        question: "衛福部「狼醫查詢平台」的法源依據與資料範圍為何？",
+        answer:
+          "本專區依據個人資料保護法第 16 條但書第 2 款「增進公共利益所必要」規定公開。現階段以 112 年性平三法修正迄今，經司法院刑事或行政訴訟裁判確定，或經地方衛生局醫懲會決議廢證或停業之案件為主。",
+      },
+      {
+        question: "如何確認案件是否已經三審判決確定？",
+        answer:
+          "專區所載案件均附有案號或裁判字號連結，民眾可點擊直達司法院裁判書系統，依據「歷審裁判」欄位核實最新審級（如最高法院駁回上訴確定、高等法院判決定讞等）。",
+      },
+      {
+        question: "為什麼部分醫師的名單中沒有列出具體執業診所名稱？",
+        answer:
+          "衛福部說明，醫師與醫事人員之執業機構屬於動態登記，醫師可能隨時於不同院所間支援、歇業或異動，為避免登記時間落差造成資訊誤導，現行平台以「執業縣市」與「證書字號」作為主要識別基準。",
+      },
+      {
+        question: "若發現就診醫師曾涉及性平事件，病患有哪些自保權益？",
+        answer:
+          "病患享有醫療選擇權與身體自主權。在侵入性檢查、婦產科、泌尿科、超音波或物理治療時，有權要求醫療院所安排護理人員陪同（Chaperone），或選擇更換看診醫師。若遇不當對待，應立即向院方申訴或撥打 113 保護專線、向當地衛生局檢舉。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -3486,6 +3560,7 @@ const INDEXABLE_SLUGS = new Set([
   "water-outages",
   "emergency-hotlines",
   "emergency-supplies",
+  "medical-violators",
 ]);
 
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>

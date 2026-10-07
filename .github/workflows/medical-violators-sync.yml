@@ -1,0 +1,44 @@
+name: Medical violators sync
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs weekly on Sunday at 03:25 UTC (11:25 Taipei time)
+    - cron: "25 3 * * 0"
+
+concurrency:
+  group: medical-violators-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run MOHW violators crawler
+        run: node scripts/sync-medical-violators.mjs
+
+      - name: Commit and push changes if data updated
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          if ! git diff --quiet data/medical-violators-seed.json; then
+            git add data/medical-violators-seed.json
+            git commit -m "chore(data): auto-sync MOHW medical violators seed [skip ci]"
+            git push
+          else
+            echo "No changes in medical violators data."
+          fi
