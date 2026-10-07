@@ -107,6 +107,7 @@ const SOURCE_LABELS: Record<string, string> = {
   moi: "內政部",
   moe: "教育部",
   moda: "數位發展部",
+  twreporter: "報導者",
 };
 
 export interface SourceLabelInput {
