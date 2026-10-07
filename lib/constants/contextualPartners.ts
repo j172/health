@@ -1,6 +1,7 @@
 export type CivicPartnerId =
   | "metawilo"
   | "sports-coach"
+  | "mohw-vio"
   | "kuma"
   | "anti-cw"
   | "g0v"
@@ -55,6 +56,23 @@ export const CONTEXTUAL_PARTNERS: Record<CivicPartnerId, ContextualPartnerConfig
     defaultDescription:
       "把關課後運動與才藝訓練安全：建議搭配運動部公告專區，查核是否有涉及違法事件之不適任教練。",
     defaultActionText: "查核不適任名單",
+  },
+  "mohw-vio": {
+    id: "mohw-vio",
+    name: "衛福部醫事性平專區",
+    baseUrl: "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
+    icon: "🩺",
+    badge: "就醫安全防護",
+    badgeColor:
+      "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
+    borderColor: "border-rose-200/80 dark:border-rose-900/50",
+    hoverBorderColor: "hover:border-rose-400 dark:hover:border-rose-700",
+    bgLinear:
+      "from-rose-50/40 via-white to-slate-50/30 dark:from-rose-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "就醫安全與違法醫事人員查核",
+    defaultDescription:
+      "守護民眾就醫安全與身體自主權：建議就診前搭配衛福部專區，查核涉及性平事件之醫事人員確定案件名冊。",
+    defaultActionText: "查核醫事性平名單",
   },
   kuma: {
     id: "kuma",

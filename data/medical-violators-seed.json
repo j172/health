@@ -1,0 +1,429 @@
+{
+  "metadata": {
+    "source": "衛生福利部 醫事人員性別事件資訊專區",
+    "sourceUrl": "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
+    "lastSyncedAt": "2026-10-07T13:45:48.573Z",
+    "totalCount": 21,
+    "note": "依據個人資料保護法第16條但書第2款，公開資訊僅供公眾就醫安全公益查驗。"
+  },
+  "data": [
+    {
+      "id": "A-孔繁錦-醫***495",
+      "name": "孔繁錦",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "已廢證",
+      "city": "已廢證",
+      "status": "已廢證",
+      "licenseMasked": "醫***495",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://doc2-exthird.ntpc.gov.tw/NTPC_SODPUBLISH/FILE/0000000/PUBLISH/112/3/112311.pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-李宇力-醫***251",
+      "name": "李宇力",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "內科",
+      "city": "高雄市",
+      "status": "執業中",
+      "licenseMasked": "醫***251",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/11.%E6%9D%8E%E5%AE%87%E5%8A%9B(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-李遠聰-醫***842",
+      "name": "李遠聰",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "耳鼻喉頭頸外科",
+      "city": "臺中市",
+      "status": "執業中",
+      "licenseMasked": "醫***842",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/13.%E6%9D%8E%E9%81%A0%E8%81%B0(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-林朝順-醫***403",
+      "name": "林朝順",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "麻醉科",
+      "city": "新北市",
+      "status": "執業中",
+      "licenseMasked": "醫***403",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPHM,113%2c%e4%be%b5%e4%b8%8a%e8%a8%b4%2c252%2c20260507%2c1",
+          "type": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "A-洪建德-醫***277",
+      "name": "洪建德",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "內科",
+      "city": "新北市",
+      "status": "執業中",
+      "licenseMasked": "醫***277",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPHM,109%2c%e4%be%b5%e4%b8%8a%e8%a8%b4%2c155%2c20200923%2c1",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/9.%E6%B4%AA%E5%BB%BA%E5%BE%B7(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-王至弘-醫***133",
+      "name": "王至弘",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "骨科",
+      "city": "桃園市",
+      "status": "執業中",
+      "licenseMasked": "醫***133",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPDM,111%2c%e4%be%b5%e8%a8%b4%2c59%2c20231228%2c1",
+          "type": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "A-紀孟宏-醫***289",
+      "name": "紀孟宏",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "兒科",
+      "city": "彰化縣",
+      "status": "執業中",
+      "licenseMasked": "醫***289",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=SCDM%2c113%2c%e4%be%b5%e8%a8%b4%2c7%2c20241129%2c2",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://dep-administration.hccg.gov.tw/uploaddowndoc?file=Municipalbulletin/202506131049070.pdf&filedisplay=%E6%96%B0%E7%AB%B9%E5%B8%82%E5%85%AC%E5%A0%B1114%E5%B9%B4%E7%AC%AC3%E6%9C%9F.pdf&flag=doc",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-羅崧慎-醫***470",
+      "name": "羅崧慎",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "婦產科",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "醫***470",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/LAW_Mobile_FJUD/FJUD/data.aspx?ty=JD&id=PCDM%2c115%2c%E8%A8%B4%2c257%2c20260603%2c1&ot=in%20https://share.google/3vxwOSG1V2U0G6Mha",
+          "type": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "A-葉元宏-醫***675",
+      "name": "葉元宏",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "復健科",
+      "city": "臺中市",
+      "status": "執業中",
+      "licenseMasked": "醫***675",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TCBA%2c113%2c%e8%a8%b4%2c292%2c20250428%2c3",
+          "type": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "A-蕭為駿-醫***155",
+      "name": "蕭為駿",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "家庭醫學科",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "醫***155",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=CHDM,110%2c%e4%be%b5%e8%a8%b4%2c48%2c20220809%2c1",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/10.%E8%95%AD%E7%B6%AD%E9%A7%BF(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-許明正-醫***187",
+      "name": "許明正",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "婦產科",
+      "city": "臺中市",
+      "status": "執業中",
+      "licenseMasked": "醫***187",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/12.%E8%A8%B1%E6%98%8E%E6%AD%A3(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-詹益源-醫***340",
+      "name": "詹益源",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "骨科、外科",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "醫***340",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPDM,114%2c%e4%be%b5%e7%b0%a1%2c2%2c20250723%2c1",
+          "type": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "A-鄭文芳-醫***019",
+      "name": "鄭文芳",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "婦產科",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "醫***019",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPDM,114%2c%e4%be%b5%e8%a8%b4%e7%b7%9d%2c1%2c20260512%2c3",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://matest.tradevan.com.tw/Accessibility/Downloads/%E9%84%AD%E6%96%87%E8%8A%B3.pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-陳思原-醫***976",
+      "name": "陳思原",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "婦產科",
+      "city": "臺北市",
+      "status": "執業中",
+      "licenseMasked": "醫***976",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://gazette.gov.taipei/gazettesearch/dicontent/E8B354E3-FC66-4C04-A387-92C2E7D834AE",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-高揚威-醫***977",
+      "name": "高揚威",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "家庭醫學科",
+      "city": "桃園市",
+      "status": "執業中",
+      "licenseMasked": "醫***977",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TYDM%2c111%2c%e5%8e%9f%e4%be%b5%e8%a8%b4%2c6%2c20230428%2c1",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://gazette.tycg.gov.tw/TYBulletin/Doc/11217.pdf?v=105742#page=20",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-黃信穎-醫***117",
+      "name": "黃信穎",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "婦產科",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "醫***117",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPDM,113%2c%e4%be%b5%e8%a8%b4%2c94%2c20250505%2c1",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://gazette.gov.taipei/gazettesearch/dicontent/8B5AA5DB-968D-4A3A-B8BB-056152889120",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "B-林民莒-台***6515",
+      "name": "林民莒",
+      "category": "中醫師",
+      "categoryCode": "B",
+      "specialty": "未載明",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "台***6515",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPSM,111%2c%e5%8f%b0%e4%b8%8a%2c3355%2c20220810%2c1",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/14.%E6%9E%97%E6%B0%91%E8%8E%92(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "B-陳資昀-台***3339",
+      "name": "陳資昀",
+      "category": "中醫師",
+      "categoryCode": "B",
+      "specialty": "未登錄專科",
+      "city": "臺東縣",
+      "status": "執業中",
+      "licenseMasked": "台***3339",
+      "disposition": "裁判1 、 懲戒1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=HLDM,113%2c%e4%be%b5%e6%98%93%2c1%2c20240528%2c1",
+          "type": "judgment"
+        },
+        {
+          "title": "懲戒1",
+          "url": "https://ws.hl.gov.tw/Download.ashx?u=LzAwMS9VcGxvYWQvNTExL3JlbGZpbGUvMjE1NDgvMTY5NDY2Lzc0Mjg0ODY0LWYzMTctNDQ0My1iYmRmLTUxNDBiN2JmYjU4Yy5wZGY%3d&n=6KGb6YarMTEzMDIxNzYwNy5wZGY%3d&icon=..pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "D,E-莊成富-藥***407",
+      "name": "莊成富",
+      "category": "藥事人員",
+      "categoryCode": "D,E",
+      "specialty": "未登錄專科",
+      "city": "新北市",
+      "status": "執業中",
+      "licenseMasked": "藥***407",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://gazette.gov.taipei/informationcatalog/latestgazette/dicontent/275743F3-D136-4C2D-8699-D4DB74C31926",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "H,I,J,K-魏文明-檢***597",
+      "name": "魏文明",
+      "category": "護理人員",
+      "categoryCode": "H,I,J,K",
+      "specialty": "未登錄專科",
+      "city": "新北市",
+      "status": "執業中",
+      "licenseMasked": "檢***597",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TPBA,112%2c%e8%a8%b4%2c1183%2c20250206%2c1",
+          "type": "judgment"
+        }
+      ]
+    },
+    {
+      "id": "S,T-李昌庭-放***480",
+      "name": "李昌庭",
+      "category": "醫事放射人員",
+      "categoryCode": "S,T",
+      "specialty": "未載明",
+      "city": "歇業",
+      "status": "歇業",
+      "licenseMasked": "放***480",
+      "disposition": "裁判1",
+      "links": [
+        {
+          "title": "裁判1",
+          "url": "https://judgment.judicial.gov.tw/FJUD/data.aspx?ty=JD&id=TNDM,113%2c%e4%be%b5%e8%a8%b4%2c65%2c20241219%2c1",
+          "type": "judgment"
+        }
+      ]
+    }
+  ]
+}

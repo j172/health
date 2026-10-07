@@ -98,6 +98,7 @@
     "er-status": "全台湾救急外来リアルタイム混雑掲示板",
     "aed": "台湾公共場所 AED 救急マップ",
     "food-safety": "食品安全・残留農薬検査速報",
+    "medical-violators": "医療従事者性暴力・懲戒処分検索",
     "outdoor-safety": "アウトドア活動・運動安全指数",
     "accessible-transit": "全台湾バリアフリー交通・ノンステップバスマップ",
     "inundation-map": "全台湾リアルタイム浸水・冠水センサーマップ",
@@ -139,6 +140,7 @@
     "antiCognitiveWarfare": "認知戦対策 ↗",
     "taiwanCriminals": "台湾犯罪者名鑑 ↗",
     "sportsCoach": "スポーツ不適任指導者公報 ↗",
+    "mohwVio": "衛生福利部 医療従事者性暴力情報 ↗",
     "council2026": "2026年 政治家経歴 ↗",
     "license": "ソースコードは MIT ライセンス · 構造化データは CC0-1.0 で公開",
     "accessibility": "アクセシビリティ宣言"

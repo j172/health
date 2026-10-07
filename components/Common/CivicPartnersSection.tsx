@@ -67,6 +67,16 @@ export const CIVIC_PARTNERS: CivicPartnerItem[] = [
     description: "運動部官方公告涉及性平、傷害與違法情事之不適任教練名單，守護學生與兒少運動安全。",
   },
   {
+    id: "mohw-vio",
+    name: "衛福部醫事性平專區",
+    url: "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
+    icon: "🩺",
+    badge: "就醫安全",
+    badgeColor: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800",
+    tag: "就醫安全 ‧ 違法醫事名單",
+    description: "衛福部官方公告涉及性平案件判決或懲戒確定之醫事人員名冊，落實病患就醫防護知情權。",
+  },
+  {
     id: "council2026",
     name: "2026 政治人物前科",
     url: "https://council2026.taiwangogo.tw/",
@@ -130,12 +140,12 @@ export default function CivicPartnersSection({
           </p>
         </div>
         <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-          5 個友善公民組織與專案
+          {CIVIC_PARTNERS.length} 個友善公民組織與專案
         </span>
       </div>
 
       {/* Partners Grid */}
-      <div className="relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {CIVIC_PARTNERS.map((partner) => (
           <a
             key={partner.id}
