@@ -193,6 +193,14 @@ export default function SiteFooter() {
       label: t("footer.taiwanCriminals", "台灣罪犯圖鑑 ↗"),
     },
     {
+      href: appendOutboundUtm("https://www.sports.gov.tw/News/6295", {
+        medium: "civic_partner",
+        campaign: "civic_alliance",
+        content: "footer",
+      }),
+      label: t("footer.sportsCoach", "運動部不適任教練 ↗"),
+    },
+    {
       href: appendOutboundUtm("https://council2026.taiwangogo.tw/", {
         medium: "civic_partner",
         campaign: "civic_alliance",

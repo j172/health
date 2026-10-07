@@ -121,8 +121,10 @@
     "loading": "Loading..."
   },
   "footer": {
+    "license": "Code licensed under MIT · Structured data under CC0-1.0",
     "rights": "All rights reserved.",
     "privacy": "Privacy Policy",
+    "accessibility": "Accessibility Statement",
     "overview": "Site Overview",
     "calculatorTools": "Health Calculators & Tools",
     "newsList": "Health News",
@@ -135,6 +137,7 @@
     "kumaAcademy": "Kuma Academy ↗",
     "antiCognitiveWarfare": "Anti-Cognitive Warfare ↗",
     "taiwanCriminals": "Taiwan Criminals Index ↗",
+    "sportsCoach": "Sports Administration Ineligible Coaches ↗",
     "council2026": "2026 Politician Records ↗"
   },
   "tts_title": "Voice Reader",
@@ -164,11 +167,6 @@
     "lineLoose": "Loose",
     "dialogLabel": "Immersive reading mode",
     "summary": "Key summary"
-  },
-  "footer": {
-    "license": "Code licensed under MIT · Structured data under CC0-1.0",
-    "disclaimer": "Data aggregated from government and public health open APIs and RSS feeds. Official agency announcements prevail.",
-    "accessibility": "Accessibility Statement"
   },
   "a11y": {
     "skipRegion": "Keyboard Shortcuts & Accessibility Skip Links",

@@ -57,6 +57,16 @@ export const CIVIC_PARTNERS: CivicPartnerItem[] = [
     description: "公開揭露性侵害與性騷擾加害者判決紀錄，把羞恥還給加害者，守護下一代安全。",
   },
   {
+    id: "sports-coach",
+    name: "運動部不適任教練專區",
+    url: "https://www.sports.gov.tw/News/6295",
+    icon: "🥋",
+    badge: "體育安全",
+    badgeColor: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800",
+    tag: "體育安全 ‧ 不適任名單",
+    description: "運動部官方公告涉及性平、傷害與違法情事之不適任教練名單，守護學生與兒少運動安全。",
+  },
+  {
     id: "council2026",
     name: "2026 政治人物前科",
     url: "https://council2026.taiwangogo.tw/",

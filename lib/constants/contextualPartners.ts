@@ -1,5 +1,6 @@
 export type CivicPartnerId =
   | "metawilo"
+  | "sports-coach"
   | "kuma"
   | "anti-cw"
   | "g0v"
@@ -37,6 +38,23 @@ export const CONTEXTUAL_PARTNERS: Record<CivicPartnerId, ContextualPartnerConfig
     defaultDescription:
       "守護孩童人身安全：除政府立案資格與警示點外，建議搭配台灣罪犯圖鑑查核司法判決紀錄。",
     defaultActionText: "前往查核",
+  },
+  "sports-coach": {
+    id: "sports-coach",
+    name: "運動部不適任教練專區",
+    baseUrl: "https://www.sports.gov.tw/News/6295",
+    icon: "🥋",
+    badge: "體育安全防護",
+    badgeColor:
+      "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800",
+    borderColor: "border-teal-200/80 dark:border-teal-900/50",
+    hoverBorderColor: "hover:border-teal-400 dark:hover:border-teal-700",
+    bgLinear:
+      "from-teal-50/40 via-white to-slate-50/30 dark:from-teal-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "課後運動與體育教練安全查核",
+    defaultDescription:
+      "把關課後運動與才藝訓練安全：建議搭配運動部公告專區，查核是否有涉及違法事件之不適任教練。",
+    defaultActionText: "查核不適任名單",
   },
   kuma: {
     id: "kuma",

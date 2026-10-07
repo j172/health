@@ -24,11 +24,20 @@ export const metadata: Metadata = {
 export default function CramSchoolsPage() {
   return (
     <ToolPageShell slug="cram-schools" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <ContextualPartnerCard
-        partnerId="metawilo"
-        contextTitle="校園與補教環境安全查核"
-        contextDescription="為學子把關課後學習安全：除查驗教育部立案與師資核備外，建議前往「台灣罪犯圖鑑」查核涉及兒少性犯罪公開判決。"
-      />
+      <div className="mb-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        <ContextualPartnerCard
+          partnerId="metawilo"
+          compact={true}
+          contextTitle="補教環境司法判決查核"
+          contextDescription="為學子把關課後學習安全：建議前往「台灣罪犯圖鑑」查核涉及兒少性犯罪公開判決。"
+        />
+        <ContextualPartnerCard
+          partnerId="sports-coach"
+          compact={true}
+          contextTitle="運動與才藝教練資格查核"
+          contextDescription="把關體育與運動培訓安全：建議前往「運動部專區」查核涉及違法情事之不適任教練名單。"
+        />
+      </div>
       <FacilitySearchContent config={facilitySearchConfigs["cram-schools"]} />
     </ToolPageShell>
   );
