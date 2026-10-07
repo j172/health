@@ -1,8 +1,9 @@
 # TICKET-20260930: 全民防災物資：緊急避難包與居家儲備計算機實作
 
 - **Spec Reference**: [docs/specs/SPEC-20260930-EMERGENCY-SUPPLIES-PREPAREDNESS-CALCULATOR.md](file:///d:/GoogleDrive/health/docs/specs/SPEC-20260930-EMERGENCY-SUPPLIES-PREPAREDNESS-CALCULATOR.md)
-- **Status**: In Progress
+- **Status**: Completed / Merged & Deployed
 - **Created**: 2026-09-30
+- **Completed**: 2026-09-30
 
 ## Tasks
 

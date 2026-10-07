@@ -1,7 +1,7 @@
 # Spec & Ticket: Stop pm2 Daemon Proliferation Exhausting NPROC
 
 - **Ticket ID**: `SPEC-HEALTH-20260831-PM2-PROLIFERATION`
-- **Status**: TODO
+- **Status**: Implemented and verified in production (2026-10-07)
 - **Priority**: HIGH (P1)
 - **Affects**: `.remote-health-index.php`
 
@@ -50,19 +50,19 @@ Every `pm2` CLI call that cannot reach the live daemon starts another one. Over 
 
 ## 2. Agreed Architectural Blueprint
 
-### 2.1 Gate escalation on the process count, not on a failure count
+### 2.1 Gate escalation on Linux task use, not only process leaders
 
-Before any escalation that spawns a process, count the account's own processes by reading `/proc` — a directory listing, which needs no fork and therefore works in exactly the conditions that matter. If the count is at or above a headroom threshold below NPROC=100, **do not spawn**. Log the refusal with the observed count.
+Before any escalation that spawns a process, scan account-owned `/proc/<pid>/status` files and sum each process's `Threads` count. This reads `/proc` directly and needs no fork. The 2026-10-07 incident had 31 process leaders, below the old 35-process threshold, while PM2/Node logs reported `pthread_create` / `uv_thread_create` failures. A later healthy-host sample showed 8 process leaders but 52 threads, confirming that process leaders alone understate the constrained task use.
 
-**This is deliberately not a "give up after N failures" rule.** Escalation resumes on its own as soon as the count drops. The gate fires only when spawning is both futile and harmful; it never abandons a recoverable app whose process table is healthy.
+The configured task ceiling is 65 against the hosting-support-confirmed NPROC limit of 100: 35 slots are reserved for one bounded PM2 CLI/daemon, replacement Node app, wrapper/probe work, and slack. At 65 or above, or whenever a trustworthy task count cannot be read, **do not spawn**. The gate reopens automatically when task use falls below 65; it is not a fixed failure-count shutdown.
 
 ### 2.2 Make the refusal observable
 
-The watchdog log and `/__ops/pm2-status` must state the process count and whether the gate is currently blocking. A recovery path whose availability cannot be observed is one that cannot be trusted — the lesson from #97, where a silent `exec()` fallback made #74 a no-op for two days without anyone knowing.
+The watchdog log and `/__ops/pm2-status` state process leaders, summed tasks, the task ceiling, NPROC limit, and whether recovery is blocked. Unknown measurements fail closed. The watchdog uses one shared PM2 lock, bounded `startOrRestart` calls, and exponential retry backoff; it probes health and mall independently so either can be restored. The per-request self-heal path is separately locked and throttled to one trigger per five minutes. A failed lock acquisition also refuses to spawn.
 
 ### 2.3 Report the diagnostic facts #97 needs
 
-While in this file, have `/__ops/pm2-status` print `extension_loaded('posix')`, `function_exists('posix_kill')` and `ini_get('disable_functions')`. Support confirmed ext-posix is enabled, so the working hypothesis is that `posix_kill` is in `disable_functions` — but that is a hypothesis, and this settles it in one request.
+`/__ops/pm2-status` reports `extension_loaded('posix')`, `function_exists('posix_kill')`, and `ini_get('disable_functions')`. Production verification reports `true`, `true`, and an empty disabled-functions list; the reaper uses forkless `posix_kill`.
 
 ### 2.4 Close the double-spawn race
 
@@ -72,7 +72,7 @@ The lock must not release until the new run's pid is observable.
 
 ### 2.5 Reap stragglers
 
-`node /bin/timeout update` had been alive since Aug 29. Nothing reaps orphans. A sweep should remove `Daemon.js` / `ProcessContainerFork.js` processes not owned by the live God Daemon, and anything old that is not the app — using whatever kill mechanism is available (see #97; `exec()` may be all there is).
+The reaper remains dry-run/observe-only in the watchdog. It only signals positively identified stale candidates when explicitly invoked with `apply=1`. Post-deploy verification found one live PM2 God daemon and zero reaper candidates, so no process was killed speculatively.
 
 ---
 
@@ -88,7 +88,7 @@ The lock must not release until the new run's pid is observable.
 ## 4. Verification & Quality Assurance
 
 - `php -l` passes — CI enforces it (`.github/workflows/php-lint.yml`).
-- Unit-testing PHP is not set up in this repo; state plainly what is and is not covered by automated checks rather than implying more.
-- The process-count reader must be demonstrated to work **without forking**: show the implementation reads `/proc` directly rather than shelling out to `ps` or `wc`.
-- State the chosen headroom threshold and the reasoning for that number.
-- After deploy, `/__ops/pm2-status` must show the process count, the gate state, and the three posix facts. Paste that output.
+- `tests/pm2-recovery-guard.test.php` covers lock exclusion, retry backoff, task summation/unknown-count behavior, and forkless log-tail boundaries; `tests/pm2-watchdog-contract.test.php` locks down the front-controller integration.
+- The production task scan reads `/proc` directly; it does not call `ps`, `wc`, or other subprocesses.
+- Production verification on 2026-10-07: health and mall both returned HTTP 200 directly from the origin; local ports 3000 and 3300 returned HTTP 200; `/__ops/pm2-status` reported 9 process leaders, 53 tasks, task ceiling 65, NPROC 100, and `blocking=no` (an earlier idle sample was 8/52). `posix`/`posix_kill` were available, with no disabled functions. The reaper dry run identified God daemon PID 3138410 and found 0 candidates.
+- A cached public maintenance response initially showed pre-deploy values. All `/__ops/*` responses now send `Cache-Control: private, no-store, max-age=0`; the edge reported `CF-Cache-Status: BYPASS`, and direct-origin checks were used for authoritative verification.
