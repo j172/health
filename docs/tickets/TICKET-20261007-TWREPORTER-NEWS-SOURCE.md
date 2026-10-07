@@ -26,7 +26,7 @@
 - [x] 5. `scripts/generate-source-og-images.mjs` 同步更新鏡像標籤。
 - [x] 6. 建立 `tests/twreporter-rss.test.mjs` 測試並全數通過。
 - [x] 7. 執行 `npm run typecheck` 與 `npm test` 驗證全站無型別與迴歸問題。
-- [ ] 8. 建立 PR、合併至 `main` 分支並觸發正式環境部署（closes #428）。
+- [x] 8. 建立 PR、合併至 `main` 分支並觸發正式環境部署（closes #428）。
 
 ---
 
@@ -38,5 +38,5 @@
 - [x] 4. 修改程式碼與設定檔
 - [x] 5. 撰寫專屬測試檔 `tests/twreporter-rss.test.mjs`
 - [x] 6. 本地測試與型別檢查驗證
-- [ ] 7. Git 提交與分支推送
-- [ ] 8. 合併至 `main` 並觸發 GHA 部署
+- [x] 7. Git 提交與分支推送
+- [x] 8. 合併至 `main` 並觸發 GHA 部署
