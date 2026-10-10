@@ -1269,7 +1269,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["long-term-care", "ltc-contracted", "disability-welfare"],
+    relatedSlugs: ["long-term-care", "ltc-contracted", "disability-welfare", "senior-friendly"],
     faqs: [
       {
         question: "資料涵蓋哪些老人福利機構？",
@@ -2734,7 +2734,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["metro-alerts", "youbike", "disability-atm", "long-term-care"],
+    relatedSlugs: ["metro-alerts", "youbike", "disability-atm", "long-term-care", "senior-friendly"],
     faqs: [
       {
         question: "如何預約捷運或臺鐵的無障礙愛心乘車渡板服務？",
@@ -3480,6 +3480,47 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
   },
+  {
+    slug: "senior-friendly",
+    group: "life-services",
+    schemaType: "WebPage",
+    navLabel: "敬老卡與樂齡旅遊地圖",
+    title: "敬老卡補助與樂齡旅遊地圖：全臺22縣市敬老卡交通補助查詢",
+    description:
+      "查詢全臺 22 縣市敬老卡交通補助類型與申請資訊，並整合景區無障礙設施、軟性服務（輪椅／老花眼鏡借用、語音導覽）、樂齡套票推薦與設施停用公告。",
+    directAnswer:
+      "敬老卡補助與樂齡旅遊地圖整合交通部 TDX「樂齡/敬老」觀光開放資料與全臺 22 縣市社會局敬老卡資訊：選擇縣市即可查詢敬老卡交通補助類型與申請連結，並搜尋全臺景區的無障礙設施、軟性服務與樂齡套票推薦。",
+    scientificBasis: [
+      {
+        title: "交通部運輸資料流通服務 (TDX)「樂齡/敬老」觀光無障礙與敬老卡開放資料",
+        authority: "交通部",
+        url: "https://tdx.transportdata.tw",
+      },
+      {
+        title: "各縣市政府社會局（處）敬老福利政策",
+        authority: "衛生福利部社會及家庭署 (SFAA)",
+        url: "https://www.sfaa.gov.tw",
+      },
+    ],
+    relatedSlugs: ["elder-welfare", "accessible-transit", "ltc-contracted"],
+    faqs: [
+      {
+        question: "敬老卡申請資格是什麼？",
+        answer:
+          "一般需設籍該縣市且年滿 65 歲以上；部分縣市放寬原住民申請年齡至 55 歲以上。各縣市補助額度、是否需定期儲值與涵蓋運具範圍略有不同，請以當地社會局（處）最新公告為準，或撥打衛福部 1957 福利諮詢專線查詢。",
+      },
+      {
+        question: "樂齡套票與一般旅遊行程有什麼不同？",
+        answer:
+          "樂齡套票是觀光署或各業者針對長輩設計的旅遊行程，特色是行程節奏較慢、住宿與交通安排考量長輩體力與無障礙需求，部分套票並結合景區無障礙設施與軟性服務（如輪椅、老花眼鏡借用）資訊，方便長輩安心出遊。",
+      },
+      {
+        question: "景區設施停用公告會顯示多久？",
+        answer:
+          "公告僅在生效期間（開始時間至結束時間內）顯示，一旦超過結束時間即自動隱藏，避免長輩看到已經恢復使用的過期資訊；若公告未標示結束時間，則視為持續有效直到另行公告。",
+      },
+    ],
+  },
 ];
 
 /**
@@ -3556,6 +3597,7 @@ const INDEXABLE_SLUGS = new Set([
   "food-safety",
   "outdoor-safety",
   "accessible-transit",
+  "senior-friendly",
   "inundation-map",
   "water-outages",
   "emergency-hotlines",
