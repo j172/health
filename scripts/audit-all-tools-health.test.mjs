@@ -35,7 +35,7 @@ const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
 const { facilitySearchConfigs } = await import("../app/tools/facilityConfigs.ts");
 
 test("Site-wide tools health: every tool in TOOL_CATALOG has valid metadata and no blocking loading", () => {
-  assert.equal(TOOL_CATALOG.length, 83, `Expected exactly 83 tools, got ${TOOL_CATALOG.length}`);
+  assert.equal(TOOL_CATALOG.length, 84, `Expected exactly 84 tools, got ${TOOL_CATALOG.length}`);
 
   for (const tool of TOOL_CATALOG) {
     const pagePath = path.join(ROOT_DIR, "app", "tools", tool.slug, "page.tsx");

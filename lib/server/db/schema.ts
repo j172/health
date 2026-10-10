@@ -1743,6 +1743,86 @@ export const TABLE_DDL = {
       INDEX idx_hotline_agency (agency)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TDX Senior/Tourism 景區無障礙設施 (issue #436) — 一景點可有多筆設施分類項
+  // (廁所/充電站/服務中心等)，無天然唯一 key，sync 採整表 DELETE+INSERT。
+  seniorTourismFacilities: `
+    CREATE TABLE IF NOT EXISTS senior_tourism_facilities (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      attraction_id VARCHAR(64) NOT NULL,
+      attraction_name VARCHAR(128) NOT NULL,
+      city_code VARCHAR(16) NULL,
+      county VARCHAR(32) NULL,
+      facility_category VARCHAR(64) NOT NULL,
+      facility_name VARCHAR(128) NULL,
+      building_name VARCHAR(128) NULL,
+      floor_level VARCHAR(32) NULL,
+      description TEXT NULL,
+      lat DECIMAL(10, 7) NULL,
+      lng DECIMAL(10, 7) NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_attraction (attraction_id),
+      INDEX idx_county (county)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TDX Senior/Tourism 景區軟性服務 (issue #436) — 同上，無天然唯一 key。
+  seniorTourismServices: `
+    CREATE TABLE IF NOT EXISTS senior_tourism_services (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      attraction_id VARCHAR(64) NOT NULL,
+      attraction_name VARCHAR(128) NOT NULL,
+      county VARCHAR(32) NULL,
+      service_name VARCHAR(128) NULL,
+      description TEXT NULL,
+      service_url VARCHAR(512) NULL,
+      service_phone VARCHAR(64) NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_attraction (attraction_id),
+      INDEX idx_county (county)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TDX Senior/Tourism 樂齡套票 (issue #436) — PackageName 不保證全域唯一，用
+  // AUTO_INCREMENT；sync 採「每次整批 DELETE+INSERT」而非 upsert。
+  seniorTourPackages: `
+    CREATE TABLE IF NOT EXISTS senior_tour_packages (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      package_name VARCHAR(128) NOT NULL,
+      description TEXT NULL,
+      booking_url VARCHAR(512) NULL,
+      picture_url VARCHAR(512) NULL,
+      issuing_entity VARCHAR(128) NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TDX Senior/Tourism 景區設施停用公告 (issue #436) — AlertID 是 TDX 自己發的
+  // 穩定識別碼，直接當 PK 讓 sync 做 upsert（比照 accessible_transit_facility_alerts）。
+  seniorTourismAlerts: `
+    CREATE TABLE IF NOT EXISTS senior_tourism_alerts (
+      alert_id VARCHAR(64) PRIMARY KEY,
+      type VARCHAR(32) NULL,
+      target_id VARCHAR(64) NULL,
+      target_name VARCHAR(128) NULL,
+      reason TEXT NULL,
+      start_time DATETIME NULL,
+      end_time DATETIME NULL,
+      publish_time DATETIME NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TDX Senior/SeniorCard 22縣市敬老卡補助 (issue #436) — 一縣市可有多筆補助
+  // 類型 (Subsidies 陣列展開成多列)，故用 AUTO_INCREMENT + (county, category)
+  // 索引，而非把 Subsidies 整包塞 JSON —— 方便依類型篩選。
+  seniorCardSubsidies: `
+    CREATE TABLE IF NOT EXISTS senior_card_subsidies (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      county VARCHAR(32) NOT NULL,
+      card_name VARCHAR(64) NULL,
+      info_url VARCHAR(512) NULL,
+      category VARCHAR(64) NULL,
+      description TEXT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_county (county)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

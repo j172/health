@@ -35,6 +35,11 @@ import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
 import { runTransitAccessibilitySync, runTransitFacilityAlertsSync } from "@/lib/server/transit/runSync";
+import {
+  runSeniorTourismSync,
+  runSeniorTourismAlertsSync,
+  runSeniorCardSync,
+} from "@/lib/server/seniorTourism/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -405,5 +410,25 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "16,46 * * * *",
     runGuarded("transit-accessibility-alerts-cron.log", () => runTransitFacilityAlertsSync()),
+  );
+  // TDX Senior/Tourism 景區無障礙設施/服務/樂齡套票 (issue #436) — 來源
+  // UpdateInterval 多為 86400 (每日)，排在 3am off-peak 區段，避開 public-art 的
+  // "0 3" 與 transit-accessibility 的 "15 3"。
+  cron.schedule(
+    "20 3 * * *",
+    runGuarded("senior-tourism-sync-cron.log", () => runSeniorTourismSync()),
+  );
+  // TDX Senior/Tourism 景區設施停用公告 (issue #436) — 來源 UpdateInterval 為
+  // -1 (事件觸發)，需要比上面每日同步更高的更新頻率；17/47 這兩個分鐘在本檔案中
+  // 目前未被任何其他 job 佔用 (不與 transit-accessibility-alerts 的 16/46 衝突)。
+  cron.schedule(
+    "17,47 * * * *",
+    runGuarded("senior-tourism-alerts-cron.log", () => runSeniorTourismAlertsSync()),
+  );
+  // TDX Senior/SeniorCard 22縣市敬老卡交通補助 (issue #436) — 補助政策不會頻繁
+  // 變動，daily 即可；排在 3am 區段的 25 分，避開上面兩個新 job 用到的 20 分。
+  cron.schedule(
+    "25 3 * * *",
+    runGuarded("senior-card-sync-cron.log", () => runSeniorCardSync()),
   );
 };
