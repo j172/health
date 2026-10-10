@@ -1596,6 +1596,63 @@ export const TABLE_DDL = {
       INDEX idx_county_system (county, system_type)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TDX Senior/Rail 設施停用公告 (issue #434) — 一站可有多筆同期公告，AlertID 是
+  // TDX 自己發的穩定識別碼，直接當 PK 讓 sync 做 upsert。
+  accessibleTransitFacilityAlerts: `
+    CREATE TABLE IF NOT EXISTS accessible_transit_facility_alerts (
+      alert_id VARCHAR(64) PRIMARY KEY,
+      rail_system VARCHAR(16) NOT NULL,
+      station_id VARCHAR(32) NOT NULL,
+      station_name VARCHAR(128) NOT NULL,
+      facility_id VARCHAR(64) NULL,
+      facility_name VARCHAR(128) NULL,
+      reason VARCHAR(255) NULL,
+      description TEXT NULL,
+      start_time DATETIME NULL,
+      end_time DATETIME NULL,
+      publish_time DATETIME NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_rail_system (rail_system),
+      INDEX idx_station (station_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TDX Senior/Rail 車站導覽圖 (issue #434) — v1 只存 map_url 連結與原始 WKT
+  // geometry 字串，不做幾何渲染（成本高、非本次重點，見 spec 第 3.3 節）。
+  accessibleTransitStationMaps: `
+    CREATE TABLE IF NOT EXISTS accessible_transit_station_maps (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      rail_system VARCHAR(16) NOT NULL,
+      station_id VARCHAR(32) NOT NULL,
+      station_name VARCHAR(128) NOT NULL,
+      floor_level VARCHAR(32) NULL,
+      map_name VARCHAR(128) NULL,
+      map_url VARCHAR(512) NULL,
+      geometry TEXT NULL COMMENT 'WKT 格式，本次僅儲存不渲染',
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_station (station_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // TDX Senior/Rail 跨運具轉乘 (issue #434) — 一個出入口可對應多種轉乘方式，
+  // 沒有單一天然 key，用 AUTO_INCREMENT + station 索引供查詢。
+  accessibleTransitTransfers: `
+    CREATE TABLE IF NOT EXISTS accessible_transit_transfers (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      rail_system VARCHAR(16) NOT NULL,
+      station_id VARCHAR(32) NOT NULL,
+      station_name VARCHAR(128) NOT NULL,
+      floor_level VARCHAR(32) NULL,
+      exit_id VARCHAR(32) NULL,
+      exit_name VARCHAR(64) NULL,
+      lat DECIMAL(10, 7) NULL,
+      lng DECIMAL(10, 7) NULL,
+      transfer_mode VARCHAR(32) NULL,
+      transfer_route_description TEXT NULL,
+      transfer_description TEXT NULL,
+      is_onsite_transfer TINYINT(1) NOT NULL DEFAULT 0,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_station (station_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   wraInundationSensors: `
     CREATE TABLE IF NOT EXISTS wra_inundation_sensors (
       sensor_id VARCHAR(64) PRIMARY KEY,

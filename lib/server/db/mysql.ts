@@ -133,6 +133,9 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.outdoorSafetyIndices);
   await p.query(TABLE_DDL.accessibleTransitRoutes);
   await p.query(TABLE_DDL.accessibleTransitFacilities);
+  await p.query(TABLE_DDL.accessibleTransitFacilityAlerts);
+  await p.query(TABLE_DDL.accessibleTransitStationMaps);
+  await p.query(TABLE_DDL.accessibleTransitTransfers);
   await p.query(TABLE_DDL.wraInundationSensors);
   await p.query(TABLE_DDL.wraWaterOutages);
   await p.query(TABLE_DDL.moaDebrisFlowAlerts);
@@ -268,6 +271,21 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(`
     ALTER TABLE aqi_readings
       ADD INDEX IF NOT EXISTS idx_aqi_reading_geo (lat, lng)
+  `);
+  // TDX Senior/Rail sync (issue #434) upgrades accessible_transit_facilities
+  // from one-time seed data to a real daily sync: source distinguishes seed
+  // rows from tdx_senior rows, station_id is TDX's own station code, and the
+  // unique key lets runSync() upsert one row per (station, system) instead
+  // of only ever inserting.
+  await p.query(`
+    ALTER TABLE accessible_transit_facilities
+      ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'seed' COMMENT 'seed | tdx_senior' AFTER lng,
+      ADD COLUMN IF NOT EXISTS station_id VARCHAR(32) NULL AFTER source,
+      ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER station_id
+  `);
+  await p.query(`
+    ALTER TABLE accessible_transit_facilities
+      ADD UNIQUE KEY IF NOT EXISTS uniq_station (station_id, system_type)
   `);
   // Unlike the DDL above, this can't use `ADD INDEX IF NOT EXISTS` — MySQL
   // has no "if not exists" form for FULLTEXT indexes, so a second run (or a

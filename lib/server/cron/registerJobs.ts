@@ -34,6 +34,7 @@ import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
+import { runTransitAccessibilitySync, runTransitFacilityAlertsSync } from "@/lib/server/transit/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -390,5 +391,19 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "7,22,37,52 * * * *",
     runGuarded("emergency-rooms-sync-cron.log", () => runEmergencyRoomSync()),
+  );
+  // TDX Senior/Rail 無障礙設施/服務/導覽圖/跨運具轉乘 (issue #434) — 來源
+  // UpdateInterval 多為 86400 (每日)，排在 3am off-peak 區段但避開 public-art
+  // 的 "0 3"。
+  cron.schedule(
+    "15 3 * * *",
+    runGuarded("transit-accessibility-sync-cron.log", () => runTransitAccessibilitySync()),
+  );
+  // TDX Senior/Rail 設施停用公告 (issue #434) — 來源 UpdateInterval 為 -1
+  // (事件觸發)，需要比上面每日同步更高的更新頻率；16/46 這兩個分鐘在本檔案中
+  // 目前未被任何其他 job 佔用。
+  cron.schedule(
+    "16,46 * * * *",
+    runGuarded("transit-accessibility-alerts-cron.log", () => runTransitFacilityAlertsSync()),
   );
 };

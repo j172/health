@@ -1,12 +1,7 @@
 import "server-only";
-import { httpGetJson, httpPostForm } from "@/lib/server/net/httpClient";
+import { httpGetJson } from "@/lib/server/net/httpClient";
+import { getTdxToken } from "@/lib/server/tdx/auth";
 import type { YouBikeStation } from "./types";
-
-interface TdxTokenResponse {
-  access_token: string;
-  expires_in: number;
-  token_type: string;
-}
 
 interface TdxStationPosition {
   PositionLon: number;
@@ -56,9 +51,6 @@ export const TDX_CITIES: Record<string, { tdxName: string; label: string }> = {
   PTT: { tdxName: "PingtungCounty", label: "屏東縣" },
 };
 
-let cachedToken: string | null = null;
-let tokenExpiresAt = 0;
-
 function cleanName(raw?: string | null): string {
   return (raw || "").replace(/^YouBike2\.0_/i, "").trim();
 }
@@ -70,46 +62,6 @@ function formatTime(str?: string | null): string {
     return `${clean.slice(0, 4)}-${clean.slice(4, 6)}-${clean.slice(6, 8)} ${clean.slice(8, 10)}:${clean.slice(10, 12)}:${clean.slice(12, 14)}`;
   }
   return new Date().toISOString().slice(0, 19).replace("T", " ");
-}
-
-/**
- * 取得 TDX 存取權杖 (OAuth2 Client Credentials)
- */
-async function getTdxToken(): Promise<string | null> {
-  const clientId = process.env.TDX_CLIENT_ID || process.env.TDX_APP_ID;
-  const clientSecret = process.env.TDX_CLIENT_SECRET || process.env.TDX_APP_KEY;
-
-  if (!clientId || !clientSecret) {
-    return null;
-  }
-
-  const now = Date.now();
-  if (cachedToken && now < tokenExpiresAt) {
-    return cachedToken;
-  }
-
-  try {
-    const res = await httpPostForm<TdxTokenResponse>(
-      "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token",
-      {
-        grant_type: "client_credentials",
-        client_id: clientId,
-        client_secret: clientSecret,
-      },
-      { timeoutMs: 8000 }
-    );
-
-    if (res.status === 200 && res.data?.access_token) {
-      cachedToken = res.data.access_token;
-      // 提早 60 秒到期，確保安全邊界
-      tokenExpiresAt = now + Math.max(0, (res.data.expires_in - 60) * 1000);
-      return cachedToken;
-    }
-    return null;
-  } catch (err) {
-    console.warn("TDX token fetch failed:", err instanceof Error ? err.message : String(err));
-    return null;
-  }
 }
 
 /**
