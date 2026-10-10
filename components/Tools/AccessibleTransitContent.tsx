@@ -7,6 +7,8 @@ import type {
   AccessibleTransitRoute,
   AccessibleTransitFacility,
   AccessibleTransitHotline,
+  AccessibleTransitStationMap,
+  AccessibleTransitTransfer,
   TransitAccessibilityOverview,
   TransitSystemType,
 } from "@/lib/server/transit/types";
@@ -57,6 +59,41 @@ export default function AccessibleTransitContent() {
     setCopiedPhone(phone);
     setTimeout(() => setCopiedPhone(null), 2000);
   };
+
+  // 篩掉已過期的設施停用公告 — 依目前時間比對 endTime（無 endTime 視為持續有效）。
+  // Date.now() 只在 lazy useState initializer 內呼叫一次，避免 render 期間呼叫
+  // impure function（比照 PestAlertSidebarWidget.tsx 的既有慣例）。
+  const [nowTs] = useState(() => Date.now());
+  const activeAlerts = useMemo(() => {
+    return (data?.alerts || []).filter((a) => {
+      if (a.endTime && new Date(a.endTime).getTime() < nowTs) return false;
+      if (a.startTime && new Date(a.startTime).getTime() > nowTs) return false;
+      return true;
+    });
+  }, [data?.alerts, nowTs]);
+
+  // 以站名比對導覽圖／轉乘資料到對應的設施卡片（TDX 同步資料的 stationOrAgency
+  // 即站名；舊版 seed 資料的 stationOrAgency 是機構全稱，比對不到也沒關係，單純
+  // 不顯示額外資訊）。
+  const mapsByStation = useMemo(() => {
+    const m = new Map<string, AccessibleTransitStationMap[]>();
+    for (const map of data?.stationMaps || []) {
+      const list = m.get(map.stationName) || [];
+      list.push(map);
+      m.set(map.stationName, list);
+    }
+    return m;
+  }, [data?.stationMaps]);
+
+  const transfersByStation = useMemo(() => {
+    const m = new Map<string, AccessibleTransitTransfer[]>();
+    for (const t of data?.transfers || []) {
+      const list = m.get(t.stationName) || [];
+      list.push(t);
+      m.set(t.stationName, list);
+    }
+    return m;
+  }, [data?.transfers]);
 
   const counties = data?.counties || [
     "臺北市", "新北市", "基隆市", "桃園市", "新竹市", "新竹縣", "苗栗縣",
@@ -149,6 +186,43 @@ export default function AccessibleTransitContent() {
               全程站務導引
             </div>
             <div className="mt-1 text-xs text-slate-500">抵達前專線預約免等待</div>
+          </div>
+        </div>
+      )}
+
+      {/* 設施停用公告 — 比照 inundation-map 的警示燈號設計語言 */}
+      {activeAlerts.length > 0 && (
+        <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900 rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">⚠️</span>
+            <h2 className="text-sm font-bold text-orange-700 dark:text-orange-400">
+              設施停用公告（{activeAlerts.length} 筆生效中）
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {activeAlerts.slice(0, 12).map((a) => (
+              <div
+                key={a.alertId}
+                className="bg-white dark:bg-slate-800 rounded-lg px-4 py-2.5 text-xs border border-orange-100 dark:border-orange-900/50"
+              >
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <span className="font-bold text-slate-900 dark:text-white">
+                    {a.stationName}
+                    {a.facilityName ? ` · ${a.facilityName}` : ""}
+                  </span>
+                  <span className="text-orange-600 dark:text-orange-400 font-medium whitespace-nowrap">
+                    {a.reason || "設施停用"}
+                  </span>
+                </div>
+                {(a.startTime || a.endTime) && (
+                  <div className="text-slate-500">
+                    停用期間：{a.startTime ? new Date(a.startTime).toLocaleString("zh-TW") : "即刻起"}
+                    {" ～ "}
+                    {a.endTime ? new Date(a.endTime).toLocaleString("zh-TW") : "恢復通知前"}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -344,6 +418,42 @@ export default function AccessibleTransitContent() {
                         >
                           📞 {f.servicePhone}
                         </a>
+                      </div>
+                    )}
+
+                    {/* 導覽圖連結（有資料才顯示） */}
+                    {(mapsByStation.get(f.stationOrAgency) || [])
+                      .filter((m) => m.mapUrl)
+                      .slice(0, 1)
+                      .map((m, mIdx) => (
+                        <div key={mIdx} className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
+                          <a
+                            href={m.mapUrl!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                          >
+                            <span>🗺️</span>
+                            <span>查看車站導覽圖{m.mapName ? `（${m.mapName}）` : ""}</span>
+                          </a>
+                        </div>
+                      ))}
+
+                    {/* 周邊轉乘摘要（有資料才顯示） */}
+                    {(transfersByStation.get(f.stationOrAgency) || []).length > 0 && (
+                      <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
+                        <div className="text-xs text-slate-500 mb-1">周邊轉乘：</div>
+                        <ul className="space-y-0.5">
+                          {(transfersByStation.get(f.stationOrAgency) || [])
+                            .slice(0, 3)
+                            .map((t, tIdx) => (
+                              <li key={tIdx} className="text-xs text-slate-600 dark:text-slate-300">
+                                🔀 {t.transferMode || "轉乘"}
+                                {t.exitName ? `（${t.exitName}）` : ""}
+                                {t.transferDescription ? ` — ${t.transferDescription}` : ""}
+                              </li>
+                            ))}
+                        </ul>
                       </div>
                     )}
                   </div>
