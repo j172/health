@@ -2,7 +2,7 @@
   "metadata": {
     "source": "衛生福利部 醫事人員性別事件資訊專區",
     "sourceUrl": "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
-    "lastSyncedAt": "2026-10-07T13:45:48.573Z",
+    "lastSyncedAt": "2026-10-11T03:45:24.425Z",
     "totalCount": 21,
     "note": "依據個人資料保護法第16條但書第2款，公開資訊僅供公眾就醫安全公益查驗。"
   },
@@ -26,24 +26,6 @@
       ]
     },
     {
-      "id": "A-李宇力-醫***251",
-      "name": "李宇力",
-      "category": "醫師",
-      "categoryCode": "A",
-      "specialty": "內科",
-      "city": "高雄市",
-      "status": "執業中",
-      "licenseMasked": "醫***251",
-      "disposition": "懲戒1",
-      "links": [
-        {
-          "title": "懲戒1",
-          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/11.%E6%9D%8E%E5%AE%87%E5%8A%9B(%E6%80%A7%E5%B9%B3).pdf",
-          "type": "disciplinary"
-        }
-      ]
-    },
-    {
       "id": "A-李遠聰-醫***842",
       "name": "李遠聰",
       "category": "醫師",
@@ -57,6 +39,24 @@
         {
           "title": "懲戒1",
           "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/13.%E6%9D%8E%E9%81%A0%E8%81%B0(%E6%80%A7%E5%B9%B3).pdf",
+          "type": "disciplinary"
+        }
+      ]
+    },
+    {
+      "id": "A-李宇力-醫***251",
+      "name": "李宇力",
+      "category": "醫師",
+      "categoryCode": "A",
+      "specialty": "內科",
+      "city": "高雄市",
+      "status": "執業中",
+      "licenseMasked": "醫***251",
+      "disposition": "懲戒1",
+      "links": [
+        {
+          "title": "懲戒1",
+          "url": "https://ma.mohw.gov.tw/Accessibility/Downloads/11.%E6%9D%8E%E5%AE%87%E5%8A%9B(%E6%80%A7%E5%B9%B3).pdf",
           "type": "disciplinary"
         }
       ]
