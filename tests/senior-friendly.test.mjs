@@ -128,12 +128,12 @@ test("Senior Tourism queries: seeds only when empty and returns all 5 collection
   assert.ok(seedContent.includes("TAIWAN_COUNTIES"), "SeniorCard seed should cover all 22 counties via TAIWAN_COUNTIES");
 });
 
-test("Senior Tourism catalog: TOOL_CATALOG has a senior-friendly entry in life-services with WebPage schema and bidirectional relatedSlugs (issue #436)", () => {
+test("Senior Tourism catalog: TOOL_CATALOG has a senior-friendly entry in elder-care-welfare with WebPage schema and bidirectional relatedSlugs (issue #436)", () => {
   const catalogContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "tools", "catalog.ts"), "utf-8");
   assert.ok(catalogContent.includes('slug: "senior-friendly"'), "catalog.ts should define the senior-friendly entry");
   assert.ok(
-    /slug:\s*"senior-friendly"[\s\S]{0,200}group:\s*"life-services"/.test(catalogContent),
-    "senior-friendly should be in the life-services group",
+    /slug:\s*"senior-friendly"[\s\S]{0,200}group:\s*"elder-care-welfare"/.test(catalogContent),
+    "senior-friendly should be in the elder-care-welfare group (issue #442: reclassified from the old life-services group)",
   );
   assert.ok(
     /slug:\s*"senior-friendly"[\s\S]{0,300}schemaType:\s*"WebPage"/.test(catalogContent),

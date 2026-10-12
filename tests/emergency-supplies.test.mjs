@@ -19,8 +19,8 @@ test("Emergency Supplies: catalog entry exists and meets SEO/E-E-A-T specificati
     "catalog.ts INDEXABLE_SLUGS must contain 'emergency-supplies'",
   );
   assert.ok(
-    content.includes('group: "disaster-safety"'),
-    "emergency-supplies must belong to 'disaster-safety' group",
+    content.includes('group: "disaster-alerts"'),
+    "emergency-supplies must belong to 'disaster-alerts' group",
   );
   assert.ok(
     content.includes("https://prepare.mnd.gov.tw/"),
