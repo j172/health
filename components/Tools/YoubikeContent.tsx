@@ -7,6 +7,9 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
+// 與 lib/server/youbike/tdxClient.ts 的 TDX_CITIES 保持一致（issue #453：由 11
+// 個縣市擴充為 TDX 涵蓋的全部 15 個）。此處是 client component，無法直接 import
+// server-only 的 tdxClient.ts，故維持獨立的一份對照表。
 const CITIES = [
   { code: "", label: "附近 3km" },
   { code: "TPE", label: "臺北市" },
@@ -16,11 +19,35 @@ const CITIES = [
   { code: "HCH", label: "新竹縣" },
   { code: "MAL", label: "苗栗縣" },
   { code: "TXG", label: "臺中市" },
+  { code: "CHA", label: "彰化縣" },
+  { code: "YUN", label: "雲林縣" },
   { code: "CYI", label: "嘉義市" },
+  { code: "CYQ", label: "嘉義縣" },
   { code: "TNN", label: "臺南市" },
   { code: "KHH", label: "高雄市" },
   { code: "PTT", label: "屏東縣" },
+  { code: "TTT", label: "臺東縣" },
 ];
+
+// code -> 短標籤（站卡上的縣市徽章用，比完整 label 更精簡），供下方站點卡片查表
+// 使用，取代舊版只認得臺北/新北、其餘全部誤標為「新竹」的寫死三元判斷。
+const CITY_SHORT_LABELS: Record<string, string> = {
+  TPE: "臺北",
+  NTPC: "新北",
+  TYCG: "桃園",
+  HSC: "新竹市",
+  HCH: "新竹縣",
+  MAL: "苗栗",
+  TXG: "臺中",
+  CHA: "彰化",
+  YUN: "雲林",
+  CYI: "嘉義市",
+  CYQ: "嘉義縣",
+  TNN: "臺南",
+  KHH: "高雄",
+  PTT: "屏東",
+  TTT: "臺東",
+};
 
 export default function YoubikeContent({
   initialStations = [],
@@ -319,11 +346,7 @@ export default function YoubikeContent({
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5">
                         <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {station.cityCode === "TPE"
-                            ? "臺北"
-                            : station.cityCode === "NTPC"
-                            ? "新北"
-                            : "新竹"}
+                          {CITY_SHORT_LABELS[station.cityCode] || station.cityCode}
                         </span>
                         {station.districtTw && (
                           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400">

@@ -37,6 +37,14 @@ interface TdxAvailabilityItem {
 }
 
 // TDX 城市代碼對應表 (TDX City Name -> 內部 City Code)
+//
+// 原本只接了 11 個縣市；issue #453 / docs/2.0/tdx-basic-integration-research.md
+// §T6 指出 TDX 的 Bike/Station、Bike/Availability 這組 City 列舉其實涵蓋全台 15
+// 個縣市，故補上彰化、雲林、嘉義縣、臺東這 4 個，使 TDX_CITIES 達到完整的 15 個。
+// tdxName 採用 TDX 平台其他 API（如 Tourism/Car_Park）共用的標準縣市代碼命名
+// （XxxCounty 代表縣、純市名代表直轄市/市）。各縣市目前是否已有實際上線的公共自
+// 行車站點資料由 TDX 回應內容決定——即使某縣市暫無資料，fetchTdxCityStations()
+// 仍會正常回傳空陣列，不視為錯誤。
 export const TDX_CITIES: Record<string, { tdxName: string; label: string }> = {
   TPE: { tdxName: "Taipei", label: "臺北市" },
   NTPC: { tdxName: "NewTaipei", label: "新北市" },
@@ -45,10 +53,14 @@ export const TDX_CITIES: Record<string, { tdxName: string; label: string }> = {
   HCH: { tdxName: "HsinchuCounty", label: "新竹縣" },
   MAL: { tdxName: "MiaoliCounty", label: "苗栗縣" },
   TXG: { tdxName: "Taichung", label: "臺中市" },
+  CHA: { tdxName: "ChanghuaCounty", label: "彰化縣" },
+  YUN: { tdxName: "YunlinCounty", label: "雲林縣" },
   CYI: { tdxName: "Chiayi", label: "嘉義市" },
+  CYQ: { tdxName: "ChiayiCounty", label: "嘉義縣" },
   TNN: { tdxName: "Tainan", label: "臺南市" },
   KHH: { tdxName: "Kaohsiung", label: "高雄市" },
   PTT: { tdxName: "PingtungCounty", label: "屏東縣" },
+  TTT: { tdxName: "TaitungCounty", label: "臺東縣" },
 };
 
 function cleanName(raw?: string | null): string {
@@ -141,33 +153,46 @@ export async function fetchTdxCityStations(cityCode: string): Promise<YouBikeSta
 
 /**
  * 批次抓取 TDX 支援的所有全台縣市 YouBike 2.0 站點
+ *
+ * 每個縣市的請求以 Promise.allSettled 個別隔離錯誤（逾時、TDX 回應非 200、JSON
+ * 解析失敗等）：單一縣市失敗只會記錄進 errors[cityCode]、該縣市當次回報 0 站，
+ * 不會讓 Promise.all 整批 reject 而連帶吃掉同批次裡其他縣市、甚至全部 15 個縣
+ * 市已抓到的資料（issue #453 acceptance criteria：新增縣市失敗不應影響其他縣
+ * 市，失敗率應與既有縣市一致）。
  */
 export async function fetchAllTdxStations(): Promise<{
   stations: YouBikeStation[];
   citiesCount: Record<string, number>;
+  errors: Record<string, string>;
 }> {
   const token = await getTdxToken();
   if (!token) {
-    return { stations: [], citiesCount: {} };
+    return { stations: [], citiesCount: {}, errors: {} };
   }
 
   const cityKeys = Object.keys(TDX_CITIES);
   const citiesCount: Record<string, number> = {};
+  const errors: Record<string, string> = {};
   const allStations: YouBikeStation[] = [];
 
   // 為保護頻寬與 TDX 配額，分批併發 3 個縣市請求
   const batchSize = 3;
   for (let i = 0; i < cityKeys.length; i += batchSize) {
     const batch = cityKeys.slice(i, i + batchSize);
-    const results = await Promise.all(batch.map((c) => fetchTdxCityStations(c)));
+    const results = await Promise.allSettled(batch.map((c) => fetchTdxCityStations(c)));
 
     for (let j = 0; j < batch.length; j++) {
       const c = batch[j];
-      const list = results[j];
-      citiesCount[c] = list.length;
-      allStations.push(...list);
+      const result = results[j];
+      if (result.status === "fulfilled") {
+        citiesCount[c] = result.value.length;
+        allStations.push(...result.value);
+      } else {
+        citiesCount[c] = 0;
+        errors[c] = result.reason instanceof Error ? result.reason.message : String(result.reason);
+      }
     }
   }
 
-  return { stations: allStations, citiesCount };
+  return { stations: allStations, citiesCount, errors };
 }

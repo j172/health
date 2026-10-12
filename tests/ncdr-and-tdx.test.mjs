@@ -14,6 +14,94 @@ test("TDX Client: TDX_CITIES maps valid Taiwan cities and cleanName strips prefi
   assert.ok(content.includes("cleanName"), "cleanName function should exist");
 });
 
+test("YouBike TDX_CITIES: covers all 15 TDX-enumerated counties/cities (issue #453)", () => {
+  const tdxFile = path.join(process.cwd(), "lib", "server", "youbike", "tdxClient.ts");
+  const content = fs.readFileSync(tdxFile, "utf-8");
+
+  const expectedCities = [
+    "Taipei",
+    "NewTaipei",
+    "Taoyuan",
+    "Hsinchu",
+    "HsinchuCounty",
+    "MiaoliCounty",
+    "Taichung",
+    "ChanghuaCounty",
+    "YunlinCounty",
+    "Chiayi",
+    "ChiayiCounty",
+    "Tainan",
+    "Kaohsiung",
+    "PingtungCounty",
+    "TaitungCounty",
+  ];
+  for (const tdxName of expectedCities) {
+    assert.ok(content.includes(`"${tdxName}"`), `TDX_CITIES should include tdxName "${tdxName}"`);
+  }
+
+  // Count entries in TDX_CITIES by matching "CODE: { tdxName:" lines, to pin down
+  // the total at exactly 15 rather than just checking each name is present.
+  const entryMatches = content.match(/^\s*[A-Z]{2,5}:\s*{\s*tdxName:/gm) || [];
+  assert.strictEqual(
+    entryMatches.length,
+    15,
+    `Expected TDX_CITIES to have exactly 15 entries, found ${entryMatches.length}`
+  );
+});
+
+test("YouBike TDX sync: per-city failures are isolated via Promise.allSettled and reported, not thrown (issue #453)", () => {
+  const tdxFile = path.join(process.cwd(), "lib", "server", "youbike", "tdxClient.ts");
+  const content = fs.readFileSync(tdxFile, "utf-8");
+
+  assert.ok(
+    content.includes("Promise.allSettled"),
+    "fetchAllTdxStations should isolate per-city failures with Promise.allSettled instead of Promise.all"
+  );
+  assert.ok(
+    content.includes("errors[c]") || content.includes("errors: Record<string, string>"),
+    "fetchAllTdxStations should surface per-city errors instead of silently swallowing or rethrowing them"
+  );
+
+  const syncFile = path.join(process.cwd(), "lib", "server", "youbike", "runSync.ts");
+  const syncContent = fs.readFileSync(syncFile, "utf-8");
+  assert.ok(
+    syncContent.includes("tdxResult.errors"),
+    "runYouBikeSync should record per-city TDX errors into summary.errors"
+  );
+});
+
+test("YouBike UI: city picker and badge labels cover the 15-county TDX_CITIES set (issue #453)", () => {
+  const uiFile = path.join(process.cwd(), "components", "Tools", "YoubikeContent.tsx");
+  const content = fs.readFileSync(uiFile, "utf-8");
+
+  for (const code of [
+    "TPE",
+    "NTPC",
+    "TYCG",
+    "HSC",
+    "HCH",
+    "MAL",
+    "TXG",
+    "CHA",
+    "YUN",
+    "CYI",
+    "CYQ",
+    "TNN",
+    "KHH",
+    "PTT",
+    "TTT",
+  ]) {
+    assert.ok(content.includes(`"${code}"`), `YoubikeContent.tsx CITIES/labels should include city code ${code}`);
+  }
+
+  // The city badge on each station card used to be a hardcoded TPE/NTPC/else="新竹"
+  // ternary that mislabeled every other county — guard against regressing back to it.
+  assert.ok(
+    !/station\.cityCode === "TPE"[\s\S]{0,80}"新竹"/.test(content),
+    "station city badge should not regress to the old hardcoded TPE/NTPC/else-新竹 ternary"
+  );
+});
+
 test("TDX shared auth: lib/server/tdx/auth.ts exports getTdxToken and youbike client no longer duplicates it (issue #434)", () => {
   const authFile = path.join(process.cwd(), "lib", "server", "tdx", "auth.ts");
   assert.ok(fs.existsSync(authFile), "lib/server/tdx/auth.ts should exist");

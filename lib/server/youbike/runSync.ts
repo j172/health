@@ -35,13 +35,18 @@ export async function runYouBikeSync(): Promise<YouBikeSyncSummary> {
 
   let allStations: YouBikeStation[] = [];
 
-  // 1. 優先嘗試交通部 TDX 全台 API (涵蓋 10 縣市)
+  // 1. 優先嘗試交通部 TDX 全台 API（涵蓋 TDX_CITIES 定義的全部 15 個縣市；單一
+  // 縣市失敗已在 fetchAllTdxStations() 內以 Promise.allSettled 隔離，不會波及
+  // 其他縣市，詳見該函式註解）
   try {
     const tdxResult = await fetchAllTdxStations();
     if (tdxResult.stations.length > 0) {
       allStations = tdxResult.stations;
       summary.cities = tdxResult.citiesCount;
       summary.source = "tdx";
+    }
+    for (const [city, msg] of Object.entries(tdxResult.errors)) {
+      summary.errors.push(`TDX fetch failed for ${city}: ${msg}`);
     }
   } catch (tdxErr) {
     const msg = tdxErr instanceof Error ? tdxErr.message : String(tdxErr);
