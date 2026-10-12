@@ -2358,9 +2358,9 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     title: "公共自行車 (YouBike 2.0) 即時動態",
     keywords: ["YouBike", "公共自行車", "共享單車"],
     description:
-      "即時查詢北北桃竹（臺北市、新北市、桃園市、新竹市）YouBike 2.0 與 2.0E 租借站點、可借車輛與空位數量。",
+      "即時查詢全台 15 縣市 YouBike 2.0 與 2.0E 租借站點、可借車輛與空位數量。",
     directAnswer:
-      "公共自行車即時動態跨直轄市整合北北桃竹 YouBike 2.0 站點，提供即時可借車輛數、可還空位數、電輔車數量與附近站點導航。",
+      "公共自行車即時動態整合全台 15 縣市的 YouBike 2.0 站點，提供即時可借車輛數、可還空位數、電輔車數量與附近站點導航。",
     scientificBasis: [
       {
         title: "公共自行車租賃系統即時開放資料",
@@ -2373,7 +2373,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       {
         question: "支援哪些縣市的 YouBike 查詢？",
         answer:
-          "目前整合臺北市、新北市、桃園市與新竹市之 YouBike 2.0 租借站點與即時可借車數、空位數。",
+          "目前整合臺北市、新北市、桃園市、新竹市、新竹縣、苗栗縣、臺中市、彰化縣、雲林縣、嘉義市、嘉義縣、臺南市、高雄市、屏東縣與臺東縣共 15 個縣市之 YouBike 2.0 租借站點與即時可借車數、空位數。",
       },
       {
         question: "如何查找最近的租借站？",
