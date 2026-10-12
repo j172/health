@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cardClass, disclaimerClass, inputClass, labelClass, primaryButtonClass, secondaryButtonClass, toggleButtonClass } from "@/components/Tools/toolStyles";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 type Gender = "male" | "female";
 type ActivityLevel = "sedentary" | "light" | "moderate" | "active" | "very_active";
@@ -44,6 +46,32 @@ export default function CaloriesCalculator() {
   const [weight, setWeight] = useState("65");
   const [activity, setActivity] = useState<ActivityLevel>("moderate");
   const [calculated, setCalculated] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill from the remembered shared body profile (default OFF — see issue
+  // #474). Deferred via queueMicrotask — see
+  // docs/archive/specs/set-state-in-effect-fix.md and
+  // lib/hooks/useSharedGeolocation.ts for why (react-hooks/set-state-in-effect).
+  useEffect(() => {
+    queueMicrotask(() => {
+      if (profile.sex !== undefined) setGender(profile.sex);
+      if (profile.age !== undefined) setAge(String(profile.age));
+      if (profile.height !== undefined) setHeight(String(profile.height));
+      if (profile.weight !== undefined) setWeight(String(profile.weight));
+    });
+  }, [profile]);
+
+  // Persist edits back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    const a = parseInt(age);
+    const h = parseFloat(height);
+    const w = parseFloat(weight);
+    const fields: { sex?: Gender; age?: number; height?: number; weight?: number } = { sex: gender };
+    if (!isNaN(a) && a > 0) fields.age = a;
+    if (!isNaN(h) && h > 0) fields.height = h;
+    if (!isNaN(w) && w > 0) fields.weight = w;
+    save(fields);
+  }, [gender, age, height, weight, save]);
 
   const result = useMemo<CaloriesResult | null>(() => {
     if (!calculated) return null;
@@ -153,6 +181,15 @@ export default function CaloriesCalculator() {
             ))}
           </div>
         </div>
+
+        <BodyProfileControls
+          remember={remember}
+          isStorageAvailable={isStorageAvailable}
+          onRememberChange={setRemember}
+          onClearAll={clearAll}
+          hasSavedData={Object.keys(profile).length > 0}
+          idSuffix="calories"
+        />
 
         <div className="flex gap-3">
           <button onClick={handleCalculate} className={primaryButtonClass}>

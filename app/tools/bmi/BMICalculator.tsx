@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 interface BMIResult {
   bmi: number;
@@ -80,6 +82,29 @@ export default function BMICalculator() {
   const [height, setHeight] = useState("170");
   const [weight, setWeight] = useState("65");
   const [calculated, setCalculated] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill from the remembered shared body profile (default OFF: `profile`
+  // stays {} until the user has opted in — see issue #474). Deferred via
+  // queueMicrotask (see docs/archive/specs/set-state-in-effect-fix.md and
+  // lib/hooks/useSharedGeolocation.ts for the same pattern): calling setState
+  // directly from an effect body trips react-hooks/set-state-in-effect.
+  useEffect(() => {
+    queueMicrotask(() => {
+      if (profile.height !== undefined) setHeight(String(profile.height));
+      if (profile.weight !== undefined) setWeight(String(profile.weight));
+    });
+  }, [profile]);
+
+  // Persist edits back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    const h = parseFloat(height);
+    const w = parseFloat(weight);
+    const fields: { height?: number; weight?: number } = {};
+    if (!isNaN(h) && h > 0) fields.height = h;
+    if (!isNaN(w) && w > 0) fields.weight = w;
+    if (Object.keys(fields).length > 0) save(fields);
+  }, [height, weight, save]);
 
   const result = useMemo<BMIResult | null>(() => {
     const h = parseFloat(height);
@@ -159,6 +184,15 @@ export default function BMICalculator() {
             </div>
           </div>
         </div>
+
+        <BodyProfileControls
+          remember={remember}
+          isStorageAvailable={isStorageAvailable}
+          onRememberChange={setRemember}
+          onClearAll={clearAll}
+          hasSavedData={Object.keys(profile).length > 0}
+          idSuffix="bmi"
+        />
 
         <div className="flex gap-3">
           <button

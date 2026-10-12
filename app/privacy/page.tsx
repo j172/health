@@ -6,7 +6,7 @@ import { appendOutboundUtm } from "@/lib/format/outboundLink";
 export const revalidate = 86400;
 export const runtime = "nodejs";
 
-const LAST_UPDATED = "2026-09-14";
+const LAST_UPDATED = "2026-10-13";
 
 export default function PrivacyPage() {
   const baseUrl = getBaseUrl();
@@ -52,7 +52,8 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">健康小工具的輸入內容：</span>
-                  BMI、卡路里、體脂率、血壓、睡眠品質評估等計算機工具，所有輸入數值僅在您的瀏覽器內計算，不會傳送或儲存到本站伺服器。
+                  BMI、卡路里、體脂率、血壓、睡眠品質評估等計算機工具，所有輸入數值僅在您的瀏覽器內計算，不會傳送或儲存到本站伺服器。其中身高、體重、年齡、性別這 4
+                  項基本資料，若您主動勾選「記住我的資料」，會額外存放在您裝置的瀏覽器本機儲存（localStorage），詳見下方第七節說明。
                 </li>
                 <li>
                   <span className="font-medium text-neutral-800 dark:text-slate-100">網站流量分析（Google Analytics 4 與 Consent Mode v2）：</span>
@@ -113,7 +114,35 @@ export default function PrivacyPage() {
             </section>
 
             <section className="space-y-2">
-              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-100">七、聯絡我們</h2>
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-100">七、健康計算器「記住我的資料」功能</h2>
+              <ul className="list-inside list-disc space-y-2">
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">預設關閉：</span>
+                  BMI、卡路里、營養素、飲水量、體脂率、腰臀比、目標心率、去脂體重、VO2Max
+                  等計算器之間，可選擇記住您的身高、體重、年齡、性別這 4 項基本資料，供其他計算器自動帶入，省去重複輸入。此功能預設為關閉，除非您主動勾選「記住我的資料（只存在這台裝置，不會上傳）」，否則切換到不同計算器不會看到任何被記住的資料。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">存放位置：</span>
+                  僅存放在您目前使用裝置、瀏覽器的本機儲存（localStorage）之中，不會上傳或傳送到本站伺服器，也不會同步到您的其他裝置。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">存放內容：</span>
+                  僅限身高、體重、年齡、性別這 4
+                  項基本資料。血壓、心率等醫療量測數值（例如收縮壓、舒張壓、靜止心率等）在任何情況下都不會被這個功能記住，即使您已勾選記住我的資料。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">如何清除：</span>
+                  在任何一個支援此功能的計算器頁面，取消勾選「記住我的資料」，或點擊旁邊的「一鍵清除已記住的資料」，會立即清除裝置上儲存的全部資料，往後切換到任何計算器都不會再看到被記住的內容。您也可以直接清除瀏覽器的網站資料（localStorage）達到同樣效果。
+                </li>
+                <li>
+                  <span className="font-medium text-neutral-800 dark:text-slate-100">裝置儲存功能不可用時：</span>
+                  若您的瀏覽器處於隱私/無痕模式或已封鎖本機儲存，此功能的勾選框會自動隱藏，所有計算器仍會照常獨立運作，不受影響。
+                </li>
+              </ul>
+            </section>
+
+            <section className="space-y-2">
+              <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-100">八、聯絡我們</h2>
               <p>
                 若您對本政策或個人資料處理方式有任何疑問或請求，請透過{" "}
                 <a
