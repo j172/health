@@ -8,6 +8,7 @@ import InAppBrowserBanner from "@/components/Common/InAppBrowserBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 import GoogleTag from "@/components/Analytics/GoogleTag";
 import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
+import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytics";
 import SkipToContent from "@/components/Accessibility/SkipToContent";
 
 const inter = Inter({
@@ -114,6 +115,7 @@ export default function RootLayout({
       >
         <GoogleTag />
         <MicrosoftClarity />
+        <CloudflareWebAnalytics />
         <Provider>
           <SkipToContent />
           <InAppBrowserBanner />
