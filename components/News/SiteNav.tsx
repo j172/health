@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useCallback,
   useEffect,
@@ -453,6 +454,71 @@ export default function SiteNav() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Mobile bottom nav bar (issue #473): hide-on-scroll-down /
+  // show-on-scroll-up, scoped to news article pages only
+  // (`/news/[id]`, not the `/news` list page) — the acceptance criteria
+  // text is specific to "閱讀新聞內頁時" (reading a news article), and every
+  // other mobile page should keep the bar always visible per the same
+  // criteria's "手機版任何頁面都能看到底部 5 格導覽列". There's no existing
+  // scroll-direction hook/utility anywhere in this repo to reuse (checked
+  // `components/ScrollToTop` and this file's own `scrolled` state above —
+  // both only compare `window.scrollY` against a fixed threshold, never a
+  // delta/direction), so this is a small dedicated listener following the
+  // same passive-scroll-listener pattern as `scrolled`.
+  const pathname = usePathname();
+  const isNewsArticlePage = /^\/news\/[^/]+/.test(pathname ?? "");
+  // `scrollHidden` only ever gets set from inside the scroll event handler
+  // below (never synchronously in the effect body — that trips
+  // react-hooks/set-state-in-effect), and `bottomNavHidden` is a plain
+  // derived value so leaving a news article page can't leave a stale
+  // "hidden" flag behind: it's ANDed back to false immediately.
+  const [scrollHidden, setScrollHidden] = useState(false);
+  const bottomNavHidden = isNewsArticlePage && scrollHidden;
+  const lastScrollYRef = useRef(0);
+
+  useEffect(() => {
+    if (!isNewsArticlePage) return;
+    lastScrollYRef.current = window.scrollY;
+    const handler = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollYRef.current;
+      // Dead zone so a few pixels of jitter (rubber-banding, the mobile
+      // address bar collapsing/expanding) doesn't flicker the bar, and it
+      // never hides near the very top of the article.
+      if (Math.abs(delta) > 4) {
+        setScrollHidden(delta > 0 && currentY > 80);
+        lastScrollYRef.current = currentY;
+      }
+    };
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
+  }, [isNewsArticlePage]);
+
+  // Exactly 5 items per issue #473's acceptance criteria — a deliberately
+  // DIFFERENT top-level item set from the desktop nav's 5 (新聞/工具/生活情境/
+  // 我附近/緊急), but every shared concept (工具/我附近/緊急) points at the
+  // exact same destination the desktop nav already uses, and "搜尋" reuses
+  // this same component's existing Ctrl+K search-modal state
+  // (`setSearchOpen`) rather than opening a second modal path. These labels
+  // are hardcoded zh-TW strings rather than routed through t(), matching
+  // this file's own precedent for short nav micro-copy (the 🚨緊急電話 /
+  // 🚨緊急 labels above are hardcoded the same way, not translated).
+  const bottomNavItems: Array<
+    | { type: "link"; href: string; label: string; icon: string }
+    | { type: "button"; label: string; icon: string; onClick: () => void }
+  > = [
+    { type: "link", href: "/", label: "首頁", icon: "🏠" },
+    { type: "link", href: "/tools", label: "工具", icon: "🛠️" },
+    { type: "link", href: "/nearby", label: "我附近", icon: "📍" },
+    { type: "link", href: "/tools/emergency-hotlines", label: "緊急", icon: "🚨" },
+    {
+      type: "button",
+      label: "搜尋",
+      icon: "🔍",
+      onClick: () => setSearchOpen(true),
+    },
+  ];
+
   return (
     <>
       <header
@@ -708,6 +774,62 @@ export default function SiteNav() {
           </div>
         )}
       </header>
+
+      {/* Mobile Bottom Navigation Bar (issue #473): a fixed, persistent
+          5-item quick-access bar shown only below the desktop breakpoint
+          (<1024px, matching #460's lg:hidden convention). This is an
+          ADDITIONAL layer, not a replacement for the hamburger drawer
+          above — the drawer still exists for deeper category/tool
+          browsing. "工具" here links straight to the `/tools` index page
+          (the full browsing experience now lives there and at
+          `/tools/category/[slug]`) instead of opening the drawer, so a
+          thumb tap always lands somewhere useful without an extra
+          disclosure step. `pb-safe` (app/globals.css) applies
+          `env(safe-area-inset-bottom)` so the bar's own background — not
+          its tap targets — absorbs the device's gesture-nav inset. Sibling
+          to <header>, not nested inside it, so its `fixed` positioning is
+          relative to the viewport regardless of the header's own
+          sticky/transition styles. */}
+      <nav
+        aria-label="底部導覽"
+        className={`pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-md transition-transform duration-300 lg:hidden dark:border-slate-800 dark:bg-slate-950/95 ${
+          bottomNavHidden ? "translate-y-full" : "translate-y-0"
+        }`}
+      >
+        <div className="grid grid-cols-5">
+          {bottomNavItems.map((item) =>
+            item.type === "link" ? (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={pathname === item.href ? "page" : undefined}
+                className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold ${
+                  pathname === item.href
+                    ? "text-indigo-600 dark:text-indigo-400"
+                    : "text-slate-600 dark:text-slate-300"
+                }`}
+              >
+                <span aria-hidden="true" className="text-lg leading-none">
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </Link>
+            ) : (
+              <button
+                key={item.label}
+                type="button"
+                onClick={item.onClick}
+                className="flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold text-slate-600 dark:text-slate-300"
+              >
+                <span aria-hidden="true" className="text-lg leading-none">
+                  {item.icon}
+                </span>
+                <span>{item.label}</span>
+              </button>
+            ),
+          )}
+        </div>
+      </nav>
 
       {/* Modal Search */}
       {searchOpen ? (

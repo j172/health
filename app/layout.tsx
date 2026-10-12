@@ -26,6 +26,11 @@ const inter = Inter({
 
 export const viewport: Viewport = {
   themeColor: "#625df5",
+  // `viewport-fit=cover` is required for `env(safe-area-inset-bottom)` (used
+  // by SiteNav.tsx's mobile bottom nav bar, issue #473) to resolve to the
+  // device's actual gesture-nav inset on iOS Safari — without it, Safari
+  // never extends the layout under the inset and the env() value stays 0.
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
@@ -98,7 +103,15 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(siteGraph) }}
         />
       </head>
-      <body className={`dark:bg-black ${inter.className}`} suppressHydrationWarning>
+      <body
+        // Reserves space below the page below 1024px so SiteNav.tsx's fixed
+        // mobile bottom nav bar (issue #473) never overlaps the last bit of
+        // page content; matches its own `lg:hidden` breakpoint and adds its
+        // safe-area inset again so the spacer is never shorter than the bar
+        // actually renders at.
+        className={`dark:bg-black ${inter.className} pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0`}
+        suppressHydrationWarning
+      >
         <GoogleTag />
         <MicrosoftClarity />
         <Provider>

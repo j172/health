@@ -279,6 +279,15 @@
     brightness(100%) contrast(105%);
 }
 
+/* Mobile bottom nav bar (issue #473) — respects the device's safe-area /
+   system gesture inset (iOS home-indicator bar, Android gesture nav) instead
+   of a fixed pixel value. Requires `viewport-fit=cover` on the viewport meta
+   (set via app/layout.tsx's `viewport.viewportFit`), otherwise browsers
+   resolve env(safe-area-inset-bottom) to 0. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 @layer utilities {
   #supportCheckbox:checked ~ div span {
     @apply opacity-100;
