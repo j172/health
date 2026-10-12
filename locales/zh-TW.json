@@ -87,7 +87,9 @@
     "clear": "清除",
     "close": "關閉搜尋",
     "escHint": "Esc 關閉搜尋",
-    "viewAll": "檢視所有符合結果"
+    "viewAll": "檢視所有符合結果",
+    "tools": "工具",
+    "news": "新聞"
   },
   "reader": {
     "close": "離開沉浸模式",

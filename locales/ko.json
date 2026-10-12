@@ -174,7 +174,9 @@
     "clear": "지우기",
     "close": "검색 닫기",
     "escHint": "Esc 키로 닫기",
-    "viewAll": "일치하는 전체 결과 보기"
+    "viewAll": "일치하는 전체 결과 보기",
+    "tools": "도구",
+    "news": "뉴스"
   },
   "reader": {
     "close": "몰입 모드 종료",
