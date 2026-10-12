@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import seedData from "@/data/medical-violators-seed.json";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export interface ViolatorLink {
   title: string;
@@ -126,7 +127,10 @@ export default function MedicalViolatorsContent({
           </div>
           <div className="shrink-0">
             <a
-              href="https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO"
+              href={appendOutboundUtm(
+                "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
+                { medium: "tool_content", campaign: "medical_violators" },
+              )}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-50 transition-colors dark:border-rose-800 dark:bg-slate-800 dark:text-rose-300 dark:hover:bg-slate-700"

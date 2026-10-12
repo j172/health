@@ -1,4 +1,5 @@
 import React from "react";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export interface GooglePreferredSourceButtonProps {
   className?: string;
@@ -9,8 +10,10 @@ export default function GooglePreferredSourceButton({
 }: GooglePreferredSourceButtonProps) {
   const tooltipText =
     "請點選打勾將 j172tw Healthz 設為首選來源，在 Google 上查看更多我們的精彩報導";
-  const sourceUrl =
-    "https://www.google.com/preferences/source?q=health.j172.tw";
+  const sourceUrl = appendOutboundUtm(
+    "https://www.google.com/preferences/source?q=health.j172.tw",
+    { medium: "google_preferred_source", campaign: "news_source_preference" },
+  );
 
   return (
     <a

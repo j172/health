@@ -7,6 +7,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import type { DisasterLayer } from "@/lib/server/disaster/ingestDisasterPoints";
 import type { DisasterPoint } from "@/lib/server/disaster/queries";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead (same fix as FacilityMap.tsx).
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -259,7 +260,10 @@ export default function DisasterMapLeaflet({
 
               <div className="mt-2 pt-1 border-t border-slate-100 flex items-center justify-between gap-1">
                 <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`}
+                  href={appendOutboundUtm(
+                    `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`,
+                    { medium: "map_navigation", campaign: "map_directions" },
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 inline-flex items-center justify-center rounded bg-indigo-600 py-1 text-[10px] font-bold text-white hover:bg-indigo-700 transition"
@@ -308,7 +312,10 @@ export default function DisasterMapLeaflet({
               </div>
               <div className="mt-2 pt-1 border-t border-slate-100">
                 <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${df.lat},${df.lng}`}
+                  href={appendOutboundUtm(
+                    `https://www.google.com/maps/dir/?api=1&destination=${df.lat},${df.lng}`,
+                    { medium: "map_navigation", campaign: "map_directions" },
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center rounded bg-amber-600 py-1 px-2.5 text-[10px] font-bold text-white hover:bg-amber-700 transition"

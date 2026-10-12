@@ -1,7 +1,35 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
+import { registerHooks } from "node:module";
+import { fileURLToPath } from "node:url";
+
+// tileConfig.ts (imported below) now pulls in lib/format/outboundLink via a
+// relative, extension-less specifier (issue #451), which itself uses the
+// `@/` alias — plain `node --test` can't resolve either without a loader
+// hook, same as tests/outboundLinkUtm.test.mjs.
+const REPO_ROOT = new URL("../", import.meta.url);
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    let target = specifier;
+    let parentURL = context.parentURL;
+    if (specifier.startsWith("@/")) {
+      target = `./${specifier.slice(2)}`;
+      parentURL = REPO_ROOT.href;
+    }
+    if (target.startsWith(".") && !/\.[cm]?[jt]sx?$/.test(target)) {
+      for (const extension of [".ts", ".tsx"]) {
+        const candidate = new URL(target + extension, parentURL);
+        if (existsSync(fileURLToPath(candidate))) {
+          return nextResolve(target + extension, { ...context, parentURL });
+        }
+      }
+    }
+    return nextResolve(target, { ...context, parentURL });
+  },
+});
 
 // components/Map/BaseMap.tsx is a React/JSX client component that mounts a real
 // Leaflet map; this repo's test runner has no JSX/DOM rendering harness wired up

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { buildBreadcrumbJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export const revalidate = 86400;
 export const runtime = "nodejs";
@@ -222,7 +223,10 @@ export default function AccessibilityPage() {
               </p>
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
-                  href="https://github.com/j172/health/issues/new?title=%5BA11y%20Barrier%5D%20%E7%84%A1%E9%9A%9C%E7%A4%99%E5%95%8F%E9%A1%8C%E5%8F%8D%E6%98%A0&labels=accessibility"
+                  href={appendOutboundUtm(
+                    "https://github.com/j172/health/issues/new?title=%5BA11y%20Barrier%5D%20%E7%84%A1%E9%9A%9C%E7%A4%99%E5%95%8F%E9%A1%8C%E5%8F%8D%E6%98%A0&labels=accessibility",
+                    { medium: "accessibility_feedback", campaign: "a11y_report" },
+                  )}
                   target="_blank"
                   rel="noreferrer noopener"
                   className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"

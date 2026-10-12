@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 interface ChecklistItem {
   id: string;
@@ -257,7 +258,10 @@ export default function EmergencySuppliesContent() {
 
           <div className="flex flex-wrap sm:flex-col gap-2 shrink-0">
             <a
-              href="https://prepare.mnd.gov.tw/"
+              href={appendOutboundUtm("https://prepare.mnd.gov.tw/", {
+                medium: "disaster_supplies_guide",
+                campaign: "mnd_guide",
+              })}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-900 shadow-md transition hover:bg-amber-50 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white"
@@ -265,7 +269,10 @@ export default function EmergencySuppliesContent() {
               🌐 瀏覽國防部官網
             </a>
             <a
-              href="https://prepare.mnd.gov.tw/assets/pdf/emergency-response.zh-Hant.pdf"
+              href={appendOutboundUtm(
+                "https://prepare.mnd.gov.tw/assets/pdf/emergency-response.zh-Hant.pdf",
+                { medium: "disaster_supplies_guide", campaign: "mnd_guide" },
+              )}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-400/90 px-4 py-2.5 text-sm font-bold text-slate-950 shadow-md transition hover:bg-amber-300 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-amber-200"
@@ -873,7 +880,10 @@ export default function EmergencySuppliesContent() {
             </div>
             <div className="flex gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
               <a
-                href="https://apps.apple.com/tw/app/%E6%B6%88%E9%98%B2%E9%98%B2%E7%81%BDe%E9%BB%9E%E9%80%9A/id1500403641"
+                href={appendOutboundUtm(
+                  "https://apps.apple.com/tw/app/%E6%B6%88%E9%98%B2%E9%98%B2%E7%81%BDe%E9%BB%9E%E9%80%9A/id1500403641",
+                  { medium: "app_download", campaign: "nfa_report_app", content: "ios" },
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
@@ -881,7 +891,10 @@ export default function EmergencySuppliesContent() {
                  iOS 下載
               </a>
               <a
-                href="https://play.google.com/store/apps/details?id=com.nfa.report"
+                href={appendOutboundUtm(
+                  "https://play.google.com/store/apps/details?id=com.nfa.report",
+                  { medium: "app_download", campaign: "nfa_report_app", content: "android" },
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
@@ -911,7 +924,10 @@ export default function EmergencySuppliesContent() {
             </div>
             <div className="flex gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
               <a
-                href="https://apps.apple.com/tw/app/%E8%AD%A6%E6%94%BF%E6%9C%8D%E5%8B%99/id544121843"
+                href={appendOutboundUtm(
+                  "https://apps.apple.com/tw/app/%E8%AD%A6%E6%94%BF%E6%9C%8D%E5%8B%99/id544121843",
+                  { medium: "app_download", campaign: "npa_callservice_app", content: "ios" },
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
@@ -919,7 +935,10 @@ export default function EmergencySuppliesContent() {
                  iOS 下載
               </a>
               <a
-                href="https://play.google.com/store/apps/details?id=tw.gov.npa.callservice"
+                href={appendOutboundUtm(
+                  "https://play.google.com/store/apps/details?id=tw.gov.npa.callservice",
+                  { medium: "app_download", campaign: "npa_callservice_app", content: "android" },
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 text-center rounded-lg bg-slate-100 dark:bg-slate-800 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition"

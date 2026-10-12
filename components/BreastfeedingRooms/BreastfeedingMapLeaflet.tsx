@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -94,9 +95,12 @@ export default function BreastfeedingMapLeaflet({
                 )}
                 <div className="mt-1.5 border-t border-neutral-100 pt-1">
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${p.name} ${p.address}`,
-                    )}`}
+                    href={appendOutboundUtm(
+                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        `${p.name} ${p.address}`,
+                      )}`,
+                      { medium: "map_navigation", campaign: "map_search" },
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs font-semibold text-pink-600 hover:underline"

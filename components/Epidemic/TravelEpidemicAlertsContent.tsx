@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import type { CDCTravelAlertItem, CDCEpidemicNewsItem } from "@/app/api/cdc/travel-alerts/route";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export default function TravelEpidemicAlertsContent() {
   const [alerts, setAlerts] = useState<CDCTravelAlertItem[]>([]);
@@ -372,7 +373,10 @@ export default function TravelEpidemicAlertsContent() {
                   <div className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
                     {item.lat !== null && item.lng !== null && (
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`}
+                        href={appendOutboundUtm(
+                          `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`,
+                          { medium: "map_navigation", campaign: "map_search" },
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-center text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-750"
@@ -381,7 +385,10 @@ export default function TravelEpidemicAlertsContent() {
                       </a>
                     )}
                     <a
-                      href={item.web || "https://www.cdc.gov.tw"}
+                      href={appendOutboundUtm(item.web || "https://www.cdc.gov.tw", {
+                        medium: "epidemic_source",
+                        campaign: "cdc_travel_alert",
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-500"
@@ -440,7 +447,10 @@ export default function TravelEpidemicAlertsContent() {
 
                   <div className="mt-4 flex items-center justify-end">
                     <a
-                      href={item.web || "https://www.cdc.gov.tw"}
+                      href={appendOutboundUtm(item.web || "https://www.cdc.gov.tw", {
+                        medium: "epidemic_source",
+                        campaign: "cdc_travel_alert",
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"

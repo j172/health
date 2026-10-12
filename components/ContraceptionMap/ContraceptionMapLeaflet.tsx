@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -98,9 +99,12 @@ export default function ContraceptionMapLeaflet({
                 <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-1.5 text-xs">
                   <span className="text-[10px] text-neutral-400">BeOK 認證</span>
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${p.name} ${p.address}`,
-                    )}`}
+                    href={appendOutboundUtm(
+                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        `${p.name} ${p.address}`,
+                      )}`,
+                      { medium: "map_navigation", campaign: "map_search" },
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-semibold text-indigo-600 hover:underline"

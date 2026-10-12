@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import ImageSkeleton from "@/components/ui/ImageSkeleton";
 import type { HeroImageAttribution } from "@/lib/server/news/heroImage";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const PROVIDER_LABELS: Record<HeroImageAttribution["provider"], string> = {
   pixabay: "Pixabay",
@@ -58,7 +59,10 @@ export default function HeroImage({
       {attribution ? (
         <figcaption className="mt-3 text-center text-xs text-slate-600">
           <a
-            href={attribution.sourcePageUrl}
+            href={appendOutboundUtm(attribution.sourcePageUrl, {
+              medium: "hero_image_attribution",
+              campaign: "stock_photo_credit",
+            })}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-indigo-500 hover:underline dark:hover:text-indigo-400"

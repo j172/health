@@ -1,6 +1,34 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { existsSync } from "node:fs";
+import { registerHooks } from "node:module";
+import { fileURLToPath } from "node:url";
+
+// mapNavigation.ts (imported below) now pulls in lib/format/outboundLink via
+// a relative, extension-less specifier (issue #451), which itself uses the
+// `@/` alias — plain `node --test` can't resolve either without a loader
+// hook, same as tests/outboundLinkUtm.test.mjs.
+const REPO_ROOT = new URL("../", import.meta.url);
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    let target = specifier;
+    let parentURL = context.parentURL;
+    if (specifier.startsWith("@/")) {
+      target = `./${specifier.slice(2)}`;
+      parentURL = REPO_ROOT.href;
+    }
+    if (target.startsWith(".") && !/\.[cm]?[jt]sx?$/.test(target)) {
+      for (const extension of [".ts", ".tsx"]) {
+        const candidate = new URL(target + extension, parentURL);
+        if (existsSync(fileURLToPath(candidate))) {
+          return nextResolve(target + extension, { ...context, parentURL });
+        }
+      }
+    }
+    return nextResolve(target, { ...context, parentURL });
+  },
+});
 
 test("mapNavigation helper generates correct URLs and multilingual labels", async () => {
   const { buildGoogleMapsDirUrl, getNavigationButtonLabel } = await import(
@@ -13,7 +41,14 @@ test("mapNavigation helper generates correct URLs and multilingual labels", asyn
     address: "臺北市大安區仁愛路四段10號",
   });
   assert.ok(urlWithAddress.startsWith("https://www.google.com/maps/dir/?api=1&destination="));
-  assert.ok(urlWithAddress.includes(encodeURIComponent("臺北市大安區仁愛路四段10號 臺北市立聯合醫院仁愛院區")));
+  // Decode rather than compare the raw encoded substring: as of issue #451 this
+  // URL is passed through appendOutboundUtm(), which reparses/reserializes it via
+  // URL/URLSearchParams to attach utm_* params — that round-trip re-encodes the
+  // existing `destination` value using application/x-www-form-urlencoded rules
+  // (space -> `+`) rather than encodeURIComponent's `%20`, which is an equivalent,
+  // harmless encoding difference but breaks a literal substring check.
+  const destinationParam = new URL(urlWithAddress).searchParams.get("destination");
+  assert.equal(destinationParam, "臺北市大安區仁愛路四段10號 臺北市立聯合醫院仁愛院區");
 
   // With coords only
   const urlWithCoords = buildGoogleMapsDirUrl({
