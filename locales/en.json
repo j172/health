@@ -21,7 +21,12 @@
     "family": "Family & Children",
     "disasterAlerts": "Disaster & Weather Alerts",
     "environmentFood": "Environment & Food Safety",
-    "lifeCulture": "Transport, Life & Culture"
+    "lifeCulture": "Transport, Life & Culture",
+    "guides": "Life Situations",
+    "nearby": "Near Me",
+    "toolsFilterPlaceholder": "Search tools...",
+    "toolsFilterLabel": "Filter tools",
+    "toolsFilterNoResults": "No tools match “{query}”"
   },
   "tools": {
     "water": "Water Intake Calculator",
@@ -197,5 +202,12 @@
     "skipToFooter": "Skip to footer (Alt+Z)",
     "statementLink": "Accessibility statement and shortcuts",
     "accessibility": "Accessibility Statement"
+  },
+  "guides": {
+    "caring-for-elders": { "title": "Caring for Elders" },
+    "pregnancy-to-parenting": { "title": "Pregnancy to Parenting" },
+    "typhoon-earthquake": { "title": "Typhoon & Earthquake Prep" },
+    "disability-living": { "title": "Living with a Disability" },
+    "travel-health": { "title": "Travel & Epidemic Prevention" }
   }
 }

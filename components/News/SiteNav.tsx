@@ -2,10 +2,16 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
-import { TOOL_CATALOG, TOOL_GROUP_META } from "@/lib/server/tools/catalog";
-import { compareByStrokeOrder } from "@/lib/server/tools/strokeOrder";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import dynamic from "next/dynamic";
+import { buildNavModel, GUIDES, type NavModel } from "@/lib/server/tools/navModel";
 import ThemeToggler from "@/components/Header/ThemeToggler";
 import LanguageToggler from "@/components/Header/LanguageToggler";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -17,12 +23,6 @@ const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), {
 interface NavLinkItem {
   href: string;
   label: string;
-}
-
-interface NavCategory {
-  id: string;
-  label: string;
-  items: NavLinkItem[];
 }
 
 const ChevronIcon = () => (
@@ -40,6 +40,101 @@ const ChevronIcon = () => (
   </svg>
 );
 
+/**
+ * Escape-to-close, click-outside-to-close and focus-return, shared by both
+ * disclosure menus below ("工具" mega menu, "生活情境" dropdown).
+ *
+ * This is deliberately NOT `components/ui/useModalA11y` (the hook
+ * `SearchModal.tsx` uses): that hook implements a full *modal* dialog —
+ * `role="dialog"`/`aria-modal`, Tab trapped inside, background scroll
+ * locked. A nav disclosure is not modal: Tab must be free to carry on past
+ * the menu into the rest of the page, the background stays interactive, and
+ * nothing should lock page scroll. The WAI-ARIA Disclosure (Navigation)
+ * pattern only asks for Escape-to-close, outside-click-to-close, and
+ * returning focus to the trigger — so this is a small dedicated hook for
+ * exactly that, instead of forcing the modal hook to fit a non-modal job.
+ */
+function useDisclosure({
+  open,
+  onClose,
+  triggerRef,
+  containerRef,
+}: {
+  open: boolean;
+  onClose: () => void;
+  triggerRef: React.RefObject<HTMLElement | null>;
+  containerRef: React.RefObject<HTMLElement | null>;
+}) {
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        onClose();
+        triggerRef.current?.focus();
+      }
+    };
+    const onPointerDown = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onPointerDown);
+    };
+  }, [open, onClose, triggerRef, containerRef]);
+}
+
+/**
+ * Arrow-key roving focus within an open menu: ArrowDown/ArrowUp move between
+ * `selector` matches inside `containerRef` in DOM order, Home/End jump to the
+ * first/last. Scoped to whichever element the caller attaches `onKeyDown`
+ * to, so it never intercepts arrow keys typed into the mega menu's filter
+ * input (that element isn't inside the scoped container).
+ */
+function handleMenuArrowKeys(
+  event: React.KeyboardEvent<HTMLElement>,
+  containerRef: React.RefObject<HTMLElement | null>,
+  selector: string,
+) {
+  if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+  const root = containerRef.current;
+  if (!root) return;
+  const items = Array.from(root.querySelectorAll<HTMLElement>(selector));
+  if (items.length === 0) return;
+
+  const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+  event.preventDefault();
+
+  let nextIndex = currentIndex;
+  if (event.key === "ArrowDown") {
+    nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
+  } else if (event.key === "ArrowUp") {
+    nextIndex =
+      currentIndex < 0
+        ? items.length - 1
+        : (currentIndex - 1 + items.length) % items.length;
+  } else if (event.key === "Home") {
+    nextIndex = 0;
+  } else if (event.key === "End") {
+    nextIndex = items.length - 1;
+  }
+  items[nextIndex]?.focus();
+}
+
+/**
+ * Narrow disclosure dropdown (used for "生活情境"): a trigger button plus a
+ * `role="menu"` popup of plain links. Click/Enter/Space opens (native button
+ * activation covers both pointer and keyboard); ArrowDown on the closed
+ * trigger also opens it. Escape, outside click and link selection all close
+ * it and return focus to the trigger.
+ */
 const NavDropdown = ({
   label,
   items,
@@ -50,60 +145,249 @@ const NavDropdown = ({
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    const onClick = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      )
-        setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("mousedown", onClick);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("mousedown", onClick);
-    };
-  }, [open]);
+  const close = useCallback(() => setOpen(false), []);
+  useDisclosure({ open, onClose: close, triggerRef, containerRef });
 
   return (
     <div className="relative" ref={containerRef}>
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
-        aria-haspopup="true"
+        aria-haspopup="menu"
         aria-controls={menuId}
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 py-4 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" && !open) {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
       >
         {label}
         <ChevronIcon />
       </button>
-      {open && (
-        <div
-          id={menuId}
-          role="menu"
-          aria-label={label}
-          className="absolute top-full left-0 z-50 max-h-[70vh] min-w-[13rem] overflow-y-auto rounded-2xl border border-slate-200 bg-white py-2 shadow-xl dark:border-slate-800 dark:bg-slate-900"
-        >
-          {items.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-xs font-medium whitespace-nowrap text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+      <div
+        id={menuId}
+        role="menu"
+        aria-label={label}
+        hidden={!open}
+        onKeyDown={(event) =>
+          handleMenuArrowKeys(event, containerRef, '[role="menuitem"]')
+        }
+        className="absolute top-full left-0 z-50 max-h-[70vh] min-w-[13rem] overflow-y-auto rounded-2xl border border-slate-200 bg-white py-2 shadow-xl dark:border-slate-800 dark:bg-slate-900"
+      >
+        {items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            role="menuitem"
+            onClick={close}
+            className="block px-4 py-2 text-xs font-medium whitespace-nowrap text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+interface ToolsMegaMenuProps {
+  categories: NavModel;
+  triggerLabel: string;
+  filterPlaceholder: string;
+  filterSrLabel: string;
+  noResultsTemplate: string;
+}
+
+/**
+ * The "工具" mega menu (issue #460): a wide disclosure panel listing all 7
+ * `buildNavModel()` categories with their full tool lists, plus a
+ * client-side live-filter text input. Follows the WAI-ARIA Disclosure
+ * Navigation pattern (https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/
+ * navigation example): the trigger is a plain button with
+ * `aria-expanded`/`aria-haspopup`/`aria-controls`, and the panel is a `<nav>`
+ * landmark of `<h3>` category headings (not `role="menu"`/`menuitem` — this
+ * is a navigation region, not an application menu widget, so screen reader
+ * users can jump between categories with heading navigation).
+ *
+ * Trigger mechanism: click/Enter/Space only — deliberately no hover-to-open.
+ * Hover-only mega menus are a common accessibility/touch anti-pattern
+ * (they flash open on an incidental mouse pass-through and have no
+ * equivalent on touchscreens); a single click-based activation model keeps
+ * pointer, keyboard and touch all behaving identically.
+ */
+const ToolsMegaMenu = ({
+  categories,
+  triggerLabel,
+  filterPlaceholder,
+  filterSrLabel,
+  noResultsTemplate,
+}: ToolsMegaMenuProps) => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const panelId = useId();
+  const filterInputId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const linksNavRef = useRef<HTMLDivElement>(null);
+  const filterInputRef = useRef<HTMLInputElement>(null);
+
+  const close = useCallback(() => {
+    setOpen(false);
+    setQuery("");
+  }, []);
+  useDisclosure({ open, onClose: close, triggerRef, containerRef });
+
+  // Move focus into the filter input whenever the panel opens, so keyboard
+  // users land somewhere immediately useful instead of needing an extra Tab.
+  useEffect(() => {
+    if (!open) return;
+    const timer = window.setTimeout(() => filterInputRef.current?.focus(), 10);
+    return () => window.clearTimeout(timer);
+  }, [open]);
+
+  // Client-side filter against the already-loaded buildNavModel() data — no
+  // network call. A category whose own label matches keeps its full tool
+  // list; otherwise it's narrowed to just the matching tools, and dropped
+  // entirely once empty.
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return categories;
+    return categories
+      .map((category) => {
+        const categoryMatches = category.label.toLowerCase().includes(q);
+        const tools = categoryMatches
+          ? category.tools
+          : category.tools.filter((tool) =>
+              tool.label.toLowerCase().includes(q),
+            );
+        return { ...category, tools };
+      })
+      .filter((category) => category.tools.length > 0);
+  }, [categories, query]);
+
+  const totalMatches = useMemo(
+    () => filtered.reduce((sum, category) => sum + category.tools.length, 0),
+    [filtered],
+  );
+  const trimmedQuery = query.trim();
+  const noResultsMessage = noResultsTemplate.replace("{query}", trimmedQuery);
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="true"
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" && !open) {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+      >
+        {triggerLabel}
+        <ChevronIcon />
+      </button>
+
+      <div
+        id={panelId}
+        hidden={!open}
+        className="absolute top-full left-1/2 z-50 mt-1 w-[min(94vw,68rem)] -translate-x-1/2 rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+      >
+        <form role="search" onSubmit={(event) => event.preventDefault()} className="mb-4">
+          <label htmlFor={filterInputId} className="sr-only">
+            {filterSrLabel}
+          </label>
+          <div className="relative">
+            <svg
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      )}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              ref={filterInputRef}
+              id={filterInputId}
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={filterPlaceholder}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  const first =
+                    linksNavRef.current?.querySelector<HTMLElement>("a[href]");
+                  first?.focus();
+                }
+              }}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pr-3 pl-9 text-sm text-slate-800 outline-none focus:border-indigo-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            />
+          </div>
+          <p role="status" aria-live="polite" className="sr-only">
+            {trimmedQuery
+              ? totalMatches > 0
+                ? `${totalMatches} 個工具符合「${trimmedQuery}」`
+                : noResultsMessage
+              : ""}
+          </p>
+        </form>
+
+        {trimmedQuery && filtered.length === 0 ? (
+          <p className="px-1 py-6 text-center text-sm text-slate-600 dark:text-slate-400">
+            {noResultsMessage}
+          </p>
+        ) : (
+          <nav
+            ref={linksNavRef}
+            aria-label={triggerLabel}
+            onKeyDown={(event) =>
+              handleMenuArrowKeys(event, linksNavRef, "a[href]")
+            }
+            className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3 lg:grid-cols-4"
+          >
+            {filtered.map((category) => (
+              <div key={category.group}>
+                <h3 className="mb-1.5 text-xs font-bold tracking-wide text-indigo-600 uppercase dark:text-indigo-400">
+                  <Link href={category.href} onClick={close} className="hover:underline">
+                    {category.label}
+                  </Link>
+                </h3>
+                <ul className="space-y-1">
+                  {category.tools.map((tool) => (
+                    <li key={tool.slug}>
+                      <Link
+                        href={tool.href}
+                        onClick={close}
+                        className="block rounded-md px-1 py-0.5 text-xs font-medium text-slate-600 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+                      >
+                        {tool.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        )}
+      </div>
     </div>
   );
 };
@@ -116,30 +400,39 @@ export default function SiteNav() {
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   const { t, locale } = useLanguage();
 
-  // The 9 Nav dropdowns / mobile-drawer sections (issue #256
-  // reclassification), each resolved from TOOL_GROUP_META + TOOL_CATALOG so
-  // this can never drift from the footer's columns (SiteFooter.tsx reads the
-  // same TOOL_GROUP_META) or from an added/removed/re-grouped tool. Category
-  // order and the tool order within each category both apply the shared
-  // stroke-order rule (spec: navbar-footer-reclassification-and-merges §0.2):
-  // Latin-named items first, then Chinese items by first-character stroke
-  // count ascending.
-  const categories: NavCategory[] = TOOL_GROUP_META.map((meta) => {
-    const items = TOOL_CATALOG.filter((tool) => tool.group === meta.group)
-      .map((tool) => {
-        const zhLabel = tool.navLabel ?? tool.title;
-        return {
-          href: `/tools/${tool.slug}`,
-          label: locale !== "zh-TW" ? t(`catalog.${tool.slug}`, zhLabel) : zhLabel,
-        };
-      })
-      .sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
-    return {
-      id: meta.group,
-      label: t(meta.labelKey, meta.labelDefault),
-      items,
-    };
-  }).sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
+  // Catalog-derived nav model (issue #443's buildNavModel()): exactly 7
+  // categories, each pre-sorted via compareByStrokeOrder. The desktop "工具"
+  // mega menu renders this directly; the mobile drawer below (kept working
+  // as-is per #473 — "手機底部固定導覽列" — which will redesign it into a
+  // bottom nav bar) reuses the same 7 sections instead of hand-rolling a
+  // second copy, so the two can never drift apart.
+  const navModel: NavModel = useMemo(
+    () =>
+      buildNavModel({
+        locale,
+        translateGroupLabel: (meta) => t(meta.labelKey, meta.labelDefault),
+        translateToolLabel: (tool) => {
+          const zhLabel = tool.navLabel ?? tool.title;
+          return locale !== "zh-TW"
+            ? t(`catalog.${tool.slug}`, zhLabel)
+            : zhLabel;
+        },
+      }),
+    [locale, t],
+  );
+
+  // The 5 life-situation guide hubs (issue #438 §3.3 / navModel.ts's
+  // `GUIDES`). The `/guides/[slug]` pages themselves don't exist yet (a
+  // separate future ticket builds them) — this nav already points at their
+  // final URLs.
+  const guideLinks: NavLinkItem[] = useMemo(
+    () =>
+      GUIDES.map((guide) => ({
+        href: `/guides/${guide.slug}`,
+        label: t(`guides.${guide.slug}.title`, guide.title),
+      })),
+    [t],
+  );
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 8);
@@ -182,7 +475,9 @@ export default function SiteNav() {
             ::: 上方導覽區
           </a>
           <div className="flex h-16 items-center justify-between gap-4">
-            {/* Logo */}
+            {/* Logo — also serves as the "首頁" entry point (issue #460
+                removed the separate "首頁" nav item; the logo already linked
+                here, so no change was needed for that). */}
             <Link href="/" className="flex items-center gap-2.5">
               <Image
                 src="/images/logo/j172tw-health-logo.png"
@@ -199,39 +494,45 @@ export default function SiteNav() {
               </span>
             </Link>
 
-            {/* Desktop Navigation. It unfolds at xl, not md: nine
-                category dropdowns plus home/news cannot share a 768px row
-                with the logo, the search field and three toggles. Below
-                1280px the hamburger drawer carries the same groups, so
-                nothing is lost. */}
+            {/* Desktop Navigation (issue #460): exactly 5 top-level items at
+                ≥1024px — 新聞｜工具▾｜生活情境▾｜我附近｜🚨緊急. Below 1024px
+                the hamburger drawer takes over (unchanged scope, #473). */}
             <nav
               aria-label="主要導覽"
-              className="hidden items-center gap-1.5 xl:flex"
+              className="hidden items-center gap-1.5 lg:flex"
             >
-              <Link
-                href="/"
-                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
-              >
-                {t("nav.home", "首頁")}
-              </Link>
               <Link
                 href="/news"
                 className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
               >
                 {t("nav.news", "最新新聞")}
               </Link>
-              {categories.map((category) => (
-                <NavDropdown
-                  key={category.id}
-                  label={category.label}
-                  items={category.items}
-                />
-              ))}
-            </nav>
 
-            {/* Right Actions (Search Button + Theme Toggler) */}
-            <div className="flex items-center gap-2.5 sm:gap-3">
-              {/* Emergency Hotlines Quick Entry */}
+              <ToolsMegaMenu
+                categories={navModel}
+                triggerLabel={t("nav.tools", "健康與生活工具")}
+                filterPlaceholder={t(
+                  "nav.toolsFilterPlaceholder",
+                  "搜尋工具名稱...",
+                )}
+                filterSrLabel={t("nav.toolsFilterLabel", "篩選工具")}
+                noResultsTemplate={t(
+                  "nav.toolsFilterNoResults",
+                  "沒有符合「{query}」的工具",
+                )}
+              />
+
+              <NavDropdown label={t("nav.guides", "生活情境")} items={guideLinks} />
+
+              <Link
+                href="/nearby"
+                className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-300 dark:hover:text-indigo-400"
+              >
+                {t("nav.nearby", "我附近")}
+              </Link>
+
+              {/* Emergency Hotlines Quick Entry — unchanged destination and
+                  styling, exactly as it already was before this ticket. */}
               <Link
                 href="/tools/emergency-hotlines"
                 className="flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-50/90 px-2.5 py-1 text-xs font-bold text-rose-700 shadow-2xs transition-all hover:bg-rose-100 hover:border-rose-400 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300 dark:hover:bg-rose-900/60"
@@ -243,7 +544,10 @@ export default function SiteNav() {
                 </span>
                 <span className="whitespace-nowrap">🚨 <span className="hidden xs:inline">緊急電話</span></span>
               </Link>
+            </nav>
 
+            {/* Right Actions (Search Button + Theme Toggler) */}
+            <div className="flex items-center gap-2.5 sm:gap-3">
               {/* Cmd+K Search Trigger */}
               <button
                 id="search-trigger"
@@ -290,7 +594,7 @@ export default function SiteNav() {
                     : t("nav.openMenu", "開啟選單")
                 }
                 onClick={() => setMobileOpen((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 xl:hidden dark:border-slate-800 dark:text-slate-300"
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-600 lg:hidden dark:border-slate-800 dark:text-slate-300"
               >
                 <svg
                   viewBox="0 0 24 24"
@@ -318,11 +622,16 @@ export default function SiteNav() {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile Navigation Drawer. Out of scope for issue #460 (a separate
+            ticket, #473, redesigns this into a bottom nav bar below 1024px)
+            — kept working as-is, with one low-risk bonus: it now reads from
+            the same `navModel`/`guideLinks` as the desktop mega menu instead
+            of a second hand-rolled 9-group copy, so it already reflects the
+            new 7-category structure without any extra logic. */}
         {mobileOpen && (
           <div
             id={mobilePanelId}
-            className="max-h-[75vh] overflow-y-auto border-t border-slate-100 bg-white p-4 xl:hidden dark:border-slate-800 dark:bg-slate-950"
+            className="max-h-[75vh] overflow-y-auto border-t border-slate-100 bg-white p-4 lg:hidden dark:border-slate-800 dark:bg-slate-950"
           >
             {/* Pinned Emergency Quick Dial in Mobile Drawer */}
             <div className="mb-3">
@@ -341,38 +650,56 @@ export default function SiteNav() {
 
             <div className="flex flex-col gap-2 text-sm font-semibold">
               <Link
-                href="/"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-lg p-2 text-slate-700 dark:text-slate-200"
-              >
-                {t("nav.home", "首頁")}
-              </Link>
-              <Link
                 href="/news"
                 onClick={() => setMobileOpen(false)}
                 className="rounded-lg p-2 text-slate-700 dark:text-slate-200"
               >
                 {t("nav.news", "最新新聞")}
               </Link>
+              <Link
+                href="/nearby"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg p-2 text-slate-700 dark:text-slate-200"
+              >
+                {t("nav.nearby", "我附近")}
+              </Link>
             </div>
 
-            {categories.map((category) => (
+            <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
+              <p className="px-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-500">
+                {t("nav.guides", "生活情境")}
+              </p>
+              <div className="mt-1 flex flex-col gap-1">
+                {guideLinks.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-lg p-2 text-sm font-medium text-slate-600 dark:text-slate-300"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {navModel.map((category) => (
               <div
-                key={category.id}
+                key={category.group}
                 className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800"
               >
                 <p className="px-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-500">
                   {category.label}
                 </p>
                 <div className="mt-1 flex flex-col gap-1">
-                  {category.items.map((item) => (
+                  {category.tools.map((tool) => (
                     <Link
-                      key={item.href}
-                      href={item.href}
+                      key={tool.slug}
+                      href={tool.href}
                       onClick={() => setMobileOpen(false)}
                       className="rounded-lg p-2 text-sm font-medium text-slate-600 dark:text-slate-300"
                     >
-                      {item.label}
+                      {tool.label}
                     </Link>
                   ))}
                 </div>

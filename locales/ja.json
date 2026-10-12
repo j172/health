@@ -21,7 +21,12 @@
     "family": "子育て・家庭",
     "disasterAlerts": "防災・気象警報",
     "environmentFood": "環境・食品安全",
-    "lifeCulture": "交通・生活・文化"
+    "lifeCulture": "交通・生活・文化",
+    "guides": "ライフシーン別ガイド",
+    "nearby": "近くの情報",
+    "toolsFilterPlaceholder": "ツールを検索...",
+    "toolsFilterLabel": "ツールを絞り込む",
+    "toolsFilterNoResults": "「{query}」に一致するツールはありません"
   },
   "tools": {
     "water": "水分摂取量計算機",
@@ -200,5 +205,12 @@
     "skipToFooter": "フッター情報へスキップ (Alt+Z)",
     "statementLink": "アクセシビリティ宣言とショートカット案内",
     "accessibility": "アクセシビリティ宣言"
+  },
+  "guides": {
+    "caring-for-elders": { "title": "高齢者のケア" },
+    "pregnancy-to-parenting": { "title": "妊娠から育児まで" },
+    "typhoon-earthquake": { "title": "台風・地震への備え" },
+    "disability-living": { "title": "障がいのある生活" },
+    "travel-health": { "title": "海外渡航と防疫" }
   }
 }
