@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
-import { getToolCategoryLink } from "@/lib/server/tools/navModel";
+import { getRelatedTools, getToolCategoryLink } from "@/lib/server/tools/navModel";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { TOOL_MEDICAL_DISCLAIMER } from "@/lib/server/content/toolLlmsPage";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
@@ -39,11 +39,12 @@ export default function ToolPageShell({
   const scientificBasis = catalogEntry?.scientificBasis ?? [];
   const referenceTable = catalogEntry?.referenceTable;
   const formula = catalogEntry?.formula;
-  const relatedSlugs = catalogEntry?.relatedSlugs ?? [];
-
-  const relatedTools = relatedSlugs
-    .map((s) => TOOL_CATALOG.find((t) => t.slug === s))
-    .filter((t): t is NonNullable<typeof t> => Boolean(t));
+  // Related-tools auto-fill (issue #464): the manually curated
+  // `relatedSlugs` display first, in order; when that resolves to fewer
+  // than 4 tools, getRelatedTools appends same-`group` tools until there are
+  // 4 (or the category itself runs out of other members) — see
+  // lib/server/tools/navModel.ts's getRelatedTools for the full rule.
+  const relatedTools = getRelatedTools(slug);
 
   const toolGraph = catalogEntry ? buildToolGraphJsonLd(catalogEntry) : null;
   // Category breadcrumb level (issue #459): resolved from the catalog

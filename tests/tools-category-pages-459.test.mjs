@@ -131,7 +131,7 @@ const toolPageShellContent = fs.readFileSync(toolPageShellPath, "utf-8");
 
 test("ToolPageShell.tsx resolves the category breadcrumb level via the shared getToolCategoryLink helper", () => {
   assert.ok(
-    /import\s*{\s*getToolCategoryLink\s*}\s*from\s*"@\/lib\/server\/tools\/navModel"/.test(
+    /import\s*{[^}]*\bgetToolCategoryLink\b[^}]*}\s*from\s*"@\/lib\/server\/tools\/navModel"/.test(
       toolPageShellContent,
     ),
     "ToolPageShell.tsx must import getToolCategoryLink from lib/server/tools/navModel",
