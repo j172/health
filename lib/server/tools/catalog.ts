@@ -227,7 +227,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw",
       },
     ],
-    relatedSlugs: ["uv", "aqi"],
+    relatedSlugs: ["uv", "aqi", "emergency-supplies"],
     faqs: [
       {
         question: "地震資料多久更新一次？",
@@ -439,7 +439,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
     formula:
       "三大營養素克數 = (總熱量 × 佔比%) / 每克熱量 (蛋白質4kcal/g, 碳水4kcal/g, 脂肪9kcal/g)",
-    relatedSlugs: ["calories", "food-nutrition", "bmi", "body-fat"],
+    relatedSlugs: ["calories", "food-nutrition", "bmi", "body-fat", "health-supplements"],
     faqs: [
       {
         question: "三大營養素的建議比例是多少？",
@@ -789,7 +789,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.hpa.gov.tw",
       },
     ],
-    relatedSlugs: ["stress", "heart-rate", "blood-pressure"],
+    relatedSlugs: ["stress", "heart-rate", "blood-pressure", "mental-health"],
     faqs: [
       {
         question: "PSQI 量表評估哪些面向？",
@@ -831,7 +831,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://wellbeing.mohw.gov.tw",
       },
     ],
-    relatedSlugs: ["sleep", "heart-rate", "blood-pressure"],
+    relatedSlugs: ["sleep", "heart-rate", "blood-pressure", "mental-health"],
     faqs: [
       {
         question: "PSS-10 是什麼？",
@@ -998,7 +998,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ],
       ],
     },
-    relatedSlugs: ["uv", "earthquakes", "water"],
+    relatedSlugs: ["uv", "earthquakes", "water", "iaq-premises", "aqx-monitoring"],
     faqs: [
       {
         question: "AQI 數值如何解讀？",
@@ -1028,7 +1028,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nhi.gov.tw",
       },
     ],
-    relatedSlugs: ["pharmacies", "long-term-care", "health-checks"],
+    relatedSlugs: ["pharmacies", "long-term-care", "health-checks", "medical-violators"],
     faqs: [
       {
         question: "可以查詢哪些層級的醫療院所？",
@@ -1057,7 +1057,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nhi.gov.tw",
       },
     ],
-    relatedSlugs: ["clinics", "drugs", "long-term-care"],
+    relatedSlugs: ["clinics", "drugs", "long-term-care", "smoking-cessation"],
     faqs: [
       {
         question: "一般藥局跟健保特約藥局有什麼不同？",
@@ -1114,7 +1114,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.fda.gov.tw",
       },
     ],
-    relatedSlugs: ["calories", "nutrition", "food-operators"],
+    relatedSlugs: ["calories", "nutrition", "food-operators", "health-supplements"],
     faqs: [
       {
         question: "營養成分數值是以什麼為單位？",
@@ -1192,7 +1192,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.osha.gov.tw",
       },
     ],
-    relatedSlugs: ["clinics", "long-term-care", "blood-pressure"],
+    relatedSlugs: ["clinics", "long-term-care", "blood-pressure", "smoking-cessation", "rare-disease-care", "medical-violators"],
     faqs: [
       {
         question: "收錄哪些類型的健檢機構？",
@@ -1251,7 +1251,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://cloud.hakka.gov.tw/Pub/Opendata/DTST20230600002.json",
       },
     ],
-    relatedSlugs: ["disability-welfare", "senior-friendly", "hearing-aid-subsidies"],
+    relatedSlugs: ["disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities"],
     faqs: [
       {
         question: "長照照顧圈地圖整合哪些類型的長照資源？",
@@ -1292,7 +1292,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions"],
+    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops"],
     faqs: [
       {
         question: "資料涵蓋哪些身心障礙福利機構？",
@@ -1345,7 +1345,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["green-certifications", "disability-atm"],
+    relatedSlugs: ["green-certifications", "disability-atm", "cleaning-squads"],
     faqs: [
       {
         question: "這裡的公廁資料包含哪些類型？",
@@ -1424,7 +1424,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://stats.moe.gov.tw",
       },
     ],
-    relatedSlugs: ["cram-schools", "child-welfare-institutions"],
+    relatedSlugs: ["cram-schools", "child-welfare-institutions", "child-native-languages"],
     faqs: [
       {
         question: "如何查詢附近的公立或私立幼兒園？",
@@ -1455,7 +1455,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://bsb.kh.edu.tw",
       },
     ],
-    relatedSlugs: ["kindergartens", "child-welfare-institutions", "child-safety-spots"],
+    relatedSlugs: ["kindergartens", "child-welfare-institutions", "child-safety-spots", "child-native-languages"],
     faqs: [
       {
         question: "短期補習班包含哪些類科？",
@@ -1572,7 +1572,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://eip.fia.gov.tw",
       },
     ],
-    relatedSlugs: ["food-operators", "green-certifications", "child-welfare-institutions", "disability-welfare"],
+    relatedSlugs: ["food-operators", "green-certifications", "child-welfare-institutions", "disability-welfare", "sheltered-workshops"],
     faqs: [
       {
         question: "全臺公益組織(NPO)名錄包含哪些機構？",
@@ -1611,7 +1611,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://cloud.culture.tw",
       },
     ],
-    relatedSlugs: ["public-art", "heritage-map", "latest-books"],
+    relatedSlugs: ["public-art", "heritage-map", "latest-books", "tourism-factories"],
     faqs: [
       {
         question: "活動資訊包含哪些類別？",
@@ -1758,7 +1758,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ["超大豪雨 (Extremely Torrential Rain)", "≥ 500 mm", "—", "紫色 🟣", "重大致災降雨，配合預警性撤離與避難"],
       ],
     },
-    relatedSlugs: ["aqi", "uv", "earthquakes", "water"],
+    relatedSlugs: ["aqi", "uv", "earthquakes", "water", "travel-epidemic-alerts"],
     faqs: [
       {
         question: "氣象警報多久更新一次？",
@@ -1794,7 +1794,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["uv", "public-toilets", "green-certifications"],
+    relatedSlugs: ["uv", "public-toilets", "green-certifications", "iaq-premises"],
     faqs: [
       {
         question: "什麼是「涼適點」？",
@@ -2061,7 +2061,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw",
       },
     ],
-    relatedSlugs: ["earthquakes", "weather-alerts"],
+    relatedSlugs: ["earthquakes", "weather-alerts", "emergency-supplies"],
     faqs: [
       {
         question: "防災地圖的資料多久更新一次？",
@@ -2098,7 +2098,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://cloud.culture.tw",
       },
     ],
-    relatedSlugs: ["cultural-events", "public-art", "cool-spots"],
+    relatedSlugs: ["cultural-events", "public-art", "cool-spots", "tourism-factories"],
     faqs: [
       {
         question: "本頁收錄哪些實體書店？",
@@ -2385,7 +2385,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.youbike.com.tw",
       },
     ],
-    relatedSlugs: ["metro-alerts", "aqi"],
+    relatedSlugs: ["metro-alerts", "aqi", "cpc-prices"],
     faqs: [
       {
         question: "支援哪些縣市的 YouBike 查詢？",
@@ -2416,7 +2416,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.aphia.gov.tw",
       },
     ],
-    relatedSlugs: ["weather-alerts", "uv"],
+    relatedSlugs: ["weather-alerts", "uv", "pesticide-sales"],
     faqs: [
       {
         question: "病蟲害預警資訊包含哪些內容？",
@@ -2458,7 +2458,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://service.taipower.com.tw",
       },
     ],
-    relatedSlugs: ["water-conditions", "aqi"],
+    relatedSlugs: ["water-conditions", "aqi", "cpc-prices"],
     faqs: [
       {
         question: "這個儀表板的三份資料分別是什麼？",
@@ -2603,7 +2603,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["public-toilets", "cool-spots", "carbon-footprint"],
+    relatedSlugs: ["public-toilets", "cool-spots", "carbon-footprint", "cleaning-squads"],
     faqs: [
       {
         question: "什麼是環境部認證綠色商店？",
@@ -2656,7 +2656,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://info.nhi.gov.tw",
       },
     ],
-    relatedSlugs: ["clinics", "aed", "health-checks"],
+    relatedSlugs: ["clinics", "aed", "health-checks", "rare-disease-care", "organ-donation-hospitals", "home-emergency-care"],
     faqs: [
       {
         question: "急診即時資訊多久更新一次？",
@@ -2741,7 +2741,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.fda.gov.tw",
       },
     ],
-    relatedSlugs: ["food-nutrition", "food-operators", "drugs"],
+    relatedSlugs: ["food-nutrition", "food-operators", "drugs", "pesticide-sales"],
     faqs: [
       {
         question: "用鹽水或小蘇打洗菜真的能去除更多農藥嗎？",
@@ -2783,7 +2783,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://airtw.moenv.gov.tw",
       },
     ],
-    relatedSlugs: ["aqi", "uv", "weather-alerts"],
+    relatedSlugs: ["aqi", "uv", "weather-alerts", "aqx-monitoring"],
     faqs: [
       {
         question: "戶外活動安全指數是如何計算出來的？",
@@ -3265,7 +3265,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://mort.moi.gov.tw/",
       },
     ],
-    relatedSlugs: ["life-services", "npo-organizations", "public-toilets"],
+    relatedSlugs: ["long-term-care", "npo-organizations", "public-toilets"],
     group: "elder-care-welfare",
 
     schemaType: "WebPage",
@@ -3378,7 +3378,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw/",
       },
     ],
-    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts"],
+    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "travel-epidemic-alerts"],
     faqs: [
       {
         question: "手機在沒有 SIM 卡或沒有所屬電信訊號時該如何求救？",
@@ -3598,7 +3598,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["accessible-transit", "long-term-care"],
+    relatedSlugs: ["accessible-transit", "long-term-care", "funeral-facilities"],
     faqs: [
       {
         question: "敬老卡申請資格是什麼？",
