@@ -57,10 +57,14 @@ export default function WaistHipCalculator() {
 
   // Pre-fill from the remembered shared body profile (default OFF — see
   // issue #474). Only height/sex are shared; waist/hip are specific to this
-  // calculator's own measurements, not part of the shared profile.
+  // calculator's own measurements, not part of the shared profile. Deferred
+  // via queueMicrotask — see docs/archive/specs/set-state-in-effect-fix.md
+  // and lib/hooks/useSharedGeolocation.ts for why (react-hooks/set-state-in-effect).
   useEffect(() => {
-    if (profile.sex !== undefined) setGender(profile.sex);
-    if (profile.height !== undefined) setHeight(String(profile.height));
+    queueMicrotask(() => {
+      if (profile.sex !== undefined) setGender(profile.sex);
+      if (profile.height !== undefined) setHeight(String(profile.height));
+    });
   }, [profile]);
 
   // Persist edits back to the shared profile (no-ops unless remembering).

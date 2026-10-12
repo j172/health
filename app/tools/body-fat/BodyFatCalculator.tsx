@@ -69,10 +69,14 @@ export default function BodyFatCalculator() {
   // Pre-fill from the remembered shared body profile (default OFF — see issue
   // #474). Only height/weight/sex are shared; neck/waist/hip are specific to
   // this calculator's own Navy-Method inputs, not part of the shared profile.
+  // Deferred via queueMicrotask — see docs/archive/specs/set-state-in-effect-fix.md
+  // and lib/hooks/useSharedGeolocation.ts for why (react-hooks/set-state-in-effect).
   useEffect(() => {
-    if (profile.sex !== undefined) setGender(profile.sex);
-    if (profile.height !== undefined) setHeight(String(profile.height));
-    if (profile.weight !== undefined) setWeight(String(profile.weight));
+    queueMicrotask(() => {
+      if (profile.sex !== undefined) setGender(profile.sex);
+      if (profile.height !== undefined) setHeight(String(profile.height));
+      if (profile.weight !== undefined) setWeight(String(profile.weight));
+    });
   }, [profile]);
 
   // Persist edits back to the shared profile (no-ops unless remembering).

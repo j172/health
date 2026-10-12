@@ -38,9 +38,14 @@ export function WaterCalculator() {
   const [hotClimate, setHotClimate] = useState(false);
   const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
 
-  // Pre-fill from the remembered shared body profile (default OFF — see issue #474).
+  // Pre-fill from the remembered shared body profile (default OFF — see issue
+  // #474). Deferred via queueMicrotask — see
+  // docs/archive/specs/set-state-in-effect-fix.md and
+  // lib/hooks/useSharedGeolocation.ts for why (react-hooks/set-state-in-effect).
   useEffect(() => {
-    if (profile.weight !== undefined) setWeight(profile.weight);
+    queueMicrotask(() => {
+      if (profile.weight !== undefined) setWeight(profile.weight);
+    });
   }, [profile]);
 
   // Persist edits back to the shared profile (no-ops unless remembering).

@@ -72,15 +72,20 @@ export default function NutritionAdvisor() {
   const [result, setResult] = useState<NutritionResult | null>(null);
   const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
 
-  // Pre-fill from the remembered shared body profile (default OFF — see issue #474).
+  // Pre-fill from the remembered shared body profile (default OFF — see issue
+  // #474). Deferred via queueMicrotask — see
+  // docs/archive/specs/set-state-in-effect-fix.md and
+  // lib/hooks/useSharedGeolocation.ts for why (react-hooks/set-state-in-effect).
   useEffect(() => {
-    setForm((f) => ({
-      ...f,
-      ...(profile.sex !== undefined ? { gender: profile.sex } : {}),
-      ...(profile.age !== undefined ? { age: profile.age } : {}),
-      ...(profile.height !== undefined ? { heightCm: profile.height } : {}),
-      ...(profile.weight !== undefined ? { weightKg: profile.weight } : {}),
-    }));
+    queueMicrotask(() => {
+      setForm((f) => ({
+        ...f,
+        ...(profile.sex !== undefined ? { gender: profile.sex } : {}),
+        ...(profile.age !== undefined ? { age: profile.age } : {}),
+        ...(profile.height !== undefined ? { heightCm: profile.height } : {}),
+        ...(profile.weight !== undefined ? { weightKg: profile.weight } : {}),
+      }));
+    });
   }, [profile]);
 
   // Persist edits back to the shared profile (no-ops unless remembering).

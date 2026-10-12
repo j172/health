@@ -85,10 +85,15 @@ export default function BMICalculator() {
   const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
 
   // Pre-fill from the remembered shared body profile (default OFF: `profile`
-  // stays {} until the user has opted in — see issue #474).
+  // stays {} until the user has opted in — see issue #474). Deferred via
+  // queueMicrotask (see docs/archive/specs/set-state-in-effect-fix.md and
+  // lib/hooks/useSharedGeolocation.ts for the same pattern): calling setState
+  // directly from an effect body trips react-hooks/set-state-in-effect.
   useEffect(() => {
-    if (profile.height !== undefined) setHeight(String(profile.height));
-    if (profile.weight !== undefined) setWeight(String(profile.weight));
+    queueMicrotask(() => {
+      if (profile.height !== undefined) setHeight(String(profile.height));
+      if (profile.weight !== undefined) setWeight(String(profile.weight));
+    });
   }, [profile]);
 
   // Persist edits back to the shared profile (no-ops unless remembering).

@@ -59,8 +59,12 @@ export default function HeartRateCalculator() {
   // issue #474). `restHr` is a medical measurement value and is NEVER read
   // from or written to the shared profile — BodyProfile's type doesn't even
   // have a field for it, so there's no way to pass it to save() by mistake.
+  // Deferred via queueMicrotask — see docs/archive/specs/set-state-in-effect-fix.md
+  // and lib/hooks/useSharedGeolocation.ts for why (react-hooks/set-state-in-effect).
   useEffect(() => {
-    if (profile.age !== undefined) setAge(String(profile.age));
+    queueMicrotask(() => {
+      if (profile.age !== undefined) setAge(String(profile.age));
+    });
   }, [profile]);
 
   // Persist only `age` back to the shared profile (no-ops unless remembering).
