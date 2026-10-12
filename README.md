@@ -79,7 +79,7 @@
    - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-9-款)
    - [D. 婦幼兒少與家庭生活](#d-婦幼兒少與家庭生活服務-10-款)
    - [E. 即時環境與災害觀測](#e-即時環境與公衛災害觀測-13-款)
-   - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-15-款)
+   - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-14-款)
    - [G. 文化休閒與毛孩生活](#g-文化展演休閒與毛孩生活-8-款)
 4. [高防禦性系統工程與架構設計](#-高防禦性系統工程與架構設計)
 5. [雙軌定時排程矩陣 (Dual-Track Cron)](#-雙軌定時排程矩陣-dual-track-cron)
@@ -225,7 +225,7 @@ flowchart TD
 | **國際旅遊公衛與疫情警示** | [`/tools/travel-epidemic-alerts`](https://health.j172.tw/tools/travel-epidemic-alerts) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級） |
 | **農藥殘留檢驗合格販售站** | [`/tools/pesticide-sales`](https://health.j172.tw/tools/pesticide-sales) | 農業部農業藥物毒物試驗所 | 合法登記農藥販賣商與管理人員證照查詢 |
 
-### F. 交通能源與綠色永續生活 (15 款)
+### F. 交通能源與綠色永續生活 (14 款)
 
 | 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
 |---|---|---|---|
@@ -236,8 +236,7 @@ flowchart TD
 | **大眾捷運即時營運事件警示** | [`/tools/metro-alerts`](https://health.j172.tw/tools/metro-alerts) | 北捷 / 高捷 / 桃捷 / 中捷 | 各線捷運設備異常、延誤、故障告警資訊 |
 | **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車、輪椅接駁客運班次路線總覽 |
 | **全國優良環境公廁地圖** | [`/tools/public-toilets`](https://health.j172.tw/tools/public-toilets) | 環境部公共設施清冊 | 親子廁所、無障礙廁所、性別友善廁所定位 |
-| **全臺綠色友善商店清冊** | [`/tools/green-shops`](https://health.j172.tw/tools/green-shops) | 環境部國家綠色生活平臺 | 環保標章商品、節能家電特約環保商店 |
-| **綠色環保認證旅宿指南** | [`/tools/green-certifications`](https://health.j172.tw/tools/green-certifications) | 環境部國家綠色生活平臺 | 減塑、不主動提供備品之銅金銀級環保標章旅館 |
+| **綠色環保認證旅宿指南** | [`/tools/green-certifications`](https://health.j172.tw/tools/green-certifications) | 環境部國家綠色生活平臺 | 減塑、不主動提供備品之銅金銀級環保標章旅館（含綠色商店／環保餐廳／環保產品分頁） |
 | **生活碳足跡盤查與係數** | [`/tools/carbon-footprint`](https://health.j172.tw/tools/carbon-footprint) | 環境部氣候變遷署 | 日常通勤、電力瓦斯、差旅排碳量評估計算 |
 | **夏日公共遮陽避暑冷氣地圖** | [`/tools/cool-spots`](https://health.j172.tw/tools/cool-spots) | 各縣市政府公共避暑專區 | 公共圖書館、活動中心弱勢避暑共享空調空間 |
 | **室內空氣品質認證場所** | [`/tools/iaq-premises`](https://health.j172.tw/tools/iaq-premises) | 環境部室內空品法列管名單 | 醫療院所、捷運站、大專院校優良室內空品場所 |

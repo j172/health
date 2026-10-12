@@ -90,18 +90,22 @@ const nextConfig = {
         permanent: true,
       },
       {
+        // issue #448: predates the `?tab=` initialKey plumbing that PR added
+        // for green-shops — now that it exists, carry it here too so these
+        // three land on their own tab instead of green-certifications'
+        // default (green-shops) tab.
         source: "/tools/green-hotels",
-        destination: "/tools/green-certifications",
+        destination: "/tools/green-certifications?tab=green-hotels",
         permanent: true,
       },
       {
         source: "/tools/green-products",
-        destination: "/tools/green-certifications",
+        destination: "/tools/green-certifications?tab=green-products",
         permanent: true,
       },
       {
         source: "/tools/green-restaurants",
-        destination: "/tools/green-certifications",
+        destination: "/tools/green-certifications?tab=green-restaurants",
         permanent: true,
       },
       {
@@ -137,6 +141,16 @@ const nextConfig = {
       {
         source: "/tools/ltc-contracted",
         destination: "/tools/long-term-care",
+        permanent: true,
+      },
+      // issue #448 (2.0 §D merge item M2) — "/tools/green-shops" was the one
+      // member of the #256 green-certification-family merge left on its own
+      // page/catalog entry; it uses the exact same `green_shop` facility data
+      // as the "綠色商店" tab on /tools/green-certifications, so it 301s there
+      // with a query param that auto-selects that tab instead of the default.
+      {
+        source: "/tools/green-shops",
+        destination: "/tools/green-certifications?tab=green-shops",
         permanent: true,
       },
     ];
