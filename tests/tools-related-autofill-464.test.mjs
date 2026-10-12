@@ -76,13 +76,14 @@ const toolPageShellPath = path.join(ROOT_DIR, "components", "Tools", "ToolPageSh
 const toolPageShellContent = fs.readFileSync(toolPageShellPath, "utf-8");
 
 test("ToolPageShell.tsx derives relatedTools via the shared getRelatedTools helper, not an inline computation", () => {
+  // Matches the import regardless of what else shares the same
+  // destructured import list (issue #471 added getGuidesForTool alongside
+  // getRelatedTools/getToolCategoryLink in that same statement) — this only
+  // cares that getRelatedTools itself comes from navModel.
   assert.ok(
-    /import\s*{\s*getRelatedTools\s*,\s*getToolCategoryLink\s*}\s*from\s*"@\/lib\/server\/tools\/navModel"/.test(
+    /import\s*{[^}]*\bgetRelatedTools\b[^}]*}\s*from\s*"@\/lib\/server\/tools\/navModel"/.test(
       toolPageShellContent,
-    ) ||
-      /import\s*{\s*getToolCategoryLink\s*,\s*getRelatedTools\s*}\s*from\s*"@\/lib\/server\/tools\/navModel"/.test(
-        toolPageShellContent,
-      ),
+    ),
     "ToolPageShell.tsx must import getRelatedTools from lib/server/tools/navModel",
   );
   assert.ok(
