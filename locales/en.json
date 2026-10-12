@@ -171,7 +171,9 @@
     "clear": "Clear",
     "close": "Close search",
     "escHint": "Esc to close",
-    "viewAll": "View all matching results"
+    "viewAll": "View all matching results",
+    "tools": "Tools",
+    "news": "News"
   },
   "reader": {
     "close": "Exit immersive mode",
