@@ -5,12 +5,8 @@ import {
   getBaseUrl,
   SITE_NAME,
 } from "@/lib/server/news/seo";
-import {
-  TOOL_CATALOG,
-  compareToolTitles,
-  type ToolCatalogEntry,
-  type ToolGroup,
-} from "@/lib/server/tools/catalog";
+import { TOOL_CATALOG, TOOL_GROUP_META } from "@/lib/server/tools/catalog";
+import { buildCategoryPage } from "@/lib/server/tools/navModel";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import CivicPartnersSection from "@/components/Common/CivicPartnersSection";
 
@@ -118,147 +114,30 @@ const TOOL_ICONS: Record<string, string> = {
   "emergency-hotlines": "🚨",
 };
 
-interface ToolCategory {
-  id: string;
-  title: string;
-  description: string;
-  /**
-   * Membership comes from ToolGroup, so this page cannot drift away from the
-   * nav dropdowns and the footer columns (issue #442 reclassification: both
-   * derive from the same 7 `TOOL_GROUP_META` buckets in catalog.ts, down
-   * from 9). It had drifted before: tools were added to the catalog, wired
-   * into a group, and stayed invisible here because nobody remembered to
-   * append the slug by hand.
-   *
-   * `slugs` is the exception, for the "body"/"cardio" sections that split
-   * the twelve `health-assessment` tools into a finer distinction no group
-   * boundary expresses. Every group appears exactly once across these
-   * `slugs` sections and the `groups` sections further down — otherwise a
-   * tool would double-render. The old "registry" and "culture-tourism"
-   * sections were removed here (#442): their members are now covered by
-   * `medical-care`/`environment-food` and `life-culture` respectively, each
-   * already claimed by a surviving `groups` section below.
-   */
-  groups?: ToolGroup[];
-  slugs?: string[];
-}
-
-const CATEGORIES: ToolCategory[] = [
-  {
-    id: "body",
-    title: "身體組成與代謝評估",
-    description:
-      "依據衛福部國健署、WHO 與國際醫學公式評估身體質量、體脂率與熱量需求",
-    slugs: [
-      "bmi",
-      "calories",
-      "nutrition",
-      "water",
-      "body-fat",
-      "waist-hip",
-      "lbm",
-    ],
-  },
-  {
-    id: "cardio",
-    title: "心血管、睡眠與心理評估",
-    description:
-      "依據 2023 ESH 高血壓指引、Karvonen 公式、PSQI 與 PSS-10 量表量化健康狀態",
-    slugs: ["heart-rate", "blood-pressure", "vo2max", "sleep", "stress"],
-  },
-  {
-    // issue #442 reclassification (9 groups -> 7): the old "registry" group
-    // no longer exists — its members (drugs, food-nutrition, food-operators,
-    // food-safety) are now part of "medical-care"/"environment-food" and are
-    // picked up by the groups-based sections below instead of a dedicated
-    // slugs-based section.
-    id: "care-facility",
-    title: "醫療照護機構",
-    description:
-      "全台健保特約醫院、診所、藥局、健康檢查機構、長照 2.0、居家醫療、老人與身心障礙福利機構檢索",
-    groups: ["medical-care"],
-  },
-  {
-    id: "child-welfare",
-    title: "兒少福利與教育資源",
-    description: "全國親子館與兒少福利中心、幼兒園、短期補習班、本土語言辭典",
-    groups: ["family"],
-  },
-  {
-    id: "disaster-safety",
-    title: "防災與安全示警",
-    description:
-      "紫外線、地震、天氣警報、防災地圖、婦幼安全警示地點、國際旅遊疫情與農作物病蟲害預警",
-    groups: ["disaster-alerts"],
-  },
-  {
-    // issue #442: also absorbs the old "culture-tourism" section, since both
-    // old groups now map onto the single "life-culture" group.
-    id: "transport-energy",
-    title: "交通與能源",
-    description:
-      "YouBike、中油油價與站點地圖、電力概況儀表板與捷運營運公告",
-    groups: ["life-culture"],
-  },
-  {
-    id: "environment",
-    title: "環境品質與綠色生活",
-    description:
-      "AQI／AQX 空品監測、室內空氣品質公告場所、水情（水位站／水庫）、地方清潔隊、環保標章與碳足跡查詢",
-    groups: ["environment-food"],
-  },
-  {
-    id: "life-services",
-    title: "公益與生活服務",
-    description:
-      "非營利組織(NPO)、公廁、涼適點、無障礙ATM、毛孩認養與動物醫院查詢",
-    groups: ["elder-care-welfare"],
-  },
-];
-
-const byTitle = (a: ToolCatalogEntry, b: ToolCatalogEntry) =>
-  compareToolTitles(a.title, b.title);
-
 /**
- * Categories resolved to their tools, plus a catch-all.
- *
- * Collated per SPECIFICATION.md 5.1 rather than left in catalog order — this is
- * the page where readers actually browse. Anything a category does not claim
- * lands in 其他工具 rather than vanishing, so the next un-categorised group is
- * visible on the page instead of silently missing from it.
+ * The 7 category sections this page renders, derived from the single shared
+ * `buildCategoryPage` model (issue #443/#459) instead of a hand-rolled local
+ * array. This used to be its own independent `CATEGORIES` list that could
+ * (and did) drift from the Nav dropdowns/Footer columns/the new
+ * `/tools/category/[slug]` landing pages — tools got added to the catalog
+ * and wired into a `ToolGroup`, then stayed invisible here because nobody
+ * remembered to append the slug by hand, or a merged group left a section's
+ * title/description topically stale. Deriving straight from
+ * `TOOL_GROUP_META` + `buildCategoryPage` means every one of those four
+ * surfaces now reads the same 7 buckets from the same place, so they can't
+ * disagree again.
  */
-const SECTIONS = (() => {
-  const claimed = new Set<string>();
-  const sections = CATEGORIES.map((category) => {
-    const tools = (
-      category.groups
-        ? TOOL_CATALOG.filter((tool) => category.groups!.includes(tool.group))
-        : (category.slugs ?? [])
-            .map((slug) => TOOL_CATALOG.find((tool) => tool.slug === slug))
-            .filter((tool): tool is ToolCatalogEntry => Boolean(tool))
-    )
-      .slice()
-      .sort(byTitle);
-    tools.forEach((tool) => claimed.add(tool.slug));
-    return { ...category, tools };
-  }).filter((section) => section.tools.length > 0);
-
-  const leftover = TOOL_CATALOG.filter(
-    (tool) => !claimed.has(tool.slug),
-  ).sort(byTitle);
-
-  return leftover.length > 0
-    ? [
-        ...sections,
-        {
-          id: "other",
-          title: "其他工具",
-          description: "尚未歸入上列主題的工具",
-          tools: leftover,
-        },
-      ]
-    : sections;
-})();
+const SECTIONS = TOOL_GROUP_META.map((meta) => {
+  const category = buildCategoryPage(meta.group);
+  if (!category) {
+    // Unreachable: `meta.group` comes from the same TOOL_GROUP_META list
+    // buildCategoryPage looks the group up against, so this would only fire
+    // if the two ever desynced — fail loudly rather than silently drop a
+    // whole category section.
+    throw new Error(`buildCategoryPage returned null for known group "${meta.group}"`);
+  }
+  return category;
+});
 
 export default function ToolsIndexPage() {
   const toolsGraph = buildToolsIndexGraphJsonLd(TOOL_CATALOG);
@@ -292,15 +171,20 @@ export default function ToolsIndexPage() {
 
               return (
                 <section
-                  key={category.id}
-                  aria-labelledby={`category-${category.id}`}
+                  key={category.group}
+                  aria-labelledby={`category-${category.group}`}
                 >
                   <div className="mb-4">
                     <h2
-                      id={`category-${category.id}`}
+                      id={`category-${category.group}`}
                       className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100"
                     >
-                      <span>{category.title}</span>
+                      <Link
+                        href={`/tools/category/${category.group}`}
+                        className="hover:text-indigo-600 dark:hover:text-indigo-400"
+                      >
+                        {category.label}
+                      </Link>
                       <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                         {categoryTools.length}
                       </span>
@@ -323,10 +207,10 @@ export default function ToolsIndexPage() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <h3 className="truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                              {tool.title}
+                              {tool.navLabel ?? tool.title}
                             </h3>
                             <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                              {tool.description}
+                              {tool.directAnswer}
                             </p>
                           </div>
                         </div>

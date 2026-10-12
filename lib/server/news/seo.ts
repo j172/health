@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { NewsListItem, NewsDetailItem } from "./queries";
 import { resolveAuthorLabel, hasSourceLabel } from "./sourceLabels";
 import type { ToolCatalogEntry } from "@/lib/server/tools/catalog";
+import { getToolCategoryLink, type CategoryPageModel } from "@/lib/server/tools/navModel";
 
 /**
  * og:image resolution for an article. Falls back to a source-branded
@@ -318,6 +319,11 @@ export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unk
   const baseUrl = getBaseUrl();
   const canonical = `${baseUrl}/tools/${tool.slug}`;
   const pageType = tool.schemaType ?? "MedicalWebPage";
+  // Issue #459: 4-level breadcrumb (首頁 / 工具 / 分類 / 工具), resolved via
+  // the shared getToolCategoryLink helper so this JSON-LD representation
+  // can't drift from the visual breadcrumb ToolPageShell.tsx renders for the
+  // same tool.
+  const categoryLink = getToolCategoryLink(tool.group);
 
   const citations = tool.scientificBasis.map((ref) => ({
     "@type": "CreativeWork",
@@ -334,8 +340,9 @@ export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unk
       "@id": `${canonical}#breadcrumb`,
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "首頁", item: baseUrl },
-        { "@type": "ListItem", position: 2, name: "健康工具", item: `${baseUrl}/tools` },
-        { "@type": "ListItem", position: 3, name: tool.title, item: canonical },
+        { "@type": "ListItem", position: 2, name: "工具", item: `${baseUrl}/tools` },
+        { "@type": "ListItem", position: 3, name: categoryLink.label, item: `${baseUrl}${categoryLink.href}` },
+        { "@type": "ListItem", position: 4, name: tool.title, item: canonical },
       ],
     },
     {
@@ -388,6 +395,58 @@ export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unk
   return {
     "@context": "https://schema.org",
     "@graph": graph,
+  };
+};
+
+/**
+ * Composite Schema.org @graph for /tools/category/<slug> category landing
+ * pages (issue #459). 3-level breadcrumb (首頁 / 工具 / 分類 — the category
+ * IS the current page, so there's no further nesting), a CollectionPage for
+ * the category itself, and an ItemList enumerating every tool in it.
+ */
+export const buildCategoryPageGraphJsonLd = (category: CategoryPageModel): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/tools/category/${category.group}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationEntity(baseUrl),
+      buildWebSiteEntity(baseUrl),
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "首頁", item: baseUrl },
+          { "@type": "ListItem", position: 2, name: "工具", item: `${baseUrl}/tools` },
+          { "@type": "ListItem", position: 3, name: category.label, item: canonical },
+        ],
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        name: category.label,
+        description: category.description,
+        isPartOf: { "@id": `${baseUrl}/#website` },
+        breadcrumb: { "@id": `${canonical}#breadcrumb` },
+        mainEntity: { "@id": `${canonical}#catalog` },
+        inLanguage: "zh-TW",
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonical}#catalog`,
+        name: `${category.label}工具列表`,
+        mainEntityOfPage: { "@id": `${canonical}#webpage` },
+        itemListElement: category.tools.map((tool, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${baseUrl}/tools/${tool.slug}`,
+          name: tool.navLabel ?? tool.title,
+          description: tool.directAnswer,
+        })),
+      },
+    ],
   };
 };
 
