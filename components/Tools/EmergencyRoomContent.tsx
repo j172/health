@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import type { EmergencyRoomItem, EmergencyOverviewResult } from "@/lib/server/emergencyRooms/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import type { GeolocationOverride } from "@/lib/utils/geolocationOverride";
 
 const REGION_TABS = [
   { id: "", label: "全台責任醫院" },
@@ -74,8 +75,19 @@ function SparklineSvg({
 
 export default function EmergencyRoomContent({
   initialData,
+  locationOverride = null,
 }: {
   initialData?: EmergencyOverviewResult;
+  /**
+   * `?lat=&lng=` override (issue #463) resolved server-side by
+   * app/tools/er-status/page.tsx from its own `searchParams` — e.g. a map
+   * popup's "看附近的急診" deep link. When present, the server-rendered
+   * `initialData` is already sorted by distance from this point; this prop
+   * additionally carries it into `refreshData()`'s client-side refetch so
+   * pressing "重新整理" keeps the same point as the distance-sort center
+   * instead of silently dropping back to an unsorted list.
+   */
+  locationOverride?: GeolocationOverride | null;
 }) {
   const { locale } = useLanguage();
   const [data, setData] = useState<EmergencyOverviewResult | undefined>(initialData);
@@ -89,7 +101,13 @@ export default function EmergencyRoomContent({
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/emergency-rooms");
+      const query = new URLSearchParams();
+      if (locationOverride) {
+        query.set("lat", String(locationOverride.lat));
+        query.set("lng", String(locationOverride.lng));
+      }
+      const qs = query.toString();
+      const res = await fetch(`/api/emergency-rooms${qs ? `?${qs}` : ""}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -99,7 +117,7 @@ export default function EmergencyRoomContent({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locationOverride]);
 
   useEffect(() => {
     if (initialData) {

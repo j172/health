@@ -13,6 +13,7 @@ import MapViewController, { userLocationIcon } from "@/components/Common/MapView
 import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead
 // (same fix as FacilityMap.tsx / DisasterMapLeaflet.tsx / AedMapLeaflet.tsx).
@@ -137,6 +138,7 @@ export default function InundationMapLeaflet({
                 <p className="mt-1.5 text-[10px] text-slate-400">
                   來源：{s.source}｜{new Date(s.recordedAt).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })} 更新
                 </p>
+                <PopupNearbyToolsLinks lat={s.lat} lng={s.lng} />
               </div>
             </Popup>
           </Marker>
@@ -177,6 +179,7 @@ export default function InundationMapLeaflet({
                     </a>
                   )}
                 </div>
+                <PopupNearbyToolsLinks lat={sh.lat} lng={sh.lng} />
               </div>
             </Popup>
           </Marker>

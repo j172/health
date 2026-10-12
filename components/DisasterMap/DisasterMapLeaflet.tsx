@@ -8,6 +8,7 @@ import type { DisasterLayer } from "@/lib/server/disaster/ingestDisasterPoints";
 import type { DisasterPoint } from "@/lib/server/disaster/queries";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead (same fix as FacilityMap.tsx).
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -180,6 +181,7 @@ export default function DisasterMapLeaflet({
               </div>
               <p className="mt-1 text-xs text-neutral-600">{ip.county} {ip.district} {ip.address}</p>
               <p className="mt-1 text-[10px] text-neutral-400">資料來源：{ip.source}</p>
+              <PopupNearbyToolsLinks lat={ip.lat} lng={ip.lng} />
             </div>
           </Popup>
         </Marker>
@@ -205,6 +207,7 @@ export default function DisasterMapLeaflet({
               )}
               {s.recordedAt && <p className="mt-1 text-[10px] text-neutral-400">觀測時間：{s.recordedAt}</p>}
               <p className="mt-1 text-[10px] text-neutral-400">資料來源：經濟部水利署水資源物聯網</p>
+              <PopupNearbyToolsLinks lat={s.lat} lng={s.lng} />
             </div>
           </Popup>
         </Marker>
@@ -224,6 +227,7 @@ export default function DisasterMapLeaflet({
               </p>
               {s.recordedAt && <p className="mt-1 text-[10px] text-neutral-400">觀測時間：{s.recordedAt}</p>}
               <p className="mt-1 text-[10px] text-neutral-400">資料來源：經濟部水利署水資源物聯網</p>
+              <PopupNearbyToolsLinks lat={s.lat} lng={s.lng} />
             </div>
           </Popup>
         </Marker>
@@ -279,6 +283,7 @@ export default function DisasterMapLeaflet({
                   </a>
                 )}
               </div>
+              <PopupNearbyToolsLinks lat={p.lat} lng={p.lng} />
             </div>
           </Popup>
         </Marker>
@@ -323,6 +328,7 @@ export default function DisasterMapLeaflet({
                   路線導航 ↗
                 </a>
               </div>
+              <PopupNearbyToolsLinks lat={df.lat} lng={df.lng} />
             </div>
           </Popup>
         </Marker>

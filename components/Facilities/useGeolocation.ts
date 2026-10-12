@@ -1,6 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  type GeolocationOverride,
+  isValidGeolocationOverride,
+  parseGeolocationOverrideFromSearchParams,
+} from "@/lib/utils/geolocationOverride";
+
+// Re-exported so existing call sites (components/Tools/AedContent.tsx,
+// components/Facilities/FacilitySearchContent.tsx) can keep importing both
+// the hook and the override helpers from this one module. See
+// lib/utils/geolocationOverride.ts for why the actual parsing logic lives
+// there instead of here (this file's top-of-file "use client" directive
+// would make it uncallable from a Server Component).
+export type { GeolocationOverride };
+export { parseGeolocationOverrideFromSearchParams };
 
 /** 預設位置：臺北101（找不到定位時的退回點） */
 export const GEO_DEFAULTS = { lat: 25.033, lng: 121.5654 };
@@ -69,16 +83,37 @@ export function getSavedLocation(): { lat: number; lng: number; name?: string } 
   return null;
 }
 
-/** 自動觸發瀏覽器定位，失敗則退回偏好位置或臺北101；也可透過 refresh() 手動重新定位。 */
-export function useGeolocation(): GeoLocation {
-  const [state, setState] = useState<GeoState>(() => ({
-    lat: GEO_DEFAULTS.lat,
-    lng: GEO_DEFAULTS.lng,
-    isDefault: true,
-    loading: true,
-    refreshing: false,
-    awaitingPermission: false,
-  }));
+/**
+ * 自動觸發瀏覽器定位，失敗則退回偏好位置或臺北101；也可透過 refresh() 手動重新定位。
+ *
+ * `override` 提供有效座標時（例如某個地圖彈出視窗的深連結帶入
+ * `?lat=&lng=`，見 issue #463 的 PopupNearbyToolsLinks），一律優先採用該座標
+ * 當作初始位置、略過瀏覽器定位（不觸發權限彈窗、沒有等待時間），讓目的頁立刻
+ * 以那個點位為中心顯示結果，不需要使用者重新定位。使用者仍可按下「重新定位」
+ * 按鈕呼叫 refresh() 切回自己裝置的實際位置——override 只影響「初始」位置，不
+ * 會讓 refresh() 失效。沒有提供 override（或座標無效）時行為與過去完全相同。
+ */
+export function useGeolocation(override?: GeolocationOverride | null): GeoLocation {
+  const hasOverride = isValidGeolocationOverride(override);
+  const [state, setState] = useState<GeoState>(() =>
+    hasOverride
+      ? {
+          lat: override!.lat,
+          lng: override!.lng,
+          isDefault: false,
+          loading: false,
+          refreshing: false,
+          awaitingPermission: false,
+        }
+      : {
+          lat: GEO_DEFAULTS.lat,
+          lng: GEO_DEFAULTS.lng,
+          isDefault: true,
+          loading: true,
+          refreshing: false,
+          awaitingPermission: false,
+        },
+  );
   const attempted = useRef(false);
 
   const locate = useCallback(async (maximumAge: number, mode: "initial" | "refresh") => {
@@ -124,6 +159,9 @@ export function useGeolocation(): GeoLocation {
   useEffect(() => {
     if (attempted.current) return;
     attempted.current = true;
+    // 有效的外部覆寫座標已經在 useState 初始值套用完畢——完全略過瀏覽器定位
+    // 與 localStorage 偏好位置，不觸發定位權限彈窗。
+    if (hasOverride) return;
     const saved = getSavedLocation();
     if (saved) {
       setState((prev) => ({
@@ -135,7 +173,7 @@ export function useGeolocation(): GeoLocation {
       }));
     }
     locate(300_000, "initial");
-  }, [locate]);
+  }, [locate, hasOverride]);
 
   useEffect(() => {
     const handleLocationChange = (e: Event) => {
