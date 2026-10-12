@@ -293,6 +293,17 @@ const runSchemaMigrations = async (): Promise<void> => {
     ALTER TABLE accessible_transit_facilities
       ADD UNIQUE KEY IF NOT EXISTS uniq_station (station_id, system_type)
   `);
+  // TDX Basic Bus sync (issue #467) upgrades accessible_transit_routes'
+  // low_floor_ratio from a one-time hardcoded seed value to a real daily
+  // sync from GET /v3/Bus/Vehicle,Schedule/City/{City} — source distinguishes
+  // seed rows from tdx_bus rows, and sample_trips_json holds a small sample
+  // of per-schedule IsLowFloor flags for the "某條路線某個班次是否為低地板車"
+  // UI requirement (see lib/server/transit/busLowFloorMath.ts).
+  await p.query(`
+    ALTER TABLE accessible_transit_routes
+      ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'seed' COMMENT 'seed | tdx_bus' AFTER description,
+      ADD COLUMN IF NOT EXISTS sample_trips_json JSON NULL AFTER source
+  `);
   // Unlike the DDL above, this can't use `ADD INDEX IF NOT EXISTS` — MySQL
   // has no "if not exists" form for FULLTEXT indexes, so a second run (or a
   // host whose MySQL build lacks the ngram parser plugin) throws here every

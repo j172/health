@@ -482,9 +482,29 @@ export default function AccessibleTransitContent() {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
-                          {r.county}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                            {r.county}
+                          </span>
+                          {/* 真實資料 vs 示範種子資料標示 — 對應 issue #467 驗收標準「來自每日
+                              同步的真實資料，不是寫死的數字」，讓使用者（與人工部署後驗證）一看
+                              就能分辨這條路線是哪種來源。 */}
+                          {r.source === "tdx_bus" ? (
+                            <span
+                              className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
+                              title="交通部 TDX 每日同步之真實車輛資料"
+                            >
+                              ✓ 即時同步
+                            </span>
+                          ) : (
+                            <span
+                              className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-400"
+                              title="尚未完成 TDX 同步，暫以示範資料顯示"
+                            >
+                              示範資料
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs font-medium text-slate-400">
                           {r.operatorName}
                         </span>
@@ -495,6 +515,30 @@ export default function AccessibleTransitContent() {
                       <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
                         {r.description}
                       </p>
+
+                      {/* 班次層級低地板標示 — issue #467「可以看到某條路線某個班次是否為
+                          低地板車」，資料來自 TDX Bus/Schedule 的 Timetable.IsLowFloor 取樣。 */}
+                      {r.sampleTrips && r.sampleTrips.length > 0 && (
+                        <div className="mb-4">
+                          <div className="text-xs text-slate-500 mb-1.5">班次低地板標示：</div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {r.sampleTrips.map((trip, tIdx) => (
+                              <span
+                                key={trip.tripId || tIdx}
+                                className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                                  trip.isLowFloor
+                                    ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400"
+                                    : "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
+                                }`}
+                                title={trip.isLowFloor ? "此班次為低地板車" : "此班次非低地板車"}
+                              >
+                                {trip.isLowFloor ? "♿" : "🚫"}{" "}
+                                {trip.departureTime ? trip.departureTime.slice(0, 5) : `班次 ${tIdx + 1}`}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div>

@@ -6,6 +6,17 @@ export type TransitSystemType =
   | "rehab_bus"
   | "accessible_taxi";
 
+// One sample schedule/trip-level low-floor flag for a route (issue #467's
+// "可以看到某條路線某個班次是否為低地板車" requirement) — sourced from TDX's
+// GET /v3/Bus/Schedule/City/{City}, whose Timetable entries each carry their
+// own IsLowFloor. Only a small sample (see buildSampleTrips() in
+// busLowFloorMath.ts) is kept per route, not every scheduled trip.
+export interface AccessibleTransitRouteTrip {
+  tripId: string;
+  departureTime?: string | null;
+  isLowFloor: boolean;
+}
+
 export interface AccessibleTransitRoute {
   id?: number;
   county: string;
@@ -16,6 +27,12 @@ export interface AccessibleTransitRoute {
   isAllLowFloor: boolean;
   wheelchairSlots: number;
   description?: string | null;
+  // Present once this row comes from a real TDX Basic Bus sync rather than
+  // the hardcoded seed (lib/server/transit/data/transitSeed.ts).
+  source?: "seed" | "tdx_bus";
+  // Small sample of this route's schedule-level low-floor flags — only set
+  // for source: "tdx_bus" rows that had matching Schedule/City data.
+  sampleTrips?: AccessibleTransitRouteTrip[];
 }
 
 // One TDX Senior/Rail facility detail (elevator/toilet/AED/etc.), kept
