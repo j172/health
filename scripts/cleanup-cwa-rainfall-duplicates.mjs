@@ -15,7 +15,7 @@
  * index scan before ranking by distance, confirmed fast (~0.2s) by EXPLAIN.
  * This cleanup is preventive maintenance (reclaim space, stop relying on the
  * optimizer's luck), not an emergency fix. See
- * docs/specs/cwa-rainfall-duplicate-row-cleanup.md.
+ * docs/archive/specs/cwa-rainfall-duplicate-row-cleanup.md.
  *
  * This script keeps only the newest obs_time row per station_id (no
  * dataset_id column on this table, unlike cwa_station_weather) and deletes

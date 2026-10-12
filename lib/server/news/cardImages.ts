@@ -243,7 +243,7 @@ const loadCandidatesForProviderTerm = async (
 /**
  * Narrows assignment to articles created within the last N hours.
  *
- * docs/specs/recent-news-image-backfill.md: an operator tool for improving
+ * docs/archive/specs/recent-news-image-backfill.md: an operator tool for improving
  * images on newly-ingested articles "without touching the historical backlog".
  * Accepts only finite whole numbers in the inclusive range 1-168; anything else
  * is treated as absent.
@@ -444,7 +444,7 @@ export const assignMissingNewsCardImages = async (
               candidate.provider,
               candidate.id,
               // Legacy pixabay_id column stays populated for Pixabay rows
-              // only (see docs/specs/news-card-image-multi-provider-fallback.md
+              // only (see docs/archive/specs/news-card-image-multi-provider-fallback.md
               // section 4) — it's now nullable so Pexels/Unsplash rows can
               // simply omit it rather than needing a sentinel value.
               candidate.provider === "pixabay" ? Number(candidate.id) : null,
@@ -468,7 +468,7 @@ export const assignMissingNewsCardImages = async (
           recentUsedPaths.add(downloaded.localPath);
           await recordProviderSuccess(conn, cooldownState, provider.name);
           summary.assigned += 1;
-          // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+          // See docs/archive/specs/news-article-jsonld-stale-fallback-image.md — refresh
           // the article's ISR cache now instead of waiting on organic traffic.
           revalidateArticlePath(news.id);
           return "assigned";
@@ -521,7 +521,7 @@ export const assignMissingNewsCardImages = async (
       if (configuredProviders.length > 0) {
         termLoop: for (const term of termsToTry) {
           // Pixabay → Pexels → Unsplash, skipping any provider currently in
-          // cooldown (see docs/specs/news-card-image-multi-provider-fallback.md
+          // cooldown (see docs/archive/specs/news-card-image-multi-provider-fallback.md
           // section 1) — one provider being rate-limited or unconfigured no
           // longer stalls articles the other two can still serve.
           for (const provider of configuredProviders) {
@@ -547,7 +547,7 @@ export const assignMissingNewsCardImages = async (
           if (archivedAssigned) {
             assignedThisNews = true;
             summary.assigned += 1;
-            // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+            // See docs/archive/specs/news-article-jsonld-stale-fallback-image.md — refresh
             // the article's ISR cache now instead of waiting on organic traffic.
             revalidateArticlePath(news.id);
           }
@@ -604,7 +604,7 @@ export const assignMissingNewsCardImages = async (
             if (mapAssigned) {
               assignedThisNews = true;
               summary.assigned += 1;
-              // See docs/specs/news-article-jsonld-stale-fallback-image.md — refresh
+              // See docs/archive/specs/news-article-jsonld-stale-fallback-image.md — refresh
               // the article's ISR cache now instead of waiting on organic traffic.
               revalidateArticlePath(news.id);
             }

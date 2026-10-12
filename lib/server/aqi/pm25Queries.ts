@@ -15,7 +15,7 @@ export interface Pm25ReadingRow {
 
 /**
  * Upserts the latest reading per site, keyed by site_name (see
- * docs/specs/aqi-pm25-narrow-unique-key-migration.md). The AQX_P_02 payload
+ * docs/archive/specs/aqi-pm25-narrow-unique-key-migration.md). The AQX_P_02 payload
  * carries no coordinates of its own — this shares the same ~79-station
  * network as aqi_readings (AQX_P_432), so lat/lng is resolved by matching
  * (site_name, county) against that table and stored here directly (avoids a

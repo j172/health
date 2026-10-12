@@ -4,7 +4,7 @@
  * Taiwan open-data geospatial datasets (preschools, hospitals/clinics, pharmacies),
  * plus two cross-match backfills against those same already-downloaded
  * datasets for sibling sources that carry a matchable code or name+address
- * but no coordinates of their own (see docs/specs/geocode-opendata-coverage-gap-research.md
+ * but no coordinates of their own (see docs/archive/specs/geocode-opendata-coverage-gap-research.md
  * §4, items 2-3):
  *   - mol_labor_checkup (勞工健檢機構): its 醫療機構代碼 is the same NHI
  *     institution-code format already indexed for nhi_hospital below.
@@ -260,7 +260,7 @@ async function backfillHospitals({ codeMap, nameAddrMap }) {
 // 2b. Backfill Labor Health-Check Facilities (mol_labor_checkup) — cross-match
 // against the same NHI hospitals.json codeMap loaded for backfillHospitals,
 // since 醫療機構代碼/醫事機構代碼 are the same institution-code standard (see
-// docs/specs/geocode-opendata-coverage-gap-research.md #15). No new external
+// docs/archive/specs/geocode-opendata-coverage-gap-research.md #15). No new external
 // dataset — reuses the index the caller already fetched.
 async function backfillMolLaborCheckup({ codeMap, nameAddrMap }) {
   console.log("=================================================");

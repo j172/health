@@ -3,7 +3,7 @@
  * Deterministic assertion tests for the geocode batch job's pure logic
  * (address normalization, Taiwan bounding box, budget/circuit-breaker
  * arithmetic, dedup, priority-source list shape). No test framework — this
- * repo has none (see docs/specs/phase9-opencage-geocode-batch.md's
+ * repo has none (see docs/archive/specs/phase9-opencage-geocode-batch.md's
  * acceptance criteria discussion) — plain node:assert, run directly:
  *   node scripts/test-geocode-batch.mjs
  * Network-calling code (queryOpenCage/queryNominatim's HTTP paths,

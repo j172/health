@@ -10,7 +10,7 @@
  * ORDER BY can't use any index against a table this size (EXPLAIN showed
  * type=ALL + Using filesort, ~812k rows scanned) — this is what took down
  * every DB-backed API route on 2026-09-21 (see
- * docs/specs/cwa-station-weather-duplicate-row-cleanup.md).
+ * docs/archive/specs/cwa-station-weather-duplicate-row-cleanup.md).
  *
  * This script keeps only the newest obs_time row per (dataset_id, station_id)
  * and deletes the rest, in small batches to avoid holding a long lock on a

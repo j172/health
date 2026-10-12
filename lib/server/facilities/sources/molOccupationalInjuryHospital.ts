@@ -19,7 +19,7 @@ interface MolOccupationalRaw {
 }
 
 // Critical-field schema for the raw rows. `sourceId` (see
-// docs/specs/mol-occupational-injury-source-id-migration.md — the original
+// docs/archive/specs/mol-occupational-injury-source-id-migration.md — the original
 // incident this validation exists to catch a recurrence of) is derived from
 // 醫療機構名稱/地址/直轄市或省轄縣市, so those three are validated for
 // presence+type here; the rest (phone/contact fields) aren't identity-

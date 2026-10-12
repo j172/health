@@ -193,7 +193,7 @@ const runSchemaMigrations = async (): Promise<void> => {
   // news_card_images was originally Pixabay-only (pixabay_id BIGINT NOT NULL
   // UNIQUE, see TABLE_DDL.newsCardImages above, deliberately left as-is).
   // Generalizing to the Pixabay/Pexels/Unsplash provider chain (see
-  // docs/specs/news-card-image-multi-provider-fallback.md section 4) adds a
+  // docs/archive/specs/news-card-image-multi-provider-fallback.md section 4) adds a
   // provider + provider_image_id pair without dropping/renaming pixabay_id,
   // so existing production rows are untouched.
   await p.query(`

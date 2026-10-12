@@ -2,7 +2,7 @@
  * Controlled recent-news card-image backfill.
  *
  * Implements the "Controlled batch runner" section of
- * docs/specs/recent-news-image-backfill.md. Every bound in here is from that
+ * docs/archive/specs/recent-news-image-backfill.md. Every bound in here is from that
  * spec, and the point of the script is that it cannot be talked into a bigger
  * run: it never clears caches, never reassigns existing images, never touches
  * the historical backlog, and always stops after MAX_ROUNDS.

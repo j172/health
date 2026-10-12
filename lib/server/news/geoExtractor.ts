@@ -184,7 +184,7 @@ export async function extractLocationFromText(
   // matched, so an article carrying the CWA's inline SVG map of Taiwan (every
   // township name present, see fetchDetailPage.ts) was always badged
   // TAIWAN_DISTRICT_COORDINATES[0] = 台北市中正區 — 5 of 7 district badges in a
-  // 51-badge live sample. See docs/specs/news-landmark-saturation-guard.md.
+  // 51-badge live sample. See docs/archive/specs/news-landmark-saturation-guard.md.
   const area = resolveAdministrativeArea(combinedText);
   if (area.kind === "match") {
     return {

@@ -21,7 +21,7 @@ export interface AqiReadingRow {
   recorded_at: Date;
 }
 
-/** Upserts the latest snapshot per site, keyed by site_id — a genuinely new recorded_at overwrites the previous row in place rather than accumulating a new one (see docs/specs/aqi-pm25-narrow-unique-key-migration.md). */
+/** Upserts the latest snapshot per site, keyed by site_id — a genuinely new recorded_at overwrites the previous row in place rather than accumulating a new one (see docs/archive/specs/aqi-pm25-narrow-unique-key-migration.md). */
 export const upsertAqiReadings = async (
   sites: AqiSiteSnapshot[],
 ): Promise<{ inserted: number; updated: number }> =>

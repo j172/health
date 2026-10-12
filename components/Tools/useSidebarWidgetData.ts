@@ -56,7 +56,7 @@ export interface UseSidebarWidgetDataOptions<T> {
 
 /**
  * Shared fetch/state hook for the News sidebar widgets (see
- * docs/specs/sidebar-widgets-unified-error-state-refactor.md). Centralizes
+ * docs/archive/specs/sidebar-widgets-unified-error-state-refactor.md). Centralizes
  * the four things every widget used to reimplement slightly differently:
  *
  *   - `fetchWithTimeout` wrapping (every widget now has a timeout, not just

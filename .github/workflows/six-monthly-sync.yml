@@ -18,7 +18,7 @@ on:
   schedule:
     # ~03:00 Taipei time on Jan 2 and Jul 2 (cron is UTC).
     #
-    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): moved
+    # 2026-09-20 (#336, docs/archive/specs/github-actions-cron-decollision.md): moved
     # minute 0 → 45. This workflow fires only twice a year, but minute 0 is
     # also facilities-geocode-batch.yml's own every-30-minute mark, so any
     # year this and Jan 1/Jul 1 19:00 UTC line up would have been a direct

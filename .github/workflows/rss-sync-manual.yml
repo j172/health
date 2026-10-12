@@ -6,7 +6,7 @@ on:
     # Runs every 30 minutes as an external heartbeat to guarantee news ingestion
     # even if in-app node-cron experiences transient host PM2 restarts.
     #
-    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md):
+    # 2026-09-20 (#336, docs/archive/specs/github-actions-cron-decollision.md):
     # re-staggered from :18/:48 to :20/:50. The old offset still landed
     # within a 10-minute window of the other SSH-connecting hourly workflows
     # once GitHub Actions' 5-15 minute schedule jitter was accounted for, and

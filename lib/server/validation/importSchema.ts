@@ -7,9 +7,9 @@ import type { z } from "zod";
  * to build `sourceId`/identity keys and the fields downstream code reads
  * unconditionally). This exists because this site has repeatedly been
  * burned by upstream datasets silently renaming or dropping a column (see
- * `docs/specs/mol-occupational-injury-source-id-migration.md`,
- * `docs/specs/drug-label-source-blocked.md`,
- * `docs/specs/fix-facility-cross-county-coordinate-mismatch.md`) with no
+ * `docs/archive/specs/mol-occupational-injury-source-id-migration.md`,
+ * `docs/archive/specs/drug-label-source-blocked.md`,
+ * `docs/archive/specs/fix-facility-cross-county-coordinate-mismatch.md`) with no
  * warning beyond bad data quietly landing in MySQL.
  *
  * Design choice: critical-field schemas should type each field as

@@ -44,7 +44,7 @@ interface DbFacilityRow extends RowDataPacket {
 }
 
 // alerts/stationMaps/transfers carry rail_system + station_id but no county
-// or system_type column of their own (see docs/specs/
+// or system_type column of their own (see docs/archive/specs/
 // tdx-senior-rail-accessibility-upgrade.md section 3.2-3.4's literal DDL) —
 // the county/systemType filters below recover both by joining each row back
 // to the accessible_transit_facilities row the same sync run wrote for that

@@ -11,7 +11,7 @@
  * this still runs as a standalone script rather than a registered
  * lib/server/facilities/sources/*.ts fetcher purely to keep this small,
  * rarely-changing two-CSV source simple and self-contained, matching the
- * MOHW scripts' shape as directed by docs/specs/phase2-disability-accessible-atm.md.
+ * MOHW scripts' shape as directed by docs/archive/specs/phase2-disability-accessible-atm.md.
  *
  * Merge key: the spec's "join by 代號 (branch code) alone" turned out not to
  * hold — 代號 identifies the credit union, not the individual ATM location;

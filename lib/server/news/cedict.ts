@@ -8,7 +8,7 @@ import "server-only";
  * no per-article cost — a title that doesn't match any KEYWORD_TERMS pattern
  * gets a real, specific search term instead of immediately falling into the
  * same 3 overused generic terms that exhaust their provider candidate pools
- * under heavy backfill (see docs/specs/news-card-image-freshness-scheduling.md).
+ * under heavy backfill (see docs/archive/specs/news-card-image-freshness-scheduling.md).
  *
  * data/cedict-terms.json is a prebuilt { traditionalWord: englishGloss } map
  * generated from CC-CEDICT by scripts/build-cedict-terms.mjs (see that

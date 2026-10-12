@@ -8,7 +8,7 @@
  * recorded_at INSERTs a new row instead of overwriting the old one.
  * Confirmed on production 2026-09-22: aqi_readings 93,744 rows / 84 sites,
  * pm25_readings 102,760 rows / 80 sites. See
- * docs/specs/aqi-pm25-narrow-unique-key-migration.md.
+ * docs/archive/specs/aqi-pm25-narrow-unique-key-migration.md.
  *
  * Keeps only the newest recorded_at row per site (site_id for aqi_readings,
  * site_name for pm25_readings) and deletes the rest, in small batches. No

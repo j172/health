@@ -4,7 +4,7 @@ import { getTdxToken } from "@/lib/server/tdx/auth";
 
 /**
  * Base paths for TDX's "Senior" (樂齡/敬老) Tourism + SeniorCard APIs — issue
- * #436 / docs/specs/tdx-senior-tourism-and-card-new-tool.md section 2.
+ * #436 / docs/archive/specs/tdx-senior-tourism-and-card-new-tool.md section 2.
  *
  * ⚠️ UNVERIFIED, same risk as lib/server/transit/tdxSeniorClient.ts's
  * `SENIOR_RAIL_BASE` (issue #434): that file documents 10+ base-path variants

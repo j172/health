@@ -12,7 +12,7 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
  * label, color, and body content.
  *
  * The load-failed state is deliberately distinct from the empty state (see
- * docs/specs/sidebar-widgets-unified-error-state-refactor.md) — a fetch
+ * docs/archive/specs/sidebar-widgets-unified-error-state-refactor.md) — a fetch
  * timeout/500/network error used to collapse into the exact same "暫無資料"
  * copy as a genuine "nothing today", leaving no way for a user (or a
  * developer without console access) to tell the two apart.

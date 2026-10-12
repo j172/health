@@ -4,7 +4,7 @@ import { getTdxToken } from "@/lib/server/tdx/auth";
 import { TAIWAN_COUNTIES } from "@/lib/constants/taiwanDistricts";
 
 /**
- * The 10 TDX Senior/Rail RailSystem codes (issue #434 / docs/specs/
+ * The 10 TDX Senior/Rail RailSystem codes (issue #434 / docs/archive/specs/
  * tdx-senior-rail-accessibility-upgrade.md section 2): 臺鐵、高鐵、四個都會捷運、
  * 兩個輕軌系統、新北捷運與臺北捷運。
  */

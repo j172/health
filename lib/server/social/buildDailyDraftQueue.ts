@@ -47,7 +47,7 @@ export interface DailyDraftQueueSummary {
 /**
  * Selects up to `maxItems` eligible, not-yet-queued government news items
  * (newest first) and inserts one social_post_queue draft row per platform
- * for each — see docs/specs/social-icons-and-post-drafts.md section 2.
+ * for each — see docs/archive/specs/social-icons-and-post-drafts.md section 2.
  * The INNER JOIN onto news_card_images means items without a card image yet
  * are invisible to this query entirely, so the newest *imaged* qualifying
  * item is always picked next rather than ever waiting on one to gain an

@@ -5,7 +5,7 @@ import type { RailSystem } from "./railStationCounty";
 
 /**
  * Base path for TDX's "Senior" (樂齡/敬老) Rail accessibility APIs — issue
- * #434 / docs/specs/tdx-senior-rail-accessibility-upgrade.md section 2.
+ * #434 / docs/archive/specs/tdx-senior-rail-accessibility-upgrade.md section 2.
  *
  * ⚠️ UNVERIFIED: this is the spec's documented best guess
  * (`/api/advanced/v1/Senior/Rail/...`, inferred from the swagger UI showing

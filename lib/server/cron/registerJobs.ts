@@ -58,7 +58,7 @@ const appendLog = async (fileName: string, line: unknown): Promise<void> => {
  * Names of jobs currently mid-run, shared across every runGuarded() closure
  * — lets memory-monitor.log show not just "how much memory did this one job
  * use" but "were N jobs overlapping when memory spiked", since this process
- * runs 25+ of these on a shared 768MB heap (see docs/specs/
+ * runs 25+ of these on a shared 768MB heap (see docs/archive/specs/
  * cron-memory-monitoring.md, opened after a WASM OOM crash loop whose exact
  * memory-pressure source was never pinned down).
  */
@@ -172,8 +172,8 @@ export const runGuarded = (
 /**
  * Registers the in-process sync jobs. The first four used to be driven by
  * system crontab entries hitting Next.js API routes over an HTTP loopback
- * call (see docs/specs/in-app-cron-scheduler.md); the social-post draft
- * queue job is new (docs/specs/social-icons-and-post-drafts.md) but follows
+ * call (see docs/archive/specs/in-app-cron-scheduler.md); the social-post draft
+ * queue job is new (docs/archive/specs/social-icons-and-post-drafts.md) but follows
  * the exact same in-process pattern. Called once from instrumentation.ts.
  * Each job is a direct, in-process function call — no HTTP, no secret
  * headers — since there is no longer an external caller to authenticate.
@@ -199,13 +199,13 @@ export const registerCronJobs = (): void => {
   );
   // Once daily — no specific business requirement on exact hour, 8am
   // server-local keeps it clear of the denser :00-ish traffic from the jobs
-  // above. See docs/specs/social-icons-and-post-drafts.md section 2.3.
+  // above. See docs/archive/specs/social-icons-and-post-drafts.md section 2.3.
   cron.schedule(
     "0 8 * * *",
     runGuarded("social-post-queue-cron.log", () => buildDailyDraftQueue()),
   );
   // The WRA drought source was removed on 2026-08-31 — see
-  // docs/specs/drop-wra-drought-source.md. It used to be excluded from this
+  // docs/archive/specs/drop-wra-drought-source.md. It used to be excluded from this
   // scheduler because opendata.wra.gov.tw answers this host with an F5 Shape
   // challenge rather than JSON, so it ran from a GitHub runner instead. It was
   // dropped for a different reason: the source is a historical bulletin log
@@ -217,7 +217,7 @@ export const registerCronJobs = (): void => {
     runGuarded("facilities-hours-sync-cron.log", () => runFacilityHoursSync()),
   );
   // Every 10 minutes — decoupled from rss-sync (see
-  // docs/specs/news-card-image-freshness-scheduling.md) so Pixabay
+  // docs/archive/specs/news-card-image-freshness-scheduling.md) so Pixabay
   // assignment cadence isn't limited by rss-sync's own overlap guard.
   // assignMissingNewsCardImages() already takes out its own MySQL GET_LOCK
   // (news_card_image_assignment_lock), so this is safe to run alongside any
@@ -258,7 +258,7 @@ export const registerCronJobs = (): void => {
   );
   // WRA water outages sync (wra_water_outages, the table /tools/water-outages
   // actually reads) — issue #337 /
-  // docs/specs/water-outages-live-ingestion-gap.md: this table had NO
+  // docs/archive/specs/water-outages-live-ingestion-gap.md: this table had NO
   // ingestion anywhere in the repo, so the page always fell back to
   // WATER_OUTAGES_SEED. Every hour, offset from the legacy water-outages-cron
   // job's :25 (see above) at :18/:48 — not on any other hourly job's exact

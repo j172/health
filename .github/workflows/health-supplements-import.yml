@@ -6,7 +6,7 @@ on:
     # TFDA's own data.gov.tw/dataset/6951 listing states this dataset
     # updates every 3 months, i.e. more often than the six-monthly-sync.yml
     # cadence this used to depend on (Jan 1 / Jul 1) — see #252 and
-    # docs/specs/scheduling-health-audit-20260914.md. Runs quarterly on the
+    # docs/archive/specs/scheduling-health-audit-20260914.md. Runs quarterly on the
     # 15th (Jan/Apr/Jul/Oct) at 05:17 UTC:
     #  - Day 15, not day 1, so it never lands on six-monthly-sync.yml's own
     #    Jan 1 / Jul 1 schedule ("0 19 1 1,7 *") — that workflow also runs
@@ -21,7 +21,7 @@ on:
     #    4 days a year so collision odds are already low, but keeping it off
     #    those grid points costs nothing.
     #
-    #    2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md):
+    #    2026-09-20 (#336, docs/archive/specs/github-actions-cron-decollision.md):
     #    the old :17 was only checked against facilities-geocode-batch's
     #    :00/:30 grid and ended up just 1 minute from rss-sync-manual's old
     #    :18 mark. Moved to :15 — the midpoint between news-og-backfill's

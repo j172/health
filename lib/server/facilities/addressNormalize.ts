@@ -1,6 +1,6 @@
 /**
  * Address normalization for the unified geocode batch job (see
- * docs/specs/phase9-opencage-geocode-batch.md, "Before querying, normalize a
+ * docs/archive/specs/phase9-opencage-geocode-batch.md, "Before querying, normalize a
  * copy of each address"). Produces a *query* string — the source `address`
  * column itself is never overwritten, this is only what gets sent to
  * OpenCage/Nominatim and used as the batch-local dedup key (see

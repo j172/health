@@ -539,7 +539,7 @@ export interface HeritageMapData {
  * across both categories — small enough to fetch in one shot; the frontend
  * filters by category client-side via the layer toggle checkboxes). Rows with
  * NULL longitude/latitude are excluded here — they still exist in the table
- * but are never plottable, per docs/specs/heritage-assets-map.md. */
+ * but are never plottable, per docs/archive/specs/heritage-assets-map.md. */
 export async function getHeritageMapData(): Promise<HeritageMapData> {
   return withConnectionFallback({ points: [], updatedAt: null }, async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(

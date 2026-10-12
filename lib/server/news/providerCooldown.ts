@@ -5,7 +5,7 @@ import { utcNowSql } from "@/lib/server/db/mysql";
 
 /**
  * DB-backed escalating backoff per image provider — see
- * docs/specs/news-card-image-multi-provider-fallback.md section 2. Kept
+ * docs/archive/specs/news-card-image-multi-provider-fallback.md section 2. Kept
  * separate from lib/server/news/imageProviders.ts (which only knows how to
  * talk to each provider's API) and lib/server/news/cardImages.ts (which
  * orchestrates the per-article assignment loop); this module owns just the

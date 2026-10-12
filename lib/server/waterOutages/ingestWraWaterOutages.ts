@@ -5,7 +5,7 @@ import { parseWraCsv } from "@/lib/server/water/wraCsvParser";
 
 // Same endpoint the legacy `water_outages` pipeline
 // (lib/server/water/ingestWaterOutages.ts) already polls successfully — see
-// docs/specs/water-outages-live-ingestion-gap.md. This is the ingestion the
+// docs/archive/specs/water-outages-live-ingestion-gap.md. This is the ingestion the
 // `/tools/water-outages` page (table `wra_water_outages`) never had: without
 // it that table stays empty forever and every request falls back to
 // WATER_OUTAGES_SEED.

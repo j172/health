@@ -28,7 +28,7 @@ on:
     # duration, without touching the shared group itself (see the group
     # comment below for why it must stay shared).
     #
-    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): :45
+    # 2026-09-20 (#336, docs/archive/specs/github-actions-cron-decollision.md): :45
     # was originally chosen only against facilities-geocode-batch.yml's
     # :00/:30 grid and happened to land just 3 minutes from
     # rss-sync-manual.yml's old :48 mark — an accidental near-collision that

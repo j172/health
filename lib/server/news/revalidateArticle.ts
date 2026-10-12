@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
  * Best-effort on-demand ISR revalidation for a news article page, called by
  * the image-backfill pipelines immediately after they successfully attach a
  * real photo to an article. Fixes the root cause documented in
- * docs/specs/news-article-jsonld-stale-fallback-image.md: `/news/<id>`'s
+ * docs/archive/specs/news-article-jsonld-stale-fallback-image.md: `/news/<id>`'s
  * `revalidate = 60` ISR cache only refreshes on the next visit, and a
  * low-traffic article that got the generic per-source fallback image baked
  * into its metadata on first render could otherwise carry that stale

@@ -117,7 +117,7 @@ test("Catalog & Spec: catalog.ts and SPECIFICATION.md register child-native-lang
   assert.ok(catalogContent.includes('group: "child-welfare"'), "Must belong to child-welfare");
   assert.ok(catalogContent.includes('title: "兒少本土語言辭典（閩南語／客語）"'), "Must have correct title");
 
-  const specPath = path.join(ROOT_DIR, "docs", "SPECIFICATION.md");
+  const specPath = path.join(ROOT_DIR, "docs", "archive", "SPECIFICATION.md");
   const specContent = fs.readFileSync(specPath, "utf-8");
   // issue #256 reclassified 7 groups → 9 and merged 5 tool families (67 → 60
   // tools); SPECIFICATION.md §5.2 now documents per-group counts in a table

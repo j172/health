@@ -22,7 +22,7 @@ import { loadRotatedSources, saveRotationCursor } from "@/lib/server/facilities/
 
 /**
  * Unified, budget-aware geocode batch runner for all 16 facility sources
- * (see docs/specs/phase9-opencage-geocode-batch.md — originally scoped to
+ * (see docs/archive/specs/phase9-opencage-geocode-batch.md — originally scoped to
  * green shops only, widened to cover every source with one shared daily
  * budget since OpenCage/Nominatim's rate limits are account-level, not
  * per-source). Replaces ad-hoc per-source calls to

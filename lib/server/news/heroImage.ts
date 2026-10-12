@@ -16,7 +16,7 @@ export interface ResolvedHeroImage {
    * Photographer/source-page credit for a stock-photo hero (Pixabay/Pexels/
    * Unsplash/Flickr) — required by Unsplash's API Guidelines whenever one of their
    * photos is displayed, and applied to all providers for consistency
-   * (see docs/specs/news-card-image-multi-provider-fallback.md section 3).
+   * (see docs/archive/specs/news-card-image-multi-provider-fallback.md section 3).
    */
   attribution: HeroImageAttribution | null;
 }

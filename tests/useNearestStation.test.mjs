@@ -9,7 +9,7 @@ import http from "node:http";
 // (this .mjs test runner has no React renderer / TS-JSX loader wired up).
 //
 // This file specifically targets the regression described in
-// docs/specs/sidebar-widgets-unified-error-state-refactor.md §1 item 2:
+// docs/archive/specs/sidebar-widgets-unified-error-state-refactor.md §1 item 2:
 // useNearestStation used to unconditionally run
 // `setResolved({ lat, lng, station: null })` on ANY fetch failure —
 // including a refresh failure after a station had already been resolved
