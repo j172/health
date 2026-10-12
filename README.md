@@ -79,7 +79,7 @@
    - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-9-款)
    - [D. 婦幼兒少與家庭生活](#d-婦幼兒少與家庭生活服務-10-款)
    - [E. 即時環境與災害觀測](#e-即時環境與公衛災害觀測-13-款)
-   - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-14-款)
+   - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-13-款)
    - [G. 文化休閒與毛孩生活](#g-文化展演休閒與毛孩生活-8-款)
 4. [高防禦性系統工程與架構設計](#-高防禦性系統工程與架構設計)
 5. [雙軌定時排程矩陣 (Dual-Track Cron)](#-雙軌定時排程矩陣-dual-track-cron)
@@ -225,14 +225,13 @@ flowchart TD
 | **國際旅遊公衛與疫情警示** | [`/tools/travel-epidemic-alerts`](https://health.j172.tw/tools/travel-epidemic-alerts) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級） |
 | **農藥殘留檢驗合格販售站** | [`/tools/pesticide-sales`](https://health.j172.tw/tools/pesticide-sales) | 農業部農業藥物毒物試驗所 | 合法登記農藥販賣商與管理人員證照查詢 |
 
-### F. 交通能源與綠色永續生活 (14 款)
+### F. 交通能源與綠色永續生活 (13 款)
 
 | 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
 |---|---|---|---|
 | **YouBike 公共自行車即時車況** | [`/tools/youbike`](https://health.j172.tw/tools/youbike) | 交通部 TDX 運輸資料流通平臺 | 全國 5000+ 租借站可借車輛與可還空位即時更新 |
 | **臺電全臺發電結構即時儀表板** | [`/tools/power-grid-overview`](https://health.j172.tw/tools/power-grid-overview) | 台灣電力公司電力調度數據 | 燃煤、燃氣、核能、太陽能、風力即時發電佔比 |
-| **台灣中油即時油價與預估** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油價格與下週油價浮動走勢預估 |
-| **中油直營與加盟加油站地圖** | [`/tools/cpc-stations`](https://health.j172.tw/tools/cpc-stations) | 台灣中油股份有限公司 | 自助加油、洗車、充電樁與無障礙廁所設備篩選 |
+| **台灣中油油價查詢與加油站服務地圖** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油牌價走勢與全臺加油站洗車、充電樁等 20 項服務篩選（雙分頁） |
 | **大眾捷運即時營運事件警示** | [`/tools/metro-alerts`](https://health.j172.tw/tools/metro-alerts) | 北捷 / 高捷 / 桃捷 / 中捷 | 各線捷運設備異常、延誤、故障告警資訊 |
 | **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車、輪椅接駁客運班次路線總覽 |
 | **全國優良環境公廁地圖** | [`/tools/public-toilets`](https://health.j172.tw/tools/public-toilets) | 環境部公共設施清冊 | 親子廁所、無障礙廁所、性別友善廁所定位 |

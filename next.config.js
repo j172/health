@@ -153,6 +153,16 @@ const nextConfig = {
         destination: "/tools/green-certifications?tab=green-shops",
         permanent: true,
       },
+      // issue #483 (2.0 §D merge item M3) — "/tools/cpc-stations" (中油加油站
+      // 服務據點地圖) merged into "/tools/cpc-prices" as its "附近加油站" tab;
+      // the old page both fetched and rendered genuinely different content
+      // from cpc-prices (not a duplicate-data retirement like M1/M2), so this
+      // 301 carries `?tab=stations` to land directly on the matching tab.
+      {
+        source: "/tools/cpc-stations",
+        destination: "/tools/cpc-prices?tab=stations",
+        permanent: true,
+      },
     ];
   },
 };
