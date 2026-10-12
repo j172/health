@@ -1,36 +1,27 @@
 import "server-only";
 import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { TDX_SENIORS_API_BASE } from "@/lib/server/tdx/seniors";
 
 /**
  * Base paths for TDX's "Senior" (樂齡/敬老) Tourism + SeniorCard APIs — issue
  * #436 / docs/archive/specs/tdx-senior-tourism-and-card-new-tool.md section 2.
  *
- * ⚠️ UNVERIFIED, same risk as lib/server/transit/tdxSeniorClient.ts's
- * `SENIOR_RAIL_BASE` (issue #434): that file documents 10+ base-path variants
- * for TDX's "Senior/Rail" sub-category that all returned 404 with a valid
- * OAuth2 token, and the real base path for the whole `Senior` category was
- * never confirmed. Tourism and SeniorCard are different sub-categories under
- * the same `Senior` category, so they almost certainly 404 the same way until
- * that base path is fixed. Rather than re-burn API calls re-discovering the
- * identical 404s, this reuses the exact same tier/version pattern
- * (`/api/advanced/v1/Senior/...`) Spec A settled on, with only the sub-path
- * changed (`Tourism/...`, `SeniorCard/...` instead of `Rail/...`). Every
- * fetch function below is wrapped by callers in try/catch (see runSync.ts)
- * so a continued 404 here degrades to an `errors[]` entry, never a crash —
- * ensureSeniorFriendlySeeded() in queries.ts keeps the page non-empty via
- * seed data in the meantime. Once the real base path is confirmed, both
- * constants below are the only lines that need to change.
+ * Shares the confirmed `seniors` service-category base with the Rail client
+ * (lib/server/tdx/seniors.ts). Every fetch below is still wrapped by callers
+ * in try/catch (runSync.ts), and ensureSeniorFriendlySeeded() keeps the page
+ * non-empty via seed data if a sync fails.
  */
-const SENIOR_TOURISM_BASE = "https://tdx.transportdata.tw/api/advanced/v1/Senior/Tourism";
-const SENIOR_CARD_BASE = "https://tdx.transportdata.tw/api/advanced/v1/Senior/SeniorCard";
+const SENIOR_TOURISM_BASE = `${TDX_SENIORS_API_BASE}/Tourism`;
+const SENIOR_CARD_BASE = `${TDX_SENIORS_API_BASE}/SeniorCard`;
 
 export interface TourismFacilityItem {
   FacilityID?: string;
   FacilityName?: string;
   BuildingName?: string;
-  PositionLon?: number;
-  PositionLat?: number;
+  /** Typed `string` in TDX's OpenAPI document — coerce with parseTdxCoordinate(). */
+  PositionLon?: string | number;
+  PositionLat?: string | number;
   FloorLevel?: string;
   Description?: string;
 }
@@ -130,14 +121,11 @@ export const flattenTourismFacilityCategories = (
 /**
  * TDX CityCode (Tourism §2.1) / City (SeniorCard §2.2) → this repo's
  * canonical Traditional-Chinese county name (lib/constants/taiwanDistricts.ts
- * TAIWAN_COUNTIES). The spec's only confirmed example (`NAN` = 南投縣)
- * matches between the two APIs, and TDX's advanced-tier "Senior" category
- * conventionally shares this 3-letter county abbreviation scheme across its
- * sub-APIs — but since both base paths are still 404ing (see the base-path
- * comment above), this mapping could not be verified against a live
- * response. Treat it as best-effort: unmapped codes fall back to the raw
- * code string rather than null so a sync run never silently drops a row for
- * want of a county match.
+ * TAIWAN_COUNTIES). The 22 keys match, code for code, the `City` path
+ * parameter enum in TDX's Senior OpenAPI document (confirmed 2026-10-12).
+ * Tourism's free-form `CityCode` field has no enum in that document, so
+ * unmapped codes still fall back to the raw code string rather than null —
+ * a sync run never silently drops a row for want of a county match.
  */
 export const SENIOR_CITY_CODE_TO_COUNTY: Record<string, string> = {
   TPE: "臺北市",
