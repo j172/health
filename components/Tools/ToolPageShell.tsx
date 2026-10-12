@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
-import { getRelatedTools, getToolCategoryLink } from "@/lib/server/tools/navModel";
+import { getGuidesForTool, getRelatedTools, getToolCategoryLink } from "@/lib/server/tools/navModel";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { TOOL_MEDICAL_DISCLAIMER } from "@/lib/server/content/toolLlmsPage";
 import { findRelatedNewsForTool } from "@/lib/server/content/relatedNewsForTool";
@@ -15,13 +15,27 @@ import { displayDate, toTaipei } from "@/lib/format/news";
  * - Composite MedicalWebPage/WebPage + WebApplication + FAQPage JSON-LD
  *   (the page type is MedicalWebPage by default, or WebPage for tools whose
  *   catalog entry opts out via `schemaType` — see ToolCatalogEntry, issue #136)
+ * - Related Tools Cross-linking ("下一步")
+ * - Related News Cross-linking
+ * - Life-situation Guide Cross-linking
  * - AEO Direct Answer Box (#aeo-direct-answer)
- * - Standard Semantic HTML Comparison/Reference Tables
- * - Calculation Formula & Evaluation Steps
- * - Scientific Basis & Official Citations
- * - Standard Medical Disclaimer
- * - Related Tools Cross-linking
- * - Structured FAQ Section
+ * - Calculation Formula & Evaluation Steps (collapsible)
+ * - Standard Semantic HTML Comparison/Reference Tables (collapsible)
+ * - Scientific Basis & Official Citations (collapsible)
+ * - Structured FAQ Section (collapsible)
+ * - Standard Medical Disclaimer (last)
+ *
+ * Section order (issue #471, reordered from the original tool-body →
+ * formulas/tables/basis/FAQ → related-tools layout): tool body first (so a
+ * mobile user sees the tool itself without scrolling past a wall of text),
+ * then "下一步" related tools, related news, the life-situation guide(s)
+ * this tool belongs to (via `getGuidesForTool`, issue #465's first UI
+ * consumer), then the AEO direct-answer box, then the four long-form
+ * reference sections — now native <details>/<summary> elements, collapsed
+ * by default but still fully present in the raw HTML (so the JSON-LD
+ * FAQPage/citations graph built below from the same catalog data is
+ * unaffected by the collapsed UI state) — and finally the medical
+ * disclaimer, always last.
  */
 export default async function ToolPageShell({
   slug,
@@ -55,6 +69,10 @@ export default async function ToolPageShell({
   // doc comment). Only computed when a catalog entry exists; an unknown
   // slug has no keywords to match against.
   const relatedNews = catalogEntry ? await findRelatedNewsForTool(catalogEntry) : [];
+  // Life-situation guides this tool belongs to (issue #465's getGuidesForTool,
+  // first consumed here per issue #471 — a pure reverse lookup over GUIDES,
+  // no DB involved, so it's safe to call unconditionally).
+  const guides = getGuidesForTool(slug);
 
   const toolGraph = catalogEntry ? buildToolGraphJsonLd(catalogEntry) : null;
   // Category breadcrumb level (issue #459): resolved from the catalog
@@ -126,127 +144,16 @@ export default async function ToolPageShell({
             </Suspense>
           </div>
 
-          {/* 💡 AEO Direct Answer Box (Featured Snippet Optimization) */}
-          {directAnswer ? (
-            <section
-              id="aeo-direct-answer"
-              className="mt-8 rounded-2xl border border-indigo-200/80 bg-indigo-50/60 p-5 text-sm leading-relaxed text-slate-800 shadow-xs dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-slate-200"
-              aria-labelledby="aeo-summary-heading"
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <h2 id="aeo-summary-heading" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
-                  <span>💡</span>
-                  <span>核心定義與重點快覽 (AEO Direct Answer)</span>
-                </h2>
-                <span className="font-mono text-[10px] text-slate-600">AI / Snippet Ready</span>
-              </div>
-              <p className="font-medium leading-relaxed">{directAnswer}</p>
-            </section>
-          ) : null}
-
-          {/* 📐 Calculation Formula & Step-by-Step Breakdown (if applicable) */}
-          {formula ? (
-            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="formula-heading">
-              <h2 id="formula-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <span>📐</span>
-                <span>計算公式與推算方法 (Formula & Calculation)</span>
-              </h2>
-              <div className="mt-3 rounded-xl bg-slate-100/80 p-3.5 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                {formula}
-              </div>
-            </section>
-          ) : null}
-
-          {/* 📊 Structured HTML Reference Table (AEO Table Snippet) */}
-          {referenceTable ? (
-            <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="reference-table-heading">
-              <div className="border-b border-slate-100 bg-slate-50/75 px-5 py-3.5 dark:border-slate-800 dark:bg-slate-850">
-                <h2 id="reference-table-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                  <span>📊</span>
-                  <span>{referenceTable.title || "標準對照與臨床指引表"}</span>
-                </h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-                  <thead className="bg-slate-100/60 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                    <tr>
-                      {referenceTable.headers.map((header, idx) => (
-                        <th key={idx} scope="col" className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {referenceTable.rows.map((row, rIdx) => (
-                      <tr key={rIdx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
-                        {row.map((cell, cIdx) => (
-                          <td key={cIdx} className="px-4 py-3 font-medium">
-                            {cell}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-          ) : null}
-
-          {/* 🔬 Scientific Basis & Guidelines (E-E-A-T Citations) */}
-          {scientificBasis.length > 0 ? (
-            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="scientific-basis-heading">
-              <h2 id="scientific-basis-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <span>🔬</span>
-                <span>科學依據與官方參考指引 (Authoritative Citations & Basis)</span>
-              </h2>
-              <ul className="mt-3 space-y-2 text-xs">
-                {scientificBasis.map((ref, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-slate-600 dark:text-slate-400">
-                    <span className="text-indigo-500 dark:text-indigo-400 mt-0.5">•</span>
-                    <div>
-                      {ref.url ? (
-                        <a
-                          href={appendOutboundUtm(ref.url, {
-                            medium: "scientific_basis",
-                            campaign: "tool_citations",
-                          })}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline dark:text-slate-200 dark:hover:text-indigo-400"
-                        >
-                          {ref.title}
-                        </a>
-                      ) : (
-                        <span className="font-semibold text-slate-800 dark:text-slate-200">{ref.title}</span>
-                      )}
-                      <span className="ml-1.5 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                        {ref.authority}
-                      </span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
-          {/* ⚕️ Standard Medical Disclaimer (E-E-A-T Trust) */}
-          <section className="mt-8 rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4 text-xs leading-relaxed text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
-            <p className="flex items-start gap-2">
-              <span className="text-base leading-none">⚕️</span>
-              <span>
-                <strong>醫療資訊免責聲明：</strong>
-                {TOOL_MEDICAL_DISCLAIMER}
-              </span>
-            </p>
-          </section>
-
-          {/* 🔗 Related Tools Recommendation Bar (Internal Linking Silo) */}
+          {/* 🔗 "下一步" Related Tools Recommendation Bar (Internal Linking
+              Silo) — issue #471: moved to immediately follow the tool body
+              itself, instead of sitting below the formulas/FAQ wall of text,
+              so a user who just finished using the tool sees where to go
+              next before anything else. */}
           {relatedTools.length > 0 ? (
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-tools-heading">
               <h2 id="related-tools-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>🔗</span>
-                <span>相關健康評估工具推薦</span>
+                <span>下一步：相關健康評估工具推薦</span>
               </h2>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {relatedTools.map((tool) => (
@@ -268,7 +175,10 @@ export default async function ToolPageShell({
           ) : null}
 
           {/* 📰 Related News Recommendation Bar (issue #462: Tools → News
-              cross-linking). No empty section when nothing matches. */}
+              cross-linking). No empty section when nothing matches. Issue
+              #471 moved this up to sit right after "下一步", ahead of the
+              now-collapsed formulas/reference-table/scientific-basis/FAQ
+              block. */}
           {relatedNews.length > 0 ? (
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-news-heading">
               <h2 id="related-news-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -295,27 +205,199 @@ export default async function ToolPageShell({
             </section>
           ) : null}
 
-          {/* ❓ Structured Frequently Asked Questions (FAQ Section) */}
-          {faqs.length > 0 ? (
-            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="tool-faq-heading">
-              <h2 id="tool-faq-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <span>❓</span>
-                <span>常見問題解答 (FAQ)</span>
+          {/* 🧭 Life-situation Guide(s) this tool belongs to (issue #465's
+              getGuidesForTool, first consumed here per issue #471). Renders
+              nothing when the tool isn't part of any of the 5 GUIDES. */}
+          {guides.length > 0 ? (
+            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-guides-heading">
+              <h2 id="related-guides-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>🧭</span>
+                <span>所屬生活情境指南</span>
               </h2>
-              <dl className="mt-4 space-y-4">
-                {faqs.map((faq) => (
-                  <div key={faq.question} className="rounded-xl bg-slate-50/75 p-4 dark:bg-slate-850">
-                    <dt className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                      Q: {faq.question}
-                    </dt>
-                    <dd className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                      A: {faq.answer}
-                    </dd>
-                  </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {guides.map((guide) => (
+                  <Link
+                    key={guide.slug}
+                    href={guide.href}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50/60 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition-all hover:border-indigo-200 hover:bg-indigo-50/40 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-850 dark:text-slate-300 dark:hover:border-indigo-900/50 dark:hover:bg-indigo-950/30 dark:hover:text-indigo-400"
+                  >
+                    {guide.title}
+                  </Link>
                 ))}
-              </dl>
+              </div>
             </section>
           ) : null}
+
+          {/* 💡 AEO Direct Answer Box (Featured Snippet Optimization) — kept
+              visible by default (not collapsed): it's a single short
+              paragraph, not the "wall of text" the mobile-first acceptance
+              criterion is about, and its #aeo-direct-answer id is referenced
+              by buildToolGraphJsonLd's `speakable.cssSelector`. */}
+          {directAnswer ? (
+            <section
+              id="aeo-direct-answer"
+              className="mt-8 rounded-2xl border border-indigo-200/80 bg-indigo-50/60 p-5 text-sm leading-relaxed text-slate-800 shadow-xs dark:border-indigo-900/50 dark:bg-indigo-950/40 dark:text-slate-200"
+              aria-labelledby="aeo-summary-heading"
+            >
+              <div className="mb-2 flex items-center justify-between">
+                <h2 id="aeo-summary-heading" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                  <span>💡</span>
+                  <span>核心定義與重點快覽 (AEO Direct Answer)</span>
+                </h2>
+                <span className="font-mono text-[10px] text-slate-600">AI / Snippet Ready</span>
+              </div>
+              <p className="font-medium leading-relaxed">{directAnswer}</p>
+            </section>
+          ) : null}
+
+          {/* 📐 Calculation Formula & Step-by-Step Breakdown (if applicable).
+              Issue #471: now a native <details>/<summary> element, collapsed
+              by default. The content stays in the page's raw HTML either
+              way — <details> only toggles visibility via the `open`
+              attribute/CSS, it never unmounts its children — so this has no
+              effect on the separate JSON-LD <script> tag above, which is
+              built straight from the catalog entry regardless of UI state. */}
+          {formula ? (
+            <details className="group mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-5 [&::-webkit-details-marker]:hidden">
+                <h2 id="formula-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <span>📐</span>
+                  <span>計算公式與推算方法 (Formula & Calculation)</span>
+                </h2>
+                <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
+              </summary>
+              <div className="border-t border-slate-100 px-5 pb-5 pt-4 dark:border-slate-800">
+                <div className="rounded-xl bg-slate-100/80 p-3.5 font-mono text-xs text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                  {formula}
+                </div>
+              </div>
+            </details>
+          ) : null}
+
+          {/* 📊 Structured HTML Reference Table (AEO Table Snippet). Issue
+              #471: collapsed by default via <details>/<summary>. */}
+          {referenceTable ? (
+            <details className="group mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-5 [&::-webkit-details-marker]:hidden">
+                <h2 id="reference-table-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <span>📊</span>
+                  <span>{referenceTable.title || "標準對照與臨床指引表"}</span>
+                </h2>
+                <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
+              </summary>
+              <div className="overflow-x-auto border-t border-slate-100 dark:border-slate-800">
+                <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+                  <thead className="bg-slate-100/60 text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                    <tr>
+                      {referenceTable.headers.map((header, idx) => (
+                        <th key={idx} scope="col" className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {referenceTable.rows.map((row, rIdx) => (
+                      <tr key={rIdx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                        {row.map((cell, cIdx) => (
+                          <td key={cIdx} className="px-4 py-3 font-medium">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          ) : null}
+
+          {/* 🔬 Scientific Basis & Guidelines (E-E-A-T Citations). Issue
+              #471: collapsed by default via <details>/<summary>. */}
+          {scientificBasis.length > 0 ? (
+            <details className="group mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-5 [&::-webkit-details-marker]:hidden">
+                <h2 id="scientific-basis-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <span>🔬</span>
+                  <span>科學依據與官方參考指引 (Authoritative Citations & Basis)</span>
+                </h2>
+                <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
+              </summary>
+              <div className="border-t border-slate-100 px-5 pb-5 pt-4 dark:border-slate-800">
+                <ul className="space-y-2 text-xs">
+                  {scientificBasis.map((ref, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-slate-600 dark:text-slate-400">
+                      <span className="text-indigo-500 dark:text-indigo-400 mt-0.5">•</span>
+                      <div>
+                        {ref.url ? (
+                          <a
+                            href={appendOutboundUtm(ref.url, {
+                              medium: "scientific_basis",
+                              campaign: "tool_citations",
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline dark:text-slate-200 dark:hover:text-indigo-400"
+                          >
+                            {ref.title}
+                          </a>
+                        ) : (
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">{ref.title}</span>
+                        )}
+                        <span className="ml-1.5 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                          {ref.authority}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          ) : null}
+
+          {/* ❓ Structured Frequently Asked Questions (FAQ Section). Issue
+              #471: collapsed by default via <details>/<summary>. The FAQPage
+              JSON-LD graph entry (built earlier in this component from the
+              same `faqs` array, independent of this markup) still reports
+              every question/answer in full regardless of this element's
+              open/closed state. */}
+          {faqs.length > 0 ? (
+            <details className="group mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-6 [&::-webkit-details-marker]:hidden">
+                <h2 id="tool-faq-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  <span>❓</span>
+                  <span>常見問題解答 (FAQ)</span>
+                </h2>
+                <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
+              </summary>
+              <div className="border-t border-slate-100 px-6 pb-6 pt-4 dark:border-slate-800">
+                <dl className="space-y-4">
+                  {faqs.map((faq) => (
+                    <div key={faq.question} className="rounded-xl bg-slate-50/75 p-4 dark:bg-slate-850">
+                      <dt className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                        Q: {faq.question}
+                      </dt>
+                      <dd className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        A: {faq.answer}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </details>
+          ) : null}
+
+          {/* ⚕️ Standard Medical Disclaimer (E-E-A-T Trust) — issue #471:
+              moved to be the very last section on the page. */}
+          <section className="mt-8 rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4 text-xs leading-relaxed text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+            <p className="flex items-start gap-2">
+              <span className="text-base leading-none">⚕️</span>
+              <span>
+                <strong>醫療資訊免責聲明：</strong>
+                {TOOL_MEDICAL_DISCLAIMER}
+              </span>
+            </p>
+          </section>
         </main>
 
         <StabloFooter />
