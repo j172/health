@@ -1,0 +1,52 @@
+name: Cloudflare zone config (plan)
+
+# Read-only half of the config-as-code flow for issue #454: diffs
+# config/cloudflare/zone-settings.json against the live Cloudflare zone and
+# prints the result as a job summary. This workflow NEVER applies anything —
+# see cloudflare-zone-apply.yml (workflow_dispatch + typed confirmation) for
+# the only path that can change the live zone, the same manual-only split
+# deploy-ftps.yml uses between build and deploy.
+#
+# Runs automatically whenever the settings file changes (so a PR shows the
+# plan before merge), and is also available on demand.
+
+on:
+  pull_request:
+    paths:
+      - "config/cloudflare/zone-settings.json"
+      - "scripts/cloudflare-zone-plan.mjs"
+      - "scripts/lib/cloudflare/**"
+  push:
+    branches: [main]
+    paths:
+      - "config/cloudflare/zone-settings.json"
+      - "scripts/cloudflare-zone-plan.mjs"
+      - "scripts/lib/cloudflare/**"
+  workflow_dispatch: {}
+
+concurrency:
+  group: cloudflare-zone-plan
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Compute Cloudflare zone config plan
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/cloudflare-zone-plan.mjs

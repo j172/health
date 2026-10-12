@@ -1,0 +1,64 @@
+name: Cloudflare zone config (apply)
+
+# The ONLY workflow allowed to change the live Cloudflare zone's
+# configuration from config/cloudflare/zone-settings.json (issue #454).
+# Deliberately workflow_dispatch-only — never on push, pull_request, or a
+# schedule — and additionally gated behind a typed confirmation input, so a
+# production CDN/WAF change always requires a deliberate, explicit human
+# action. This mirrors deploy-ftps.yml (manual-only) and goes one step
+# further than cloudflare-config.yml's existing choice-input toggle because
+# this workflow can touch far more (cache rules, WAF, rate limiting,
+# transform rules), not just one setting.
+#
+# Before running this:
+#   1. Run (or re-check the latest automatic run of) cloudflare-zone-plan.yml
+#      and read every line of its diff.
+#   2. Only if the diff is what you intended, dispatch this workflow with
+#      confirm=APPLY.
+#
+# This workflow re-computes the diff itself right before applying (it never
+# trusts a previous plan run's output) and will do nothing if there turns
+# out to be no drift.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type exactly "APPLY" to confirm you have reviewed the plan diff and want to push config/cloudflare/zone-settings.json to the live zone'
+        required: true
+        type: string
+
+concurrency:
+  group: cloudflare-zone-apply
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Verify confirmation input
+        run: |
+          if [ "${{ inputs.confirm }}" != "APPLY" ]; then
+            echo "::error::confirm input must be exactly 'APPLY' (got '${{ inputs.confirm }}'). Aborting without touching the Cloudflare zone."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Apply Cloudflare zone config
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CONFIRM_APPLY: ${{ inputs.confirm }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/cloudflare-zone-apply.mjs
