@@ -63,4 +63,11 @@ export const env = {
     accountId: process.env.CLOUDFLARE_ACCOUNT_ID?.trim() || null,
     apiToken: process.env.CLOUDFLARE_API_TOKEN?.trim() || null,
   },
+  // Cloudflare Web Analytics (no-cookie) beacon token — issue #456. Added via
+  // the manual JS beacon snippet (components/Analytics/CloudflareWebAnalytics.tsx),
+  // not Cloudflare's dashboard "automatic setup". No-ops until a human
+  // provisions a real token in the Cloudflare dashboard (Analytics > Web
+  // Analytics > Manage Site) and sets it here, same optional-credential
+  // convention as the other fields above.
+  cloudflareWebAnalyticsToken: process.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN?.trim() || null,
 };

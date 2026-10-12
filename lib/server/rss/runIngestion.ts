@@ -86,8 +86,6 @@ import {
 import { generateSeoMetadataWithAi } from "@/lib/server/news/generateSeoMetadata";
 import { fetchOpenGraphImageAsset } from "@/lib/server/images/fetchOpenGraphImage";
 import { downloadArticleImage } from "@/lib/server/images/downloadArticleImage";
-import { getBaseUrl } from "@/lib/server/news/seo";
-import { submitToIndexNow } from "@/lib/server/seo/indexnow";
 import { isGovSource } from "@/lib/server/news/sourceCategories";
 import type { NewsAsset } from "@/types/rss";
 
@@ -1095,21 +1093,6 @@ export const runRssIngestion = async (
 
       stats.unchanged += skippedUnchanged;
 
-      if (stats.insertedIds.length > 0) {
-        const baseUrl = getBaseUrl();
-        const newUrls = stats.insertedIds.map((id) => `${baseUrl}/news/${id}`);
-        submitToIndexNow(newUrls)
-          .then((res) => {
-            if (res.ok) {
-              console.info(`[runIngestion] IndexNow: submitted ${res.submittedCount} new article(s).`);
-            } else {
-              console.warn(`[runIngestion] IndexNow submission warning: ${res.error}`);
-            }
-          })
-          .catch((err) => {
-            console.error("[runIngestion] IndexNow error:", err);
-          });
-      }
       const ended = new Date();
       const summary: IngestionSummary = {
         trigger,

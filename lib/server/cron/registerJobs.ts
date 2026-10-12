@@ -23,7 +23,6 @@ import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ing
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
 import { runAqxSync } from "@/lib/server/aqx/ingestAqx";
 import { runWraSync, runWraCatalogSync, runWraIotSync } from "@/lib/server/wra/runSync";
-import { submitRecentNewsToIndexNow } from "@/lib/server/seo/indexnow";
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
@@ -320,11 +319,6 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "12,27,42,57 * * * *",
     runGuarded("wra-iot-sync-cron.log", () => runWraIotSync()),
-  );
-  // IndexNow daily refresh at 5:00am — submits latest 100 news articles to IndexNow / Bing
-  cron.schedule(
-    "0 5 * * *",
-    runGuarded("indexnow-sync-cron.log", () => submitRecentNewsToIndexNow(100)),
   );
   // Cool spots (gis_p_82), IAQ Act premises (aqx_p_23), cleaning squads
   // (wr_s_04) — issue #156. Unlike green-products/carbon-footprint/aqx/wra,
