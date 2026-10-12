@@ -7,6 +7,7 @@ import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 // Webpack/Turbopack default marker fix
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -160,9 +161,12 @@ export default function CpcStationMap({
 
                   <div className="mt-2 pt-1 border-t border-slate-100 flex justify-between items-center">
                     <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                        station.address || `${station.lat},${station.lng}`,
-                      )}`}
+                      href={appendOutboundUtm(
+                        `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                          station.address || `${station.lat},${station.lng}`,
+                        )}`,
+                        { medium: "map_navigation", campaign: "map_directions" },
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline"

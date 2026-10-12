@@ -6,6 +6,7 @@ import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const TAIWAN_CITIES = [
   "全部縣市",
@@ -451,7 +452,10 @@ export default function NpoOrganizationsContent() {
                   <div className="flex items-start gap-1.5 text-xs text-neutral-600 dark:text-neutral-300">
                     <span className="shrink-0 text-neutral-400">📍</span>
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name + " " + item.address)}`}
+                      href={appendOutboundUtm(
+                        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name + " " + item.address)}`,
+                        { medium: "map_navigation", campaign: "map_search" },
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="line-clamp-1 hover:text-teal-600 hover:underline dark:hover:text-teal-400"

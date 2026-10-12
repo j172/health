@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { buildFooterModel } from "@/lib/server/tools/navModel";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const FooterColumn = ({
   label,
@@ -218,19 +219,31 @@ export default function SiteFooter() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <SocialIcon
-                href="https://www.instagram.com/j172twhealths/"
+                href={appendOutboundUtm("https://www.instagram.com/j172twhealths/", {
+                  medium: "footer_social",
+                  campaign: "social_follow",
+                  content: "instagram",
+                })}
                 label="Instagram"
               >
                 <InstagramIcon />
               </SocialIcon>
               <SocialIcon
-                href="https://www.facebook.com/profile.php?id=61592584239566"
+                href={appendOutboundUtm("https://www.facebook.com/profile.php?id=61592584239566", {
+                  medium: "footer_social",
+                  campaign: "social_follow",
+                  content: "facebook",
+                })}
                 label="Facebook"
               >
                 <FacebookIcon />
               </SocialIcon>
               <SocialIcon
-                href="https://www.threads.com/@j172twhealths"
+                href={appendOutboundUtm("https://www.threads.com/@j172twhealths", {
+                  medium: "footer_social",
+                  campaign: "social_follow",
+                  content: "threads",
+                })}
                 label="Threads"
               >
                 <ThreadsIcon />
@@ -238,7 +251,11 @@ export default function SiteFooter() {
             </div>
 
             <a
-              href="https://www.j172.tw"
+              href={appendOutboundUtm("https://www.j172.tw", {
+                medium: "cross_promo",
+                campaign: "main_site",
+                content: "footer",
+              })}
               target="_blank"
               rel="noreferrer noopener"
               className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-indigo-500 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:text-indigo-400"

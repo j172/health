@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buildBreadcrumbJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export const revalidate = 86400;
 export const runtime = "nodejs";
@@ -115,7 +116,16 @@ export default function PrivacyPage() {
               <h2 className="text-xl font-semibold text-neutral-800 dark:text-slate-100">七、聯絡我們</h2>
               <p>
                 若您對本政策或個人資料處理方式有任何疑問或請求，請透過{" "}
-                <a href="https://www.j172.tw" target="_blank" rel="noreferrer noopener" className="text-primary underline hover:no-underline">
+                <a
+                  href={appendOutboundUtm("https://www.j172.tw", {
+                    medium: "cross_promo",
+                    campaign: "main_site",
+                    content: "privacy",
+                  })}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="text-primary underline hover:no-underline"
+                >
                   www.j172.tw
                 </a>{" "}
                 的聯絡方式與我們聯繫。

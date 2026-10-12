@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
 /**
@@ -166,7 +167,10 @@ export default function ToolPageShell({
                     <div>
                       {ref.url ? (
                         <a
-                          href={ref.url}
+                          href={appendOutboundUtm(ref.url, {
+                            medium: "scientific_basis",
+                            campaign: "tool_citations",
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="font-semibold text-slate-800 hover:text-indigo-600 hover:underline dark:text-slate-200 dark:hover:text-indigo-400"

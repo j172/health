@@ -10,6 +10,7 @@ import type {
 } from "@/lib/server/waterOutages/types";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 // Fix leaflet icon default path issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -119,7 +120,10 @@ export default function WaterOutagesLeaflet({
                   </div>
                   <div className="pt-1">
                     <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`}
+                      href={appendOutboundUtm(
+                        `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`,
+                        { medium: "map_navigation", campaign: "map_directions" },
+                      )}
                       target="_blank"
                       rel="noreferrer noopener"
                       className="font-bold text-indigo-600 hover:underline"

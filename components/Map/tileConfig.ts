@@ -13,11 +13,24 @@
  * 要防範的規則）。
  */
 
+// Relative import (not the `@/` alias) so this file keeps resolving under a
+// plain `node --test` import() with no path-alias loader hook registered
+// (see tests/baseMap.test.mjs, which imports this module directly).
+import { appendOutboundUtm } from "../../lib/format/outboundLink";
+
 export const PRIMARY_TILE_URL = "https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}.png";
 export const PRIMARY_ATTRIBUTION = "&copy; 內政部國土測繪中心";
 
 export const FALLBACK_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-export const FALLBACK_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+
+// Copyright attribution link UTM-tagged per issue #451 (see lib/constants/mapTiles.ts
+// for the sibling OSM_TILE_ATTRIBUTION constant used by the 9 Leaflet-based map
+// components — this file's BaseMap-only fallback attribution duplicates the same URL).
+const OSM_COPYRIGHT_URL = appendOutboundUtm(
+  "https://www.openstreetmap.org/copyright",
+  { medium: "map_attribution", campaign: "map_tiles" },
+);
+export const FALLBACK_ATTRIBUTION = `&copy; <a href="${OSM_COPYRIGHT_URL}">OpenStreetMap</a> contributors`;
 
 /** 備援底圖永遠疊在主要底圖下方，主要底圖失敗時移除即可讓備援立刻可見，不會有空白地圖的瞬間。 */
 export const FALLBACK_TILE_Z_INDEX = 1;

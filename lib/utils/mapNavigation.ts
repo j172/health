@@ -1,3 +1,9 @@
+// Relative import (not the `@/` alias) so this file keeps resolving under a
+// plain `node --test` import() with no path-alias loader hook registered
+// (see tests/issue-418-map-navigation-i18n-isr.test.mjs, which imports this
+// module directly).
+import { appendOutboundUtm } from "../format/outboundLink";
+
 export interface MapNavigationOptions {
   name: string;
   address?: string | null;
@@ -32,7 +38,11 @@ export function buildGoogleMapsDirUrl({
     destination = cleanName;
   }
 
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+  // UTM-tagged per issue #451 — single choke point shared by every "get
+  // directions" button across the site, so wrapping it here covers all
+  // call sites without touching each one individually.
+  return appendOutboundUtm(url, { medium: "map_navigation", campaign: "map_directions" });
 }
 
 /**

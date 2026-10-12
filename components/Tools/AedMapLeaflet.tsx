@@ -8,6 +8,7 @@ import type { FacilityListItem } from "@/lib/server/facilities/queries";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 // Webpack/Turbopack Leaflet default icon fix
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -167,7 +168,10 @@ export default function AedMapLeaflet({
 
                   <div className="mt-2.5 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2">
                     <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`}
+                      href={appendOutboundUtm(
+                        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                        { medium: "map_navigation", campaign: "map_directions" },
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 inline-flex items-center justify-center gap-1 rounded bg-indigo-600 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-xs hover:bg-indigo-700 transition"

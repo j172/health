@@ -10,7 +10,15 @@
  *
  * @see https://operations.osmfoundation.org/policies/tiles/
  */
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
+
 export const OSM_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
-export const OSM_TILE_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+// Copyright attribution link UTM-tagged per issue #451 so OSM can see this
+// traffic came from the map attribution, not a generic referral.
+const OSM_COPYRIGHT_URL = appendOutboundUtm(
+  "https://www.openstreetmap.org/copyright",
+  { medium: "map_attribution", campaign: "map_tiles" },
+);
+
+export const OSM_TILE_ATTRIBUTION = `&copy; <a href="${OSM_COPYRIGHT_URL}">OpenStreetMap</a> contributors`;
