@@ -8,6 +8,7 @@ import { fetchNhiHomeHealthcare } from "@/lib/server/facilities/sources/nhiHomeH
 import { fetchHakkaCommunity } from "@/lib/server/facilities/sources/hakkaCommunity";
 import { fetchMoenvGreenHotels } from "@/lib/server/facilities/sources/moenvGreenHotels";
 import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties";
+import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -32,6 +33,12 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "hakka_dtst20230600002", fetch: fetchHakkaCommunity },
   { key: "moenv_green_hotel", fetch: fetchMoenvGreenHotels },
   { key: "nhi_penalty", fetch: fetchNhiPenalties },
+  // #468: nationwide 盲人有聲號誌 points from TDX's "basic" category. Its own
+  // fetch isolates per-county failures internally (see tdxAudibleSignals.ts);
+  // runSource() below still wraps it so a total failure (e.g. no TDX
+  // credentials configured) reports as this one source's error without
+  // touching any other source's result.
+  { key: "tdx_aps", fetch: fetchTdxAudibleSignals },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —

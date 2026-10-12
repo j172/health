@@ -1292,7 +1292,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops"],
+    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops", "audible-signals"],
     faqs: [
       {
         question: "資料涵蓋哪些身心障礙福利機構？",
@@ -1325,6 +1325,38 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "資料涵蓋哪些無障礙ATM？",
         answer:
           "資料來源為中華民國信用合作社聯合社的輪椅可及ATM與語音服務ATM名冊，兩份名單依信用合作社分社代號合併，同一分社若同時提供兩種服務會標示為「輪椅可及、語音服務」。",
+      },
+    ],
+  },
+  {
+    slug: "audible-signals",
+    group: "elder-care-welfare",
+
+    navLabel: "有聲號誌查詢",
+    title: "全國盲人有聲號誌查詢",
+    keywords: ["盲人有聲號誌", "行人穿越道語音號誌", "視障號誌", "App觸發號誌"],
+    description:
+      "查詢全國各縣市盲人有聲號誌（行人穿越道語音號誌）設置路口，顯示路名座標與是否支援 App 觸發，支援關鍵字搜尋與附近定位。",
+    directAnswer:
+      "查詢全臺各縣市政府設置之盲人有聲號誌（行人穿越道語音號誌）路口位置，並標示該路口是否支援以手機 App 觸發語音播放。",
+    scientificBasis: [
+      {
+        title: "有聲號誌 (Traffic/Road/APS)",
+        authority: "交通部 TDX 運輸資料流通服務平台",
+        url: "https://tdx.transportdata.tw",
+      },
+    ],
+    relatedSlugs: ["disability-welfare", "disability-atm", "accessible-transit"],
+    faqs: [
+      {
+        question: "有聲號誌和一般行人號誌有什麼不同？",
+        answer:
+          "有聲號誌會在通行時段播放語音或嗶聲提示，協助視障使用者判斷是否可通行；部分路口另外支援以手機 App（如本工具查詢結果標示「可用App觸發」）主動觸發語音播放，而非全天候自動播放。",
+      },
+      {
+        question: "資料多久更新一次？是否涵蓋全國？",
+        answer:
+          "資料來源為交通部 TDX 運輸資料流通服務平台的「有聲號誌」基礎服務，由各縣市政府交通主管機關提供並定期更新；本工具會同步全部已開放資料的縣市，若某縣市尚未開放或暫時查詢失敗，僅該縣市資料會缺漏，不影響其他縣市正常顯示。",
       },
     ],
   },
