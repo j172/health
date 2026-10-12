@@ -62,11 +62,6 @@ function createClient({ apiToken, zoneId }) {
       return result.value;
     },
 
-    async getCrawlerHints() {
-      const result = await request("GET", `/zones/${zoneId}/cache/crawler_hints`);
-      return result.value === "on";
-    },
-
     async getBotManagement() {
       return request("GET", `/zones/${zoneId}/bot_management`);
     },
@@ -94,10 +89,6 @@ function createClient({ apiToken, zoneId }) {
 
     async setTieredCacheSmartTopology(value) {
       return request("PATCH", `/zones/${zoneId}/cache/tiered_cache_smart_topology_enable`, { value });
-    },
-
-    async setCrawlerHints(enabled) {
-      return request("PATCH", `/zones/${zoneId}/cache/crawler_hints`, { value: enabled ? "on" : "off" });
     },
 
     /**

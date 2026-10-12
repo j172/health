@@ -36,7 +36,7 @@
   },
   "crawlerHints": {
     "enabled": false,
-    "note": "docs/2.0/spec-issue-438.md §T lists turning this ON as a still-pending 2.0 action item (to let it replace the site's self-written IndexNow submission code), so the current live value is most likely OFF. Needs live verification either way."
+    "note": "Dashboard-managed, NOT read or written by the plan/apply scripts: Cloudflare has no documented, stable public REST API for Crawler Hints (confirmed 2026-10-12 during issue #454 — the only known endpoint is an undocumented internal flags call, and calling it from cloudflare-zone-plan.mjs caused a live HTTP 400). docs/2.0/spec-issue-438.md §T lists turning this ON as a still-pending 2.0 action item (to let it replace the site's self-written IndexNow submission code); `enabled` here records the intended target state for a human to set manually via Caching > Configuration in the dashboard, not a value this tooling enforces."
   },
   "botManagement": {
     "fightMode": true,

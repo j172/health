@@ -75,11 +75,10 @@ async function main() {
 
   const client = createClient({ apiToken, zoneId });
 
-  const [liveZoneSettings, liveTieredCache, liveCrawlerHints, liveBotManagement, ...liveRuleLists] =
+  const [liveZoneSettings, liveTieredCache, liveBotManagement, ...liveRuleLists] =
     await Promise.all([
       client.getZoneSettings(),
       client.getTieredCacheSmartTopology(),
-      client.getCrawlerHints(),
       client.getBotManagement(),
       ...Object.values(RULESET_PHASES).map((phase) => client.getRulesetPhase(phase)),
     ]);
@@ -93,10 +92,6 @@ async function main() {
   const tieredCacheChanges = diffFlatSettings(
     { smartTopologyEnable: settings.tieredCache.smartTopologyEnable },
     { smartTopologyEnable: liveTieredCache },
-  );
-  const crawlerHintsChanges = diffFlatSettings(
-    { enabled: settings.crawlerHints.enabled },
-    { enabled: liveCrawlerHints },
   );
   const botManagementChanges = diffFlatSettings(
     {
@@ -118,7 +113,6 @@ async function main() {
     flatSettingsChanges: [
       ...zoneSettingsChanges,
       ...tieredCacheChanges,
-      ...crawlerHintsChanges,
       ...botManagementChanges,
     ],
     ruleReconciliation,
@@ -130,11 +124,11 @@ async function main() {
     `Zone: \`${settings._meta.zone}\` (primary host: \`${settings._meta.primaryHost}\`)`,
     `Settings file captured: ${settings._meta.capturedAt}, verifiedAgainstLiveZone: ${settings._meta.verifiedAgainstLiveZone}`,
     "",
+    `Crawler Hints: dashboard-managed, not plan/apply-managed (see config/cloudflare/zone-settings.json's crawlerHints.note) — desired value \`${settings.crawlerHints.enabled}\`, verify manually in Caching > Configuration.`,
+    "",
     ...renderFlatChanges("Zone settings", zoneSettingsChanges),
     "",
     ...renderFlatChanges("Tiered cache", tieredCacheChanges),
-    "",
-    ...renderFlatChanges("Crawler Hints", crawlerHintsChanges),
     "",
     ...renderFlatChanges("Bot management", botManagementChanges),
     "",

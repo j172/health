@@ -77,11 +77,10 @@ async function main() {
 
   const client = createClient({ apiToken, zoneId });
 
-  const [liveZoneSettings, liveTieredCache, liveCrawlerHints, liveBotManagement, ...liveRuleLists] =
+  const [liveZoneSettings, liveTieredCache, liveBotManagement, ...liveRuleLists] =
     await Promise.all([
       client.getZoneSettings(),
       client.getTieredCacheSmartTopology(),
-      client.getCrawlerHints(),
       client.getBotManagement(),
       ...Object.values(RULESET_PHASES).map((phase) => client.getRulesetPhase(phase)),
     ]);
@@ -95,10 +94,6 @@ async function main() {
   const tieredCacheChanges = diffFlatSettings(
     { smartTopologyEnable: settings.tieredCache.smartTopologyEnable },
     { smartTopologyEnable: liveTieredCache },
-  );
-  const crawlerHintsChanges = diffFlatSettings(
-    { enabled: settings.crawlerHints.enabled },
-    { enabled: liveCrawlerHints },
   );
   const botManagementChanges = diffFlatSettings(
     {
@@ -120,7 +115,6 @@ async function main() {
     flatSettingsChanges: [
       ...zoneSettingsChanges,
       ...tieredCacheChanges,
-      ...crawlerHintsChanges,
       ...botManagementChanges,
     ],
     ruleReconciliation,
@@ -148,11 +142,6 @@ async function main() {
   for (const change of tieredCacheChanges) {
     await client.setTieredCacheSmartTopology(change.to);
     auditLine(`tieredCache.smartTopologyEnable: ${change.from} -> ${change.to}`);
-  }
-
-  for (const change of crawlerHintsChanges) {
-    await client.setCrawlerHints(change.to);
-    auditLine(`crawlerHints.enabled: ${change.from} -> ${change.to}`);
   }
 
   if (botManagementChanges.length > 0) {
