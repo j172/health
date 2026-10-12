@@ -25,45 +25,60 @@ export default function NewsSidebar({
   cwaAlerts = [],
   earthquakes = [],
   activeGroupKey,
+  hideLiveWidgets = false,
 }: {
   trendingNews?: NewsListItem[];
   cwaAlerts?: CwaAlertItem[];
   earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
+  /**
+   * Hides the 10 live-data widgets below (items 1-10), keeping only the
+   * trending-news list, partner card, and source tag cloud (issue #472).
+   * Used by the homepage, which now covers the same weather/AQI/UV/
+   * earthquake/alerts ground via its own top status bar fed by a single
+   * aggregation API — rendering these too would duplicate that and bring
+   * back the ~8 extra per-widget client fetches this ticket removes.
+   * Defaults to `false` so `/news` archive pages are unaffected.
+   */
+  hideLiveWidgets?: boolean;
 }) {
   const { t, locale, tDynamic } = useLanguage();
 
   return (
     <aside className="space-y-6" aria-label="側邊資訊欄">
-      {/* 1. 所在位置即時天氣 (CWA O-A0001-001) */}
-      <LocalWeatherSvgWidget />
+      {!hideLiveWidgets && (
+        <>
+          {/* 1. 所在位置即時天氣 (CWA O-A0001-001) */}
+          <LocalWeatherSvgWidget />
 
-      {/* 2. 氣象災害特警報 */}
-      <WeatherAlertSidebarWidget alerts={cwaAlerts} />
+          {/* 2. 氣象災害特警報 */}
+          <WeatherAlertSidebarWidget alerts={cwaAlerts} />
 
-      {/* 3. 全台急診即時看板 */}
-      <ErStatusSidebarWidget />
+          {/* 3. 全台急診即時看板 */}
+          <ErStatusSidebarWidget />
 
-      {/* 4. 有感地震即時速報 */}
-      <EarthquakeSidebarWidget earthquakes={earthquakes} />
+          {/* 4. 有感地震即時速報 */}
+          <EarthquakeSidebarWidget earthquakes={earthquakes} />
 
-      {/* 5. 空氣品質 AQI */}
-      <AqiSidebarWidget />
+          {/* 5. 空氣品質 AQI */}
+          <AqiSidebarWidget />
 
-      {/* 6. 即時紫外線指數 */}
-      <UvSidebarWidget />
+          {/* 6. 即時紫外線指數 */}
+          <UvSidebarWidget />
 
-      {/* 7. 中油油價預測 */}
-      <CpcPriceSidebarWidget />
+          {/* 7. 中油油價預測 */}
+          <CpcPriceSidebarWidget />
 
-      {/* 8. 自來水即時停水通知 */}
-      <WaterOutageSidebarWidget />
+          {/* 8. 自來水即時停水通知 */}
+          <WaterOutageSidebarWidget />
 
-      {/* 9. 疾管署國際旅遊疫情 */}
-      <CdcAlertSidebarWidget />
+          {/* 9. 疾管署國際旅遊疫情 */}
+          <CdcAlertSidebarWidget />
 
-      {/* 10. 農業動植物疫情警報 */}
-      <PestAlertSidebarWidget />
+          {/* 10. 農業動植物疫情警報 */}
+          <PestAlertSidebarWidget />
+        </>
+      )}
 
       {/* 11. 熱門焦點新聞 (依瀏覽量排序) */}
       {trendingNews.length > 0 && (

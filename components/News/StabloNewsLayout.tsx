@@ -39,6 +39,7 @@ export default async function StabloNewsLayout({
   activeGroupKey,
   blogItem,
   blogItems,
+  homeTopSections,
 }: {
   items: NewsListItem[];
   variant: Variant;
@@ -48,6 +49,15 @@ export default async function StabloNewsLayout({
   activeGroupKey?: string;
   blogItem?: NewsListItem | null;
   blogItems?: NewsListItem[];
+  /**
+   * Homepage-only content rendered at the very top of `<main>`, above the
+   * existing hotline-quick-access banner / hero / news grid (issue #472,
+   * parent #438 §G): the status bar, 5 life-situation cards, and "最近使用
+   * 的工具". Ignored for `variant === "archive"`. Kept as a prop (rather than
+   * hardcoding those components here) so this shared layout file doesn't
+   * need to know about them directly — `app/(site)/page.tsx` composes them.
+   */
+  homeTopSections?: React.ReactNode;
 }) {
   const hero = items[0];
   const secondary = items.slice(1, 3);
@@ -94,6 +104,11 @@ export default async function StabloNewsLayout({
       <main className="mx-auto max-w-7xl px-4 pt-8 pb-20 sm:px-6 lg:px-8">
         {variant === "home" && hero ? (
           <>
+            {/* 首頁改版新增區塊：狀態列／生活情境卡／最近使用的工具 (issue
+             * #472) — 放在最上方，其餘既有內容（急救專線、焦點新聞、新聞列
+             * 表）維持原樣往下移。 */}
+            {homeTopSections}
+
             {/* Urgent Public Safety Hotline Quick Access */}
             <section
               className="mb-8 overflow-hidden rounded-2xl border border-rose-200/80 bg-linear-to-r from-rose-50/90 via-amber-50/70 to-orange-50/80 p-4 shadow-xs sm:p-5 dark:border-rose-900/60 dark:from-rose-950/40 dark:via-amber-950/30 dark:to-orange-950/30"
@@ -176,6 +191,15 @@ export default async function StabloNewsLayout({
                   cwaAlerts={cwaAlerts}
                   earthquakes={earthquakes}
                   activeGroupKey={activeGroupKey}
+                  // issue #472: the home page's new top status bar
+                  // (components/Home/HomeStatusBar.tsx) now covers
+                  // weather/AQI/UV/latest-earthquake/alerts via one
+                  // aggregation API call, so this sidebar's 8 old
+                  // independent per-widget live-data fetches would just be
+                  // duplicating that — hidden on home only; /news archive
+                  // pages keep them unchanged (hideLiveWidgets defaults to
+                  // false).
+                  hideLiveWidgets
                 />
               </div>
             </div>

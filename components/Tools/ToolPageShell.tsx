@@ -8,6 +8,7 @@ import { TOOL_MEDICAL_DISCLAIMER } from "@/lib/server/content/toolLlmsPage";
 import { findRelatedNewsForTool } from "@/lib/server/content/relatedNewsForTool";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import { displayDate, toTaipei } from "@/lib/format/news";
+import RecentToolRecorder from "@/components/Tools/RecentToolRecorder";
 
 /**
  * Shared wrapper for every /tools/<slug> page.
@@ -101,6 +102,11 @@ export default async function ToolPageShell({
        * no matter where in the tree they render. */}
       <link rel="alternate" type="text/plain" title={`${title} - LLM Index (llms.txt)`} href={`/tools/${slug}/llms.txt`} />
       <link rel="alternate" type="text/markdown" title={`${title} - Clean Markdown`} href={`/tools/${slug}/markdown`} />
+
+      {/* 最近使用的工具 (issue #472): records this slug into the device-only
+       * localStorage list the homepage reads back — see
+       * components/Home/RecentToolsSection.tsx. */}
+      <RecentToolRecorder slug={slug} />
 
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <StabloHeader />
