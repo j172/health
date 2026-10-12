@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { buildFooterModel } from "@/lib/server/tools/navModel";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const FooterColumn = ({
   label,
