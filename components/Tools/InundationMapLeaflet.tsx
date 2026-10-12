@@ -11,6 +11,7 @@ import type {
 } from "@/lib/server/inundation/types";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
+import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead
 // (same fix as FacilityMap.tsx / DisasterMapLeaflet.tsx / AedMapLeaflet.tsx).
@@ -96,10 +97,7 @@ export default function InundationMapLeaflet({
     <div className="relative h-full w-full">
       <MapContainer center={center} zoom={zoom} className="h-full w-full" scrollWheelZoom>
         <MapViewController center={center} zoom={zoom} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
 
         {userLocation?.lat && userLocation?.lng && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>

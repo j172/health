@@ -6,6 +6,7 @@ import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { GEO_DEFAULTS } from "./useGeolocation";
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
+import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead.
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -49,7 +50,7 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
     <div className="relative h-full w-full">
       <MapContainer center={center} zoom={13} className="h-full w-full" scrollWheelZoom>
         <MapViewController center={center} zoom={13} />
-        <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
 
         <Marker position={center} icon={userIcon}>
           <Popup>{userLocation.isDefault ? "預設位置" : "您目前的位置"}</Popup>

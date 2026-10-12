@@ -7,6 +7,7 @@ import { MapContainer, Marker, Popup, TileLayer, Circle } from "react-leaflet";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
+import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 
 // Webpack/Turbopack Leaflet default icon fix
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -86,10 +87,7 @@ export default function AedMapLeaflet({
         scrollWheelZoom
       >
         <MapViewController center={center} zoom={13} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
 
         {/* 使用者位置與搜尋半徑 */}
         {userLocation.lat && userLocation.lng && (
