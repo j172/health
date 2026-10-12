@@ -355,6 +355,68 @@ export function getToolCategoryLink(group: ToolGroup): ToolCategoryLink {
 }
 
 // ---------------------------------------------------------------------------
+// 3b. Related-tools auto-fill (issue #464)
+// ---------------------------------------------------------------------------
+
+/**
+ * Resolves a tool's "相關工具" list for ToolPageShell.tsx: the manually
+ * curated `ToolCatalogEntry.relatedSlugs` first, in their original order,
+ * then — only when that curated list resolves to fewer than `limit` (default
+ * 4) — auto-filled with other tools from the *same* `group`, in `TOOL_CATALOG`
+ * array order, until there are `limit` tools or the category itself runs out
+ * of other members.
+ *
+ * Curated entries never get reordered or bumped by an auto-filled one; this
+ * only ever appends. Dedupes against the tool's own slug and against
+ * whatever's already in the list (defensive — a hand-curated `relatedSlugs`
+ * could in principle repeat a slug), and silently drops any curated slug
+ * that doesn't resolve to a real catalog entry (matching ToolPageShell's
+ * prior behavior before this ticket).
+ *
+ * Returns `[]` for an unknown slug and never throws — every one of the 7
+ * post-#442 groups currently has at least 9 members (well above `limit`), so
+ * running out of same-group tools to auto-fill with doesn't happen in
+ * practice today, but a future group with fewer members is handled
+ * gracefully: this just returns however many tools are actually available.
+ *
+ * `catalog` defaults to the real `TOOL_CATALOG` and callers never need to
+ * pass it; it exists only so this function's own test suite can exercise
+ * the "this tool's group has fewer than `limit` total members" edge case
+ * against a tiny synthetic catalog, since no real group is currently that
+ * small.
+ */
+export function getRelatedTools(
+  slug: string,
+  limit = 4,
+  catalog: ToolCatalogEntry[] = TOOL_CATALOG,
+): ToolCatalogEntry[] {
+  const entry = catalog.find((t) => t.slug === slug);
+  if (!entry) return [];
+
+  const result: ToolCatalogEntry[] = [];
+  const seen = new Set<string>([slug]);
+
+  for (const relatedSlug of entry.relatedSlugs) {
+    if (seen.has(relatedSlug)) continue;
+    const tool = catalog.find((t) => t.slug === relatedSlug);
+    if (!tool) continue;
+    result.push(tool);
+    seen.add(tool.slug);
+  }
+
+  if (result.length < limit) {
+    for (const tool of catalog) {
+      if (result.length >= limit) break;
+      if (tool.group !== entry.group || seen.has(tool.slug)) continue;
+      result.push(tool);
+      seen.add(tool.slug);
+    }
+  }
+
+  return result.slice(0, limit);
+}
+
+// ---------------------------------------------------------------------------
 // 4. Merge redirects
 // ---------------------------------------------------------------------------
 
