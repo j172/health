@@ -23,6 +23,19 @@ test("next.config.js redirects /tools/green-shops permanently to the green-shops
   );
 });
 
+test("the pre-existing green-hotels/green-products/green-restaurants redirects also carry ?tab= now that the mechanism exists (issue #448 follow-up)", () => {
+  const content = fs.readFileSync(path.join(process.cwd(), "next.config.js"), "utf-8");
+
+  for (const key of ["green-hotels", "green-products", "green-restaurants"]) {
+    assert.ok(
+      new RegExp(
+        `source:\\s*"/tools/${key}",\\s*destination:\\s*"/tools/green-certifications\\?tab=${key}",\\s*permanent:\\s*true,?`,
+      ).test(content),
+      `redirects() entry for /tools/${key} should carry ?tab=${key} so it lands on its own tab, not the default`,
+    );
+  }
+});
+
 test("the /tools/green-shops standalone page directory no longer exists (issue #448)", () => {
   const pageDir = path.join(process.cwd(), "app", "tools", "green-shops");
   assert.ok(!fs.existsSync(pageDir), "app/tools/green-shops should be deleted, not just redirected around");

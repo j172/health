@@ -90,18 +90,22 @@ const nextConfig = {
         permanent: true,
       },
       {
+        // issue #448: predates the `?tab=` initialKey plumbing that PR added
+        // for green-shops — now that it exists, carry it here too so these
+        // three land on their own tab instead of green-certifications'
+        // default (green-shops) tab.
         source: "/tools/green-hotels",
-        destination: "/tools/green-certifications",
+        destination: "/tools/green-certifications?tab=green-hotels",
         permanent: true,
       },
       {
         source: "/tools/green-products",
-        destination: "/tools/green-certifications",
+        destination: "/tools/green-certifications?tab=green-products",
         permanent: true,
       },
       {
         source: "/tools/green-restaurants",
-        destination: "/tools/green-certifications",
+        destination: "/tools/green-certifications?tab=green-restaurants",
         permanent: true,
       },
       {
