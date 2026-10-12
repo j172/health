@@ -1,4 +1,5 @@
 import "server-only";
+import type { Pool } from "mysql2/promise";
 import { getPool } from "@/lib/server/db/mysql";
 import { parseTdxCoordinate } from "@/lib/server/tdx/seniors";
 import {
@@ -20,7 +21,9 @@ import {
   type SeniorStationTransfer,
   type SeniorStationFacilityAlert,
 } from "./tdxSeniorClient";
-import type { TransitSystemType } from "./types";
+import { fetchAllTdxBusRoutes } from "./tdxBusClient";
+import { partitionSyncableCounties } from "./busLowFloorMath";
+import type { AccessibleTransitRoute, TransitSystemType } from "./types";
 
 export interface TransitAccessibilitySyncSummary {
   ok: boolean;
@@ -418,6 +421,137 @@ export async function runTransitFacilityAlertsSync(): Promise<TransitAlertsSyncS
     }
   } catch (err) {
     summary.errors.push(`alerts upsert failed: ${err instanceof Error ? err.message : String(err)}`);
+    summary.ok = false;
+  }
+
+  return summary;
+}
+
+export interface TransitBusSyncSummary {
+  ok: boolean;
+  countiesSynced: number;
+  routesUpserted: number;
+  /** Counties whose TDX fetch returned nothing this run — their existing
+   * rows (seed or a previous successful sync) were left untouched. */
+  skippedCounties: string[];
+  errors: string[];
+}
+
+/**
+ * Replaces one county's accessible_transit_routes rows with freshly-synced
+ * TDX Basic Bus data inside a transaction, so a mid-write failure can never
+ * leave that county's rows deleted-but-not-reinserted (which would otherwise
+ * contradict the "sync failure must not blank the page" requirement at the
+ * single-county level).
+ */
+async function replaceCountyRoutes(
+  pool: Pool,
+  county: string,
+  routes: AccessibleTransitRoute[],
+): Promise<void> {
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+    await conn.query("DELETE FROM accessible_transit_routes WHERE county = ?", [county]);
+    const values = routes.map((r) => [
+      r.county,
+      r.routeId,
+      r.routeName,
+      r.operatorName,
+      r.lowFloorRatio,
+      r.isAllLowFloor ? 1 : 0,
+      r.wheelchairSlots,
+      r.description || null,
+      r.source || "tdx_bus",
+      r.sampleTrips ? JSON.stringify(r.sampleTrips) : null,
+    ]);
+    await conn.query(
+      `INSERT INTO accessible_transit_routes
+        (county, route_id, route_name, operator_name, low_floor_ratio, is_all_low_floor, wheelchair_slots, description, source, sample_trips_json)
+       VALUES ?`,
+      [values],
+    );
+    await conn.commit();
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+}
+
+/**
+ * Real-data sync for the accessible-transit map's "低地板公車比率" (issue
+ * #467 / docs/2.0/tdx-basic-integration-research.md §T1) — replaces the
+ * one-time TRANSIT_ROUTES_SEED values in accessible_transit_routes with a
+ * daily sync of TDX's Basic Bus Vehicle + Schedule data, computed per county
+ * by lib/server/transit/tdxBusClient.ts + busLowFloorMath.ts.
+ *
+ * Fallback behavior (acceptance criteria: "同步失敗時退回既有的種子資料，不會
+ * 讓頁面空白"): a county is only ever touched (DELETE+INSERT, see
+ * replaceCountyRoutes above) when this run actually fetched at least one real
+ * route for it. A county with zero fetched routes — whether because TDX itself
+ * is down, that city's enum 404s, or getTdxToken() has no credentials at all —
+ * is recorded in `skippedCounties` and its existing rows (whatever seed data
+ * or a previous day's successful sync already put there) are left completely
+ * alone. getTransitAccessibilityOverview()'s ensureTransitSeeded() call
+ * guarantees there's always *something* in the table in the first place, so
+ * the page is never blank even before this sync has ever run successfully.
+ */
+export async function runTransitBusSync(): Promise<TransitBusSyncSummary> {
+  const summary: TransitBusSyncSummary = {
+    ok: true,
+    countiesSynced: 0,
+    routesUpserted: 0,
+    skippedCounties: [],
+    errors: [],
+  };
+
+  let fetchResult: Awaited<ReturnType<typeof fetchAllTdxBusRoutes>>;
+  try {
+    fetchResult = await fetchAllTdxBusRoutes();
+  } catch (err) {
+    // Whole-batch failure (e.g. getTdxToken() itself threw) — existing
+    // accessible_transit_routes rows are never touched below this point, so
+    // the seed/previous-sync fallback is preserved by construction.
+    summary.errors.push(
+      `TDX bus sync failed entirely, existing seed/previous data left untouched: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+    );
+    return summary;
+  }
+
+  for (const [county, msg] of Object.entries(fetchResult.errors)) {
+    summary.errors.push(`${county}: ${msg}`);
+  }
+
+  const { syncable, skippedCounties } = partitionSyncableCounties(fetchResult.routesByCounty);
+  summary.skippedCounties = skippedCounties;
+
+  const pool = getPool();
+  if (!pool) {
+    summary.ok = false;
+    summary.errors.push("MySQL pool unavailable");
+    return summary;
+  }
+
+  for (const [county, routes] of syncable) {
+    try {
+      await replaceCountyRoutes(pool, county, routes);
+      summary.countiesSynced += 1;
+      summary.routesUpserted += routes.length;
+    } catch (err) {
+      summary.errors.push(
+        `${county} DB write failed, rolled back (existing rows preserved): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      summary.ok = false;
+    }
+  }
+
+  if (summary.countiesSynced === 0 && summary.errors.length > 0) {
     summary.ok = false;
   }
 

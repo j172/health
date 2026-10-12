@@ -34,7 +34,11 @@ import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
-import { runTransitAccessibilitySync, runTransitFacilityAlertsSync } from "@/lib/server/transit/runSync";
+import {
+  runTransitAccessibilitySync,
+  runTransitFacilityAlertsSync,
+  runTransitBusSync,
+} from "@/lib/server/transit/runSync";
 import {
   runSeniorTourismSync,
   runSeniorTourismAlertsSync,
@@ -430,5 +434,13 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "25 3 * * *",
     runGuarded("senior-card-sync-cron.log", () => runSeniorCardSync()),
+  );
+  // TDX Basic Bus Vehicle/Schedule 低地板公車比率 (issue #467) — 取代
+  // accessible_transit_routes 原本寫死的種子值。來源為即時車輛/班次資料而非
+  // UpdateInterval 固定值，daily 已足夠反映車隊配置的實際變動；排在 3am
+  // 區段的 30 分，避開上面三個 transit/senior job 用到的 15/20/25 分。
+  cron.schedule(
+    "30 3 * * *",
+    runGuarded("transit-bus-sync-cron.log", () => runTransitBusSync()),
   );
 };

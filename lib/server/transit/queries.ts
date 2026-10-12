@@ -26,6 +26,8 @@ interface DbRouteRow extends RowDataPacket {
   is_all_low_floor: number;
   wheelchair_slots: number;
   description: string | null;
+  source: string | null;
+  sample_trips_json: any;
 }
 
 interface DbFacilityRow extends RowDataPacket {
@@ -167,6 +169,28 @@ function parseFeaturesJson(raw: any): { tags: string[]; items: any[] } {
   return { tags: [], items: [] };
 }
 
+/** Reads a route's sample_trips_json column (see AccessibleTransitRouteTrip)
+ * back into a typed array — tolerates NULL/already-parsed-object/malformed
+ * JSON the same defensive way parseFeaturesJson() does above. */
+function parseSampleTrips(raw: any): AccessibleTransitRoute["sampleTrips"] {
+  let parsed = raw;
+  if (typeof raw === "string") {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return undefined;
+    }
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) return undefined;
+  return parsed
+    .filter((t) => t && typeof t === "object" && typeof t.tripId === "string")
+    .map((t) => ({
+      tripId: t.tripId,
+      departureTime: t.departureTime ?? null,
+      isLowFloor: Boolean(t.isLowFloor),
+    }));
+}
+
 export async function getTransitAccessibilityOverview(filter?: {
   county?: string;
   systemType?: string;
@@ -201,6 +225,8 @@ export async function getTransitAccessibilityOverview(filter?: {
       isAllLowFloor: Boolean(r.is_all_low_floor),
       wheelchairSlots: r.wheelchair_slots,
       description: r.description,
+      source: (r.source as "seed" | "tdx_bus") || "seed",
+      sampleTrips: parseSampleTrips(r.sample_trips_json),
     }));
 
     let facSql = "SELECT * FROM accessible_transit_facilities WHERE 1=1";
