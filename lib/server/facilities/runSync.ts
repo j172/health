@@ -9,6 +9,7 @@ import { fetchHakkaCommunity } from "@/lib/server/facilities/sources/hakkaCommun
 import { fetchMoenvGreenHotels } from "@/lib/server/facilities/sources/moenvGreenHotels";
 import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties";
 import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
+import { fetchTdxAccessibleParking } from "@/lib/server/facilities/sources/tdxParking";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -39,6 +40,11 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // credentials configured) reports as this one source's error without
   // touching any other source's result.
   { key: "tdx_aps", fetch: fetchTdxAudibleSignals },
+  // #469: nationwide 孕婦及親子／身心障礙汽車／身心障礙機車／復康巴士 special
+  // parking spaces from TDX's "basic" 停車資訊 service, filtered down to only
+  // those 4 SpaceType values inside tdxParking.ts itself. Same per-county (and
+  // per off-street/on-street kind) failure isolation as tdx_aps above.
+  { key: "tdx_parking", fetch: fetchTdxAccessibleParking },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —

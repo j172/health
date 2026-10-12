@@ -563,4 +563,22 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的有聲號誌路口。",
     serviceItem: "badge",
   },
+  "accessible-parking": {
+    facilityType: "accessible_parking",
+    emoji: "🅿️",
+    title: "孕婦親子／身心障礙／復康巴士車位查詢",
+    description:
+      "查詢全台停車場（路外）與路邊停車（路內）的孕婦及親子專用、身心障礙汽車、身心障礙機車與復康巴士專用車位，顯示即時剩餘車位數。資料來源：TDX 運輸資料流通服務平台。",
+    searchPlaceholder: "輸入停車場名稱、路段或縣市關鍵字",
+    errorText: "查詢特殊車位資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的特殊車位，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的特殊車位。",
+    serviceItem: "badge",
+    categories: [
+      { value: "孕婦及親子專用車位", label: "🤰 孕婦及親子專用" },
+      { value: "身心障礙汽車車位", label: "♿ 身心障礙汽車" },
+      { value: "身心障礙機車車位", label: "🛵 身心障礙機車" },
+      { value: "復康巴士", label: "🚐 復康巴士" },
+    ],
+  },
 } satisfies Record<string, FacilitySearchConfig>;
