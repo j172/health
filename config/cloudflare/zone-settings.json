@@ -1,0 +1,127 @@
+{
+  "_meta": {
+    "zone": "j172.tw",
+    "primaryHost": "health.j172.tw",
+    "capturedAt": "2026-10-12",
+    "capturedBy": "worktree-agent (issue #454), without live Cloudflare API access",
+    "verifiedAgainstLiveZone": false,
+    "verificationNote": "This file is a best-effort reconstruction from repo docs and memory notes, NOT a live export. A human with Cloudflare dashboard/API access MUST run the plan workflow (.github/workflows/cloudflare-zone-plan.yml) and review every reported diff line before the apply workflow is ever run for the first time. Do not assume any single field here is correct.",
+    "sharedZoneWarning": "The Cloudflare zone is the apex domain j172.tw, shared with bid.j172.tw on the same hosting account (see docs/domains/11-hosting-ops-incidents.md). All zone-level settings, Cache Rules, WAF custom rules, rate limiting rules, and Transform Rules in this file apply to the WHOLE zone unless their `expression` scopes them to a specific host. The source documents this file was built from (docs/archive/CLOUDFLARE_OPTIMIZATION.md) use a generic `yourdomain.com` placeholder and do not show host-scoping — it is unconfirmed whether the live rules are scoped to `health.j172.tw` or apply zone-wide (and therefore also to bid.j172.tw). Resolve this during the first plan review, before any apply.",
+    "sourceDocs": [
+      "docs/domains/11-hosting-ops-incidents.md",
+      "docs/archive/CLOUDFLARE_OPTIMIZATION.md",
+      "docs/2.0/spec-issue-438.md (section T, Cloudflare free-plan integration)",
+      ".github/workflows/cloudflare-config.yml",
+      ".github/workflows/purge-cloudflare-cache.yml"
+    ]
+  },
+  "zoneSettings": {
+    "ssl": "strict",
+    "always_use_https": "on",
+    "automatic_https_rewrites": "on",
+    "min_tls_version": "1.3",
+    "opportunistic_encryption": "on",
+    "tls_1_3": "zrt",
+    "http3": "on",
+    "0rtt": "on",
+    "websockets": "on",
+    "brotli": "on",
+    "early_hints": "on",
+    "rocket_loader": "off",
+    "minify": { "css": "off", "html": "off", "js": "off" }
+  },
+  "tieredCache": {
+    "smartTopologyEnable": "on",
+    "note": "Confirmed enabled via .github/workflows/cloudflare-config.yml (shipped before this file existed). This is the one setting in this file that has actually been applied through a version-controlled workflow."
+  },
+  "crawlerHints": {
+    "enabled": false,
+    "note": "Dashboard-managed, NOT read or written by the plan/apply scripts: Cloudflare has no documented, stable public REST API for Crawler Hints (confirmed 2026-10-12 during issue #454 — the only known endpoint is an undocumented internal flags call, and calling it from cloudflare-zone-plan.mjs caused a live HTTP 400). docs/2.0/spec-issue-438.md §T lists turning this ON as a still-pending 2.0 action item (to let it replace the site's self-written IndexNow submission code); `enabled` here records the intended target state for a human to set manually via Caching > Configuration in the dashboard, not a value this tooling enforces."
+  },
+  "botManagement": {
+    "fightMode": true,
+    "aiBotsProtection": "block",
+    "crawlerProtection": null,
+    "note": "fight_mode=true and ai_bots_protection=block are corroborated by memory (ops_cloudflare_bot_protection.md: both turned ON 2026-08-16) and by a 2026-10-12 live test recorded in docs/domains/13-seo-performance-i18n-ai.md (GPTBot/ClaudeBot got 403, PerplexityBot got 200 — consistent with ai_bots_protection=block still blocking the Agent/Training-ish bots under the legacy single-toggle model). Cloudflare's newer Search/Agent/Training three-category model (2026-07-01 changelog) is NOT yet represented here because this repo has not confirmed the exact API field for it — see docs/2.0/spec-issue-438.md §T item 347 for the intended target state (all three categories allowed, paired with caching/rate-limiting mitigations) which is deliberately NOT captured as 'current state' in this baseline file. crawlerProtection=null means this field is genuinely unconfirmed, not a desired value of 'off' — confirmed 2026-10-12 via issue #454's first live plan run that the real zone has it set to 'enabled', so the plan/apply scripts deliberately skip diffing/writing this field while it's null, to avoid silently resetting it. Set it to an actual 'enabled'/'disabled' value here only once someone has confirmed what this field should be."
+  },
+  "managedRules": {
+    "cacheRules": [
+      {
+        "ref": "health-repo:bypass-admin",
+        "description": "Bypass Cache for Admin & Admin APIs",
+        "expression": "(http.request.uri.path starts_with \"/admin\") or (http.request.uri.path starts_with \"/api/admin\")",
+        "action": "bypass_cache",
+        "enabled": true
+      },
+      {
+        "ref": "health-repo:cache-static-assets",
+        "description": "Cache Static Assets",
+        "expression": "(http.request.uri.path starts_with \"/_next/static/\") or (http.request.uri.path starts_with \"/images/\") or (http.request.uri.path eq \"/favicon.ico\")",
+        "action": "eligible_for_cache",
+        "edgeTtlMode": "respect_origin",
+        "browserTtlMode": "respect_origin",
+        "enabled": true
+      },
+      {
+        "ref": "health-repo:html-edge-cache",
+        "description": "Respect Origin for Public HTML & SWR",
+        "expression": "not (http.request.uri.path starts_with \"/admin\") and not (http.request.uri.path starts_with \"/api/admin\")",
+        "action": "eligible_for_cache",
+        "edgeTtlMode": "respect_origin",
+        "enabled": true
+      }
+    ],
+    "wafCustomRules": [
+      {
+        "ref": "health-repo:challenge-admin",
+        "description": "Challenge Untrusted Traffic on Admin",
+        "expression": "(http.request.uri.path starts_with \"/admin\" or http.request.uri.path starts_with \"/api/admin\") and (cf.threat_score gt 0 or not ip.geoip.country in {\"TW\"})",
+        "action": "managed_challenge",
+        "enabled": true
+      },
+      {
+        "ref": "health-repo:block-high-threat",
+        "description": "Block High Threat Score",
+        "expression": "cf.threat_score ge 15",
+        "action": "block",
+        "enabled": true
+      }
+    ],
+    "rateLimitingRules": [
+      {
+        "ref": "health-repo:protect-api-and-login",
+        "description": "Protect API & Login Rate Limits",
+        "expression": "http.request.uri.path starts_with \"/api/\" or http.request.uri.path starts_with \"/admin\"",
+        "requestsPerPeriod": 30,
+        "periodSeconds": 10,
+        "mitigationTimeoutSeconds": 60,
+        "action": "managed_challenge",
+        "enabled": true
+      }
+    ],
+    "responseHeaderTransformRules": [
+      {
+        "ref": "health-repo:security-privacy-headers",
+        "description": "Security & Privacy Headers",
+        "expression": "true",
+        "setStatic": {
+          "X-Content-Type-Options": "nosniff",
+          "X-Frame-Options": "SAMEORIGIN",
+          "Referrer-Policy": "strict-origin-when-cross-origin",
+          "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)"
+        },
+        "remove": ["Server", "X-Powered-By"],
+        "enabled": true
+      }
+    ],
+    "redirectRules": []
+  },
+  "documentedUnmanagedRules": [
+    {
+      "phase": "http_request_firewall_custom",
+      "liveRuleId": "375d8e07c0c442caba42a540eb3b9069",
+      "description": "Blocks SemrushBot and AhrefsBot (exact expression text not available in this repo's docs)",
+      "note": "Called out explicitly in docs/2.0/spec-issue-438.md §T as a rule that MUST survive the config-as-code import ('設定即程式碼匯入時不得遺失'). This repo intentionally does NOT manage this rule's content — the plan/apply tooling treats any live rule not tagged with a health-repo:* ref as unmanaged and never rewrites or drops it when it updates the http_request_firewall_custom ruleset. This entry exists purely so the rule's existence and intent are documented in version control, not to control its content. Verify the live rule ID still matches on first plan run."
+    }
+  ]
+}
