@@ -888,3 +888,31 @@ export function buildGuide(slug: string): GuidePageModel | null {
     })),
   };
 }
+
+export interface GuideLink {
+  slug: string;
+  title: string;
+  href: string;
+}
+
+/**
+ * Reverse lookup from a tool back to the life-situation guide(s) that
+ * include it as a step (issue #465 acceptance criterion 5: "工具頁上線時能
+ * 知道自己屬於哪些情境" — this ticket only prepares this data; rendering a
+ * "所屬生活情境" section on the tool page itself is explicitly left to the
+ * future tool-page-reorg ticket, per issue #438 §A).
+ *
+ * Derived straight from `GUIDES` — never a second, hand-maintained
+ * tool-to-guides map — so it can't drift when a guide's steps change.
+ * Returns `[]` for a tool that appears in no guide (most tools) or an
+ * unrecognized slug; never throws.
+ */
+export function getGuidesForTool(toolSlug: string): GuideLink[] {
+  return GUIDES.filter((guide) =>
+    guide.steps.some((step) => step.toolSlug === toolSlug),
+  ).map((guide) => ({
+    slug: guide.slug,
+    title: guide.title,
+    href: `/guides/${guide.slug}`,
+  }));
+}

@@ -3,7 +3,12 @@ import type { Metadata } from "next";
 import type { NewsListItem, NewsDetailItem } from "./queries";
 import { resolveAuthorLabel, hasSourceLabel } from "./sourceLabels";
 import type { ToolCatalogEntry } from "@/lib/server/tools/catalog";
-import { getToolCategoryLink, type CategoryPageModel } from "@/lib/server/tools/navModel";
+import {
+  getToolCategoryLink,
+  type CategoryPageModel,
+  type Guide,
+  type GuidePageModel,
+} from "@/lib/server/tools/navModel";
 
 /**
  * og:image resolution for an article. Falls back to a source-branded
@@ -444,6 +449,152 @@ export const buildCategoryPageGraphJsonLd = (category: CategoryPageModel): Recor
           url: `${baseUrl}/tools/${tool.slug}`,
           name: tool.navLabel ?? tool.title,
           description: tool.directAnswer,
+        })),
+      },
+    ],
+  };
+};
+
+/**
+ * Composite Schema.org @graph for `/guides/<slug>` life-situation guide hub
+ * pages (issue #465, per issue #438 §R's spec table: "生活情境 hub →
+ * HowTo（步驟）＋ItemList＋FAQPage"). 3-level breadcrumb (首頁 / 生活情境 /
+ * guide title — the guide itself is the current page, same depth pattern as
+ * `buildCategoryPageGraphJsonLd`'s 3-level 首頁/工具/分類).
+ *
+ * `HowTo.step` carries the guide's ordered steps as `HowToStep` entries
+ * (name = step.caption, text = step.why, url = the step's real tool page),
+ * and a parallel `ItemList` enumerates the same steps' resolved tools —
+ * matching the established tools/category convention of pairing a semantic
+ * content type (HowTo) with a generic ItemList of the same entities for
+ * broader rich-result eligibility. `FAQPage` is only added when the guide
+ * has FAQs (every one of the 5 GUIDES does, but this mirrors
+ * `buildToolGraphJsonLd`'s `tool.faqs.length > 0` guard rather than assuming
+ * it).
+ */
+export const buildGuideGraphJsonLd = (guide: GuidePageModel): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/guides/${guide.slug}`;
+  const guidesIndexUrl = `${baseUrl}/guides`;
+
+  const graph: Record<string, unknown>[] = [
+    buildOrganizationEntity(baseUrl),
+    buildWebSiteEntity(baseUrl),
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${canonical}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "首頁", item: baseUrl },
+        { "@type": "ListItem", position: 2, name: "生活情境", item: guidesIndexUrl },
+        { "@type": "ListItem", position: 3, name: guide.title, item: canonical },
+      ],
+    },
+    {
+      "@type": "CollectionPage",
+      "@id": `${canonical}#webpage`,
+      url: canonical,
+      name: guide.title,
+      description: guide.description,
+      isPartOf: { "@id": `${baseUrl}/#website` },
+      breadcrumb: { "@id": `${canonical}#breadcrumb` },
+      mainEntity: { "@id": `${canonical}#howto` },
+      inLanguage: "zh-TW",
+      speakable: {
+        "@type": "SpeakableSpecification",
+        cssSelector: ["h1", "#guide-direct-answer"],
+      },
+    },
+    {
+      "@type": "HowTo",
+      "@id": `${canonical}#howto`,
+      name: guide.title,
+      description: guide.description,
+      mainEntityOfPage: { "@id": `${canonical}#webpage` },
+      step: guide.steps.map((step, index) => ({
+        "@type": "HowToStep",
+        position: index + 1,
+        name: step.caption,
+        text: step.why,
+        url: `${baseUrl}${step.href}`,
+      })),
+    },
+    {
+      "@type": "ItemList",
+      "@id": `${canonical}#steps`,
+      name: `${guide.title}步驟清單`,
+      mainEntityOfPage: { "@id": `${canonical}#webpage` },
+      itemListElement: guide.steps.map((step, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `${baseUrl}${step.href}`,
+        name: step.tool.navLabel ?? step.tool.title,
+        description: step.caption,
+      })),
+    },
+  ];
+
+  if (guide.faqs.length > 0) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${canonical}#faq`,
+      isPartOf: { "@id": `${canonical}#webpage` },
+      mainEntity: guide.faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.question,
+        acceptedAnswer: { "@type": "Answer", text: faq.answer },
+      })),
+    });
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": graph,
+  };
+};
+
+/**
+ * Composite Schema.org @graph for the `/guides` index page (issue #465) —
+ * same "index page gets a BreadcrumbList + ItemList" convention as
+ * `buildToolsIndexGraphJsonLd`, enumerating all 5 `GUIDES` hubs.
+ */
+export const buildGuidesIndexGraphJsonLd = (guides: Guide[]): Record<string, unknown> => {
+  const baseUrl = getBaseUrl();
+  const canonical = `${baseUrl}/guides`;
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      buildOrganizationEntity(baseUrl),
+      buildWebSiteEntity(baseUrl),
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonical}#breadcrumb`,
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "首頁", item: baseUrl },
+          { "@type": "ListItem", position: 2, name: "生活情境", item: canonical },
+        ],
+      },
+      {
+        "@type": "CollectionPage",
+        "@id": `${canonical}#webpage`,
+        url: canonical,
+        name: "生活情境指南",
+        description: "依家有長輩、懷孕到育兒、颱風地震、身心障礙者生活、出國與防疫等 5 種生活情境，依序整理對應工具的步驟指南。",
+        isPartOf: { "@id": `${baseUrl}/#website` },
+        breadcrumb: { "@id": `${canonical}#breadcrumb` },
+        inLanguage: "zh-TW",
+      },
+      {
+        "@type": "ItemList",
+        "@id": `${canonical}#list`,
+        name: "生活情境指南列表",
+        mainEntityOfPage: { "@id": `${canonical}#webpage` },
+        itemListElement: guides.map((guide, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${baseUrl}/guides/${guide.slug}`,
+          name: guide.title,
+          description: guide.description,
         })),
       },
     ],
