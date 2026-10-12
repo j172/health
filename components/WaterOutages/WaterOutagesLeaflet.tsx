@@ -9,6 +9,7 @@ import type {
   EmergencyWaterStation,
 } from "@/lib/server/waterOutages/types";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
+import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 
 // Fix leaflet icon default path issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -59,10 +60,7 @@ export default function WaterOutagesLeaflet({
         scrollWheelZoom={false}
         className="h-full w-full"
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
 
         <MapViewController center={defaultCenter} zoom={defaultZoom} />
 
