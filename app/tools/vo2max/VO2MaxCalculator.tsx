@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cardClass, inputClass, primaryButtonClass, secondaryButtonClass, toggleButtonClass } from "@/components/Tools/toolStyles";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 type Gender = "male" | "female";
 
@@ -58,6 +60,24 @@ export default function VO2MaxCalculator() {
   const [hrRest, setHrRest] = useState("65");
   const [gender, setGender] = useState<Gender>("male");
   const [calculated, setCalculated] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill age/sex from the remembered shared body profile (default OFF —
+  // see issue #474). `hrRest` is a medical measurement value and is NEVER
+  // read from or written to the shared profile — BodyProfile's type doesn't
+  // even have a field for it, so there's no way to pass it to save() by mistake.
+  useEffect(() => {
+    if (profile.sex !== undefined) setGender(profile.sex);
+    if (profile.age !== undefined) setAge(String(profile.age));
+  }, [profile]);
+
+  // Persist only sex/age back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    const a = parseInt(age, 10);
+    const fields: { sex?: Gender; age?: number } = { sex: gender };
+    if (!isNaN(a) && a > 0) fields.age = a;
+    save(fields);
+  }, [gender, age, save]);
 
   const result = useMemo<VO2MaxResult | null>(() => {
     const a = parseInt(age, 10);
@@ -151,6 +171,15 @@ export default function VO2MaxCalculator() {
             <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">早晨起床前，靜臥測量 1 分鐘</p>
           </div>
         </div>
+
+        <BodyProfileControls
+          remember={remember}
+          isStorageAvailable={isStorageAvailable}
+          onRememberChange={setRemember}
+          onClearAll={clearAll}
+          hasSavedData={Object.keys(profile).length > 0}
+          idSuffix="vo2max"
+        />
 
         <div className="flex gap-3">
           <button onClick={handleCalculate} className={primaryButtonClass}>

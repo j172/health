@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { disclaimerClass, inputClass, labelClass, primaryButtonClass, toggleButtonClass } from "@/components/Tools/toolStyles";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 type Gender = "male" | "female";
 
@@ -51,6 +53,23 @@ export default function WaistHipCalculator() {
   const [hip, setHip] = useState("95");
   const [height, setHeight] = useState("170");
   const [calculated, setCalculated] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill from the remembered shared body profile (default OFF — see
+  // issue #474). Only height/sex are shared; waist/hip are specific to this
+  // calculator's own measurements, not part of the shared profile.
+  useEffect(() => {
+    if (profile.sex !== undefined) setGender(profile.sex);
+    if (profile.height !== undefined) setHeight(String(profile.height));
+  }, [profile]);
+
+  // Persist edits back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    const h = parseFloat(height);
+    const fields: { sex?: Gender; height?: number } = { sex: gender };
+    if (!isNaN(h) && h > 0) fields.height = h;
+    save(fields);
+  }, [gender, height, save]);
 
   const result = useMemo<WHRResult | null>(() => {
     if (!calculated) return null;
@@ -146,6 +165,15 @@ export default function WaistHipCalculator() {
           />
         </div>
       </div>
+
+      <BodyProfileControls
+        remember={remember}
+        isStorageAvailable={isStorageAvailable}
+        onRememberChange={setRemember}
+        onClearAll={clearAll}
+        hasSavedData={Object.keys(profile).length > 0}
+        idSuffix="waist-hip"
+      />
 
       <button onClick={() => setCalculated(true)} className={primaryButtonClass}>
         計算腰臀比

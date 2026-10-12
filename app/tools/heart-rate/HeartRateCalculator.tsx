@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { disclaimerClass, inputClass, labelClass, primaryButtonClass } from "@/components/Tools/toolStyles";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 interface HeartRateZone {
   name: string;
@@ -51,6 +53,21 @@ export default function HeartRateCalculator() {
   const [age, setAge] = useState("35");
   const [restHr, setRestHr] = useState("65");
   const [calculated, setCalculated] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill age from the remembered shared body profile (default OFF — see
+  // issue #474). `restHr` is a medical measurement value and is NEVER read
+  // from or written to the shared profile — BodyProfile's type doesn't even
+  // have a field for it, so there's no way to pass it to save() by mistake.
+  useEffect(() => {
+    if (profile.age !== undefined) setAge(String(profile.age));
+  }, [profile]);
+
+  // Persist only `age` back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    const a = parseInt(age);
+    if (!isNaN(a) && a > 0) save({ age: a });
+  }, [age, save]);
 
   const result = useMemo<HeartRateResult | null>(() => {
     if (!calculated) return null;
@@ -109,6 +126,15 @@ export default function HeartRateCalculator() {
           />
         </div>
       </div>
+
+      <BodyProfileControls
+        remember={remember}
+        isStorageAvailable={isStorageAvailable}
+        onRememberChange={setRemember}
+        onClearAll={clearAll}
+        hasSavedData={Object.keys(profile).length > 0}
+        idSuffix="heart-rate"
+      />
 
       <button onClick={() => setCalculated(true)} className={primaryButtonClass}>
         計算心率區間

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cardClass, disclaimerClass, inputClass, labelClass, primaryButtonClass, toggleButtonClass } from "@/components/Tools/toolStyles";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 type Goal = "maintain" | "lose" | "gain";
 type Gender = "male" | "female";
@@ -68,6 +70,23 @@ function calcNutrition(input: NutritionInput): NutritionResult {
 export default function NutritionAdvisor() {
   const [form, setForm] = useState<NutritionInput>({ age: 30, gender: "male", heightCm: 170, weightKg: 70, activityLevel: 3, goal: "maintain" });
   const [result, setResult] = useState<NutritionResult | null>(null);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill from the remembered shared body profile (default OFF — see issue #474).
+  useEffect(() => {
+    setForm((f) => ({
+      ...f,
+      ...(profile.sex !== undefined ? { gender: profile.sex } : {}),
+      ...(profile.age !== undefined ? { age: profile.age } : {}),
+      ...(profile.height !== undefined ? { heightCm: profile.height } : {}),
+      ...(profile.weight !== undefined ? { weightKg: profile.weight } : {}),
+    }));
+  }, [profile]);
+
+  // Persist edits back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    save({ sex: form.gender, age: form.age, height: form.heightCm, weight: form.weightKg });
+  }, [form.gender, form.age, form.heightCm, form.weightKg, save]);
 
   const handleCalc = () => setResult(calcNutrition(form));
 
@@ -146,6 +165,15 @@ export default function NutritionAdvisor() {
             ))}
           </div>
         </div>
+
+        <BodyProfileControls
+          remember={remember}
+          isStorageAvailable={isStorageAvailable}
+          onRememberChange={setRemember}
+          onClearAll={clearAll}
+          hasSavedData={Object.keys(profile).length > 0}
+          idSuffix="nutrition"
+        />
 
         <button type="button" onClick={handleCalc} className={primaryButtonClass}>
           計算營養建議

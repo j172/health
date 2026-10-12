@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { cardClass, inputClass, primaryButtonClass, secondaryButtonClass, toggleButtonClass } from "@/components/Tools/toolStyles";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 type Gender = "male" | "female";
 
@@ -64,6 +66,24 @@ export default function LBMCalculator() {
   const [weight, setWeight] = useState("65");
   const [gender, setGender] = useState<Gender>("male");
   const [calculated, setCalculated] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill from the remembered shared body profile (default OFF — see issue #474).
+  useEffect(() => {
+    if (profile.sex !== undefined) setGender(profile.sex);
+    if (profile.height !== undefined) setHeight(String(profile.height));
+    if (profile.weight !== undefined) setWeight(String(profile.weight));
+  }, [profile]);
+
+  // Persist edits back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    const h = parseFloat(height);
+    const w = parseFloat(weight);
+    const fields: { sex?: Gender; height?: number; weight?: number } = { sex: gender };
+    if (!isNaN(h) && h > 0) fields.height = h;
+    if (!isNaN(w) && w > 0) fields.weight = w;
+    save(fields);
+  }, [gender, height, weight, save]);
 
   const result = useMemo<LBMResult | null>(() => {
     const h = parseFloat(height);
@@ -158,6 +178,15 @@ export default function LBMCalculator() {
             </div>
           </div>
         </div>
+
+        <BodyProfileControls
+          remember={remember}
+          isStorageAvailable={isStorageAvailable}
+          onRememberChange={setRemember}
+          onClearAll={clearAll}
+          hasSavedData={Object.keys(profile).length > 0}
+          idSuffix="lbm"
+        />
 
         <div className="flex gap-3">
           <button onClick={handleCalculate} className={primaryButtonClass}>

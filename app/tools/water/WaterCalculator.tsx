@@ -6,7 +6,9 @@
  * 參考來源：台灣衛生福利部國民健康署建議
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useBodyProfile } from "@/lib/client/useBodyProfile";
+import BodyProfileControls from "@/components/Tools/BodyProfileControls";
 
 const ACTIVITY_LEVELS = [
   { value: 1, label: "久坐（辦公室、幾乎不運動）" },
@@ -34,6 +36,17 @@ export function WaterCalculator() {
   const [weight, setWeight] = useState(65);
   const [activityLevel, setActivityLevel] = useState(2);
   const [hotClimate, setHotClimate] = useState(false);
+  const { profile, remember, isStorageAvailable, setRemember, save, clearAll } = useBodyProfile();
+
+  // Pre-fill from the remembered shared body profile (default OFF — see issue #474).
+  useEffect(() => {
+    if (profile.weight !== undefined) setWeight(profile.weight);
+  }, [profile]);
+
+  // Persist edits back to the shared profile (no-ops unless remembering).
+  useEffect(() => {
+    if (weight > 0) save({ weight });
+  }, [weight, save]);
 
   const totalMl = useMemo(() => calcWaterMl(weight, activityLevel, hotClimate), [weight, activityLevel, hotClimate]);
   const cups = useMemo(() => Math.ceil(totalMl / 250), [totalMl]);
@@ -98,6 +111,15 @@ export function WaterCalculator() {
             高溫或出汗較多的環境 <span className="ml-1 text-xs text-neutral-500 dark:text-slate-400">（+500 ml）</span>
           </label>
         </div>
+
+        <BodyProfileControls
+          remember={remember}
+          isStorageAvailable={isStorageAvailable}
+          onRememberChange={setRemember}
+          onClearAll={clearAll}
+          hasSavedData={Object.keys(profile).length > 0}
+          idSuffix="water"
+        />
       </section>
 
       <section className="space-y-4 rounded-xl border border-primary/20 bg-zumthor p-6 dark:border-primary/30 dark:bg-primary/20">
