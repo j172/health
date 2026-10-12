@@ -14,7 +14,7 @@ const catalogEntry = getToolCatalogEntry("metro-alerts");
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["捷運公告", "捷運電梯檢修", "台北捷運即時資訊", "無障礙電梯動態", "北捷營運公告"],
+  keywords: ["捷運公告", "捷運電梯檢修", "台北捷運即時資訊", "無障礙電梯動態", "北捷營運公告", "臺鐵誤點", "高鐵停駛", "全台軌道通阻"],
   alternates: { canonical },
   openGraph: {
     title: catalogEntry.title,

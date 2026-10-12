@@ -124,7 +124,7 @@ export default function AccessibleTransitContent() {
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >
               <span>🚇</span>
-              <span>捷運營運與電梯檢修公告</span>
+              <span>全台軌道營運通阻</span>
             </Link>
             <Link
               href="/tools/long-term-care"

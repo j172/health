@@ -1129,13 +1129,19 @@ export const TABLE_DDL = {
       alert_type VARCHAR(50) NOT NULL DEFAULT 'elevator',
       alert_time DATETIME NOT NULL,
       status VARCHAR(20) NOT NULL DEFAULT 'active',
+      -- Issue #470: upgraded from Taipei-only to all 6 metro/light-rail
+      -- systems + TRA + THSR. Defaults keep every legacy (pre-#470) row
+      -- correctly labeled as Taipei Metro without a backfill.
+      system_code VARCHAR(20) NOT NULL DEFAULT 'TRTC',
+      system_label VARCHAR(50) NOT NULL DEFAULT '臺北捷運',
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
       UNIQUE KEY uq_metro_alert (external_id),
       KEY idx_metro_station (station_name),
       KEY idx_metro_line (line_name),
-      KEY idx_metro_time (alert_time)
+      KEY idx_metro_time (alert_time),
+      KEY idx_metro_system (system_code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // 便民服務：北北桃竹公共自行車 (YouBike 2.0) 即時站點車位

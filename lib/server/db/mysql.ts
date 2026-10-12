@@ -304,6 +304,18 @@ const runSchemaMigrations = async (): Promise<void> => {
       ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'seed' COMMENT 'seed | tdx_bus' AFTER description,
       ADD COLUMN IF NOT EXISTS sample_trips_json JSON NULL AFTER source
   `);
+  // Issue #470: metro_alerts upgraded from Taipei-only (data.taipei CSV) to
+  // all 6 TDX metro/light-rail systems + TRA + THSR. Defaults keep every
+  // pre-#470 row correctly labeled as Taipei Metro without a backfill.
+  await p.query(`
+    ALTER TABLE metro_alerts
+      ADD COLUMN IF NOT EXISTS system_code VARCHAR(20) NOT NULL DEFAULT 'TRTC' AFTER status,
+      ADD COLUMN IF NOT EXISTS system_label VARCHAR(50) NOT NULL DEFAULT '臺北捷運' AFTER system_code
+  `);
+  await p.query(`
+    ALTER TABLE metro_alerts
+      ADD INDEX IF NOT EXISTS idx_metro_system (system_code)
+  `);
   // Unlike the DDL above, this can't use `ADD INDEX IF NOT EXISTS` — MySQL
   // has no "if not exists" form for FULLTEXT indexes, so a second run (or a
   // host whose MySQL build lacks the ngram parser plugin) throws here every
@@ -557,9 +569,20 @@ const runSchemaMigrations = async (): Promise<void> => {
           await p.query(
             `INSERT IGNORE INTO metro_alerts (
               external_id, line_name, station_name, alert_title, alert_content,
-              alert_type, alert_time, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-            [a.externalId, a.lineName, a.stationName, a.alertTitle, a.alertContent, a.alertType, a.alertTime, a.status]
+              alert_type, alert_time, status, system_code, system_label, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+            [
+              a.externalId,
+              a.lineName,
+              a.stationName,
+              a.alertTitle,
+              a.alertContent,
+              a.alertType,
+              a.alertTime,
+              a.status,
+              a.systemCode || "TRTC",
+              a.systemLabel || "臺北捷運",
+            ]
           );
         }
         console.log(`[ensureSchema] Successfully seeded ${alerts.length} metro alerts into MySQL`);
