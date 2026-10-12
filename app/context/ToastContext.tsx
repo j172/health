@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Toaster } from "react-hot-toast";
+import { Toaster } from "@/components/Common/Toast";
 
 const ToasterContext = () => {
   const [mounted, setMounted] = useState(false);
@@ -13,7 +13,7 @@ const ToasterContext = () => {
 
   return (
     <div>
-      <Toaster position="top-center" reverseOrder={false} />
+      <Toaster />
     </div>
   );
 };

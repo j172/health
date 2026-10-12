@@ -1,7 +1,11 @@
-import iconv from "iconv-lite";
-
-/** Decodes a Big5-encoded CSV buffer (common for older MOHW open-data exports) to a UTF-8 string. */
-export const decodeBig5 = (buffer: Buffer): string => iconv.decode(buffer, "big5");
+/**
+ * Decodes a Big5-encoded CSV buffer (common for older MOHW open-data
+ * exports) to a UTF-8 string. Uses Node's built-in full-ICU `TextDecoder`
+ * instead of `iconv-lite` — same pattern already established in
+ * lib/server/metroAlerts/runSync.ts — confirmed byte-for-byte identical to
+ * iconv-lite's output on a real MOHW Big5 CSV sample (issue #479).
+ */
+export const decodeBig5 = (buffer: Buffer): string => new TextDecoder("big5").decode(buffer);
 
 /**
  * CSV parser operating on the whole text as one character stream, not

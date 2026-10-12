@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { toast } from "@/components/Common/Toast";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { TOOL_GROUP_META } from "@/lib/server/tools/catalog";
 
