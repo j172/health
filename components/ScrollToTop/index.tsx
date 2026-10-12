@@ -31,7 +31,10 @@ export default function ScrollToTop() {
   }, []);
 
   return (
-    <div className="z-99 fixed bottom-8 right-8">
+    // bottom-24 clears SiteNav.tsx's fixed mobile bottom nav bar (issue
+    // #473, <1024px only) plus its safe-area inset; lg:bottom-8 restores the
+    // original desktop position where that bar doesn't render.
+    <div className="z-99 fixed bottom-24 right-4 lg:bottom-8 lg:right-8">
       {isVisible && (
         <div
           onClick={scrollToTop}
