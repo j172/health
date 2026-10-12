@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
+import { getToolCategoryLink } from "@/lib/server/tools/navModel";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
@@ -44,6 +45,13 @@ export default function ToolPageShell({
     .filter((t): t is NonNullable<typeof t> => Boolean(t));
 
   const toolGraph = catalogEntry ? buildToolGraphJsonLd(catalogEntry) : null;
+  // Category breadcrumb level (issue #459): resolved from the catalog
+  // entry's `group` via the shared getToolCategoryLink helper, kept in sync
+  // with the JSON-LD BreadcrumbList buildToolGraphJsonLd builds for the same
+  // tool. `catalogEntry` is only absent for a slug with no TOOL_CATALOG
+  // entry, in which case there's no group to resolve and the breadcrumb
+  // falls back to its previous 3-level shape.
+  const categoryLink = catalogEntry ? getToolCategoryLink(catalogEntry.group) : null;
 
   return (
     <>
@@ -69,10 +77,20 @@ export default function ToolPageShell({
               <li aria-hidden="true" className="text-slate-300 dark:text-slate-700">/</li>
               <li>
                 <Link href="/tools" className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                  健康工具與公衛資料庫
+                  工具
                 </Link>
               </li>
               <li aria-hidden="true" className="text-slate-300 dark:text-slate-700">/</li>
+              {categoryLink ? (
+                <>
+                  <li>
+                    <Link href={categoryLink.href} className="hover:text-indigo-600 dark:hover:text-indigo-400">
+                      {categoryLink.label}
+                    </Link>
+                  </li>
+                  <li aria-hidden="true" className="text-slate-300 dark:text-slate-700">/</li>
+                </>
+              ) : null}
               <li aria-current="page" className="font-semibold text-slate-700 dark:text-slate-300">
                 {title}
               </li>

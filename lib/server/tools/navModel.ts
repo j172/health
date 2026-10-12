@@ -320,6 +320,40 @@ export function buildCategoryPage(groupSlug: string): CategoryPageModel | null {
   };
 }
 
+export interface ToolCategoryLink {
+  group: ToolGroup;
+  label: string;
+  href: string;
+}
+
+/**
+ * Resolves a tool's category breadcrumb destination — the single "what is
+ * this tool's category label and URL" lookup shared by the visual
+ * breadcrumb (ToolPageShell.tsx) and the BreadcrumbList JSON-LD
+ * (`buildToolGraphJsonLd` in lib/server/news/seo.ts), so the 4-level
+ * "首頁 / 工具 / 分類 / 工具" breadcrumb (issue #459) can't drift between its
+ * two representations — both call this instead of hand-duplicating the
+ * category label/URL string.
+ *
+ * Throws on an unknown group rather than returning `null`, unlike
+ * `buildCategoryPage` — every `ToolCatalogEntry.group` is typed as
+ * `ToolGroup` and must already match one of the 7 `TOOL_GROUP_META`
+ * entries, so an unresolved group here means the catalog and the group
+ * metadata have desynced, which is a programming error worth failing loudly
+ * on rather than silently mis-rendering a tool page's breadcrumb.
+ */
+export function getToolCategoryLink(group: ToolGroup): ToolCategoryLink {
+  const meta = TOOL_GROUP_META.find((m) => m.group === group);
+  if (!meta) {
+    throw new Error(`getToolCategoryLink: unknown tool group "${group}"`);
+  }
+  return {
+    group: meta.group,
+    label: meta.labelDefault,
+    href: `/tools/category/${meta.group}`,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // 4. Merge redirects
 // ---------------------------------------------------------------------------
