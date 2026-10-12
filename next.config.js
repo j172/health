@@ -139,6 +139,16 @@ const nextConfig = {
         destination: "/tools/long-term-care",
         permanent: true,
       },
+      // issue #448 (2.0 §D merge item M2) — "/tools/green-shops" was the one
+      // member of the #256 green-certification-family merge left on its own
+      // page/catalog entry; it uses the exact same `green_shop` facility data
+      // as the "綠色商店" tab on /tools/green-certifications, so it 301s there
+      // with a query param that auto-selects that tab instead of the default.
+      {
+        source: "/tools/green-shops",
+        destination: "/tools/green-certifications?tab=green-shops",
+        permanent: true,
+      },
     ];
   },
 };

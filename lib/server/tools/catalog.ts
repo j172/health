@@ -3190,38 +3190,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "green-shops",
-    title: "全國綠色商店與環保標章商品地圖",
-    keywords: ["綠色商店", "環保標章商品"],
-    navLabel: "綠色商店地圖",
-    description:
-      "查詢環境部認證之綠色商店、環保餐廳與碳足跡標籤商品販售通路，提供自備容器優惠、環保集點與友善低碳綠生活據點。",
-    directAnswer:
-      "綠色商店係指設置環保標章或碳足跡商品專區，並推動節能減塑、自備購物袋優惠措施之環境部認證綠色消費據點。",
-    scientificBasis: [
-      {
-        title: "環境部資源循環署全民綠生活與綠色商店推廣要點",
-        authority: "環境部",
-        url: "https://www.moenv.gov.tw/",
-      },
-    ],
-    relatedSlugs: ["green-certifications", "carbon-footprint", "cool-spots"],
-    group: "environment",
-    schemaType: "WebPage",
-    faqs: [
-      {
-        question: "什麼是環境部認證的「綠色商店」？",
-        answer:
-          "綠色商店是指販售環保標章、節能標章、省水標章或綠建材標章商品，並承諾落實自身節能減碳、減少包裝廢棄物之實體通路或連鎖超市。",
-      },
-      {
-        question: "在綠色商店消費能享有什麼好處？",
-        answer:
-          "消費者於綠色商店購買具環保標章產品，除可搭配環境部「環保集點 (GreenPoint)」累積綠點折抵消費外，許多據點亦提供自備購物袋或容器折價之實質獎勵。",
-      },
-    ],
-  },
-  {
     slug: "hearing-aid-subsidies",
     title: "助聽器評估特約醫療院所查詢：公費聽力輔具評估",
     keywords: ["助聽器補助", "聽力輔具評估", "公費助聽器"],
