@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import Provider from "./(site)/Provider";
-import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import { buildSiteGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import InAppBrowserBanner from "@/components/Common/InAppBrowserBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
@@ -77,12 +77,26 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Site-wide Organization + WebSite(SearchAction) + SiteNavigationElement
+  // @graph, rendered on every route via this single root layout (issue #458).
+  // Pages with their own richer entity graph (home/news/tools/llm-info) also
+  // declare these same @id-addressed entities again in their own @graph —
+  // that duplication is harmless (Google merges/dedupes by matching @id) and
+  // this root-level copy is what guarantees true site-wide coverage for the
+  // remaining routes (e.g. /privacy, /accessibility, /emergency) that don't
+  // build their own composite graph.
+  const siteGraph = buildSiteGraphJsonLd();
+
   return (
     <html lang="zh-Hant-TW" suppressHydrationWarning>
       <head>
         <link rel="alternate" type="application/rss+xml" title={`${SITE_NAME} - 最新公衛與健康新聞 (RSS 2.0)`} href="/feed.xml" />
         <link rel="alternate" type="text/plain" title={`${SITE_NAME} - LLM / AI Index (llms.txt)`} href="/llms.txt" />
         <link rel="alternate" type="text/plain" title={`${SITE_NAME} - LLM Full Knowledge Base (llms-full.txt)`} href="/llms-full.txt" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteGraph) }}
+        />
       </head>
       <body className={`dark:bg-black ${inter.className}`} suppressHydrationWarning>
         <GoogleTag />
