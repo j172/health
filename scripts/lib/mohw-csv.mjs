@@ -1,10 +1,12 @@
 // Shared by scripts/import-mohw-disability-welfare.mjs and
 // scripts/import-mohw-elder-welfare.mjs — both parse a Big5-encoded MOHW CSV
 // export and submit the resulting facility records to the same admin
-// endpoint. facilities.mjs/ltc-contracted.mjs are NOT included here: their
+// endpoint. import-mohw-facilities.mjs is NOT included here: its
 // parseCsv/submit shapes genuinely differ (a line-based parser and a
-// chunked-batch submit, respectively), so folding them in would change their
-// behavior rather than just removing duplication.
+// chunked-batch submit, respectively), so folding it in would change its
+// behavior rather than just removing duplication. (import-mohw-ltc-
+// contracted.mjs, formerly excluded here for the same reason, was retired
+// in issue #447 — superseded by import-mohw-ltc-gis.mjs.)
 
 // Full-text (not line-split-first) CSV parser — some MOHW exports embed
 // literal newlines inside quoted fields, which a split-on-newline-first

@@ -129,6 +129,16 @@ const nextConfig = {
         destination: "/tools/carbon-footprint",
         permanent: true,
       },
+      // issue #447 (2.0 §D merge item M1) — "/tools/ltc-contracted" was a
+      // noindex ghost page whose facility type and categories are a strict
+      // subset of "/tools/long-term-care" (which already covers every
+      // contracted service item it offered). Retired, not merged: there was
+      // no content here that long-term-care didn't already have.
+      {
+        source: "/tools/ltc-contracted",
+        destination: "/tools/long-term-care",
+        permanent: true,
+      },
     ];
   },
 };

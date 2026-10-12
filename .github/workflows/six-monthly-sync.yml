@@ -242,13 +242,16 @@ jobs:
             curl -fsS --retry 3 "$HEALTHCHECKS_URL_SIX_MONTHLY_SYNC/fail"
           fi
 
-      # NOT run here: the 4 MOHW imports that fetch from ltcpap.mohw.gov.tw /
+      # NOT run here: the 3 MOHW imports that fetch from ltcpap.mohw.gov.tw /
       # www.opendata.mohw.gov.tw. Empirically confirmed unreachable from the
       # production host too (re-verified 2026-08-01 via direct SSH: both
       # hosts time out after 15s) — this isn't the same public-domain/WAF
       # issue the tunnel above works around, the mohw.gov.tw subdomains
-      # themselves are unreachable regardless of caller. These four
-      # (scripts/import-mohw-facilities.mjs, import-mohw-ltc-contracted.mjs,
-      # import-mohw-disability-welfare.mjs, import-mohw-elder-welfare.mjs)
-      # can only be run from a residential/office network by hand — see
-      # run-six-monthly-sync.sh's header comment.
+      # themselves are unreachable regardless of caller. These three
+      # (scripts/import-mohw-facilities.mjs, import-mohw-disability-welfare.mjs,
+      # import-mohw-elder-welfare.mjs) can only be run from a residential/office
+      # network by hand — see run-six-monthly-sync.sh's header comment.
+      # (issue #447: import-mohw-ltc-contracted.mjs, the 4th script formerly
+      # listed here, was retired — its ltc_contracted facility type was a
+      # narrower duplicate of what import-mohw-ltc-gis.mjs's all.csv/ltc.csv
+      # already ingests as facility_type "long_term_care".)

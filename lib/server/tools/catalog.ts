@@ -1230,7 +1230,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nhi.gov.tw",
       },
     ],
-    relatedSlugs: ["clinics", "ltc-contracted", "long-term-care"],
+    relatedSlugs: ["clinics", "long-term-care"],
     faqs: [
       {
         question: "居家醫療服務包含哪些內容？",
@@ -1305,7 +1305,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["long-term-care", "ltc-contracted", "disability-welfare", "senior-friendly"],
+    relatedSlugs: ["long-term-care", "disability-welfare", "senior-friendly"],
     faqs: [
       {
         question: "資料涵蓋哪些老人福利機構？",
@@ -1330,7 +1330,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://cloud.hakka.gov.tw/Pub/Opendata/DTST20230600002.json",
       },
     ],
-    relatedSlugs: ["ltc-contracted", "elder-welfare"],
+    relatedSlugs: ["long-term-care", "elder-welfare"],
     faqs: [
       {
         question: "什麼是「伯公照護站」？提供哪些服務？",
@@ -3596,7 +3596,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["elder-welfare", "accessible-transit", "ltc-contracted"],
+    relatedSlugs: ["elder-welfare", "accessible-transit", "long-term-care"],
     faqs: [
       {
         question: "敬老卡申請資格是什麼？",
@@ -3716,11 +3716,7 @@ export function toolsInGroup(
  * loudly at build/request time instead of silently rendering blank title/description. */
 export function getToolCatalogEntry(slug: string): ToolCatalogEntry {
   const normalizedSlug =
-    slug === "tax-organizations"
-      ? "npo-organizations"
-      : slug === "ltc-contracted"
-      ? "long-term-care"
-      : slug;
+    slug === "tax-organizations" ? "npo-organizations" : slug;
   const entry = TOOL_CATALOG.find((tool) => tool.slug === normalizedSlug);
   if (!entry) {
     throw new Error(`No TOOL_CATALOG entry for slug "${slug}"`);
