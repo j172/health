@@ -280,19 +280,6 @@
 }
 
 @layer utilities {
-  /* third-party libraries CSS */
-
-  .testimonial-01 .swiper-pagination-bullet {
-    @apply h-2.5 w-2.5 bg-stroke opacity-100;
-  }
-  .testimonial-01 .swiper-pagination-bullet-active {
-    @apply w-5 rounded-full bg-primary;
-  }
-
-  .testimonial-01 .swiper-pagination {
-    @apply relative pt-[50px];
-  }
-
   #supportCheckbox:checked ~ div span {
     @apply opacity-100;
   }

@@ -24,16 +24,15 @@
   <!-- 2. 核心技術棧版本 -->
   <img src="https://img.shields.io/badge/Next.js-16.3%20(Turbopack)-black?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/React-19.3-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-5.8-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5" />
+  <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 6" />
   <img src="https://img.shields.io/badge/Node.js-20%2B%20%7C%2022%2B-5FA04E?style=flat-square&logo=node.js&logoColor=white" alt="Node.js 20+" />
   <img src="https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
-  <img src="https://img.shields.io/badge/Framer%20Motion-v13-FF0055?style=flat-square&logo=framer&logoColor=white" alt="Framer Motion 13" />
   <img src="https://img.shields.io/badge/MySQL-8.0%20(Pooled)-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL 8.0" />
 </p>
 
 <p align="center">
   <!-- 3. 品質與測試指標 -->
-  <img src="https://img.shields.io/badge/Automated%20Tests-404%2F404%20Passing-success?style=flat-square&logo=node.js&logoColor=white" alt="Tests" />
+  <img src="https://img.shields.io/badge/Automated%20Tests-620%2F620%20Passing-success?style=flat-square&logo=node.js&logoColor=white" alt="Tests" />
   <img src="https://img.shields.io/badge/Typecheck-0%20Errors-success?style=flat-square&logo=typescript&logoColor=white" alt="Typecheck" />
   <img src="https://img.shields.io/badge/Image%20Funnel-4--Tier%20Resilient-blueviolet?style=flat-square&logo=unsplash&logoColor=white" alt="Four Tier Funnel" />
   <img src="https://img.shields.io/badge/Broken%20Images-0%25%20Guaranteed-brightgreen?style=flat-square" alt="Zero Broken Images" />
@@ -74,13 +73,13 @@
 1. [平臺核心亮點與願景](#-平臺核心亮點與願景)
 2. [四層新聞圖片漏斗架構 (Four-Tier Funnel)](#-四層新聞圖片漏斗架構-four-tier-image-funnel)
 3. [70+ 款生活便民與公衛防災工具速查矩陣](#-70-款生活便民與公衛防災工具速查矩陣)
-   - [A. 身體健康與體態計算](#a-身體健康與體態數值計算-12-款)
-   - [B. 醫療院所與即時量能](#b-醫療院所與即時量能資源-11-款)
-   - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-7-款)
-   - [D. 婦幼兒少與家庭生活](#d-婦幼兒少與家庭生活服務-10-款)
-   - [E. 即時環境與災害觀測](#e-即時環境與公衛災害觀測-13-款)
-   - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-13-款)
-   - [G. 文化休閒與毛孩生活](#g-文化展演休閒與毛孩生活-8-款)
+   - [A. 健康自我評估 (12 款)](#a-健康自我評估-12-款)
+   - [B. 就醫與用藥 (13 款)](#b-就醫與用藥-13-款)
+   - [C. 長照與社會福利 (9 款)](#c-長照與社會福利-9-款)
+   - [D. 婦幼與家庭 (9 款)](#d-婦幼與家庭-9-款)
+   - [E. 防災與示警 (13 款)](#e-防災與示警-13-款)
+   - [F. 環境與食品安全 (11 款)](#f-環境與食品安全-11-款)
+   - [G. 交通、生活與文化 (12 款)](#g-交通生活與文化-12-款)
 4. [高防禦性系統工程與架構設計](#-高防禦性系統工程與架構設計)
 5. [雙軌定時排程矩陣 (Dual-Track Cron)](#-雙軌定時排程矩陣-dual-track-cron)
 6. [多語言國際化 (i18n & Collation)](#-多語言國際化-i18n--collation)
@@ -142,11 +141,11 @@ flowchart TD
 
 ## 🧰 70+ 款生活便民與公衛防災工具速查矩陣
 
-平臺提供 7 大專業領域、70+ 款互動式計算與全臺地理圖資工具：
+平臺提供 7 大專業領域、79 款互動式計算與全臺地理圖資工具（分類與統計依 `lib/server/tools/catalog.ts` 的 `TOOL_GROUP_META` 單一事實來源，與站內導覽選單、頁尾分類及 `/tools` 索引頁完全同步）：
 
-### A. 身體健康與體態數值計算 (12 款)
+### A. 健康自我評估 (12 款)
 
-| 工具名稱 | 路徑 | 參照標準 / 演算法 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
 | **BMI 計算器** | [`/tools/bmi`](https://health.j172.tw/tools/bmi) | 衛福部國健署 & WHO 體重標準 | 支援男女各年齡層健康體重範圍對照 |
 | **卡路里需求計算器** | [`/tools/calories`](https://health.j172.tw/tools/calories) | Mifflin-St Jeor 基礎代謝公式 | 5 段活動係數計算 BMR 與 TDEE 熱量赤字建議 |
@@ -154,104 +153,109 @@ flowchart TD
 | **每日飲水量計算器** | [`/tools/water`](https://health.j172.tw/tools/water) | 體重活動量綜合法 | 智慧生成 8 段分時補水時間表 |
 | **體脂率計算器** | [`/tools/body-fat`](https://health.j172.tw/tools/body-fat) | 美國海軍體脂演算法 (Navy Method) | 免儀器透過頸圍、腰圍、臀圍精準估算 |
 | **腰臀比計算器** | [`/tools/waist-hip`](https://health.j172.tw/tools/waist-hip) | WHO 腹部中心性肥胖分類標準 | 評估向心型肥胖與心血管慢性病風險等級 |
-| **去脂體重 (LBM)** | [`/tools/lbm`](https://health.j172.tw/tools/lbm) | Boer & James 精密公式 | 健美、運動員骨骼肌重量與用藥劑量基準 |
-| **最大攝氧量 (VO2Max)** | [`/tools/vo2max`](https://health.j172.tw/tools/vo2max) | Uth 安靜心率心肺對比公式 | 評估心肺耐力，可搭配穿戴裝置數值比對 |
 | **目標心率計算器** | [`/tools/heart-rate`](https://health.j172.tw/tools/heart-rate) | Karvonen 儲備心率 (HRR) 公式 | 劃分熱身、燃脂、有氧、無氧 5 大運動區間 |
 | **血壓分析器** | [`/tools/blood-pressure`](https://health.j172.tw/tools/blood-pressure) | 2023 ESH 歐洲高血壓學會指南 | 即時判別低血壓、理想、正常高值與高血壓期別 |
 | **睡眠品質評估 (PSQI)** | [`/tools/sleep`](https://health.j172.tw/tools/sleep) | 匹茲堡睡眠品質指數量表 (PSQI) | 7 大維度睡眠障礙診斷與改善建議 |
 | **自覺壓力檢測 (PSS-10)** | [`/tools/stress`](https://health.j172.tw/tools/stress) | PSS-10 國際知覺壓力量表 | 辨識身心過負荷狀態與心理韌性分析 |
+| **去脂體重 (LBM)** | [`/tools/lbm`](https://health.j172.tw/tools/lbm) | Boer & James 精密公式 | 健美、運動員骨骼肌重量與用藥劑量基準 |
+| **最大攝氧量 (VO2Max)** | [`/tools/vo2max`](https://health.j172.tw/tools/vo2max) | Uth 安靜心率心肺對比公式 | 評估心肺耐力，可搭配穿戴裝置數值比對 |
 
-### B. 醫療院所與即時量能資源 (11 款)
+### B. 就醫與用藥 (13 款)
 
-| 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
 | **全國醫療特約診所** | [`/tools/clinics`](https://health.j172.tw/tools/clinics) | 衛生福利部中央健康保險署 | 依縣市行政區、科別篩選特約基層診所 |
 | **特約健保藥局地圖** | [`/tools/pharmacies`](https://health.j172.tw/tools/pharmacies) | 衛生福利部中央健康保險署 | 全臺藥局地址、電話與即時營業導航 |
-| **全國急診即時壅塞監測** | [`/tools/er-status`](https://health.j172.tw/tools/er-status) | 衛福部緊急醫療管理系統 (EMIS) | 全國醫學中心急診等候住院、推床即時量能 |
-| **全臺 AED 應急地圖** | [`/tools/aed`](https://health.j172.tw/tools/aed) | 衛生福利部公共場所 AED 登錄平臺 | 緊急自動體外心臟電擊去顫器 GPS 導航找尋 |
-| **成人預防保健特約機構** | [`/tools/adult-preventive-care`](https://health.j172.tw/tools/adult-preventive-care) | 衛福部國民健康署 | 免費成人健檢、三高與四癌篩檢機構 |
+| **藥品許可證查詢** | [`/tools/drugs`](https://health.j172.tw/tools/drugs) | 衛生福利部食品藥物管理署 (TFDA) | 核准藥品許可證字號、中英文品名與外觀顏色／形狀辨識 |
 | **成人預防健康檢查地圖** | [`/tools/health-checks`](https://health.j172.tw/tools/health-checks) | 勞動部職業安全衛生署 / 衛福部 | 勞工體格檢查、公務健檢與一般體檢機構 |
-| **居家急症照護機構** | [`/tools/home-emergency-care`](https://health.j172.tw/tools/home-emergency-care) | 衛生福利部新制急症照護 | 在宅急症抗生素治療與遠距照護特約機構 |
-| **器官捐贈與移植醫院** | [`/tools/organ-donation-hospitals`](https://health.j172.tw/tools/organ-donation-hospitals) | 財團法人器官捐贈移植登錄及病人自主推廣中心 | 器官摘取與移植認可合格醫院清單 |
-| **罕見疾病照護網絡** | [`/tools/rare-disease-care`](https://health.j172.tw/tools/rare-disease-care) | 衛生福利部國民健康署 | 罕見疾病照護諮詢機構與遺傳諮詢中心 |
+| **全國急診即時壅塞監測** | [`/tools/er-status`](https://health.j172.tw/tools/er-status) | 衛福部緊急醫療管理系統 (EMIS) | 全國醫學中心急診等候住院、推床即時量能 |
+| **健康食品與保健認證小綠人** | [`/tools/health-supplements`](https://health.j172.tw/tools/health-supplements) | 衛生福利部審核通過健康食品 | 取得衛署健食字號認證之功效宣稱與保健成分 |
+| **心靈健康諮商與醫療** | [`/tools/mental-health`](https://health.j172.tw/tools/mental-health) | 衛福部心理健康司 | 心理諮商所、臨床心理所與精神復健機構 |
 | **戒菸服務特約醫療院所** | [`/tools/smoking-cessation`](https://health.j172.tw/tools/smoking-cessation) | 國健署戒菸治療服務系統 | 尼古丁戒斷門診、衛教諮詢與補助方案機構 |
-| **全國非營利公衛組織 (NPO)** | [`/tools/npo-organizations`](https://health.j172.tw/tools/npo-organizations) | 內政部人民團體資料庫 | 公衛醫療基金會、罕病協會與長照公益組織 |
+| **成人預防保健特約機構** | [`/tools/adult-preventive-care`](https://health.j172.tw/tools/adult-preventive-care) | 衛福部國民健康署 | 免費成人健檢、三高與四癌篩檢機構 |
+| **罕見疾病照護網絡** | [`/tools/rare-disease-care`](https://health.j172.tw/tools/rare-disease-care) | 衛生福利部國民健康署 | 罕見疾病照護諮詢機構與遺傳諮詢中心 |
+| **器官捐贈與移植醫院** | [`/tools/organ-donation-hospitals`](https://health.j172.tw/tools/organ-donation-hospitals) | 財團法人器官捐贈移植登錄及病人自主推廣中心 | 器官摘取與移植認可合格醫院清單 |
+| **居家急症照護機構** | [`/tools/home-emergency-care`](https://health.j172.tw/tools/home-emergency-care) | 衛生福利部新制急症照護 | 在宅急症抗生素治療與遠距照護特約機構 |
+| **醫事人員性別事件查詢（狼醫專區）** | [`/tools/medical-violators`](https://health.j172.tw/tools/medical-violators) | 衛生福利部醫事司 | 公告經法院判決或醫事審議懲戒確定之性平事件醫事人員名冊 |
 
-### C. 長照安老與身心社福資源 (7 款)
+### C. 長照與社會福利 (9 款)
 
-| 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
 | **長照照顧圈地圖** | [`/tools/long-term-care`](https://health.j172.tw/tools/long-term-care) | 衛生福利部長期照顧司 / 中央健康保險署 / 社會及家庭署 / 客家委員會 | 整合長照2.0特約機構、居家醫療、老人福利機構與伯公照護站，可切換1/3/5公里照顧圈半徑 |
 | **身心障礙福利服務機構** | [`/tools/disability-welfare`](https://health.j172.tw/tools/disability-welfare) | 衛生福利部社會及家庭署 | 日間日間照顧、住宿式全日型生活機構 |
-| **心靈健康諮商與醫療** | [`/tools/mental-health`](https://health.j172.tw/tools/mental-health) | 衛福部心理健康司 | 心理諮商所、臨床心理所與精神復健機構 |
-| **助聽器補助特約廠商** | [`/tools/hearing-aid-subsidies`](https://health.j172.tw/tools/hearing-aid-subsidies) | 社會局身心障礙輔具中心 | 政府聽力輔具評估與特約代償墊付門市 |
-| **全臺身心障礙庇護工場** | [`/tools/sheltered-workshops`](https://health.j172.tw/tools/sheltered-workshops) | 勞動部勞動力發展署 | 烘焙、手工藝、清潔服務庇護商品與訂購指南 |
 | **無障礙自動櫃員機 (ATM)** | [`/tools/disability-atm`](https://health.j172.tw/tools/disability-atm) | 金融監督管理委員會 / 銀行公會 | 視障語音、輪椅友善升降無障礙 ATM 定位 |
+| **全國非營利公衛組織 (NPO)** | [`/tools/npo-organizations`](https://health.j172.tw/tools/npo-organizations) | 內政部人民團體資料庫 | 公衛醫療基金會、罕病協會與長照公益組織 |
+| **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車、輪椅接駁客運班次路線總覽 |
+| **全臺身心障礙庇護工場** | [`/tools/sheltered-workshops`](https://health.j172.tw/tools/sheltered-workshops) | 勞動部勞動力發展署 | 烘焙、手工藝、清潔服務庇護商品與訂購指南 |
+| **助聽器補助特約廠商** | [`/tools/hearing-aid-subsidies`](https://health.j172.tw/tools/hearing-aid-subsidies) | 社會局身心障礙輔具中心 | 政府聽力輔具評估與特約代償墊付門市 |
 | **綠色殯葬與環保設施** | [`/tools/funeral-facilities`](https://health.j172.tw/tools/funeral-facilities) | 內政部殯葬資訊網 | 樹葬、海葬、灑葬環保自然葬園區查詢 |
+| **敬老卡補助與樂齡旅遊地圖** | [`/tools/senior-friendly`](https://health.j172.tw/tools/senior-friendly) | 交通部 TDX / 衛福部社會及家庭署 | 全臺 22 縣市敬老卡交通補助查詢，整合景區無障礙設施與樂齡套票 |
 
-### D. 婦幼兒少與家庭生活服務 (10 款)
+### D. 婦幼與家庭 (9 款)
 
-| 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
-| **全國公私立幼兒園清單** | [`/tools/kindergartens`](https://health.j172.tw/tools/kindergartens) | 教育部全國教保資訊網 | 公立、非營利、準公共幼兒園評鑑與核定人數 |
-| **兒童安全愛心熱點地圖** | [`/tools/child-safety-spots`](https://health.j172.tw/tools/child-safety-spots) | 內政部警政署 | 超商、學校警衛室兒少緊急庇護通報熱點 |
 | **兒童及少年福利機構** | [`/tools/child-welfare-institutions`](https://health.j172.tw/tools/child-welfare-institutions) | 衛生福利部社會及家庭署 | 公共托育家園、托嬰中心、早期療育發展機構 |
-| **母嬰親善醫療院所認證** | [`/tools/baby-friendly-hospitals`](https://health.j172.tw/tools/baby-friendly-hospitals) | 衛生福利部國民健康署 | 鼓勵母乳哺育、24H 母嬰同室評鑑認證醫院 |
+| **全國公私立幼兒園清單** | [`/tools/kindergartens`](https://health.j172.tw/tools/kindergartens) | 教育部全國教保資訊網 | 公立、非營利、準公共幼兒園評鑑與核定人數 |
+| **全國短期補習班登記查詢** | [`/tools/cram-schools`](https://health.j172.tw/tools/cram-schools) | 教育部全國補習班資訊管理系統 | 立案狀態、科目類別、負責人與安全稽查 |
+| **本土原住民族語幼兒辭典** | [`/tools/child-native-languages`](https://health.j172.tw/tools/child-native-languages) | 教育部國語推行委員會 / 原民會 | 16 原住民族族語與客家語童趣注音辭庫 |
+| **全國公立動物收容認領養** | [`/tools/pet-adoption`](https://health.j172.tw/tools/pet-adoption) | 農業部動物保護資訊網 | 公立收容所犬貓等毛孩照片、特徵與認養手續 |
 | **全國公共場所哺集乳室** | [`/tools/breastfeeding-rooms`](https://health.j172.tw/tools/breastfeeding-rooms) | 國民健康署哺集乳室清冊 | 交通樞紐、觀光景點與百貨哺乳育嬰空間 |
 | **避孕措施衛教與諮詢地圖** | [`/tools/contraception-map`](https://health.j172.tw/tools/contraception-map) | 衛福部青少年健康衛教中心 | 婦產科門診、家庭計畫衛教機構諮詢 |
-| **本土原住民族語幼兒辭典** | [`/tools/child-native-languages`](https://health.j172.tw/tools/child-native-languages) | 教育部國語推行委員會 / 原民會 | 16 原住民族族語與客家語童趣注音辭庫 |
-| **全國短期補習班登記查詢** | [`/tools/cram-schools`](https://health.j172.tw/tools/cram-schools) | 教育部全國補習班資訊管理系統 | 立案狀態、科目類別、負責人與安全稽查 |
-| **全國最新好書出版目錄** | [`/tools/latest-books`](https://health.j172.tw/tools/latest-books) | 國家圖書館 ISBN 申辦中心 | 本月新書、親職教育與醫藥科普書單速遞 |
-| **獨立特色書店地圖** | [`/tools/bookstores`](https://health.j172.tw/tools/bookstores) | 文化部文化資源整合平臺 | 全臺實體書店、社區繪本書屋空間定位 |
+| **全臺合法公私立動物醫院** | [`/tools/vet-clinics`](https://health.j172.tw/tools/vet-clinics) | 農業部動植物防疫檢疫署 | 執業獸醫診療機構、急診動物醫院證照查詢 |
+| **母嬰親善醫療院所認證** | [`/tools/baby-friendly-hospitals`](https://health.j172.tw/tools/baby-friendly-hospitals) | 衛生福利部國民健康署 | 鼓勵母乳哺育、24H 母嬰同室評鑑認證醫院 |
 
-### E. 即時環境與公衛災害觀測 (13 款)
+### E. 防災與示警 (13 款)
 
-| 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
-| **全臺 AQI 空氣品質地圖** | [`/tools/aqi`](https://health.j172.tw/tools/aqi) | 環境部化學物質管理署 / 監測所 | 全臺 85+ 測站 AQI 指標與 PM2.5 實時色階圖 |
-| **AQX 空品歷程即時監測** | [`/tools/aqx-monitoring`](https://health.j172.tw/tools/aqx-monitoring) | 環境部空氣品質監測網 | O3、SO2、CO、NO2 多重氣體污染物曲線圖 |
 | **全臺地面紫外線指數 (UVI)** | [`/tools/uv`](https://health.j172.tw/tools/uv) | 交通部中央氣象署 | 5 級防護提醒、防曬建議與最高暴曬時段預警 |
-| **中央氣象署即時天氣示警** | [`/tools/weather-alerts`](https://health.j172.tw/tools/weather-alerts) | 交通部中央氣象署 | 大雨、豪雨、陸上強風、低溫與濃霧特報 |
 | **全球顯著地震與海嘯觀測** | [`/tools/earthquakes`](https://health.j172.tw/tools/earthquakes) | CWA / USGS / EMSC / HKO | 全球 M6.0+ 與臺灣顯著有感地震即時推送 |
+| **兒童安全愛心熱點地圖** | [`/tools/child-safety-spots`](https://health.j172.tw/tools/child-safety-spots) | 內政部警政署 | 超商、學校警衛室兒少緊急庇護通報熱點 |
+| **國際旅遊公衛與疫情警示** | [`/tools/travel-epidemic-alerts`](https://health.j172.tw/tools/travel-epidemic-alerts) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級） |
+| **中央氣象署即時天氣示警** | [`/tools/weather-alerts`](https://health.j172.tw/tools/weather-alerts) | 交通部中央氣象署 | 大雨、豪雨、陸上強風、低溫與濃霧特報 |
+| **全臺主要水庫水情水情表** | [`/tools/water-conditions`](https://health.j172.tw/tools/water-conditions) | 經濟部水利署防災資訊網 | 各主要水庫即時蓄水量、蓄水率與入流量 |
 | **綜合災害動態地圖** | [`/tools/disaster-map`](https://health.j172.tw/tools/disaster-map) | 國家災害防救科技中心 (NCDR) | 避難收容所、前進指揮所、物資儲放點圖層 |
+| **動植物農業疫情與病蟲害** | [`/tools/pest-alerts`](https://health.j172.tw/tools/pest-alerts) | 農業部動植物防疫檢疫署 | 全國稻熱病、秋行軍蟲與重要動植物疫情警報 |
+| **全臺 AED 應急地圖** | [`/tools/aed`](https://health.j172.tw/tools/aed) | 衛生福利部公共場所 AED 登錄平臺 | 緊急自動體外心臟電擊去顫器 GPS 導航找尋 |
 | **全臺歷史即時淹水感測圖** | [`/tools/inundation-map`](https://health.j172.tw/tools/inundation-map) | 經濟部水利署物聯網感測器 | 道路、橋梁路面積水與感測器水位警戒 |
 | **全國即時停水通報通知** | [`/tools/water-outages`](https://health.j172.tw/tools/water-outages) | 台灣自來水公司 / 北水處 | 突發停水、降壓施工與預計復水時間查詢 |
-| **全臺主要水庫水情水情表** | [`/tools/water-conditions`](https://health.j172.tw/tools/water-conditions) | 經濟部水利署防災資訊網 | 各主要水庫即時蓄水量、蓄水率與入流量 |
-| **室外防護與安全綜合指數** | [`/tools/outdoor-safety`](https://health.j172.tw/tools/outdoor-safety) | CWA 氣象署 / 環境部 | 結合體感溫度、紫外線與空品之戶外活動建議 |
-| **動植物農業疫情與病蟲害** | [`/tools/pest-alerts`](https://health.j172.tw/tools/pest-alerts) | 農業部動植物防疫檢疫署 | 全國稻熱病、秋行軍蟲與重要動植物疫情警報 |
-| **國際旅遊公衛與疫情警示** | [`/tools/travel-epidemic-alerts`](https://health.j172.tw/tools/travel-epidemic-alerts) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級） |
-| **農藥殘留檢驗合格販售站** | [`/tools/pesticide-sales`](https://health.j172.tw/tools/pesticide-sales) | 農業部農業藥物毒物試驗所 | 合法登記農藥販賣商與管理人員證照查詢 |
+| **全臺急用緊急專線速查** | [`/tools/emergency-hotlines`](https://health.j172.tw/tools/emergency-hotlines) | 數位發展部 / NCC / 內政部消防署、警政署 | 110/119/112/113/118 等專線與 22 縣市 1999 代表號一鍵撥號、離線零延遲查詢 |
+| **防災避難包與居家儲備計算機** | [`/tools/emergency-supplies`](https://health.j172.tw/tools/emergency-supplies) | 國防部全民防衛動員署 / 內政部消防署 | 依家庭人數與儲備天數（3/7/14 天）動態試算飲水、乾糧與常備藥品 |
 
-### F. 交通能源與綠色永續生活 (13 款)
+### F. 環境與食品安全 (11 款)
 
-| 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
-| **YouBike 公共自行車即時車況** | [`/tools/youbike`](https://health.j172.tw/tools/youbike) | 交通部 TDX 運輸資料流通平臺 | 全國 5000+ 租借站可借車輛與可還空位即時更新 |
-| **臺電全臺發電結構即時儀表板** | [`/tools/power-grid-overview`](https://health.j172.tw/tools/power-grid-overview) | 台灣電力公司電力調度數據 | 燃煤、燃氣、核能、太陽能、風力即時發電佔比 |
-| **台灣中油油價查詢與加油站服務地圖** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油牌價走勢與全臺加油站洗車、充電樁等 20 項服務篩選（雙分頁） |
-| **大眾捷運即時營運事件警示** | [`/tools/metro-alerts`](https://health.j172.tw/tools/metro-alerts) | 北捷 / 高捷 / 桃捷 / 中捷 | 各線捷運設備異常、延誤、故障告警資訊 |
-| **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車、輪椅接駁客運班次路線總覽 |
-| **全國優良環境公廁地圖** | [`/tools/public-toilets`](https://health.j172.tw/tools/public-toilets) | 環境部公共設施清冊 | 親子廁所、無障礙廁所、性別友善廁所定位 |
-| **綠色環保認證旅宿指南** | [`/tools/green-certifications`](https://health.j172.tw/tools/green-certifications) | 環境部國家綠色生活平臺 | 減塑、不主動提供備品之銅金銀級環保標章旅館（含綠色商店／環保餐廳／環保產品分頁） |
-| **生活碳足跡盤查與係數** | [`/tools/carbon-footprint`](https://health.j172.tw/tools/carbon-footprint) | 環境部氣候變遷署 | 日常通勤、電力瓦斯、差旅排碳量評估計算 |
-| **夏日公共遮陽避暑冷氣地圖** | [`/tools/cool-spots`](https://health.j172.tw/tools/cool-spots) | 各縣市政府公共避暑專區 | 公共圖書館、活動中心弱勢避暑共享空調空間 |
+| **全臺 AQI 空氣品質地圖** | [`/tools/aqi`](https://health.j172.tw/tools/aqi) | 環境部化學物質管理署 / 監測所 | 全臺 85+ 測站 AQI 指標與 PM2.5 實時色階圖 |
+| **TFDA 食品營養成分資料庫** | [`/tools/food-nutrition`](https://health.j172.tw/tools/food-nutrition) | 衛生福利部食品藥物管理署 | 臺灣本土各類食材熱量、微量元素與維生素分析 |
+| **全國合法食品業者登錄查詢** | [`/tools/food-operators`](https://health.j172.tw/tools/food-operators) | 衛生福利部食品藥物管理署 | 非登不可（FDA）合法食品製造加工餐飲登記 |
 | **室內空氣品質認證場所** | [`/tools/iaq-premises`](https://health.j172.tw/tools/iaq-premises) | 環境部室內空品法列管名單 | 醫療院所、捷運站、大專院校優良室內空品場所 |
 | **各鄉鎮公所清潔隊收運** | [`/tools/cleaning-squads`](https://health.j172.tw/tools/cleaning-squads) | 環境部資源循環署 | 大型廢棄物清運、定點定時垃圾車與資源回收 |
-| **全國合法觀光工廠文化遊** | [`/tools/tourism-factories`](https://health.j172.tw/tools/tourism-factories) | 經濟部產業發展署 | 通過經濟部評鑑認證之生醫、食品產業文化園區 |
-| **財政部賦稅營業登記特約** | [`/tools/tax-organizations`](https://health.j172.tw/tools/tax-organizations) | 財政部稅務入口網 | 統一編號查詢、特種行業登記與開立統一發票機構 |
+| **生活碳足跡盤查與係數** | [`/tools/carbon-footprint`](https://health.j172.tw/tools/carbon-footprint) | 環境部氣候變遷署 | 日常通勤、電力瓦斯、差旅排碳量評估計算 |
+| **AQX 空品歷程即時監測** | [`/tools/aqx-monitoring`](https://health.j172.tw/tools/aqx-monitoring) | 環境部空氣品質監測網 | O3、SO2、CO、NO2 多重氣體污染物曲線圖 |
+| **綠色環保認證旅宿指南** | [`/tools/green-certifications`](https://health.j172.tw/tools/green-certifications) | 環境部國家綠色生活平臺 | 減塑、不主動提供備品之銅金銀級環保標章旅館（含綠色商店／環保餐廳／環保產品分頁） |
+| **蔬果農藥殘留與食安檢驗看板** | [`/tools/food-safety`](https://health.j172.tw/tools/food-safety) | 農業部農業試驗所 / 衛福部食藥署 | 常見蔬果官方抽驗合格率排行、違規超標農藥與黃金清洗指南 |
+| **室外防護與安全綜合指數** | [`/tools/outdoor-safety`](https://health.j172.tw/tools/outdoor-safety) | CWA 氣象署 / 環境部 | 結合體感溫度、紫外線與空品之戶外活動建議 |
+| **農藥殘留檢驗合格販售站** | [`/tools/pesticide-sales`](https://health.j172.tw/tools/pesticide-sales) | 農業部農業藥物毒物試驗所 | 合法登記農藥販賣商與管理人員證照查詢 |
 
-### G. 文化展演休閒與毛孩生活 (8 款)
+### G. 交通、生活與文化 (12 款)
 
-| 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
+| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
 |---|---|---|---|
+| **全國優良環境公廁地圖** | [`/tools/public-toilets`](https://health.j172.tw/tools/public-toilets) | 環境部公共設施清冊 | 親子廁所、無障礙廁所、性別友善廁所定位 |
 | **全國藝文表演展覽日曆** | [`/tools/cultural-events`](https://health.j172.tw/tools/cultural-events) | 文化部全國藝文活動資訊網 | 音樂會、戲劇舞蹈、講座展覽日程與索票 |
 | **全臺公共藝術裝置地圖** | [`/tools/public-art`](https://health.j172.tw/tools/public-art) | 文化部公共藝術官方網站 | 街頭雕塑、捷運站裝置藝術與創作者解說 |
 | **全國法定文化資產圖鑑** | [`/tools/heritage-map`](https://health.j172.tw/tools/heritage-map) | 文化部文化資產局 (BOCH) | 國定古蹟、歷史建築、聚落建築群與遺址 |
-| **全國公立動物收容認領養** | [`/tools/pet-adoption`](https://health.j172.tw/tools/pet-adoption) | 農業部動物保護資訊網 | 公立收容所犬貓等毛孩照片、特徵與認養手續 |
-| **全臺合法公私立動物醫院** | [`/tools/vet-clinics`](https://health.j172.tw/tools/vet-clinics) | 農業部動植物防疫檢疫署 | 執業獸醫診療機構、急診動物醫院證照查詢 |
-| **TFDA 食品營養成分資料庫** | [`/tools/food-nutrition`](https://health.j172.tw/tools/food-nutrition) | 衛生福利部食品藥物管理署 | 臺灣本土各類食材熱量、微量元素與維生素分析 |
-| **全國合法食品業者登錄查詢** | [`/tools/food-operators`](https://health.j172.tw/tools/food-operators) | 衛生福利部食品藥物管理署 | 非登不可（FDA）合法食品製造加工餐飲登記 |
-| **健康食品與保健認證小綠人** | [`/tools/health-supplements`](https://health.j172.tw/tools/health-supplements) | 衛生福利部審核通過健康食品 | 取得衛署健食字號認證之功效宣稱與保健成分 |
+| **夏日公共遮陽避暑冷氣地圖** | [`/tools/cool-spots`](https://health.j172.tw/tools/cool-spots) | 各縣市政府公共避暑專區 | 公共圖書館、活動中心弱勢避暑共享空調空間 |
+| **獨立特色書店地圖** | [`/tools/bookstores`](https://health.j172.tw/tools/bookstores) | 文化部文化資源整合平臺 | 全臺實體書店、社區繪本書屋空間定位 |
+| **全國合法觀光工廠文化遊** | [`/tools/tourism-factories`](https://health.j172.tw/tools/tourism-factories) | 經濟部產業發展署 | 通過經濟部評鑑認證之生醫、食品產業文化園區 |
+| **全國最新好書出版目錄** | [`/tools/latest-books`](https://health.j172.tw/tools/latest-books) | 國家圖書館 ISBN 申辦中心 | 本月新書、親職教育與醫藥科普書單速遞 |
+| **大眾捷運即時營運事件警示** | [`/tools/metro-alerts`](https://health.j172.tw/tools/metro-alerts) | 北捷 / 高捷 / 桃捷 / 中捷 | 各線捷運設備異常、延誤、故障告警資訊 |
+| **YouBike 公共自行車即時車況** | [`/tools/youbike`](https://health.j172.tw/tools/youbike) | 交通部 TDX 運輸資料流通平臺 | 全國 5000+ 租借站可借車輛與可還空位即時更新 |
+| **臺電全臺發電結構即時儀表板** | [`/tools/power-grid-overview`](https://health.j172.tw/tools/power-grid-overview) | 台灣電力公司電力調度數據 | 燃煤、燃氣、核能、太陽能、風力即時發電佔比 |
+| **台灣中油油價查詢與加油站服務地圖** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油牌價走勢與全臺加油站洗車、充電樁等 20 項服務篩選（雙分頁） |
 
 ---
 
@@ -372,7 +376,7 @@ npm run dev
 # 執行 TypeScript 靜態型態安全檢查 (0 errors)
 npm run typecheck
 
-# 執行全站 404 項單元與整合測試
+# 執行全站 620 項單元與整合測試
 npm test
 
 # 執行 Next.js Turbopack 生產構建

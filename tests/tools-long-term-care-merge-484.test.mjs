@@ -239,6 +239,13 @@ test("README.md merges the long-term-care-family rows and updates the affected s
   assert.ok(!content.includes("/tools/elder-welfare"), "README should no longer list a standalone elder-welfare row");
   assert.ok(!content.includes("/tools/hakka-bogong"), "README should no longer list a standalone hakka-bogong row");
   assert.ok(content.includes("長照照顧圈地圖"), "README should list the retitled long-term-care row");
-  assert.match(content, /B\. 醫療院所與即時量能資源 \(11 款\)/, "section B's count should have dropped by 1 (home-healthcare removed)");
-  assert.match(content, /C\. 長照安老與身心社福資源 \(7 款\)/, "section C's count should have dropped by 2 (elder-welfare + hakka-bogong removed)");
+  // Issue #445 later rewrote the README's category breakdown to always
+  // mirror lib/server/tools/catalog.ts's TOOL_GROUP_META (previously the
+  // README used a stale, hand-maintained category scheme that had drifted
+  // out of sync with the actual nav dropdowns / footer columns / /tools
+  // index, which all derive from TOOL_GROUP_META already). Issue #442
+  // reclassified TOOL_GROUP_META again right after, down to 7 groups; under
+  // that current layout, long-term-care lives in the "elder-care-welfare"
+  // group ("C. 長照與社會福利"), whose count (9) already reflects this merge.
+  assert.match(content, /C\. 長照與社會福利 \(9 款\)/, "elder-care-welfare section should list 9 tools, including the merged long-term-care row");
 });
