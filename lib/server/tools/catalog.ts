@@ -69,6 +69,16 @@ export interface ToolCatalogEntry {
    */
   navLabel?: string;
   description: string;
+  /**
+   * Common nicknames, synonyms, and news-headline terms for this tool that
+   * don't otherwise appear in `title`/`description`/`directAnswer` — e.g. AED's
+   * keywords include "心臟電擊", BMI's include "肥胖". `searchTools` matches
+   * against these alongside the other text fields (issue #441). This is the
+   * shared foundation for the future Ctrl+K search-across-tools, the news↔tool
+   * cross-linking, and each page's `llms.txt` keywords — every entry must set
+   * at least one.
+   */
+  keywords: string[];
   /** Direct-answer concise definition for AEO / Featured Snippets / AI Overviews (40-80 chars) */
   directAnswer: string;
   /** Official scientific guidelines, government bodies, or published research backing this tool */
@@ -110,6 +120,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "uv",
     group: "disaster-safety",
     title: "全臺即時紫外線指數 (UV)",
+    keywords: ["紫外線", "曝曬", "防曬", "UV指數"],
     description:
       "即時查詢全臺各縣市氣象站紫外線指數 (UV Index)，提供紫外線曝曬防護分級（低量、中量、高量、過量、極高量）與專業防曬係數與配件建議。",
     directAnswer:
@@ -196,6 +207,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     schemaType: "WebPage",
     title: "臺灣與全球顯著地震查詢",
+    keywords: ["地震", "地震速報", "震度", "海嘯"],
     description:
       "即時查詢近 7 天全臺 M4.0+ 與全球 M6.0+ 顯著地震動態資訊，包含震央地點、規模大小、震源深度與海嘯警報提示，整合中央氣象署 (CWA) 與美國地質調查局 (USGS) 測報數據。",
     directAnswer:
@@ -240,6 +252,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "bmi",
     group: "calculator",
     title: "BMI 計算器",
+    keywords: ["肥胖", "身體質量指數", "體重", "過重"],
     description:
       "免費線上 BMI 身體質量指數計算器，輸入身高與體重即可立即計算您的 BMI 值，並對照臺灣衛生福利部國民健康署標準，了解過輕、正常、過重或肥胖的健康風險。",
     directAnswer:
@@ -322,6 +335,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "calories",
     group: "calculator",
     title: "卡路里需求計算器",
+    keywords: ["熱量", "基礎代謝率", "BMR", "TDEE", "減重"],
     description:
       "根據年齡、性別、身高、體重與活動量，採用 Mifflin-St Jeor 公式計算每日所需熱量攝取 (BMR/TDEE)。",
     directAnswer:
@@ -405,6 +419,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "nutrition",
     group: "calculator",
     title: "每日營養素建議計算器",
+    keywords: ["營養素", "三大營養素", "蛋白質碳水脂肪"],
     description:
       "依據個人體型、活動量與飲食目標，提供每日三大營養素（蛋白質、碳水化合物、脂肪）攝取建議。",
     directAnswer:
@@ -441,6 +456,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "water",
     group: "calculator",
     title: "飲水量計算器",
+    keywords: ["喝水量", "補水", "水分攝取"],
     description:
       "依體重與活動量計算每日建議飲水量，並提供分段補水時間表，幫助您養成良好的補水習慣。",
     directAnswer:
@@ -478,6 +494,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "body-fat",
     group: "calculator",
     title: "體脂率計算器",
+    keywords: ["體脂", "體脂率", "海軍體脂法"],
     description:
       "採用美國海軍體脂計算法（Navy Method），計算體脂率、脂肪質量與肌肉量，對照 ACSM 標準分類。",
     directAnswer:
@@ -515,6 +532,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "waist-hip",
     group: "calculator",
     title: "腰臀比計算器",
+    keywords: ["腰臀比", "腹部肥胖", "WHR"],
     description: "計算腰臀比（WHR），依 WHO 標準評估腹部肥胖與心血管代謝風險。",
     directAnswer:
       "腰臀比（WHR）＝腰圍 ÷ 臀圍。世界衛生組織（WHO）與衛福部國健署標準：男性 WHR ≥ 0.90、女性 WHR ≥ 0.85 即為中心型（腹部）肥胖，心血管與糖尿病風險顯著增加。",
@@ -573,6 +591,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "heart-rate",
     group: "calculator",
     title: "目標心率計算器",
+    keywords: ["心率區間", "運動強度", "Karvonen"],
     description:
       "使用 Karvonen 公式計算 5 個運動強度心率區間，幫助您精準控制訓練強度，支援手動輸入 Apple Watch、iPhone 健康 App 記錄的靜止心率。",
     directAnswer:
@@ -656,6 +675,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "blood-pressure",
     group: "calculator",
     title: "血壓分析器",
+    keywords: ["高血壓", "血壓標準", "722原則"],
     description:
       "依 2023 ESH 高血壓指南分類血壓等級，支援多次記錄與平均值分析，提供個人化生活建議。",
     directAnswer:
@@ -744,6 +764,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "sleep",
     group: "calculator",
     title: "睡眠品質評估",
+    keywords: ["睡眠品質", "失眠", "PSQI"],
     description:
       "基於 PSQI 量表 7 個面向，評估您的睡眠狀況並提供科學化睡眠衛生改善建議，可搭配 Apple Watch、iPhone 睡眠追蹤紀錄回答更準確。",
     directAnswer:
@@ -784,6 +805,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "stress",
     group: "calculator",
     title: "壓力評估測驗",
+    keywords: ["壓力測驗", "知覺壓力", "PSS"],
     description:
       "採用 PSS-10 知覺壓力量表，10 道題目量化壓力程度，提供個人化減壓策略。",
     directAnswer:
@@ -814,6 +836,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "lbm",
     group: "calculator",
     title: "去脂體重 (LBM) 計算器",
+    keywords: ["去脂體重", "肌肉量", "瘦體重"],
     description: "以 Boer 公式估算去脂體重與體脂率，全面了解您的身體組成狀況。",
     directAnswer:
       "去脂體重（LBM）是指扣除脂肪後的體重淨重（肌肉、骨骼、器官與水分）。本工具採用經典 Boer 公式估算，是運動員及減脂期監控肌肉流失的關鍵指標。",
@@ -850,6 +873,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "vo2max",
     group: "calculator",
     title: "VO2Max 估算器",
+    keywords: ["最大攝氧量", "心肺耐力"],
     description:
       "輸入年齡與安靜心率，以 Uth 公式快速評估最大攝氧量（VO2Max），對照 ACSM 標準了解您的心肺耐力等級，安靜心率可直接參考 Apple Watch 或 iPhone 健康 App 的紀錄。",
     directAnswer:
@@ -892,6 +916,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "aqi",
     group: "environment",
     title: "AQI 空氣品質即時查詢",
+    keywords: ["空氣品質", "PM2.5", "懸浮微粒"],
     description:
       "即時顯示全臺環境部監測站 AQI 空氣品質指標，包含 PM2.5、PM10 等污染物濃度。",
     directAnswer:
@@ -980,6 +1005,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "clinics",
     group: "care-facility",
     title: "醫療院所查詢",
+    keywords: ["看醫生", "健保診所", "醫院查詢"],
     description: "查詢全民健保特約醫療院所，支援關鍵字搜尋與附近定位。",
     directAnswer:
       "即時查詢全臺近 2 萬家健保特約醫療院所（醫學中心、區域醫院、地區醫院、基層診所），支援關鍵字、科別、縣市與 GPS 距離定位。",
@@ -1007,6 +1033,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "pharmacies",
     group: "care-facility",
     title: "藥局查詢",
+    keywords: ["藥房", "健保藥局", "連續處方箋"],
     description: "查詢全臺一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。",
     directAnswer:
       "查詢全臺 8,000+ 家一般藥局與健保特約藥局，支援慢性病連續處方箋調劑藥局篩選與附近 GPS 定位。",
@@ -1030,6 +1057,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "drugs",
     group: "registry",
     title: "藥品查詢",
+    keywords: ["藥品查詢", "許可證字號", "辨識藥品"],
     description:
       "查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵，協助辨識藥品。",
     directAnswer:
@@ -1059,6 +1087,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "food-nutrition",
     group: "registry",
     title: "食品營養成分查詢",
+    keywords: ["食物熱量", "食材營養", "食品成分"],
     description:
       "查詢衛福部食藥署食品營養成分資料庫，依食品名稱搜尋熱量、蛋白質、脂肪、碳水化合物等營養成分含量。",
     directAnswer:
@@ -1104,6 +1133,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "registry",
     schemaType: "WebPage",
     title: "食品業者登錄查詢",
+    keywords: ["食品登錄", "食品業者", "追溯追蹤"],
     description:
       "查詢衛福部食藥署食品業者登錄資料，依公司名稱、統一編號或地址搜尋登錄項目（販售場所、製造場所、餐飲場所等）。",
     directAnswer:
@@ -1133,6 +1163,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "health-checks",
     group: "care-facility",
     title: "健康檢查機構查詢",
+    keywords: ["健檢機構", "職業健檢"],
     description:
       "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1157,6 +1188,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "long-term-care",
     group: "care-facility",
     title: "長照服務機構查詢",
+    keywords: ["長照機構", "長照2.0", "照護服務"],
     description:
       "查詢全臺長照服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、住宿型長照機構與社區照顧據點。支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1186,6 +1218,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "home-healthcare",
     group: "care-facility",
     title: "居家醫療查詢",
+    keywords: ["居家醫療", "居家照護", "到宅看診"],
     description:
       "查詢提供居家醫療照護服務的全民健保特約機構，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1210,6 +1243,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "disability-welfare",
     group: "care-facility",
     title: "身心障礙福利機構查詢",
+    keywords: ["身心障礙機構", "殘障福利", "障礙福利"],
     description:
       "查詢衛福部全國身心障礙福利機構名冊，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1235,6 +1269,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "life-services",
     navLabel: "無障礙ATM查詢",
     title: "信用合作社無障礙ATM查詢",
+    keywords: ["無障礙ATM", "語音ATM", "視障提款"],
     description:
       "查詢全臺信用合作社提供輪椅可及或語音服務的無障礙ATM，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1259,6 +1294,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "elder-welfare",
     group: "care-facility",
     title: "老人福利機構查詢",
+    keywords: ["老人福利機構", "養老院", "安養機構"],
     description: "查詢衛福部全國老人福利機構名冊，支援關鍵字搜尋與附近定位。",
     directAnswer:
       "查詢衛福部全國老人福利機構名冊，涵蓋公私立安養中心、養護機構與長期照護機構。",
@@ -1282,6 +1318,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "hakka-bogong",
     group: "care-facility",
     title: "客家委員會「伯公照護站」查詢",
+    keywords: ["伯公照護站", "客家照護", "日間照顧"],
     description:
       "查詢客家委員會「伯公照護站」名冊，支援關鍵字搜尋與附近定位。",
     directAnswer:
@@ -1307,6 +1344,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "life-services",
     schemaType: "WebPage",
     title: "全國公廁查詢",
+    keywords: ["公共廁所", "廁所地圖", "找廁所"],
     description: "查詢全國公廁位置、無障礙與親子設施。資料來源：環境部。",
     directAnswer:
       "查詢環境部列管之全國公廁，可依無障礙廁所、親子廁所、性別友善廁所與尿布臺設置情形篩選，並顯示清潔等級與所在位置。",
@@ -1341,6 +1379,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "child-welfare-institutions",
     group: "child-welfare",
     title: "全國親子館與兒少福利中心查詢",
+    keywords: ["親子館", "兒童福利中心", "托育資源中心"],
     description:
       "查詢全國親子館（托育資源中心）與兒童及少年福利服務中心名冊，可切換機構類型查看育兒親子空間或兒少個案輔導據點。資料來源：衛福部社會及家庭署開放資料。",
     directAnswer:
@@ -1381,6 +1420,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "child-welfare",
     schemaType: "WebPage",
     title: "全國幼兒園查詢",
+    keywords: ["幼兒園查詢", "托嬰", "幼稚園"],
     description:
       "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航。資料來源：教育部開放資料。",
     directAnswer:
@@ -1410,6 +1450,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "child-welfare",
     schemaType: "WebPage",
     title: "全國短期補習班查詢",
+    keywords: ["補習班查詢", "安親班"],
     description:
       "查詢全臺 22 縣市立案短期補習班名冊，涵蓋文理類、外語類、技藝類補習班地址、電話與立案狀態。資料來源：教育部短期補習班資訊管理系統。",
     directAnswer:
@@ -1440,6 +1481,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     schemaType: "WebPage",
     title: "婦幼安全警示地點查詢",
+    keywords: ["婦幼安全", "治安顧慮地點", "警示地點"],
     description:
       "查詢內政部警政署公告之全國婦幼安全警示地點與加強維安路段，提供管轄警察分局及聯繫窗口資訊，提醒家長與婦幼留意環境安全。資料來源：內政部警政署開放資料。",
     directAnswer:
@@ -1471,6 +1513,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "本土語言辭典",
     title: "兒少本土語言辭典（閩南語／客語）",
+    keywords: ["台語辭典", "客語辭典", "本土語言", "閩南語字典"],
     description:
       "整合教育部《臺灣閩南語常用詞辭典》與《臺灣客家語常用詞辭典》，收錄數萬筆詞目、臺羅與客拼標音、六大客語腔調、生活例句與真人線上發音朗讀，支援華語意譯反查。",
     directAnswer:
@@ -1516,6 +1559,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "life-services",
     schemaType: "WebPage",
     title: "全臺公益組織(NPO)查詢",
+    keywords: ["公益組織", "NPO查詢", "非營利組織", "捐款立案"],
     description:
       "整合臺灣公益資訊中心（NPO Center）及財政部機關團體名冊，收錄全國社會福利慈善財團法人、兒少保護、身心障礙、老人照護、環境保護、性別平權與急難救助等公益組織。支援名稱、統一編號、縣市與機構屬性篩選，提供詳細地址地圖導航、官方網站連結與電話一鍵撥號。",
     directAnswer:
@@ -1558,6 +1602,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "culture-tourism",
     schemaType: "WebPage",
     title: "全國藝文展覽與親子活動查詢",
+    keywords: ["藝文活動", "展覽資訊", "親子活動"],
     description:
       "整合文化部全國藝文活動開放資料，查詢全國展覽、音樂、戲劇、講座等各類活動，並提供「親子友善」篩選標籤快速鎖定親子劇場、兒童音樂會與親子工作坊。資料來源：文化部開放資料。",
     directAnswer:
@@ -1588,6 +1633,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "culture-tourism",
     schemaType: "WebPage",
     title: "全國公共藝術與演藝場所地圖",
+    keywords: ["公共藝術", "演藝場所", "表演場館"],
     description:
       "查詢全臺設置之公共藝術作品、作者與設置地點，以及 767 處公私立演藝活動場所。資料來源：文化部公共藝術資料庫與演藝場所開放資料。",
     directAnswer:
@@ -1619,6 +1665,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "文化資產地圖",
     title: "文化資產地圖：古蹟／歷史建築／考古遺址查詢",
+    keywords: ["古蹟查詢", "歷史建築", "考古遺址", "文化資產"],
     description:
       "整合文化部文化資產局開放資料，於地圖上查詢全臺古蹟、歷史建築與考古遺址點位，支援圖層切換、沿革與登錄理由查詢。",
     directAnswer:
@@ -1648,6 +1695,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "travel-epidemic-alerts",
     group: "disaster-safety",
     title: "國際旅遊疫情與即時情報地圖",
+    keywords: ["出國疫情", "旅遊警示", "境外感染"],
     description:
       "即時連線疾管署國際旅遊疫情建議等級與全球重要疫情快訊，提供各國警戒等級（注意/警示/警告）地圖視覺化、疾病快搜與最新流行病學情報。資料來源：衛生福利部疾病管制署。",
     directAnswer:
@@ -1682,6 +1730,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "weather-alerts",
     group: "disaster-safety",
     title: "即時氣象警報與降雨資訊",
+    keywords: ["氣象警報", "豪雨特報", "颱風警報", "降雨"],
     description:
       "即時查詢全臺氣象警報（強風、濃霧、豪大雨、颱風警報及鄉鎮劇烈天氣特報），並依 GPS 定位查詢最近測站即時與月累積降雨量。",
     directAnswer:
@@ -1731,6 +1780,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "cool-spots",
     group: "life-services",
     title: "全國涼適點查詢",
+    keywords: ["涼適點", "避暑", "降溫站"],
     description:
       "查詢環境部「Cool Map 涼適點」名冊，提供百貨、圖書館、里民活動中心等可供民眾避暑消暑之場所位置與設施資訊。資料來源：環境部開放資料。",
     directAnswer:
@@ -1761,6 +1811,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "environment",
     schemaType: "WebPage",
     title: "室內空氣品質法公告場所查詢",
+    keywords: ["室內空氣品質", "公告場所", "IAQ"],
     description:
       "查詢應符合《室內空氣品質管理法》之公告場所名冊，如捷運站、圖書館、大型賣場等。資料來源：環境部開放資料。",
     directAnswer:
@@ -1786,6 +1837,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "environment",
     schemaType: "WebPage",
     title: "地方清潔隊聯絡資訊查詢",
+    keywords: ["清潔隊", "垃圾車", "清潔隊電話"],
     description:
       "查詢全國各縣市地方清潔隊聯絡地址與電話，供民眾洽詢垃圾清運、資源回收等相關業務。資料來源：環境部開放資料。",
     directAnswer:
@@ -1816,6 +1868,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "碳足跡查詢",
     title: "碳足跡查詢：產品標籤與排放係數",
+    keywords: ["碳足跡", "碳標籤", "排放係數"],
     description:
       "查詢環境部審查通過之產品碳足跡標籤數據，以及原物料、製程、能源等單位活動量之碳足跡排放係數，可切換分頁查看。資料來源：環境部開放資料（cfp_p_01、cfp_p_02）。",
     directAnswer:
@@ -1860,6 +1913,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "aqx-monitoring",
     group: "environment",
     title: "空氣品質延伸監測資料查詢（AQX 系列）",
+    keywords: ["AQX", "延伸空品監測", "空品歷史資料"],
     description:
       "查詢環境部開放資料平臺 AQX 系列監測小時值，涵蓋一般污染物、BTEX、非甲烷碳氫化合物（NMHC）、總碳氫化合物（THC）、光化測站、CO 8小時平均值、PM10 小時值與其它測項。",
     directAnswer:
@@ -1930,6 +1984,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "全臺水情查詢",
     title: "全臺水情：河川水位與水庫營運查詢",
+    keywords: ["水情", "河川水位", "水庫蓄水率"],
     description:
       "即時查詢經濟部水利署全臺河川／地下水位站與水庫營運狀況，可切換分頁查看測站即時水位或水庫蓄水量、進出流量與集水區降雨量。資料來源：經濟部水利署開放資料平臺。",
     directAnswer:
@@ -1981,6 +2036,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "防災地圖",
     title: "防災地圖：避難收容處所／消防救援單位／應變中心查詢",
+    keywords: ["避難收容所", "防災地圖", "消防救援", "緊急避難場所"],
     description:
       "整合內政部開放資料，於地圖上查詢全臺避難收容處所、消防救援單位與縣市應變中心點位，支援圖層切換與地點詳細資訊查詢。",
     directAnswer:
@@ -2021,6 +2077,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "culture-tourism",
     schemaType: "WebPage",
     title: "全國實體書店查詢",
+    keywords: ["實體書店", "獨立書店", "書店地圖"],
     description:
       "查詢全國特色實體書店、獨立書局與閱讀空間。資料來源：文化部開放資料。",
     directAnswer:
@@ -2056,6 +2113,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "culture-tourism",
     schemaType: "WebPage",
     title: "全臺認證觀光工廠查詢",
+    keywords: ["觀光工廠", "工廠旅遊"],
     description:
       "查詢經濟部產業發展署評鑑通過之全臺觀光工廠與產業文化館。資料來源：經濟部產業發展署開放資料。",
     directAnswer:
@@ -2086,6 +2144,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "life-services",
     schemaType: "WebPage",
     title: "全臺毛孩認領養查詢",
+    keywords: ["動物認養", "毛小孩認養", "公立動物之家"],
     description:
       "即時查詢全臺公立動物收容所等待認養之犬貓與各類毛小孩。資料來源：農業部動物保護資訊網開放資料。",
     directAnswer:
@@ -2119,6 +2178,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "breastfeeding-rooms",
     title: "全國哺集乳室地圖查詢",
+    keywords: ["哺乳室", "集乳室", "親子廁所"],
     description:
       "整合衛生福利部國民健康署官方開放資料，查詢全臺依法設置與自願設置之公共哺集乳室位置、地址、電話與開放時段。",
     directAnswer:
@@ -2159,6 +2219,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "contraception-map",
     navLabel: "避孕諮詢地圖",
     title: "避孕諮詢地圖：婦產科診所與諮詢藥局查詢",
+    keywords: ["避孕諮詢", "婦產科診所", "事後避孕藥"],
     description:
       "整合臺灣婦產科醫學會 BeOK 避孕諮詢室認證機構名冊，提供全臺 88 家婦產科診所與 798 家諮詢藥局之雙圖層點位查詢與雙重避孕衛教指引。",
     directAnswer:
@@ -2194,6 +2255,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "latest-books",
     navLabel: "書籍推薦",
     title: "書籍推薦：博客來、誠品與TAAZE讀冊選書",
+    keywords: ["新書推薦", "選書", "博客來誠品讀冊"],
     description:
       "整合博客來 4 大暢銷榜、誠品線上 27 類主題選書與 TAAZE 讀冊生活 10 大注目與編輯推薦書單，涵蓋醫療保健、心理勵志、飲食料理、親子教養、熟齡長照與生活風格，即時掌握優質書單、定價優惠與讀者口碑好書。",
     directAnswer:
@@ -2234,6 +2296,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "vet-clinics",
     group: "life-services",
     title: "全臺動物醫院與獸醫診所查詢",
+    keywords: ["動物醫院", "獸醫診所"],
     description:
       "查詢全臺各縣市開業之合法獸醫診療機構與動物醫院，支援附近定位與關鍵字搜尋。資料來源：農業部動植物防疫檢疫署。",
     directAnswer:
@@ -2263,6 +2326,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "metro-alerts",
     group: "transport-energy",
     title: "捷運營運與電梯檢修公告",
+    keywords: ["捷運公告", "電梯檢修", "捷運停駛"],
     description:
       "即時查詢臺北捷運各路線營運狀況、設備異常通報與各車站無障礙電梯檢修公告。資料來源：臺北大眾捷運公司。",
     directAnswer:
@@ -2292,6 +2356,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "youbike",
     group: "transport-energy",
     title: "公共自行車 (YouBike 2.0) 即時動態",
+    keywords: ["YouBike", "公共自行車", "共享單車"],
     description:
       "即時查詢北北桃竹（臺北市、新北市、桃園市、新竹市）YouBike 2.0 與 2.0E 租借站點、可借車輛與空位數量。",
     directAnswer:
@@ -2321,6 +2386,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "pest-alerts",
     group: "disaster-safety",
     title: "農作物病蟲害即時預警",
+    keywords: ["病蟲害預警", "農作物病害"],
     description:
       "即時查詢農業部動植物防檢署發布之全臺農作物病蟲害即時示警與發生預警資訊。",
     directAnswer:
@@ -2351,6 +2417,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "transport-energy",
     schemaType: "WebPage",
     title: "全臺電力概況儀表板",
+    keywords: ["電力供需", "台電", "停電", "備轉容量"],
     description:
       "整合臺灣電力公司與經濟部能源署開放資料，一頁掌握全臺各機組即時發電量、全國電源配比與核電廠周邊輻射偵測站即時劑量率。",
     directAnswer:
@@ -2395,6 +2462,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "cpc-prices",
     group: "transport-energy",
     title: "中油各式油氣牌價查詢",
+    keywords: ["油價查詢", "中油牌價", "汽油價格"],
     description:
       "即時查詢臺灣中油（CPC）最新公告各式牌價，包含汽柴油零售（92/95/98/超級柴油）、家用天然氣、工業燃料油、桶裝液化石油氣（瓦斯）、海運用油、航空燃油、六大類油品、中油生技酒類及液化天然氣氣源成本分析。",
     directAnswer:
@@ -2441,6 +2509,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "cpc-stations",
     group: "transport-energy",
     title: "中油加油站服務據點地圖",
+    keywords: ["加油站地圖", "中油加油站"],
     description:
       "全臺臺灣中油（CPC）加油站多功能服務地圖，聚合 20 大便民設施：洗車服務、電動機車充換電、汽車電動車充電、來速咖啡（Cup Go）、輪胎充氣、數位打氣機、自助加油、代收停車費、無障礙廁所與悠遊卡/一卡通支付，支援 GPS 定位與多選交叉篩選。",
     directAnswer:
@@ -2496,6 +2565,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "環保標章查詢",
     title: "環保標章與綠色生活認證查詢",
+    keywords: ["環保標章", "綠色生活認證", "綠色餐廳旅館"],
     description:
       "整合環境部認證之綠色商店、環保標章旅館、環保標章產品與環保餐廳名冊，可切換認證類型查詢。資料來源：環境部開放資料（gp_p_01、gp_p_02、gp_p_42、gp_p_43、epr_p_02、gis_p_11）。",
     directAnswer:
@@ -2556,6 +2626,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "care-facility",
     schemaType: "MedicalWebPage",
     title: "全臺急救責任醫院急診即時看板",
+    keywords: ["急診即時", "急診人數", "急診壅塞"],
     navLabel: "急診即時看板",
     description:
       "即時連線衛生福利部與全臺各重度級、中度級急救責任醫院急診即時訊息，提供等待看診人數、等待推床人數、等待住院人數、等待加護病房 (ICU) 人數與 119 滿線暫停後送通報，並繪製 24 小時人潮波動趨勢圖提供錯峰就醫參考。",
@@ -2597,6 +2668,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     schemaType: "MedicalWebPage",
     title: "全國公共場所 AED 急救地圖",
+    keywords: ["心臟電擊", "自動體外心臟去顫器", "心臟急救", "電擊器"],
     navLabel: "AED急救地圖",
     description:
       "即時查詢全國公共場所自動體外心臟電擊去顫器 (AED) 設置地點、詳細放置位置、開放使用時間與緊急管理聯絡電話，結合 GPS 定位爭取黃金 4 分鐘急救時間，支援動態營業時間鎖定。",
@@ -2637,6 +2709,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "food-safety",
     group: "registry",
     title: "全臺蔬果農藥殘留與食安檢驗透明看板",
+    keywords: ["農藥殘留", "食安檢驗", "蔬果檢驗"],
     navLabel: "食安檢驗看板",
     description:
       "彙整農業部最新蔬果質譜快檢與食藥署邊境抽驗數據，提供臺灣常見蔬果合格率排行、常見超標違規農藥與毒物專家黃金流水清洗指南。",
@@ -2677,6 +2750,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "outdoor-safety",
     group: "environment",
     title: "全臺戶外運動與放電安全指數",
+    keywords: ["戶外安全指數", "放電安全", "雷擊風險"],
     navLabel: "戶外安全指數",
     description:
       "跨表聚合即時氣象測站熱指數、空氣品質 AQI、紫外線 UV 與登革熱警戒，為跑者單車族、親子戶外放電與銀髮長輩提供今日戶外活動安全評分與黃金時段建議。",
@@ -2718,6 +2792,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "transport-energy",
     navLabel: "全臺無障礙交通地圖",
     title: "全臺無障礙交通地圖：低地板公車／捷運無障礙／通用計程車／復康巴士",
+    keywords: ["無障礙交通", "低地板公車", "復康巴士", "通用計程車"],
     description:
       "即時查詢全臺 22 縣市低地板公車比率、臺北與高雄捷運及雙鐵無障礙乘車渡板預約、全臺通用無障礙計程車叫車平臺與各縣市復康巴士派車專線。",
     directAnswer:
@@ -2758,6 +2833,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     navLabel: "全臺積淹水即時感測地圖",
     title: "全臺積淹水即時感測地圖：路面淹水／水位防汛警戒／避難收容處所",
+    keywords: ["積水地圖", "淹水感測", "防汛警戒"],
     description:
       "整合經濟部水利署各河川分署 IoT 路面即時公分級水深感測器、河川水位站一至三級防汛溢堤警戒，以及周邊緊急避難收容處所。遇颱風豪雨，提供用路人低窪涵洞避災與疏散指引。",
     directAnswer:
@@ -2796,6 +2872,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "health-supplements",
     title: "健康食品認證查詢：衛福部食藥署健字號許可登記",
+    keywords: ["健字號", "健康食品認證", "保健食品"],
     navLabel: "健康食品認證",
     description:
       "即時查詢衛生福利部食品藥物管理署審查通過之健康食品（小綠人標章）與許可證字號，包含審定保健功效、成分、申請廠商與警語。",
@@ -2827,6 +2904,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "sheltered-workshops",
     title: "全國庇護工場地圖：身障手作商品與公益據點查詢",
+    keywords: ["庇護工場", "身障手作商品"],
     navLabel: "庇護工場地圖",
     description:
       "即時查詢全國各縣市身心障礙者庇護工場、公益烘焙伴手禮、手工皂及庇護就業服務據點。資料來源：勞動部勞動力發展署。",
@@ -2858,6 +2936,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "mental-health",
     title: "全國心理諮商所地圖：合格心理諮商與心衛中心查詢",
+    keywords: ["心理諮商所", "心理師", "心衛中心"],
     navLabel: "心理諮商所地圖",
     description:
       "查詢衛福部合法立案之公私立心理諮商所、臨床心理所與各縣市社區心理衛生中心，支援 1925 安心專線與專業晤談預約。",
@@ -2889,6 +2968,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "smoking-cessation",
     title: "戒菸門診特約院所查詢：二代戒菸補助與戒菸衛教",
+    keywords: ["戒菸門診", "二代戒菸", "戒菸補助"],
     navLabel: "戒菸門診查詢",
     description:
       "查詢全國提供衛生福利部國民健康署二代戒菸治療與戒菸衛教補助之特約醫院、基層診所與社區藥局，享藥品免部分負擔。",
@@ -2920,6 +3000,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "adult-preventive-care",
     title: "成人健檢與公費癌症篩檢院所查詢",
+    keywords: ["成人健檢", "公費癌症篩檢", "免費健檢"],
     navLabel: "成人健檢與癌篩",
     description:
       "查詢全國提供 40 歲以上公費成人健康檢查與子宮頸抹片、乳房X光、大腸癌糞便潛血及口腔黏膜四癌篩檢特約院所名冊。",
@@ -2951,6 +3032,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "baby-friendly-hospitals",
     title: "母嬰親善醫療院所地圖：母嬰同室與母乳哺育認證醫院",
+    keywords: ["母嬰親善醫院", "母嬰同室", "母乳哺育"],
     navLabel: "母嬰親善醫療院所",
     description:
       "查詢國健署評鑑通過之母嬰親善醫療院所名冊，提供 24 小時母嬰同室、母乳庫合作與專業國際泌乳顧問指導之友善生產環境。",
@@ -2982,6 +3064,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "rare-disease-care",
     title: "罕見疾病照護諮詢中心與確診醫院查詢",
+    keywords: ["罕見疾病", "罕病照護", "罕病醫院"],
     navLabel: "罕病照護中心",
     description:
       "查詢國民健康署指定之全臺罕見疾病照護諮詢中心、遺傳醫學諮詢窗口與重大罕見疾病確診醫療機構名冊與服務專線。",
@@ -3013,6 +3096,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "organ-donation-hospitals",
     title: "器官捐贈指定責任醫院查詢：器捐意願簽署與勸募網絡",
+    keywords: ["器官捐贈", "器捐", "器捐意願書"],
     navLabel: "器捐責任醫院",
     description:
       "查詢衛福部器官捐贈勸募網絡指定責任醫院名冊，提供大愛器捐諮詢、健保卡器捐意願註記簽署與安寧緩和諮詢窗口。",
@@ -3044,6 +3128,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "home-emergency-care",
     title: "健保在宅急症照護特約機構查詢：在宅施打抗生素醫療",
+    keywords: ["在宅急症照護", "在宅抗生素", "住院替代"],
     navLabel: "在宅急症特約機構",
     description:
       "查詢中央健保署在宅急症照護試辦計畫特約院所，針對肺炎、尿路感染、軟組織感染長者提供到宅施打抗生素與遠距生理監控。",
@@ -3075,6 +3160,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "pesticide-sales",
     title: "合法農藥販賣業執照據點查詢：植物保護資材地圖",
+    keywords: ["農藥行", "農藥販賣業", "植物保護資材"],
     navLabel: "合法農藥資材據點",
     description:
       "查詢農業部動植物防疫檢疫署核發合法農藥販賣業執照之經銷門市、植物保護資材營業據點，保障農作安全用藥與資材來源。",
@@ -3106,6 +3192,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "green-shops",
     title: "全國綠色商店與環保標章商品地圖",
+    keywords: ["綠色商店", "環保標章商品"],
     navLabel: "綠色商店地圖",
     description:
       "查詢環境部認證之綠色商店、環保餐廳與碳足跡標籤商品販售通路，提供自備容器優惠、環保集點與友善低碳綠生活據點。",
@@ -3137,6 +3224,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "hearing-aid-subsidies",
     title: "助聽器評估特約醫療院所查詢：公費聽力輔具評估",
+    keywords: ["助聽器補助", "聽力輔具評估", "公費助聽器"],
     navLabel: "助聽器評估院所",
     description:
       "查詢衛生福利部社會及家庭署身心障礙輔具補助指定之助聽器聽力檢查與效益驗證特約醫學中心、耳鼻喉專科醫療機構名冊。",
@@ -3168,6 +3256,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "funeral-facilities",
     title: "全國合法公私立殯葬設施地圖：公墓／納骨塔／禮儀業者",
+    keywords: ["殯葬設施", "公墓", "納骨塔", "禮儀業者"],
     navLabel: "合法殯葬設施",
     description:
       "查詢內政部全國殯葬資訊網登記立案之合法公立與私立公墓、納骨塔（骨灰骸存放設施）、火化場與合法生命禮儀服務公司。",
@@ -3201,6 +3290,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     navLabel: "全臺即時停水查詢",
     title: "全臺即時停水與供水站地圖：自來水管線修復／計畫停水／取水點查詢",
+    keywords: ["停水查詢", "停水公告", "供水站", "計畫停水"],
     description:
       "即時查詢臺灣自來水公司與臺北自來水事業處突發管線破裂搶修、定期計畫性施工停水與水壓降低區域，並提供鄰近緊急臨時供水站與取水車地圖定位導航。",
     directAnswer:
@@ -3271,6 +3361,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     schemaType: "WebPage",
     title: "全臺急用緊急專線速查與直撥目錄",
+    keywords: ["緊急專線", "報案電話", "緊急聯絡電話"],
     navLabel: "緊急專線速查",
     description:
       "彙整全臺 47+ 組官方特殊服務簡碼、急難求救專線與各縣市 1999 直撥代表號，提供 110、119、112、113、118 一鍵快速撥號、即時關鍵字模糊搜尋、22 縣市分流切換與離線零延遲應急查詢。",
@@ -3317,6 +3408,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-safety",
     schemaType: "WebPage",
     title: "全民防災物資：緊急避難包與居家儲備計算機",
+    keywords: ["防災包", "緊急避難包", "居家儲備物資"],
     navLabel: "防災避難物資計算",
     description:
       "依據國防部《臺灣全民安全指引》與內政部消防署規範，提供個人緊急避難包 (Go-Bag) 互動檢核清單，並依家庭人數與儲備天數（3/7/14天）動態推算生活飲水、乾糧熱量、常備藥品與特殊備品，支援離線暫存與列印。",
@@ -3410,6 +3502,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     slug: "medical-violators",
     group: "care-facility",
     title: "醫事人員性別事件查詢（狼醫專區）",
+    keywords: ["狼醫", "醫事性平事件", "醫師性騷擾"],
     navLabel: "醫事性平查詢",
     description:
       "即時查詢衛生福利部官方公告經法院確定判決或醫事審議懲戒之涉及性平事件醫事人員名冊（涵蓋醫師、中醫師、放射師、藥事及護理人員），落實就醫安全與病患防護知情權。",
@@ -3486,6 +3579,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     schemaType: "WebPage",
     navLabel: "敬老卡與樂齡旅遊地圖",
     title: "敬老卡補助與樂齡旅遊地圖：全臺22縣市敬老卡交通補助查詢",
+    keywords: ["敬老卡", "敬老卡補助", "樂齡旅遊"],
     description:
       "查詢全臺 22 縣市敬老卡交通補助類型與申請資訊，並整合景區無障礙設施、軟性服務（輪椅／老花眼鏡借用、語音導覽）、樂齡套票推薦與設施停用公告。",
     directAnswer:
@@ -3632,4 +3726,53 @@ export function getToolCatalogEntry(slug: string): ToolCatalogEntry {
     throw new Error(`No TOOL_CATALOG entry for slug "${slug}"`);
   }
   return entry;
+}
+
+/**
+ * Find every catalog entry matching a free-text keyword (issue #441).
+ *
+ * A pure function — given the same `query` (and the same `translate` callback,
+ * if provided) it always returns the same result, with no side effects and no
+ * network calls — so it is the shared foundation for three things that all
+ * need "does this keyword match a tool" without a server round-trip: the
+ * Ctrl+K search-across-tools UI, news↔tool cross-linking, and each tool
+ * page's `llms.txt` keywords.
+ *
+ * Matches case-insensitively (so "AED" / "aed" are equivalent) against:
+ *  - `title`
+ *  - `description`
+ *  - `directAnswer`
+ *  - every entry in `keywords` (common nicknames/synonyms, e.g. AED ↔ 心臟電擊)
+ *  - the current locale's translated label, when `translate` is passed —
+ *    callers in a locale other than zh-TW should pass e.g.
+ *    `(tool) => t(\`catalog.${tool.slug}\`, tool.title)` so a search for an
+ *    English/Japanese/Korean term still finds the tool.
+ *
+ * An empty/whitespace-only query returns no results rather than the whole
+ * catalog, since callers wire this to "type to search" UIs where no input
+ * means no results yet.
+ */
+export function searchTools(
+  query: string,
+  translate?: (tool: ToolCatalogEntry) => string | null | undefined,
+): ToolCatalogEntry[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase("zh-TW");
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  return TOOL_CATALOG.filter((tool) => {
+    const haystacks: Array<string | null | undefined> = [
+      tool.title,
+      tool.description,
+      tool.directAnswer,
+      ...tool.keywords,
+      translate?.(tool),
+    ];
+    return haystacks.some(
+      (text) =>
+        typeof text === "string" &&
+        text.toLocaleLowerCase("zh-TW").includes(normalizedQuery),
+    );
+  });
 }
