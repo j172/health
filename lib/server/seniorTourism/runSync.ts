@@ -1,5 +1,6 @@
 import "server-only";
 import { getPool } from "@/lib/server/db/mysql";
+import { parseTdxCoordinate } from "@/lib/server/tdx/seniors";
 import {
   fetchTourismFacility,
   fetchTourismService,
@@ -91,8 +92,8 @@ export async function runSeniorTourismSync(): Promise<SeniorTourismSyncSummary> 
             item.BuildingName || null,
             item.FloorLevel || null,
             item.Description || null,
-            item.PositionLat ?? null,
-            item.PositionLon ?? null,
+            parseTdxCoordinate(item.PositionLat),
+            parseTdxCoordinate(item.PositionLon),
           ],
         );
         summary.facilitiesUpserted += 1;

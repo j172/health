@@ -1,5 +1,6 @@
 import "server-only";
 import { getPool } from "@/lib/server/db/mysql";
+import { parseTdxCoordinate } from "@/lib/server/tdx/seniors";
 import {
   RAIL_SYSTEMS,
   RAIL_SYSTEM_FALLBACK_COUNTY,
@@ -218,8 +219,8 @@ export async function runTransitAccessibilitySync(): Promise<TransitAccessibilit
           description: item.Description ?? null,
           exitName: item.ExitName ?? null,
           platformName: item.PlatformName ?? null,
-          lat: item.PositionLat ?? null,
-          lng: item.PositionLon ?? null,
+          lat: parseTdxCoordinate(item.PositionLat),
+          lng: parseTdxCoordinate(item.PositionLon),
         }));
         for (const s of acc.serviceItems) {
           if (s.serviceUrl) {
@@ -321,8 +322,8 @@ export async function runTransitAccessibilitySync(): Promise<TransitAccessibilit
             transfer.FloorLevel || null,
             transfer.ExitID || null,
             transfer.ExitName || null,
-            transfer.PositionLat ?? null,
-            transfer.PositionLon ?? null,
+            parseTdxCoordinate(transfer.PositionLat),
+            parseTdxCoordinate(transfer.PositionLon),
             transfer.TransferMode || null,
             transfer.TransferRouteDescription || null,
             transfer.TransferDescription || null,
