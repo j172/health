@@ -18,15 +18,13 @@ export interface ReferenceTable {
 }
 
 export type ToolGroup =
-  | "calculator"
-  | "care-facility"
-  | "registry"
-  | "child-welfare"
-  | "disaster-safety"
-  | "transport-energy"
-  | "environment"
-  | "culture-tourism"
-  | "life-services";
+  | "health-assessment"
+  | "medical-care"
+  | "elder-care-welfare"
+  | "family"
+  | "disaster-alerts"
+  | "environment-food"
+  | "life-culture";
 
 export interface ToolGroupMeta {
   group: ToolGroup;
@@ -38,22 +36,20 @@ export interface ToolGroupMeta {
 }
 
 /**
- * Single source of truth for the 9 Nav-dropdown / Footer-column / /tools
- * category buckets (issue #256 reclassification) — SiteNav.tsx and
- * SiteFooter.tsx both derive their category list from this array instead of
- * each hand-rolling their own, so the two can't drift out of sync the way
- * the old 7-bucket layout was hardcoded independently in both files.
+ * Single source of truth for the 7 Nav-dropdown / Footer-column / /tools
+ * category buckets (issue #442 reclassification, down from the previous 9 —
+ * see issue #438 §A) — SiteNav.tsx and SiteFooter.tsx both derive their
+ * category list from this array instead of each hand-rolling their own, so
+ * the two can't drift out of sync.
  */
 export const TOOL_GROUP_META: ToolGroupMeta[] = [
-  { group: "calculator", labelKey: "nav.healthTools", labelDefault: "健康工具" },
-  { group: "care-facility", labelKey: "nav.careFacility", labelDefault: "醫療照護機構" },
-  { group: "registry", labelKey: "nav.registry", labelDefault: "藥品食品登錄查詢" },
-  { group: "child-welfare", labelKey: "nav.childWelfare", labelDefault: "兒少福利與教育" },
-  { group: "disaster-safety", labelKey: "nav.disasterSafety", labelDefault: "防災與安全示警" },
-  { group: "transport-energy", labelKey: "nav.transportEnergy", labelDefault: "交通與能源" },
-  { group: "environment", labelKey: "nav.environment", labelDefault: "環境品質與綠色生活" },
-  { group: "culture-tourism", labelKey: "nav.cultureTourism", labelDefault: "文化藝術與觀光" },
-  { group: "life-services", labelKey: "nav.lifeServices", labelDefault: "公益與生活服務" },
+  { group: "health-assessment", labelKey: "nav.healthAssessment", labelDefault: "健康自我評估" },
+  { group: "medical-care", labelKey: "nav.medicalCare", labelDefault: "就醫與用藥" },
+  { group: "elder-care-welfare", labelKey: "nav.elderCareWelfare", labelDefault: "長照與社會福利" },
+  { group: "family", labelKey: "nav.family", labelDefault: "婦幼與家庭" },
+  { group: "disaster-alerts", labelKey: "nav.disasterAlerts", labelDefault: "防災與示警" },
+  { group: "environment-food", labelKey: "nav.environmentFood", labelDefault: "環境與食品安全" },
+  { group: "life-culture", labelKey: "nav.lifeCulture", labelDefault: "交通、生活與文化" },
 ];
 
 export interface ToolCatalogEntry {
@@ -91,11 +87,11 @@ export interface ToolCatalogEntry {
   relatedSlugs: string[];
   faqs: ToolFaq[];
   /** Drives the nav dropdowns, the footer columns and the /tools index sections
-   * from one place (issue #256 reclassification): "calculator" → 健康工具;
-   * "care-facility" → 醫療照護機構; "registry" → 藥品食品登錄查詢;
-   * "child-welfare" → 兒少福利與教育; "disaster-safety" → 防災與安全示警;
-   * "transport-energy" → 交通與能源; "environment" → 環境品質與綠色生活;
-   * "culture-tourism" → 文化藝術與觀光; "life-services" → 公益與生活服務. */
+   * from one place (issue #442 reclassification, down from 9 to 7 groups):
+   * "health-assessment" → 健康自我評估; "medical-care" → 就醫與用藥;
+   * "elder-care-welfare" → 長照與社會福利; "family" → 婦幼與家庭;
+   * "disaster-alerts" → 防災與示警; "environment-food" → 環境與食品安全;
+   * "life-culture" → 交通、生活與文化. */
   group: ToolGroup;
   /**
    * schema.org type for the page-level JSON-LD built by `buildToolPageJsonLd`
@@ -118,7 +114,8 @@ export interface ToolCatalogEntry {
 export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "uv",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     title: "全臺即時紫外線指數 (UV)",
     keywords: ["紫外線", "曝曬", "防曬", "UV指數"],
     description:
@@ -204,7 +201,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "earthquakes",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     schemaType: "WebPage",
     title: "臺灣與全球顯著地震查詢",
     keywords: ["地震", "地震速報", "震度", "海嘯"],
@@ -250,7 +248,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "bmi",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "BMI 計算器",
     keywords: ["肥胖", "身體質量指數", "體重", "過重"],
     description:
@@ -333,7 +332,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "calories",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "卡路里需求計算器",
     keywords: ["熱量", "基礎代謝率", "BMR", "TDEE", "減重"],
     description:
@@ -417,7 +417,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "nutrition",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "每日營養素建議計算器",
     keywords: ["營養素", "三大營養素", "蛋白質碳水脂肪"],
     description:
@@ -454,7 +455,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "water",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "飲水量計算器",
     keywords: ["喝水量", "補水", "水分攝取"],
     description:
@@ -492,7 +494,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "body-fat",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "體脂率計算器",
     keywords: ["體脂", "體脂率", "海軍體脂法"],
     description:
@@ -530,7 +533,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "waist-hip",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "腰臀比計算器",
     keywords: ["腰臀比", "腹部肥胖", "WHR"],
     description: "計算腰臀比（WHR），依 WHO 標準評估腹部肥胖與心血管代謝風險。",
@@ -589,7 +593,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "heart-rate",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "目標心率計算器",
     keywords: ["心率區間", "運動強度", "Karvonen"],
     description:
@@ -673,7 +678,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "blood-pressure",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "血壓分析器",
     keywords: ["高血壓", "血壓標準", "722原則"],
     description:
@@ -762,7 +768,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "sleep",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "睡眠品質評估",
     keywords: ["睡眠品質", "失眠", "PSQI"],
     description:
@@ -803,7 +810,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "stress",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "壓力評估測驗",
     keywords: ["壓力測驗", "知覺壓力", "PSS"],
     description:
@@ -834,7 +842,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "lbm",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "去脂體重 (LBM) 計算器",
     keywords: ["去脂體重", "肌肉量", "瘦體重"],
     description: "以 Boer 公式估算去脂體重與體脂率，全面了解您的身體組成狀況。",
@@ -871,7 +880,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "vo2max",
-    group: "calculator",
+    group: "health-assessment",
+
     title: "VO2Max 估算器",
     keywords: ["最大攝氧量", "心肺耐力"],
     description:
@@ -914,7 +924,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aqi",
-    group: "environment",
+    group: "environment-food",
+
     title: "AQI 空氣品質即時查詢",
     keywords: ["空氣品質", "PM2.5", "懸浮微粒"],
     description:
@@ -1003,7 +1014,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "clinics",
-    group: "care-facility",
+    group: "medical-care",
+
     title: "醫療院所查詢",
     keywords: ["看醫生", "健保診所", "醫院查詢"],
     description: "查詢全民健保特約醫療院所，支援關鍵字搜尋與附近定位。",
@@ -1031,7 +1043,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pharmacies",
-    group: "care-facility",
+    group: "medical-care",
+
     title: "藥局查詢",
     keywords: ["藥房", "健保藥局", "連續處方箋"],
     description: "查詢全臺一般藥局及健保特約藥局，支援關鍵字搜尋與附近定位。",
@@ -1055,7 +1068,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "drugs",
-    group: "registry",
+    group: "medical-care",
+
     title: "藥品查詢",
     keywords: ["藥品查詢", "許可證字號", "辨識藥品"],
     description:
@@ -1085,7 +1099,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-nutrition",
-    group: "registry",
+    group: "environment-food",
+
     title: "食品營養成分查詢",
     keywords: ["食物熱量", "食材營養", "食品成分"],
     description:
@@ -1130,7 +1145,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-operators",
-    group: "registry",
+    group: "environment-food",
+
     schemaType: "WebPage",
     title: "食品業者登錄查詢",
     keywords: ["食品登錄", "食品業者", "追溯追蹤"],
@@ -1161,7 +1177,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "health-checks",
-    group: "care-facility",
+    group: "medical-care",
+
     title: "健康檢查機構查詢",
     keywords: ["健檢機構", "職業健檢"],
     description:
@@ -1186,7 +1203,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "long-term-care",
-    group: "care-facility",
+    group: "elder-care-welfare",
+
     navLabel: "長照照顧圈地圖",
     title: "長照照顧圈地圖",
     keywords: [
@@ -1259,7 +1277,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disability-welfare",
-    group: "care-facility",
+    group: "elder-care-welfare",
+
     title: "身心障礙福利機構查詢",
     keywords: ["身心障礙機構", "殘障福利", "障礙福利"],
     description:
@@ -1284,7 +1303,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disability-atm",
-    group: "life-services",
+    group: "elder-care-welfare",
+
     navLabel: "無障礙ATM查詢",
     title: "信用合作社無障礙ATM查詢",
     keywords: ["無障礙ATM", "語音ATM", "視障提款"],
@@ -1310,7 +1330,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "public-toilets",
-    group: "life-services",
+    group: "life-culture",
+
     schemaType: "WebPage",
     title: "全國公廁查詢",
     keywords: ["公共廁所", "廁所地圖", "找廁所"],
@@ -1346,7 +1367,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // + facilitySearchConfigs["child-welfare-nurseries" | "child-welfare-centers"]
     // (unchanged), switched by a type tab — see ChildWelfareInstitutionsContent.tsx.
     slug: "child-welfare-institutions",
-    group: "child-welfare",
+    group: "family",
+
     title: "全國親子館與兒少福利中心查詢",
     keywords: ["親子館", "兒童福利中心", "托育資源中心"],
     description:
@@ -1386,7 +1408,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "kindergartens",
-    group: "child-welfare",
+    group: "family",
+
     schemaType: "WebPage",
     title: "全國幼兒園查詢",
     keywords: ["幼兒園查詢", "托嬰", "幼稚園"],
@@ -1416,7 +1439,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cram-schools",
-    group: "child-welfare",
+    group: "family",
+
     schemaType: "WebPage",
     title: "全國短期補習班查詢",
     keywords: ["補習班查詢", "安親班"],
@@ -1447,7 +1471,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "child-safety-spots",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     schemaType: "WebPage",
     title: "婦幼安全警示地點查詢",
     keywords: ["婦幼安全", "治安顧慮地點", "警示地點"],
@@ -1478,7 +1503,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "child-native-languages",
-    group: "child-welfare",
+    group: "family",
+
     schemaType: "WebPage",
     navLabel: "本土語言辭典",
     title: "兒少本土語言辭典（閩南語／客語）",
@@ -1525,7 +1551,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "npo-organizations",
-    group: "life-services",
+    group: "elder-care-welfare",
+
     schemaType: "WebPage",
     title: "全臺公益組織(NPO)查詢",
     keywords: ["公益組織", "NPO查詢", "非營利組織", "捐款立案"],
@@ -1568,7 +1595,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // quick-filter (see CulturalEventsContent.tsx) so the family-oriented
     // subset is still one click away instead of living on a separate page.
     slug: "cultural-events",
-    group: "culture-tourism",
+    group: "life-culture",
+
     schemaType: "WebPage",
     title: "全國藝文展覽與親子活動查詢",
     keywords: ["藝文活動", "展覽資訊", "親子活動"],
@@ -1599,7 +1627,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "public-art",
-    group: "culture-tourism",
+    group: "life-culture",
+
     schemaType: "WebPage",
     title: "全國公共藝術與演藝場所地圖",
     keywords: ["公共藝術", "演藝場所", "表演場館"],
@@ -1630,7 +1659,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "heritage-map",
-    group: "culture-tourism",
+    group: "life-culture",
+
     schemaType: "WebPage",
     navLabel: "文化資產地圖",
     title: "文化資產地圖：古蹟／歷史建築／考古遺址查詢",
@@ -1662,7 +1692,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "travel-epidemic-alerts",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     title: "國際旅遊疫情與即時情報地圖",
     keywords: ["出國疫情", "旅遊警示", "境外感染"],
     description:
@@ -1697,7 +1728,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "weather-alerts",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     title: "即時氣象警報與降雨資訊",
     keywords: ["氣象警報", "豪雨特報", "颱風警報", "降雨"],
     description:
@@ -1747,7 +1779,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cool-spots",
-    group: "life-services",
+    group: "life-culture",
+
     title: "全國涼適點查詢",
     keywords: ["涼適點", "避暑", "降溫站"],
     description:
@@ -1777,7 +1810,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "iaq-premises",
-    group: "environment",
+    group: "environment-food",
+
     schemaType: "WebPage",
     title: "室內空氣品質法公告場所查詢",
     keywords: ["室內空氣品質", "公告場所", "IAQ"],
@@ -1803,7 +1837,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "cleaning-squads",
-    group: "environment",
+    group: "environment-food",
+
     schemaType: "WebPage",
     title: "地方清潔隊聯絡資訊查詢",
     keywords: ["清潔隊", "垃圾車", "清潔隊電話"],
@@ -1833,7 +1868,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // a 產品標籤／排放係數 tab, reusing both existing bespoke content
     // components unmodified — see CarbonFootprintContent.tsx.
     slug: "carbon-footprint",
-    group: "environment",
+    group: "environment-food",
+
     schemaType: "WebPage",
     navLabel: "碳足跡查詢",
     title: "碳足跡查詢：產品標籤與排放係數",
@@ -1880,7 +1916,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aqx-monitoring",
-    group: "environment",
+    group: "environment-food",
+
     title: "空氣品質延伸監測資料查詢（AQX 系列）",
     keywords: ["AQX", "延伸空品監測", "空品歷史資料"],
     description:
@@ -1949,7 +1986,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // with a river/reservoir tab, reusing both existing bespoke content
     // components unmodified — see WaterConditionsContent.tsx.
     slug: "water-conditions",
-    group: "environment",
+    group: "disaster-alerts",
+
     schemaType: "WebPage",
     navLabel: "全臺水情查詢",
     title: "全臺水情：河川水位與水庫營運查詢",
@@ -2001,7 +2039,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "disaster-map",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     schemaType: "WebPage",
     navLabel: "防災地圖",
     title: "防災地圖：避難收容處所／消防救援單位／應變中心查詢",
@@ -2043,7 +2082,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "bookstores",
-    group: "culture-tourism",
+    group: "life-culture",
+
     schemaType: "WebPage",
     title: "全國實體書店查詢",
     keywords: ["實體書店", "獨立書店", "書店地圖"],
@@ -2079,7 +2119,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "tourism-factories",
-    group: "culture-tourism",
+    group: "life-culture",
+
     schemaType: "WebPage",
     title: "全臺認證觀光工廠查詢",
     keywords: ["觀光工廠", "工廠旅遊"],
@@ -2110,7 +2151,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pet-adoption",
-    group: "life-services",
+    group: "family",
+
     schemaType: "WebPage",
     title: "全臺毛孩認領養查詢",
     keywords: ["動物認養", "毛小孩認養", "公立動物之家"],
@@ -2152,7 +2194,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       "整合衛生福利部國民健康署官方開放資料，查詢全臺依法設置與自願設置之公共哺集乳室位置、地址、電話與開放時段。",
     directAnswer:
       "全國哺集乳室地圖整合國健署孕產兒關懷網站資料，提供全臺 3,800+ 處依法設置與自願設置哺集乳室，支援 22 縣市快選、GPS 距離排序與機構電話查詢。",
-    group: "life-services",
+    group: "family",
+
     scientificBasis: [
       {
         title: "公共場所母乳哺育條例",
@@ -2193,7 +2236,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       "整合臺灣婦產科醫學會 BeOK 避孕諮詢室認證機構名冊，提供全臺 88 家婦產科診所與 798 家諮詢藥局之雙圖層點位查詢與雙重避孕衛教指引。",
     directAnswer:
       "避孕諮詢地圖整合臺灣婦產科醫學會認證名冊，收錄全臺近 900 處專業婦產科診所與健保諮詢藥局，提供事前/事後口服避孕藥諮詢與雙重避孕指導。",
-    group: "care-facility",
+    group: "family",
+
     scientificBasis: [
       {
         title: "雙重避孕指引與衛教規範",
@@ -2229,7 +2273,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       "整合博客來 4 大暢銷榜、誠品線上 27 類主題選書與 TAAZE 讀冊生活 10 大注目與編輯推薦書單，涵蓋醫療保健、心理勵志、飲食料理、親子教養、熟齡長照與生活風格，即時掌握優質書單、定價優惠與讀者口碑好書。",
     directAnswer:
       "書籍推薦服務整合臺灣三大圖書通路，收錄博客來暢銷榜、誠品選書與 TAAZE 讀冊生活多元選書，涵蓋健康醫學、心理成長、生活風格與親子教養等多元好書，提供即時分類檢索與購書導覽。",
-    group: "culture-tourism",
+    group: "life-culture",
+
     scientificBasis: [
       {
         title: "圖書分類法與出版書目規範",
@@ -2263,7 +2308,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "vet-clinics",
-    group: "life-services",
+    group: "family",
+
     title: "全臺動物醫院與獸醫診所查詢",
     keywords: ["動物醫院", "獸醫診所"],
     description:
@@ -2293,7 +2339,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "metro-alerts",
-    group: "transport-energy",
+    group: "life-culture",
+
     title: "捷運營運與電梯檢修公告",
     keywords: ["捷運公告", "電梯檢修", "捷運停駛"],
     description:
@@ -2323,7 +2370,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "youbike",
-    group: "transport-energy",
+    group: "life-culture",
+
     title: "公共自行車 (YouBike 2.0) 即時動態",
     keywords: ["YouBike", "公共自行車", "共享單車"],
     description:
@@ -2353,7 +2401,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "pest-alerts",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     title: "農作物病蟲害即時預警",
     keywords: ["病蟲害預警", "農作物病害"],
     description:
@@ -2383,7 +2432,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "power-grid-overview",
-    group: "transport-energy",
+    group: "life-culture",
+
     schemaType: "WebPage",
     title: "全臺電力概況儀表板",
     keywords: ["電力供需", "台電", "停電", "備轉容量"],
@@ -2438,7 +2488,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // combining the most-queried rows from each original table rather than
     // either one alone.
     slug: "cpc-prices",
-    group: "transport-energy",
+    group: "life-culture",
+
     title: "中油油價查詢與加油站服務地圖",
     keywords: [
       "油價查詢",
@@ -2520,7 +2571,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // it is now a substantive, single canonical page comparing all four
     // certification types, not a thin single-type directory shell.
     slug: "green-certifications",
-    group: "environment",
+    group: "environment-food",
+
     schemaType: "WebPage",
     navLabel: "環保標章查詢",
     title: "環保標章與綠色生活認證查詢",
@@ -2582,7 +2634,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "er-status",
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     title: "全臺急救責任醫院急診即時看板",
     keywords: ["急診即時", "急診人數", "急診壅塞"],
@@ -2624,7 +2677,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "aed",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     schemaType: "MedicalWebPage",
     title: "全國公共場所 AED 急救地圖",
     keywords: ["心臟電擊", "自動體外心臟去顫器", "心臟急救", "電擊器"],
@@ -2666,7 +2720,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "food-safety",
-    group: "registry",
+    group: "environment-food",
+
     title: "全臺蔬果農藥殘留與食安檢驗透明看板",
     keywords: ["農藥殘留", "食安檢驗", "蔬果檢驗"],
     navLabel: "食安檢驗看板",
@@ -2707,7 +2762,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "outdoor-safety",
-    group: "environment",
+    group: "environment-food",
+
     title: "全臺戶外運動與放電安全指數",
     keywords: ["戶外安全指數", "放電安全", "雷擊風險"],
     navLabel: "戶外安全指數",
@@ -2748,7 +2804,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "accessible-transit",
-    group: "transport-energy",
+    group: "elder-care-welfare",
+
     navLabel: "全臺無障礙交通地圖",
     title: "全臺無障礙交通地圖：低地板公車／捷運無障礙／通用計程車／復康巴士",
     keywords: ["無障礙交通", "低地板公車", "復康巴士", "通用計程車"],
@@ -2789,7 +2846,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "inundation-map",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     navLabel: "全臺積淹水即時感測地圖",
     title: "全臺積淹水即時感測地圖：路面淹水／水位防汛警戒／避難收容處所",
     keywords: ["積水地圖", "淹水感測", "防汛警戒"],
@@ -2845,7 +2903,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["food-safety", "nutrition", "food-nutrition", "food-operators"],
-    group: "registry",
+    group: "medical-care",
+
     schemaType: "WebPage",
     faqs: [
       {
@@ -2877,7 +2936,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["disability-welfare", "disability-atm", "npo-organizations"],
-    group: "life-services",
+    group: "elder-care-welfare",
+
     schemaType: "WebPage",
     faqs: [
       {
@@ -2909,7 +2969,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["stress", "sleep", "clinics"],
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -2941,7 +3002,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["clinics", "pharmacies", "health-checks"],
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -2973,7 +3035,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["health-checks", "clinics", "blood-pressure"],
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -3005,7 +3068,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["breastfeeding-rooms", "contraception-map", "child-welfare-institutions"],
-    group: "child-welfare",
+    group: "family",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -3037,7 +3101,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["clinics", "er-status", "health-checks"],
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -3069,7 +3134,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["clinics", "long-term-care", "er-status"],
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -3101,7 +3167,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["long-term-care", "clinics"],
-    group: "care-facility",
+    group: "medical-care",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -3133,7 +3200,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["food-safety", "pest-alerts", "green-certifications"],
-    group: "environment",
+    group: "environment-food",
+
     schemaType: "WebPage",
     faqs: [
       {
@@ -3165,7 +3233,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["clinics", "disability-welfare", "long-term-care"],
-    group: "life-services",
+    group: "elder-care-welfare",
+
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -3197,7 +3266,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       },
     ],
     relatedSlugs: ["life-services", "npo-organizations", "public-toilets"],
-    group: "life-services",
+    group: "elder-care-welfare",
+
     schemaType: "WebPage",
     faqs: [
       {
@@ -3214,7 +3284,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "water-outages",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     navLabel: "全臺即時停水查詢",
     title: "全臺即時停水與供水站地圖：自來水管線修復／計畫停水／取水點查詢",
     keywords: ["停水查詢", "停水公告", "供水站", "計畫停水"],
@@ -3285,7 +3356,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "emergency-hotlines",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     schemaType: "WebPage",
     title: "全臺急用緊急專線速查與直撥目錄",
     keywords: ["緊急專線", "報案電話", "緊急聯絡電話"],
@@ -3332,7 +3404,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "emergency-supplies",
-    group: "disaster-safety",
+    group: "disaster-alerts",
+
     schemaType: "WebPage",
     title: "全民防災物資：緊急避難包與居家儲備計算機",
     keywords: ["防災包", "緊急避難包", "居家儲備物資"],
@@ -3427,7 +3500,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "medical-violators",
-    group: "care-facility",
+    group: "medical-care",
+
     title: "醫事人員性別事件查詢（狼醫專區）",
     keywords: ["狼醫", "醫事性平事件", "醫師性騷擾"],
     navLabel: "醫事性平查詢",
@@ -3502,7 +3576,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   },
   {
     slug: "senior-friendly",
-    group: "life-services",
+    group: "elder-care-welfare",
+
     schemaType: "WebPage",
     navLabel: "敬老卡與樂齡旅遊地圖",
     title: "敬老卡補助與樂齡旅遊地圖：全臺22縣市敬老卡交通補助查詢",

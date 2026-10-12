@@ -67,10 +67,10 @@ test("parseCategoryHtml parses 5-column physician data correctly", () => {
   assert.equal(parsed[0].links[0].type, "judgment");
 });
 
-test("catalog.ts registers medical-violators with INDEXABLE_SLUGS and care-facility group", () => {
+test("catalog.ts registers medical-violators with INDEXABLE_SLUGS and medical-care group", () => {
   const catalogContent = fs.readFileSync(path.join(REPO_ROOT, "lib", "server", "tools", "catalog.ts"), "utf-8");
   assert.ok(catalogContent.includes('slug: "medical-violators"'), "catalog.ts must contain medical-violators slug");
-  assert.ok(catalogContent.includes('group: "care-facility"'), "medical-violators must belong to care-facility group");
+  assert.ok(catalogContent.includes('group: "medical-care"'), "medical-violators must belong to medical-care group");
   assert.ok(catalogContent.includes('"medical-violators",'), "INDEXABLE_SLUGS must contain medical-violators");
 });
 

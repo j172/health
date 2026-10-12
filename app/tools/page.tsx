@@ -124,18 +124,20 @@ interface ToolCategory {
   description: string;
   /**
    * Membership comes from ToolGroup, so this page cannot drift away from the
-   * nav dropdowns and the footer columns (issue #256 reclassification: both
-   * derive from the same 9 `TOOL_GROUP_META` buckets in catalog.ts). It had
-   * drifted before: tools were added to the catalog, wired into a group, and
-   * stayed invisible here because nobody remembered to append the slug by
-   * hand.
+   * nav dropdowns and the footer columns (issue #442 reclassification: both
+   * derive from the same 7 `TOOL_GROUP_META` buckets in catalog.ts, down
+   * from 9). It had drifted before: tools were added to the catalog, wired
+   * into a group, and stayed invisible here because nobody remembered to
+   * append the slug by hand.
    *
-   * `slugs` is the exception, for the three curated sections below that split
-   * a group's tools into a finer distinction no group boundary expresses (the
-   * twelve `calculator` tools into "body" vs. "cardio", and `registry` named
-   * as the drug/food registry-lookup section it actually is). Every group
-   * appears exactly once across these `slugs` sections and the `groups`
-   * sections further down — otherwise a tool would double-render.
+   * `slugs` is the exception, for the "body"/"cardio" sections that split
+   * the twelve `health-assessment` tools into a finer distinction no group
+   * boundary expresses. Every group appears exactly once across these
+   * `slugs` sections and the `groups` sections further down — otherwise a
+   * tool would double-render. The old "registry" and "culture-tourism"
+   * sections were removed here (#442): their members are now covered by
+   * `medical-care`/`environment-food` and `life-culture` respectively, each
+   * already claimed by a surviving `groups` section below.
    */
   groups?: ToolGroup[];
   slugs?: string[];
@@ -165,62 +167,52 @@ const CATEGORIES: ToolCategory[] = [
     slugs: ["heart-rate", "blood-pressure", "vo2max", "sleep", "stress"],
   },
   {
-    // The entire "registry" group (issue #256), named for what it actually
-    // is — drug/food registry & composition lookups — rather than as a
-    // groups-based section, so its tools don't also need excluding from a
-    // separate `groups: ["registry"]` section elsewhere in this list.
-    id: "registry",
-    title: "藥品食品登錄查詢",
-    description: "衛福部食藥署藥品許可證、食品營養成分與食品業者登錄資料庫",
-    slugs: ["drugs", "food-nutrition", "food-operators"],
-  },
-  {
+    // issue #442 reclassification (9 groups -> 7): the old "registry" group
+    // no longer exists — its members (drugs, food-nutrition, food-operators,
+    // food-safety) are now part of "medical-care"/"environment-food" and are
+    // picked up by the groups-based sections below instead of a dedicated
+    // slugs-based section.
     id: "care-facility",
     title: "醫療照護機構",
     description:
       "全台健保特約醫院、診所、藥局、健康檢查機構、長照 2.0、居家醫療、老人與身心障礙福利機構檢索",
-    groups: ["care-facility"],
+    groups: ["medical-care"],
   },
   {
     id: "child-welfare",
     title: "兒少福利與教育資源",
     description: "全國親子館與兒少福利中心、幼兒園、短期補習班、本土語言辭典",
-    groups: ["child-welfare"],
+    groups: ["family"],
   },
   {
     id: "disaster-safety",
     title: "防災與安全示警",
     description:
       "紫外線、地震、天氣警報、防災地圖、婦幼安全警示地點、國際旅遊疫情與農作物病蟲害預警",
-    groups: ["disaster-safety"],
+    groups: ["disaster-alerts"],
   },
   {
+    // issue #442: also absorbs the old "culture-tourism" section, since both
+    // old groups now map onto the single "life-culture" group.
     id: "transport-energy",
     title: "交通與能源",
     description:
       "YouBike、中油油價與站點地圖、電力概況儀表板與捷運營運公告",
-    groups: ["transport-energy"],
+    groups: ["life-culture"],
   },
   {
     id: "environment",
     title: "環境品質與綠色生活",
     description:
       "AQI／AQX 空品監測、室內空氣品質公告場所、水情（水位站／水庫）、地方清潔隊、環保標章與碳足跡查詢",
-    groups: ["environment"],
-  },
-  {
-    id: "culture-tourism",
-    title: "文化藝術與觀光",
-    description:
-      "全國藝文展覽與親子活動、公共藝術與演藝場所地圖、文化資產地圖、實體書店與觀光工廠",
-    groups: ["culture-tourism"],
+    groups: ["environment-food"],
   },
   {
     id: "life-services",
     title: "公益與生活服務",
     description:
       "非營利組織(NPO)、公廁、涼適點、無障礙ATM、毛孩認養與動物醫院查詢",
-    groups: ["life-services"],
+    groups: ["elder-care-welfare"],
   },
 ];
 

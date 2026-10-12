@@ -114,7 +114,12 @@ test("Catalog & Spec: catalog.ts and SPECIFICATION.md register child-native-lang
   const catalogContent = fs.readFileSync(catalogPath, "utf-8");
 
   assert.ok(catalogContent.includes('slug: "child-native-languages"'), "Must register slug");
-  assert.ok(catalogContent.includes('group: "child-welfare"'), "Must belong to child-welfare");
+  // issue #442: reclassified from the old "child-welfare" group (9-group
+  // scheme) into "family" (7-group scheme). The SPECIFICATION.md assertions
+  // below check docs/archive/'s frozen historical snapshot (issue #256,
+  // 60 tools / 9 groups) and are intentionally left referring to the old
+  // group name — that archive isn't kept in sync with live reclassifications.
+  assert.ok(catalogContent.includes('group: "family"'), "Must belong to family");
   assert.ok(catalogContent.includes('title: "兒少本土語言辭典（閩南語／客語）"'), "Must have correct title");
 
   const specPath = path.join(ROOT_DIR, "docs", "archive", "SPECIFICATION.md");
