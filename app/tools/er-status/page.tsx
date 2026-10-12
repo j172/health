@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EmergencyRoomContent from "@/components/Tools/EmergencyRoomContent";
 import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 import { getEmergencyRoomOverview } from "@/lib/server/emergencyRooms/queries";
-import { parseGeolocationOverrideFromPlainParams } from "@/lib/utils/geolocationOverride";
 
 export const revalidate = 30;
 export const runtime = "nodejs";
@@ -34,20 +34,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ErStatusPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ lat?: string; lng?: string }>;
-}) {
-  // issue #463：地圖彈出視窗「看附近的急診」深連結帶入的 ?lat=&lng=，有提供時
-  // 讓急診看板以該點位（而非使用者裝置定位）為中心，依距離排序顯示結果。
-  const locationOverride = parseGeolocationOverrideFromPlainParams(await searchParams);
-
+export default async function ErStatusPage() {
+  // issue #463 的 ?lat=&lng= 深連結覆寫座標改由 EmergencyRoomContent 透過
+  // useSearchParams() 在 client 端讀取（見該檔案），不在這裡讀取 searchParams——
+  // App Router 的 searchParams 屬於 Next.js 的 Dynamic API，一旦頁面讀取它就會
+  // 整頁退出靜態渲染／ISR，讓本來每 30 秒（revalidate）才重新查詢一次、全站共用
+  // 快取的 getEmergencyRoomOverview()（含壅塞統計與 25 家醫院的 24 小時走勢圖子查詢）
+  // 變成每個請求都重新查一次，大幅增加資料庫負載，且這個代價會套用在沒有深連結、
+  // 佔絕大多數的一般訪客身上。
   let initialData;
   try {
-    initialData = await getEmergencyRoomOverview(
-      locationOverride ? { lat: locationOverride.lat, lng: locationOverride.lng } : undefined,
-    );
+    initialData = await getEmergencyRoomOverview();
   } catch (err) {
     console.warn("Failed to fetch initial ER data on server:", err);
   }
@@ -59,7 +56,9 @@ export default async function ErStatusPage({
         contextTitle="急診分流與平時自救準備"
         contextDescription="合理利用緊急醫療資源，非危急病症請善用門診分流；平時前往「黑熊學院」掌握家庭急救包必備物資與第一時間止血自救觀念。"
       />
-      <EmergencyRoomContent initialData={initialData} locationOverride={locationOverride} />
+      <Suspense>
+        <EmergencyRoomContent initialData={initialData} />
+      </Suspense>
     </ToolPageShell>
   );
 }

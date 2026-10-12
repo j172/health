@@ -173,20 +173,36 @@ test("app/tools/pharmacies/page.tsx: server component resolves ?lat=&lng= from i
   assert.match(src, /<FacilitySearchContent[^>]*locationOverride=\{locationOverride\}/);
 });
 
-test("EmergencyRoomContent.tsx: accepts locationOverride and includes it when refetching /api/emergency-rooms", () => {
+test("EmergencyRoomContent.tsx: reads ?lat=&lng= via useSearchParams (not a prop from the server page) and includes it when refetching /api/emergency-rooms", () => {
   const src = read("components/Tools/EmergencyRoomContent.tsx");
-  assert.match(src, /locationOverride\?:\s*GeolocationOverride \| null;/);
+  // Reads the override itself, client-side — same pattern as AedContent.tsx,
+  // and deliberately NOT a prop resolved by app/tools/er-status/page.tsx from
+  // its own `searchParams`: reading `searchParams` in that server page would
+  // opt the whole route out of static rendering/ISR (a Next.js Dynamic API),
+  // turning its 30-second-shared getEmergencyRoomOverview() query into one
+  // DB hit per request for every visitor, not just the few arriving via a
+  // map popup's deep link.
+  assert.match(src, /import\s*\{\s*useSearchParams\s*\}\s*from\s*["']next\/navigation["']/);
+  assert.match(src, /parseGeolocationOverrideFromSearchParams\(searchParams\)/);
+  assert.doesNotMatch(src, /locationOverride\?:\s*GeolocationOverride \| null;/, "must not re-accept this as a prop");
   assert.match(src, /query\.set\("lat",\s*String\(locationOverride\.lat\)\)/);
   assert.match(src, /query\.set\("lng",\s*String\(locationOverride\.lng\)\)/);
   assert.match(src, /fetch\(`\/api\/emergency-rooms\$\{qs \? `\?\$\{qs\}` : ""\}`\)/);
+  // A deep-link visit must trigger a fresh, distance-sorted client fetch
+  // rather than trusting the SSR initialData (which isn't sorted by it).
+  assert.match(src, /if \(locationOverride\) \{\s*\n\s*refreshData\(\);/);
 });
 
-test("app/tools/er-status/page.tsx: server component resolves ?lat=&lng= and forwards it to both the initial query and the client component", () => {
+test("app/tools/er-status/page.tsx: does NOT read searchParams server-side (preserves the 30s ISR cache for the general-visitor case) and wraps EmergencyRoomContent in Suspense", () => {
   const src = read("app/tools/er-status/page.tsx");
-  assert.match(src, /searchParams:\s*Promise<\{\s*lat\?:\s*string;\s*lng\?:\s*string\s*\}>/);
-  assert.match(src, /parseGeolocationOverrideFromPlainParams\(await searchParams\)/);
-  assert.match(src, /getEmergencyRoomOverview\(\s*\n\s*locationOverride \? \{ lat: locationOverride\.lat, lng: locationOverride\.lng \} : undefined,/);
-  assert.match(src, /<EmergencyRoomContent initialData=\{initialData\} locationOverride=\{locationOverride\} \/>/);
+  assert.doesNotMatch(
+    src,
+    /searchParams\s*[:,)]|await\s+searchParams/,
+    "must not accept/read a searchParams prop — would force this ISR page fully dynamic for every visitor",
+  );
+  assert.match(src, /import\s*\{\s*Suspense\s*\}\s*from\s*["']react["']/);
+  assert.match(src, /<Suspense>\s*\n\s*<EmergencyRoomContent initialData=\{initialData\} \/>\s*\n\s*<\/Suspense>/);
+  assert.match(src, /getEmergencyRoomOverview\(\);/);
 });
 
 // ---------------------------------------------------------------------------
