@@ -140,15 +140,15 @@ test("Senior Tourism catalog: TOOL_CATALOG has a senior-friendly entry in life-s
     "senior-friendly is an administrative/open-data tool, not clinical content, so schemaType should be WebPage (issue #136)",
   );
   assert.ok(
-    /slug:\s*"senior-friendly"[\s\S]{0,900}relatedSlugs:\s*\[[^\]]*"elder-welfare"[^\]]*"accessible-transit"[^\]]*"long-term-care"/.test(
+    /slug:\s*"senior-friendly"[\s\S]{0,900}relatedSlugs:\s*\[[^\]]*"accessible-transit"[^\]]*"long-term-care"/.test(
       catalogContent,
     ),
-    "senior-friendly should link to elder-welfare, accessible-transit and long-term-care (issue #447: ltc-contracted was retired and 301s to long-term-care)",
+    "senior-friendly should link to accessible-transit and long-term-care (issue #447: ltc-contracted was retired and 301s to long-term-care; issue #484: elder-welfare was retired the same way, merged into long-term-care)",
   );
 
   assert.ok(
-    /slug:\s*"elder-welfare"[\s\S]{0,400}relatedSlugs:\s*\[[^\]]*"senior-friendly"/.test(catalogContent),
-    "elder-welfare should link back to senior-friendly",
+    /slug:\s*"long-term-care"[\s\S]{0,1600}relatedSlugs:\s*\[[^\]]*"senior-friendly"/.test(catalogContent),
+    "long-term-care should link back to senior-friendly (issue #484: elder-welfare's reciprocal link transferred here when elder-welfare was merged into long-term-care)",
   );
   assert.ok(
     /slug:\s*"accessible-transit"[\s\S]{0,2200}relatedSlugs:\s*\[[^\]]*"senior-friendly"/.test(catalogContent),

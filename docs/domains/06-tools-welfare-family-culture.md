@@ -9,7 +9,7 @@
 
 | 群組 | 工具 |
 |---|---|
-| 長者 | [伯公照護站](https://health.j172.tw/tools/hakka-bogong)、[敬老／樂齡](https://health.j172.tw/tools/senior-friendly)、[無障礙交通](https://health.j172.tw/tools/accessible-transit) |
+| 長者 | [長照照顧圈地圖（含伯公照護站）](https://health.j172.tw/tools/long-term-care)、[敬老／樂齡](https://health.j172.tw/tools/senior-friendly)、[無障礙交通](https://health.j172.tw/tools/accessible-transit) |
 | 身心障礙 | [身障福利機構](https://health.j172.tw/tools/disability-welfare)、[無障礙 ATM](https://health.j172.tw/tools/disability-atm)、[庇護工場](https://health.j172.tw/tools/sheltered-workshops)、[助聽器補助](https://health.j172.tw/tools/hearing-aid-subsidies) |
 | NPO | [公益組織查詢](https://health.j172.tw/tools/npo-organizations)（範圍收斂為 `facility_type='npo'`，live 約 47 筆主檔）；`/tools/tax-organizations` 已 301 併入 |
 | 兒少家庭 | [兒少福利機構](https://health.j172.tw/tools/child-welfare-institutions)、[幼兒園](https://health.j172.tw/tools/kindergartens)、[短期補習班](https://health.j172.tw/tools/cram-schools)、[兒童安全地點](https://health.j172.tw/tools/child-safety-spots)、[本土語言辭典](https://health.j172.tw/tools/child-native-languages)、[哺集乳室](https://health.j172.tw/tools/breastfeeding-rooms)、[避孕諮詢地圖](https://health.j172.tw/tools/contraception-map)、[毛孩認養](https://health.j172.tw/tools/pet-adoption) |
@@ -39,9 +39,9 @@
 
 ### 4.1 長者與身障
 
-#### 客委會「伯公照護站」查詢（更名） ✅
+#### 客委會「伯公照護站」查詢（更名，後併入長照照顧圈地圖） ✅
 - 原檔：[hakka-bogong-care-station.md](../archive/specs/hakka-bogong-care-station.md)
-- `/tools/hakka-community` → `/tools/hakka-bogong`（301）；資料源客委會 `DTST20230600002.json`。2.0 M4 將併入長照照顧圈地圖。
+- `/tools/hakka-community` → `/tools/hakka-bogong`（301）；資料源客委會 `DTST20230600002.json`。2.0 M4（#484）已將其與居家醫療、老人福利機構併入 `/tools/long-term-care`（長照照顧圈地圖）作為類型篩選之一；`/tools/hakka-bogong`、`/tools/hakka-community` 均 301 轉址到 `/tools/long-term-care?type=hakka-bogong`。
 
 #### 伯公擴展、便民三工具、NPO 信任徽章、10+1 社福新聞、19 家藝文售票 ✅
 - 原檔：[hakka-bogong-npo-and-public-services-expansion.md](../archive/specs/hakka-bogong-npo-and-public-services-expansion.md)（#194）

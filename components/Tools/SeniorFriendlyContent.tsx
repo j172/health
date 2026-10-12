@@ -112,7 +112,7 @@ export default function SeniorFriendlyContent() {
               <span>全台無障礙交通地圖</span>
             </Link>
             <Link
-              href="/tools/elder-welfare"
+              href="/tools/long-term-care?type=elder-welfare"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >
               <span>🏡</span>
@@ -123,7 +123,7 @@ export default function SeniorFriendlyContent() {
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >
               <span>🏥</span>
-              <span>長照服務機構查詢</span>
+              <span>長照照顧圈地圖</span>
             </Link>
           </div>
         </div>

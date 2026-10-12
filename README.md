@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>全方位臺灣公衛醫療新聞、80+ 款免安裝生活便民工具、即時災害環境觀測與開放資料整合樞紐</strong>
+  <strong>全方位臺灣公衛醫療新聞、70+ 款免安裝生活便民工具、即時災害環境觀測與開放資料整合樞紐</strong>
 </p>
 
 <p align="center">
@@ -73,10 +73,10 @@
 
 1. [平臺核心亮點與願景](#-平臺核心亮點與願景)
 2. [四層新聞圖片漏斗架構 (Four-Tier Funnel)](#-四層新聞圖片漏斗架構-four-tier-image-funnel)
-3. [80+ 款生活便民與公衛防災工具速查矩陣](#-80-款生活便民與公衛防災工具速查矩陣)
+3. [70+ 款生活便民與公衛防災工具速查矩陣](#-70-款生活便民與公衛防災工具速查矩陣)
    - [A. 身體健康與體態計算](#a-身體健康與體態數值計算-12-款)
-   - [B. 醫療院所與即時量能](#b-醫療院所與即時量能資源-12-款)
-   - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-9-款)
+   - [B. 醫療院所與即時量能](#b-醫療院所與即時量能資源-11-款)
+   - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-7-款)
    - [D. 婦幼兒少與家庭生活](#d-婦幼兒少與家庭生活服務-10-款)
    - [E. 即時環境與災害觀測](#e-即時環境與公衛災害觀測-13-款)
    - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-13-款)
@@ -95,7 +95,7 @@
 `j172tw Healthz` 致力於打造**臺灣最值得信賴的公共衛生、民生防災與生活決策資訊整合平臺**。整合逾 50 家中央與地方官方公報、醫療專科頻道與環境感測物聯網，消弭資訊孤島，堅持：
 
 1. **嚴謹求真，權威分流**：官方機構公文堅持白皮書特刊微視覺與原廠圖表，杜絕不相干商業圖庫侵蝕公信力。
-2. **零阻礙即開即用**：全站 80+ 款生活工具無廣告干擾、免下載安裝、支援離線 PWA 與暗色模式。
+2. **零阻礙即開即用**：全站 70+ 款生活工具無廣告干擾、免下載安裝、支援離線 PWA 與暗色模式。
 3. **極限環境工程美學**：在 768MB RAM 極限主機記憶體下，以純原生 HTTP 與高防禦性管線實現零崩潰、零破圖、0 CLS。
 4. **開放資料與 AI 友善**：遵循 `llms.txt` 標準，原創 Schema 與 AI 結構化資料全面以 `CC0-1.0` 開放賦能 AI Agent。
 
@@ -140,9 +140,9 @@ flowchart TD
 
 ---
 
-## 🧰 80+ 款生活便民與公衛防災工具速查矩陣
+## 🧰 70+ 款生活便民與公衛防災工具速查矩陣
 
-平臺提供 7 大專業領域、80+ 款互動式計算與全臺地理圖資工具：
+平臺提供 7 大專業領域、70+ 款互動式計算與全臺地理圖資工具：
 
 ### A. 身體健康與體態數值計算 (12 款)
 
@@ -161,7 +161,7 @@ flowchart TD
 | **睡眠品質評估 (PSQI)** | [`/tools/sleep`](https://health.j172.tw/tools/sleep) | 匹茲堡睡眠品質指數量表 (PSQI) | 7 大維度睡眠障礙診斷與改善建議 |
 | **自覺壓力檢測 (PSS-10)** | [`/tools/stress`](https://health.j172.tw/tools/stress) | PSS-10 國際知覺壓力量表 | 辨識身心過負荷狀態與心理韌性分析 |
 
-### B. 醫療院所與即時量能資源 (12 款)
+### B. 醫療院所與即時量能資源 (11 款)
 
 | 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
 |---|---|---|---|
@@ -171,21 +171,18 @@ flowchart TD
 | **全臺 AED 應急地圖** | [`/tools/aed`](https://health.j172.tw/tools/aed) | 衛生福利部公共場所 AED 登錄平臺 | 緊急自動體外心臟電擊去顫器 GPS 導航找尋 |
 | **成人預防保健特約機構** | [`/tools/adult-preventive-care`](https://health.j172.tw/tools/adult-preventive-care) | 衛福部國民健康署 | 免費成人健檢、三高與四癌篩檢機構 |
 | **成人預防健康檢查地圖** | [`/tools/health-checks`](https://health.j172.tw/tools/health-checks) | 勞動部職業安全衛生署 / 衛福部 | 勞工體格檢查、公務健檢與一般體檢機構 |
-| **居家醫療特約機構** | [`/tools/home-healthcare`](https://health.j172.tw/tools/home-healthcare) | 健保署居家醫療照護整合計畫 | 醫師護理師到宅訪視與安寧緩和醫療查詢 |
 | **居家急症照護機構** | [`/tools/home-emergency-care`](https://health.j172.tw/tools/home-emergency-care) | 衛生福利部新制急症照護 | 在宅急症抗生素治療與遠距照護特約機構 |
 | **器官捐贈與移植醫院** | [`/tools/organ-donation-hospitals`](https://health.j172.tw/tools/organ-donation-hospitals) | 財團法人器官捐贈移植登錄及病人自主推廣中心 | 器官摘取與移植認可合格醫院清單 |
 | **罕見疾病照護網絡** | [`/tools/rare-disease-care`](https://health.j172.tw/tools/rare-disease-care) | 衛生福利部國民健康署 | 罕見疾病照護諮詢機構與遺傳諮詢中心 |
 | **戒菸服務特約醫療院所** | [`/tools/smoking-cessation`](https://health.j172.tw/tools/smoking-cessation) | 國健署戒菸治療服務系統 | 尼古丁戒斷門診、衛教諮詢與補助方案機構 |
 | **全國非營利公衛組織 (NPO)** | [`/tools/npo-organizations`](https://health.j172.tw/tools/npo-organizations) | 內政部人民團體資料庫 | 公衛醫療基金會、罕病協會與長照公益組織 |
 
-### C. 長照安老與身心社福資源 (9 款)
+### C. 長照安老與身心社福資源 (7 款)
 
 | 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
 |---|---|---|---|
-| **長期照顧福利服務機構** | [`/tools/long-term-care`](https://health.j172.tw/tools/long-term-care) | 衛生福利部長期照顧司 | 護理之家、日間照顧中心、團體家屋搜尋、長照2.0特約服務 |
+| **長照照顧圈地圖** | [`/tools/long-term-care`](https://health.j172.tw/tools/long-term-care) | 衛生福利部長期照顧司 / 中央健康保險署 / 社會及家庭署 / 客家委員會 | 整合長照2.0特約機構、居家醫療、老人福利機構與伯公照護站，可切換1/3/5公里照顧圈半徑 |
 | **身心障礙福利服務機構** | [`/tools/disability-welfare`](https://health.j172.tw/tools/disability-welfare) | 衛生福利部社會及家庭署 | 日間日間照顧、住宿式全日型生活機構 |
-| **老人福利服務機構** | [`/tools/elder-welfare`](https://health.j172.tw/tools/elder-welfare) | 衛生福利部社會及家庭署 | 安養中心、長期照護型、養護型機構總覽 |
-| **客委會伯公照護站** | [`/tools/hakka-bogong`](https://health.j172.tw/tools/hakka-bogong) | 客家委員會公衛照顧平臺 | 客庄銀髮樂活、健康促進與老幼共學據點 |
 | **心靈健康諮商與醫療** | [`/tools/mental-health`](https://health.j172.tw/tools/mental-health) | 衛福部心理健康司 | 心理諮商所、臨床心理所與精神復健機構 |
 | **助聽器補助特約廠商** | [`/tools/hearing-aid-subsidies`](https://health.j172.tw/tools/hearing-aid-subsidies) | 社會局身心障礙輔具中心 | 政府聽力輔具評估與特約代償墊付門市 |
 | **全臺身心障礙庇護工場** | [`/tools/sheltered-workshops`](https://health.j172.tw/tools/sheltered-workshops) | 勞動部勞動力發展署 | 烘焙、手工藝、清潔服務庇護商品與訂購指南 |

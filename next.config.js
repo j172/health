@@ -68,8 +68,13 @@ const nextConfig = {
         permanent: false,
       },
       {
+        // issue #484 (2.0 §D merge item M4): "/tools/hakka-bogong" itself was
+        // merged into "/tools/long-term-care?type=hakka-bogong" — this older
+        // redirect (predating that merge) now has to chain to the new
+        // destination directly instead of landing on a page that no longer
+        // exists.
         source: "/tools/hakka-community",
-        destination: "/tools/hakka-bogong",
+        destination: "/tools/long-term-care?type=hakka-bogong",
         permanent: true,
       },
       {
@@ -161,6 +166,27 @@ const nextConfig = {
       {
         source: "/tools/cpc-stations",
         destination: "/tools/cpc-prices?tab=stations",
+        permanent: true,
+      },
+      // issue #484 (2.0 §D merge item M4) — "/tools/home-healthcare",
+      // "/tools/elder-welfare" and "/tools/hakka-bogong" merged into
+      // "/tools/long-term-care" ("長照照顧圈地圖") as a type filter; each 301s
+      // with `?type=` carrying its matching facilitySearchConfigs key so the
+      // redirect lands directly on the right facility type instead of the
+      // default (long-term-care itself).
+      {
+        source: "/tools/home-healthcare",
+        destination: "/tools/long-term-care?type=home-healthcare",
+        permanent: true,
+      },
+      {
+        source: "/tools/elder-welfare",
+        destination: "/tools/long-term-care?type=elder-welfare",
+        permanent: true,
+      },
+      {
+        source: "/tools/hakka-bogong",
+        destination: "/tools/long-term-care?type=hakka-bogong",
         permanent: true,
       },
     ];

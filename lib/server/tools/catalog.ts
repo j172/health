@@ -1016,7 +1016,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nhi.gov.tw",
       },
     ],
-    relatedSlugs: ["pharmacies", "home-healthcare", "health-checks"],
+    relatedSlugs: ["pharmacies", "long-term-care", "health-checks"],
     faqs: [
       {
         question: "可以查詢哪些層級的醫療院所？",
@@ -1044,7 +1044,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nhi.gov.tw",
       },
     ],
-    relatedSlugs: ["clinics", "drugs", "home-healthcare"],
+    relatedSlugs: ["clinics", "drugs", "long-term-care"],
     faqs: [
       {
         question: "一般藥局跟健保特約藥局有什麼不同？",
@@ -1175,7 +1175,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.osha.gov.tw",
       },
     ],
-    relatedSlugs: ["clinics", "home-healthcare", "blood-pressure"],
+    relatedSlugs: ["clinics", "long-term-care", "blood-pressure"],
     faqs: [
       {
         question: "收錄哪些類型的健檢機構？",
@@ -1187,12 +1187,25 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "long-term-care",
     group: "care-facility",
-    title: "長照服務機構查詢",
-    keywords: ["長照機構", "長照2.0", "照護服務"],
+    navLabel: "長照照顧圈地圖",
+    title: "長照照顧圈地圖",
+    keywords: [
+      "長照機構",
+      "長照2.0",
+      "長照3.0",
+      "照護服務",
+      "居家醫療",
+      "居家照護",
+      "老人福利機構",
+      "安養機構",
+      "伯公照護站",
+      "10分鐘照顧圈",
+      "照顧圈",
+    ],
     description:
-      "查詢全臺長照服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、住宿型長照機構與社區照顧據點。支援關鍵字搜尋與附近定位。",
+      "查詢全臺長照資源的「照顧圈地圖」：整合長照2.0特約機構、居家醫療特約機構、老人福利機構與客家委員會伯公照護站四種類型，可切換 1／3／5 公里直線半徑圈，即時顯示圈內資源數量，協助掌握住家附近的長照選擇。",
     directAnswer:
-      "長照服務機構查詢整合衛福部長照2.0特約服務單位與長期照顧服務機構名冊，涵蓋居家照顧、日間照顧、住宿式機構、喘息服務與社區據點，提供即時定位與多維度服務篩選。",
+      "長照照顧圈地圖整合長照2.0特約服務機構、居家醫療特約機構、老人福利機構與伯公照護站四類長照資源，支援依機構類型篩選查詢，並提供 1／3／5 公里可切換的直線半徑照顧圈，即時顯示圈內資源數量；半徑為直線距離估算（市區約等於車程 10 分鐘，實際依路況而定），非路徑規劃導航。",
     scientificBasis: [
       {
         title: "長期照顧服務機構管理與許可名冊",
@@ -1204,38 +1217,43 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         authority: "衛生福利部長期照顧司",
         url: "https://1966.gov.tw",
       },
-    ],
-    relatedSlugs: ["elder-welfare", "home-healthcare", "disability-welfare"],
-    faqs: [
-      {
-        question: "資料涵蓋哪些長照機構與服務項目？",
-        answer:
-          "收錄衛福部許可之全臺長期照顧服務機構與長照2.0特約機構，涵蓋居家服務、日間照顧、喘息服務、家庭托顧、住宿式長照機構及社區巷弄長照站等完整資源。",
-      },
-    ],
-  },
-  {
-    slug: "home-healthcare",
-    group: "care-facility",
-    title: "居家醫療查詢",
-    keywords: ["居家醫療", "居家照護", "到宅看診"],
-    description:
-      "查詢提供居家醫療照護服務的全民健保特約機構，支援關鍵字搜尋與附近定位。",
-    directAnswer:
-      "查詢全民健保居家醫療照護整合計畫特約醫事機構，提供行動不便長者與重症病患到宅醫療照護服務資訊。",
-    scientificBasis: [
       {
         title: "全民健康保險居家醫療照護整合計畫特約名冊",
         authority: "衛生福利部中央健康保險署 (NHI)",
         url: "https://www.nhi.gov.tw",
       },
+      {
+        title: "全國老人福利機構一覽表",
+        authority: "衛生福利部社會及家庭署 (SFAA)",
+        url: "https://www.sfaa.gov.tw",
+      },
+      {
+        title: "客家委員會開放資料 - 伯公照護站名冊",
+        authority: "客家委員會 (HAC)",
+        url: "https://cloud.hakka.gov.tw/Pub/Opendata/DTST20230600002.json",
+      },
     ],
-    relatedSlugs: ["clinics", "long-term-care"],
+    relatedSlugs: ["disability-welfare", "senior-friendly", "hearing-aid-subsidies"],
     faqs: [
       {
-        question: "居家醫療服務包含哪些內容？",
+        question: "長照照顧圈地圖整合哪些類型的長照資源？",
         answer:
-          "居家醫療是由健保特約醫事機構到宅提供的醫療照護服務，適用於行動不便、有醫療照護需求但難以親自就醫的民眾，實際服務項目依機構而定。",
+          "整合四種類型：長照2.0特約機構（居家服務、日間照顧、喘息服務、住宿式機構、小規模多機能、失智據點、社區照顧關懷據點等）、全民健保居家醫療照護整合計畫特約機構、衛福部社會及家庭署老人福利機構（安養、養護、長期照護），以及客家委員會伯公照護站。可用上方的類型篩選切換查詢其中任一種。",
+      },
+      {
+        question: "可切換的 1／3／5 公里「照顧圈」半徑是怎麼算的？",
+        answer:
+          "照顧圈採直線距離（經緯度幾何計算），不呼叫任何路徑規劃或導航服務，因此不會反映實際路況、單行道或山區蜿蜒道路的真實車程；市區平地的直線距離大致約等於 10 分鐘車程，但實際時間仍依路況而定。若目前半徑內查無資源，頁面會提示可嘗試切換至更大的半徑，而不會自動擴大範圍替您顯示較遠的結果。",
+      },
+      {
+        question: "「伯公照護站」是什麼？為什麼併入長照照顧圈地圖？",
+        answer:
+          "「伯公照護站」是客家委員會配合衛福部長照 2.0 政策，結合客庄在地資源（如社區發展協會、C 級巷弄長照站）推動的據點，融入客語環境、客家歌謠與文化健康活動。因為服務性質與長照社區據點高度重疊，2.0 版改版將其併入本頁作為四種可切換的機構類型之一，不再另立專頁。",
+      },
+      {
+        question: "原本「居家醫療查詢」與「老人福利機構查詢」的網址還能用嗎？",
+        answer:
+          "會自動永久轉址到本頁，並帶入對應的類型篩選參數（例如原「居家醫療查詢」會直接開啟本頁並選定「居家醫療」類型），收藏的舊網址不會失效。",
       },
     ],
   },
@@ -1255,7 +1273,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["disability-atm", "elder-welfare", "child-welfare-institutions"],
+    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions"],
     faqs: [
       {
         question: "資料涵蓋哪些身心障礙福利機構？",
@@ -1281,61 +1299,12 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.cusa.org.tw",
       },
     ],
-    relatedSlugs: ["disability-welfare", "hakka-bogong"],
+    relatedSlugs: ["disability-welfare", "long-term-care"],
     faqs: [
       {
         question: "資料涵蓋哪些無障礙ATM？",
         answer:
           "資料來源為中華民國信用合作社聯合社的輪椅可及ATM與語音服務ATM名冊，兩份名單依信用合作社分社代號合併，同一分社若同時提供兩種服務會標示為「輪椅可及、語音服務」。",
-      },
-    ],
-  },
-  {
-    slug: "elder-welfare",
-    group: "care-facility",
-    title: "老人福利機構查詢",
-    keywords: ["老人福利機構", "養老院", "安養機構"],
-    description: "查詢衛福部全國老人福利機構名冊，支援關鍵字搜尋與附近定位。",
-    directAnswer:
-      "查詢衛福部全國老人福利機構名冊，涵蓋公私立安養中心、養護機構與長期照護機構。",
-    scientificBasis: [
-      {
-        title: "全國老人福利機構一覽表",
-        authority: "衛生福利部社會及家庭署 (SFAA)",
-        url: "https://www.sfaa.gov.tw",
-      },
-    ],
-    relatedSlugs: ["long-term-care", "disability-welfare", "senior-friendly"],
-    faqs: [
-      {
-        question: "資料涵蓋哪些老人福利機構？",
-        answer:
-          "資料來源為衛福部社會及家庭署開放資料「全國老人福利機構名冊」，涵蓋安養、養護、長期照顧等各類老人福利機構，資料按縣市分別提供。",
-      },
-    ],
-  },
-  {
-    slug: "hakka-bogong",
-    group: "care-facility",
-    title: "客家委員會「伯公照護站」查詢",
-    keywords: ["伯公照護站", "客家照護", "日間照顧"],
-    description:
-      "查詢客家委員會「伯公照護站」名冊，支援關鍵字搜尋與附近定位。",
-    directAnswer:
-      "查詢客家委員會核准設立之伯公照護站名冊，提供客庄長者客語溝通、文化傳承、健康促進與長照關懷據點資訊。",
-    scientificBasis: [
-      {
-        title: "客家委員會開放資料 - 伯公照護站名冊",
-        authority: "客家委員會 (HAC)",
-        url: "https://cloud.hakka.gov.tw/Pub/Opendata/DTST20230600002.json",
-      },
-    ],
-    relatedSlugs: ["long-term-care", "elder-welfare"],
-    faqs: [
-      {
-        question: "什麼是「伯公照護站」？提供哪些服務？",
-        answer:
-          "「伯公照護站」為客家委員會配合衛生福利部長照 2.0 政策，結合客庄在地資源（如社區發展協會、C 級巷弄長照站）推動之據點。除了提供共餐、關懷訪視與延緩失能課程外，特別融入客語環境、客家歌謠與文化健康活動，提供貼近客庄長者生活背景的在地照顧。",
       },
     ],
   },
@@ -3131,7 +3100,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nhi.gov.tw/",
       },
     ],
-    relatedSlugs: ["home-healthcare", "long-term-care", "clinics"],
+    relatedSlugs: ["long-term-care", "clinics"],
     group: "care-facility",
     schemaType: "MedicalWebPage",
     faqs: [
@@ -3195,7 +3164,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw/",
       },
     ],
-    relatedSlugs: ["clinics", "disability-welfare", "elder-welfare"],
+    relatedSlugs: ["clinics", "disability-welfare", "long-term-care"],
     group: "life-services",
     schemaType: "MedicalWebPage",
     faqs: [
@@ -3507,7 +3476,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ],
       ],
     },
-    relatedSlugs: ["clinics", "baby-friendly-hospitals", "adult-preventive-care", "home-healthcare"],
+    relatedSlugs: ["clinics", "baby-friendly-hospitals", "adult-preventive-care", "long-term-care"],
     faqs: [
       {
         question: "衛福部「狼醫查詢平台」的法源依據與資料範圍為何？",
@@ -3554,7 +3523,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["elder-welfare", "accessible-transit", "long-term-care"],
+    relatedSlugs: ["accessible-transit", "long-term-care"],
     faqs: [
       {
         question: "敬老卡申請資格是什麼？",
