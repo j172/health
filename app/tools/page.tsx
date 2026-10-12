@@ -94,7 +94,6 @@ const TOOL_ICONS: Record<string, string> = {
   "disability-welfare": "♿",
   "disability-atm": "🏧",
   "elder-welfare": "👵",
-  "ltc-contracted": "🤝",
   "hakka-bogong": "🧓",
   "child-welfare-institutions": "👶",
   "weather-alerts": "⛈️",

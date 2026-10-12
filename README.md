@@ -76,7 +76,7 @@
 3. [80+ 款生活便民與公衛防災工具速查矩陣](#-80-款生活便民與公衛防災工具速查矩陣)
    - [A. 身體健康與體態計算](#a-身體健康與體態數值計算-12-款)
    - [B. 醫療院所與即時量能](#b-醫療院所與即時量能資源-12-款)
-   - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-10-款)
+   - [C. 長照安老與社福資源](#c-長照安老與身心社福資源-9-款)
    - [D. 婦幼兒少與家庭生活](#d-婦幼兒少與家庭生活服務-10-款)
    - [E. 即時環境與災害觀測](#e-即時環境與公衛災害觀測-13-款)
    - [F. 交通能源與綠生活](#f-交通能源與綠色永續生活-15-款)
@@ -178,12 +178,11 @@ flowchart TD
 | **戒菸服務特約醫療院所** | [`/tools/smoking-cessation`](https://health.j172.tw/tools/smoking-cessation) | 國健署戒菸治療服務系統 | 尼古丁戒斷門診、衛教諮詢與補助方案機構 |
 | **全國非營利公衛組織 (NPO)** | [`/tools/npo-organizations`](https://health.j172.tw/tools/npo-organizations) | 內政部人民團體資料庫 | 公衛醫療基金會、罕病協會與長照公益組織 |
 
-### C. 長照安老與身心社福資源 (10 款)
+### C. 長照安老與身心社福資源 (9 款)
 
 | 工具名稱 | 路徑 | 資料來源機關 | 核心特色 |
 |---|---|---|---|
-| **長期照顧福利服務機構** | [`/tools/long-term-care`](https://health.j172.tw/tools/long-term-care) | 衛生福利部長期照顧司 | 護理之家、日間照顧中心、團體家屋搜尋 |
-| **長照 2.0 特約服務單位** | [`/tools/ltc-contracted`](https://health.j172.tw/tools/ltc-contracted) | 長照 2.0 照護服務平臺 | 居家服務、日間照顧、喘息服務特約機構 |
+| **長期照顧福利服務機構** | [`/tools/long-term-care`](https://health.j172.tw/tools/long-term-care) | 衛生福利部長期照顧司 | 護理之家、日間照顧中心、團體家屋搜尋、長照2.0特約服務 |
 | **身心障礙福利服務機構** | [`/tools/disability-welfare`](https://health.j172.tw/tools/disability-welfare) | 衛生福利部社會及家庭署 | 日間日間照顧、住宿式全日型生活機構 |
 | **老人福利服務機構** | [`/tools/elder-welfare`](https://health.j172.tw/tools/elder-welfare) | 衛生福利部社會及家庭署 | 安養中心、長期照護型、養護型機構總覽 |
 | **客委會伯公照護站** | [`/tools/hakka-bogong`](https://health.j172.tw/tools/hakka-bogong) | 客家委員會公衛照顧平臺 | 客庄銀髮樂活、健康促進與老幼共學據點 |

@@ -62,8 +62,11 @@ log "Waiting 5 minutes for background facility upserts to finish..."
 sleep 300
 
 # (facility_type, source_key) pairs that need geocoding. nhi_home_healthcare
-# and mohw_ltc_contracted (imported separately, see below) ship their own
-# lat/lng and are deliberately excluded.
+# ships its own lat/lng and is deliberately excluded. (issue #447:
+# mohw_ltc_contracted, formerly excluded here for the same reason, was
+# retired along with scripts/import-mohw-ltc-contracted.mjs — its data is a
+# narrower duplicate of what import-mohw-ltc-gis.mjs already ingests under
+# facility_type "long_term_care" / source_key "mohw_ltc_full".)
 COMBOS=(
   "health_check mol_labor_checkup"
   "health_check mol_occupational_injury"
