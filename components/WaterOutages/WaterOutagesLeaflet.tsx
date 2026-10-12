@@ -11,6 +11,7 @@ import type {
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Fix leaflet icon default path issue
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -94,6 +95,7 @@ export default function WaterOutagesLeaflet({
                   </div>
                   <div className="text-slate-600">影響: 約 {o.affectedHouseholds} 戶</div>
                   <div className="text-[11px] text-slate-500">來源: {o.source}</div>
+                  <PopupNearbyToolsLinks lat={o.lat} lng={o.lng} />
                 </div>
               </Popup>
             </Marker>
@@ -131,6 +133,7 @@ export default function WaterOutagesLeaflet({
                       開啟 Google 地圖導航 ↗
                     </a>
                   </div>
+                  <PopupNearbyToolsLinks lat={s.lat} lng={s.lng} />
                 </div>
               </Popup>
             </Marker>

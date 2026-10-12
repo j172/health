@@ -9,6 +9,7 @@ import MapViewController, { userLocationIcon } from "@/components/Common/MapView
 import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Webpack/Turbopack Leaflet default icon fix
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -187,6 +188,7 @@ export default function AedMapLeaflet({
                       </a>
                     )}
                   </div>
+                  <PopupNearbyToolsLinks lat={lat} lng={lng} />
                 </div>
               </Popup>
             </Marker>

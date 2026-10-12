@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { useSearchParams } from "next/navigation";
+import {
+  useGeolocation,
+  GEO_DEFAULTS,
+  parseGeolocationOverrideFromSearchParams,
+} from "@/components/Facilities/useGeolocation";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
@@ -65,7 +70,11 @@ export default function AedContent({
   initialFacilities?: FacilityListItem[];
 }) {
   const { locale } = useLanguage();
-  const geo = useGeolocation();
+  const searchParams = useSearchParams();
+  // issue #463：地圖彈出視窗「看附近的 AED」深連結帶入的 ?lat=&lng= 覆寫座標——
+  // 有提供時以該點位為中心顯示結果，不需要使用者重新定位；沒有提供時行為不變。
+  const locationOverride = useMemo(() => parseGeolocationOverrideFromSearchParams(searchParams), [searchParams]);
+  const geo = useGeolocation(locationOverride);
   const [facilities, setFacilities] = useState<FacilityListItem[]>(initialFacilities);
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);

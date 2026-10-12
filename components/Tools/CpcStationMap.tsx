@@ -8,6 +8,7 @@ import MapViewController, { userLocationIcon } from "@/components/Common/MapView
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Webpack/Turbopack default marker fix
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -174,6 +175,7 @@ export default function CpcStationMap({
                       開啟 Google 導航 ↗
                     </a>
                   </div>
+                  <PopupNearbyToolsLinks lat={station.lat} lng={station.lng} />
                 </div>
               </Popup>
             </Marker>

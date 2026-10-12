@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import type { EmergencyRoomItem, EmergencyOverviewResult } from "@/lib/server/emergencyRooms/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import { parseGeolocationOverrideFromSearchParams } from "@/lib/utils/geolocationOverride";
 
 const REGION_TABS = [
   { id: "", label: "全台責任醫院" },
@@ -78,8 +80,14 @@ export default function EmergencyRoomContent({
   initialData?: EmergencyOverviewResult;
 }) {
   const { locale } = useLanguage();
+  const searchParams = useSearchParams();
+  // issue #463：地圖彈出視窗「看附近的急診」深連結帶入的 ?lat=&lng= 覆寫座標，
+  // 在 client 端讀取（而不是讓 app/tools/er-status/page.tsx 讀取 searchParams）
+  // ——這樣一般訪客（絕大多數）仍能吃到該頁的 30 秒 ISR 快取，只有真的帶著深連結
+  // 進來的訪客才會多打一次 /api/emergency-rooms。
+  const locationOverride = useMemo(() => parseGeolocationOverrideFromSearchParams(searchParams), [searchParams]);
   const [data, setData] = useState<EmergencyOverviewResult | undefined>(initialData);
-  const [loading, setLoading] = useState(!initialData);
+  const [loading, setLoading] = useState(!initialData && !locationOverride);
   const [keyword, setKeyword] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("");
   const [onlyCritical, setOnlyCritical] = useState(false);
@@ -89,7 +97,13 @@ export default function EmergencyRoomContent({
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/emergency-rooms");
+      const query = new URLSearchParams();
+      if (locationOverride) {
+        query.set("lat", String(locationOverride.lat));
+        query.set("lng", String(locationOverride.lng));
+      }
+      const qs = query.toString();
+      const res = await fetch(`/api/emergency-rooms${qs ? `?${qs}` : ""}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -99,16 +113,21 @@ export default function EmergencyRoomContent({
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [locationOverride]);
 
   useEffect(() => {
-    if (initialData) {
+    // 帶著 ?lat=&lng= 深連結進來時，SSR 的 initialData 並未依這個點位排序
+    // （見上方 page.tsx 的註解：刻意不讓 searchParams 影響該頁的 ISR 快取），
+    // 所以一律改發一次 client 端請求，取得依距離排序的結果。
+    if (locationOverride) {
+      refreshData();
+    } else if (initialData) {
       setData(initialData);
       setLoading(false);
     } else {
       refreshData();
     }
-  }, [initialData, refreshData]);
+  }, [initialData, locationOverride, refreshData]);
 
   const filteredHospitals = useMemo(() => {
     if (!data?.items) return [];

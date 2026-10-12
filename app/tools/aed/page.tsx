@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
@@ -40,7 +41,11 @@ export default function AedPage() {
         contextTitle="急救止血與生命守護訓練"
         contextDescription="搶救黃金時間不只依賴 AED 位置查詢：可前往「黑熊學院」接受現代創傷急救、止血帶操作與自救互救實體技能培訓。"
       />
-      <AedContent />
+      {/* AedContent 透過 useSearchParams 讀取 ?lat=&lng= 深連結覆寫座標（issue #463），
+          App Router 要求這類用法要有 Suspense 邊界 */}
+      <Suspense>
+        <AedContent />
+      </Suspense>
     </ToolPageShell>
   );
 }

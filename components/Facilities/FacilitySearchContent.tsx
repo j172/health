@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useGeolocation, type GeolocationOverride } from "@/components/Facilities/useGeolocation";
 import type { MapMarker } from "@/components/Facilities/FacilityMap";
 import WeeklyHoursLine from "@/components/Facilities/WeeklyHours";
 import LoadingOrb from "@/components/ui/LoadingOrb";
@@ -116,7 +116,20 @@ const facilityNoun = (emptyStateNoKeyword: string, title: string): string => {
  * the same `/api/facilities` endpoint and renders the same skeleton — only the copy, radius,
  * and how (if at all) `service_item`/weekly hours/geocode status are displayed differ.
  */
-export default function FacilitySearchContent({ config }: { config: FacilitySearchConfig }) {
+export default function FacilitySearchContent({
+  config,
+  locationOverride = null,
+}: {
+  config: FacilitySearchConfig;
+  /**
+   * Optional `?lat=&lng=` override (issue #463) resolved server-side by the calling
+   * page from its own `searchParams` — see the comment above `useGeolocation(...)`
+   * below for why this is a prop here instead of this component calling
+   * `useSearchParams()` itself. `null`/omitted preserves the pre-existing
+   * browser-geolocation-first behavior exactly.
+   */
+  locationOverride?: GeolocationOverride | null;
+}) {
   const {
     facilityType,
     emoji,
@@ -137,7 +150,14 @@ export default function FacilitySearchContent({ config }: { config: FacilitySear
   } = config;
 
   const { locale } = useLanguage();
-  const location = useGeolocation();
+  // issue #463：地圖彈出視窗「看附近的 AED／急診／藥局」深連結帶入的 ?lat=&lng=
+  // 覆寫座標，由呼叫端（目前只有 /tools/pharmacies，一個 server component）在
+  // page.tsx 解析 searchParams 後往下傳——FacilitySearchContent 被 30 個以上的
+  // /tools 頁面共用，刻意不在這裡自己呼叫 useSearchParams()，避免逼著其他 29
+  // 個跟這張票無關的頁面也要補上 Suspense 邊界才能繼續 build。沒有提供
+  // locationOverride 時行為不變（仍是瀏覽器定位 → 使用者偏好位置 → 預設位置的
+  // 既有流程）。
+  const location = useGeolocation(locationOverride);
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [county, setCounty] = useState("");

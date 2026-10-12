@@ -5,6 +5,7 @@ import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -108,6 +109,7 @@ export default function BreastfeedingMapLeaflet({
                     Google 地圖導航 ↗
                   </a>
                 </div>
+                <PopupNearbyToolsLinks lat={p.lat} lng={p.lng} />
               </div>
             </Popup>
           </Marker>

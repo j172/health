@@ -7,6 +7,7 @@ import { GEO_DEFAULTS } from "./useGeolocation";
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead.
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -79,6 +80,7 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
                     </a>
                   </div>
                 )}
+                <PopupNearbyToolsLinks lat={m.lat} lng={m.lng} />
               </div>
             </Popup>
           </Marker>

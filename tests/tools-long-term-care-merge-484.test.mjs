@@ -215,10 +215,20 @@ test("CareCircleMap.tsx counts resources itself from the returned facilities arr
 
 test("FacilitySearchContent.tsx's prop contract and default behavior are untouched by this merge (zero blast radius for its other 29 consumers)", () => {
   const content = read("components", "Facilities", "FacilitySearchContent.tsx");
+  // Issue #463 (later than this #484 merge) added one new, optional prop —
+  // `locationOverride`, defaulting to `null` — so a map popup's "看附近的
+  // AED／急診／藥局" deep link can center/sort results on a specific point.
+  // It's additive and backward compatible: every existing caller that still
+  // only passes `config` (all 29+ /tools pages on this component, this
+  // merge's CareCircleMap included) is unaffected, since omitting the new
+  // prop is identical to passing `null`. What THIS test still guards against
+  // is the #484 merge's specific concern — that merge must not have grown
+  // this shared component a `config`-shaped change, a CareCircle-specific
+  // knowledge, or its own radius concept.
   assert.match(
     content,
-    /export default function FacilitySearchContent\(\{\s*config\s*\}:\s*\{\s*config:\s*FacilitySearchConfig\s*\}\)/,
-    "FacilitySearchContent should still take exactly one prop (config), unchanged by this ticket",
+    /export default function FacilitySearchContent\(\{\s*config,\s*locationOverride = null,\s*\}:\s*\{/,
+    "FacilitySearchContent should still take `config` as its first/primary prop, with only the later #463 locationOverride addition appended",
   );
   assert.ok(!content.includes("CareCircle"), "FacilitySearchContent should have no knowledge of the new CareCircleMap component");
   assert.ok(!content.includes("radiusKm"), "FacilitySearchContent should not have grown a new user-adjustable radius concept of its own");

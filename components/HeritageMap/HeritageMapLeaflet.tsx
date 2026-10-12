@@ -7,6 +7,7 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import type { HeritageCategory } from "@/lib/server/culture/ingestHeritageAssets";
 import type { HeritageAssetPoint } from "@/lib/server/culture/queries";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
 // Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead (same fix as FacilityMap.tsx / DisasterMapLeaflet.tsx).
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -156,6 +157,7 @@ export default function HeritageMapLeaflet({
                     <ExpandableText text={summary} />
                   </div>
                 )}
+                <PopupNearbyToolsLinks lat={p.lat} lng={p.lng} />
               </div>
             </Popup>
           </Marker>
