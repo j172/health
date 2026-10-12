@@ -570,7 +570,7 @@ if (str_starts_with($path, '/__ops/')) {
         // first exercised with apply=1 and it killed the live health-web
         // process. $godPid above is only as good as ~/.pm2/pm2.pid, and that
         // file is a snapshot that repeated apply-prebuilt restarts can leave
-        // pointing at the wrong daemon (see docs/specs/watchdog-reap-must-
+        // pointing at the wrong daemon (see docs/archive/specs/watchdog-reap-must-
         // protect-live-app-ancestors.md §1 for the incident). Rather than try
         // to make that identification more precise, this scans for the thing
         // that is unambiguous — an actually-running next-server process, i.e.

@@ -58,7 +58,7 @@ export default function HeritageMapContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   // Both layers default on — this data is static/non-safety-critical, unlike
-  // disaster-map's collapsed secondary layers (docs/specs/heritage-assets-map.md 5).
+  // disaster-map's collapsed secondary layers (docs/archive/specs/heritage-assets-map.md 5).
   const [visibleLayers, setVisibleLayers] = useState<Record<HeritageCategory, boolean>>(() =>
     Object.fromEntries(LAYERS.map((l) => [l.category, true])) as Record<HeritageCategory, boolean>,
   );

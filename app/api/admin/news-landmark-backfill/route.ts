@@ -10,7 +10,7 @@ export const maxDuration = 60;
  * Operator-triggered batch that re-applies the current landmark rules to
  * `news_items` rows that already hold a landmark. See
  * `lib/server/news/landmarkBackfill.ts` and
- * docs/specs/news-landmark-backfill.md.
+ * docs/archive/specs/news-landmark-backfill.md.
  *
  * Request  (all fields optional):
  *   POST /api/admin/news-landmark-backfill

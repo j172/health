@@ -7,7 +7,7 @@ on:
     # window (see memory: ops_ingestion_counters_and_deploy_timing.md) so a
     # PM2 restart from a concurrent deploy doesn't kill a mid-flight sync.
     #
-    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): moved
+    # 2026-09-20 (#336, docs/archive/specs/github-actions-cron-decollision.md): moved
     # from :20 to :25. Every hour, three other SSH-connecting workflows
     # (facilities-geocode-batch, news-og-backfill, rss-sync-manual) now fire
     # on an even :00/:10/:20/:30/:40/:50 grid — with :20 itself now occupied

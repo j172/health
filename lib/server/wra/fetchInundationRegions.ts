@@ -10,7 +10,7 @@ import { httpGetText } from "@/lib/server/net/httpClient";
 // allows shipping just this "which counties currently have inundation-map
 // data available" list/indicator instead of a full Leaflet ImageOverlay,
 // given the added complexity (tile georeferencing, refresh cadence, styling)
-// of the latter. See docs/specs/disaster-map-wra-iot-realtime-layers.md §2.3.
+// of the latter. See docs/archive/specs/disaster-map-wra-iot-realtime-layers.md §2.3.
 //
 // Licensing note: see fetchDamStructureStations.ts's comment (same swagger
 // doc, same unconfirmed-licence posture) and the PR description.

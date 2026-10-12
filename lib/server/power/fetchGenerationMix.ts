@@ -7,7 +7,7 @@ import type { GenerationMixRecord } from "./types";
 // ~4 rows). Confirmed live via a GitHub Actions egress probe: despite the URL
 // having no file extension, the response is CSV (Content-Disposition:
 // attachment), not JSON. Barely ever changes — synced daily, not every 10
-// minutes. See docs/specs/taipower-energy-dashboard.md.
+// minutes. See docs/archive/specs/taipower-energy-dashboard.md.
 const GENERATION_MIX_URL =
   "https://www.moeaea.gov.tw/ECW/populace/opendata/wHandOpenData_File.ashx?set_id=55";
 

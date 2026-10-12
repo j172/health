@@ -17,7 +17,7 @@ import {
  * rows. `persistItems.ts` skips extraction entirely when `payload_hash` is
  * unchanged, and both `runNewsGeocodeBatch` and `cardImages.ts` select on
  * `lat IS NULL` — while every affected row holds a non-null, wrong `lat`.
- * See docs/specs/news-landmark-backfill.md.
+ * See docs/archive/specs/news-landmark-backfill.md.
  *
  * Three properties are load-bearing, not preferences:
  *

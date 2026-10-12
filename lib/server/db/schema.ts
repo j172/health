@@ -112,7 +112,7 @@ export const TABLE_DDL = {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // DB-backed escalating backoff per image provider (see
-  // docs/specs/news-card-image-multi-provider-fallback.md section 2) — must
+  // docs/archive/specs/news-card-image-multi-provider-fallback.md section 2) — must
   // be DB-backed rather than in-memory because the in-app cron process
   // restarts on every deploy, which would otherwise silently reset a
   // still-cooling-down provider right back to zero. One row per provider,
@@ -127,7 +127,7 @@ export const TABLE_DDL = {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // Persistent, account-level daily budget + circuit breaker for the
-  // facility-geocoding batch job (see docs/specs/phase9-opencage-geocode-batch.md
+  // facility-geocoding batch job (see docs/archive/specs/phase9-opencage-geocode-batch.md
   // and lib/server/facilities/geocodeBudget.ts). OpenCage's and Nominatim's
   // rate limits are per API-key/IP, not per facility source, so all 16
   // facility sources share one row per provider per day rather than each
@@ -655,7 +655,7 @@ export const TABLE_DDL = {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // Social-post draft queue (Phase 1) — see
-  // docs/specs/social-icons-and-post-drafts.md section 2. Daily cron
+  // docs/archive/specs/social-icons-and-post-drafts.md section 2. Daily cron
   // (lib/server/social/buildDailyDraftQueue.ts) inserts one 'draft' row per
   // platform for each selected news item; status flips to 'posted'/'failed'
   // only once a follow-up spec wires up the actual Meta Graph/Threads API
@@ -1223,7 +1223,7 @@ export const TABLE_DDL = {
   // guess, this dataset is NOT scheduled-outage data; it's per-station
   // radiation dose-rate telemetry around 核一/核二/核三 (安全監測), confirmed
   // live via a GitHub Actions egress probe (see
-  // docs/specs/taipower-energy-dashboard.md). ~10-minute cadence alongside
+  // docs/archive/specs/taipower-energy-dashboard.md). ~10-minute cadence alongside
   // d006001. Latest-snapshot upsert keyed by station_no (站號).
   powerRadiationStations: `
     CREATE TABLE IF NOT EXISTS power_radiation_stations (
@@ -1425,7 +1425,7 @@ export const TABLE_DDL = {
   // truncate-and-replace — see lib/server/culture/ingestHeritageAssets.ts.
   // past_history and register_reason are both nullable on both categories:
   // real-world building records were found to often carry both fields, not
-  // just registerReason as originally assumed (see docs/specs/
+  // just registerReason as originally assumed (see docs/archive/specs/
   // heritage-assets-map.md 1.1). image_source (representImageSource) is only
   // ever populated by the archaeological-site dataset — the building dataset
   // never sends that field at all, confirmed live 2026-09-09.

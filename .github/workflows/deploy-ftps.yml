@@ -707,7 +707,7 @@ jobs:
           # External OG backfill used to run here too (runner egress + SSH
           # attach) but is now independently scheduled every 30 min — see
           # .github/workflows/news-og-backfill.yml and
-          # docs/specs/news-card-image-freshness-scheduling.md — so it isn't
+          # docs/archive/specs/news-card-image-freshness-scheduling.md — so it isn't
           # gated on deploy cadence and doesn't double-run alongside it here.
 
           echo "=== Pixabay backfill (remote loopback) ==="
@@ -722,7 +722,7 @@ jobs:
 
             test "$OK" = "true"
             # Reason text updated for the Pixabay->Pexels->Unsplash fallback chain
-            # (see docs/specs/news-card-image-multi-provider-fallback.md) — was
+            # (see docs/archive/specs/news-card-image-multi-provider-fallback.md) — was
             # "No unused Pixabay candidates are available." when this only ever
             # tried one provider.
             if [ "$ASSIGNED" = "0" ] && [ "$FAILED" != "0" ] && [ "$REASON" = "No unused candidates are available from any configured provider." ]; then

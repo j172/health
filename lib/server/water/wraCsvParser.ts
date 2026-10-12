@@ -5,7 +5,7 @@
  * Extracted out of `lib/server/water/ingestWaterOutages.ts` (the legacy
  * `water_outages` pipeline) so the newer `lib/server/waterOutages/`
  * ingestion (table `wra_water_outages`, see
- * docs/specs/water-outages-live-ingestion-gap.md) can reuse the same
+ * docs/archive/specs/water-outages-live-ingestion-gap.md) can reuse the same
  * tokenizer instead of re-implementing CSV parsing from scratch. Both
  * pipelines hit the exact same endpoint, so they need the exact same
  * parsing behavior (BOM stripping, quoted-cell handling, CRLF newlines).

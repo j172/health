@@ -26,7 +26,7 @@ import { displayDate } from "@/lib/format/news";
 import { buildOutboundLink, appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export const runtime = "nodejs";
-// Primary fix for docs/specs/news-article-jsonld-stale-fallback-image.md is
+// Primary fix for docs/archive/specs/news-article-jsonld-stale-fallback-image.md is
 // on-demand revalidation (lib/server/news/revalidateArticle.ts), fired by the
 // image-backfill pipeline right when it attaches a photo. This shorter ISR
 // window (was 300s) is the secondary safety net for the one path that can't

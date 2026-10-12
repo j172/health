@@ -3,7 +3,7 @@ name: Cloudflare zone config (manual)
 # One-off/occasional manual utility for toggling Cloudflare zone-level
 # settings via API, using the same CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID
 # environment secrets deploy-ftps.yml already uses for cache purging (see
-# docs/specs/free-tier-tooling-recommendations-20260914.md §5). Kept as a
+# docs/archive/specs/free-tier-tooling-recommendations-20260914.md §5). Kept as a
 # version-controlled workflow rather than a one-time ad-hoc curl so the
 # change is auditable and repeatable (e.g. if the setting ever needs to be
 # re-applied after a zone reset).

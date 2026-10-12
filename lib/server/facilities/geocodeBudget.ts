@@ -4,7 +4,7 @@ import { utcNowSql } from "@/lib/server/db/mysql";
 
 /**
  * DB-backed, account-level daily budget + circuit breaker for the facility
- * geocode batch job (see docs/specs/phase9-opencage-geocode-batch.md). Both
+ * geocode batch job (see docs/archive/specs/phase9-opencage-geocode-batch.md). Both
  * OpenCage's and Nominatim's rate limits are per API-key/IP, not per facility
  * source — all 16 facility sources (lib/server/facilities/geocodeBatch.ts's
  * SOURCES_IN_PRIORITY) draw from one shared counter per provider per day,

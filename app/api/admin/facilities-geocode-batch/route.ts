@@ -9,7 +9,7 @@ export const maxDuration = 60;
 /**
  * Unified, budget-aware geocode batch endpoint covering all 16 facility
  * sources (see lib/server/facilities/geocodeBatch.ts and
- * docs/specs/phase9-opencage-geocode-batch.md) — the production path,
+ * docs/archive/specs/phase9-opencage-geocode-batch.md) — the production path,
  * called repeatedly (e.g. every 10 min from a scheduled workflow) until its
  * daily budget is exhausted or there's nothing left to do. No body params:
  * scope/limits/provider order are all fixed by the module, not caller input.

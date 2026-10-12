@@ -1,7 +1,7 @@
 /**
  * Types shared across the 全台電力概況儀表板 (issue #177) sync + query layer.
  * Three independent open-data sources, integrated into one dashboard page —
- * see docs/specs/taipower-energy-dashboard.md for the corrected field-shape
+ * see docs/archive/specs/taipower-energy-dashboard.md for the corrected field-shape
  * findings (most notably: d525001 is NOT scheduled-outage data).
  */
 

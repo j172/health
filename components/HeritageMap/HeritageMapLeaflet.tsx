@@ -64,7 +64,7 @@ const TRUNCATE_LENGTH = 120;
 
 /** Truncates a long history/registration-reason text with a "顯示全文/收合"
  * toggle button — the full text can run to thousands of characters and must
- * never be dumped whole into a Leaflet popup (docs/specs/heritage-assets-map.md 5). */
+ * never be dumped whole into a Leaflet popup (docs/archive/specs/heritage-assets-map.md 5). */
 function ExpandableText({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
   const isLong = text.length > TRUNCATE_LENGTH;

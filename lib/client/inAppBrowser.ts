@@ -9,7 +9,7 @@
  * things this site relies on — the Geolocation permission prompt, the
  * Clipboard API, service workers/PWA install, sometimes even IndexedDB —
  * because each host app ships its own cut-down WebView shell rather than the
- * OS's real browser engine. See docs/specs/in-app-browser-warning-banner.md.
+ * OS's real browser engine. See docs/archive/specs/in-app-browser-warning-banner.md.
  *
  * Pure function, no DOM/`navigator` access here — the caller (a client
  * component) passes `navigator.userAgent` in explicitly, which keeps this

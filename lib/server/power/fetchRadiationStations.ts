@@ -11,7 +11,7 @@ import type { RadiationStationRecord } from "./types";
 // 站名,站號,劑量率(微西弗/小時),日期時間,經度,緯度 — per-station radiation
 // dose-rate monitoring around Taipower's nuclear plants (核一/核二/核三),
 // i.e. an environmental-safety dataset, not outage information. See
-// docs/specs/taipower-energy-dashboard.md and the correction comment posted
+// docs/archive/specs/taipower-energy-dashboard.md and the correction comment posted
 // on issue #177.
 const RADIATION_STATIONS_URL =
   "https://service.taipower.com.tw/data/opendata/apply/file/d525001/001.csv";

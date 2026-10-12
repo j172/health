@@ -25,7 +25,7 @@ interface TfdaDrugRaw {
 
 // Critical-field schema for the raw rows. This is the same data.fda.gov.tw
 // TFDA drug-data family whose thin/incomplete field coverage is documented
-// in docs/specs/drug-label-source-blocked.md (the drug package-insert
+// in docs/archive/specs/drug-label-source-blocked.md (the drug package-insert
 // feature was blocked precisely because TFDA's structured exports don't
 // carry the fields that would be needed) — the exact class of "upstream
 // dataset doesn't have the field you assumed it did" risk this validation

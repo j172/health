@@ -6,7 +6,7 @@
  * Site-wide, dismissible warning shown when the page is loaded inside a
  * chat/social app's in-app browser (LINE / Facebook / Instagram / WeChat)
  * rather than the user's real system browser. See
- * docs/specs/in-app-browser-warning-banner.md.
+ * docs/archive/specs/in-app-browser-warning-banner.md.
  *
  * ## Why "copy link", not a one-click "open in Safari/Chrome" button
  *

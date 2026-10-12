@@ -7,7 +7,7 @@ import path from "node:path";
 // repo's test runner has no JSX/DOM rendering harness wired up (see
 // tests/useSidebarWidgetData.test.mjs for the same caveat). These checks
 // verify, via source inspection, the exact acceptance criteria from
-// docs/specs/sidebar-widgets-unified-error-state-refactor.md: a distinct
+// docs/archive/specs/sidebar-widgets-unified-error-state-refactor.md: a distinct
 // "load failed" visual state that is NOT the same markup as the "no data
 // today" empty state.
 

@@ -135,7 +135,7 @@ const ENDPOINTS = [
 // 注意：這個端點同時回傳「自營站/漁船站」（站代號 5 碼，如 D2030，跟既有 20 大服務端點格式一致）
 // 與「加盟站」（站代號 9 碼，如 AA6212A03，既有站點清單中從未出現過的全新命名空間）。
 // 本次擴充僅補強既有站點清單中「已存在」的站點資料，不會因為這個來源而新增「加盟站」站點，
-// 以維持既有站點範疇（詳見 docs/specs/cpc-station-info-enrichment.md）。
+// 以維持既有站點範疇（詳見 docs/archive/specs/cpc-station-info-enrichment.md）。
 const STATION_INFO_URL = "https://vipmbr.cpc.com.tw/openData/getStationInfo";
 
 function toBool(val) {

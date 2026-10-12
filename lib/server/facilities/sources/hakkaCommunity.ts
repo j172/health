@@ -18,7 +18,7 @@ interface HakkaCommunityRow {
 }
 
 // Critical-field schema for the raw rows. This source previously caused a
-// live incident (docs/specs/fix-facility-cross-county-coordinate-mismatch.md
+// live incident (docs/archive/specs/fix-facility-cross-county-coordinate-mismatch.md
 // §1 point 5): some rows' `Address` doesn't repeat the county/city from
 // `city_name`, and the code below has to compensate for that by prepending
 // it — so all three fields it depends on (`Unit_name`, `Address`,

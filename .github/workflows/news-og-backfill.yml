@@ -3,12 +3,12 @@ name: News OG image backfill
 on:
   workflow_dispatch:
   schedule:
-    # Matches rss-sync cadence (docs/specs/in-app-cron-scheduler.md) so real
+    # Matches rss-sync cadence (docs/archive/specs/in-app-cron-scheduler.md) so real
     # og:image backfill runs independently of deploy cadence — previously
     # this only ran as a step inside deploy-ftps.yml, i.e. only at deploy
-    # time. See docs/specs/news-card-image-freshness-scheduling.md.
+    # time. See docs/archive/specs/news-card-image-freshness-scheduling.md.
     #
-    # 2026-09-20 (#336, docs/specs/github-actions-cron-decollision.md): the
+    # 2026-09-20 (#336, docs/archive/specs/github-actions-cron-decollision.md): the
     # old ":07/:37" offset only left a 7-minute buffer either side of
     # facilities-geocode-batch.yml's "*/30" grid — and GitHub Actions' own
     # 5-15 minute schedule-trigger jitter routinely erased that buffer,

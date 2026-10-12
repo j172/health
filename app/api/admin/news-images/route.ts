@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       limit?: unknown;
       /**
        * Restrict assignment to articles created in the last N hours (1-168).
-       * See docs/specs/recent-news-image-backfill.md — this is the safe operator
+       * See docs/archive/specs/recent-news-image-backfill.md — this is the safe operator
        * mode that cannot fall through to the historical backlog.
        */
       newerThanHours?: unknown;

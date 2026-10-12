@@ -5,7 +5,7 @@ import type { GenerationUnitRecord } from "./types";
 // updates ~every 10 minutes. Confirmed live via a GitHub Actions egress probe
 // (databaseId 34370655418): top-level `{DateTime, aaData: [...215 rows]}`,
 // every field in a row is a STRING (parse them). See
-// docs/specs/taipower-energy-dashboard.md.
+// docs/archive/specs/taipower-energy-dashboard.md.
 const GENERATION_UNITS_URL =
   "https://service.taipower.com.tw/data/opendata/apply/file/d006001/001.json";
 
