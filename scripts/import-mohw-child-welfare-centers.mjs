@@ -6,7 +6,6 @@
  * Usage:
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> node scripts/import-mohw-child-welfare-centers.mjs
  */
-import iconv from "iconv-lite";
 import { parseCsv, toHalfwidthDigits, normalizeAddress, submitFacilities } from "./lib/mohw-csv.mjs";
 
 const SOURCE_URL =
@@ -29,7 +28,7 @@ async function fetchRecords() {
 
   let text;
   try {
-    text = iconv.decode(buffer, "big5");
+    text = new TextDecoder("big5").decode(buffer);
   } catch {
     text = buffer.toString("utf-8");
   }

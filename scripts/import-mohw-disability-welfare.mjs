@@ -16,7 +16,6 @@
  * Usage:
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> node scripts/import-mohw-disability-welfare.mjs
  */
-import iconv from "iconv-lite";
 import { parseCsv, toHalfwidthDigits, normalizeAddress, submitFacilities } from "./lib/mohw-csv.mjs";
 
 const SOURCE_URL =
@@ -36,7 +35,7 @@ async function fetchRecords() {
   const buffer = Buffer.from(await res.arrayBuffer());
   console.log(`  downloaded ${buffer.length} bytes`);
 
-  const text = iconv.decode(buffer, "big5");
+  const text = new TextDecoder("big5").decode(buffer);
   const rows = parseCsv(text);
   console.log(`  ${rows.length} raw rows`);
 

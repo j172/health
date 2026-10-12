@@ -17,7 +17,6 @@
  * Usage:
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> node scripts/import-mohw-elder-welfare.mjs
  */
-import iconv from "iconv-lite";
 import { parseCsv, toHalfwidthDigits, normalizeAddress, submitFacilities } from "./lib/mohw-csv.mjs";
 
 const BASE_URL = process.env.HEALTH_BASE_URL || "https://health.j172.tw";
@@ -57,7 +56,7 @@ async function fetchCounty(county, url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url} failed for ${county}: HTTP ${res.status}`);
   const buffer = Buffer.from(await res.arrayBuffer());
-  const text = iconv.decode(buffer, "big5");
+  const text = new TextDecoder("big5").decode(buffer);
   const rows = parseCsv(text);
 
   return rows
