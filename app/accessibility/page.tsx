@@ -3,11 +3,19 @@ import type { Metadata } from "next";
 import { buildBreadcrumbJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import {
+  ACCESSIBILITY_COMMITMENT_PARAGRAPHS,
+  ACCESSIBILITY_FEEDBACK_LINKS,
+  ACCESSIBILITY_FEEDBACK_PARAGRAPH,
+  ACCESSIBILITY_HIGHLIGHTS,
+  ACCESSIBILITY_LAST_UPDATED,
+  ACCESSIBILITY_SHORTCUTS,
+} from "@/lib/server/content/accessibilityContent";
 
 export const revalidate = 86400;
 export const runtime = "nodejs";
 
-const LAST_UPDATED = "2026-09-26";
+const LAST_UPDATED = ACCESSIBILITY_LAST_UPDATED;
 
 export const metadata: Metadata = {
   title: "無障礙宣告與快捷鍵指引",
@@ -37,6 +45,11 @@ export default function AccessibilityPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      {/* Machine-readable sibling versions of this page (issue #444), built
+       * from the exact same ACCESSIBILITY_* data rendered below via
+       * lib/server/content/accessibilityContent.ts. */}
+      <link rel="alternate" type="text/plain" title="無障礙宣告 - LLM Index (llms.txt)" href="/accessibility/llms.txt" />
+      <link rel="alternate" type="text/markdown" title="無障礙宣告 - Clean Markdown" href="/accessibility/markdown" />
       <div className="min-h-screen bg-white text-neutral-800 dark:bg-slate-900 dark:text-slate-100">
         <StabloHeader />
 
@@ -77,12 +90,9 @@ export default function AccessibilityPage() {
               <h2 className="text-xl font-bold text-neutral-900 dark:text-slate-100">
                 一、無障礙設計承諾與規範標準
               </h2>
-              <p>
-                j172tw Healthz（health.j172.tw，以下簡稱「本站」）堅信<strong>「數位人權、資訊平權」</strong>是公共服務之基石。為保障視覺障礙者、聽覺障礙者、肢體行動不便者及高齡長輩能無障礙獲取攸關民生之公衛醫療、防災安全、弱勢福利與生活圖資，本站各項網頁與功能模組均嚴格參照<strong>中華民國數位發展部《無障礙網頁開發規範 2.1》</strong>以及<strong>全球資訊網協會（W3C）Web Content Accessibility Guidelines (WCAG) 2.1 AA 級標準</strong>進行架構規劃與體驗優化。
-              </p>
-              <p>
-                本站設有「快速跳過重覆區塊之錨點（Skip Links）」、「鍵盤定位點符號 :::」、「全域高對比焦點外框」、以及針對 Leaflet 地圖提供「等價結構化無障礙清單替代視圖」，確保即使不使用滑鼠或搭配螢幕報讀軟體（如 NVDA、JAWS、VoiceOver），亦能獲得 100% 完整之公衛與民生資訊。
-              </p>
+              {ACCESSIBILITY_COMMITMENT_PARAGRAPHS.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
             </section>
 
             {/* Section 2: 鍵盤快速鍵指南 */}
@@ -113,60 +123,15 @@ export default function AccessibilityPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900/40">
-                    <tr>
-                      <td className="px-4 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                        Alt + C
-                      </td>
-                      <td className="px-4 py-3">
-                        <strong className="text-neutral-900 dark:text-slate-100">中間主要內容區</strong>：跳過上方導覽與輪播，直接聚焦至頁面核心文章、公衛工具或數據表格。
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-neutral-500">#main-content</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                        Alt + U
-                      </td>
-                      <td className="px-4 py-3">
-                        <strong className="text-neutral-900 dark:text-slate-100">上方主要導覽區</strong>：瀏覽全站主選單，包含最新新聞、分類工具選單、語系與深色主題切換。
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-neutral-500">#header-nav</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                        Alt + Z
-                      </td>
-                      <td className="px-4 py-3">
-                        <strong className="text-neutral-900 dark:text-slate-100">下方資訊與頁尾區</strong>：跳轉至頁尾全站分類連結、公民夥伴陣線、開放資料授權宣告與隱私政策。
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-neutral-500">#footer-info</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                        Alt + S
-                      </td>
-                      <td className="px-4 py-3">
-                        <strong className="text-neutral-900 dark:text-slate-100">全域即時搜尋</strong>：開啟全站新聞與 90+ 種生活工具搜尋框（亦可直接按下 <kbd className="rounded border border-slate-300 bg-slate-100 px-1 text-xs font-mono dark:border-slate-700 dark:bg-slate-800">⌘K</kbd> 或 <kbd className="rounded border border-slate-300 bg-slate-100 px-1 text-xs font-mono dark:border-slate-700 dark:bg-slate-800">Ctrl+K</kbd>）。
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-neutral-500">#search-trigger</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-mono font-bold text-slate-600 dark:text-slate-400">
-                        Tab
-                      </td>
-                      <td className="px-4 py-3">
-                        按序聚焦至下一個可互動元件；搭配 <kbd className="rounded border border-slate-300 bg-slate-100 px-1 text-xs font-mono dark:border-slate-700 dark:bg-slate-800">Shift</kbd> + <kbd className="rounded border border-slate-300 bg-slate-100 px-1 text-xs font-mono dark:border-slate-700 dark:bg-slate-800">Tab</kbd> 可反向返回前一個元件。
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-neutral-500">循序導航</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 font-mono font-bold text-slate-600 dark:text-slate-400">
-                        Esc
-                      </td>
-                      <td className="px-4 py-3">
-                        關閉搜尋彈窗、選單抽屜或沉浸閱讀視窗，並將焦點自動還原至原先觸發之按鈕。
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-neutral-500">焦點還原</td>
-                    </tr>
+                    {ACCESSIBILITY_SHORTCUTS.map((shortcut) => (
+                      <tr key={shortcut.code}>
+                        <td className="px-4 py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                          {shortcut.code}
+                        </td>
+                        <td className="px-4 py-3">{shortcut.description}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-neutral-500">{shortcut.anchor}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -178,38 +143,15 @@ export default function AccessibilityPage() {
                 三、本站無障礙技術實踐亮點
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-                  <h3 className="font-bold text-indigo-700 dark:text-indigo-400">
-                    🗺️ 互動地圖等價清單模式
-                  </h3>
-                  <p className="mt-1.5 text-xs text-neutral-600 dark:text-slate-400">
-                    全站包含身障 ATM、母嬰親善室、AED 急救、避孕諮詢等 GIS 圖資頁面，均標配一鍵切換「📋 清單模式」，並提供跳過地圖錨點，免除鍵盤焦點受困於地圖 Canvas 的困擾。
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-                  <h3 className="font-bold text-indigo-700 dark:text-indigo-400">
-                    🎯 醒目高對比焦點提示
-                  </h3>
-                  <p className="mt-1.5 text-xs text-neutral-600 dark:text-slate-400">
-                    全域配置無障礙專用 <code>:focus-visible</code> 樣式，鍵盤巡航時產生清晰的 2px 高飽和度輪廓線（Outline），滑鼠操作時則自動隱藏，兼顧視覺質感與合規可用性。
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-                  <h3 className="font-bold text-indigo-700 dark:text-indigo-400">
-                    📢 即時狀態語音廣播（ARIA Live）
-                  </h3>
-                  <p className="mt-1.5 text-xs text-neutral-600 dark:text-slate-400">
-                    在縣市篩選、關鍵字檢索與資料即時載入時，透過 <code>aria-live=&quot;polite&quot;</code> 播報「符合 X 筆據點」，讓視障者即時掌握動態資料變化。
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-                  <h3 className="font-bold text-indigo-700 dark:text-indigo-400">
-                    🔊 新聞沉浸閱讀與語音朗讀
-                  </h3>
-                  <p className="mt-1.5 text-xs text-neutral-600 dark:text-slate-400">
-                    新聞專區內建語音朗讀（Web Speech API）與純文字沉浸模式，支援自訂字級放大、行距與米色護眼配色，貼心照顧弱視朋友與銀髮長輩。
-                  </p>
-                </div>
+                {ACCESSIBILITY_HIGHLIGHTS.map((highlight) => (
+                  <div
+                    key={highlight.title}
+                    className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 dark:border-slate-800 dark:bg-slate-900/50"
+                  >
+                    <h3 className="font-bold text-indigo-700 dark:text-indigo-400">{highlight.title}</h3>
+                    <p className="mt-1.5 text-xs text-neutral-600 dark:text-slate-400">{highlight.body}</p>
+                  </div>
+                ))}
               </div>
             </section>
 
@@ -218,28 +160,30 @@ export default function AccessibilityPage() {
               <h2 className="text-xl font-bold text-indigo-950 dark:text-indigo-200">
                 四、無障礙障礙通報與意見回饋
               </h2>
-              <p className="text-neutral-700 dark:text-slate-300">
-                若您在瀏覽本站時遭遇任何無法使用、語音報讀不完整、對比度不足或鍵盤操作障礙，誠摯歡迎您與我們聯繫！本專案為開放原始碼公益專案，我們將於接獲反映後 3 至 5 個工作天內查驗並持續精進。
-              </p>
+              <p className="text-neutral-700 dark:text-slate-300">{ACCESSIBILITY_FEEDBACK_PARAGRAPH}</p>
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <a
-                  href={appendOutboundUtm(
-                    "https://github.com/j172/health/issues/new?title=%5BA11y%20Barrier%5D%20%E7%84%A1%E9%9A%9C%E7%A4%99%E5%95%8F%E9%A1%8C%E5%8F%8D%E6%98%A0&labels=accessibility",
-                    { medium: "accessibility_feedback", campaign: "a11y_report" },
-                  )}
+                  href={
+                    ACCESSIBILITY_FEEDBACK_LINKS[0].url.startsWith("https://")
+                      ? appendOutboundUtm(ACCESSIBILITY_FEEDBACK_LINKS[0].url, {
+                          medium: "accessibility_feedback",
+                          campaign: "a11y_report",
+                        })
+                      : ACCESSIBILITY_FEEDBACK_LINKS[0].url
+                  }
                   target="_blank"
                   rel="noreferrer noopener"
                   className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 >
                   <span>💬</span>
-                  <span>於 GitHub 開啟無障礙 Issue 通報</span>
+                  <span>{ACCESSIBILITY_FEEDBACK_LINKS[0].label}</span>
                 </a>
                 <a
-                  href="mailto:contact@j172.tw?subject=%5BAccessibility%20Feedback%5D%20j172tw%20Healthz%20%E7%84%A1%E9%9A%9C%E7%A4%99%E6%84%8F%E8%A6%8B%E5%8F%8D%E6%98%A0"
+                  href={ACCESSIBILITY_FEEDBACK_LINKS[1].url}
                   className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-white px-4 py-2.5 text-xs font-bold text-indigo-900 shadow-xs transition hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <span>✉️</span>
-                  <span>寄送電子郵件至維護團隊 (contact@j172.tw)</span>
+                  <span>{ACCESSIBILITY_FEEDBACK_LINKS[1].label}</span>
                 </a>
               </div>
             </section>

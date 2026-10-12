@@ -119,16 +119,37 @@ test("A11y: app/accessibility/page.tsx provides full statement and shortcuts tab
     content.includes("WCAG 2.1 AA") && content.includes("無障礙網頁開發規範 2.1"),
     "Accessibility statement must reference both WCAG 2.1 AA and Taiwan moda 2.1",
   );
+
+  // Issue #444: the access-key table's own codes moved to the shared
+  // lib/server/content/accessibilityContent.ts data module (so the HTML
+  // page and the /accessibility llms.txt/markdown generator render the
+  // same content instead of each keeping its own copy) — the page itself
+  // now renders them via ACCESSIBILITY_SHORTCUTS.map(...) rather than
+  // hardcoding "Alt + C" etc. as literal JSX text.
   assert.ok(
-    content.includes("Alt + C") && content.includes("Alt + U") && content.includes("Alt + Z"),
-    "Accessibility statement must document standard Taiwan access keys",
+    content.includes("ACCESSIBILITY_SHORTCUTS") && content.includes("ACCESSIBILITY_SHORTCUTS.map"),
+    "Accessibility statement must render its shortcuts table from the shared ACCESSIBILITY_SHORTCUTS data",
   );
+  const contentDataPath = path.join(
+    process.cwd(),
+    "lib",
+    "server",
+    "content",
+    "accessibilityContent.ts",
+  );
+  const contentData = fs.readFileSync(contentDataPath, "utf-8");
   assert.ok(
-    content.includes("github.com/j172/health/issues"),
+    contentData.includes("Alt + C") && contentData.includes("Alt + U") && contentData.includes("Alt + Z"),
+    "The shared accessibility content data must document standard Taiwan access keys",
+  );
+
+  assert.ok(
+    content.includes("github.com/j172/health/issues") ||
+      contentData.includes("github.com/j172/health/issues"),
     "Accessibility statement must provide GitHub issue reporting link",
   );
   assert.ok(
-    content.includes("contact@j172.tw"),
+    content.includes("contact@j172.tw") || contentData.includes("contact@j172.tw"),
     "Accessibility statement must provide barrier reporting contact email",
   );
 });

@@ -4,6 +4,7 @@ import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import { getToolCategoryLink } from "@/lib/server/tools/navModel";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import { TOOL_MEDICAL_DISCLAIMER } from "@/lib/server/content/toolLlmsPage";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
 /**
@@ -61,6 +62,16 @@ export default function ToolPageShell({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(toolGraph) }}
         />
       )}
+      {/* Machine-readable sibling versions of this specific tool page (issue
+       * #444) — a per-page llms.txt (https://llmstxt.org/) and a clean
+       * full-page Markdown rendering, both built from this same
+       * TOOL_CATALOG entry via lib/server/content/toolLlmsPage.ts. Rendered
+       * here (rather than via the page-level Metadata API) because every
+       * /tools/<slug> page shares this one component, so this single pair
+       * of tags covers all of them; React hoists <link> elements to <head>
+       * no matter where in the tree they render. */}
+      <link rel="alternate" type="text/plain" title={`${title} - LLM Index (llms.txt)`} href={`/tools/${slug}/llms.txt`} />
+      <link rel="alternate" type="text/markdown" title={`${title} - Clean Markdown`} href={`/tools/${slug}/markdown`} />
 
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <StabloHeader />
@@ -214,7 +225,7 @@ export default function ToolPageShell({
               <span className="text-base leading-none">⚕️</span>
               <span>
                 <strong>醫療資訊免責聲明：</strong>
-                本工具提供之計算數據、分級與生活建議僅供健康生活與自我評估參考，無法取代專業醫師之臨床診斷、治療計畫或處方諮詢。若有任何身體不適或疾病疑慮，請立即尋求合格醫療機構與專科醫師之專業協助。
+                {TOOL_MEDICAL_DISCLAIMER}
               </span>
             </p>
           </section>

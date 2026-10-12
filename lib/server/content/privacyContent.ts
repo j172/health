@@ -1,0 +1,164 @@
+import type { LlmsPageContent, LlmsPageSection } from "./llmsPage";
+
+/**
+ * Single source of truth for /privacy's textual content — both
+ * app/privacy/page.tsx (the HTML page) and
+ * buildPrivacyLlmsPageContent (the llms.txt/markdown generator) render from
+ * this same structure instead of each keeping its own copy of the policy
+ * text (issue #444 acceptance criterion 5).
+ */
+export const LAST_UPDATED = "2026-10-13";
+
+export interface PrivacySectionItem {
+  /** Optional bold lead-in label rendered before `body` (e.g. "地理位置資訊："). */
+  label?: string;
+  body: string;
+}
+
+export interface PrivacySection {
+  heading: string;
+  /** Plain intro paragraph(s) rendered before any `items` list. */
+  paragraphs?: string[];
+  items?: PrivacySectionItem[];
+}
+
+export const PRIVACY_INTRO =
+  "j172tw Healthz（health.j172.tw，以下稱「本站」）重視您的隱私權。本政策說明本站蒐集哪些資料、如何使用，以及您依歐盟《一般資料保護規則》（GDPR）、美國加州《消費者隱私法》與《加州隱私權法》（CCPA/CPRA）、日本《個人資訊保護法》（APPI）、APEC 跨境隱私保護規則（CBPR）與臺灣《個人資料保護法》所享有的權利。本站遵循「最小化資料蒐集」原則，並全面支援 Google 同意聲明模式（Consent Mode v2）。";
+
+export const PRIVACY_SECTIONS: PrivacySection[] = [
+  {
+    heading: "一、本站蒐集哪些資料",
+    items: [
+      {
+        label: "地理位置資訊",
+        body: "站內各項地圖與定位型工具（例如鄰近設施查詢、防災與安全地圖等）會請求您瀏覽器的定位權限，用於計算「離您最近」的結果；隨網站功能持續增加，這類工具的項目可能隨時調整，恕不逐一列舉。這項授權由您的瀏覽器直接管理，本站僅在您同意後取得當下的經緯度，查詢後不會將座標與任何足以識別您身分的資訊一併儲存於本站伺服器資料庫。",
+      },
+      {
+        label: "健康小工具的輸入內容",
+        body: "BMI、卡路里、體脂率、血壓、睡眠品質評估等計算機工具，所有輸入數值僅在您的瀏覽器內計算，不會傳送或儲存到本站伺服器。其中身高、體重、年齡、性別這 4 項基本資料，若您主動勾選「記住我的資料」，會額外存放在您裝置的瀏覽器本機儲存（localStorage），詳見下方第七節說明。",
+      },
+      {
+        label: "網站流量分析（Google Analytics 4 與 Consent Mode v2）",
+        body: "本站使用 Google Analytics (ID: G-V0CTGFQXW2) 協助了解網站使用情況與改進服務體驗。本站預設啟用 Google Consent Mode v2（將分析與廣告儲存預設為拒絕 denied）。僅於您在同意橫幅中點擊「同意並接受」後，系統才會啟用分析儲存權限。您可以隨時透過清除瀏覽器 Cookie 或本機儲存來重設同意狀態。",
+      },
+      {
+        label: "使用者行為分析（Microsoft Clarity）",
+        body: "本站使用 Microsoft Clarity（Project ID: ye0lvdgk17）進行工作階段錄製（session recording）與熱點圖（heatmap）分析，協助了解使用者於頁面上的互動情形以改善介面體驗。此功能同樣受本站的 Consent Mode 同意機制管控：僅於您同意分析用途的 Cookie／儲存權限後才會啟用，若您尚未同意或選擇拒絕，Clarity 將不會蒐集您的工作階段紀錄。您可透過與上述 Google Analytics 相同的方式選擇退出——即不同意同意橫幅中的分析選項，或隨時清除瀏覽器 Cookie 與本機儲存以重設同意狀態。",
+      },
+      {
+        label: "一般網站存取紀錄",
+        body: "本站透過 Cloudflare 與主機服務商提供服務，其基礎設施可能依標準作業產生存取紀錄（如 IP 位址、瀏覽器類型、造訪時間），用於資訊安全防護與異常流量偵測，非用於識別特定個人或建立個人輪廓。",
+      },
+      {
+        label: "本機儲存（localStorage）",
+        body: "本站使用瀏覽器本機儲存記住您的隱私與 Cookie 同意偏好，不作為第三方追蹤用途。",
+      },
+      {
+        label: "文章瀏覽計數 Cookie",
+        body: "當您閱讀一篇新聞文章時，本站會於您的瀏覽器設置一個不含個人資料、以文章編號命名的 Cookie（有效期 24 小時），僅用於避免同一裝置短時間內重複瀏覽同一篇文章被重複計入「熱門焦點新聞」的點閱統計，不用於廣告、追蹤或建立個人輪廓，也不會與其他資料串接識別您的身分。",
+      },
+    ],
+  },
+  {
+    heading: "二、本站承諾與合規原則",
+    items: [
+      { body: "不需要註冊帳號即可使用本站所有健康工具與新聞閱讀功能，本站未提供任何強制會員登入機制。" },
+      { body: "不使用第三方再行銷廣告追蹤像素（如 Meta Pixel、TikTok Pixel 等）。" },
+      { body: "不會將您的個人資料出售、出租或提供給第三方作商業行銷用途。" },
+    ],
+  },
+  {
+    heading: "三、資料保存期間",
+    paragraphs: [
+      "地理位置座標僅用於單次查詢，不會被本站儲存。基礎設施層級的存取紀錄依 Cloudflare 與主機服務商之標準留存政策處理，非由本站另行延長保存或作其他用途。健康新聞、政府開放資料（如醫療院所、藥品、食品業者登錄等）為公開資料之彙整，不屬於個人資料範疇。",
+    ],
+  },
+  {
+    heading: "四、您的權利",
+    paragraphs: [
+      "依據 GDPR、CCPA/CPRA、APPI、CBPR 與臺灣個人資料保護法等規範，您可能享有查詢、閱覽、複製、補充或更正個人資料、停止蒐集處理利用、請求刪除，以及拒絕行銷等權利。由於本站設計上盡量不儲存可識別個人身分的資料，多數情況下並無留存資料可供查詢；如您仍希望提出相關請求或有任何疑問，歡迎透過下方聯絡方式與我們聯繫，我們會依合理時間內回覆處理。",
+    ],
+  },
+  {
+    heading: "五、兒童隱私",
+    paragraphs: ["本站內容以一般大眾為對象，並非特別針對兒童設計，亦不會刻意向兒童蒐集個人資料。"],
+  },
+  {
+    heading: "六、政策更新",
+    paragraphs: ["本政策可能因法規異動或站內功能調整而更新，更新後將標示於本頁上方的「最後更新日期」，請不定期回來查看。"],
+  },
+  {
+    heading: "七、健康計算器「記住我的資料」功能",
+    items: [
+      {
+        label: "預設關閉",
+        body: "BMI、卡路里、營養素、飲水量、體脂率、腰臀比、目標心率、去脂體重、VO2Max 等計算器之間，可選擇記住您的身高、體重、年齡、性別這 4 項基本資料，供其他計算器自動帶入，省去重複輸入。此功能預設為關閉，除非您主動勾選「記住我的資料（只存在這台裝置，不會上傳）」，否則切換到不同計算器不會看到任何被記住的資料。",
+      },
+      {
+        label: "存放位置",
+        body: "僅存放在您目前使用裝置、瀏覽器的本機儲存（localStorage）之中，不會上傳或傳送到本站伺服器，也不會同步到您的其他裝置。",
+      },
+      {
+        label: "存放內容",
+        body: "僅限身高、體重、年齡、性別這 4 項基本資料。血壓、心率等醫療量測數值（例如收縮壓、舒張壓、靜止心率等）在任何情況下都不會被這個功能記住，即使您已勾選記住我的資料。",
+      },
+      {
+        label: "如何清除",
+        body: "在任何一個支援此功能的計算器頁面，取消勾選「記住我的資料」，或點擊旁邊的「一鍵清除已記住的資料」，會立即清除裝置上儲存的全部資料，往後切換到任何計算器都不會再看到被記住的內容。您也可以直接清除瀏覽器的網站資料（localStorage）達到同樣效果。",
+      },
+      {
+        label: "裝置儲存功能不可用時",
+        body: "若您的瀏覽器處於隱私/無痕模式或已封鎖本機儲存，此功能的勾選框會自動隱藏，所有計算器仍會照常獨立運作，不受影響。",
+      },
+    ],
+  },
+];
+
+/** The contact section (八、聯絡我們) has its own link with UTM params, so it
+ * stays a small dedicated constant rather than a generic PrivacySection —
+ * both the page and the generator append the link after this lead-in text. */
+export const PRIVACY_CONTACT = {
+  heading: "八、聯絡我們",
+  leadIn: "若您對本政策或個人資料處理方式有任何疑問或請求，請透過",
+  linkLabel: "www.j172.tw",
+  linkUrl: "https://www.j172.tw",
+  trailing: "的聯絡方式與我們聯繫。",
+};
+
+export const PRIVACY_SUMMARY =
+  "本站僅在使用者同意後蒐集最少量資料（定位座標不儲存、健康計算僅在瀏覽器端執行），不販售個資，並支援 GDPR／CCPA／APPI／CBPR／臺灣個資法下的使用者權利。";
+
+/**
+ * Builds the shared `LlmsPageContent` shape for `/privacy`, from exactly the
+ * same `PRIVACY_SECTIONS`/`PRIVACY_CONTACT` data `app/privacy/page.tsx`
+ * renders.
+ */
+export function buildPrivacyLlmsPageContent(baseUrl: string): LlmsPageContent {
+  const url = `${baseUrl}/privacy`;
+
+  const sections: LlmsPageSection[] = PRIVACY_SECTIONS.map((section) => {
+    const paragraphs: string[] = [...(section.paragraphs ?? [])];
+    for (const item of section.items ?? []) {
+      paragraphs.push(item.label ? `- **${item.label}**：${item.body}` : `- ${item.body}`);
+    }
+    return { heading: section.heading, paragraphs };
+  });
+
+  sections.push({
+    heading: PRIVACY_CONTACT.heading,
+    paragraphs: [
+      `${PRIVACY_CONTACT.leadIn} [${PRIVACY_CONTACT.linkLabel}](${PRIVACY_CONTACT.linkUrl}) ${PRIVACY_CONTACT.trailing}`,
+    ],
+  });
+
+  return {
+    title: "隱私權政策與同意聲明",
+    url,
+    summary: PRIVACY_SUMMARY,
+    sections: [{ heading: "摘要", paragraphs: [PRIVACY_INTRO] }, ...sections],
+    related: [
+      { title: "無障礙宣告", url: `${baseUrl}/accessibility` },
+      { title: "Hey AI 簡介頁", url: `${baseUrl}/llm-info` },
+    ],
+  };
+}

@@ -138,6 +138,19 @@ export default async function NewsDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleGraph) }}
       />
+      {/* Machine-readable sibling versions of this specific article (issue
+       * #444), built from the same official-source-only data via
+       * lib/server/content/newsLlmsPage.ts. Only rendered when `isGov` is
+       * true — a non-official source already redirected to its original
+       * article above before reaching this point, so by construction these
+       * tags only ever appear on articles whose llms.txt/markdown routes
+       * actually resolve (200, not 404). */}
+      {isGov && (
+        <>
+          <link rel="alternate" type="text/plain" title={`${news.title} - LLM Index (llms.txt)`} href={`/news/${news.id}/llms.txt`} />
+          <link rel="alternate" type="text/markdown" title={`${news.title} - Clean Markdown`} href={`/news/${news.id}/markdown`} />
+        </>
+      )}
       <ArticleViewTracker newsId={news.id} />
       <StabloHeader />
 
