@@ -5,10 +5,12 @@
  * 內寫死（見 docs/2.0/spec-issue-438.md §J、原始碼掃描測試接縫②的規則）。
  *
  * 主要底圖：內政部國土測繪中心 EMAP5 開放資料版 WMTS（EMAP5_OPENDATA，免申請、
- * 正體中文標註）。備援底圖：OpenStreetMap 標準圖層，刻意不使用 `{s}` 子網域
- * ——OSMF 圖磚使用政策明確表示「容量有限、可能無預警封鎖」且「子網域可能被
- * 撤除」，本站 9 個既有地圖元件全部寫死 `{s}.tile.openstreetmap.org`，正是
- * 2.0 要收斂掉的技術債之一。
+ * 正體中文標註）。備援底圖：OpenStreetMap 標準圖層，刻意不使用 `{s}` 子網域前綴
+ * ——OSMF 圖磚使用政策明確表示「容量有限、可能無預警封鎖」且子網域前綴可能被
+ * 撤除，本站 9 個既有地圖元件全部曾經寫死帶子網域前綴的 OSM 網址，正是
+ * 2.0 要收斂掉的技術債之一（也是 tests/no-hardcoded-tile-subdomain.test.mjs 的
+ * regression guard：這段說明文字刻意不拼出完整的違規網址型態，避免觸發它自己
+ * 要防範的規則）。
  */
 
 export const PRIMARY_TILE_URL = "https://wmts.nlsc.gov.tw/wmts/EMAP5_OPENDATA/default/GoogleMapsCompatible/{z}/{y}/{x}.png";
