@@ -225,9 +225,20 @@ export interface RailAlertsFanOutResult {
  * guessed) is recorded into `errors[code]` and that source simply
  * contributes 0 alerts this round — it never aborts, delays, or discards
  * any other source's already-fetched data (issue #470 acceptance criterion
- * 4). Returns an all-empty result (not an error) when no TDX credentials
- * are configured, matching this repo's "no token configured" convention
- * elsewhere.
+ * 4).
+ *
+ * When no token can be obtained at all (`getTdxToken()` returns null both
+ * when credentials are unset AND when the token request itself transiently
+ * fails — see lib/server/tdx/auth.ts), every source is recorded into
+ * `errors` rather than silently returning an all-empty "success" result.
+ * This matters because the caller (runMetroAlertsSync -> resolveStaleAlerts)
+ * uses an EMPTY `errors[code]` as its signal that a system was actually
+ * checked this round and had nothing to report, and resolves ("目前無通阻")
+ * any of that system's previously-active rows on that basis. A transient
+ * TDX auth hiccup is not "nothing to report" — treating it that way would
+ * falsely clear every currently-active disruption across all 8 systems
+ * (including on "颱風地震來了", the one guide page whose whole point is
+ * surfacing exactly this), until the next successful sync 30 minutes later.
  */
 export async function fetchAllRailAlerts(): Promise<RailAlertsFanOutResult> {
   const bySystem: Record<string, number> = {};
@@ -236,6 +247,10 @@ export async function fetchAllRailAlerts(): Promise<RailAlertsFanOutResult> {
 
   const token = await getTdxToken();
   if (!token) {
+    for (const source of RAIL_ALERT_SOURCES) {
+      bySystem[source.code] = 0;
+      errors[source.code] = "TDX token unavailable (not configured, or the token request itself failed)";
+    }
     return { alerts, bySystem, errors };
   }
 

@@ -189,11 +189,18 @@ test("normalizeRailAlert: falls back to PublishTime then StartTime when UpdateTi
 //    no-credentials degrade path, without any real network call.
 // ---------------------------------------------------------------------------
 
-test("fetchAllRailAlerts: with no TDX credentials configured, returns an all-empty result instead of throwing or making a network call", async () => {
+test("fetchAllRailAlerts: with no TDX credentials configured, records every source as failed (not a silent all-empty success) so the caller never wrongly resolves active alerts it couldn't actually check", async () => {
   const result = await fetchAllRailAlerts();
   assert.deepEqual(result.alerts, []);
-  assert.deepEqual(result.bySystem, {});
-  assert.deepEqual(result.errors, {});
+  // Every source must be recorded as an error, not just "0 alerts" the same
+  // way a real zero-result success would look — otherwise runMetroAlertsSync's
+  // resolveStaleAlerts() would treat "we have no token" as "this system was
+  // checked and nothing is wrong", and mark every real active alert resolved.
+  for (const def of RAIL_ALERT_SOURCES) {
+    assert.equal(result.bySystem[def.code], 0);
+    assert.ok(result.errors[def.code], `expected an error recorded for "${def.code}" when no token is available`);
+  }
+  assert.equal(Object.keys(result.errors).length, RAIL_ALERT_SOURCES.length);
 });
 
 // ---------------------------------------------------------------------------
@@ -208,6 +215,17 @@ test("runSync.ts fans out via fetchAllRailAlerts, falls back to the Taipei CSV o
   assert.match(src, /fetchTaipeiCsvAlerts\(\)/);
   assert.match(src, /resolveStaleAlerts/, "must resolve stale (no-longer-reported) alerts, not let them sit as 'active' forever");
   assert.match(src, /status = 'resolved'/);
+});
+
+test("runSync.ts skips resolveStaleAlerts for any system that failed this round (including the all-sources-failed no-token case), never resolving rows it couldn't actually check", () => {
+  const src = readSource("lib", "server", "metroAlerts", "runSync.ts");
+  // tdxFailed is computed from errors[source.code] — after the tdxClient.ts
+  // fix, this is populated for EVERY source when fetchAllRailAlerts()
+  // couldn't get a token at all, not left empty as if every system
+  // succeeded with zero alerts. That's what makes the `continue` below
+  // actually skip resolveStaleAlerts in that case.
+  assert.match(src, /const tdxFailed = Boolean\(errors\[source\.code\]\);/);
+  assert.match(src, /if \(tdxFailed && !isTrtcRecoveredByCsv\) continue;/);
 });
 
 test("runSync.ts's upsert writes system_code and system_label into metro_alerts", () => {
