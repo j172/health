@@ -362,7 +362,9 @@ export const registerCronJobs = (): void => {
     "*/5 * * * *",
     runGuarded("youbike-sync-cron.log", () => runYouBikeSync()),
   );
-  // Taipei Metro alerts every 30 minutes — fetches Big5 CSV elevator maintenance and operational bulletins
+  // Rail alerts every 30 minutes (issue #470) — fans out across all 6 TDX metro/light-rail
+  // systems + TRA + THSR (Promise.allSettled-isolated per system), falling back to Taipei
+  // Metro's own Big5 CSV for TRTC only when TDX's TRTC call itself fails
   cron.schedule(
     "0,30 * * * *",
     runGuarded("metro-alerts-sync-cron.log", () => runMetroAlertsSync()),

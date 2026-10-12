@@ -4,22 +4,27 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { MetroAlertItem } from "@/lib/server/metroAlerts/types";
 
-const MRT_LINES = [
-  { id: "all", label: "全部路線", color: "bg-slate-700 text-white" },
-  { id: "板南線", label: "板南線", color: "bg-blue-600 text-white" },
-  { id: "淡水信義線", label: "淡水信義線", color: "bg-red-600 text-white" },
-  { id: "中和新蘆線", label: "中和新蘆線", color: "bg-amber-600 text-white" },
-  { id: "松山新店線", label: "松山新店線", color: "bg-emerald-600 text-white" },
-  { id: "文湖線", label: "文湖線", color: "bg-yellow-700 text-white" },
-  { id: "環狀線", label: "環狀線", color: "bg-amber-400 text-black" },
+// 全台 6 個捷運／輕軌系統 + 臺鐵 + 高鐵，與 lib/server/metroAlerts/tdxClient.ts
+// 的 RAIL_ALERT_SOURCES 對應（issue #470）。以 systemCode 精確比對，取代升級前
+// 僅涵蓋臺北捷運各路線名稱子字串比對的 MRT_LINES。
+const SYSTEMS = [
+  { id: "all", label: "全部系統", color: "bg-slate-700 text-white" },
+  { id: "TRTC", label: "臺北捷運", color: "bg-blue-600 text-white" },
+  { id: "TRTCMG", label: "貓空纜車", color: "bg-lime-600 text-white" },
+  { id: "TYMC", label: "桃園捷運", color: "bg-purple-600 text-white" },
+  { id: "TMRT", label: "臺中捷運", color: "bg-orange-600 text-white" },
+  { id: "KRTC", label: "高雄捷運", color: "bg-orange-500 text-white" },
+  { id: "KLRT", label: "高雄輕軌", color: "bg-pink-600 text-white" },
+  { id: "TRA", label: "臺鐵", color: "bg-sky-700 text-white" },
+  { id: "THSR", label: "高鐵", color: "bg-rose-700 text-white" },
 ];
 
 export default function MetroAlertsContent({ initialAlerts = [] }: { initialAlerts?: MetroAlertItem[] }) {
   const [alerts, setAlerts] = useState<MetroAlertItem[]>(initialAlerts);
   const [loading, setLoading] = useState(initialAlerts.length === 0);
-  const [selectedLine, setSelectedLine] = useState("all");
+  const [selectedSystem, setSelectedSystem] = useState("all");
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [selectedType, setSelectedType] = useState<"all" | "elevator" | "operational">("all");
+  const [selectedType, setSelectedType] = useState<"all" | "elevator" | "operational" | "suspended">("all");
 
   useEffect(() => {
     let ignore = false;
@@ -46,7 +51,8 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
 
   const filteredAlerts = useMemo(() => {
     return alerts.filter((a) => {
-      if (selectedLine !== "all" && !a.lineName.includes(selectedLine)) return false;
+      const systemCode = a.systemCode || "TRTC";
+      if (selectedSystem !== "all" && systemCode !== selectedSystem) return false;
       if (selectedType !== "all" && a.alertType !== selectedType) return false;
       if (searchKeyword.trim()) {
         const kw = searchKeyword.trim().toLowerCase();
@@ -57,7 +63,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
       }
       return true;
     });
-  }, [alerts, selectedLine, selectedType, searchKeyword]);
+  }, [alerts, selectedSystem, selectedType, searchKeyword]);
 
   return (
     <div className="space-y-6">
@@ -87,10 +93,10 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
           </span>
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              臺北捷運營運與無障礙電梯即時公告
+              全台軌道營運通阻即時公告
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              即時同步臺北大眾捷運股份有限公司營運資訊，包含各車站無障礙電梯保養檢修及特別班次動態。
+              即時彙整全台 6 個捷運／輕軌系統（臺北捷運、貓空纜車、桃園捷運、臺中捷運、高雄捷運、高雄輕軌）、臺鐵、高鐵的營運通阻公告，以及臺北捷運各車站無障礙電梯檢修公告。
             </p>
           </div>
         </div>
@@ -98,17 +104,17 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
         {/* Filter Controls */}
         <div className="mt-5 space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
           <div className="flex flex-wrap gap-2">
-            {MRT_LINES.map((line) => (
+            {SYSTEMS.map((system) => (
               <button
-                key={line.id}
-                onClick={() => setSelectedLine(line.id)}
+                key={system.id}
+                onClick={() => setSelectedSystem(system.id)}
                 className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                  selectedLine === line.id
-                    ? `${line.color} shadow-sm ring-2 ring-offset-2 ring-slate-400 dark:ring-offset-slate-900`
+                  selectedSystem === system.id
+                    ? `${system.color} shadow-sm ring-2 ring-offset-2 ring-slate-400 dark:ring-offset-slate-900`
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 }`}
               >
-                {line.label}
+                {system.label}
               </button>
             ))}
           </div>
@@ -119,7 +125,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="搜尋車站名稱（例：景安、臺北車站）或關鍵字..."
+                placeholder="搜尋車站／路線名稱（例：景安、臺北車站）或關鍵字..."
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:focus:bg-slate-900"
               />
               {searchKeyword && (
@@ -132,7 +138,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
               )}
             </div>
 
-            <div className="flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+            <div className="flex flex-wrap rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
               <button
                 onClick={() => setSelectedType("all")}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
@@ -144,14 +150,14 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 全部公告
               </button>
               <button
-                onClick={() => setSelectedType("elevator")}
+                onClick={() => setSelectedType("suspended")}
                 className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
-                  selectedType === "elevator"
-                    ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
+                  selectedType === "suspended"
+                    ? "bg-white text-red-600 shadow-sm dark:bg-slate-900 dark:text-red-400"
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
-                <span>🛗</span> 電梯檢修
+                <span>🛑</span> 全線停駛
               </button>
               <button
                 onClick={() => setSelectedType("operational")}
@@ -163,6 +169,16 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
               >
                 <span>⚠️</span> 營運調整
               </button>
+              <button
+                onClick={() => setSelectedType("elevator")}
+                className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                  selectedType === "elevator"
+                    ? "bg-white text-blue-600 shadow-sm dark:bg-slate-900 dark:text-blue-400"
+                    : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                }`}
+              >
+                <span>🛗</span> 電梯檢修
+              </button>
             </div>
           </div>
         </div>
@@ -173,7 +189,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-600">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-            <p className="mt-3 text-sm">正在載入捷運即時公告...</p>
+            <p className="mt-3 text-sm">正在載入全台軌道即時公告...</p>
           </div>
         ) : filteredAlerts.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
@@ -182,48 +198,79 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
               目前全線營運正常
             </h3>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-              {searchKeyword || selectedLine !== "all" || selectedType !== "all"
-                ? "目前選取的條件查無公告，您可切換回全部路線或清除關鍵字。"
-                : "目前捷運全線設備及電梯運作良好，無維護中或暫停使用通報。"}
+              {searchKeyword || selectedSystem !== "all" || selectedType !== "all"
+                ? "目前選取的條件查無公告，您可切換回全部系統或清除關鍵字。"
+                : "目前全台軌道系統設備運作良好，無通阻或暫停使用通報。"}
             </p>
           </div>
         ) : (
-          filteredAlerts.map((alert, idx) => (
-            <div
-              key={alert.externalId || idx}
-              className="group relative overflow-hidden rounded-2xl border border-amber-200/80 bg-gradient-to-r from-amber-50/50 via-white to-white p-5 shadow-sm transition hover:shadow-md dark:border-amber-900/30 dark:from-amber-950/20 dark:via-slate-900 dark:to-slate-900"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-bold text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">
-                    {alert.alertType === "elevator" ? "🛗 電梯檢修" : "⚠️ 營運公告"}
+          filteredAlerts.map((alert, idx) => {
+            const systemLabel = alert.systemLabel || alert.lineName;
+            return (
+              <div
+                key={alert.externalId || idx}
+                className={`group relative overflow-hidden rounded-2xl border p-5 shadow-sm transition hover:shadow-md ${
+                  alert.alertType === "suspended"
+                    ? "border-red-200/80 bg-gradient-to-r from-red-50/50 via-white to-white dark:border-red-900/30 dark:from-red-950/20 dark:via-slate-900 dark:to-slate-900"
+                    : "border-amber-200/80 bg-gradient-to-r from-amber-50/50 via-white to-white dark:border-amber-900/30 dark:from-amber-950/20 dark:via-slate-900 dark:to-slate-900"
+                }`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+                        alert.alertType === "elevator"
+                          ? "bg-blue-500/10 text-blue-700 dark:bg-blue-400/10 dark:text-blue-300"
+                          : alert.alertType === "suspended"
+                          ? "bg-red-500/10 text-red-700 dark:bg-red-400/10 dark:text-red-300"
+                          : "bg-amber-500/10 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300"
+                      }`}
+                    >
+                      {alert.alertType === "elevator"
+                        ? "🛗 電梯檢修"
+                        : alert.alertType === "suspended"
+                        ? "🛑 全線停駛"
+                        : "⚠️ 營運調整"}
+                    </span>
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      {systemLabel}
+                    </span>
+                    {alert.stationName ? (
+                      <span className="text-sm font-bold text-slate-900 dark:text-white">
+                        {alert.stationName}
+                      </span>
+                    ) : null}
+                  </div>
+                  <time className="text-xs text-slate-600 dark:text-slate-500">
+                    {alert.alertTime}
+                  </time>
+                </div>
+
+                <h4 className="mt-2.5 text-base font-semibold text-slate-800 dark:text-slate-100">
+                  {alert.alertTitle}
+                </h4>
+
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  {alert.alertContent}
+                </p>
+
+                <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-600 dark:border-slate-800">
+                  <span>
+                    資訊來源：{systemLabel === "臺北捷運" ? "臺北大眾捷運股份有限公司" : "交通部 TDX 運輸資料流通服務"}開放資料
                   </span>
-                  <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {alert.lineName}
-                  </span>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">
-                    {alert.stationName}
+                  <span
+                    className={`font-medium ${
+                      alert.alertType === "suspended"
+                        ? "text-red-600 dark:text-red-400"
+                        : "text-amber-600 dark:text-amber-400"
+                    }`}
+                  >
+                    進行中
                   </span>
                 </div>
-                <time className="text-xs text-slate-600 dark:text-slate-500">
-                  {alert.alertTime}
-                </time>
               </div>
-
-              <h4 className="mt-2.5 text-base font-semibold text-slate-800 dark:text-slate-100">
-                {alert.alertTitle}
-              </h4>
-
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                {alert.alertContent}
-              </p>
-
-              <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-600 dark:border-slate-800">
-                <span>資訊來源：臺北大眾捷運股份有限公司開放資料</span>
-                <span className="text-amber-600 dark:text-amber-400 font-medium">進行中</span>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
