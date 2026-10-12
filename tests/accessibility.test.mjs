@@ -88,9 +88,25 @@ test("A11y: SiteNav.tsx and SiteFooter.tsx provide semantic landmarks and Access
     footerContent.includes('accessKey="Z"'),
     "SiteFooter must have accessKey='Z' anchor point",
   );
+  // Issue #461: the overview links (including /accessibility) now live in
+  // buildFooterModel() (lib/server/tools/navModel.ts), not hand-rolled
+  // inline in SiteFooter.tsx — check the actual source of truth, and that
+  // SiteFooter.tsx wires that model in instead of re-declaring its own copy.
   assert.ok(
-    footerContent.includes('href: "/accessibility"'),
-    "SiteFooter overview links must include /accessibility link",
+    footerContent.includes("buildFooterModel"),
+    "SiteFooter must render its overview links via buildFooterModel()",
+  );
+  const navModelPath = path.join(
+    process.cwd(),
+    "lib",
+    "server",
+    "tools",
+    "navModel.ts",
+  );
+  const navModelContent = fs.readFileSync(navModelPath, "utf-8");
+  assert.ok(
+    navModelContent.includes('href: "/accessibility"'),
+    "buildFooterModel's overview block must include /accessibility link",
   );
 });
 

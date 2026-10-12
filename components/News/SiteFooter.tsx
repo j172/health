@@ -2,14 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  TOOL_GROUP_META,
-  toolsInGroup,
-  type ToolCatalogEntry,
-} from "@/lib/server/tools/catalog";
-import { compareByStrokeOrder } from "@/lib/server/tools/strokeOrder";
+import { buildFooterModel } from "@/lib/server/tools/navModel";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const FooterColumn = ({
   label,
@@ -139,99 +133,46 @@ const ThreadsIcon = () => (
   </svg>
 );
 
+// Maps buildFooterModel()'s stable link ids (the "關於本站" overview block's
+// `id || "home"`, and the "公民倡議與友站" block's link hostname — see
+// navModel.ts's BuildFooterModelOptions.translateLinkLabel doc comment) to
+// this site's existing footer.*/nav.* i18n keys, so non-zh-TW locales keep
+// getting the exact same translated strings they did before this ticket
+// wired the model in. No new i18n keys are introduced here — every key below
+// already existed pre-#461.
+const FOOTER_LINK_LABEL_KEYS: Record<string, string> = {
+  home: "nav.home",
+  news: "footer.newsList",
+  privacy: "footer.privacy",
+  accessibility: "footer.accessibility",
+  "llm-info": "footer.llmInfo",
+  "g0v.tw": "footer.g0v",
+  "kuma-academy.org": "footer.kumaAcademy",
+  "cw.yueyuknows.com": "footer.antiCognitiveWarfare",
+  "metawilo.com": "footer.taiwanCriminals",
+  "www.sports.gov.tw": "footer.sportsCoach",
+  "ma.mohw.gov.tw": "footer.mohwVio",
+  "council2026.taiwangogo.tw": "footer.council2026",
+};
+
 export default function SiteFooter() {
   const { t, locale } = useLanguage();
-  // navLabel (issue #256) is the Nav/Footer-only display name — falls back to
-  // the SEO title when not set. Never affects the tool page's own metadata.
-  const localizeTitle = (item: ToolCatalogEntry) => {
-    const zhLabel = item.navLabel ?? item.title;
-    return locale !== "zh-TW" ? t(`catalog.${item.slug}`, zhLabel) : zhLabel;
-  };
 
-  const overviewLinks = [
-    { href: "/", label: t("nav.home", "首頁") },
-    { href: "/news", label: t("footer.newsList", "健康新聞列表") },
-    { href: "/privacy", label: t("footer.privacy", "隱私權政策") },
-    { href: "/accessibility", label: t("footer.accessibility", "無障礙宣告") },
-    {
-      href: "/llm-info",
-      label: t("footer.llmInfo", "Hey AI, learn about j172.tw Healthz"),
+  // Issue #461: wires the already-built (issue #443) buildFooterModel() in,
+  // replacing the old hand-rolled 1 overview + one column per catalog tool
+  // group (each listing every individual tool in that group) + 1
+  // civic-partners = 9-column footer with the exact 4-block structure the
+  // issue asks for: 關於本站／工具分類（7 分類連結，非個別工具）／生活情境
+  // （5 guide 連結）／公民倡議與友站（既有 7 個連結，由 buildFooterModel 以
+  // appendOutboundUtm 附加 UTM，這裡不重複包裝）。
+  const footerModel = buildFooterModel({
+    locale,
+    translateGroupLabel: (meta) => t(meta.labelKey, meta.labelDefault),
+    translateLinkLabel: (id, zhLabel) => {
+      const key = FOOTER_LINK_LABEL_KEYS[id];
+      return key ? t(key, zhLabel) : zhLabel;
     },
-  ];
-
-  const civicPartnerLinks = [
-    {
-      href: appendOutboundUtm("https://g0v.tw/intl/zh-TW/", {
-        medium: "civic_partner",
-        campaign: "civic_alliance",
-        content: "footer",
-      }),
-      label: t("footer.g0v", "g0v 零時政府 ↗"),
-    },
-    {
-      href: appendOutboundUtm("https://kuma-academy.org/", {
-        medium: "civic_partner",
-        campaign: "civic_alliance",
-        content: "footer",
-      }),
-      label: t("footer.kumaAcademy", "黑熊學院 ↗"),
-    },
-    {
-      href: appendOutboundUtm("https://cw.yueyuknows.com/", {
-        medium: "civic_partner",
-        campaign: "civic_alliance",
-        content: "footer",
-      }),
-      label: t("footer.antiCognitiveWarfare", "反認知作戰 ↗"),
-    },
-    {
-      href: appendOutboundUtm("https://metawilo.com/", {
-        medium: "civic_partner",
-        campaign: "civic_alliance",
-        content: "footer",
-      }),
-      label: t("footer.taiwanCriminals", "台灣罪犯圖鑑 ↗"),
-    },
-    {
-      href: appendOutboundUtm("https://www.sports.gov.tw/News/6295", {
-        medium: "civic_partner",
-        campaign: "civic_alliance",
-        content: "footer",
-      }),
-      label: t("footer.sportsCoach", "運動部不適任教練 ↗"),
-    },
-    {
-      href: appendOutboundUtm(
-        "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
-        {
-          medium: "civic_partner",
-          campaign: "civic_alliance",
-          content: "footer",
-        }
-      ),
-      label: t("footer.mohwVio", "衛福部醫事性平專區 ↗"),
-    },
-    {
-      href: appendOutboundUtm("https://council2026.taiwangogo.tw/", {
-        medium: "civic_partner",
-        campaign: "civic_alliance",
-        content: "footer",
-      }),
-      label: t("footer.council2026", "2026 政治人物前科 ↗"),
-    },
-  ];
-
-  // One column per TOOL_GROUP_META entry (issue #256 reclassification) — this
-  // mirrors SiteNav.tsx's category resolution exactly (same source array,
-  // same stroke-order comparator for both category and tool ordering) so the
-  // footer can never drift from the nav dropdowns or from an
-  // added/removed/re-grouped tool the way the old 7-hardcoded-columns layout
-  // could.
-  const categoryColumns = TOOL_GROUP_META.map((meta) => ({
-    id: meta.group,
-    label: t(meta.labelKey, meta.labelDefault),
-    tools: toolsInGroup(meta.group, localizeTitle, locale),
-  })).sort((a, b) => compareByStrokeOrder(a.label, b.label, locale));
+  });
 
   return (
     <footer
@@ -307,34 +248,44 @@ export default function SiteFooter() {
           </div>
         </div>
 
-        {/* Links Grid: 1 static overview column + 9 TOOL_GROUP_META columns
-            (issue #256) — two neat rows of 5 at the widest breakpoint. */}
-        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 dark:border-slate-900">
-          <FooterColumn label={t("footer.overview", "全站總覽")}>
-            {overviewLinks.map((item) => (
-              <FooterLink key={item.href} href={item.href}>
-                {item.label}
-              </FooterLink>
-            ))}
-          </FooterColumn>
-
-          {categoryColumns.map((category) => (
-            <FooterColumn key={category.id} label={category.label}>
-              {category.tools.map((tool) => (
-                <FooterLink key={tool.slug} href={`/tools/${tool.slug}`}>
-                  {localizeTitle(tool)}
-                </FooterLink>
-              ))}
-            </FooterColumn>
-          ))}
-
-          <FooterColumn label={t("footer.civicPartners", "公民倡議與友站")}>
-            {civicPartnerLinks.map((item) => (
-              <FooterExternalLink key={item.href} href={item.href}>
-                {item.label}
-              </FooterExternalLink>
-            ))}
-          </FooterColumn>
+        {/* Links Grid: exactly 4 columns from buildFooterModel() (issue #461,
+            replacing the old 1 static overview + one-column-per-catalog-group
+            "list every tool again" layout) — 關於本站／工具分類（7 分類，非
+            個別工具）／生活情境（5 guides）／公民倡議與友站（既有 7 連結）。 */}
+        <div className="grid grid-cols-2 gap-8 border-t border-slate-100 pt-10 sm:grid-cols-4 dark:border-slate-900">
+          {footerModel.map((block) => {
+            // The civic-partners block's links are external (and already
+            // UTM-wrapped by buildFooterModel via appendOutboundUtm — never
+            // re-wrap them here); every other block links within this site.
+            const isExternal = block.id === "civic-partners";
+            // footer.civicPartners already existed pre-#461 with the exact
+            // same default text buildFooterModel returns for this block, so
+            // reusing it here keeps this one header's cross-locale
+            // translation behavior unchanged. The other 3 block labels
+            // ("關於本站"/"工具分類"/"生活情境") have no pre-existing i18n key
+            // of their own (buildFooterModel doesn't expose a translator for
+            // block-level labels, only for the links within them — out of
+            // scope for this ticket to add), so they render as-is.
+            const headerLabel =
+              block.id === "civic-partners"
+                ? t("footer.civicPartners", block.label)
+                : block.label;
+            return (
+              <FooterColumn key={block.id} label={headerLabel}>
+                {block.links.map((link) =>
+                  isExternal ? (
+                    <FooterExternalLink key={link.href} href={link.href}>
+                      {link.label}
+                    </FooterExternalLink>
+                  ) : (
+                    <FooterLink key={link.href} href={link.href}>
+                      {link.label}
+                    </FooterLink>
+                  ),
+                )}
+              </FooterColumn>
+            );
+          })}
         </div>
 
         {/* Bottom copyright */}

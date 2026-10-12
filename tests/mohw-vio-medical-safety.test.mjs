@@ -75,10 +75,24 @@ test("catalog.ts registers medical-violators with INDEXABLE_SLUGS and medical-ca
 });
 
 test("SiteFooter and CivicPartnersSection include mohw-vio partner and URLs", () => {
+  // Issue #461: SiteFooter.tsx's civic-partner links now come from
+  // buildFooterModel()'s CIVIC_PARTNER_LINKS (lib/server/tools/navModel.ts)
+  // rather than a hardcoded array inline in SiteFooter.tsx — check the
+  // actual source of truth, and that SiteFooter.tsx wires it in (including
+  // its i18n key) instead of re-declaring its own copy of the URL.
+  const navModelContent = fs.readFileSync(
+    path.join(REPO_ROOT, "lib", "server", "tools", "navModel.ts"),
+    "utf-8",
+  );
+  assert.ok(
+    navModelContent.includes("https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO"),
+    "navModel.ts's CIVIC_PARTNER_LINKS must include MOHW VIO url"
+  );
+
   const footerContent = fs.readFileSync(path.join(REPO_ROOT, "components", "News", "SiteFooter.tsx"), "utf-8");
   assert.ok(
-    footerContent.includes("https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO"),
-    "SiteFooter must include MOHW VIO url"
+    footerContent.includes("buildFooterModel"),
+    "SiteFooter must render its civic-partner links via buildFooterModel()",
   );
   assert.ok(footerContent.includes("footer.mohwVio"), "SiteFooter must use footer.mohwVio i18n key");
 

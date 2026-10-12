@@ -68,13 +68,26 @@ test("sports-coach: CivicPartnersSection.tsx includes sports-coach immediately a
 });
 
 test("sports-coach: SiteFooter.tsx contains sportsCoach footer link with UTM and HTTPS", () => {
+  // Issue #461: the civic-partner URL now lives in buildFooterModel()'s
+  // CIVIC_PARTNER_LINKS (lib/server/tools/navModel.ts), not hardcoded
+  // inline in SiteFooter.tsx — check the actual source of truth, and that
+  // SiteFooter.tsx wires that model in (including its i18n key).
+  const navModelContent = readFileSync(
+    path.join(ROOT_DIR, "lib", "server", "tools", "navModel.ts"),
+    "utf-8"
+  );
+  assert.ok(
+    navModelContent.includes("https://www.sports.gov.tw/News/6295"),
+    "navModel.ts's CIVIC_PARTNER_LINKS must include sports.gov.tw URL"
+  );
+
   const footerContent = readFileSync(
     path.join(ROOT_DIR, "components", "News", "SiteFooter.tsx"),
     "utf-8"
   );
   assert.ok(
-    footerContent.includes("https://www.sports.gov.tw/News/6295"),
-    "SiteFooter must include sports.gov.tw URL"
+    footerContent.includes("buildFooterModel"),
+    "SiteFooter must render its civic-partner links via buildFooterModel()",
   );
   assert.ok(
     footerContent.includes("footer.sportsCoach"),
