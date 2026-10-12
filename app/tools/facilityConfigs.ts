@@ -551,4 +551,16 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的殯葬設施。",
     serviceItem: { label: "殯葬設施類別：" },
   },
+  "audible-signals": {
+    facilityType: "audible_signal",
+    emoji: "🔊",
+    title: "全國盲人有聲號誌查詢",
+    description:
+      "查詢全國各縣市盲人有聲號誌（行人穿越道語音號誌）設置路口，顯示路名與是否支援 App 觸發。資料來源：TDX 運輸資料流通服務平台。",
+    searchPlaceholder: "輸入路名或縣市關鍵字",
+    errorText: "查詢有聲號誌資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的有聲號誌路口，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的有聲號誌路口。",
+    serviceItem: "badge",
+  },
 } satisfies Record<string, FacilitySearchConfig>;
