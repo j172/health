@@ -93,18 +93,23 @@ async function main() {
     { smartTopologyEnable: settings.tieredCache.smartTopologyEnable },
     { smartTopologyEnable: liveTieredCache },
   );
-  const botManagementChanges = diffFlatSettings(
-    {
-      fightMode: settings.botManagement.fightMode,
-      aiBotsProtection: settings.botManagement.aiBotsProtection,
-      crawlerProtection: settings.botManagement.crawlerProtection,
-    },
-    {
-      fightMode: liveBotManagement.fight_mode,
-      aiBotsProtection: liveBotManagement.ai_bots_protection,
-      crawlerProtection: liveBotManagement.crawler_protection ?? null,
-    },
-  );
+  // crawlerProtection: null means "unconfirmed, not managed by this file" (see
+  // config/cloudflare/zone-settings.json's botManagement.note) — only diff it
+  // when the file states an actual desired value, matching cloudflare-zone-apply.mjs
+  // so apply never acts on drift the plan didn't also report.
+  const botManagementDesired = {
+    fightMode: settings.botManagement.fightMode,
+    aiBotsProtection: settings.botManagement.aiBotsProtection,
+  };
+  const botManagementLive = {
+    fightMode: liveBotManagement.fight_mode,
+    aiBotsProtection: liveBotManagement.ai_bots_protection,
+  };
+  if (settings.botManagement.crawlerProtection !== null) {
+    botManagementDesired.crawlerProtection = settings.botManagement.crawlerProtection;
+    botManagementLive.crawlerProtection = liveBotManagement.crawler_protection ?? null;
+  }
+  const botManagementChanges = diffFlatSettings(botManagementDesired, botManagementLive);
 
   const desiredRulesByPhase = mapDesiredManagedRulesToCloudflare(settings.managedRules);
   const ruleReconciliation = reconcileAllManagedRules(desiredRulesByPhase, liveRulesByCategory);

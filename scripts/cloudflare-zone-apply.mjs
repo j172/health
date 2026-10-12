@@ -95,18 +95,23 @@ async function main() {
     { smartTopologyEnable: settings.tieredCache.smartTopologyEnable },
     { smartTopologyEnable: liveTieredCache },
   );
-  const botManagementChanges = diffFlatSettings(
-    {
-      fightMode: settings.botManagement.fightMode,
-      aiBotsProtection: settings.botManagement.aiBotsProtection,
-      crawlerProtection: settings.botManagement.crawlerProtection,
-    },
-    {
-      fightMode: liveBotManagement.fight_mode,
-      aiBotsProtection: liveBotManagement.ai_bots_protection,
-      crawlerProtection: liveBotManagement.crawler_protection ?? null,
-    },
-  );
+  // crawlerProtection: null means "unconfirmed, not managed by this file" (see
+  // config/cloudflare/zone-settings.json's botManagement.note) — only diff/apply
+  // it when the file states an actual desired value, so an unconfirmed null
+  // never overwrites whatever the live zone already has.
+  const botManagementDesired = {
+    fightMode: settings.botManagement.fightMode,
+    aiBotsProtection: settings.botManagement.aiBotsProtection,
+  };
+  const botManagementLive = {
+    fightMode: liveBotManagement.fight_mode,
+    aiBotsProtection: liveBotManagement.ai_bots_protection,
+  };
+  if (settings.botManagement.crawlerProtection !== null) {
+    botManagementDesired.crawlerProtection = settings.botManagement.crawlerProtection;
+    botManagementLive.crawlerProtection = liveBotManagement.crawler_protection ?? null;
+  }
+  const botManagementChanges = diffFlatSettings(botManagementDesired, botManagementLive);
 
   const desiredRulesByPhase = mapDesiredManagedRulesToCloudflare(settings.managedRules);
   const ruleReconciliation = reconcileAllManagedRules(desiredRulesByPhase, liveRulesByCategory);
@@ -153,8 +158,10 @@ async function main() {
       ...liveBotManagement,
       fight_mode: settings.botManagement.fightMode,
       ai_bots_protection: settings.botManagement.aiBotsProtection,
-      crawler_protection: settings.botManagement.crawlerProtection,
     };
+    if (settings.botManagement.crawlerProtection !== null) {
+      merged.crawler_protection = settings.botManagement.crawlerProtection;
+    }
     await client.putBotManagement(merged);
     auditLine(`botManagement: ${botManagementChanges.map((c) => `${c.key} ${c.from}->${c.to}`).join(", ")}`);
   }

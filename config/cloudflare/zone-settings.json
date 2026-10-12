@@ -19,9 +19,9 @@
     "ssl": "strict",
     "always_use_https": "on",
     "automatic_https_rewrites": "on",
-    "min_tls_version": "1.2",
+    "min_tls_version": "1.3",
     "opportunistic_encryption": "on",
-    "tls_1_3": "on",
+    "tls_1_3": "zrt",
     "http3": "on",
     "0rtt": "on",
     "websockets": "on",
@@ -42,7 +42,7 @@
     "fightMode": true,
     "aiBotsProtection": "block",
     "crawlerProtection": null,
-    "note": "fight_mode=true and ai_bots_protection=block are corroborated by memory (ops_cloudflare_bot_protection.md: both turned ON 2026-08-16) and by a 2026-10-12 live test recorded in docs/domains/13-seo-performance-i18n-ai.md (GPTBot/ClaudeBot got 403, PerplexityBot got 200 — consistent with ai_bots_protection=block still blocking the Agent/Training-ish bots under the legacy single-toggle model). Cloudflare's newer Search/Agent/Training three-category model (2026-07-01 changelog) is NOT yet represented here because this repo has not confirmed the exact API field for it — see docs/2.0/spec-issue-438.md §T item 347 for the intended target state (all three categories allowed, paired with caching/rate-limiting mitigations) which is deliberately NOT captured as 'current state' in this baseline file."
+    "note": "fight_mode=true and ai_bots_protection=block are corroborated by memory (ops_cloudflare_bot_protection.md: both turned ON 2026-08-16) and by a 2026-10-12 live test recorded in docs/domains/13-seo-performance-i18n-ai.md (GPTBot/ClaudeBot got 403, PerplexityBot got 200 — consistent with ai_bots_protection=block still blocking the Agent/Training-ish bots under the legacy single-toggle model). Cloudflare's newer Search/Agent/Training three-category model (2026-07-01 changelog) is NOT yet represented here because this repo has not confirmed the exact API field for it — see docs/2.0/spec-issue-438.md §T item 347 for the intended target state (all three categories allowed, paired with caching/rate-limiting mitigations) which is deliberately NOT captured as 'current state' in this baseline file. crawlerProtection=null means this field is genuinely unconfirmed, not a desired value of 'off' — confirmed 2026-10-12 via issue #454's first live plan run that the real zone has it set to 'enabled', so the plan/apply scripts deliberately skip diffing/writing this field while it's null, to avoid silently resetting it. Set it to an actual 'enabled'/'disabled' value here only once someone has confirmed what this field should be."
   },
   "managedRules": {
     "cacheRules": [

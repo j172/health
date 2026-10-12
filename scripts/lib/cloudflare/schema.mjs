@@ -98,7 +98,10 @@ export const zoneSettingsFileSchema = z.object({
     automatic_https_rewrites: onOff,
     min_tls_version: z.enum(["1.0", "1.1", "1.2", "1.3"]),
     opportunistic_encryption: onOff,
-    tls_1_3: onOff,
+    // "zrt" = TLS 1.3 enabled with 0-RTT (zero round trip) early data allowed —
+    // a third state Cloudflare's API supports alongside plain on/off, confirmed
+    // live on this zone during issue #454's first plan run (2026-10-12).
+    tls_1_3: z.enum(["on", "off", "zrt"]),
     http3: onOff,
     "0rtt": onOff,
     websockets: onOff,
