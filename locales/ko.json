@@ -21,7 +21,12 @@
     "family": "가족 및 아동",
     "disasterAlerts": "재난 및 기상 경보",
     "environmentFood": "환경 및 식품 안전",
-    "lifeCulture": "교통·생활·문화"
+    "lifeCulture": "교통·생활·문화",
+    "guides": "생활 상황별 가이드",
+    "nearby": "내 주변",
+    "toolsFilterPlaceholder": "도구 검색...",
+    "toolsFilterLabel": "도구 필터링",
+    "toolsFilterNoResults": "“{query}”와 일치하는 도구가 없습니다"
   },
   "tools": {
     "water": "하루 물 섭취량 계산기",
@@ -200,5 +205,12 @@
     "skipToFooter": "하단 정보 바로가기 (Alt+Z)",
     "statementLink": "웹 접근성 선언 및 단축키 안내",
     "accessibility": "웹 접근성 선언"
+  },
+  "guides": {
+    "caring-for-elders": { "title": "노인 돌봄" },
+    "pregnancy-to-parenting": { "title": "임신부터 육아까지" },
+    "typhoon-earthquake": { "title": "태풍・지진 대비" },
+    "disability-living": { "title": "장애인의 생활" },
+    "travel-health": { "title": "해외 여행과 방역" }
   }
 }

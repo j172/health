@@ -21,7 +21,12 @@
     "family": "婦幼與家庭",
     "disasterAlerts": "防災與示警",
     "environmentFood": "環境與食品安全",
-    "lifeCulture": "交通、生活與文化"
+    "lifeCulture": "交通、生活與文化",
+    "guides": "生活情境",
+    "nearby": "我附近",
+    "toolsFilterPlaceholder": "搜尋工具名稱...",
+    "toolsFilterLabel": "篩選工具",
+    "toolsFilterNoResults": "沒有符合「{query}」的工具"
   },
   "categories": {
     "allNews": "全部新聞",
@@ -113,5 +118,12 @@
     "skipToFooter": "下方資訊區 (Alt+Z)",
     "statementLink": "無障礙宣告與快捷鍵說明",
     "accessibility": "無障礙宣告"
+  },
+  "guides": {
+    "caring-for-elders": { "title": "家有長輩" },
+    "pregnancy-to-parenting": { "title": "懷孕到育兒" },
+    "typhoon-earthquake": { "title": "颱風地震來了" },
+    "disability-living": { "title": "身心障礙者生活" },
+    "travel-health": { "title": "出國與防疫" }
   }
 }
