@@ -5,7 +5,9 @@ import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import { getRelatedTools, getToolCategoryLink } from "@/lib/server/tools/navModel";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { TOOL_MEDICAL_DISCLAIMER } from "@/lib/server/content/toolLlmsPage";
+import { findRelatedNewsForTool } from "@/lib/server/content/relatedNewsForTool";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
+import { displayDate, toTaipei } from "@/lib/format/news";
 
 /**
  * Shared wrapper for every /tools/<slug> page.
@@ -21,7 +23,7 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
  * - Related Tools Cross-linking
  * - Structured FAQ Section
  */
-export default function ToolPageShell({
+export default async function ToolPageShell({
   slug,
   title,
   children,
@@ -45,6 +47,14 @@ export default function ToolPageShell({
   // 4 (or the category itself runs out of other members) — see
   // lib/server/tools/navModel.ts's getRelatedTools for the full rule.
   const relatedTools = getRelatedTools(slug);
+  // Tools → News cross-linking (issue #462): up to 3 recent news articles
+  // whose title matches this tool's `keywords`, via the DB-backed half of
+  // lib/server/content/crossLinks.ts (its candidate pool is read through
+  // the already-`memoizeQuery`-cached listLatestNews, so this doesn't issue
+  // a fresh query on every single tool-page request — see that module's
+  // doc comment). Only computed when a catalog entry exists; an unknown
+  // slug has no keywords to match against.
+  const relatedNews = catalogEntry ? await findRelatedNewsForTool(catalogEntry) : [];
 
   const toolGraph = catalogEntry ? buildToolGraphJsonLd(catalogEntry) : null;
   // Category breadcrumb level (issue #459): resolved from the catalog
@@ -254,6 +264,34 @@ export default function ToolPageShell({
                   </Link>
                 ))}
               </div>
+            </section>
+          ) : null}
+
+          {/* 📰 Related News Recommendation Bar (issue #462: Tools → News
+              cross-linking). No empty section when nothing matches. */}
+          {relatedNews.length > 0 ? (
+            <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-news-heading">
+              <h2 id="related-news-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <span>📰</span>
+                <span>相關新聞報導</span>
+              </h2>
+              <ul className="mt-3 space-y-3">
+                {relatedNews.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={`/news/${item.id}`}
+                      className="group flex flex-col gap-0.5 rounded-xl border border-slate-100 bg-slate-50/60 p-3.5 transition-all hover:border-indigo-200 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-850 dark:hover:border-indigo-900/50 dark:hover:bg-indigo-950/30"
+                    >
+                      <span className="line-clamp-2 text-xs font-semibold text-slate-800 group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
+                        {item.title}
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {item.feed_name} · {toTaipei(displayDate(item), "short")}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </section>
           ) : null}
 

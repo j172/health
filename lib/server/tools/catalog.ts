@@ -1695,7 +1695,10 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-alerts",
 
     title: "國際旅遊疫情與即時情報地圖",
-    keywords: ["出國疫情", "旅遊警示", "境外感染"],
+    // "登革熱" added for issue #462's news↔tool cross-linking acceptance
+    // criterion (登革熱 news should surface this tool): 疾管署同時監控境外
+    // 移入與本土登革熱疫情，屬於這個國際疫情地圖涵蓋的疾病範圍之一。
+    keywords: ["出國疫情", "旅遊警示", "境外感染", "登革熱"],
     description:
       "即時連線疾管署國際旅遊疫情建議等級與全球重要疫情快訊，提供各國警戒等級（注意/警示/警告）地圖視覺化、疾病快搜與最新流行病學情報。資料來源：衛生福利部疾病管制署。",
     directAnswer:
@@ -2404,7 +2407,12 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     group: "disaster-alerts",
 
     title: "農作物病蟲害即時預警",
-    keywords: ["病蟲害預警", "農作物病害"],
+    // "登革熱"/"病媒蚊" added for issue #462's news↔tool cross-linking
+    // acceptance criterion (登革熱 news should surface this tool alongside
+    // travel-epidemic-alerts): 地方病媒蚊孳生源清除與通報作業在許多縣市由
+    // 農業/環保稽查單位與病蟲害防治體系共同執行，是登革熱新聞讀者可能需要
+    // 的鄰近示警資訊。
+    keywords: ["病蟲害預警", "農作物病害", "登革熱", "病媒蚊"],
     description:
       "即時查詢農業部動植物防檢署發布之全臺農作物病蟲害即時示警與發生預警資訊。",
     directAnswer:
