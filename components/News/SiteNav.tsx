@@ -16,6 +16,7 @@ import { buildNavModel, GUIDES, type NavModel } from "@/lib/server/tools/navMode
 import ThemeToggler from "@/components/Header/ThemeToggler";
 import LanguageToggler from "@/components/Header/LanguageToggler";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { cfImageUrl } from "@/lib/format/cfImageUrl";
 
 const SearchModal = dynamic(() => import("@/components/Search/SearchModal"), {
   ssr: false,
@@ -546,7 +547,14 @@ export default function SiteNav() {
                 here, so no change was needed for that). */}
             <Link href="/" className="flex items-center gap-2.5">
               <Image
-                src="/images/logo/j172tw-health-logo.png"
+                // issue #482: served via Cloudflare's edge Image
+                // Transformations (resized + format=auto) instead of the
+                // 256x256 PNG original; onerror=redirect falls back to the
+                // original if the zone-level feature isn't enabled yet.
+                src={cfImageUrl("/images/logo/j172tw-health-logo.png", {
+                  width: 72,
+                  format: "auto",
+                })}
                 alt=""
                 width={36}
                 height={36}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { buildFooterModel } from "@/lib/server/tools/navModel";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import { cfImageUrl } from "@/lib/format/cfImageUrl";
 
 const FooterColumn = ({
   label,
@@ -195,7 +196,14 @@ export default function SiteFooter() {
           <div className="max-w-sm">
             <Link href="/" className="flex items-center gap-2.5">
               <Image
-                src="/images/logo/j172tw-health-logo.png"
+                // issue #482: served via Cloudflare's edge Image
+                // Transformations (resized + format=auto) instead of the
+                // 256x256 PNG original; onerror=redirect falls back to the
+                // original if the zone-level feature isn't enabled yet.
+                src={cfImageUrl("/images/logo/j172tw-health-logo.png", {
+                  width: 72,
+                  format: "auto",
+                })}
                 alt=""
                 width={36}
                 height={36}
