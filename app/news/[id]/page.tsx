@@ -7,6 +7,7 @@ import {
   listRelatedNews,
   listNewsForSitemap,
 } from "@/lib/server/news/queries";
+import { findRelatedToolsForNews } from "@/lib/server/content/crossLinks";
 import {
   buildArticleGraphJsonLd,
   buildArticleMetadata,
@@ -127,6 +128,17 @@ export default async function NewsDetailPage({
     news.detail_html ||
     news.description_html ||
     "<p>此則新聞目前沒有可顯示的完整內容。</p>";
+  // News → Tools cross-linking (issue #462): matches this article's
+  // title/tags/publisher against every TOOL_CATALOG tool's `keywords`, pure
+  // in-memory (see lib/server/content/crossLinks.ts) — no DB, no caching
+  // needed. Renders 0-3 tool cards near the bottom of the article; 0 means
+  // no section at all, never an empty one.
+  const relatedTools = findRelatedToolsForNews({
+    title: news.title,
+    keywords: news.keywords,
+    feed_name: news.feed_name,
+    dept_name: news.dept_name,
+  });
   const articleGraph = buildArticleGraphJsonLd(news);
   const authorLabel = resolveAuthorLabel(news);
   const badgeStyle = getSourceBadgeStyle(news.source_name);
@@ -382,6 +394,34 @@ export default async function NewsDetailPage({
               </Link>
             </div>
           </article>
+
+          {/* Related Tools Section (issue #462: News → Tools cross-linking) */}
+          {relatedTools.length > 0 && (
+            <section
+              className="mt-16 border-t border-slate-200 pt-10 dark:border-slate-800"
+              aria-label="相關工具"
+            >
+              <h2 className="mb-8 text-xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
+                相關工具推薦
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedTools.map((tool) => (
+                  <Link
+                    key={tool.slug}
+                    href={`/tools/${tool.slug}`}
+                    className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-200 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-900/50 dark:hover:bg-indigo-950/30"
+                  >
+                    <span className="font-semibold text-sm text-slate-800 group-hover:text-indigo-600 dark:text-slate-200 dark:group-hover:text-indigo-400">
+                      {tool.navLabel ?? tool.title}
+                    </span>
+                    <span className="mt-1.5 line-clamp-2 text-xs leading-snug text-slate-600 dark:text-slate-400">
+                      {tool.description}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Related Articles Section */}
           {relatedItems.length > 0 && (
