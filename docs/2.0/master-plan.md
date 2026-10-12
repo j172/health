@@ -40,7 +40,7 @@
 | 23 | Next 新功能 | Cache Components、React Compiler 皆延後 |
 | 24 | 外語／MCP／執行 | 4 語保留只翻名稱；MCP 另開計畫；分期拆 issue 逐期上線；外連 UTM 覆蓋 100%（`utm_source=health.j172.tw`） |
 | 25 | TDX 資料整合（同日追加） | 納入 T1 無障礙公車真實資料、T2 有聲號誌、T3 孕婦親子／身障／復康巴士車位、T4 全台軌道通阻、T6 YouBike 15 縣市；不新增工具頁；T6 排 P0、T1–T4 排 P2；其餘 TDX 項目 2.0 之後。見 [tdx-basic-integration-research.md](tdx-basic-integration-research.md) |
-| 26 | 觀光客多語系（同日追加，**取代 #24 對觀光客頁面的部分**） | 約 21 個觀光客頁面：介面＋內容全翻、政府資料保留原文；網址 `/en/`、`/ja/`、`/ko/` 前綴、伺服器端輸出；`?lang=` 301；不依瀏覽器語言自動跳轉；排入 P6 |
+| 26 | 多語系支援（同日追加，**取代 #24 對指定頁面的部分**） | 約 21 個指定頁面：介面＋內容全翻、政府資料保留原文；網址 `/en/`、`/ja/`、`/ko/` 前綴、伺服器端輸出；`?lang=` 301；不依瀏覽器語言自動跳轉；排入 P6 |
 | 27 | 每頁 llms.txt | 每個公開頁面（含外語版、官方新聞）都有 `/{path}/llms.txt` 與 `/{path}.md` |
 | 28 | AI 爬蟲 | Cloudflare Search／Agent／Training 三類全部允許（目前 GPTBot、ClaudeBot 被 403），排入 P0 |
 | 29 | Cloudflare 免費方案 | 設定即程式碼、Crawler Hints 取代自寫 IndexNow、Web Analytics、靜態圖片轉換（新聞圖不用） |

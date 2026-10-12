@@ -1,8 +1,8 @@
 # 2.0 PRD（Issue #438 正文副本）
 
-> 正本：[GitHub Issue #438](https://github.com/j172/health/issues/438)（標籤 `ready-for-agent`）。本檔為 2026-10-12 的副本（含 TDX、觀光客多語系、SEO／AEO／GEO、每頁 llms.txt、Cloudflare 擴充），若兩者不同以 issue 為準。
+> 正本：[GitHub Issue #438](https://github.com/j172/health/issues/438)（標籤 `ready-for-agent`）。本檔為 2026-10-12 的副本（含 TDX、多語系支援、SEO／AEO／GEO、每頁 llms.txt、Cloudflare 擴充），若兩者不同以 issue 為準。
 
-> 來源：2026-10-12 規劃＋/grill 共 24 項決策，以及同日追加的 TDX 資料整合（§P）與觀光客多語系、SEO／AEO／GEO／Schema.org、每頁 llms.txt、Cloudflare 免費方案整合（§Q–§T）。完整背景與研究見 repo 內 2.0 master plan 與 TDX 研究文件。本 spec 為 PRD，實作時再以 `/to-tickets` 拆成分期 issue。
+> 來源：2026-10-12 規劃＋/grill 共 24 項決策，以及同日追加的 TDX 資料整合（§P）與多語系支援、SEO／AEO／GEO／Schema.org、每頁 llms.txt、Cloudflare 免費方案整合（§Q–§T）。完整背景與研究見 repo 內 2.0 master plan 與 TDX 研究文件。本 spec 為 PRD，實作時再以 `/to-tickets` 拆成分期 issue。
 > 盤點基準：`origin/main` @ `7fe098b`（84 個工具）。
 
 ## Problem Statement
@@ -20,7 +20,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 9. **外連追蹤不完整**：UTM 函式已存在，但只有 6 個檔案使用；20 個寫死外連與 catalog 內 139 個科學依據外連都沒有 UTM。
 10. **i18n 缺漏**：en／ja／ko 只翻譯了 60／84 個工具名稱，其餘在外語介面顯示中文。
 11. **無障礙與交通資料是假的或不完整**：無障礙交通頁的「低地板公車比率」是寫死的種子值；捷運公告只有臺北捷運；YouBike 只接了 TDX 15 個縣市中的 5 個；站上沒有任何有聲號誌或身障／孕婦親子車位資料——而這些 TDX 基礎服務都有提供。
-12. **外語版本對搜尋引擎不存在**：`hreflang` 宣告 `?lang=en`／`ja`／`ko` 版本，但語言切換完全在瀏覽器端進行，伺服器永遠輸出中文（實測 Googlebot 抓 `/tools/aed?lang=en` 得到 `<html lang="zh-Hant-TW">` 與中文標題）。外語內容也只翻到名稱，觀光客看不懂說明與 FAQ。
+12. **外語版本對搜尋引擎不存在**：`hreflang` 宣告 `?lang=en`／`ja`／`ko` 版本，但語言切換完全在瀏覽器端進行，伺服器永遠輸出中文（實測 Googlebot 抓 `/tools/aed?lang=en` 得到 `<html lang="zh-Hant-TW">` 與中文標題）。外語內容也只翻到名稱，使用者看不懂說明與 FAQ。
 13. **AI 爬蟲被擋**：`robots.txt` 明確允許 GPTBot、ClaudeBot，但 Cloudflare 的 AI 機器人防護實際回 403（PerplexityBot 卻回 200）；站上的 llms.txt 與 GEO 投資等於無效。llms.txt 也只有全站一份，沒有每頁的 Markdown 版本。
 14. **Cloudflare 設定靠手動點選**：除了 Smart Tiered Cache 有一支手動 workflow，其餘規則都只存在儀表板，無版本紀錄、無法回溯；站上另有自寫 IndexNow（曾因全域 `fetch` 造成 502），而 Cloudflare 免費的 Crawler Hints 可自動完成同一件事。
 
@@ -40,7 +40,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - **統一地圖底層**，預設國土測繪中心 EMAP，OSM 為備援。
 - **減少 6 個套件相依**、統一定位 hook、升級 Node 24 LTS、清除空目錄。
 - **全站外連 100% 帶 UTM**。
-- **觀光客頁面真正多語系**：約 21 個觀光客會用的頁面提供 `/en/`、`/ja/`、`/ko/` 網址，伺服器直接輸出該語言，介面與內容全翻、政府資料保留原文。
+- **指定頁面真正多語系**：約 21 個高流量頁面提供 `/en/`、`/ja/`、`/ko/` 網址，伺服器直接輸出該語言，介面與內容全翻、政府資料保留原文。
 - **SEO／AEO／GEO／Schema.org 全面到位**：每種頁面類型都有完整結構化資料、一句話答案與 FAQ；AI 爬蟲三類全部放行。
 - **每一頁都有自己的 `llms.txt` 與 `.md` 全文**（含外語版）。
 - **Cloudflare 免費方案設定即程式碼**：快取、標頭、WAF、AI 爬蟲政策、Crawler Hints、Web Analytics、靜態圖轉換全部由 repo 管理。
@@ -164,13 +164,13 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 89. 身為臺北以外 10 個縣市的 YouBike 使用者，我想查到附近站點的即時車位，以便這個工具在我的城市也能用。
 90. 身為站長，我想 TDX 的座標、縣市代碼都經過同一套轉換與對照，以便不同 TDX 資料源之間不會出現格式漂移。
 
-### 觀光客多語系（2026-10-12 追加）
-91. 身為在臺灣受傷的日本觀光客，我想用日文搜尋「台北 AED」就找到日文版 AED 地圖頁，以便在緊急時看得懂。
-92. 身為韓國觀光客，我想打開韓文版急診看板，看到韓文的說明、狀態與 FAQ，以便判斷該去哪家醫院。
-93. 身為英語觀光客，我想醫院名稱與地址保留中文原文並附英文類別標籤與「複製地址」「Google 地圖導航」按鈕，以便拿給計程車司機看或直接導航。
-94. 身為觀光客，我想在外語頁切換語言時留在同一頁的對應語言版本，以便不必重新找頁面。
-95. 身為觀光客，我想在中文頁看到「This page is available in English」的提示而不是被自動跳轉，以便自己決定語言。
-96. 身為觀光客，我想外語版「我附近」與「颱風地震來了」頁同樣完整翻譯，以便在天災時自救。
+### 多語系支援（2026-10-12 追加）
+91. 身為使用者，我想用日文搜尋「台北 AED」就找到日文版 AED 地圖頁，以便在緊急時看得懂。
+92. 身為使用者，我想打開韓文版急診看板，看到韓文的說明、狀態與 FAQ，以便判斷該去哪家醫院。
+93. 身為使用者，我想醫院名稱與地址保留中文原文並附英文類別標籤與「複製地址」「Google 地圖導航」按鈕，以便拿給計程車司機看或直接導航。
+94. 身為使用者，我想在外語頁切換語言時留在同一頁的對應語言版本，以便不必重新找頁面。
+95. 身為使用者，我想在中文頁看到「This page is available in English」的提示而不是被自動跳轉，以便自己決定語言。
+96. 身為使用者，我想外語版「我附近」與「颱風地震來了」頁同樣完整翻譯，以便在天災時自救。
 97. 身為站長，我想舊的 `?lang=en` 網址 301 到 `/en/` 對應頁，以便既有外連與書籤不失效、排名權重轉移。
 
 ### SEO／AEO／GEO／Schema.org（2026-10-12 追加）
@@ -285,7 +285,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - 涵蓋：20 個寫死外連（地圖 attribution 9、防災物資 6、Footer 社群 3、其他 2）、catalog 139 個科學依據連結、新 hub／分類頁外連。
 
 ### N. i18n
-- 維持 zh-TW／en／ja／ko 四語。**非觀光客頁面**只翻譯介面字串與名稱（分類、工具、hub、按鈕），補齊 24 個缺漏工具名稱翻譯與所有新字串，內文維持中文。**觀光客頁面**改為完整多語系，見 §Q（2026-10-12 追加決策取代原本「內文一律中文」）。
+- 維持 zh-TW／en／ja／ko 四語。**非指定頁面**只翻譯介面字串與名稱（分類、工具、hub、按鈕），補齊 24 個缺漏工具名稱翻譯與所有新字串，內文維持中文。**指定頁面**改為完整多語系，見 §Q（2026-10-12 追加決策取代原本「內文一律中文」）。
 
 ### O. 分期與交付
 - P0 速贏：移除 swiper／sharp／空目錄；M1、M2；Ctrl+K 搜尋工具；修正壞相關連結＋補 19 個孤兒；補翻譯；README；OSM 去 `{s}`；UTM 覆蓋率；**T6 YouBike 15 縣市**；**§T Cloudflare 設定即程式碼＋AI 爬蟲放行＋Crawler Hints（移除自寫 IndexNow）＋Web Analytics**（AI 爬蟲放行優先，越早上線越早被 AI 收錄）。
@@ -294,7 +294,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - P3 版面：首頁＋snapshot API、工具頁重排、手機底部導覽、身體數據檔案。
 - P4 技術（可與 P1–P3 平行）：BaseMap＋EMAP、定位 hook、套件替換、Node 24、**§T 靜態圖片轉換**。
 - P5 合併：M3、M4。
-- **P6 觀光客多語系（§Q）**：P1–P3 完成後進行（hub、我附近、新工具頁版面先定型，避免翻譯兩次）；含外語路由、語系檔、hreflang、sitemap alternates、`?lang=` 301、外語版 llms.txt／.md。
+- **P6 多語系支援（§Q）**：P1–P3 完成後進行（hub、我附近、新工具頁版面先定型，避免翻譯兩次）；含外語路由、語系檔、hreflang、sitemap alternates、`?lang=` 301、外語版 llms.txt／.md。
 - 每個 issue 由 worktree agent 做到開 PR 為止；orchestrator 逐一閱讀 diff 後 merge，在 :15–:30 或 :45–:00 部署，部署後實打 live API 與受影響頁面驗證，並與 Lighthouse 基準比對。
 
 ### P. TDX 交通資料整合（2026-10-12 追加）
@@ -307,13 +307,13 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - **T6 YouBike 15 縣市**：`lib/server/youbike/tdxClient.ts` 的 `TDX_CITIES` 由 5 個擴充為 TDX `/v2/Bike/*/City/{City}` 列舉的全部 15 個。
 - 不納入（2.0 之後另開）：T5 醫院接駁公車、T7 道路災害事件、T8 偏鄉 DRTS、T9 充電站、T10 國定假日、T11 行政區界線。
 
-### Q. 觀光客多語系（2026-10-12 追加）
+### Q. 多語系支援（2026-10-12 追加）
 - **範圍（約 21 頁，清單集中定義於 catalog，供路由、sitemap、llms.txt、測試共用）**：緊急電話、急診看板、AED、醫療院所、藥局、公廁、YouBike、全台軌道通阻（metro-alerts）、無障礙交通、氣象警報、地震、AQI、UV、防災避難地圖、涼適點、藝文活動、文化資產、觀光工廠、「我附近」、`/guides/typhoon-earthquake`、首頁。其餘頁面不提供外語網址。
 - **網址**：路徑前綴 `/en/`、`/ja/`、`/ko/`；中文維持現有網址、不加前綴。伺服器端直接輸出該語言 HTML（`<html lang>`、`<title>`、meta、JSON-LD、內文皆為該語言），可被 ISR 與 Cloudflare 快取；同一套頁面元件服務四種語言，不得複製頁面檔案。
 - **翻譯深度**：介面＋頁面內容全翻（標題、description、directAnswer、FAQ、使用步驟、提示與錯誤訊息、hub 步驟說明）。**政府資料保留中文原文**（機構名稱、地址、公告內文），旁加英文類別標籤（例如 `AED`、`Hospital`）、「複製地址」與 Google 地圖導航按鈕。不在請求當下即時翻譯。
-- **翻譯產製**：以 AI 產生初稿、人工抽查醫療相關詞彙後存成靜態語系檔（版本控管）；新增或修改觀光客頁面的中文內容時，CI 檢查三語是否同步齊全。
+- **翻譯產製**：以 AI 產生初稿、人工抽查醫療相關詞彙後存成靜態語系檔（版本控管）；新增或修改指定頁面的中文內容時，CI 檢查三語是否同步齊全。
 - **SEO 標記**：每個語言版本 canonical 指向自己；`hreflang` 互相指涉 `zh-Hant-TW`、`en`、`ja`、`ko`，`x-default` 指向中文版；sitemap 每個網址附 alternates；`og:locale` 與 `og:locale:alternate`。
-- **語言切換**：觀光客頁面切換時導向對應語言網址；非觀光客頁面切換只改介面字串，並提示「此頁僅提供中文」。**不依瀏覽器語言自動跳轉**（避免爬蟲與使用者被強制導向），改顯示可關閉的語言建議橫幅。
+- **語言切換**：指定頁面切換時導向對應語言網址；其餘頁面切換只改介面字串，並提示「此頁僅提供中文」。**不依瀏覽器語言自動跳轉**（避免爬蟲與使用者被強制導向），改顯示可關閉的語言建議橫幅。
 - **舊網址**：`?lang=en|ja|ko` 若該頁有外語版則 301 到 `/{locale}/…`，否則 301 到去掉參數的中文頁；移除目前指向 `?lang=` 的錯誤 hreflang。
 
 ### R. SEO／AEO／GEO／Schema.org（2026-10-12 追加）
@@ -372,7 +372,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
   - 先例：`no-server-fetch` 測試。
 - **接縫 ③ 聚合函式**：snapshot 與 nearby 的組裝函式以注入假資料來源測試——單一來源拋錯或逾時時，其餘區塊仍正確回傳、錯誤區塊標記為錯誤狀態；nearby 依距離排序、每類截取 3 筆、類型上限 8。先例：`useSidebarWidgetData`、`useNearestStation` 測試。
 - **TDX 資料（接縫 ②＋純函式）**：原始碼掃描確保所有 TDX 座標寫入都經 `parseTdxCoordinate()`（先例：`lib/server/tdx/seniors.test.mjs`）；以假 TDX 回應測試純函式——低地板比率計算（含 0 台車的縣市）、車位只保留 7／9／10／13 四種 `SpaceType`、三種軌道通阻格式正規化為同一結構、縣市代碼對照涵蓋 basic 與 seniors 兩套。
-- **多語系（接縫 ①）**：觀光客頁面清單中每頁都有 en／ja／ko 完整內容（標題、description、directAnswer、FAQ、步驟），不得有空字串或退回中文；hreflang 集合互相指涉且含 `x-default`；每個 `?lang=` 舊網址對應到正確的 301 目標；非觀光客頁面不得出現外語網址。
+- **多語系（接縫 ①）**：指定頁面清單中每頁都有 en／ja／ko 完整內容（標題、description、directAnswer、FAQ、步驟），不得有空字串或退回中文；hreflang 集合互相指涉且含 `x-default`；每個 `?lang=` 舊網址對應到正確的 301 目標；其餘頁面不得出現外語網址。
 - **llms.txt／.md 與 JSON-LD（純函式）**：每個工具、分類頁、hub 的 llms.txt 符合 llmstxt.org 文法（H1、blockquote、H2 下單行連結）且連結皆為完整網址；`.md` 不含 HTML 標籤；各頁面類型 JSON-LD 具備該型別必要屬性；外語版 JSON-LD 帶 `inLanguage` 與翻譯關聯。
 - **Cloudflare 設定**：設定檔以 schema 驗證；CI 只跑 plan、不跑 apply；原始碼掃描確保圖片轉換網址只出現在允許的靜態圖路徑、站上不再有自寫 IndexNow 呼叫。
 - **其他單元測試**：照顧圈半徑內計數；身體數據檔案（未勾選不寫入、清除後為空、醫療數值永不寫入、localStorage 拋錯時不崩潰）；Big5 解碼前後輸出一致。
@@ -385,7 +385,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - 唯讀 MCP 端點：另開獨立計畫。
 - 移除 `react-leaflet`、遷移 Leaflet 2.0：等 Leaflet 2.0 穩定版。
 - 路徑規劃／真實車程計算。
-- **非觀光客頁面**的內文外語翻譯；政府資料列（機構名稱、地址、公告）的翻譯；依瀏覽器語言自動跳轉；ja／ko 語系存廢。
+- **其餘頁面**的內文外語翻譯；政府資料列（機構名稱、地址、公告）的翻譯；依瀏覽器語言自動跳轉；ja／ko 語系存廢。
 - Cloudflare 付費功能（Markdown for Agents、Argo、進階 Bot Management、Image 儲存與超量轉換）；新聞圖片的 Cloudflare 轉換。
 - 新增 catalog 工具頁（除合併外）；新增 §P（T1–T4、T6）以外的資料源。TDX 的 T5 醫院接駁公車、T7 道路災害事件、T8 偏鄉 DRTS、T9 充電站、T10 國定假日、T11 行政區界線留待 2.0 之後。
 - 人工維護的「熱門工具」清單。
