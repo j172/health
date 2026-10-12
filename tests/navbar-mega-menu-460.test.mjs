@@ -207,15 +207,17 @@ test("mobile drawer reuses navModel/guideLinks instead of a second hand-rolled c
 });
 
 // ---------------------------------------------------------------------------
-// SiteFooter.tsx must be untouched by this ticket (#461 handles the footer)
+// SiteFooter.tsx must not import from SiteNav.tsx (independent components)
 // ---------------------------------------------------------------------------
 
-test("SiteFooter.tsx does not import from navModel.ts or SiteNav.tsx (independent components, left alone per issue #460)", () => {
+test("SiteFooter.tsx does not import from SiteNav.tsx (independent components, each wired to navModel.ts on its own)", () => {
+  // Issue #460 left SiteFooter.tsx untouched; issue #461 (merged separately,
+  // after this ticket's branch point) legitimately wired SiteFooter.tsx to
+  // buildFooterModel() from the same lib/server/tools/navModel.ts this
+  // ticket's ToolsMegaMenu/NavDropdown consume via buildNavModel()/GUIDES —
+  // both components sharing that one data source is correct and expected,
+  // so this test only guards that neither component imports the other.
   const footerContent = read("components", "News", "SiteFooter.tsx");
-  assert.ok(
-    !/navModel/.test(footerContent),
-    "SiteFooter.tsx should not reference navModel.ts — it has its own independent inline model, untouched by this ticket",
-  );
   assert.ok(
     !/from\s*"@\/components\/News\/SiteNav"/.test(footerContent),
     "SiteFooter.tsx should not import SiteNav.tsx",
