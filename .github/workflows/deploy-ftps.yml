@@ -745,18 +745,54 @@ jobs:
       - name: Verify public news pages and JavaScript chunks
         continue-on-error: true
         timeout-minutes: 5
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
 
+          # 2026-10-13: switched from curling https://health.j172.tw (through
+          # Cloudflare) to the app's own loopback over SSH, same pattern the
+          # "Backfill missing news card images" step above already uses and
+          # for the same underlying reason documented right below this step
+          # (issue #156): Cloudflare treats this runner's traffic as bot-like
+          # and increasingly intercepts it zone-wide, not just on /api/admin/*
+          # — #455's first-ever live WAF/rate-limit rollout made that worse by
+          # actually enabling rules (e.g. block-high-threat) that had never
+          # really been enforced before. This step's job is to verify the
+          # *origin* renders pages/chunks/images correctly, which loopback
+          # does properly; it is no longer able to also catch a Cloudflare-side
+          # outage, which is a separate concern from what this step checks.
           TMP_DIR="$(mktemp -d)"
-          trap 'rm -rf "$TMP_DIR"' EXIT
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          trap 'rm -f "$KEY_FILE"; rm -rf "$TMP_DIR"' EXIT
+
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          # Fetches $1 (a path) from the app's own loopback and writes the raw
+          # HTTP response (status line + headers + blank line + body) to $2.
+          fetch_loopback() {
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -sS --max-time 30 -D - -o - 'http://127.0.0.1:3000$1'" \
+              > "$2"
+          }
+
+          # Splits a raw HTTP response file ($1) into a headers file ($2) and
+          # a body file ($3), at the first blank line.
+          split_response() {
+            local blank_line
+            blank_line="$(grep -n -m1 -E '^\r?$' "$1" | cut -d: -f1)"
+            head -n "$((blank_line - 1))" "$1" > "$2"
+            tail -n "+$((blank_line + 1))" "$1" > "$3"
+          }
 
           for PAGE in news news/60; do
-            curl --fail --show-error --silent --location --insecure \
-              --retry 3 --retry-delay 2 --retry-all-errors \
-              --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              "https://health.j172.tw/$PAGE?verify=$(date +%s%N)" \
-              --output "$TMP_DIR/${PAGE//\//-}.html"
+            fetch_loopback "/$PAGE?verify=$(date +%s%N)" "$TMP_DIR/raw-${PAGE//\//-}"
+            split_response "$TMP_DIR/raw-${PAGE//\//-}" "$TMP_DIR/headers-${PAGE//\//-}.txt" "$TMP_DIR/${PAGE//\//-}.html"
+            grep -Eq '^HTTP/[0-9.]+ 200' "$TMP_DIR/headers-${PAGE//\//-}.txt"
           done
 
           grep -hoE 'src="/_next/static/chunks/[^"?]+\.js[^\"]*"' "$TMP_DIR"/*.html \
@@ -766,12 +802,8 @@ jobs:
           test -s "$TMP_DIR/chunks.txt"
 
           while IFS= read -r CHUNK; do
-            curl --fail --show-error --silent --location --insecure \
-              --retry 3 --retry-delay 2 --retry-all-errors \
-              --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              --dump-header "$TMP_DIR/headers.txt" \
-              "https://health.j172.tw$CHUNK" \
-              --output "$TMP_DIR/chunk.js"
+            fetch_loopback "$CHUNK" "$TMP_DIR/raw-chunk"
+            split_response "$TMP_DIR/raw-chunk" "$TMP_DIR/headers.txt" "$TMP_DIR/chunk.js"
 
             grep -Eiq '^content-type: (application|text)/(javascript|x-javascript)' "$TMP_DIR/headers.txt"
             test "$(head -c 1 "$TMP_DIR/chunk.js")" != '<'
@@ -788,7 +820,7 @@ jobs:
           # /_next/image path; matching the whole /images/news/ prefix
           # instead is robust to whatever subfolder a future source adds.
           # HTML-entity-decode the optimized form's `&amp;` back to `&` so
-          # the follow-up curl's query string survives intact.
+          # the follow-up fetch's query string survives intact.
           grep -hoE 'src="(/images/news/(pixabay|pexels|unsplash|flickr)/[^"?]+|/_next/image\?url=%2Fimages%2Fnews%2F[^"]+)"' "$TMP_DIR"/*.html \
             | sed -E 's/^src="([^"]+)"$/\1/; s/&amp;/\&/g' \
             | sort -u > "$TMP_DIR/card-images.txt" || true
@@ -797,12 +829,8 @@ jobs:
 
           while IFS= read -r IMAGE; do
             echo "Verifying image: $IMAGE"
-            curl --fail --show-error --silent --location --insecure \
-              --retry 3 --retry-delay 2 --retry-all-errors \
-              --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-              --dump-header "$TMP_DIR/image-headers.txt" \
-              "https://health.j172.tw$IMAGE" \
-              --output "$TMP_DIR/card-image"
+            fetch_loopback "$IMAGE" "$TMP_DIR/raw-image"
+            split_response "$TMP_DIR/raw-image" "$TMP_DIR/image-headers.txt" "$TMP_DIR/card-image"
             grep -Eiq '^content-type: image/(jpeg|png|webp)' "$TMP_DIR/image-headers.txt"
             test -s "$TMP_DIR/card-image"
           done < "$TMP_DIR/card-images.txt"
