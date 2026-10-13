@@ -742,9 +742,22 @@ jobs:
           echo "Card image backfill exceeded 80 batches; run the workflow again to continue safely."
           exit 1
 
-      - name: Verify public news pages and JavaScript chunks
-        continue-on-error: true
-        timeout-minutes: 5
+      # 2026-10-13: every step from here on, including this one, POSTs/GETs
+      # an /api/admin/* or public page on https://health.j172.tw. #455's
+      # first-ever full live rollout of the Cloudflare WAF/bot ruleset made
+      # Cloudflare start challenge-paging ("Just a moment...") this runner's
+      # traffic — the same failure mode issue #156 and six-monthly-sync.yml
+      # already hit and fixed. Reusing that exact fix (scripts/lib/ssh-bridge.mjs,
+      # a local HTTP server on 127.0.0.1:18080 that forwards each request as
+      # a remote curl against the production host's own 127.0.0.1:3000 over
+      # SSH) instead of inventing a new one, and instead of hand-rolling a
+      # second SSH mechanism just for this step (an earlier version of this
+      # fix did that — a bespoke per-request `ssh ... curl -D - -o -` call —
+      # and it failed silently on the real host for reasons this session
+      # couldn't pin down from the CI log alone; the bridge is the one
+      # already proven in production, so this step uses it like every step
+      # below it does).
+      - name: Start SSH loopback bridge
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT }}
@@ -752,47 +765,40 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
           set -euo pipefail
+          KEY_FILE="$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
 
-          # 2026-10-13: switched from curling https://health.j172.tw (through
-          # Cloudflare) to the app's own loopback over SSH, same pattern the
-          # "Backfill missing news card images" step above already uses and
-          # for the same underlying reason documented right below this step
-          # (issue #156): Cloudflare treats this runner's traffic as bot-like
-          # and increasingly intercepts it zone-wide, not just on /api/admin/*
-          # — #455's first-ever live WAF/rate-limit rollout made that worse by
-          # actually enabling rules (e.g. block-high-threat) that had never
-          # really been enforced before. This step's job is to verify the
-          # *origin* renders pages/chunks/images correctly, which loopback
-          # does properly; it is no longer able to also catch a Cloudflare-side
-          # outage, which is a separate concern from what this step checks.
+          SSH_KEY_FILE="$KEY_FILE" \
+          SSH_HOST="$SSH_HOST" \
+          SSH_PORT="$SSH_PORT" \
+          SSH_USER="$SSH_USER" \
+          PORT=18080 \
+          node scripts/lib/ssh-bridge.mjs &
+          echo $! > "$RUNNER_TEMP/bridge.pid"
+
+          echo "Waiting for ssh-bridge to listen on 127.0.0.1:18080..."
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/healthz >/dev/null 2>&1; then break; fi
+            sleep 0.2
+          done
+          curl -fsS http://127.0.0.1:18080/healthz
+          echo "SSH loopback bridge ready on 127.0.0.1:18080."
+
+      - name: Verify public news pages and JavaScript chunks
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+
           TMP_DIR="$(mktemp -d)"
-          source scripts/lib/ssh-key-stage.sh
-          stage_ssh_key
-          trap 'rm -f "$KEY_FILE"; rm -rf "$TMP_DIR"' EXIT
-
-          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
-
-          # Fetches $1 (a path) from the app's own loopback and writes the raw
-          # HTTP response (status line + headers + blank line + body) to $2.
-          fetch_loopback() {
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -sS --max-time 30 -D - -o - 'http://127.0.0.1:3000$1'" \
-              > "$2"
-          }
-
-          # Splits a raw HTTP response file ($1) into a headers file ($2) and
-          # a body file ($3), at the first blank line.
-          split_response() {
-            local blank_line
-            blank_line="$(grep -n -m1 -E '^\r?$' "$1" | cut -d: -f1)"
-            head -n "$((blank_line - 1))" "$1" > "$2"
-            tail -n "+$((blank_line + 1))" "$1" > "$3"
-          }
+          trap 'rm -rf "$TMP_DIR"' EXIT
 
           for PAGE in news news/60; do
-            fetch_loopback "/$PAGE?verify=$(date +%s%N)" "$TMP_DIR/raw-${PAGE//\//-}"
-            split_response "$TMP_DIR/raw-${PAGE//\//-}" "$TMP_DIR/headers-${PAGE//\//-}.txt" "$TMP_DIR/${PAGE//\//-}.html"
-            grep -Eq '^HTTP/[0-9.]+ 200' "$TMP_DIR/headers-${PAGE//\//-}.txt"
+            curl --fail --show-error --silent --location \
+              --retry 3 --retry-delay 2 --retry-all-errors \
+              "http://127.0.0.1:18080/$PAGE?verify=$(date +%s%N)" \
+              --output "$TMP_DIR/${PAGE//\//-}.html"
           done
 
           grep -hoE 'src="/_next/static/chunks/[^"?]+\.js[^\"]*"' "$TMP_DIR"/*.html \
@@ -802,8 +808,11 @@ jobs:
           test -s "$TMP_DIR/chunks.txt"
 
           while IFS= read -r CHUNK; do
-            fetch_loopback "$CHUNK" "$TMP_DIR/raw-chunk"
-            split_response "$TMP_DIR/raw-chunk" "$TMP_DIR/headers.txt" "$TMP_DIR/chunk.js"
+            curl --fail --show-error --silent --location \
+              --retry 3 --retry-delay 2 --retry-all-errors \
+              --dump-header "$TMP_DIR/headers.txt" \
+              "http://127.0.0.1:18080$CHUNK" \
+              --output "$TMP_DIR/chunk.js"
 
             grep -Eiq '^content-type: (application|text)/(javascript|x-javascript)' "$TMP_DIR/headers.txt"
             test "$(head -c 1 "$TMP_DIR/chunk.js")" != '<'
@@ -829,8 +838,11 @@ jobs:
 
           while IFS= read -r IMAGE; do
             echo "Verifying image: $IMAGE"
-            fetch_loopback "$IMAGE" "$TMP_DIR/raw-image"
-            split_response "$TMP_DIR/raw-image" "$TMP_DIR/image-headers.txt" "$TMP_DIR/card-image"
+            curl --fail --show-error --silent --location \
+              --retry 3 --retry-delay 2 --retry-all-errors \
+              --dump-header "$TMP_DIR/image-headers.txt" \
+              "http://127.0.0.1:18080$IMAGE" \
+              --output "$TMP_DIR/card-image"
             grep -Eiq '^content-type: image/(jpeg|png|webp)' "$TMP_DIR/image-headers.txt"
             test -s "$TMP_DIR/card-image"
           done < "$TMP_DIR/card-images.txt"
@@ -868,47 +880,10 @@ jobs:
       # and therefore no exposure to this Cloudflare block. They stay in this
       # deploy step too, harmlessly, as a same-day head start ahead of the
       # first cron tick.
-      # 2026-10-13: every step below this point POSTs to an /api/admin/*
-      # endpoint on https://health.j172.tw. #455's first-ever full live
-      # rollout of the Cloudflare WAF/bot ruleset made Cloudflare start
-      # challenge-paging ("Just a moment...") this runner's traffic to those
-      # endpoints — the same failure mode issue #156 and six-monthly-sync.yml
-      # already hit and fixed. Reusing that exact fix here instead of
-      # inventing a new one: scripts/lib/ssh-bridge.mjs runs a local HTTP
-      # server on 127.0.0.1:18080 that forwards each request as a remote curl
-      # against the production host's own 127.0.0.1:3000 over SSH, bypassing
-      # Cloudflare (and the blocked `ssh -L` tunnel, see the bridge's own
-      # comment) entirely. Every step from here on points HEALTH_BASE_URL (or
-      # its one inline curl) at that local bridge instead of the public
-      # domain — no import script itself needed to change.
-      - name: Start SSH loopback bridge
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          set -euo pipefail
-          KEY_FILE="$RUNNER_TEMP/deploy_key"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
-          chmod 600 "$KEY_FILE"
-
-          SSH_KEY_FILE="$KEY_FILE" \
-          SSH_HOST="$SSH_HOST" \
-          SSH_PORT="$SSH_PORT" \
-          SSH_USER="$SSH_USER" \
-          PORT=18080 \
-          node scripts/lib/ssh-bridge.mjs &
-          echo $! > "$RUNNER_TEMP/bridge.pid"
-
-          echo "Waiting for ssh-bridge to listen on 127.0.0.1:18080..."
-          for _ in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:18080/healthz >/dev/null 2>&1; then break; fi
-            sleep 0.2
-          done
-          curl -fsS http://127.0.0.1:18080/healthz
-          echo "SSH loopback bridge ready on 127.0.0.1:18080."
-
+      #
+      # The SSH loopback bridge started above (before "Verify public news
+      # pages") stays running for every step in this job, including all the
+      # imports below — no separate bridge needed here.
       - name: Sync culture shows
         continue-on-error: true
         timeout-minutes: 3
