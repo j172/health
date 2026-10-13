@@ -751,6 +751,7 @@ export const TABLE_DDL = {
       year VARCHAR(50) NULL,
       source_url VARCHAR(1000) NULL,
       agency VARCHAR(500) NULL,
+      extra_json JSON NULL,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),

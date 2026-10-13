@@ -154,6 +154,17 @@ const runSchemaMigrations = async (): Promise<void> => {
       ADD COLUMN IF NOT EXISTS description_en LONGTEXT NULL AFTER description,
       ADD COLUMN IF NOT EXISTS extra_json JSON NULL AFTER web_sales
   `);
+  // lib/server/culture/ingestPublicArt.ts's INSERT has included extra_json
+  // since it was written, but public_arts' own CREATE TABLE never declared
+  // the column and no ALTER ever added it — every public-art import has
+  // failed with "Unknown column 'extra_json'" since (confirmed live
+  // 2026-10-13/14 via the deploy's "Import public art" step; unrelated to
+  // #549's cultural_events fix, a different table entirely despite the
+  // identical-looking error).
+  await p.query(`
+    ALTER TABLE public_arts
+      ADD COLUMN IF NOT EXISTS extra_json JSON NULL AFTER agency
+  `);
   await p.query(`
     ALTER TABLE news_items
       ADD COLUMN IF NOT EXISTS meta_title VARCHAR(255) NULL AFTER display_type,
