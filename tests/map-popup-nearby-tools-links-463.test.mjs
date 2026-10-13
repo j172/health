@@ -285,12 +285,17 @@ test("every surveyed map file renders <PopupNearbyToolsLinks lat=... lng=... /> 
   }
 });
 
-// FacilityMap.tsx's own "您目前的位置" user-location marker and every map's
-// equivalent should NOT get this block — it would be a redundant "see things
-// near where I'm currently centering the map on myself" link. Spot-check the
-// two files most likely to have a user-location Popup directly adjacent.
+// The user-location marker's own popup should NOT get this block — it would be
+// a redundant "see things near where I'm currently centering the map on myself"
+// link. Since issue #476, every one of the 9 map pages renders its user-location
+// marker through the single shared components/Map/BaseMap.tsx instead of each
+// duplicating its own (FacilityMap.tsx no longer renders a user-location <Marker>
+// at all — it hands `userLocation` to BaseMap, which owns this marker now), so
+// checking BaseMap.tsx once covers all 9 call sites.
 test("the user-location marker's own popup is not given nearby-tools links (would be redundant)", () => {
-  const facilityMapSrc = read("components/Facilities/FacilityMap.tsx");
-  const userLocationPopup = facilityMapSrc.match(/<Marker position=\{center\} icon=\{userIcon\}>[\s\S]*?<\/Marker>/)[0];
+  const baseMapSrc = read("components/Map/BaseMap.tsx");
+  const userLocationPopup = baseMapSrc.match(
+    /<Marker position=\{\[userLocation\.lat, userLocation\.lng\]\} icon=\{userLocationIcon\}>[\s\S]*?<\/Marker>/,
+  )[0];
   assert.doesNotMatch(userLocationPopup, /PopupNearbyToolsLinks/);
 });

@@ -1,23 +1,10 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
-
-import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import dynamic from "next/dynamic";
+import type { BaseMapMarker } from "@/components/Map/BaseMap";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
-// Webpack/Turbopack breaks Leaflet's default marker icon URL resolution — point it at a CDN instead.
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
-
-const userIcon = userLocationIcon;
+const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
 export interface MapMarker {
   id: string;
@@ -43,68 +30,55 @@ export interface FacilityMapProps {
   radiusMeters?: number;
 }
 
-/** 機構地圖（Leaflet + OpenStreetMap，免API金鑰）。SSR不安全，需以 dynamic({ ssr: false }) 載入。 */
+/**
+ * 機構地圖（issue #476：改用共用 BaseMap，底圖已改為國土測繪中心＋OSM 備援，
+ * 不再是直接寫死的 OSM 單一底圖）。SSR 不安全，BaseMap 內部已用 dynamic 載入。
+ *
+ * 不把 `userLocation.refresh` 轉接給 BaseMap 的內建定位按鈕——呼叫端（
+ * FacilitySearchContent／CareCircleMap／PublicArtContent）都已經有自己的
+ * `MapLocationBanner`，裡面同樣有「重新嘗試定位」按鈕，兩個定位按鈕疊在同一
+ * 張地圖上只是重複（見 issue #476 的決策）。
+ */
 export default function FacilityMap({ userLocation, markers, showRadius = true, radiusMeters = 5000 }: FacilityMapProps) {
-  const center: [number, number] = [userLocation.lat ?? GEO_DEFAULTS.lat, userLocation.lng ?? GEO_DEFAULTS.lng];
+  const baseMapMarkers: BaseMapMarker[] = markers.map((m) => ({
+    id: m.id,
+    lat: m.lat,
+    lng: m.lng,
+    label: m.name,
+    sublabel: m.address ?? undefined,
+    popup: (
+      <div className="text-sm leading-relaxed">
+        <p className="font-semibold text-neutral-900">{m.name}</p>
+        {m.address && <p className="text-neutral-600">{m.address}</p>}
+        {m.phone && <p className="text-blue-600">{m.phone}</p>}
+        {m.charityUrl && (
+          <div className="mt-2 pt-1.5 border-t border-neutral-100">
+            <a
+              href={m.charityUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 rounded bg-rose-500 px-2.5 py-1 text-xs font-semibold !text-white hover:bg-rose-600 transition-colors shadow-sm"
+            >
+              <span>🛍️</span>
+              <span>{m.charityName || "愛心義賣"}</span>
+              <span className="text-[10px]">↗</span>
+            </a>
+          </div>
+        )}
+        <PopupNearbyToolsLinks lat={m.lat} lng={m.lng} />
+      </div>
+    ),
+  }));
 
   return (
-    <div className="relative h-full w-full">
-      <MapContainer center={center} zoom={13} className="h-full w-full" scrollWheelZoom>
-        <MapViewController center={center} zoom={13} />
-        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
-
-        <Marker position={center} icon={userIcon}>
-          <Popup>{userLocation.isDefault ? "預設位置" : "您目前的位置"}</Popup>
-        </Marker>
-
-        {showRadius && <Circle center={center} radius={radiusMeters} pathOptions={{ color: "#625df5", fillColor: "#625df5", fillOpacity: 0.07 }} />}
-
-        {markers.map((m) => (
-          <Marker key={m.id} position={[m.lat, m.lng]}>
-            <Popup>
-              <div className="text-sm leading-relaxed">
-                <p className="font-semibold text-neutral-900">{m.name}</p>
-                {m.address && <p className="text-neutral-600">{m.address}</p>}
-                {m.phone && <p className="text-blue-600">{m.phone}</p>}
-                {m.charityUrl && (
-                  <div className="mt-2 pt-1.5 border-t border-neutral-100">
-                    <a
-                      href={m.charityUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded bg-rose-500 px-2.5 py-1 text-xs font-semibold !text-white hover:bg-rose-600 transition-colors shadow-sm"
-                    >
-                      <span>🛍️</span>
-                      <span>{m.charityName || "愛心義賣"}</span>
-                      <span className="text-[10px]">↗</span>
-                    </a>
-                  </div>
-                )}
-                <PopupNearbyToolsLinks lat={m.lat} lng={m.lng} />
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-
-      {/* 懸浮定位按鈕 */}
-      {userLocation.refresh && (
-        <div className="absolute top-3 right-3 z-[1000]">
-          <button
-            type="button"
-            onClick={() => userLocation.refresh?.()}
-            disabled={userLocation.refreshing}
-            title="重新定位至我的位置"
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-md transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          >
-            {userLocation.refreshing ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-            ) : (
-              <span className="text-base">🎯</span>
-            )}
-          </button>
-        </div>
-      )}
-    </div>
+    <BaseMap
+      markers={baseMapMarkers}
+      userLocation={{ lat: userLocation.lat, lng: userLocation.lng, isDefault: userLocation.isDefault }}
+      circle={
+        showRadius
+          ? { center: [userLocation.lat, userLocation.lng], radiusMeters, pathOptions: { color: "#625df5", fillColor: "#625df5", fillOpacity: 0.07 } }
+          : undefined
+      }
+    />
   );
 }

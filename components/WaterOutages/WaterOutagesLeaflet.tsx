@@ -1,25 +1,17 @@
 "use client";
 
-import React from "react";
-import "leaflet/dist/leaflet.css";
+import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import type {
   WaterOutageItem,
   EmergencyWaterStation,
 } from "@/lib/server/waterOutages/types";
-import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import type { BaseMapMarker } from "@/components/Map/BaseMap";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
-// Fix leaflet icon default path issue
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
 const outageIcon = new L.DivIcon({
   className: "",
@@ -43,6 +35,10 @@ export interface WaterOutagesLeafletProps {
   userLocation?: { lat: number; lng: number };
 }
 
+/**
+ * 停水資訊＋緊急供水站地圖（issue #476：改用共用 BaseMap，底圖改為國土測繪
+ * 中心＋OSM 備援，標記群聚改為共用邏輯）。
+ */
 export default function WaterOutagesLeaflet({
   outages,
   waterStations,
@@ -54,91 +50,83 @@ export default function WaterOutagesLeaflet({
 
   const defaultZoom = userLocation ? 12 : 8;
 
+  const markers: BaseMapMarker[] = useMemo(() => {
+    const outageMarkers: BaseMapMarker[] = outages
+      .filter((o) => o.lat && o.lng)
+      .map((o) => ({
+        id: `outage-${o.id}`,
+        lat: o.lat!,
+        lng: o.lng!,
+        label: o.title,
+        icon: outageIcon,
+        popup: (
+          <div className="space-y-1 text-xs">
+            <div className="font-bold text-red-600">
+              {o.outageType === "emergency" ? "⚠️ 突發破管停水" : "🔧 計畫性更換管線工程"}
+            </div>
+            <div className="font-semibold text-slate-800">{o.title}</div>
+            <div className="text-slate-600">
+              時間: {new Date(o.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ~{" "}
+              {new Date(o.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </div>
+            <div className="text-slate-600">影響: 約 {o.affectedHouseholds} 戶</div>
+            <div className="text-[11px] text-slate-500">來源: {o.source}</div>
+            <PopupNearbyToolsLinks lat={o.lat} lng={o.lng} />
+          </div>
+        ),
+      }));
+
+    const waterStationMarkers: BaseMapMarker[] = waterStations
+      .filter((s) => s.lat && s.lng)
+      .map((s) => ({
+        id: `station-${s.stationId}`,
+        lat: s.lat,
+        lng: s.lng,
+        label: s.name,
+        sublabel: s.address,
+        icon: waterStationIcon,
+        popup: (
+          <div className="space-y-1.5 text-xs">
+            <div className="font-bold text-sky-600">
+              🚰 {s.name}
+            </div>
+            <div className="text-slate-700">📍 {s.address}</div>
+            <div className="text-slate-600">🕒 開放時間: {s.operatingHours}</div>
+            <div className="text-slate-600">
+              型態: {s.waterType === "water_truck" ? "緊急水車" : "固定式儲水桶"}
+            </div>
+            <div className="pt-1">
+              <a
+                href={appendOutboundUtm(
+                  `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`,
+                  { medium: "map_navigation", campaign: "map_directions" },
+                )}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="font-bold text-indigo-600 hover:underline"
+              >
+                開啟 Google 地圖導航 ↗
+              </a>
+            </div>
+            <PopupNearbyToolsLinks lat={s.lat} lng={s.lng} />
+          </div>
+        ),
+      }));
+
+    return [...outageMarkers, ...waterStationMarkers];
+  }, [outages, waterStations]);
+
   return (
     <div className="h-[450px] w-full">
-      <MapContainer
+      <BaseMap
+        markers={markers}
         center={defaultCenter}
         zoom={defaultZoom}
+        userLocation={userLocation ? { lat: userLocation.lat, lng: userLocation.lng, isDefault: false } : undefined}
+        // 這個地圖內嵌在可捲動的停水/供水站清單頁面中，保留遷移前的設定，避免
+        // 使用者捲動頁面時不小心把地圖縮放當成頁面捲動（issue #476）。
         scrollWheelZoom={false}
-        className="h-full w-full"
-      >
-        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
-
-        <MapViewController center={defaultCenter} zoom={defaultZoom} />
-
-        {/* User Location */}
-        {userLocation && (
-          <Marker
-            position={[userLocation.lat, userLocation.lng]}
-            icon={userLocationIcon}
-          >
-            <Popup>
-              <div className="text-xs font-semibold">📍 您的目前位置</div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Outage Points */}
-        {outages
-          .filter((o) => o.lat && o.lng)
-          .map((o) => (
-            <Marker key={o.id} position={[o.lat!, o.lng!]} icon={outageIcon}>
-              <Popup>
-                <div className="space-y-1 text-xs">
-                  <div className="font-bold text-red-600">
-                    {o.outageType === "emergency" ? "⚠️ 突發破管停水" : "🔧 計畫性更換管線工程"}
-                  </div>
-                  <div className="font-semibold text-slate-800">{o.title}</div>
-                  <div className="text-slate-600">
-                    時間: {new Date(o.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} ~{" "}
-                    {new Date(o.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                  <div className="text-slate-600">影響: 約 {o.affectedHouseholds} 戶</div>
-                  <div className="text-[11px] text-slate-500">來源: {o.source}</div>
-                  <PopupNearbyToolsLinks lat={o.lat} lng={o.lng} />
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-
-        {/* Water Stations */}
-        {waterStations
-          .filter((s) => s.lat && s.lng)
-          .map((s) => (
-            <Marker
-              key={s.stationId}
-              position={[s.lat, s.lng]}
-              icon={waterStationIcon}
-            >
-              <Popup>
-                <div className="space-y-1.5 text-xs">
-                  <div className="font-bold text-sky-600">
-                    🚰 {s.name}
-                  </div>
-                  <div className="text-slate-700">📍 {s.address}</div>
-                  <div className="text-slate-600">🕒 開放時間: {s.operatingHours}</div>
-                  <div className="text-slate-600">
-                    型態: {s.waterType === "water_truck" ? "緊急水車" : "固定式儲水桶"}
-                  </div>
-                  <div className="pt-1">
-                    <a
-                      href={appendOutboundUtm(
-                        `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}`,
-                        { medium: "map_navigation", campaign: "map_directions" },
-                      )}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="font-bold text-indigo-600 hover:underline"
-                    >
-                      開啟 Google 地圖導航 ↗
-                    </a>
-                  </div>
-                  <PopupNearbyToolsLinks lat={s.lat} lng={s.lng} />
-                </div>
-              </Popup>
-            </Marker>
-          ))}
-      </MapContainer>
+      />
     </div>
   );
 }

@@ -3,8 +3,8 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import type { ReactNode } from "react";
-import { useMemo, useRef, useState } from "react";
-import { MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Circle, MapContainer, Marker, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { clusterMarkers } from "@/components/Map/clusterMarkers";
@@ -41,6 +41,14 @@ export interface BaseMapMarker {
   label?: string;
   /** 清單檢視的標題下方的次要說明文字（例如地址）。 */
   sublabel?: string;
+  /** 自訂標記圖示；未提供則使用 Leaflet 預設圖示（遷移自各頁面原本各自的 DivIcon，見 issue #476）。 */
+  icon?: L.Icon | L.DivIcon;
+}
+
+export interface BaseMapCircleOverlay {
+  center: [number, number];
+  radiusMeters: number;
+  pathOptions?: L.PathOptions;
 }
 
 export interface BaseMapUserLocation {
@@ -70,6 +78,25 @@ export interface BaseMapProps {
   clusterRadiusPx?: number;
   /** 達到此縮放層級後不再群聚，各點各自顯示，預設 17。 */
   disableClusteringAtZoom?: number;
+  /** 搜尋半徑圓形疊加（例如機構地圖的服務範圍），遷移自 FacilityMap／AedMapLeaflet 原本各自畫的 `<Circle>`。 */
+  circle?: BaseMapCircleOverlay;
+  /**
+   * 由外部（例如清單卡片的「地圖定位此站」按鈕）觸發地圖飛到某個標記點，對應
+   * markers 裡的 id；只會平移中心點，不會改變目前縮放層級（跟清單檢視點擊項目
+   * 會順便放大不同——那是第一次從收合的清單跳進地圖，這裡是地圖已經顯示中、
+   * 只是切換選取目標，遷移自 CpcStationMap 原本「選取站點→MapContainer center
+   * 跟著變→MapViewController flyTo」的行為）。同一個 id 重複觸發不會再次平移。
+   */
+  focusMarkerId?: string | null;
+  /** 點擊地圖上單一標記點（非群聚）時呼叫，傳入該標記的 id；地圖仍會照常開啟其彈出視窗。 */
+  onMarkerClick?: (id: string) => void;
+  /**
+   * 是否允許滑鼠滾輪縮放地圖，預設 true。地圖內嵌在可捲動的長列表中時（例如
+   * WaterOutagesLeaflet 原本的設定），使用者捲動頁面很容易不小心把地圖縮放
+   * 當成頁面捲動，應設為 false——遷移自各頁面原本各自在 `<MapContainer>` 上
+   * 設定的 `scrollWheelZoom`，見 issue #476。
+   */
+  scrollWheelZoom?: boolean;
 }
 
 function buildClusterIcon(count: number): L.DivIcon {
@@ -87,10 +114,11 @@ interface ClusteredMarkersProps {
   markers: BaseMapMarker[];
   clusterRadiusPx?: number;
   disableClusteringAtZoom?: number;
+  onMarkerClick?: (id: string) => void;
 }
 
 /** 掛載在 MapContainer 內部的群聚渲染層；用 zoomend 事件追蹤縮放層級變化並重新分群。 */
-function ClusteredMarkers({ markers, clusterRadiusPx, disableClusteringAtZoom }: ClusteredMarkersProps) {
+function ClusteredMarkers({ markers, clusterRadiusPx, disableClusteringAtZoom, onMarkerClick }: ClusteredMarkersProps) {
   const map = useMap();
   const [zoom, setZoom] = useState(() => map.getZoom());
 
@@ -122,7 +150,12 @@ function ClusteredMarkers({ markers, clusterRadiusPx, disableClusteringAtZoom }:
 
         const marker = cluster.members[0];
         return (
-          <Marker key={marker.id} position={[marker.lat, marker.lng]}>
+          <Marker
+            key={marker.id}
+            position={[marker.lat, marker.lng]}
+            icon={marker.icon}
+            eventHandlers={onMarkerClick ? { click: () => onMarkerClick(marker.id) } : undefined}
+          >
             {marker.popup && <Popup>{marker.popup}</Popup>}
           </Marker>
         );
@@ -170,12 +203,17 @@ export default function BaseMap({
   emptyListMessage = "目前沒有標記點位",
   clusterRadiusPx,
   disableClusteringAtZoom,
+  circle,
+  focusMarkerId,
+  onMarkerClick,
+  scrollWheelZoom = true,
 }: BaseMapProps) {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [focusedCenter, setFocusedCenter] = useState<[number, number] | null>(null);
   const [focusedZoom, setFocusedZoom] = useState<number | null>(null);
   const [primaryTileFailed, setPrimaryTileFailed] = useState(false);
   const primaryErrorCount = useRef(0);
+  const prevFocusMarkerId = useRef<string | null | undefined>(undefined);
 
   // 初始中心點只在掛載時決定一次，之後地圖重新渲染（markers／userLocation 內容變動）
   // 不會把使用者正在查看的視角拉走；真正要「飛到」某個位置時走 focusedCenter。
@@ -196,6 +234,23 @@ export default function BaseMap({
     setFocusedZoom(null);
     userLocation?.refresh?.();
   };
+
+  // 由外部觸發「飛到某個標記點」（例如 CpcStationMap 原本「選取站點→MapContainer
+  // center 跟著變」的行為）：只平移，不動縮放層級，也不切換 viewMode——跟下面清單
+  // 檢視點擊項目的 focusOnMarker 刻意不同（那是從收合清單第一次跳進地圖）。
+  // setState 延後到 queueMicrotask（同 lib/hooks/useSharedGeolocation.ts 的慣例），
+  // 避免 react-hooks/set-state-in-effect 的直接呼叫警告。
+  useEffect(() => {
+    if (focusMarkerId && focusMarkerId !== prevFocusMarkerId.current) {
+      const marker = markers.find((m) => m.id === focusMarkerId);
+      if (marker) {
+        queueMicrotask(() => {
+          setFocusedCenter([marker.lat, marker.lng]);
+        });
+      }
+    }
+    prevFocusMarkerId.current = focusMarkerId;
+  }, [focusMarkerId, markers]);
 
   const focusOnMarker = (marker: BaseMapMarker) => {
     setFocusedCenter([marker.lat, marker.lng]);
@@ -253,7 +308,7 @@ export default function BaseMap({
       )}
 
       {viewMode === "map" ? (
-        <MapContainer center={mapCenter} zoom={mapZoom} className="h-full w-full" scrollWheelZoom>
+        <MapContainer center={mapCenter} zoom={mapZoom} className="h-full w-full" scrollWheelZoom={scrollWheelZoom}>
           <MapViewController center={mapCenter} zoom={mapZoom} />
 
           {/* 備援底圖永遠掛載在下層；主要底圖失敗時把它的 opacity 降為 0，
@@ -283,7 +338,16 @@ export default function BaseMap({
             </Marker>
           )}
 
-          <ClusteredMarkers markers={markers} clusterRadiusPx={clusterRadiusPx} disableClusteringAtZoom={disableClusteringAtZoom} />
+          {circle && (
+            <Circle center={circle.center} radius={circle.radiusMeters} pathOptions={circle.pathOptions} />
+          )}
+
+          <ClusteredMarkers
+            markers={markers}
+            clusterRadiusPx={clusterRadiusPx}
+            disableClusteringAtZoom={disableClusteringAtZoom}
+            onMarkerClick={onMarkerClick}
+          />
         </MapContainer>
       ) : (
         <div className="h-full w-full overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 pt-14 dark:border-slate-800 dark:bg-slate-900">
