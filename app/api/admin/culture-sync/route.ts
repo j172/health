@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
+import { ensureSchema } from "@/lib/server/db/mysql";
 import { runCulturalShowsSync } from "@/lib/server/culture/ingestShows";
 import { runNpoActivitiesSync } from "@/lib/server/culture/ingestNpoActivities";
 import { runPresidentialVisitSync } from "@/lib/server/culture/ingestPresidentialVisit";
@@ -14,6 +15,12 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (unauthorized) return unauthorized;
 
   try {
+    // issue #549: this route never called ensureSchema(), so the
+    // cultural_events ALTER (title_en/description_en/extra_json, added
+    // 2026-09-11) never ran against production — every write here failed
+    // with "Unknown column 'extra_json'" until this call was added.
+    await ensureSchema();
+
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type") || "all";
 
