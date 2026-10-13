@@ -10,7 +10,7 @@
 | 項目 | 值 |
 |---|---|
 | 主機 | HawkHost 共享主機（新加坡），CloudLinux 8＋LiteSpeed＋MariaDB 10.11＋cPanel；與 `bid.j172.tw` 共用同一帳號 |
-| 行程 | PM2 v7（`health-web`），Node **v24.19.0**（nvm；2026-10-13 核對時發現自 2026-09-01 起 nvm default 早已是 v24.19.0，文件曾誤記為 v20.20.2——見 #481），`--max-old-space-size=768`、`max_memory_restart: 1024M` |
+| 行程 | PM2 v7（`health-web`），Node **v24.19.0**（nvm；2026-10-13 正式切換,見 #481——之前的 PR #543/文件版本誤把另一台機器（`bid.j172.tw`,帳號 `xiangshu`）的狀態當成這台,這台（103.21.221.12,帳號 `tw123457`）在切換前其實一直是 v20.20.2),`--max-old-space-size=768`、`max_memory_restart: 1024M` |
 | CloudLinux 限制 | **NPROC 100**、**Entry Processes 20**（兩者不同；耗盡的通常是 NPROC） |
 | 前端 CDN | Cloudflare Free（Full Strict、Smart Tiered Cache、Bot Fight Mode） |
 | 部署 | GitHub Actions 建置 → FTPS 上傳 prebuilt；`next.config.js` 也必須上傳（`next start` 從工作目錄讀取） |
@@ -24,11 +24,12 @@
 5. **用管線改寫正式 crontab**（`crontab -l | sed | crontab -` 曾清空整份 crontab）。
 
 ### 1.2 Node 版本回滾步驟（#481）
-`~/.nvm/versions/node/` 目前同時裝有 v20.20.2（回滾用，2026-10-13 重新裝回）與 v24.19.0（目前 default，正式在跑）。若 v24 出現記憶體或穩定性惡化：
-1. `nvm alias default 20.20.2`（改 `~/.nvm/alias/default`，不影響目前已在跑的 process，只影響下次啟動的新 shell/process 解析到的 `node`）
-2. `pm2 restart health-web`（讓 PM2 用新的 default 重新 spawn）
-3. 用 `readlink -f /proc/<pid>/exe` 確認真的切回 v20.20.2
-4. 回報 #481，記錄回滾原因
+正式主機（103.21.221.12，帳號 `tw123457`）`~/.nvm/versions/node/` 同時裝有 v20.20.2（回滾用）與 v24.19.0（2026-10-13 切換後的正式版本）。PM2 的 `exec_interpreter` 是切換時明確指定的絕對路徑，**不是**從 `nvm alias default` 動態解析——所以回滾不能只改 default alias，要直接指定回舊路徑：
+1. `pm2 restart health-web --interpreter /home/tw123457/.nvm/versions/node/v20.20.2/bin/node --update-env`
+2. 用 `readlink -f /proc/<pid>/exe` 確認真的切回 v20.20.2（`ps -ef | grep next-server` 先找 PID，注意同帳號下還有 `mall` app，務必用 `/proc/<pid>/cwd` 或 `PORT` 確認是 health-web 不是 mall，2026-10-13 曾因為沒確認錯殺過 mall 的行程）
+3. 回報 #481，記錄回滾原因
+
+切換當天（2026-10-13）的實測基準：Node 24 下 `/`、`/news`、`/api/aqi`、`/api/accessible-transit` 等頁面/API 皆正常，RSS 約 370MB（50 秒內，有真實流量），跟 v20.20.2 時期的量級一致。
 
 ---
 
@@ -47,7 +48,7 @@
 |---|---|---|
 | O-1 | **httpClient 每次 HTTPS 請求都重建 TLS SecureContext**（#401 OPEN） | 同日 3 次 `std::bad_alloc` 崩潰都在 OpenSSL `AddCACert`；斷路器降低了頻率但機制仍在。修法：共用 keep-alive `https.Agent`（目前 `httpClient.ts` 無 Agent） |
 | O-2 | Issue #391（雙 God Daemon）、#394（`_next/image` OOM）仍為 OPEN | 修正已上線，issue 待驗證後關閉 |
-| O-3 | ~~Node 20 已 EOL~~ | 2026-10-13 核對發現主機早已實際跑在 Node v24.19.0（nvm default 自 09-01 起即為 v24，之前無人記錄/補完流程）；CI 已補改為 24，`~/.nvm/versions/node/` 已重新裝回 v20.20.2 作回滾備援，詳見 #481 留言的每日觀察記錄 |
+| O-3 | ~~Node 20 已 EOL~~ | 2026-10-13 正式切換到 v24.19.0（先在非正式連接埠 3099 實測、觀察後才切換，過程中也修正了主機 `.env` 裡過期的 `MYSQL_PASSWORD`）；v20.20.2 保留作回滾，CI 已改為 24；進入 #481 要求的一週觀察期，每日記錄在 issue 留言 |
 | O-4 | 共享主機鄰居搶 CPU | 主機層級問題，非程式可解；load average 長期 10–12 |
 
 ---
