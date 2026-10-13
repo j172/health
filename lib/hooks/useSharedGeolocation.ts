@@ -207,12 +207,26 @@ function coordsFromOutcome(outcome: GeolocationOutcome): SharedGeolocationCoords
     : null;
 }
 
+export interface UseSharedGeolocationOptions {
+  /**
+   * issue #478：少數呼叫點（`FacilitySearchContent`／`AedContent`）支援
+   * `?lat=&lng=` 深連結覆寫座標（issue #463）——覆寫座標存在時，過去的
+   * `useGeolocation(override)` 會完全不碰瀏覽器定位 API，不觸發任何權限彈
+   * 窗。這支 hook 不能依賴「呼叫端有條件地呼叫 hook」（違反 React hooks 規
+   * 則），所以用這個旗標達到同樣效果：`skip: true` 時完全不執行定位流程
+   * （不讀快取、不呼叫 `getCurrentPosition`），`status` 永遠停在 `"idle"`。
+   * 預設 `false`，與既有呼叫端（`NearbyContent`／`HomeStatusBar`）完全相容。
+   */
+  skip?: boolean;
+}
+
 /**
  * 全站共用的定位 hook。見檔案頂端說明：逾時邏輯會正確等待原生授權彈窗、
  * 拒絕或逾時回報明確狀態（不靜默套用預設座標）、同一瀏覽階段內不重複跳出
- * 授權詢問。本票刻意不取代任何既有呼叫點，詳見檔案頂端說明。
+ * 授權詢問。
  */
-export function useSharedGeolocation(): SharedGeolocationResult {
+export function useSharedGeolocation(options: UseSharedGeolocationOptions = {}): SharedGeolocationResult {
+  const { skip = false } = options;
   const [status, setStatus] = useState<SharedGeolocationStatus>("idle");
   const [coords, setCoords] = useState<SharedGeolocationCoords | null>(null);
   const isMountedRef = useRef(true);
@@ -249,6 +263,7 @@ export function useSharedGeolocation(): SharedGeolocationResult {
   }, []);
 
   useEffect(() => {
+    if (skip) return;
     // Deferred via queueMicrotask (see docs/archive/specs/set-state-in-effect-fix.md,
     // issue #121/#122): run() can call setState synchronously (the cached-result
     // path), which trips react-hooks/set-state-in-effect when called directly
@@ -258,7 +273,7 @@ export function useSharedGeolocation(): SharedGeolocationResult {
     queueMicrotask(() => {
       run(false);
     });
-  }, [run]);
+  }, [run, skip]);
 
   const refresh = useCallback(() => {
     clearSessionCache();

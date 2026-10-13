@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -60,12 +61,21 @@ export default function CpcStationsClient({
   allServices,
 }: CpcStationsClientProps) {
   const { locale } = useLanguage();
-  const geo = useGeolocation();
-  const [userLocation, setUserLocation] = useState({
-    lat: GEO_DEFAULTS.lat,
-    lng: GEO_DEFAULTS.lng,
-    isDefault: true,
-  });
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
+
+  // 雙軌即時渲染（延續既有行為）：還沒有任何可用座標時，先以臺北101為暫時
+  // 中心點立即顯示站點，不讓使用者乾等 GPS 授權彈窗；真正的 GPS／手動選擇縣
+  // 市座標一旦到位就會接手排序。拒絕/逾時/不支援時下方 MapLocationBanner 會
+  // 明確提示改選縣市，不會讓使用者誤以為臺北101就是他的位置。
+  const mapOrigin = effectiveCoords ?? GEO_DEFAULTS;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -75,21 +85,16 @@ export default function CpcStationsClient({
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  // Update user location from hook
+  // 一旦有真正的座標（GPS 或使用者手動選擇的縣市）到位，自動切換為按距離排序。
   useEffect(() => {
-    if (geo.lat && geo.lng) {
-      queueMicrotask(() => {
-        setUserLocation({
-          lat: geo.lat,
-          lng: geo.lng,
-          isDefault: geo.isDefault,
-        });
-        if (!geo.isDefault) {
-          setSortByDistance(true);
-        }
-      });
-    }
-  }, [geo.lat, geo.lng, geo.isDefault]);
+    if (!effectiveCoords) return;
+    // Deferred via queueMicrotask (see lib/hooks/useSharedGeolocation.ts's
+    // own mount effect): avoids react-hooks/set-state-in-effect from calling
+    // setState directly in the effect body.
+    queueMicrotask(() => {
+      setSortByDistance(true);
+    });
+  }, [effectiveCoords]);
 
   // Haversine distance calculator
   const haversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -121,8 +126,8 @@ export default function CpcStationsClient({
   const filteredStations = useMemo(() => {
     let list = initialStations.map((st) => {
       let dist = st.distance_km;
-      if (st.lat && st.lng && userLocation.lat && userLocation.lng) {
-        dist = haversineDistance(userLocation.lat, userLocation.lng, st.lat, st.lng);
+      if (st.lat && st.lng && mapOrigin.lat && mapOrigin.lng) {
+        dist = haversineDistance(mapOrigin.lat, mapOrigin.lng, st.lat, st.lng);
       }
       return { ...st, distance_km: dist };
     });
@@ -154,7 +159,7 @@ export default function CpcStationsClient({
     }
 
     return list;
-  }, [initialStations, searchQuery, selectedServices, sortByDistance, userLocation]);
+  }, [initialStations, searchQuery, selectedServices, sortByDistance, mapOrigin]);
 
   const paginatedStations = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -180,21 +185,7 @@ export default function CpcStationsClient({
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => {
-                if (navigator.geolocation) {
-                  navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                      setUserLocation({
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        isDefault: false,
-                      });
-                      setSortByDistance(true);
-                    },
-                    (err) => console.warn(err),
-                  );
-                }
-              }}
+              onClick={() => geolocation.refresh()}
               className="inline-flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300"
             >
               <span>📍 定位附近加油站</span>
@@ -214,7 +205,15 @@ export default function CpcStationsClient({
           </div>
         </div>
 
-        <MapLocationBanner location={geo} facilityTypeName="中油加油站" />
+        <MapLocationBanner
+          geolocation={geolocation}
+          manualCounty={manualCounty}
+          manualDistrict={manualDistrict}
+          onCountyChange={setManualCounty}
+          onDistrictChange={setManualDistrict}
+          hasManualCoords={hasManualCoords}
+          facilityTypeName="中油加油站"
+        />
 
         {/* Search Input */}
         <div className="relative">
@@ -342,10 +341,10 @@ export default function CpcStationsClient({
       <section>
         <CpcStationMap
           stations={filteredStations.slice(0, 150)}
-          userLocation={userLocation}
+          userLocation={{ lat: mapOrigin.lat, lng: mapOrigin.lng, isDefault: !effectiveCoords }}
           selectedStationId={selectedStationId}
           onSelectStation={(st) => setSelectedStationId(st.id)}
-          onRecenter={() => geo.refresh()}
+          onRecenter={() => geolocation.refresh()}
         />
         <div className="mt-2 text-right text-[11px] text-slate-600">
           地圖預設標記前 150 筆符合條件站點 · 點擊圖標可展開導航與詳細服務

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   NearestRainfallOverview,
   TopRainfallStation,
 } from "@/lib/server/cwa/queries";
-import { resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
+import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const TAIWAN_COUNTIES = [
@@ -94,14 +94,19 @@ export default function WeatherRainfallLocator({
 }: {
   initialTopStations?: TopRainfallStation[];
 }) {
+  const geolocation = useSharedGeolocation();
   const [locating, setLocating] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState("");
   const [locationName, setLocationName] = useState<string | null>(null);
   const [rainfallData, setRainfallData] = useState<NearestRainfallOverview | null>(null);
   const [topStations, setTopStations] = useState<TopRainfallStation[]>(initialTopStations);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  // 使用者按下「GPS 重新定位」後才需要等待下面的 effect 處理 useSharedGeolocation 的結果。
+  const [manualGpsRequested, setManualGpsRequested] = useState(false);
+  // 初次載入的背景自動定位只套用一次，避免之後每次 geolocation.coords 變動（例如使用者按重新定位）都搶走手動選擇的縣市。
+  const autoGpsAppliedRef = useRef(false);
 
-  const fetchRainfall = async (params: { lat?: number; lng?: number; county?: string }) => {
+  const fetchRainfall = useCallback(async (params: { lat?: number; lng?: number; county?: string }) => {
     setLocating(true);
     setErrorMsg(null);
     try {
@@ -131,36 +136,46 @@ export default function WeatherRainfallLocator({
     } finally {
       setLocating(false);
     }
-  };
+  }, []);
 
-  const handleGeoLocate = async () => {
-    if (!navigator.geolocation) {
+  const handleGeoLocate = () => {
+    if (geolocation.status === "unsupported") {
       setErrorMsg("您的瀏覽器不支援 GPS 地理定位。");
       return;
     }
     setLocating(true);
     setErrorMsg(null);
+    setManualGpsRequested(true);
+    // 唯一允許跳出瀏覽器原生授權彈窗、略過快取重新嘗試一次的路徑；結果由下面的 effect 接手套用。
+    geolocation.refresh();
+  };
 
-    const { timeoutMs } = await resolveGeolocationTimeout(10000);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
+  // 使用者按下「GPS 重新定位」後，等 useSharedGeolocation 解析出終態（成功／
+  // 拒絕／逾時／不支援）再套用結果或顯示對應的錯誤訊息——取代舊版用
+  // getCurrentPosition 的 error callback 直接判斷 PERMISSION_DENIED 的寫法。
+  useEffect(() => {
+    if (!manualGpsRequested) return;
+    if (geolocation.status === "locating" || geolocation.status === "awaiting-permission") return;
+    // Deferred via queueMicrotask (see lib/hooks/useSharedGeolocation.ts's
+    // own mount effect / docs/archive/specs/set-state-in-effect-fix.md,
+    // issue #121/#122): avoids react-hooks/set-state-in-effect from calling
+    // setState directly in the effect body.
+    queueMicrotask(() => {
+      setManualGpsRequested(false);
+      if (geolocation.coords) {
         setLocationName("您的目前位置");
         setSelectedCounty("");
-        fetchRainfall({ lat: latitude, lng: longitude });
-      },
-      (error) => {
-        console.warn("Geolocation error:", error);
+        fetchRainfall({ lat: geolocation.coords.lat, lng: geolocation.coords.lng });
+      } else {
         setLocating(false);
-        if (error.code === error.PERMISSION_DENIED) {
+        if (geolocation.status === "denied") {
           setErrorMsg("未取得定位權限，您可直接選擇縣市查詢。");
         } else {
           setErrorMsg("定位失敗，請手動選擇縣市。");
         }
-      },
-      { timeout: timeoutMs, enableHighAccuracy: false },
-    );
-  };
+      }
+    });
+  }, [manualGpsRequested, geolocation.status, geolocation.coords, fetchRainfall]);
 
   const handleCountyChange = (county: string) => {
     setSelectedCounty(county);
@@ -170,34 +185,31 @@ export default function WeatherRainfallLocator({
     }
   };
 
-  // 雙軌即時渲染：初次載入立即抓臺北雨量顯示，同時間非同步查詢 GPS，若允許則平滑切換
+  // 雙軌即時渲染：初次載入立即抓臺北雨量顯示，不等待 GPS。
   useEffect(() => {
-    let active = true;
+    queueMicrotask(() => {
+      setSelectedCounty("臺北市");
+      setLocationName("臺北市");
+      fetchRainfall({ county: "臺北市" });
+    });
+  }, [fetchRainfall]);
 
-    setSelectedCounty("臺北市");
-    setLocationName("臺北市");
-    fetchRainfall({ county: "臺北市" });
-
-    if (navigator?.geolocation) {
-      resolveGeolocationTimeout(6000).then(({ timeoutMs }) => {
-        if (!active) return;
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            if (!active) return;
-            setLocationName("您的目前位置");
-            setSelectedCounty("");
-            fetchRainfall({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          },
-          () => {},
-          { timeout: timeoutMs, enableHighAccuracy: false },
-        );
-      });
-    }
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  // 背景的 useSharedGeolocation 自動定位一旦解析出座標（不需要使用者按按
+  // 鈕），就平滑切換成 GPS 結果——延續上面「雙軌即時渲染」的既有行為，只套
+  // 用一次，不會在使用者之後手動選擇縣市時又被搶走。拒絕/逾時/不支援時維持
+  // 顯示臺北市雨量，使用者可直接用下方的縣市下拉選單手動查詢（本頁原本就
+  // 有，不需要再加一個手動選擇用的提示元件）。
+  useEffect(() => {
+    if (autoGpsAppliedRef.current) return;
+    if (!geolocation.coords) return;
+    autoGpsAppliedRef.current = true;
+    const { lat, lng } = geolocation.coords;
+    queueMicrotask(() => {
+      setLocationName("您的目前位置");
+      setSelectedCounty("");
+      fetchRainfall({ lat, lng });
+    });
+  }, [geolocation.coords, fetchRainfall]);
 
   const realtime = rainfallData?.realtime;
   const accumulation = rainfallData?.accumulation;

@@ -7,8 +7,9 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { DisasterLayer } from "@/lib/server/disaster/ingestDisasterPoints";
 import type { DisasterPoint } from "@/lib/server/disaster/queries";
 
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { InundationPoint } from "@/lib/server/wra/inundation";
 import type { DamStructureMapPoint } from "@/lib/server/wra/damStructureQueries";
@@ -87,7 +88,16 @@ const formatUpdatedAt = (iso: string | null): string => {
 
 export default function DisasterMapContent() {
   const { locale } = useLanguage();
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
+  const locationRefreshing = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
   const [points, setPoints] = useState<DisasterPoint[]>([]);
   const [inundationPoints, setInundationPoints] = useState<InundationPoint[]>([]);
   const [showInundation, setShowInundation] = useState(true);
@@ -210,9 +220,9 @@ export default function DisasterMapContent() {
 
   // 計算離使用者最近的 4 處避難所或消防單位
   const closestShelters = useMemo(() => {
-    if (!location.lat || !location.lng) return [];
-    const uLat = location.lat;
-    const uLng = location.lng;
+    if (!effectiveCoords) return [];
+    const uLat = effectiveCoords.lat;
+    const uLng = effectiveCoords.lng;
 
     return points
       .filter((p) => (p.layer === "shelter" || p.layer === "rescue_unit") && p.lat && p.lng)
@@ -222,7 +232,7 @@ export default function DisasterMapContent() {
       }))
       .sort((a, b) => a.distKm - b.distKm)
       .slice(0, 4);
-  }, [points, location.lat, location.lng]);
+  }, [points, effectiveCoords]);
 
   const toggleLayer = (layer: DisasterLayer) =>
     setVisibleLayers((prev) => ({ ...prev, [layer]: !prev[layer] }));
@@ -249,7 +259,15 @@ export default function DisasterMapContent() {
       </div>
 
       {/* 定位授權與狀態指引橫幅 */}
-      <MapLocationBanner location={location} facilityTypeName="避難收容處所與救援單位" />
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        facilityTypeName="避難收容處所與救援單位"
+      />
 
       {/* 資料更新時間與免責聲明 */}
       <div className="rounded-2xl border border-amber-200/80 bg-amber-50/60 p-4 text-xs leading-relaxed text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
@@ -391,7 +409,9 @@ export default function DisasterMapContent() {
 
       {/* 地圖呈現 */}
       <div className="h-[60vh] min-h-[440px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800 shadow-sm">
-        {loading ? (
+        {!effectiveCoords ? (
+          <MapPendingPlaceholder geolocation={geolocation} />
+        ) : loading ? (
           <div className="flex h-full items-center justify-center bg-slate-50 dark:bg-slate-900">
             <LoadingOrb />
           </div>
@@ -402,7 +422,7 @@ export default function DisasterMapContent() {
             damStructurePoints={showDamStructure ? damStructurePoints : []}
             groundwaterPoints={showGroundwater ? groundwaterPoints : []}
             debrisFlowPoints={showDebrisFlow ? debrisFlowPoints : []}
-            userLocation={location}
+            userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false, refresh: geolocation.refresh, refreshing: locationRefreshing }}
             center={customCenter}
           />
         )}

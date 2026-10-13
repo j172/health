@@ -5,7 +5,7 @@ import SidebarWidgetShell from "@/components/Tools/SidebarWidgetShell";
 import { type NearestUvStation } from "@/app/api/uv/nearest/route";
 
 export default function UvSidebarWidget() {
-  const { station, showSpinner, isRefreshing, isDefault, hasError, refresh } =
+  const { station, showSpinner, isRefreshing, needsManualSelection, hasError, refresh } =
     useNearestStation<NearestUvStation>("/api/uv/nearest");
 
   const hasData = station !== null;
@@ -46,8 +46,10 @@ export default function UvSidebarWidget() {
       {hasError && station && (
         <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">重新整理失敗，顯示的可能是過期資料</p>
       )}
-      {isDefault && (
-        <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">定位權限未開啟，顯示預設地區資料</p>
+      {needsManualSelection && (
+        <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
+          未能取得您的定位，請點選下方查看全台測站地圖手動選擇鄰近地區
+        </p>
       )}
     </SidebarWidgetShell>
   );

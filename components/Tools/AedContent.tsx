@@ -3,12 +3,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import {
-  useGeolocation,
-  GEO_DEFAULTS,
-  parseGeolocationOverrideFromSearchParams,
-} from "@/components/Facilities/useGeolocation";
+import { parseGeolocationOverrideFromSearchParams } from "@/lib/utils/geolocationOverride";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -74,7 +72,16 @@ export default function AedContent({
   // issue #463：地圖彈出視窗「看附近的 AED」深連結帶入的 ?lat=&lng= 覆寫座標——
   // 有提供時以該點位為中心顯示結果，不需要使用者重新定位；沒有提供時行為不變。
   const locationOverride = useMemo(() => parseGeolocationOverrideFromSearchParams(searchParams), [searchParams]);
-  const geo = useGeolocation(locationOverride);
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback(locationOverride);
+  const locationRefreshing = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
   const [facilities, setFacilities] = useState<FacilityListItem[]>(initialFacilities);
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -128,15 +135,26 @@ export default function AedContent({
   );
 
   useEffect(() => {
-    fetchAeds({ lat: geo.lat || GEO_DEFAULTS.lat, lng: geo.lng || GEO_DEFAULTS.lng });
-  }, [geo.lat, geo.lng, fetchAeds]);
+    // issue #478：沒有任何可用座標（GPS／override／手動選擇的縣市皆無）時不
+    // 發起請求，保留伺服器端已渲染的 initialFacilities，不自行套用任何預設
+    // 座標去抓一份假裝「附近」的清單。
+    if (!effectiveCoords) return;
+    const { lat, lng } = effectiveCoords;
+    // Deferred via queueMicrotask (see lib/hooks/useSharedGeolocation.ts's
+    // own mount effect): fetchAeds() calls setState synchronously, which
+    // trips react-hooks/set-state-in-effect when called directly from an
+    // effect body.
+    queueMicrotask(() => {
+      fetchAeds({ lat, lng });
+    });
+  }, [effectiveCoords, fetchAeds]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchAeds({
       kw: keyword,
-      lat: geo.lat || undefined,
-      lng: geo.lng || undefined,
+      lat: effectiveCoords?.lat,
+      lng: effectiveCoords?.lng,
     });
   };
 
@@ -194,7 +212,15 @@ export default function AedContent({
       </div>
 
       {/* 2. 地圖定位權限與狀態指引條 */}
-      <MapLocationBanner location={geo} facilityTypeName="AED 設備" />
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        facilityTypeName="AED 設備"
+      />
 
       {/* 3. 互動式 AED 設施地圖 */}
       <div className="space-y-2">
@@ -211,7 +237,15 @@ export default function AedContent({
           <span>標示半徑 5km 搜尋範圍與詳細放置位置</span>
         </div>
         <div className="h-[380px] sm:h-[440px] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800">
-          <AedMapLeaflet facilities={processedFacilities} userLocation={geo} radiusMeters={5000} />
+          {!effectiveCoords ? (
+            <MapPendingPlaceholder geolocation={geolocation} />
+          ) : (
+            <AedMapLeaflet
+              facilities={processedFacilities}
+              userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false, refresh: geolocation.refresh, refreshing: locationRefreshing }}
+              radiusMeters={5000}
+            />
+          )}
         </div>
       </div>
 
@@ -225,10 +259,10 @@ export default function AedContent({
             距離您最近的 AED
             <span className="text-xs font-normal text-slate-500">（依 GPS 距離排列）</span>
           </h3>
-          {geo.loading ? (
+          {!effectiveCoords ? (
             <span className="text-xs text-slate-500 animate-pulse">正在精確定位中...</span>
-          ) : geo.isDefault ? (
-            <span className="text-xs text-amber-600 dark:text-amber-400">⚠️ 採用預設定位，建議開啟瀏覽器定位權限</span>
+          ) : hasManualCoords ? (
+            <span className="text-xs text-indigo-600 dark:text-indigo-400">📍 已套用您選擇的地區</span>
           ) : (
             <span className="text-xs text-emerald-600 dark:text-emerald-400">已自動定位</span>
           )}

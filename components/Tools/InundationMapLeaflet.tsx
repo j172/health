@@ -10,7 +10,8 @@ import type {
   InundationAlertLevel,
 } from "@/lib/server/inundation/types";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
+import type { MapUserLocation } from "@/lib/types/mapUserLocation";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
@@ -62,7 +63,7 @@ const ALERT_LABELS: Record<InundationAlertLevel, string> = {
 export interface InundationMapLeafletProps {
   sensors: InundationSensorItem[];
   shelters: InundationShelterPoint[];
-  userLocation?: GeoLocation;
+  userLocation?: MapUserLocation;
 }
 
 export default function InundationMapLeaflet({
@@ -191,7 +192,7 @@ export default function InundationMapLeaflet({
         <div className="absolute top-3 right-3 z-[1000]">
           <button
             type="button"
-            onClick={() => userLocation.refresh()}
+            onClick={() => userLocation.refresh?.()}
             disabled={userLocation.refreshing}
             title="重新定位至我的位置"
             className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-md transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"

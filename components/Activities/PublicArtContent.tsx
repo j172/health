@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import type { PublicArtItem } from "@/app/api/culture/public-art/route";
-import { useGeolocation, resolveGeolocationTimeout } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import Pagination from "@/components/Tools/Pagination";
@@ -84,7 +84,15 @@ const FIELD_TYPES = ["全部場域", "交通建設", "教育機構", "休閒運�
 
 export default function PublicArtContent() {
   const { locale } = useLanguage();
-  const geo = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
   const [items, setItems] = useState<PublicArtItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,8 +103,14 @@ export default function PublicArtContent() {
   const [artType, setArtType] = useState<"all" | "art" | "venue">("all");
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
-  const [userGps, setUserGps] = useState<{ lat: number; lng: number } | null>(null);
-  const [gpsLoading, setGpsLoading] = useState(false);
+  // issue #478：「🧭 尋找附近場所與作品」是使用者主動點擊才啟用的功能（不像其
+  // 他頁面的定位是自動套用），改用共用 hook 後這兩個旗標取代原本 userGps／
+  // gpsLoading：nearbyActive 記錄目前清單是否正依 GPS/手動選擇的地區排序，
+  // gpsRequested 記錄使用者是否已經按下按鈕——按下後若座標還沒就位（包含正在
+  // 定位或拒絕/逾時後改用手動選擇縣市），下面的 effect 會在座標到位的那一刻
+  // 自動補上這次查詢，不需要呼叫端自己 await 一個 Promise。
+  const [nearbyActive, setNearbyActive] = useState(false);
+  const [gpsRequested, setGpsRequested] = useState(false);
 
   const { page, pageSize, setPage, setPageSize } = usePagination();
 
@@ -133,34 +147,37 @@ export default function PublicArtContent() {
     });
   }, [loadData]);
 
-  const handleUseGps = async () => {
-    if (!navigator.geolocation) {
-      alert("您的裝置不支援地理位置定位");
-      return;
-    }
-    setGpsLoading(true);
-    try {
-      const { timeoutMs } = await resolveGeolocationTimeout(8000);
-      const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: false,
-          timeout: timeoutMs,
-        });
-      });
-      const { latitude, longitude } = pos.coords;
-      setUserGps({ lat: latitude, lng: longitude });
-      await loadData(latitude, longitude);
+  const handleUseGps = () => {
+    setGpsRequested(true);
+    if (effectiveCoords) {
+      loadData(effectiveCoords.lat, effectiveCoords.lng);
+      setNearbyActive(true);
       setPage(1);
-    } catch (e: any) {
-      console.warn("GPS 定位失敗:", e);
-      alert("定位逾時或未取得授權，請手動依縣市查詢。");
-    } finally {
-      setGpsLoading(false);
+    } else {
+      // 唯一允許跳出瀏覽器原生授權彈窗的路徑——座標到位後由下面的 effect 接手。
+      geolocation.refresh();
     }
   };
 
+  // 使用者按下「尋找附近」後，座標（GPS 成功，或拒絕/逾時後手動選擇的縣市）
+  // 一到位就自動補上這次查詢；不會在座標還沒就位前猜測任何座標。
+  useEffect(() => {
+    if (!gpsRequested || !effectiveCoords) return;
+    const { lat, lng } = effectiveCoords;
+    // Deferred via queueMicrotask (see lib/hooks/useSharedGeolocation.ts's
+    // own mount effect): avoids react-hooks/set-state-in-effect from calling
+    // setState directly in the effect body.
+    queueMicrotask(() => {
+      loadData(lat, lng);
+      setNearbyActive(true);
+      setPage(1);
+      setGpsRequested(false);
+    });
+  }, [gpsRequested, effectiveCoords, loadData, setPage]);
+
   const handleClearGps = () => {
-    setUserGps(null);
+    setGpsRequested(false);
+    setNearbyActive(false);
     loadData();
     setPage(1);
   };
@@ -293,16 +310,29 @@ export default function PublicArtContent() {
             <button
               type="button"
               onClick={handleUseGps}
-              disabled={gpsLoading}
+              disabled={gpsRequested && !effectiveCoords}
               className={`flex items-center justify-center gap-1.5 rounded-xl border px-4 py-2.5 text-xs font-bold transition-all ${
-                userGps
+                nearbyActive
                   ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                   : "border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
               }`}
             >
-              <span>{gpsLoading ? "📍 定位中..." : userGps ? "📍 附近 50km" : "🧭 尋找附近場所與作品"}</span>
+              <span>{gpsRequested && !effectiveCoords ? "📍 定位中..." : nearbyActive ? "📍 附近 50km" : "🧭 尋找附近場所與作品"}</span>
             </button>
           </div>
+
+          {/* 拒絕/逾時/不支援時的手動選擇縣市提示——只在使用者實際按下「尋找附近」後才顯示，避免還沒用到定位功能就打擾使用者 */}
+          {gpsRequested && (
+            <MapLocationBanner
+              geolocation={geolocation}
+              manualCounty={manualCounty}
+              manualDistrict={manualDistrict}
+              onCountyChange={setManualCounty}
+              onDistrictChange={setManualDistrict}
+              hasManualCoords={hasManualCoords}
+              facilityTypeName="公共藝術與演藝場所"
+            />
+          )}
 
           <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
             {/* City Filter */}
@@ -375,17 +405,17 @@ export default function PublicArtContent() {
       {/* Map View */}
       {viewMode === "map" && (
         <div className="space-y-4">
-          <MapLocationBanner location={geo} facilityTypeName="公共藝術與演藝場所" />
           {!loading && (
             <div className="h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs dark:border-slate-800 dark:bg-slate-900">
               <FacilityMap
                 userLocation={{
-                  lat: userGps?.lat ?? geo.lat ?? 25.0478,
-                  lng: userGps?.lng ?? geo.lng ?? 121.517,
-                  isDefault: userGps ? false : geo.isDefault,
+                  lat: effectiveCoords?.lat ?? 25.0478,
+                  lng: effectiveCoords?.lng ?? 121.517,
+                  isDefault: !effectiveCoords,
+                  refresh: geolocation.refresh,
                 }}
                 markers={mapMarkers}
-                showRadius={Boolean(userGps || !geo.isDefault)}
+                showRadius={nearbyActive}
                 radiusMeters={50000}
               />
             </div>

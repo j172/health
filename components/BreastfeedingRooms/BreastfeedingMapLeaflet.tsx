@@ -44,7 +44,7 @@ export interface BreastfeedingRoomPoint {
 }
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 
 export interface BreastfeedingMapProps {
   points: BreastfeedingRoomPoint[];

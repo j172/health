@@ -6,8 +6,9 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { HeritageCategory } from "@/lib/server/culture/ingestHeritageAssets";
 import type { HeritageAssetPoint } from "@/lib/server/culture/queries";
 
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const HeritageMapLeaflet = dynamic(() => import("@/components/HeritageMap/HeritageMapLeaflet"), { ssr: false });
@@ -52,7 +53,16 @@ const formatUpdatedAt = (iso: string | null): string => {
 };
 
 export default function HeritageMapContent() {
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
+  const locationRefreshing = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
   const [points, setPoints] = useState<HeritageAssetPoint[]>([]);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -132,7 +142,15 @@ export default function HeritageMapContent() {
         </p>
       </div>
 
-      <MapLocationBanner location={location} facilityTypeName="文化資產據點" />
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        facilityTypeName="文化資產據點"
+      />
 
       {/* Layer toggles */}
       <div className="flex flex-wrap gap-3 rounded-2xl border border-neutral-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900">
@@ -167,22 +185,31 @@ export default function HeritageMapContent() {
 
       {/* Map */}
       <div className="relative h-[60vh] min-h-[420px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800">
-        <button
-          type="button"
-          onClick={() => location.refresh()}
-          disabled={location.refreshing}
-          className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-amber-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-amber-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
-          title="重新取得精準定位並移至我的位置"
-        >
-          <span>🎯</span>
-          <span>{location.refreshing ? "定位中…" : "我的位置"}</span>
-        </button>
-        {loading ? (
-          <div className="flex h-full items-center justify-center">
-            <LoadingOrb />
-          </div>
+        {!effectiveCoords ? (
+          <MapPendingPlaceholder geolocation={geolocation} />
         ) : (
-          <HeritageMapLeaflet points={visiblePoints} userLocation={location} />
+          <>
+            <button
+              type="button"
+              onClick={() => geolocation.refresh()}
+              disabled={locationRefreshing}
+              className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-amber-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-amber-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
+              title="重新取得精準定位並移至我的位置"
+            >
+              <span>🎯</span>
+              <span>{locationRefreshing ? "定位中…" : "我的位置"}</span>
+            </button>
+            {loading ? (
+              <div className="flex h-full items-center justify-center">
+                <LoadingOrb />
+              </div>
+            ) : (
+              <HeritageMapLeaflet
+                points={visiblePoints}
+                userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false }}
+              />
+            )}
+          </>
         )}
       </div>
     </div>

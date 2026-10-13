@@ -52,7 +52,7 @@ const LAYER_LABELS: Record<DisasterLayer, string> = {
 };
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 
 const boolLabel = (v: boolean | null): string | null => {
   if (v === null) return null;

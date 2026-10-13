@@ -1,8 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { useGeolocation, type GeolocationOverride } from "@/components/Facilities/useGeolocation";
+import { useEffect, useMemo, useState } from "react";
+import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
+import { type GeolocationOverride, isValidGeolocationOverride } from "@/lib/utils/geolocationOverride";
 import type { MapMarker } from "@/components/Facilities/FacilityMap";
 import WeeklyHoursLine from "@/components/Facilities/WeeklyHours";
 import LoadingOrb from "@/components/ui/LoadingOrb";
@@ -123,7 +124,7 @@ export default function FacilitySearchContent({
   config: FacilitySearchConfig;
   /**
    * Optional `?lat=&lng=` override (issue #463) resolved server-side by the calling
-   * page from its own `searchParams` — see the comment above `useGeolocation(...)`
+   * page from its own `searchParams` — see the comment above `useSharedGeolocation(...)`
    * below for why this is a prop here instead of this component calling
    * `useSearchParams()` itself. `null`/omitted preserves the pre-existing
    * browser-geolocation-first behavior exactly.
@@ -154,10 +155,21 @@ export default function FacilitySearchContent({
   // 覆寫座標，由呼叫端（目前只有 /tools/pharmacies，一個 server component）在
   // page.tsx 解析 searchParams 後往下傳——FacilitySearchContent 被 30 個以上的
   // /tools 頁面共用，刻意不在這裡自己呼叫 useSearchParams()，避免逼著其他 29
-  // 個跟這張票無關的頁面也要補上 Suspense 邊界才能繼續 build。沒有提供
-  // locationOverride 時行為不變（仍是瀏覽器定位 → 使用者偏好位置 → 預設位置的
-  // 既有流程）。
-  const location = useGeolocation(locationOverride);
+  // 個跟這張票無關的頁面也要補上 Suspense 邊界才能繼續 build。
+  //
+  // issue #478：改用共用的 useSharedGeolocation()。有效覆寫座標存在時傳入
+  // `skip: true`——跳過瀏覽器定位整個流程（不讀快取、不呼叫
+  // getCurrentPosition），完全不觸發定位權限彈窗，維持 override 原本「完全略
+  // 過瀏覽器定位」的語意；沒有提供 override 時行為不變。
+  const hasOverride = isValidGeolocationOverride(locationOverride);
+  const geolocation = useSharedGeolocation({ skip: hasOverride });
+  // useMemo 讓 override 模式下也有一個跨渲染穩定的物件參照（不會每次 render
+  // 都產生新物件），否則下面依賴 effectiveCoords 的 useEffect 會在每次渲染
+  // 都誤判為「座標變了」而重新發起請求。
+  const geoCoords = useMemo(
+    () => (hasOverride ? { lat: locationOverride!.lat, lng: locationOverride!.lng } : geolocation.coords),
+    [hasOverride, locationOverride, geolocation.coords],
+  );
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [county, setCounty] = useState("");
@@ -184,6 +196,13 @@ export default function FacilitySearchContent({
   // fall back gracefully
   const effectiveSort = sort;
 
+  // issue #478：使用者手動選擇的縣市（既有的「地區快篩」功能）本身就是一個
+  // 明確的手動定位 fallback——不需要再另外加一個縣市選擇器。優先順序：GPS／
+  // override 座標 > 使用者選擇的縣市中心點 > null（兩者都沒有時絕不套用任何
+  // 預設座標，交由 MapLocationBanner 顯示「請使用上方地區篩選」的提示）。
+  const countyCentroid = county && TAIWAN_COUNTY_CENTROIDS[county] ? TAIWAN_COUNTY_CENTROIDS[county] : null;
+  const effectiveCoords = geoCoords ?? countyCentroid;
+
   useEffect(() => {
     let cancelled = false;
 
@@ -202,20 +221,16 @@ export default function FacilitySearchContent({
       if (onlyCharity) params.set("charity", "1");
       if (effectiveSort) params.set("sort", effectiveSort);
 
-      // Coordinates for distance calculations:
-      // If user selected county, use the county centroid coordinates for distance sort;
-      // otherwise use browser geolocation (or default)
-      if (effectiveSort === "distance") {
-        const centroid = county && TAIWAN_COUNTY_CENTROIDS[county] ? TAIWAN_COUNTY_CENTROIDS[county] : null;
-        const targetLat = centroid ? centroid.lat : location.lat;
-        const targetLng = centroid ? centroid.lng : location.lng;
-        if (targetLat !== undefined && targetLng !== undefined && Number.isFinite(targetLat) && Number.isFinite(targetLng)) {
-          params.set("lat", String(targetLat));
-          params.set("lng", String(targetLng));
-          // Radius constraint applies only when purely browsing nearby without specific county/district/keyword
-          if (!county && !district && !keyword) {
-            params.set("radius", String(radius));
-          }
+      // Coordinates for distance calculations: county centroid takes priority
+      // (search-filter semantics), else the GPS/override coordinate; neither
+      // present just omits lat/lng (the API falls back to id-DESC ordering,
+      // see lib/server/facilities/queries.ts's isGpsSearch guard).
+      if (effectiveSort === "distance" && effectiveCoords) {
+        params.set("lat", String(effectiveCoords.lat));
+        params.set("lng", String(effectiveCoords.lng));
+        // Radius constraint applies only when purely browsing nearby without specific county/district/keyword
+        if (!county && !district && !keyword) {
+          params.set("radius", String(radius));
         }
       }
 
@@ -262,8 +277,7 @@ export default function FacilitySearchContent({
       cancelled = true;
     };
   }, [
-    location.lat,
-    location.lng,
+    effectiveCoords,
     keyword,
     county,
     district,
@@ -462,7 +476,12 @@ export default function FacilitySearchContent({
         </div>
       </form>
 
-      <MapLocationBanner location={location} facilityTypeName={title || "機構據點"} />
+      <MapLocationBanner
+        geolocation={geolocation}
+        hasManualCoords={Boolean(countyCentroid)}
+        showPicker={false}
+        facilityTypeName={title || "機構據點"}
+      />
 
       {loading && (
         <div className="flex justify-center py-8">
@@ -474,10 +493,10 @@ export default function FacilitySearchContent({
 
       {!loading && !error && facilities && (
         <>
-          {markers.length > 0 && (
+          {markers.length > 0 && effectiveCoords && (
             <div className="h-[400px] overflow-hidden rounded-xl border border-neutral-200 dark:border-slate-800">
               <FacilityMap
-                userLocation={location}
+                userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false, refresh: geolocation.refresh }}
                 markers={markers}
                 radiusMeters={radiusMeters}
                 showRadius={!keyword && !county && !district && effectiveSort === "distance" && !widenedRadius}
