@@ -58,7 +58,7 @@ const { getRelatedTools } = await import("../lib/server/tools/navModel.ts");
 // ---------------------------------------------------------------------------
 
 test("every one of the 80 TOOL_CATALOG tools gets >= 4 related tools from getRelatedTools", () => {
-  assert.equal(TOOL_CATALOG.length, 80, "expected the catalog to have 80 tools");
+  assert.equal(TOOL_CATALOG.length, 81, "expected the catalog to have 81 tools");
   for (const tool of TOOL_CATALOG) {
     const related = getRelatedTools(tool.slug);
     assert.ok(

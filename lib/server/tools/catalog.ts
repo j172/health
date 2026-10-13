@@ -1319,7 +1319,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.cusa.org.tw",
       },
     ],
-    relatedSlugs: ["disability-welfare", "long-term-care"],
+    relatedSlugs: ["disability-welfare", "long-term-care", "accessible-parking"],
     faqs: [
       {
         question: "資料涵蓋哪些無障礙ATM？",
@@ -1357,6 +1357,38 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "資料多久更新一次？是否涵蓋全國？",
         answer:
           "資料來源為交通部 TDX 運輸資料流通服務平台的「有聲號誌」基礎服務，由各縣市政府交通主管機關提供並定期更新；本工具會同步全部已開放資料的縣市，若某縣市尚未開放或暫時查詢失敗，僅該縣市資料會缺漏，不影響其他縣市正常顯示。",
+      },
+    ],
+  },
+  {
+    slug: "accessible-parking",
+    group: "elder-care-welfare",
+
+    navLabel: "特殊車位查詢",
+    title: "孕婦親子／身心障礙／復康巴士車位查詢",
+    keywords: ["身心障礙車位", "孕婦親子車位", "復康巴士停車", "無障礙停車位", "愛心車位"],
+    description:
+      "查詢全台停車場（路外）與路邊停車（路內）的孕婦及親子專用、身心障礙汽車、身心障礙機車與復康巴士專用車位，顯示即時剩餘車位數，支援關鍵字搜尋與附近定位。",
+    directAnswer:
+      "查詢全臺停車場與路邊停車中的孕婦及親子專用、身心障礙汽車、身心障礙機車、復康巴士這 4 種特殊車位，並顯示每個車位類型的即時剩餘數。",
+    scientificBasis: [
+      {
+        title: "停車資訊 (Parking/OffStreet, Parking/OnStreet)",
+        authority: "交通部 TDX 運輸資料流通服務平台",
+        url: "https://tdx.transportdata.tw",
+      },
+    ],
+    relatedSlugs: ["disability-atm", "accessible-transit", "audible-signals", "baby-friendly-hospitals"],
+    faqs: [
+      {
+        question: "為什麼有些停車場或路段查不到特殊車位？",
+        answer:
+          "本工具只保留孕婦及親子專用、身心障礙汽車、身心障礙機車、復康巴士這 4 種車位類型；沒有設置這些車位類型的停車場或路段本來就不會出現在查詢結果中，不代表該處完全沒有停車空間。",
+      },
+      {
+        question: "剩餘車位數多久更新？",
+        answer:
+          "資料來源為交通部 TDX 運輸資料流通服務平台的「停車資訊」基礎服務，由各縣市政府或停車場管理單位提供即時剩餘車位數，本站會定期同步最新數字；若某縣市或某類車位暫時查詢失敗，僅該部分資料會缺漏，不影響其他縣市或車位類型正常顯示。",
       },
     ],
   },
@@ -3122,7 +3154,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.hpa.gov.tw/",
       },
     ],
-    relatedSlugs: ["breastfeeding-rooms", "contraception-map", "child-welfare-institutions"],
+    relatedSlugs: ["breastfeeding-rooms", "contraception-map", "child-welfare-institutions", "accessible-parking"],
     group: "family",
 
     schemaType: "MedicalWebPage",
