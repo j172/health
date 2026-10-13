@@ -1,5 +1,10 @@
 import type { LlmsPageContent, LlmsPageLink, LlmsPageSection } from "./llmsPage";
 import { NEARBY_DEFAULT_TYPES, NEARBY_MORE_TYPES } from "@/lib/server/nearby/registry";
+import type { PathLocale } from "@/lib/i18n/dictionary";
+import { getLocalizedPageMeta } from "@/lib/i18n/pageContent";
+import { getLocalizedNearbyLabel } from "@/lib/i18n/nearbyLabelContent";
+import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
+import { buildLocalizedPath, isTranslatedToolSlug, type TranslatedToolSlug } from "@/lib/i18n/translatedPages";
 
 /**
  * Single source of truth for "/nearby"'s static description (issue #466
@@ -55,5 +60,51 @@ export function buildNearbyLlmsPageContent(baseUrl: string): LlmsPageContent {
       { title: "全臺急救責任醫院急診即時看板", url: `${baseUrl}/tools/er-status` },
       { title: "防災與避難所地圖", url: `${baseUrl}/tools/disaster-map` },
     ],
+  };
+}
+
+/** The 3 related tools NEARBY_SUMMARY's zh variant above hardcodes, resolved
+ * generically so the locale variant below can reuse their real localized
+ * titles instead of a second hardcoded zh-only copy. All 3 are translated
+ * tool slugs today (aed, er-status, disaster-map). */
+const NEARBY_RELATED_TOOL_SLUGS: TranslatedToolSlug[] = ["aed", "er-status", "disaster-map"];
+
+/**
+ * Locale-aware twin of `buildNearbyLlmsPageContent` (issue #488, parent #438
+ * §Q/§S). "/nearby"'s own visible page (`NearbyContent.tsx`) only ever
+ * localizes each facility type's short *label* (via
+ * `getLocalizedNearbyLabel`) — never the longer zh `description` prose,
+ * which has no translated equivalent anywhere in the i18n system — so this
+ * adapter follows the same scope: `sources` carries localized labels only
+ * (no `note`), and the zh-only "功能說明"/type-list narrative sections
+ * `buildNearbyLlmsPageContent` adds are intentionally left out rather than
+ * surfacing untranslated zh prose under a non-Chinese heading.
+ */
+export function buildLocaleNearbyLlmsPageContent(locale: PathLocale, baseUrl: string): LlmsPageContent {
+  const meta = getLocalizedPageMeta("nearby", locale);
+  const url = `${baseUrl}${buildLocalizedPath("/nearby", locale)}`;
+
+  const resolveTypeUrl = (toolSlug: string | undefined): string | undefined => {
+    if (!toolSlug) return undefined;
+    const path = isTranslatedToolSlug(toolSlug) ? buildLocalizedPath(`/tools/${toolSlug}`, locale) : `/tools/${toolSlug}`;
+    return `${baseUrl}${path}`;
+  };
+
+  const sources: LlmsPageLink[] = [...NEARBY_DEFAULT_TYPES, ...NEARBY_MORE_TYPES].map((def) => ({
+    title: getLocalizedNearbyLabel(def.key, locale, `${def.emoji} ${def.label}`),
+    url: resolveTypeUrl(def.toolSlug),
+  }));
+
+  const related: LlmsPageLink[] = NEARBY_RELATED_TOOL_SLUGS.map((slug) => ({
+    title: getLocalizedToolMeta(slug, locale).title,
+    url: `${baseUrl}${buildLocalizedPath(`/tools/${slug}`, locale)}`,
+  }));
+
+  return {
+    title: meta.title,
+    url,
+    summary: meta.description,
+    sources,
+    related,
   };
 }

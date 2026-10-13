@@ -52,6 +52,22 @@ registerHooks({
     }
     return nextResolve(target, { ...context, parentURL });
   },
+  // lib/i18n/dictionary.ts imports the locale files relying on
+  // TypeScript's resolveJsonModule (as every other .ts file importing a
+  // .json does in this repo) — no `with { type: "json" }` import
+  // attribute. Plain `node --test` requires that attribute for the
+  // *default* JSON load path, so this intercepts .json URLs and returns
+  // their parsed-as-JSON source directly instead, sidestepping the
+  // attribute requirement entirely (issue #488 pulled this chain in via
+  // guideLlmsPage.ts's new locale-aware adapter — same hook as
+  // tests/i18n-routing-485.test.mjs).
+  load(url, context, nextLoad) {
+    if (url.endsWith(".json")) {
+      const source = fs.readFileSync(fileURLToPath(url), "utf8");
+      return { format: "json", source, shortCircuit: true };
+    }
+    return nextLoad(url, context);
+  },
 });
 
 const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");

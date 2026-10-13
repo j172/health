@@ -45,6 +45,22 @@ registerHooks({
     }
     return nextResolve(target, { ...context, parentURL });
   },
+  // lib/i18n/dictionary.ts imports the locale files relying on
+  // TypeScript's resolveJsonModule (as every other .ts file importing a
+  // .json does in this repo) — no `with { type: "json" }` import
+  // attribute. Plain `node --test` requires that attribute for the
+  // *default* JSON load path, so this intercepts .json URLs and returns
+  // their parsed-as-JSON source directly instead, sidestepping the
+  // attribute requirement entirely (issue #488 pulled this chain in via
+  // toolLlmsPage.ts's new locale-aware adapter — same hook as
+  // tests/i18n-routing-485.test.mjs).
+  load(url, context, nextLoad) {
+    if (url.endsWith(".json")) {
+      const source = fs.readFileSync(fileURLToPath(url), "utf8");
+      return { format: "json", source, shortCircuit: true };
+    }
+    return nextLoad(url, context);
+  },
 });
 
 const { buildLlmsTxt, buildLlmsMarkdown } = await import("../lib/server/content/llmsPage.ts");
@@ -252,15 +268,24 @@ test("buildToolLlmsPageContent resolves relatedSlugs to real TOOL_CATALOG entrie
 
 const readSource = (...segments) => fs.readFileSync(path.join(ROOT_DIR, ...segments), "utf-8");
 
-test("ToolPageShell.tsx declares its own per-tool llms.txt + markdown <link> tags", () => {
+test("ToolPageShell.tsx declares its own per-tool llms.txt + markdown <link> tags, locale-aware (issue #488)", () => {
   const src = readSource("components", "Tools", "ToolPageShell.tsx");
+  // Issue #488: the href must route through buildLocalizedPath(...) so a
+  // /{locale}/tools/<slug> page's <link> points at that locale's own
+  // llms.txt/markdown sibling, not always the zh /tools/<slug> one (which
+  // buildLocalizedPath still resolves to for locale "zh-TW", so the zh page
+  // behaves byte-for-byte as before).
   assert.ok(
-    /<link\s+rel="alternate"\s+type="text\/plain"[^/]*href=\{`\/tools\/\$\{slug\}\/llms\.txt`\}/.test(src),
-    "must declare a text/plain alternate link to this tool's own /tools/<slug>/llms.txt",
+    /<link[\s\S]*?rel="alternate"[\s\S]*?type="text\/plain"[\s\S]*?href=\{`\$\{buildLocalizedPath\(`\/tools\/\$\{slug\}`,\s*locale\)\}\/llms\.txt`\}/.test(
+      src,
+    ),
+    "must declare a text/plain alternate link built from buildLocalizedPath(`/tools/${slug}`, locale) + '/llms.txt'",
   );
   assert.ok(
-    /<link\s+rel="alternate"\s+type="text\/markdown"[^/]*href=\{`\/tools\/\$\{slug\}\/markdown`\}/.test(src),
-    "must declare a text/markdown alternate link to this tool's own /tools/<slug>/markdown",
+    /<link[\s\S]*?rel="alternate"[\s\S]*?type="text\/markdown"[\s\S]*?href=\{`\$\{buildLocalizedPath\(`\/tools\/\$\{slug\}`,\s*locale\)\}\/markdown`\}/.test(
+      src,
+    ),
+    "must declare a text/markdown alternate link built from buildLocalizedPath(`/tools/${slug}`, locale) + '/markdown'",
   );
 });
 

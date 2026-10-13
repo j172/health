@@ -10,7 +10,7 @@ import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import { displayDate, toTaipei } from "@/lib/format/news";
 import RecentToolRecorder from "@/components/Tools/RecentToolRecorder";
 import { getDictionary, type Locale } from "@/lib/i18n/dictionary";
-import { isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
+import { buildLocalizedPath, isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
 import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
 
@@ -125,9 +125,27 @@ export default async function ToolPageShell({
        * here (rather than via the page-level Metadata API) because every
        * /tools/<slug> page shares this one component, so this single pair
        * of tags covers all of them; React hoists <link> elements to <head>
-       * no matter where in the tree they render. */}
-      <link rel="alternate" type="text/plain" title={`${title} - LLM Index (llms.txt)`} href={`/tools/${slug}/llms.txt`} />
-      <link rel="alternate" type="text/markdown" title={`${title} - Clean Markdown`} href={`/tools/${slug}/markdown`} />
+       * no matter where in the tree they render.
+       *
+       * Issue #488: on a /{locale}/tools/<slug> page (locale !== "zh-TW",
+       * which only ever happens for a translated slug — see this
+       * component's own `locale` prop doc comment), these must point at
+       * that locale's own llms.txt/markdown sibling
+       * (app/[locale]/tools/[slug]/llms.txt|markdown/route.ts), never at
+       * the zh ones, or a crawler reading this tag off the English page
+       * would be handed Chinese content instead. */}
+      <link
+        rel="alternate"
+        type="text/plain"
+        title={`${title} - LLM Index (llms.txt)`}
+        href={`${buildLocalizedPath(`/tools/${slug}`, locale)}/llms.txt`}
+      />
+      <link
+        rel="alternate"
+        type="text/markdown"
+        title={`${title} - Clean Markdown`}
+        href={`${buildLocalizedPath(`/tools/${slug}`, locale)}/markdown`}
+      />
 
       {/* 最近使用的工具 (issue #472): records this slug into the device-only
        * localStorage list the homepage reads back — see
