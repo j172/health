@@ -183,6 +183,22 @@ const TRUSTED_CAS = [
   TWCA_CYBER_ROOT_CA,
 ];
 
+// issue #401: passing `ca: TRUSTED_CAS` (Node's ~170-cert root store + 4
+// project PEMs) inline on every request with no agent (Node's default has
+// keepAlive: false) forced a brand-new tls.SecureContext to be constructed
+// from native code on every single HTTPS call this app makes. Enough
+// concurrent calls exhausted the native heap — three std::bad_alloc crashes
+// on 2026-09-23 all shared the exact same SSL_CTX_add_client_CA /
+// SecureContext::AddCACert native stack trace. Building the CA list into
+// one shared, keep-alive Agent (constructed once, at module load) means the
+// SecureContext is built once and reused across every request instead.
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  maxSockets: 50,
+  ca: TRUSTED_CAS,
+});
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 50 });
+
 export interface HttpRequestOptions {
   method?: string;
   headers?: Record<string, string>;
@@ -261,7 +277,7 @@ const requestOnce = (
           ...options.headers,
         },
         timeout: options.timeoutMs ?? 15_000,
-        ...(parsed.protocol === "https:" ? { ca: TRUSTED_CAS } : {}),
+        agent: parsed.protocol === "https:" ? httpsAgent : httpAgent,
       },
       (res) => {
         const limit = options.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
