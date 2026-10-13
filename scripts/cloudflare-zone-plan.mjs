@@ -53,11 +53,18 @@ function renderRuleReconciliation(title, r) {
   for (const u of r.updated) lines.push(`- ✏️ update \`${u.ref}\``);
   for (const rule of r.removed) lines.push(`- ➖ remove \`${rule.ref}\` (no longer in zone-settings.json)`);
   if (r.unmanagedPreserved.length > 0) {
-    lines.push(
-      `- (${r.unmanagedPreserved.length} unmanaged live rule(s) in this phase are left untouched: ${r.unmanagedPreserved
-        .map((rule) => rule.ref || rule.id || rule.description || "unlabeled")
-        .join(", ")})`,
-    );
+    lines.push(`- ${r.unmanagedPreserved.length} unmanaged live rule(s) in this phase are left untouched:`);
+    for (const rule of r.unmanagedPreserved) {
+      // Prefer description (human-meaningful) over the bare id — a reviewer
+      // deciding whether an unmanaged rule can be touched/replaced needs to
+      // know what it actually does, not just its opaque id (issue #455's
+      // apply run hit the free plan's 1-rule cap on http_ratelimit and had
+      // no way to tell what the existing unmanaged rule there even was).
+      const label = rule.description || rule.ref || rule.id || "unlabeled";
+      const idSuffix = rule.id && rule.id !== label ? ` (id: ${rule.id})` : "";
+      const exprSuffix = rule.expression ? ` — expression: \`${rule.expression}\`` : "";
+      lines.push(`  - \`${label}\`${idSuffix}${exprSuffix}`);
+    }
   }
   return lines;
 }
