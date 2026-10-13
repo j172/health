@@ -169,8 +169,18 @@ async function main() {
     // manages onto the full live object so every other live field
     // (super bot fight mode, enterprise bot management, etc.) survives
     // untouched.
+    // Cloudflare's bot_management GET response includes read-only fields
+    // (using_latest_model, stale_zone_configuration — confirmed live 2026-10,
+    // issue #455's first apply attempt: PUTting using_latest_model back
+    // verbatim failed with "cannot write to read-only value") that a PUT
+    // must omit entirely, not just leave unchanged. Spread everything else
+    // from the live object (to avoid resetting fields this file doesn't
+    // manage, e.g. Super Bot Fight Mode settings, to their defaults by
+    // omission — there's no partial PATCH for this resource), explicitly
+    // excluding the known read-only ones.
+    const { using_latest_model, stale_zone_configuration, ...liveBotManagementWritable } = liveBotManagement;
     const merged = {
-      ...liveBotManagement,
+      ...liveBotManagementWritable,
       fight_mode: settings.botManagement.fightMode,
       ai_bots_protection: settings.botManagement.aiBotsProtection,
     };
