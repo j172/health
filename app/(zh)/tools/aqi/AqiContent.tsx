@@ -4,7 +4,16 @@ import { useEffect, useState } from "react";
 import type { AqiSite } from "@/lib/server/aqi/types";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import NearbyRainfallCard from "@/components/Tools/NearbyRainfallCard";
-import { useLanguage } from "@/app/context/LanguageContext";
+import { useLanguage, type Locale } from "@/app/context/LanguageContext";
+
+// "Updated at" is a plain timestamp, not translated text — only its digit
+// order/separator convention follows the viewer's language.
+const INTL_LOCALE_MAP: Record<Locale, string> = {
+  "zh-TW": "zh-TW",
+  en: "en-US",
+  ja: "ja-JP",
+  ko: "ko-KR",
+};
 
 const COUNTIES = [
   "臺北市",
@@ -31,6 +40,26 @@ const COUNTIES = [
   "連江縣",
 ];
 
+type Translator = (key: string, defaultValue?: string) => string;
+
+// MOENV's "status" field is a finite set of government-standard AQI grading
+// labels (良好/普通/...), not free-text station data — like the UV-level
+// badges, these ARE generic UI labels and get translated. Falls back to
+// echoing the raw string for any value outside this known set.
+const AQI_STATUS_KEYS: Record<string, { key: string; defaultValue: string }> = {
+  "良好": { key: "aqiTool.statusGood", defaultValue: "良好" },
+  "普通": { key: "aqiTool.statusModerate", defaultValue: "普通" },
+  "對敏感族群不健康": { key: "aqiTool.statusUnhealthySensitive", defaultValue: "對敏感族群不健康" },
+  "對所有族群不健康": { key: "aqiTool.statusUnhealthy", defaultValue: "對所有族群不健康" },
+  "非常不健康": { key: "aqiTool.statusVeryUnhealthy", defaultValue: "非常不健康" },
+  "危害": { key: "aqiTool.statusHazardous", defaultValue: "危害" },
+};
+
+function getAqiStatusLabel(t: Translator, status: string): string {
+  const entry = AQI_STATUS_KEYS[status];
+  return entry ? t(entry.key, entry.defaultValue) : status;
+}
+
 function AqiPollutant({
   label,
   value,
@@ -52,7 +81,7 @@ function AqiPollutant({
 }
 
 export default function AqiContent() {
-  const { tDynamic } = useLanguage();
+  const { locale, t, tDynamic } = useLanguage();
   const [county, setCounty] = useState("");
   const [stations, setStations] = useState<AqiSite[] | null>(null);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
@@ -94,13 +123,17 @@ export default function AqiContent() {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200">
         <div className="flex items-center gap-2 font-medium">
           <span className="text-base">🏃</span>
-          <span>今日想出門跑步、騎單車或帶孩子去公園？即刻查詢結合空品、熱指數與 UV 的<strong>全台戶外安全指數</strong>。</span>
+          <span>
+            {t("aqiTool.outdoorSafetyPromoPrefix", "今日想出門跑步、騎單車或帶孩子去公園？即刻查詢結合空品、熱指數與 UV 的")}
+            <strong>{t("aqiTool.outdoorSafetyPromoStrong", "全台戶外安全指數")}</strong>
+            {t("aqiTool.outdoorSafetyPromoSuffix", "。")}
+          </span>
         </div>
         <a
           href="/tools/outdoor-safety"
           className="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2.5 py-1 font-semibold text-sky-800 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-200"
         >
-          戶外安全指數 ↗
+          {t("aqiTool.outdoorSafetyLink", "戶外安全指數 ↗")}
         </a>
       </div>
 
@@ -111,10 +144,10 @@ export default function AqiContent() {
           </span>
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 sm:text-2xl dark:text-slate-100">
-              全台 AQI 空氣品質即時監測 Dashboard
+              {t("aqiTool.dashboardHeading", "全台 AQI 空氣品質即時監測 Dashboard")}
             </h1>
             <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-              環境部開放資料 · 每 30 分鐘自動同步更新
+              {t("aqiTool.dashboardSubtitle", "環境部開放資料 · 每 30 分鐘自動同步更新")}
             </p>
           </div>
         </div>
@@ -124,10 +157,10 @@ export default function AqiContent() {
             <select
               value={county}
               onChange={(e) => setCounty(e.target.value)}
-              aria-label="縣市"
+              aria-label={t("aqiTool.countySelectAriaLabel", "縣市")}
               className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
-              <option value="">全台 22 縣市測站</option>
+              <option value="">{t("aqiTool.allCountiesOption", "全台 22 縣市測站")}</option>
               {COUNTIES.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -136,14 +169,14 @@ export default function AqiContent() {
             </select>
             {stations && (
               <span className="text-xs font-semibold text-slate-600">
-                顯示 {stations.length} 個監測站
+                {t("aqiTool.stationCountTemplate", "顯示 {count} 個監測站").replace("{count}", String(stations.length))}
               </span>
             )}
           </div>
 
           {updatedAt && (
             <span className="text-xs text-slate-600">
-              更新時間：{new Date(updatedAt).toLocaleString("zh-TW")}
+              {t("aqiTool.updatedAtLabel", "更新時間：")}{new Date(updatedAt).toLocaleString(INTL_LOCALE_MAP[locale] ?? "zh-TW")}
             </span>
           )}
         </div>
@@ -162,13 +195,13 @@ export default function AqiContent() {
 
       {error && (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-xs text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-          無法取得 AQI 資料，請稍後再試。
+          {t("aqiTool.errorState", "無法取得 AQI 資料，請稍後再試。")}
         </div>
       )}
 
       {!loading && !error && stations && stations.length === 0 && (
         <div className="py-12 text-center text-sm text-slate-600">
-          目前無符合條件的 AQI 測站資料。
+          {t("aqiTool.emptyState", "目前無符合條件的 AQI 測站資料。")}
         </div>
       )}
 
@@ -200,7 +233,7 @@ export default function AqiContent() {
                     className="inline-block rounded-full px-2 py-0.5 text-[10px] font-extrabold text-white"
                     style={{ backgroundColor: site.aqiColor }}
                   >
-                    {tDynamic(site.aqiStatus)}
+                    {getAqiStatusLabel(t, site.aqiStatus)}
                   </span>
                 </div>
               </div>

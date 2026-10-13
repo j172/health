@@ -9,79 +9,87 @@ function safeToFixed(val: unknown, digits = 1): string {
   return isNaN(num) ? "-" : num.toFixed(digits);
 }
 
-const getUvRiskLevel = (uvInput: unknown) => {
+type Translator = (key: string, defaultValue?: string) => string;
+
+const getUvRiskLevel = (t: Translator, uvInput: unknown) => {
   const num =
     typeof uvInput === "number" ? uvInput : parseFloat(String(uvInput ?? ""));
   const uv = isNaN(num) ? 0 : num;
   if (isNaN(num)) {
     return {
-      level: "未知量級",
+      level: t("uvTool.levelUnknown", "未知量級"),
       bg: "bg-slate-500 text-white dark:bg-slate-600",
       border: "border-slate-200 dark:border-slate-800",
       cardBg: "bg-slate-50/50 dark:bg-slate-900/20",
       textColor: "text-slate-600 dark:text-slate-400",
-      advice: "暫無數據說明。",
+      advice: t("uvTool.adviceUnknown", "暫無數據說明。"),
     };
   }
   if (uv >= 11) {
     return {
-      level: "極高量級 (11+)",
+      level: t("uvTool.levelExtreme", "極高量級 (11+)"),
       bg: "bg-purple-600 text-white dark:bg-purple-700",
       border: "border-purple-200 dark:border-purple-900/50",
       cardBg: "bg-purple-50/50 dark:bg-purple-950/20",
       textColor: "text-purple-600 dark:text-purple-400",
-      advice:
+      advice: t(
+        "uvTool.adviceExtreme",
         "⚠️ 避免上午 10 時至下午 2 時過度曝曬。戶外防護：塗抹 SPF50+ 防曬乳、配戴帽子、太陽眼鏡、遮陽傘，並盡量尋求陰涼處。",
+      ),
     };
   }
   if (uv >= 8) {
     return {
-      level: "過量級 (8-10)",
+      level: t("uvTool.levelVeryHigh", "過量級 (8-10)"),
       bg: "bg-red-500 text-white dark:bg-red-600",
       border: "border-red-200 dark:border-red-900/50",
       cardBg: "bg-red-50/50 dark:bg-red-950/20",
       textColor: "text-red-600 dark:text-red-400",
-      advice:
+      advice: t(
+        "uvTool.adviceVeryHigh",
         "⚠️ 曬傷時間約 15-20 分鐘。戶外活動務必塗抹 SPF30+ 以上防曬乳、穿戴帽子與防曬遮陽衣物。",
+      ),
     };
   }
   if (uv >= 6) {
     return {
-      level: "高量級 (6-7)",
+      level: t("uvTool.levelHigh", "高量級 (6-7)"),
       bg: "bg-amber-500 text-white dark:bg-amber-600",
       border: "border-amber-200 dark:border-amber-900/50",
       cardBg: "bg-amber-50/50 dark:bg-amber-950/20",
       textColor: "text-amber-600 dark:text-amber-400",
-      advice: "建議戴帽子、佩戴太陽眼鏡、塗抹防曬乳，午後適時補充水分。",
+      advice: t("uvTool.adviceHigh", "建議戴帽子、佩戴太陽眼鏡、塗抹防曬乳，午後適時補充水分。"),
     };
   }
   if (uv >= 3) {
     return {
-      level: "中量級 (3-5)",
+      level: t("uvTool.levelModerate", "中量級 (3-5)"),
       bg: "bg-yellow-500 text-slate-900 dark:bg-yellow-600 dark:text-white",
       border: "border-yellow-200 dark:border-yellow-900/50",
       cardBg: "bg-yellow-50/50 dark:bg-yellow-950/20",
       textColor: "text-yellow-600 dark:text-yellow-400",
-      advice: "一般性日常防護，若長時間在戶外建議補充防曬用品。",
+      advice: t("uvTool.adviceModerate", "一般性日常防護，若長時間在戶外建議補充防曬用品。"),
     };
   }
   return {
-    level: "低量級 (0-2)",
+    level: t("uvTool.levelLow", "低量級 (0-2)"),
     bg: "bg-emerald-500 text-white dark:bg-emerald-600",
     border: "border-emerald-200 dark:border-emerald-900/50",
     cardBg: "bg-emerald-50/50 dark:bg-emerald-950/20",
     textColor: "text-emerald-600 dark:text-emerald-400",
-    advice: "低風險無虞，可安全在戶外活動。",
+    advice: t("uvTool.adviceLow", "低風險無虞，可安全在戶外活動。"),
   };
 };
 
+const ALL_COUNTIES_VALUE = "全部";
+
 export default function UvContent({ stations }: { stations: UvStationItem[] }) {
-  const { tDynamic } = useLanguage();
-  const [selectedCounty, setSelectedCounty] = useState<string>("全部");
+  const { t, tDynamic } = useLanguage();
+  const [selectedCounty, setSelectedCounty] = useState<string>(ALL_COUNTIES_VALUE);
   const [search, setSearch] = useState<string>("");
 
   const counties = [
-    "全部",
+    ALL_COUNTIES_VALUE,
     ...(Array.from(
       new Set(stations.map((s) => s.county_name).filter(Boolean)),
     ) as string[]),
@@ -89,7 +97,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
 
   const filtered = stations.filter((item) => {
     const matchCounty =
-      selectedCounty === "全部" || item.county_name === selectedCounty;
+      selectedCounty === ALL_COUNTIES_VALUE || item.county_name === selectedCounty;
     const matchSearch =
       search.trim() === "" ||
       (item.station_name && item.station_name.includes(search)) ||
@@ -102,60 +110,64 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-sky-200 bg-sky-50/70 p-3.5 text-xs text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200">
         <div className="flex items-center gap-2 font-medium">
           <span className="text-base">🏃</span>
-          <span>規劃晨跑、單車運動或帶孩子公園放電？立即查看結合紫外線與熱指數的<strong>全台戶外安全指數</strong>。</span>
+          <span>
+            {t("uvTool.outdoorSafetyPromoPrefix", "規劃晨跑、單車運動或帶孩子公園放電？立即查看結合紫外線與熱指數的")}
+            <strong>{t("uvTool.outdoorSafetyPromoStrong", "全台戶外安全指數")}</strong>
+            {t("uvTool.outdoorSafetyPromoSuffix", "。")}
+          </span>
         </div>
         <a
           href="/tools/outdoor-safety"
           className="inline-flex items-center gap-1 rounded-md bg-sky-100 px-2.5 py-1 font-semibold text-sky-800 hover:bg-sky-200 dark:bg-sky-900/50 dark:text-sky-200"
         >
-          戶外安全指數 ↗
+          {t("uvTool.outdoorSafetyLink", "戶外安全指數 ↗")}
         </a>
       </div>
 
       {/* UV Level Legend Banner */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-3 text-sm font-extrabold tracking-tight text-slate-900 dark:text-slate-100">
-          ☀️ 紫外線指數 (UV Index) 防護等級說明
+          {t("uvTool.legendHeading", "☀️ 紫外線指數 (UV Index) 防護等級說明")}
         </h3>
         <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-5">
           <div className="rounded-xl bg-emerald-50 p-2.5 dark:bg-emerald-950/40">
             <span className="font-bold text-emerald-700 dark:text-emerald-300">
-              0 - 2 低量
+              {t("uvTool.legendLowRange", "0 - 2 低量")}
             </span>
             <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
-              綠色 · 安全戶外
+              {t("uvTool.legendLowDesc", "綠色 · 安全戶外")}
             </p>
           </div>
           <div className="rounded-xl bg-yellow-50 p-2.5 dark:bg-yellow-950/40">
             <span className="font-bold text-yellow-700 dark:text-yellow-300">
-              3 - 5 中量
+              {t("uvTool.legendModerateRange", "3 - 5 中量")}
             </span>
             <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
-              黃色 · 注意防曬
+              {t("uvTool.legendModerateDesc", "黃色 · 注意防曬")}
             </p>
           </div>
           <div className="rounded-xl bg-amber-50 p-2.5 dark:bg-amber-950/40">
             <span className="font-bold text-amber-700 dark:text-amber-300">
-              6 - 7 高量
+              {t("uvTool.legendHighRange", "6 - 7 高量")}
             </span>
             <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
-              橘色 · 戴帽/塗防曬
+              {t("uvTool.legendHighDesc", "橘色 · 戴帽/塗防曬")}
             </p>
           </div>
           <div className="rounded-xl bg-red-50 p-2.5 dark:bg-red-950/40">
             <span className="font-bold text-red-700 dark:text-red-300">
-              8 - 10 過量
+              {t("uvTool.legendVeryHighRange", "8 - 10 過量")}
             </span>
             <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
-              紅色 · 減少曝曬
+              {t("uvTool.legendVeryHighDesc", "紅色 · 減少曝曬")}
             </p>
           </div>
           <div className="col-span-2 rounded-xl bg-purple-50 p-2.5 sm:col-span-1 dark:bg-purple-950/40">
             <span className="font-bold text-purple-700 dark:text-purple-300">
-              11+ 極高量
+              {t("uvTool.legendExtremeRange", "11+ 極高量")}
             </span>
             <p className="mt-0.5 text-[11px] text-slate-600 dark:text-slate-400">
-              紫色 · 避開正午
+              {t("uvTool.legendExtremeDesc", "紫色 · 避開正午")}
             </p>
           </div>
         </div>
@@ -165,17 +177,17 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
       <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-            縣市：
+            {t("uvTool.countyLabel", "縣市：")}
           </span>
           <select
             value={selectedCounty}
             onChange={(e) => setSelectedCounty(e.target.value)}
-            aria-label="縣市"
+            aria-label={t("uvTool.countySelectAriaLabel", "縣市")}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             {counties.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {c === ALL_COUNTIES_VALUE ? t("uvTool.allCountiesOption", "全部") : tDynamic(c)}
               </option>
             ))}
           </select>
@@ -184,7 +196,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
         <div className="relative">
           <input
             type="text"
-            placeholder="搜尋測站或縣市..."
+            placeholder={t("uvTool.searchPlaceholder", "搜尋測站或縣市...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs text-slate-800 outline-none focus:border-indigo-500 sm:w-64 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
@@ -195,12 +207,12 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
       {/* Stations Grid */}
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-600 dark:border-slate-800 dark:bg-slate-900">
-          目前沒有符合條件的測站數據。
+          {t("uvTool.emptyState", "目前沒有符合條件的測站數據。")}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((item) => {
-            const risk = getUvRiskLevel(item.uv_index);
+            const risk = getUvRiskLevel(t, item.uv_index);
             const displayUv = safeToFixed(item.uv_index, 1);
 
             return (
@@ -211,7 +223,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
                 <div>
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                      {tDynamic(item.county_name) || "全台測站"}
+                      {tDynamic(item.county_name) || t("uvTool.nationwideStationFallback", "全台測站")}
                     </span>
                     <span
                       className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-extrabold shadow-2xs ${risk.bg}`}
@@ -221,7 +233,7 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
                   </div>
 
                   <h4 className="mt-2 text-base font-bold text-slate-900 dark:text-slate-100">
-                    📍 {tDynamic(item.station_name) || item.station_id} 測站
+                    📍 {tDynamic(item.station_name) || item.station_id} {t("uvTool.stationSuffix", "測站")}
                   </h4>
 
                   <p className={`mt-2 text-xs font-bold ${risk.textColor}`}>
@@ -234,8 +246,8 @@ export default function UvContent({ stations }: { stations: UvStationItem[] }) {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-slate-200/60 pt-3 text-[11px] text-slate-600 dark:border-slate-800">
-                  <span>觀測日期: {item.obs_date}</span>
-                  <span className="font-mono text-[10px]">CWA Station</span>
+                  <span>{t("uvTool.obsDateLabel", "觀測日期:")} {item.obs_date}</span>
+                  <span className="font-mono text-[10px]">{t("uvTool.cwaStationTag", "CWA Station")}</span>
                 </div>
               </div>
             );

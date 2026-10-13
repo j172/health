@@ -118,12 +118,14 @@ test("app/[locale]/ has no page.tsx of its own yet (the home page isn't a pilot 
   );
 });
 
-test("this ticket ships exactly 3 translated tool pages", () => {
-  assert.deepEqual(
-    [...TRANSLATED_TOOL_SLUGS].sort(),
-    ["aed", "emergency-hotlines", "er-status"],
-    "issue #485 is scoped to exactly these 3 pilot pages",
-  );
+test("TRANSLATED_TOOL_SLUGS always contains the 3 issue #485 pilot pages", () => {
+  // Issue #485 shipped exactly these 3; later tickets (#486, #487, ...) only
+  // ever grow this array, so this is a containment check rather than the
+  // original point-in-time exact-equality assertion — otherwise this test
+  // would break the moment any later ticket adds its own slugs.
+  for (const slug of ["aed", "emergency-hotlines", "er-status"]) {
+    assert.ok(TRANSLATED_TOOL_SLUGS.includes(slug), `${slug} must remain translated`);
+  }
 });
 
 test("I18N_SCOPE_PAGES (the ~21-page roadmap) is a superset of TRANSLATED_CANONICAL_PATHS (what's actually ready)", () => {
@@ -186,7 +188,12 @@ test("buildHreflangAlternates returns a reciprocal zh-TW/en/ja/ko + x-default se
 
 test("buildHreflangAlternates returns null for a page with no translation", () => {
   const baseUrl = "https://health.j172.tw";
-  assert.equal(buildHreflangAlternates("/tools/clinics", baseUrl), null);
+  // "/tools/bmi" (not "/tools/clinics" — clinics was translated by issue
+  // #486, after this test was first written) is used here as a page that's
+  // not in I18N_SCOPE_PAGES at all, so it stays a safe "definitely
+  // untranslated" example regardless of how many more tickets grow
+  // TRANSLATED_TOOL_SLUGS.
+  assert.equal(buildHreflangAlternates("/tools/bmi", baseUrl), null);
   assert.equal(buildHreflangAlternates("/", baseUrl), null, "the home page isn't translated by this ticket");
 });
 
@@ -194,7 +201,7 @@ test("isTranslatedPath / TRANSLATED_CANONICAL_PATHS agree with TRANSLATED_TOOL_S
   for (const slug of TRANSLATED_TOOL_SLUGS) {
     assert.ok(isTranslatedPath(`/tools/${slug}`));
   }
-  assert.ok(!isTranslatedPath("/tools/clinics"));
+  assert.ok(!isTranslatedPath("/tools/bmi"));
   assert.equal(TRANSLATED_CANONICAL_PATHS.length, TRANSLATED_TOOL_SLUGS.length);
 });
 
@@ -225,8 +232,8 @@ test("resolveLocaleSwitchTarget navigates for a translated page, returns null fo
   assert.equal(resolveLocaleSwitchTarget("/tools/aed", "en"), "/en/tools/aed");
   assert.equal(resolveLocaleSwitchTarget("/en/tools/aed", "ja"), "/ja/tools/aed", "must re-derive the canonical path first, not double-prefix");
   assert.equal(resolveLocaleSwitchTarget("/en/tools/aed", "zh-TW"), "/tools/aed");
-  assert.equal(resolveLocaleSwitchTarget("/tools/clinics", "en"), null, "no translation exists, so the switcher must fall back to chrome-only");
-  assert.equal(resolveLocaleSwitchTarget("/tools/clinics", "zh-TW"), "/tools/clinics", "switching to zh-TW is always a no-op navigation");
+  assert.equal(resolveLocaleSwitchTarget("/tools/bmi", "en"), null, "no translation exists, so the switcher must fall back to chrome-only");
+  assert.equal(resolveLocaleSwitchTarget("/tools/bmi", "zh-TW"), "/tools/bmi", "switching to zh-TW is always a no-op navigation");
 });
 
 // ---------------------------------------------------------------------------
@@ -239,7 +246,17 @@ test("next.config.js redirects ?lang={locale} to the real /{locale}/ URL for eac
   const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
   assert.match(content, /async redirects\(\)/);
   assert.match(content, /\["en", "ja", "ko"\]\.flatMap/, "must generate one rule per locale×translated-slug combination");
-  assert.match(content, /\["aed", "er-status", "emergency-hotlines"\]/, "must cover exactly the 3 translated slugs");
+  // Containment check (not an exact-array snapshot) so later tickets that
+  // grow this slug list don't break this test — every TRANSLATED_TOOL_SLUGS
+  // entry must appear as a quoted string literal somewhere in the redirect
+  // slug array.
+  for (const slug of TRANSLATED_TOOL_SLUGS) {
+    assert.match(
+      content,
+      new RegExp(`"${slug}"`),
+      `next.config.js's ?lang= redirect slug list must include "${slug}"`,
+    );
+  }
   assert.match(content, /destination:\s*`\/\$\{locale\}\/tools\/\$\{slug\}`/);
 });
 

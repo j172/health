@@ -3,23 +3,34 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { MetroAlertItem } from "@/lib/server/metroAlerts/types";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 // 全台 6 個捷運／輕軌系統 + 臺鐵 + 高鐵，與 lib/server/metroAlerts/tdxClient.ts
 // 的 RAIL_ALERT_SOURCES 對應（issue #470）。以 systemCode 精確比對，取代升級前
 // 僅涵蓋臺北捷運各路線名稱子字串比對的 MRT_LINES。
-const SYSTEMS = [
-  { id: "all", label: "全部系統", color: "bg-slate-700 text-white" },
-  { id: "TRTC", label: "臺北捷運", color: "bg-blue-600 text-white" },
-  { id: "TRTCMG", label: "貓空纜車", color: "bg-lime-600 text-white" },
-  { id: "TYMC", label: "桃園捷運", color: "bg-purple-600 text-white" },
-  { id: "TMRT", label: "臺中捷運", color: "bg-orange-600 text-white" },
-  { id: "KRTC", label: "高雄捷運", color: "bg-orange-500 text-white" },
-  { id: "KLRT", label: "高雄輕軌", color: "bg-pink-600 text-white" },
-  { id: "TRA", label: "臺鐵", color: "bg-sky-700 text-white" },
-  { id: "THSR", label: "高鐵", color: "bg-rose-700 text-white" },
-];
+//
+// issue #486: `label` here doubles as each operator's own proper-noun name
+// (臺北捷運、貓空纜車…、臺鐵、高鐵) — there is no separate English label
+// field, so per the "government/institutional data stays Chinese" rule these
+// stay hardcoded Chinese verbatim and are NOT run through t(). Only the
+// "all systems" entry is generic UI chrome and gets a translated label.
+function buildSystems(t: (key: string, defaultValue?: string) => string) {
+  return [
+    { id: "all", label: t("metroAlertsTool.systemAll", "全部系統"), color: "bg-slate-700 text-white" },
+    { id: "TRTC", label: "臺北捷運", color: "bg-blue-600 text-white" },
+    { id: "TRTCMG", label: "貓空纜車", color: "bg-lime-600 text-white" },
+    { id: "TYMC", label: "桃園捷運", color: "bg-purple-600 text-white" },
+    { id: "TMRT", label: "臺中捷運", color: "bg-orange-600 text-white" },
+    { id: "KRTC", label: "高雄捷運", color: "bg-orange-500 text-white" },
+    { id: "KLRT", label: "高雄輕軌", color: "bg-pink-600 text-white" },
+    { id: "TRA", label: "臺鐵", color: "bg-sky-700 text-white" },
+    { id: "THSR", label: "高鐵", color: "bg-rose-700 text-white" },
+  ];
+}
 
 export default function MetroAlertsContent({ initialAlerts = [] }: { initialAlerts?: MetroAlertItem[] }) {
+  const { t } = useLanguage();
+  const SYSTEMS = useMemo(() => buildSystems(t), [t]);
   const [alerts, setAlerts] = useState<MetroAlertItem[]>(initialAlerts);
   const [loading, setLoading] = useState(initialAlerts.length === 0);
   const [selectedSystem, setSelectedSystem] = useState("all");
@@ -72,15 +83,15 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
         <div className="flex items-center gap-2.5">
           <span className="text-xl">♿</span>
           <div>
-            <div className="text-xs font-bold text-blue-900 dark:text-blue-300">需要跨縣市或搭乘低地板公車？</div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">查看全台 22 縣市低地板公車比率、各縣市復康巴士與通用計程車專線</div>
+            <div className="text-xs font-bold text-blue-900 dark:text-blue-300">{t("metroAlertsTool.crossPromoTitle", "需要跨縣市或搭乘低地板公車？")}</div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">{t("metroAlertsTool.crossPromoDesc", "查看全台 22 縣市低地板公車比率、各縣市復康巴士與通用計程車專線")}</div>
           </div>
         </div>
         <Link
           href="/tools/accessible-transit"
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold whitespace-nowrap transition shadow-sm"
         >
-          <span>查看無障礙交通地圖</span>
+          <span>{t("metroAlertsTool.crossPromoLink", "查看無障礙交通地圖")}</span>
           <span>→</span>
         </Link>
       </div>
@@ -93,10 +104,13 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
           </span>
           <div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-              全台軌道營運通阻即時公告
+              {t("metroAlertsTool.introHeading", "全台軌道營運通阻即時公告")}
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              即時彙整全台 6 個捷運／輕軌系統（臺北捷運、貓空纜車、桃園捷運、臺中捷運、高雄捷運、高雄輕軌）、臺鐵、高鐵的營運通阻公告，以及臺北捷運各車站無障礙電梯檢修公告。
+              {t(
+                "metroAlertsTool.introDesc",
+                "即時彙整全台 6 個捷運／輕軌系統（臺北捷運、貓空纜車、桃園捷運、臺中捷運、高雄捷運、高雄輕軌）、臺鐵、高鐵的營運通阻公告，以及臺北捷運各車站無障礙電梯檢修公告。"
+              )}
             </p>
           </div>
         </div>
@@ -125,7 +139,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                 type="text"
                 value={searchKeyword}
                 onChange={(e) => setSearchKeyword(e.target.value)}
-                placeholder="搜尋車站／路線名稱（例：景安、臺北車站）或關鍵字..."
+                placeholder={t("metroAlertsTool.searchPlaceholder", "搜尋車站／路線名稱（例：景安、臺北車站）或關鍵字...")}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:focus:bg-slate-900"
               />
               {searchKeyword && (
@@ -147,7 +161,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
-                全部公告
+                {t("metroAlertsTool.filterAll", "全部公告")}
               </button>
               <button
                 onClick={() => setSelectedType("suspended")}
@@ -157,7 +171,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
-                <span>🛑</span> 全線停駛
+                <span>🛑</span> {t("metroAlertsTool.typeSuspended", "全線停駛")}
               </button>
               <button
                 onClick={() => setSelectedType("operational")}
@@ -167,7 +181,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
-                <span>⚠️</span> 營運調整
+                <span>⚠️</span> {t("metroAlertsTool.typeOperational", "營運調整")}
               </button>
               <button
                 onClick={() => setSelectedType("elevator")}
@@ -177,7 +191,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                     : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
                 }`}
               >
-                <span>🛗</span> 電梯檢修
+                <span>🛗</span> {t("metroAlertsTool.typeElevator", "電梯檢修")}
               </button>
             </div>
           </div>
@@ -189,18 +203,18 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-600">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
-            <p className="mt-3 text-sm">正在載入全台軌道即時公告...</p>
+            <p className="mt-3 text-sm">{t("metroAlertsTool.loadingText", "正在載入全台軌道即時公告...")}</p>
           </div>
         ) : filteredAlerts.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
             <span className="text-4xl">🟢</span>
             <h3 className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-200">
-              目前全線營運正常
+              {t("metroAlertsTool.emptyHeading", "目前全線營運正常")}
             </h3>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
               {searchKeyword || selectedSystem !== "all" || selectedType !== "all"
-                ? "目前選取的條件查無公告，您可切換回全部系統或清除關鍵字。"
-                : "目前全台軌道系統設備運作良好，無通阻或暫停使用通報。"}
+                ? t("metroAlertsTool.emptyFilteredDesc", "目前選取的條件查無公告，您可切換回全部系統或清除關鍵字。")
+                : t("metroAlertsTool.emptyNoneDesc", "目前全台軌道系統設備運作良好，無通阻或暫停使用通報。")}
             </p>
           </div>
         ) : (
@@ -227,10 +241,10 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                       }`}
                     >
                       {alert.alertType === "elevator"
-                        ? "🛗 電梯檢修"
+                        ? `🛗 ${t("metroAlertsTool.typeElevator", "電梯檢修")}`
                         : alert.alertType === "suspended"
-                        ? "🛑 全線停駛"
-                        : "⚠️ 營運調整"}
+                        ? `🛑 ${t("metroAlertsTool.typeSuspended", "全線停駛")}`
+                        : `⚠️ ${t("metroAlertsTool.typeOperational", "營運調整")}`}
                     </span>
                     <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                       {systemLabel}
@@ -256,7 +270,9 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
 
                 <div className="mt-4 flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-600 dark:border-slate-800">
                   <span>
-                    資訊來源：{systemLabel === "臺北捷運" ? "臺北大眾捷運股份有限公司" : "交通部 TDX 運輸資料流通服務"}開放資料
+                    {t("metroAlertsTool.sourceLabel", "資訊來源：")}
+                    {systemLabel === "臺北捷運" ? "臺北大眾捷運股份有限公司" : "交通部 TDX 運輸資料流通服務"}
+                    {t("metroAlertsTool.openDataSuffix", "開放資料")}
                   </span>
                   <span
                     className={`font-medium ${
@@ -265,7 +281,7 @@ export default function MetroAlertsContent({ initialAlerts = [] }: { initialAler
                         : "text-amber-600 dark:text-amber-400"
                     }`}
                   >
-                    進行中
+                    {t("metroAlertsTool.statusOngoing", "進行中")}
                   </span>
                 </div>
               </div>

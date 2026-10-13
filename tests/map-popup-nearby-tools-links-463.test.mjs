@@ -161,7 +161,11 @@ test("app/(zh)/tools/aed/page.tsx: wraps AedContent in a Suspense boundary (requ
 test("FacilitySearchContent.tsx: accepts a locationOverride prop and uses it to skip the shared geolocation hook's browser-geolocation effect entirely (issue #478: migrated off the old per-call-site useGeolocation hook; no useSearchParams() of its own — shared by 30+ unrelated /tools pages)", () => {
   const src = read("components/Facilities/FacilitySearchContent.tsx");
   assert.doesNotMatch(src, /from ["']next\/navigation["']/);
-  assert.match(src, /locationOverride\s*=\s*null,?\s*\n\}:\s*\{/);
+  // Issue #486 appended one further optional prop (`slug`) after
+  // `locationOverride = null,` — so this only pins down that
+  // `locationOverride` itself still defaults to `null` right where it was,
+  // not that it's still the last prop in the destructuring.
+  assert.match(src, /locationOverride\s*=\s*null,/);
   assert.match(src, /locationOverride\?:\s*GeolocationOverride \| null;/);
   assert.match(src, /const hasOverride = isValidGeolocationOverride\(locationOverride\);/);
   assert.match(src, /useSharedGeolocation\(\{\s*skip:\s*hasOverride\s*\}\)/);

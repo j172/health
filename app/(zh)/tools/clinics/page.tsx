@@ -33,7 +33,7 @@ export default function ClinicsPage() {
           actionText="前往查核"
         />
       </div>
-      <FacilitySearchContent config={facilitySearchConfigs.clinics} />
+      <FacilitySearchContent config={facilitySearchConfigs.clinics} slug="clinics" />
     </ToolPageShell>
   );
 }

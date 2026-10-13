@@ -33,7 +33,7 @@ export default function PublicToiletsPage() {
       title={catalogEntry.title}
       maxWidthClassName="max-w-3xl"
     >
-      <FacilitySearchContent config={facilitySearchConfigs["public-toilets"]} />
+      <FacilitySearchContent config={facilitySearchConfigs["public-toilets"]} slug="public-toilets" />
     </ToolPageShell>
   );
 }

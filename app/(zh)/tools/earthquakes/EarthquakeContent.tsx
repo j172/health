@@ -2,12 +2,22 @@
 
 import { useState } from "react";
 import type { SignificantEarthquake } from "@/lib/server/earthquakes/queries";
-import { useLanguage } from "@/app/context/LanguageContext";
+import { useLanguage, type Locale } from "@/app/context/LanguageContext";
 
-const toTaipeiTime = (value: Date | string | null): string => {
+// Event time is always shown in Taiwan's local clock (Asia/Taipei) regardless
+// of UI locale — only the date/time *formatting convention* (digit order,
+// separators) follows the viewer's language.
+const INTL_LOCALE: Record<Locale, string> = {
+  "zh-TW": "zh-TW",
+  en: "en-US",
+  ja: "ja-JP",
+  ko: "ko-KR",
+};
+
+const toTaipeiTime = (value: Date | string | null, locale: Locale): string => {
   if (!value) return "";
   try {
-    return new Intl.DateTimeFormat("zh-TW", {
+    return new Intl.DateTimeFormat(INTL_LOCALE[locale] ?? "zh-TW", {
       dateStyle: "medium",
       timeStyle: "medium",
       timeZone: "Asia/Taipei",
@@ -22,7 +32,9 @@ function safeToFixed(val: unknown, digits = 1): string {
   return isNaN(num) ? "0.0" : num.toFixed(digits);
 }
 
-const getMagBadge = (magInput: unknown) => {
+type Translator = (key: string, defaultValue?: string) => string;
+
+const getMagBadge = (t: Translator, magInput: unknown) => {
   const parsed =
     typeof magInput === "number"
       ? magInput
@@ -37,13 +49,13 @@ const getMagBadge = (magInput: unknown) => {
   if (mag >= 7.0) {
     return {
       bg: "bg-red-500 text-white dark:bg-red-600",
-      label: "強震 M7.0+",
+      label: t("earthquakesTool.badgeStrongM7", "強震 M7.0+"),
     };
   }
   if (mag >= 6.0) {
     return {
       bg: "bg-amber-500 text-white dark:bg-amber-600",
-      label: "顯著 M6.0+",
+      label: t("earthquakesTool.badgeSignificantM6", "顯著 M6.0+"),
     };
   }
   return {
@@ -58,7 +70,7 @@ export default function EarthquakeContent({
   earthquakes: SignificantEarthquake[];
 }) {
   const [filterMinMag, setFilterMinMag] = useState<number>(4.0);
-  const { locale, tDynamic } = useLanguage();
+  const { locale, t, tDynamic } = useLanguage();
 
   const filtered = earthquakes.filter((e) => {
     const mag =
@@ -76,24 +88,26 @@ export default function EarthquakeContent({
           <div className="flex items-center gap-2">
             <span className="flex h-3 w-3 animate-ping rounded-full bg-amber-500" />
             <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
-              全台與全球顯著地震動態
+              {t("earthquakesTool.heading", "全台與全球顯著地震動態")}
             </h2>
           </div>
           <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-            資料來源：中央氣象署 (CWA，全台 M4.0+) · 美國地質調查局 (USGS，全球
-            M6.0+)
+            {t(
+              "earthquakesTool.dataSource",
+              "資料來源：中央氣象署 (CWA，全台 M4.0+) · 美國地質調查局 (USGS，全球 M6.0+)",
+            )}
           </p>
         </div>
 
         {/* Magnitude Filter Pills */}
         <div className="flex items-center gap-1.5 self-start sm:self-auto">
           <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-            篩選規模：
+            {t("earthquakesTool.filterLabel", "篩選規模：")}
           </span>
           {[
-            { label: "台灣+全球顯著", val: 4.0 },
-            { label: "M6.0+ 顯著", val: 6.0 },
-            { label: "M7.0+ 強震", val: 7.0 },
+            { label: t("earthquakesTool.filterAll", "台灣+全球顯著"), val: 4.0 },
+            { label: t("earthquakesTool.filterM6", "M6.0+ 顯著"), val: 6.0 },
+            { label: t("earthquakesTool.filterM7", "M7.0+ 強震"), val: 7.0 },
           ].map((opt) => (
             <button
               key={opt.val}
@@ -113,19 +127,19 @@ export default function EarthquakeContent({
       {/* Earthquakes List Grid */}
       {filtered.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-slate-600 dark:border-slate-800 dark:bg-slate-900">
-          目前沒有符合此規模篩選條件的顯著地震紀錄。
+          {t("earthquakesTool.emptyState", "目前沒有符合此規模篩選條件的顯著地震紀錄。")}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {filtered.map((item) => {
-            const badge = getMagBadge(item.magnitude);
+            const badge = getMagBadge(t, item.magnitude);
             const rawLoc =
               locale === "en"
                 ? item.place?.trim() || item.place_zh?.trim()
                 : item.place_zh?.trim() || item.place?.trim();
             // SPECIFICATION.md 4.3 — live API strings run through OpenCC for zh-CN.
             // The English branch above already prefers USGS's native item.place.
-            const location = tDynamic(rawLoc) || "未具名震央區域";
+            const location = tDynamic(rawLoc) || t("earthquakesTool.unnamedEpicenter", "未具名震央區域");
 
             return (
               <div
@@ -146,12 +160,12 @@ export default function EarthquakeContent({
                           <span className="animate-alert-ripple absolute inline-flex h-full w-full rounded-full bg-red-500" />
                           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-red-600" />
                         </span>
-                        🌊 海嘯警報
+                        {t("earthquakesTool.tsunamiWarning", "🌊 海嘯警報")}
                       </span>
                     )}
 
                     <span className="text-xs text-slate-600">
-                      {toTaipeiTime(item.event_time)}
+                      {toTaipeiTime(item.event_time, locale)}
                     </span>
                   </div>
 
@@ -170,7 +184,7 @@ export default function EarthquakeContent({
                   <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400">
                     {item.depth_km != null && (
                       <span>
-                        深度:{" "}
+                        {t("earthquakesTool.depthLabel", "深度:")}{" "}
                         <strong className="text-slate-700 dark:text-slate-200">
                           {item.depth_km} km
                         </strong>
@@ -190,7 +204,7 @@ export default function EarthquakeContent({
                       rel="noopener noreferrer"
                       className="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
                     >
-                      官方測報 ↗
+                      {t("earthquakesTool.officialReportLink", "官方測報 ↗")}
                     </a>
                   )}
                 </div>

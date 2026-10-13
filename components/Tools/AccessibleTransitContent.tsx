@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
 import type {
   AccessibleTransitRoute,
   AccessibleTransitFacility,
@@ -13,17 +14,39 @@ import type {
   TransitSystemType,
 } from "@/lib/server/transit/types";
 
-const SYSTEM_TYPE_LABELS: Record<string, { label: string; icon: string }> = {
-  all: { label: "全部系統", icon: "🌐" },
-  bus: { label: "低地板公車", icon: "🚌" },
-  metro: { label: "捷運／輕軌", icon: "🚇" },
-  rail: { label: "台鐵愛心服務", icon: "🚆" },
-  hsrail: { label: "台灣高鐵", icon: "🚄" },
-  rehab_bus: { label: "復康巴士專線", icon: "🚐" },
-  accessible_taxi: { label: "通用計程車", icon: "🚕" },
+type Translator = (key: string, defaultValue?: string) => string;
+
+// Icons are locale-independent, kept as a plain lookup. Labels are built
+// from `t()` inside the component (issue #486, following AedContent.tsx's
+// exact pattern) since module-level constants can't be reactive to locale.
+const SYSTEM_TYPE_ICONS: Record<string, string> = {
+  all: "🌐",
+  bus: "🚌",
+  metro: "🚇",
+  rail: "🚆",
+  hsrail: "🚄",
+  rehab_bus: "🚐",
+  accessible_taxi: "🚕",
 };
 
+function getSystemTypeLabels(t: Translator): Record<string, { label: string; icon: string }> {
+  return {
+    all: { label: t("accessibleTransitTool.systemAll", "全部系統"), icon: SYSTEM_TYPE_ICONS.all },
+    bus: { label: t("accessibleTransitTool.systemBus", "低地板公車"), icon: SYSTEM_TYPE_ICONS.bus },
+    metro: { label: t("accessibleTransitTool.systemMetro", "捷運／輕軌"), icon: SYSTEM_TYPE_ICONS.metro },
+    rail: { label: t("accessibleTransitTool.systemRail", "台鐵愛心服務"), icon: SYSTEM_TYPE_ICONS.rail },
+    hsrail: { label: t("accessibleTransitTool.systemHsr", "台灣高鐵"), icon: SYSTEM_TYPE_ICONS.hsrail },
+    rehab_bus: { label: t("accessibleTransitTool.systemRehabBus", "復康巴士專線"), icon: SYSTEM_TYPE_ICONS.rehab_bus },
+    accessible_taxi: {
+      label: t("accessibleTransitTool.systemAccessibleTaxi", "通用計程車"),
+      icon: SYSTEM_TYPE_ICONS.accessible_taxi,
+    },
+  };
+}
+
 export default function AccessibleTransitContent() {
+  const { t } = useLanguage();
+  const systemTypeLabels = useMemo(() => getSystemTypeLabels(t), [t]);
   const [data, setData] = useState<TransitAccessibilityOverview | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
@@ -107,15 +130,21 @@ export default function AccessibleTransitContent() {
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-teal-700 text-white rounded-2xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-md mb-4">
-            <span>♿ 交通部 TDX ＋ 衛福部通用無障礙資料</span>
+            {/* issue #486: "交通部 TDX" / "衛福部" are the issuing government
+                agencies' names — kept in Chinese verbatim per issue #485;
+                only the surrounding generic label is translated. */}
+            <span>♿ {t("accessibleTransitTool.dataSourceLabel", "通用無障礙資料來源：")}交通部 TDX ＋ 衛福部</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>22 縣市即時覆蓋</span>
+            <span>{t("accessibleTransitTool.countyCoverageBadge", "22 縣市即時覆蓋")}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
-            全台無障礙通用交通地圖
+            {t("accessibleTransitTool.pageTitle", "全台無障礙通用交通地圖")}
           </h1>
           <p className="text-blue-100 text-base sm:text-lg leading-relaxed mb-6">
-            專為高齡長輩、輪椅朋友與推嬰兒車家長打造：快速掌握低地板公車配置比率、雙鐵捷運愛心渡板與預約、全台 22 縣市復康巴士派車中心與無障礙計程車專線。
+            {t(
+              "accessibleTransitTool.pageDescription",
+              "專為高齡長輩、輪椅朋友與推嬰兒車家長打造：快速掌握低地板公車配置比率、雙鐵捷運愛心渡板與預約、全台 22 縣市復康巴士派車中心與無障礙計程車專線。",
+            )}
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -124,21 +153,21 @@ export default function AccessibleTransitContent() {
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >
               <span>🚇</span>
-              <span>全台軌道營運通阻</span>
+              <span>{t("accessibleTransitTool.navMetroAlerts", "全台軌道營運通阻")}</span>
             </Link>
             <Link
               href="/tools/long-term-care"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >
               <span>🏥</span>
-              <span>長照服務機構查詢</span>
+              <span>{t("accessibleTransitTool.navLongTermCare", "長照服務機構查詢")}</span>
             </Link>
             <Link
               href="/tools/disability-atm"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >
               <span>🏧</span>
-              <span>無障礙 ATM 據點</span>
+              <span>{t("accessibleTransitTool.navDisabilityAtm", "無障礙 ATM 據點")}</span>
             </Link>
           </div>
         </div>
@@ -149,43 +178,52 @@ export default function AccessibleTransitContent() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-              主力無障礙幹線
+              {t("accessibleTransitTool.summaryMainRoutesLabel", "主力無障礙幹線")}
             </div>
             <div className="text-2xl font-bold text-slate-900 dark:text-white">
-              {data.summary.totalRoutes} <span className="text-sm font-normal text-slate-500">條路線</span>
+              {data.summary.totalRoutes}{" "}
+              <span className="text-sm font-normal text-slate-500">{t("accessibleTransitTool.routesUnit", "條路線")}</span>
             </div>
             <div className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
-              全配比路線 {data.summary.allLowFloorCount} 條
+              {t("accessibleTransitTool.allLowFloorCountTemplate", "全配比路線 {count} 條").replace(
+                "{count}",
+                String(data.summary.allLowFloorCount),
+              )}
             </div>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-              平均低地板比率
+              {t("accessibleTransitTool.summaryAvgRatioLabel", "平均低地板比率")}
             </div>
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
               {data.summary.avgLowFloorRatio}%
             </div>
             <div className="mt-1 text-xs text-slate-500">
-              每車皆設 2 席輪椅固定座
+              {t("accessibleTransitTool.summaryAvgRatioSub", "每車皆設 2 席輪椅固定座")}
             </div>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-              復康巴士調度處
+              {t("accessibleTransitTool.summaryRehabAgenciesLabel", "復康巴士調度處")}
             </div>
             <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
-              {data.summary.rehabAgenciesCount} <span className="text-sm font-normal text-slate-500">個縣市</span>
+              {data.summary.rehabAgenciesCount}{" "}
+              <span className="text-sm font-normal text-slate-500">{t("accessibleTransitTool.countiesUnit", "個縣市")}</span>
             </div>
-            <div className="mt-1 text-xs text-indigo-500">支援就醫預約接送</div>
+            <div className="mt-1 text-xs text-indigo-500">
+              {t("accessibleTransitTool.summaryRehabAgenciesSub", "支援就醫預約接送")}
+            </div>
           </div>
           <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">
-              雙鐵捷運渡板預約
+              {t("accessibleTransitTool.summaryBoardingReservationLabel", "雙鐵捷運渡板預約")}
             </div>
             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              全程站務導引
+              {t("accessibleTransitTool.summaryBoardingReservationValue", "全程站務導引")}
             </div>
-            <div className="mt-1 text-xs text-slate-500">抵達前專線預約免等待</div>
+            <div className="mt-1 text-xs text-slate-500">
+              {t("accessibleTransitTool.summaryBoardingReservationSub", "抵達前專線預約免等待")}
+            </div>
           </div>
         </div>
       )}
@@ -196,7 +234,10 @@ export default function AccessibleTransitContent() {
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">⚠️</span>
             <h2 className="text-sm font-bold text-orange-700 dark:text-orange-400">
-              設施停用公告（{activeAlerts.length} 筆生效中）
+              {t("accessibleTransitTool.alertsHeadingTemplate", "設施停用公告（{count} 筆生效中）").replace(
+                "{count}",
+                String(activeAlerts.length),
+              )}
             </h2>
           </div>
           <div className="space-y-2">
@@ -211,14 +252,19 @@ export default function AccessibleTransitContent() {
                     {a.facilityName ? ` · ${a.facilityName}` : ""}
                   </span>
                   <span className="text-orange-600 dark:text-orange-400 font-medium whitespace-nowrap">
-                    {a.reason || "設施停用"}
+                    {a.reason || t("accessibleTransitTool.alertDefaultReason", "設施停用")}
                   </span>
                 </div>
                 {(a.startTime || a.endTime) && (
                   <div className="text-slate-500">
-                    停用期間：{a.startTime ? new Date(a.startTime).toLocaleString("zh-TW") : "即刻起"}
+                    {t("accessibleTransitTool.alertPeriodLabel", "停用期間：")}
+                    {a.startTime
+                      ? new Date(a.startTime).toLocaleString("zh-TW")
+                      : t("accessibleTransitTool.alertStartImmediate", "即刻起")}
                     {" ～ "}
-                    {a.endTime ? new Date(a.endTime).toLocaleString("zh-TW") : "恢復通知前"}
+                    {a.endTime
+                      ? new Date(a.endTime).toLocaleString("zh-TW")
+                      : t("accessibleTransitTool.alertEndPending", "恢復通知前")}
                   </div>
                 )}
               </div>
@@ -232,7 +278,9 @@ export default function AccessibleTransitContent() {
         <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
           {/* 縣市選擇 */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-thin">
-            <span className="text-xs font-bold text-slate-400 whitespace-nowrap">縣市：</span>
+            <span className="text-xs font-bold text-slate-400 whitespace-nowrap">
+              {t("accessibleTransitTool.countyLabel", "縣市：")}
+            </span>
             <button
               onClick={() => setSelectedCounty("all")}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition ${
@@ -241,8 +289,10 @@ export default function AccessibleTransitContent() {
                   : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
               }`}
             >
-              全部縣市
+              {t("accessibleTransitTool.allCounties", "全部縣市")}
             </button>
+            {/* issue #486: county/city names (c) are government administrative
+                division names — kept in Chinese verbatim per issue #485. */}
             {counties.map((c) => (
               <button
                 key={c}
@@ -262,7 +312,7 @@ export default function AccessibleTransitContent() {
           <div className="relative min-w-[220px]">
             <input
               type="text"
-              placeholder="搜尋公車路線、醫院或電話..."
+              placeholder={t("accessibleTransitTool.searchPlaceholder", "搜尋公車路線、醫院或電話...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-3.5 py-2 pl-9 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -273,7 +323,7 @@ export default function AccessibleTransitContent() {
 
         {/* 系統類型 Tabs */}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-          {Object.entries(SYSTEM_TYPE_LABELS).map(([key, item]) => (
+          {Object.entries(systemTypeLabels).map(([key, item]) => (
             <button
               key={key}
               onClick={() => setSelectedSystem(key)}
@@ -294,7 +344,9 @@ export default function AccessibleTransitContent() {
       {loading ? (
         <div className="text-center py-16">
           <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-3 text-sm text-slate-500">正在聚合各縣市無障礙交通資訊...</p>
+          <p className="mt-3 text-sm text-slate-500">
+            {t("accessibleTransitTool.loadingMessage", "正在聚合各縣市無障礙交通資訊...")}
+          </p>
         </div>
       ) : (
         <div className="space-y-10">
@@ -304,10 +356,13 @@ export default function AccessibleTransitContent() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>🚐</span>
-                  <span>各縣市復康巴士調度與預約專線</span>
+                  <span>{t("accessibleTransitTool.rehabBusHeading", "各縣市復康巴士調度與預約專線")}</span>
                 </h2>
                 <span className="text-xs text-slate-500">
-                  共 {data?.hotlines.length || 0} 處專線
+                  {t("accessibleTransitTool.rehabBusCountTemplate", "共 {count} 處專線").replace(
+                    "{count}",
+                    String(data?.hotlines.length || 0),
+                  )}
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -330,7 +385,9 @@ export default function AccessibleTransitContent() {
                         {h.description}
                       </p>
                       <div className="bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-lg text-xs text-slate-500 dark:text-slate-400 mb-4">
-                        <strong className="text-slate-700 dark:text-slate-300">適用資格：</strong>
+                        <strong className="text-slate-700 dark:text-slate-300">
+                          {t("accessibleTransitTool.eligibilityLabel", "適用資格：")}
+                        </strong>
                         {h.eligibility}
                       </div>
                     </div>
@@ -340,14 +397,18 @@ export default function AccessibleTransitContent() {
                         className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition shadow-sm"
                       >
                         <span>📞</span>
-                        <span>播打電話 {h.phone}</span>
+                        <span>
+                          {t("accessibleTransitTool.callButtonLabel", "播打電話")} {h.phone}
+                        </span>
                       </a>
                       <button
                         onClick={() => handleCopyPhone(h.phone)}
                         className="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 text-xs transition"
-                        title="複製電話號碼"
+                        title={t("accessibleTransitTool.copyPhoneTitle", "複製電話號碼")}
                       >
-                        {copiedPhone === h.phone ? "已複製!" : "複製"}
+                        {copiedPhone === h.phone
+                          ? t("accessibleTransitTool.copiedLabel", "已複製!")
+                          : t("accessibleTransitTool.copyButtonLabel", "複製")}
                       </button>
                     </div>
                   </div>
@@ -366,10 +427,13 @@ export default function AccessibleTransitContent() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>🚇</span>
-                  <span>雙鐵、捷運與通用無障礙計程車服務</span>
+                  <span>{t("accessibleTransitTool.railMetroTaxiHeading", "雙鐵、捷運與通用無障礙計程車服務")}</span>
                 </h2>
                 <span className="text-xs text-slate-500">
-                  共 {data?.facilities.length || 0} 項設施支援
+                  {t("accessibleTransitTool.facilitiesCountTemplate", "共 {count} 項設施支援").replace(
+                    "{count}",
+                    String(data?.facilities.length || 0),
+                  )}
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -388,7 +452,7 @@ export default function AccessibleTransitContent() {
                         </span>
                       </div>
                       <span className="text-lg">
-                        {SYSTEM_TYPE_LABELS[f.systemType]?.icon || "♿"}
+                        {SYSTEM_TYPE_ICONS[f.systemType] || "♿"}
                       </span>
                     </div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
@@ -411,7 +475,9 @@ export default function AccessibleTransitContent() {
 
                     {f.servicePhone && (
                       <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
-                        <span className="text-xs text-slate-500">預約或客服專線：</span>
+                        <span className="text-xs text-slate-500">
+                          {t("accessibleTransitTool.servicePhoneLabel", "預約或客服專線：")}
+                        </span>
                         <a
                           href={`tel:${f.servicePhone.replace(/[^0-9]/g, "")}`}
                           className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
@@ -434,7 +500,10 @@ export default function AccessibleTransitContent() {
                             className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                           >
                             <span>🗺️</span>
-                            <span>查看車站導覽圖{m.mapName ? `（${m.mapName}）` : ""}</span>
+                            <span>
+                              {t("accessibleTransitTool.stationMapLabel", "查看車站導覽圖")}
+                              {m.mapName ? `（${m.mapName}）` : ""}
+                            </span>
                           </a>
                         </div>
                       ))}
@@ -442,15 +511,17 @@ export default function AccessibleTransitContent() {
                     {/* 周邊轉乘摘要（有資料才顯示） */}
                     {(transfersByStation.get(f.stationOrAgency) || []).length > 0 && (
                       <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
-                        <div className="text-xs text-slate-500 mb-1">周邊轉乘：</div>
+                        <div className="text-xs text-slate-500 mb-1">
+                          {t("accessibleTransitTool.nearbyTransfersLabel", "周邊轉乘：")}
+                        </div>
                         <ul className="space-y-0.5">
                           {(transfersByStation.get(f.stationOrAgency) || [])
                             .slice(0, 3)
-                            .map((t, tIdx) => (
+                            .map((transfer, tIdx) => (
                               <li key={tIdx} className="text-xs text-slate-600 dark:text-slate-300">
-                                🔀 {t.transferMode || "轉乘"}
-                                {t.exitName ? `（${t.exitName}）` : ""}
-                                {t.transferDescription ? ` — ${t.transferDescription}` : ""}
+                                🔀 {transfer.transferMode || t("accessibleTransitTool.transferFallback", "轉乘")}
+                                {transfer.exitName ? `（${transfer.exitName}）` : ""}
+                                {transfer.transferDescription ? ` — ${transfer.transferDescription}` : ""}
                               </li>
                             ))}
                         </ul>
@@ -468,10 +539,13 @@ export default function AccessibleTransitContent() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>🚌</span>
-                  <span>主力低地板公車無障礙路線</span>
+                  <span>{t("accessibleTransitTool.busRoutesHeading", "主力低地板公車無障礙路線")}</span>
                 </h2>
                 <span className="text-xs text-slate-500">
-                  共 {data?.routes.length || 0} 條推薦就醫交通路線
+                  {t("accessibleTransitTool.busRoutesCountTemplate", "共 {count} 條推薦就醫交通路線").replace(
+                    "{count}",
+                    String(data?.routes.length || 0),
+                  )}
                 </span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -492,16 +566,16 @@ export default function AccessibleTransitContent() {
                           {r.source === "tdx_bus" ? (
                             <span
                               className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
-                              title="交通部 TDX 每日同步之真實車輛資料"
+                              title={t("accessibleTransitTool.liveSyncTitle", "交通部 TDX 每日同步之真實車輛資料")}
                             >
-                              ✓ 即時同步
+                              {t("accessibleTransitTool.liveSyncBadge", "✓ 即時同步")}
                             </span>
                           ) : (
                             <span
                               className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-400"
-                              title="尚未完成 TDX 同步，暫以示範資料顯示"
+                              title={t("accessibleTransitTool.demoDataTitle", "尚未完成 TDX 同步，暫以示範資料顯示")}
                             >
-                              示範資料
+                              {t("accessibleTransitTool.demoDataBadge", "示範資料")}
                             </span>
                           )}
                         </div>
@@ -520,7 +594,9 @@ export default function AccessibleTransitContent() {
                           低地板車」，資料來自 TDX Bus/Schedule 的 Timetable.IsLowFloor 取樣。 */}
                       {r.sampleTrips && r.sampleTrips.length > 0 && (
                         <div className="mb-4">
-                          <div className="text-xs text-slate-500 mb-1.5">班次低地板標示：</div>
+                          <div className="text-xs text-slate-500 mb-1.5">
+                            {t("accessibleTransitTool.tripLowFloorLabel", "班次低地板標示：")}
+                          </div>
                           <div className="flex flex-wrap gap-1.5">
                             {r.sampleTrips.map((trip, tIdx) => (
                               <span
@@ -530,10 +606,19 @@ export default function AccessibleTransitContent() {
                                     ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400"
                                     : "bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
                                 }`}
-                                title={trip.isLowFloor ? "此班次為低地板車" : "此班次非低地板車"}
+                                title={
+                                  trip.isLowFloor
+                                    ? t("accessibleTransitTool.tripIsLowFloorTitle", "此班次為低地板車")
+                                    : t("accessibleTransitTool.tripNotLowFloorTitle", "此班次非低地板車")
+                                }
                               >
                                 {trip.isLowFloor ? "♿" : "🚫"}{" "}
-                                {trip.departureTime ? trip.departureTime.slice(0, 5) : `班次 ${tIdx + 1}`}
+                                {trip.departureTime
+                                  ? trip.departureTime.slice(0, 5)
+                                  : t("accessibleTransitTool.tripFallbackTemplate", "班次 {idx}").replace(
+                                      "{idx}",
+                                      String(tIdx + 1),
+                                    )}
                               </span>
                             ))}
                           </div>
@@ -544,7 +629,9 @@ export default function AccessibleTransitContent() {
                     <div>
                       <div className="mb-2">
                         <div className="flex items-center justify-between text-xs font-medium mb-1">
-                          <span className="text-slate-500">低地板車隊比率</span>
+                          <span className="text-slate-500">
+                            {t("accessibleTransitTool.lowFloorRatioLabel", "低地板車隊比率")}
+                          </span>
                           <span
                             className={
                               r.lowFloorRatio >= 95
@@ -566,9 +653,16 @@ export default function AccessibleTransitContent() {
                       </div>
 
                       <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-700">
-                        <span>輪椅席位：{r.wheelchairSlots} 席/車</span>
+                        <span>
+                          {t("accessibleTransitTool.wheelchairSlotsTemplate", "輪椅席位：{n} 席/車").replace(
+                            "{n}",
+                            String(r.wheelchairSlots),
+                          )}
+                        </span>
                         <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                          {r.isAllLowFloor ? "★ 全低地板班次" : "高比例低地板"}
+                          {r.isAllLowFloor
+                            ? t("accessibleTransitTool.allLowFloorBadge", "★ 全低地板班次")
+                            : t("accessibleTransitTool.highRatioLowFloorBadge", "高比例低地板")}
                         </span>
                       </div>
                     </div>

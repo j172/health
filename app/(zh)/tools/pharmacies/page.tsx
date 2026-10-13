@@ -32,7 +32,7 @@ export default async function PharmaciesPage({
 
   return (
     <ToolPageShell slug="pharmacies" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
-      <FacilitySearchContent config={facilitySearchConfigs.pharmacies} locationOverride={locationOverride} />
+      <FacilitySearchContent config={facilitySearchConfigs.pharmacies} locationOverride={locationOverride} slug="pharmacies" />
     </ToolPageShell>
   );
 }
