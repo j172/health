@@ -52,14 +52,14 @@
       {
         "ref": "health-repo:bypass-admin",
         "description": "Bypass Cache for Admin & Admin APIs",
-        "expression": "(http.request.uri.path starts_with \"/admin\") or (http.request.uri.path starts_with \"/api/admin\")",
+        "expression": "starts_with(http.request.uri.path, \"/admin\") or starts_with(http.request.uri.path, \"/api/admin\")",
         "action": "bypass_cache",
         "enabled": true
       },
       {
         "ref": "health-repo:cache-static-assets",
         "description": "Cache Static Assets",
-        "expression": "(http.request.uri.path starts_with \"/_next/static/\") or (http.request.uri.path starts_with \"/images/\") or (http.request.uri.path eq \"/favicon.ico\")",
+        "expression": "starts_with(http.request.uri.path, \"/_next/static/\") or starts_with(http.request.uri.path, \"/images/\") or (http.request.uri.path eq \"/favicon.ico\")",
         "action": "eligible_for_cache",
         "edgeTtlMode": "respect_origin",
         "browserTtlMode": "respect_origin",
@@ -68,7 +68,7 @@
       {
         "ref": "health-repo:html-edge-cache",
         "description": "Respect Origin for Public HTML & SWR",
-        "expression": "not (http.request.uri.path starts_with \"/admin\") and not (http.request.uri.path starts_with \"/api/admin\")",
+        "expression": "not (starts_with(http.request.uri.path, \"/admin\")) and not (starts_with(http.request.uri.path, \"/api/admin\"))",
         "action": "eligible_for_cache",
         "edgeTtlMode": "respect_origin",
         "enabled": true
@@ -78,7 +78,7 @@
       {
         "ref": "health-repo:challenge-admin",
         "description": "Challenge Untrusted Traffic on Admin",
-        "expression": "(http.request.uri.path starts_with \"/admin\" or http.request.uri.path starts_with \"/api/admin\") and (cf.threat_score gt 0 or not ip.geoip.country in {\"TW\"})",
+        "expression": "(starts_with(http.request.uri.path, \"/admin\") or starts_with(http.request.uri.path, \"/api/admin\")) and (cf.threat_score gt 0 or not ip.src.country in {\"TW\"})",
         "action": "managed_challenge",
         "enabled": true
       },
@@ -94,7 +94,7 @@
       {
         "ref": "health-repo:protect-api-and-login",
         "description": "Protect API & Login Rate Limits",
-        "expression": "http.request.uri.path starts_with \"/api/\" or http.request.uri.path starts_with \"/admin\"",
+        "expression": "starts_with(http.request.uri.path, \"/api/\") or starts_with(http.request.uri.path, \"/admin\")",
         "requestsPerPeriod": 30,
         "periodSeconds": 10,
         "mitigationTimeoutSeconds": 60,
