@@ -10,7 +10,7 @@
 | 項目 | 值 |
 |---|---|
 | 主機 | HawkHost 共享主機（新加坡），CloudLinux 8＋LiteSpeed＋MariaDB 10.11＋cPanel；與 `bid.j172.tw` 共用同一帳號 |
-| 行程 | PM2 v7（`health-web`），Node **v20.20.2**（nvm），`--max-old-space-size=768`、`max_memory_restart: 1024M` |
+| 行程 | PM2 v7（`health-web`），Node **v24.19.0**（nvm；2026-10-13 核對時發現自 2026-09-01 起 nvm default 早已是 v24.19.0，文件曾誤記為 v20.20.2——見 #481），`--max-old-space-size=768`、`max_memory_restart: 1024M` |
 | CloudLinux 限制 | **NPROC 100**、**Entry Processes 20**（兩者不同；耗盡的通常是 NPROC） |
 | 前端 CDN | Cloudflare Free（Full Strict、Smart Tiered Cache、Bot Fight Mode） |
 | 部署 | GitHub Actions 建置 → FTPS 上傳 prebuilt；`next.config.js` 也必須上傳（`next start` 從工作目錄讀取） |
@@ -22,6 +22,13 @@
 3. **啟用 Next.js 圖片最佳化**：數十張圖同時縮放會衝破 768MB → 全域 `images.unoptimized: true`。
 4. **在主機上 `npm ci`**：會產生大量行程拖垮 NPROC；改為上傳預先建置好的產物。
 5. **用管線改寫正式 crontab**（`crontab -l | sed | crontab -` 曾清空整份 crontab）。
+
+### 1.2 Node 版本回滾步驟（#481）
+`~/.nvm/versions/node/` 目前同時裝有 v20.20.2（回滾用，2026-10-13 重新裝回）與 v24.19.0（目前 default，正式在跑）。若 v24 出現記憶體或穩定性惡化：
+1. `nvm alias default 20.20.2`（改 `~/.nvm/alias/default`，不影響目前已在跑的 process，只影響下次啟動的新 shell/process 解析到的 `node`）
+2. `pm2 restart health-web`（讓 PM2 用新的 default 重新 spawn）
+3. 用 `readlink -f /proc/<pid>/exe` 確認真的切回 v20.20.2
+4. 回報 #481，記錄回滾原因
 
 ---
 
@@ -40,7 +47,7 @@
 |---|---|---|
 | O-1 | **httpClient 每次 HTTPS 請求都重建 TLS SecureContext**（#401 OPEN） | 同日 3 次 `std::bad_alloc` 崩潰都在 OpenSSL `AddCACert`；斷路器降低了頻率但機制仍在。修法：共用 keep-alive `https.Agent`（目前 `httpClient.ts` 無 Agent） |
 | O-2 | Issue #391（雙 God Daemon）、#394（`_next/image` OOM）仍為 OPEN | 修正已上線，issue 待驗證後關閉 |
-| O-3 | Node 20 已 EOL | 已列入 2.0（升級 Node 24，先做記憶體實測） |
+| O-3 | ~~Node 20 已 EOL~~ | 2026-10-13 核對發現主機早已實際跑在 Node v24.19.0（nvm default 自 09-01 起即為 v24，之前無人記錄/補完流程）；CI 已補改為 24，`~/.nvm/versions/node/` 已重新裝回 v20.20.2 作回滾備援，詳見 #481 留言的每日觀察記錄 |
 | O-4 | 共享主機鄰居搶 CPU | 主機層級問題，非程式可解；load average 長期 10–12 |
 
 ---
