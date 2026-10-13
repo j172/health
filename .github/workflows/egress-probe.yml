@@ -101,7 +101,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: What is inside the WRA warning map layers
         run: node scripts/probe-wra-kml.mjs
@@ -120,7 +120,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Probe upstreams from the production host
         env:
