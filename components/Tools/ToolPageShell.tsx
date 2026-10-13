@@ -19,6 +19,7 @@ import RecentToolRecorder from "@/components/Tools/RecentToolRecorder";
  * - Related Tools Cross-linking ("下一步")
  * - Related News Cross-linking
  * - Life-situation Guide Cross-linking
+ * - Last-updated timestamp (#tool-last-updated, issue #457)
  * - AEO Direct Answer Box (#aeo-direct-answer)
  * - Calculation Formula & Evaluation Steps (collapsible)
  * - Standard Semantic HTML Comparison/Reference Tables (collapsible)
@@ -142,6 +143,20 @@ export default async function ToolPageShell({
               </li>
             </ol>
           </nav>
+
+          {/* 🕒 Last-updated timestamp (issue #457) — sourced from the
+              catalog entry's `lastUpdated`, which also feeds `dateModified`
+              on the JSON-LD page node built by buildToolGraphJsonLd, so the
+              visible date and the structured-data date can't drift apart. */}
+          {catalogEntry?.lastUpdated ? (
+            <p
+              id="tool-last-updated"
+              className="mb-4 text-right text-[11px] font-medium text-slate-500 dark:text-slate-400"
+            >
+              最後更新：
+              <time dateTime={catalogEntry.lastUpdated}>{toTaipei(catalogEntry.lastUpdated, "medium")}</time>
+            </p>
+          ) : null}
 
           {/* Interactive Tool Widget (Children) */}
           <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900 sm:p-8">

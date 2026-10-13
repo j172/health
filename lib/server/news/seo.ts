@@ -361,6 +361,10 @@ export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unk
       isPartOf: { "@id": `${baseUrl}/#website` },
       breadcrumb: { "@id": `${canonical}#breadcrumb` },
       mainEntity: { "@id": `${canonical}#app` },
+      // Issue #457: surfaces each catalog entry's `lastUpdated` as the
+      // page's modification date, matching the "最後更新" timestamp
+      // ToolPageShell.tsx renders for the same tool.
+      dateModified: tool.lastUpdated,
       citation: citations,
       ...(pageType === "MedicalWebPage"
         ? { medicalAudience: { "@type": "MedicalAudience", audienceType: "Patient" } }
