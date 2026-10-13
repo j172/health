@@ -118,6 +118,42 @@ test("parseZoneSettingsFile: the repo baseline has a health-repo:limit-bot-traff
   );
 });
 
+// ---------------------------------------------------------------------------
+// issue #455's first live apply attempt also surfaced that
+// `scripts/lib/cloudflare/schema.mjs` validates *shape*, not Cloudflare's
+// actual filter-expression grammar — zod happily accepted
+// `field starts_with "value"` (an infix-operator form Cloudflare's real API
+// rejects with a parse error, since starts_with/ends_with must be used as
+// function calls: starts_with(field, "value")) and `ip.geoip.country` (not
+// a real field; the correct one is `ip.src.country`). These regression
+// guards check every managed rule's expression string directly, since the
+// schema itself can't validate Cloudflare's grammar without reimplementing
+// their parser.
+// ---------------------------------------------------------------------------
+
+function allExpressions(parsed) {
+  return Object.values(parsed.managedRules).flatMap((list) => list.map((rule) => rule.expression));
+}
+
+test("every managed rule's expression uses starts_with()/ends_with() as function calls, never as an infix operator", () => {
+  const raw = loadBaselineRaw();
+  const parsed = parseZoneSettingsFile(raw);
+  for (const expr of allExpressions(parsed)) {
+    assert.ok(
+      !/\)\s*(starts_with|ends_with)\s*"/.test(expr) && !/\.\w+\s+(starts_with|ends_with)\s*"/.test(expr),
+      `expression "${expr}" uses starts_with/ends_with as an infix operator — Cloudflare rejects this with a parse error; must be starts_with(field, "value")`,
+    );
+  }
+});
+
+test("no managed rule expression references the nonexistent ip.geoip.country field (the real field is ip.src.country)", () => {
+  const raw = loadBaselineRaw();
+  const parsed = parseZoneSettingsFile(raw);
+  for (const expr of allExpressions(parsed)) {
+    assert.ok(!expr.includes("ip.geoip.country"), `expression "${expr}" references ip.geoip.country, which Cloudflare's field reference does not document — use ip.src.country`);
+  }
+});
+
 test("parseZoneSettingsFile: a managed rule's optional note field validates and round-trips", () => {
   const raw = loadBaselineRaw();
   raw.managedRules.rateLimitingRules[0].note = "test note";
