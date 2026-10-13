@@ -73,12 +73,16 @@ export function rateLimitingRuleToCloudflare(rule) {
 }
 
 export function responseHeaderTransformRuleToCloudflare(rule) {
-  const headers = [];
+  // Confirmed against Cloudflare's Transform Rules API docs during issue
+  // #455's first live apply attempt at this phase: `headers` is an object
+  // keyed by header name, not an array — PUTting it as an array fails with
+  // "invalid JSON: 'headers' cannot be a array".
+  const headers = {};
   for (const [name, value] of Object.entries(rule.setStatic || {})) {
-    headers.push({ name, operation: "set", value });
+    headers[name] = { operation: "set", value };
   }
   for (const name of rule.remove || []) {
-    headers.push({ name, operation: "remove" });
+    headers[name] = { operation: "remove" };
   }
   return {
     ref: rule.ref,

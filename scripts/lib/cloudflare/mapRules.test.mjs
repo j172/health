@@ -101,10 +101,13 @@ test("responseHeaderTransformRuleToCloudflare: builds set + remove header operat
     remove: ["Server"],
     enabled: true,
   });
-  assert.deepEqual(cf.action_parameters.headers, [
-    { name: "X-Frame-Options", operation: "set", value: "SAMEORIGIN" },
-    { name: "Server", operation: "remove" },
-  ]);
+  // headers is an object keyed by header name (confirmed against
+  // Cloudflare's Transform Rules API docs) — not an array, which Cloudflare
+  // rejects with "invalid JSON: 'headers' cannot be a array".
+  assert.deepEqual(cf.action_parameters.headers, {
+    "X-Frame-Options": { operation: "set", value: "SAMEORIGIN" },
+    Server: { operation: "remove" },
+  });
 });
 
 test("redirectRuleToCloudflare: builds a dynamic redirect action", () => {
