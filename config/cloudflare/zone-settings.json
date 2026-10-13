@@ -115,7 +115,8 @@
           "Referrer-Policy": "strict-origin-when-cross-origin",
           "Permissions-Policy": "camera=(), microphone=(), geolocation=(self)"
         },
-        "remove": ["Server", "X-Powered-By"],
+        "remove": ["X-Powered-By"],
+        "note": "Originally also removed the Server header. Cloudflare's live API rejected this with error 20087 ('remove' is not a valid value for operation because it cannot be used on header 'Server') — confirmed via Cloudflare's own docs that Server is one of a small set of response headers Transform Rules can never modify or remove, because Cloudflare's edge always overwrites it with its own 'cloudflare' value on the way out regardless of what the origin sent. So removing it here would be both rejected and redundant — the origin's Server value is already hidden from clients by Cloudflare's normal proxying, with no rule needed.",
         "enabled": true
       }
     ],
