@@ -115,6 +115,23 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(guideGraph) }} />
+      {/* Machine-readable sibling versions of this locale's guide hub page
+       * (issue #488, extending issue #465's zh-only pattern) — built from
+       * the full getLocalizedGuideMeta translation this page itself renders
+       * from, via lib/server/content/guideLlmsPage.ts's
+       * buildLocaleGuideLlmsPageContent. */}
+      <link
+        rel="alternate"
+        type="text/plain"
+        title={`${meta.title} - LLM Index (llms.txt)`}
+        href={`${buildLocalizedPath(CANONICAL_PATH, locale)}/llms.txt`}
+      />
+      <link
+        rel="alternate"
+        type="text/markdown"
+        title={`${meta.title} - Clean Markdown`}
+        href={`${buildLocalizedPath(CANONICAL_PATH, locale)}/markdown`}
+      />
 
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <StabloHeader />

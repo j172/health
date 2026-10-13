@@ -70,6 +70,23 @@ export default async function LocaleNearbyPage({ params }: { params: Params }) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      {/* Machine-readable sibling versions of this locale's "/nearby" page
+       * (issue #488, extending issue #466's zh-only pattern) — built from
+       * the exact same NearbyTypeDef registry + getLocalizedPageMeta this
+       * page itself renders from, via
+       * lib/server/content/nearbyContent.ts's buildLocaleNearbyLlmsPageContent. */}
+      <link
+        rel="alternate"
+        type="text/plain"
+        title={`${shortTitle} - LLM Index (llms.txt)`}
+        href={`${buildLocalizedPath(CANONICAL_PATH, locale)}/llms.txt`}
+      />
+      <link
+        rel="alternate"
+        type="text/markdown"
+        title={`${shortTitle} - Clean Markdown`}
+        href={`${buildLocalizedPath(CANONICAL_PATH, locale)}/markdown`}
+      />
       <div className="min-h-screen bg-white text-neutral-800 dark:bg-slate-900 dark:text-slate-100">
         <StabloHeader />
 

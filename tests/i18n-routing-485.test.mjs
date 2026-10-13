@@ -96,16 +96,34 @@ test("app/[locale]/tools/ contains a page.tsx for exactly TRANSLATED_TOOL_SLUGS,
     .map((e) => e.name)
     .sort();
 
+  // Issue #488 added `app/[locale]/tools/[slug]/{llms.txt,markdown}/route.ts`
+  // — a dynamic-segment sibling (same "static directory + dynamic [slug]
+  // fallback" shape as `app/(zh)/tools/[slug]/llms.txt/route.ts`) covering
+  // every TRANSLATED_TOOL_SLUGS entry's machine-readable routes with one
+  // pair of files, rather than a page.tsx of its own — so it's allowed here
+  // alongside the real per-slug page directories without weakening the
+  // "nothing more than TRANSLATED_TOOL_SLUGS" guardrail below.
   assert.deepEqual(
     entries,
-    [...TRANSLATED_TOOL_SLUGS].sort(),
-    "app/[locale]/tools/ subdirectories must exactly match TRANSLATED_TOOL_SLUGS — this is the guardrail " +
-      "that keeps every other (not-yet-translated) page from ever growing a half-finished foreign-language URL",
+    [...TRANSLATED_TOOL_SLUGS, "[slug]"].sort(),
+    "app/[locale]/tools/ subdirectories must exactly match TRANSLATED_TOOL_SLUGS (plus the issue #488 " +
+      "[slug] llms.txt/markdown route) — this is the guardrail that keeps every other (not-yet-translated) " +
+      "page from ever growing a half-finished foreign-language URL",
   );
 
   for (const slug of TRANSLATED_TOOL_SLUGS) {
     const pagePath = path.join(localeToolsDir, slug, "page.tsx");
     assert.ok(fs.existsSync(pagePath), `app/[locale]/tools/${slug}/page.tsx must exist`);
+  }
+
+  assert.ok(
+    !fs.existsSync(path.join(localeToolsDir, "[slug]", "page.tsx")),
+    "app/[locale]/tools/[slug]/ must stay route-only (llms.txt/markdown) — a page.tsx there would serve " +
+      "every untranslated tool slug as a locale page, defeating the TRANSLATED_TOOL_SLUGS guardrail",
+  );
+  for (const routeType of ["llms.txt", "markdown"]) {
+    const routePath = path.join(localeToolsDir, "[slug]", routeType, "route.ts");
+    assert.ok(fs.existsSync(routePath), `app/[locale]/tools/[slug]/${routeType}/route.ts must exist`);
   }
 });
 

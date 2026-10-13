@@ -91,9 +91,31 @@ export default async function LocaleHome({ params }: { params: Params }) {
   const items = await listDiverseHomeNews(30, 3);
   const homeGraph = buildHomeGraphJsonLd(items);
 
+  const meta = getLocalizedPageMeta("home", locale);
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph) }} />
+      {/* Machine-readable sibling versions of this locale's homepage (issue
+       * #488, parent #438 §Q/§S) — built from the same getLocalizedPageMeta
+       * + TRANSLATED_TOOL_SLUGS this page's own routing already gates on,
+       * via lib/server/content/homeLlmsPage.ts's
+       * buildLocaleHomeLlmsPageContent. The zh homepage has no equivalent
+       * tag (it's covered by the sitewide /llms.txt instead) — see that
+       * module's own doc comment for why a locale homepage needs its own
+       * scoped index rather than a straight translation of the sitewide one. */}
+      <link
+        rel="alternate"
+        type="text/plain"
+        title={`${meta.title} - LLM Index (llms.txt)`}
+        href={`${buildLocalizedPath(CANONICAL_PATH, locale)}/llms.txt`}
+      />
+      <link
+        rel="alternate"
+        type="text/markdown"
+        title={`${meta.title} - Clean Markdown`}
+        href={`${buildLocalizedPath(CANONICAL_PATH, locale)}/markdown`}
+      />
       <StabloNewsLayout
         items={items}
         variant="home"
