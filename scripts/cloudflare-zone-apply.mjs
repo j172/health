@@ -111,6 +111,21 @@ async function main() {
     botManagementDesired.crawlerProtection = settings.botManagement.crawlerProtection;
     botManagementLive.crawlerProtection = liveBotManagement.crawler_protection ?? null;
   }
+  // issue #455: same "only diff/apply when the file states an actual
+  // desired value" rule as crawlerProtection above, applied to the 3
+  // AI-crawler category fields.
+  if (settings.botManagement.aiSearch !== null) {
+    botManagementDesired.aiSearch = settings.botManagement.aiSearch;
+    botManagementLive.aiSearch = liveBotManagement.ai_search ?? null;
+  }
+  if (settings.botManagement.aiUser !== null) {
+    botManagementDesired.aiUser = settings.botManagement.aiUser;
+    botManagementLive.aiUser = liveBotManagement.ai_user ?? null;
+  }
+  if (settings.botManagement.aiTraining !== null) {
+    botManagementDesired.aiTraining = settings.botManagement.aiTraining;
+    botManagementLive.aiTraining = liveBotManagement.ai_training ?? null;
+  }
   const botManagementChanges = diffFlatSettings(botManagementDesired, botManagementLive);
 
   const desiredRulesByPhase = mapDesiredManagedRulesToCloudflare(settings.managedRules);
@@ -162,6 +177,9 @@ async function main() {
     if (settings.botManagement.crawlerProtection !== null) {
       merged.crawler_protection = settings.botManagement.crawlerProtection;
     }
+    if (settings.botManagement.aiSearch !== null) merged.ai_search = settings.botManagement.aiSearch;
+    if (settings.botManagement.aiUser !== null) merged.ai_user = settings.botManagement.aiUser;
+    if (settings.botManagement.aiTraining !== null) merged.ai_training = settings.botManagement.aiTraining;
     await client.putBotManagement(merged);
     auditLine(`botManagement: ${botManagementChanges.map((c) => `${c.key} ${c.from}->${c.to}`).join(", ")}`);
   }

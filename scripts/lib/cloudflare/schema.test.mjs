@@ -63,3 +63,64 @@ test("parseZoneSettingsFile: documentedUnmanagedRules carries the known SemrushB
   assert.ok(known, "expected the documented SemrushBot/AhrefsBot WAF rule to be present");
   assert.equal(known.phase, "http_request_firewall_custom");
 });
+
+// ---------------------------------------------------------------------------
+// issue #455: 3-category AI-crawler fields (ai_search/ai_user/ai_training)
+// and the new non-browser rate-limiting rule.
+// ---------------------------------------------------------------------------
+
+test("parseZoneSettingsFile: the repo baseline allows all 3 AI-crawler categories (issue #455)", () => {
+  const raw = loadBaselineRaw();
+  const parsed = parseZoneSettingsFile(raw);
+  assert.equal(parsed.botManagement.aiSearch, "disabled", "Search category must be allowed (not blocked)");
+  assert.equal(parsed.botManagement.aiUser, "disabled", "Agent category must be allowed (not blocked)");
+  assert.equal(parsed.botManagement.aiTraining, "disabled", "Training category must be allowed (not blocked)");
+  assert.equal(
+    parsed.botManagement.aiBotsProtection,
+    "disabled",
+    "the legacy single-toggle field must also be disabled, not left blocking behind the new per-category fields",
+  );
+});
+
+test("parseZoneSettingsFile: aiSearch/aiUser reject 'disallow' (only aiTraining's API field documents that value)", () => {
+  const raw = loadBaselineRaw();
+  raw.botManagement.aiSearch = "disallow";
+  assert.throws(() => parseZoneSettingsFile(raw), /failed schema validation/);
+});
+
+test("parseZoneSettingsFile: aiTraining accepts 'disallow'", () => {
+  const raw = loadBaselineRaw();
+  raw.botManagement.aiTraining = "disallow";
+  assert.doesNotThrow(() => parseZoneSettingsFile(raw));
+});
+
+test("parseZoneSettingsFile: aiSearch/aiUser/aiTraining accept null (genuinely unconfirmed, matching the crawlerProtection convention)", () => {
+  const raw = loadBaselineRaw();
+  raw.botManagement.aiSearch = null;
+  raw.botManagement.aiUser = null;
+  raw.botManagement.aiTraining = null;
+  assert.doesNotThrow(() => parseZoneSettingsFile(raw));
+});
+
+test("parseZoneSettingsFile: the repo baseline has a health-repo:limit-bot-traffic rate-limiting rule targeting cf.client.bot (issue #455)", () => {
+  const raw = loadBaselineRaw();
+  const parsed = parseZoneSettingsFile(raw);
+  const rule = parsed.managedRules.rateLimitingRules.find((r) => r.ref === "health-repo:limit-bot-traffic");
+  assert.ok(rule, "expected a health-repo:limit-bot-traffic rate-limiting rule");
+  assert.equal(rule.expression, "cf.client.bot");
+  assert.equal(rule.enabled, true);
+  // Must not be a challenge action — a legitimate crawler can't solve a JS
+  // challenge, so challenging bot traffic would defeat the point of #455's
+  // AI-crawler unblock.
+  assert.ok(
+    rule.action === "block" || rule.action === "log",
+    "action must not be managed_challenge/js_challenge for bot traffic",
+  );
+});
+
+test("parseZoneSettingsFile: a managed rule's optional note field validates and round-trips", () => {
+  const raw = loadBaselineRaw();
+  raw.managedRules.rateLimitingRules[0].note = "test note";
+  const parsed = parseZoneSettingsFile(raw);
+  assert.equal(parsed.managedRules.rateLimitingRules[0].note, "test note");
+});

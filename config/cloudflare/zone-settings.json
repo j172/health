@@ -40,9 +40,12 @@
   },
   "botManagement": {
     "fightMode": true,
-    "aiBotsProtection": "block",
+    "aiBotsProtection": "disabled",
+    "aiSearch": "disabled",
+    "aiUser": "disabled",
+    "aiTraining": "disabled",
     "crawlerProtection": null,
-    "note": "fight_mode=true and ai_bots_protection=block are corroborated by memory (ops_cloudflare_bot_protection.md: both turned ON 2026-08-16) and by a 2026-10-12 live test recorded in docs/domains/13-seo-performance-i18n-ai.md (GPTBot/ClaudeBot got 403, PerplexityBot got 200 — consistent with ai_bots_protection=block still blocking the Agent/Training-ish bots under the legacy single-toggle model). Cloudflare's newer Search/Agent/Training three-category model (2026-07-01 changelog) is NOT yet represented here because this repo has not confirmed the exact API field for it — see docs/2.0/spec-issue-438.md §T item 347 for the intended target state (all three categories allowed, paired with caching/rate-limiting mitigations) which is deliberately NOT captured as 'current state' in this baseline file. crawlerProtection=null means this field is genuinely unconfirmed, not a desired value of 'off' — confirmed 2026-10-12 via issue #454's first live plan run that the real zone has it set to 'enabled', so the plan/apply scripts deliberately skip diffing/writing this field while it's null, to avoid silently resetting it. Set it to an actual 'enabled'/'disabled' value here only once someone has confirmed what this field should be."
+    "note": "issue #455 (2.0 §T): allows all 3 AI-crawler categories (Search/Agent/Training — Cloudflare API fields ai_search/ai_user/ai_training, confirmed free-plan-available per the 2026-07-01 changelog). 'disabled' means NOT blocked for that category, on every field including the legacy aiBotsProtection toggle — set to 'disabled' too (not left at its old 'block' value) because Cloudflare's docs say the 3 category fields 'replace' that single toggle, and leaving it at 'block' risked an ambiguous conflicting legacy rule still blocking the exact bots this change means to allow. Before this change: fight_mode=true and ai_bots_protection=block, corroborated by memory (ops_cloudflare_bot_protection.md: both turned ON 2026-08-16) and a 2026-10-12 live test (GPTBot/ClaudeBot got 403, PerplexityBot got 200). This unblock MUST ship in the same change as: (1) the cache rules below actually being live (html/llms.txt/.md eligible for edge cache, so crawler traffic mostly hits Cloudflare's cache instead of the origin), (2) the new health-repo:limit-bot-traffic rate-limiting rule below, and (3) the documented SemrushBot/AhrefsBot WAF block (see documentedUnmanagedRules) surviving untouched — see docs/2.0/spec-issue-438.md §T item 348's explicit load-risk note (AI crawler traffic previously worsened an NPROC-exhaustion incident, which is why ai_bots_protection was turned to block on 2026-08-16 in the first place). Monitoring plan: compare host NPROC + Cloudflare cache hit rate daily for 72h after apply (recorded in issue #455's comments); if NPROC alerts reappear, revert ONLY aiTraining back to 'block' and leave aiSearch/aiUser as 'disabled' (allowed). crawlerProtection=null remains genuinely unconfirmed (unrelated to this change) — confirmed 2026-10-12 via issue #454's first live plan run that the real zone has it set to 'enabled'; the plan/apply scripts deliberately skip diffing/writing this field while it's null."
   },
   "managedRules": {
     "cacheRules": [
@@ -96,6 +99,17 @@
         "periodSeconds": 10,
         "mitigationTimeoutSeconds": 60,
         "action": "managed_challenge",
+        "enabled": true
+      },
+      {
+        "ref": "health-repo:limit-bot-traffic",
+        "description": "Limit Non-Browser (Bot) Request Rate",
+        "note": "issue #455's required mitigation paired with allowing AI crawlers (2.0 §T item 348): throttles verified-bot traffic specifically, zone-wide, so a single crawler cannot hammer the origin at a rate the host's known LVE process ceiling can't absorb (see ops_health_502_watchdog memory notes on prior NPROC-exhaustion incidents). cf.client.bot (free-plan-available, confirmed via Cloudflare's ruleset-engine field reference docs) flags known-good bots/crawlers, which is exactly the traffic class this unblock adds, without touching real browser visitors. action is 'block' rather than 'managed_challenge'/'js_challenge': those challenge types require solving a JS challenge, which a legitimate crawler cannot do, so challenging bot traffic would silently defeat the entire point of allowing it — 'block' instead just rejects requests over the limit outright (a clean, bot-interpretable backoff signal) without demanding JS execution.",
+        "expression": "cf.client.bot",
+        "requestsPerPeriod": 20,
+        "periodSeconds": 60,
+        "mitigationTimeoutSeconds": 60,
+        "action": "block",
         "enabled": true
       }
     ],

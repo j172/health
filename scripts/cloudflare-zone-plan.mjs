@@ -109,6 +109,21 @@ async function main() {
     botManagementDesired.crawlerProtection = settings.botManagement.crawlerProtection;
     botManagementLive.crawlerProtection = liveBotManagement.crawler_protection ?? null;
   }
+  // issue #455: same "only diff when the file states an actual desired
+  // value" rule as crawlerProtection above, applied to the 3 AI-crawler
+  // category fields.
+  if (settings.botManagement.aiSearch !== null) {
+    botManagementDesired.aiSearch = settings.botManagement.aiSearch;
+    botManagementLive.aiSearch = liveBotManagement.ai_search ?? null;
+  }
+  if (settings.botManagement.aiUser !== null) {
+    botManagementDesired.aiUser = settings.botManagement.aiUser;
+    botManagementLive.aiUser = liveBotManagement.ai_user ?? null;
+  }
+  if (settings.botManagement.aiTraining !== null) {
+    botManagementDesired.aiTraining = settings.botManagement.aiTraining;
+    botManagementLive.aiTraining = liveBotManagement.ai_training ?? null;
+  }
   const botManagementChanges = diffFlatSettings(botManagementDesired, botManagementLive);
 
   const desiredRulesByPhase = mapDesiredManagedRulesToCloudflare(settings.managedRules);
