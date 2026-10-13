@@ -168,7 +168,7 @@ export default function FacilitySearchContent({
   // 都誤判為「座標變了」而重新發起請求。
   const geoCoords = useMemo(
     () => (hasOverride ? { lat: locationOverride!.lat, lng: locationOverride!.lng } : geolocation.coords),
-    [hasOverride, locationOverride?.lat, locationOverride?.lng, geolocation.coords],
+    [hasOverride, locationOverride, geolocation.coords],
   );
   const [keyword, setKeyword] = useState("");
   const [searchInput, setSearchInput] = useState("");
