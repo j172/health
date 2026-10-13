@@ -19,13 +19,19 @@ import type { HomeStatusResponse, HomeStatusSection } from "@/app/api/home-statu
  * fallback for denied/timeout/unsupported, which this component mirrors.
  *
  * Single-aggregation-API requirement: this is the ONE client component that
- * calls `/api/home-status`, replacing what used to be up to 8 independent
- * per-widget client fetches in the old homepage sidebar
- * (LocalWeatherSvgWidget/AqiSidebarWidget/UvSidebarWidget/
- * ErStatusSidebarWidget/CpcPriceSidebarWidget/WaterOutageSidebarWidget/
- * CdcAlertSidebarWidget/PestAlertSidebarWidget — see
- * components/News/NewsSidebar.tsx, which no longer renders those widgets on
- * the home variant, see StabloNewsLayout.tsx's `hideLiveWidgets` prop).
+ * calls `/api/home-status`, replacing the 3 of the old homepage sidebar's
+ * independent per-widget client fetches that duplicated this same data —
+ * LocalWeatherSvgWidget, AqiSidebarWidget, and UvSidebarWidget each
+ * previously called their own endpoint (see lib/server/home/queries.ts's
+ * doc comment for which ones) — plus WeatherAlertSidebarWidget/
+ * EarthquakeSidebarWidget, which were already server-prop-driven with no
+ * client fetch of their own. See
+ * components/News/NewsSidebar.tsx's `hideStatusBarDuplicateWidgets` prop,
+ * which hides only those 5 widgets on the home variant — per a 2026-10-13
+ * product decision on issue #472, the other 5 sidebar widgets (ER status /
+ * CPC fuel price / water outages / CDC travel alerts / pest alerts, which
+ * this status bar does NOT cover) keep rendering on home exactly as before,
+ * with their own independent fetches untouched.
  * `useSidebarWidgetData`'s `buildUrl` deliberately returns `null` (skipping
  * the fetch) until geolocation reaches a terminal status
  * (success/denied/timeout/unsupported) so this fires exactly once per page

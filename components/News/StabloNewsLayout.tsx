@@ -194,12 +194,13 @@ export default async function StabloNewsLayout({
                   // issue #472: the home page's new top status bar
                   // (components/Home/HomeStatusBar.tsx) now covers
                   // weather/AQI/UV/latest-earthquake/alerts via one
-                  // aggregation API call, so this sidebar's 8 old
-                  // independent per-widget live-data fetches would just be
-                  // duplicating that — hidden on home only; /news archive
-                  // pages keep them unchanged (hideLiveWidgets defaults to
-                  // false).
-                  hideLiveWidgets
+                  // aggregation API call, so only those 5 widgets are
+                  // hidden here on home (the other 5 — ER/CPC/water/CDC/
+                  // pest — are not covered by the status bar and keep
+                  // rendering, per the 2026-10-13 product decision on
+                  // issue #472). /news archive pages keep all 10
+                  // (hideStatusBarDuplicateWidgets defaults to false).
+                  hideStatusBarDuplicateWidgets
                 />
               </div>
             </div>

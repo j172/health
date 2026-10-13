@@ -231,17 +231,54 @@ test("components/Home/HomeStatusBar.tsx offers a manual county picker gated on n
   }
 });
 
-test("components/News/NewsSidebar.tsx: hideLiveWidgets hides the 10 old live-data widgets but defaults to false (archive pages unaffected)", () => {
+// Product decision (2026-10-13 review of #472): keep all 10 original
+// sidebar widgets' *content* reachable from the homepage — only the 5 that
+// duplicate the new top status bar (weather/weather-alerts/earthquake/AQI/UV)
+// are hidden there; ER status/CPC price/water outages/CDC alerts/pest
+// alerts are NOT covered by the status bar and must always render.
+test("components/News/NewsSidebar.tsx: hideStatusBarDuplicateWidgets hides only the 5 status-bar-covered widgets, defaults to false, and never gates the other 5", () => {
   const src = readSource("components", "News", "NewsSidebar.tsx");
-  assert.ok(src.includes("hideLiveWidgets = false"), "must default to false so /news archive pages keep all 10 widgets");
-  assert.ok(src.includes("{!hideLiveWidgets && ("), "the 10 live widgets must be gated behind hideLiveWidgets");
-  assert.ok(src.indexOf("<LocalWeatherSvgWidget") > src.indexOf("{!hideLiveWidgets && ("), "LocalWeatherSvgWidget must be inside the gated block");
+  assert.ok(
+    src.includes("hideStatusBarDuplicateWidgets = false"),
+    "must default to false so /news archive pages keep all 10 widgets",
+  );
+
+  const GATE = '{!hideStatusBarDuplicateWidgets && (';
+  const gate1 = src.indexOf(GATE);
+  assert.ok(gate1 !== -1, "must gate at least one block of widgets");
+  const gate2 = src.indexOf(GATE, gate1 + GATE.length);
+  assert.ok(gate2 !== -1, "must have exactly 2 separate gated blocks (1-2 and 4-6)");
+  const gate3 = src.indexOf(GATE, gate2 + GATE.length);
+  assert.equal(gate3, -1, "must have exactly 2 gated blocks, not a 3rd — items 7-10 must never be gated");
+
+  const idx3 = src.indexOf("{/* 3.");
+  const idx7 = src.indexOf("{/* 7.");
+  const idx11 = src.indexOf("{/* 11.");
+
+  // Items 1-2 (weather / weather-alerts): inside the first gated block.
+  assert.ok(src.indexOf("<LocalWeatherSvgWidget") > gate1 && src.indexOf("<LocalWeatherSvgWidget") < idx3);
+  assert.ok(src.indexOf("<WeatherAlertSidebarWidget") > gate1 && src.indexOf("<WeatherAlertSidebarWidget") < idx3);
+
+  // Item 3 (ER status): between the two gated blocks — always renders.
+  assert.ok(src.indexOf("<ErStatusSidebarWidget") > idx3 && src.indexOf("<ErStatusSidebarWidget") < gate2, "ER status is not covered by the status bar and must always render");
+
+  // Items 4-6 (earthquake / AQI / UV): inside the second gated block.
+  for (const tag of ["<EarthquakeSidebarWidget", "<AqiSidebarWidget", "<UvSidebarWidget"]) {
+    const i = src.indexOf(tag);
+    assert.ok(i > gate2 && i < idx7, `${tag} must be inside the second gated block`);
+  }
+
+  // Items 7-10 (CPC / water / CDC / pest): after both gated blocks — always render.
+  for (const tag of ["<CpcPriceSidebarWidget", "<WaterOutageSidebarWidget", "<CdcAlertSidebarWidget", "<PestAlertSidebarWidget"]) {
+    const i = src.indexOf(tag);
+    assert.ok(i > idx7 && i < idx11, `${tag} must render after the second gated block, before item 11`);
+  }
 });
 
-test("components/News/StabloNewsLayout.tsx renders homeTopSections at the top of the home variant's <main>, and passes hideLiveWidgets to NewsSidebar on home", () => {
+test("components/News/StabloNewsLayout.tsx renders homeTopSections at the top of the home variant's <main>, and passes hideStatusBarDuplicateWidgets to NewsSidebar on home", () => {
   const src = readSource("components", "News", "StabloNewsLayout.tsx");
   assert.ok(src.includes("homeTopSections"), "must accept and render the new homepage-only sections prop");
-  assert.ok(src.includes("hideLiveWidgets"), "must pass hideLiveWidgets to NewsSidebar for the home variant");
+  assert.ok(src.includes("hideStatusBarDuplicateWidgets"), "must pass hideStatusBarDuplicateWidgets to NewsSidebar for the home variant");
   // homeTopSections must render before the existing hotline banner / hero section.
   const topIdx = src.indexOf("{homeTopSections}");
   const hotlineIdx = src.indexOf("Urgent Public Safety Hotline Quick Access");

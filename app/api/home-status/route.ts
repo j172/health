@@ -36,11 +36,15 @@ export interface HomeStatusResponse {
 /**
  * Homepage status-bar aggregation API (issue #472, parent #438 §G): one
  * request for all 5 sections the top status bar needs (天氣、AQI、UV、最新
- * 地震、警報), replacing the old homepage sidebar's ~8 independent per-widget
- * client fetches (LocalWeatherSvgWidget/AqiSidebarWidget/UvSidebarWidget/
- * ErStatusSidebarWidget/CpcPriceSidebarWidget/WaterOutageSidebarWidget/
- * CdcAlertSidebarWidget/PestAlertSidebarWidget each calling their own
- * endpoint) — see components/Home/HomeStatusBar.tsx, the sole caller.
+ * 地震、警報), replacing 3 of the old homepage sidebar's independent
+ * per-widget client fetches that duplicated this same data
+ * (LocalWeatherSvgWidget/AqiSidebarWidget/UvSidebarWidget, each previously
+ * calling their own endpoint) — see components/Home/HomeStatusBar.tsx, the
+ * sole caller. The other 5 sidebar widgets (ER status/CPC fuel price/water
+ * outages/CDC travel alerts/pest alerts) are not covered by this status bar
+ * and keep rendering + fetching independently on the homepage, per a
+ * 2026-10-13 product decision on issue #472 — see
+ * components/News/NewsSidebar.tsx's `hideStatusBarDuplicateWidgets` prop.
  *
  * `lat`/`lng` are optional, unlike `/api/nearby` (issue #466) which requires
  * them: weather/AQI/UV are location-dependent, but the latest-earthquake and
