@@ -102,7 +102,7 @@ test("SiteFooter and CivicPartnersSection include mohw-vio partner and URLs", ()
 });
 
 test("clinics page contains ContextualPartnerCard for mohw-vio", () => {
-  const clinicsContent = fs.readFileSync(path.join(REPO_ROOT, "app", "tools", "clinics", "page.tsx"), "utf-8");
+  const clinicsContent = fs.readFileSync(path.join(REPO_ROOT, "app", "(zh)", "tools", "clinics", "page.tsx"), "utf-8");
   assert.ok(clinicsContent.includes('partnerId="mohw-vio"'), "clinics page must include mohw-vio partner card");
   assert.ok(clinicsContent.includes("ContextualPartnerCard"), "clinics page must import ContextualPartnerCard");
 });

@@ -13,7 +13,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT_DIR = process.cwd();
-const TOOLS_DIR = path.join(ROOT_DIR, "app", "tools");
+const TOOLS_DIR = path.join(ROOT_DIR, "app", "(zh)", "tools");
 const SEEDS_DIR = path.join(ROOT_DIR, "data", "facilities-seeds");
 const DATA_DIR = path.join(ROOT_DIR, "data");
 

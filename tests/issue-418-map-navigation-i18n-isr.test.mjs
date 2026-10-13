@@ -83,9 +83,22 @@ test("Japanese and Korean dictionaries exist and have complete structure", () =>
 
 test("LanguageContext and LanguageToggler support zh-TW, en, ja, and ko", () => {
   const contextSrc = fs.readFileSync("app/context/LanguageContext.tsx", "utf8");
-  assert.ok(contextSrc.includes('"ja"'), "LanguageContext must support ja");
-  assert.ok(contextSrc.includes('"ko"'), "LanguageContext must support ko");
-  assert.ok(contextSrc.includes("urlLang"), "LanguageContext must check URL query lang param");
+  // issue #485: the locale list itself moved to lib/i18n/dictionary.ts
+  // (SUPPORTED_LOCALES), which LanguageContext.tsx now imports/re-exports
+  // rather than declaring "ja"/"ko" as its own literals — both the
+  // server-safe getDictionary() (full-page i18n) and the client
+  // useLanguage() (UI-chrome i18n) read the exact same list.
+  const dictionarySrc = fs.readFileSync("lib/i18n/dictionary.ts", "utf8");
+  assert.ok(dictionarySrc.includes('"ja"'), "the shared dictionary module must support ja");
+  assert.ok(dictionarySrc.includes('"ko"'), "the shared dictionary module must support ko");
+  assert.ok(contextSrc.includes("SUPPORTED_LOCALES"), "LanguageContext must re-export the shared locale list");
+  assert.ok(contextSrc.includes("forcedLocale"), "LanguageContext must support a locked/forced locale (issue #485)");
+  // issue #485: the old `?lang=` query-param detection this used to check
+  // for (`urlLang`) is retired — `/tools/aed?lang=en` now gets a permanent
+  // redirect to `/en/tools/aed` (see next.config.js's redirects()) before
+  // this code ever runs, and real /en//ja//ko/ routes are the only
+  // remaining way to reach a non-zh locale server-side.
+  assert.ok(!contextSrc.includes("urlLang"), "the retired ?lang= query-param detection must not come back");
 
   const togglerSrc = fs.readFileSync("components/Header/LanguageToggler.tsx", "utf8");
   assert.ok(togglerSrc.includes('"ja"'), "LanguageToggler must offer ja");
@@ -94,16 +107,29 @@ test("LanguageContext and LanguageToggler support zh-TW, en, ja, and ko", () => 
   assert.ok(togglerSrc.includes("한국어"), "LanguageToggler must display 한국어");
 });
 
-test("SEO, alternates, and sitemap include ja and ko", () => {
-  const layoutSrc = fs.readFileSync("app/layout.tsx", "utf8");
-  assert.ok(layoutSrc.includes("lang=ja"));
-  assert.ok(layoutSrc.includes("lang=ko"));
-  assert.ok(layoutSrc.includes('"ja_JP"'));
-  assert.ok(layoutSrc.includes('"ko_KR"'));
+test("SEO, alternates, and sitemap include ja and ko via the real /en//ja//ko/ mechanism (issue #485), not the retired ?lang= one", () => {
+  // The (zh) root layout's own metadata no longer claims a `?lang=ja|ko`
+  // translation for the home page (issue #485 retires that broken
+  // declaration until a future ticket gives the home page a real /ja//ko/
+  // version) — but ja/ko are still fully wired up for the 3 pages that do:
+  // via lib/i18n/translatedPages.ts (PATH_LOCALES) and the dedicated
+  // app/[locale]/ route tree, asserted below.
+  const layoutSrc = fs.readFileSync("app/(zh)/layout.tsx", "utf8");
+  assert.ok(!layoutSrc.includes("lang=ja"), "the retired ?lang=ja home-page alternate must not come back");
+  assert.ok(!layoutSrc.includes("lang=ko"), "the retired ?lang=ko home-page alternate must not come back");
+
+  // PATH_LOCALES is defined once in lib/i18n/dictionary.ts and re-exported
+  // (not redeclared) from lib/i18n/translatedPages.ts.
+  const dictionarySrc = fs.readFileSync("lib/i18n/dictionary.ts", "utf8");
+  assert.ok(dictionarySrc.includes('PATH_LOCALES: PathLocale[] = ["en", "ja", "ko"]'), "PATH_LOCALES must include ja and ko");
+
+  const localeLayoutSrc = fs.readFileSync("app/[locale]/layout.tsx", "utf8");
+  assert.ok(localeLayoutSrc.includes("html lang={pathLocale}"), "the /[locale]/ root layout must set a real per-request <html lang>");
 
   const sitemapSrc = fs.readFileSync("app/sitemap.ts", "utf8");
-  assert.ok(sitemapSrc.includes("lang=ja"));
-  assert.ok(sitemapSrc.includes("lang=ko"));
+  assert.ok(!sitemapSrc.includes("lang=ja"), "the retired ?lang=ja sitemap alternate must not come back");
+  assert.ok(!sitemapSrc.includes("lang=ko"), "the retired ?lang=ko sitemap alternate must not come back");
+  assert.ok(sitemapSrc.includes("buildHreflangAlternates"), "sitemap must build real ja/ko alternates for translated pages");
 
   const llmsSrc = fs.readFileSync("app/llms.txt/route.ts", "utf8");
   assert.ok(llmsSrc.includes("日本語 (ja)"));
@@ -112,32 +138,32 @@ test("SEO, alternates, and sitemap include ja and ko", () => {
 
 test("ISR performance optimizations are properly configured", () => {
   // news detail has generateStaticParams
-  const newsDetailSrc = fs.readFileSync("app/news/[id]/page.tsx", "utf8");
+  const newsDetailSrc = fs.readFileSync("app/(zh)/news/[id]/page.tsx", "utf8");
   assert.ok(newsDetailSrc.includes("export async function generateStaticParams()"));
   assert.ok(newsDetailSrc.includes("export const revalidate = 60;"));
 
   // privacy is ISR, not force-dynamic
-  const privacySrc = fs.readFileSync("app/privacy/page.tsx", "utf8");
+  const privacySrc = fs.readFileSync("app/(zh)/privacy/page.tsx", "utf8");
   assert.ok(!privacySrc.includes('export const dynamic = "force-dynamic";'));
   assert.ok(privacySrc.includes("export const revalidate = 86400;"));
 
   // llm-info is ISR, not force-dynamic
-  const llmInfoSrc = fs.readFileSync("app/llm-info/page.tsx", "utf8");
+  const llmInfoSrc = fs.readFileSync("app/(zh)/llm-info/page.tsx", "utf8");
   assert.ok(!llmInfoSrc.includes('export const dynamic = "force-dynamic";'));
   assert.ok(llmInfoSrc.includes("export const revalidate = 3600;"));
 
   // news index is ISR, not force-dynamic
-  const newsIndexSrc = fs.readFileSync("app/news/page.tsx", "utf8");
+  const newsIndexSrc = fs.readFileSync("app/(zh)/news/page.tsx", "utf8");
   assert.ok(!newsIndexSrc.includes('export const dynamic = "force-dynamic";'));
   assert.ok(newsIndexSrc.includes("export const revalidate = 60;"));
 
   // er-status is 30s ISR, not force-dynamic
-  const erStatusSrc = fs.readFileSync("app/tools/er-status/page.tsx", "utf8");
+  const erStatusSrc = fs.readFileSync("app/(zh)/tools/er-status/page.tsx", "utf8");
   assert.ok(!erStatusSrc.includes('export const dynamic = "force-dynamic";'));
   assert.ok(erStatusSrc.includes("export const revalidate = 30;"));
 
   // power-grid is 60s ISR, not force-dynamic
-  const powerGridSrc = fs.readFileSync("app/tools/power-grid-overview/page.tsx", "utf8");
+  const powerGridSrc = fs.readFileSync("app/(zh)/tools/power-grid-overview/page.tsx", "utf8");
   assert.ok(!powerGridSrc.includes('export const dynamic = "force-dynamic";'));
   assert.ok(powerGridSrc.includes("export const revalidate = 60;"));
 });

@@ -67,6 +67,43 @@ const nextConfig = {
         destination: "/tools/emergency-hotlines",
         permanent: false,
       },
+      // issue #485 (2.0 §Q): the old `?lang=en|ja|ko` query-param mechanism
+      // never actually served a translated page server-side (Googlebot
+      // fetching `/tools/aed?lang=en` got back `<html lang="zh-Hant-TW">`
+      // and Chinese content) — these permanently redirect to the real
+      // path-prefixed URL for the 3 pages that now have one. Each locale
+      // needs its own `has` entry since Next.js redirect `has` matching is
+      // an exact query value match, not a wildcard.
+      ...["en", "ja", "ko"].flatMap((locale) =>
+        ["aed", "er-status", "emergency-hotlines"].map((slug) => ({
+          source: `/tools/${slug}`,
+          has: [{ type: "query", key: "lang", value: locale }],
+          destination: `/${locale}/tools/${slug}`,
+          permanent: true,
+        })),
+      ),
+      // Every other `?lang=` hit (any other page, or the home page) has no
+      // translated destination yet — 301 to the bare Chinese URL instead of
+      // leaving a dead link. This is intentionally LAST among the
+      // `?lang=`-matching rules (Next.js evaluates redirects in array
+      // order and stops at the first match), so the 3 specific rules above
+      // always win for their own pages.
+      //
+      // Next.js always forwards the original request's query string to a
+      // redirect's destination ("When a redirect is applied, any query
+      // values provided in the request will be passed through" — this is
+      // documented, unconditional behavior with no opt-out) — so
+      // `?lang=en` does survive onto the destination URL verbatim rather
+      // than being stripped. That's harmless: the destination page never
+      // reads a `lang` query param (LanguageContext.tsx's old `urlLang`
+      // handling was removed by this same ticket), and the page's own
+      // `alternates.canonical` is unaffected by it either way.
+      {
+        source: "/:path*",
+        has: [{ type: "query", key: "lang" }],
+        destination: "/:path*",
+        permanent: true,
+      },
       {
         // issue #484 (2.0 §D merge item M4): "/tools/hakka-bogong" itself was
         // merged into "/tools/long-term-care?type=hakka-bogong" — this older

@@ -66,14 +66,14 @@ test("lib/server/news/seo.ts: buildWebSiteEntity declares a spec-conformant Sear
 });
 
 test("the SearchAction's /news?keyword= target is a real, working filter -- not decorative", () => {
-  const newsPageContent = fs.readFileSync(path.join(ROOT_DIR, "app", "news", "page.tsx"), "utf-8");
+  const newsPageContent = fs.readFileSync(path.join(ROOT_DIR, "app", "(zh)", "news", "page.tsx"), "utf-8");
   assert.ok(
     newsPageContent.includes("keyword: keywordParam"),
-    "app/news/page.tsx must read a `keyword` search param",
+    "app/(zh)/news/page.tsx must read a `keyword` search param",
   );
   assert.ok(
     /listLatestNews\(\s*[\s\S]*?keyword/.test(newsPageContent),
-    "app/news/page.tsx must pass keyword through to the data query (real filtering, not decorative)",
+    "app/(zh)/news/page.tsx must pass keyword through to the data query (real filtering, not decorative)",
   );
 
   const queriesContent = fs.readFileSync(path.join(ROOT_DIR, "lib", "server", "news", "queries.ts"), "utf-8");
@@ -109,7 +109,7 @@ test("lib/server/news/seo.ts: buildSiteGraphJsonLd wires buildWebSiteEntity into
 });
 
 test("app/layout.tsx (the single root layout) renders buildSiteGraphJsonLd's JSON-LD on every route", () => {
-  const layoutPath = path.join(ROOT_DIR, "app", "layout.tsx");
+  const layoutPath = path.join(ROOT_DIR, "app", "(zh)", "layout.tsx");
   assert.ok(fs.existsSync(layoutPath), "app/layout.tsx must exist");
   const content = fs.readFileSync(layoutPath, "utf-8");
 
@@ -131,11 +131,11 @@ test("app/layout.tsx (the single root layout) renders buildSiteGraphJsonLd's JSO
   // every route (so this one JSON-LD script really is site-wide, not just
   // scoped to one route group).
   const subLayouts = [
-    "app/(site)/layout.tsx",
-    "app/admin/layout.tsx",
-    "app/news/layout.tsx",
-    "app/privacy/layout.tsx",
-    "app/tools/layout.tsx",
+    "app/(zh)/(site)/layout.tsx",
+    "app/(zh)/admin/layout.tsx",
+    "app/(zh)/news/layout.tsx",
+    "app/(zh)/privacy/layout.tsx",
+    "app/(zh)/tools/layout.tsx",
   ];
   for (const rel of subLayouts) {
     const subPath = path.join(ROOT_DIR, rel);

@@ -285,8 +285,8 @@ test("components/News/StabloNewsLayout.tsx renders homeTopSections at the top of
   assert.ok(topIdx !== -1 && hotlineIdx !== -1 && topIdx < hotlineIdx, "homeTopSections must render above the existing hotline banner");
 });
 
-test("app/(site)/page.tsx composes HomeStatusBar + GuideCardsSection + RecentToolsSection into homeTopSections, and keeps its existing ISR revalidate", () => {
-  const src = readSource("app", "(site)", "page.tsx");
+test("app/(zh)/(site)/page.tsx composes HomeStatusBar + GuideCardsSection + RecentToolsSection into homeTopSections, and keeps its existing ISR revalidate", () => {
+  const src = readSource("app", "(zh)", "(site)", "page.tsx");
   assert.ok(src.includes("<HomeStatusBar"));
   assert.ok(src.includes("<GuideCardsSection"));
   assert.ok(src.includes("<RecentToolsSection"));

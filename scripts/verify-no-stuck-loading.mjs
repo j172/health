@@ -81,7 +81,7 @@ for (const relPath of criticalComponents) {
 
 // 3. 掃描 app/tools 底下的所有子目錄路由
 console.log("\n📦 掃描 app/tools 所有工具子路由...");
-const toolsDir = path.join(rootDir, "app/tools");
+const toolsDir = path.join(rootDir, "app/(zh)/tools");
 const entries = fs.readdirSync(toolsDir, { withFileTypes: true });
 
 let toolRoutes = [];

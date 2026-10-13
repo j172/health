@@ -218,10 +218,10 @@ test("relatedNewsForTool.ts delegates ranking to the pure rankNewsForTool and re
 // app/news/[id]/page.tsx wiring — source-text inspection (JSX)
 // ---------------------------------------------------------------------------
 
-const newsPagePath = path.join(ROOT_DIR, "app", "news", "[id]", "page.tsx");
+const newsPagePath = path.join(ROOT_DIR, "app", "(zh)", "news", "[id]", "page.tsx");
 const newsPageContent = fs.readFileSync(newsPagePath, "utf-8");
 
-test("app/news/[id]/page.tsx computes relatedTools via findRelatedToolsForNews and renders it conditionally", () => {
+test("app/(zh)/news/[id]/page.tsx computes relatedTools via findRelatedToolsForNews and renders it conditionally", () => {
   assert.ok(
     /import\s*{\s*findRelatedToolsForNews\s*}\s*from\s*"@\/lib\/server\/content\/crossLinks"/.test(
       newsPageContent,

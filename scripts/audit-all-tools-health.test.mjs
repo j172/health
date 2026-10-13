@@ -32,13 +32,13 @@ registerHooks({
 });
 
 const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
-const { facilitySearchConfigs } = await import("../app/tools/facilityConfigs.ts");
+const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfigs.ts");
 
 test("Site-wide tools health: every tool in TOOL_CATALOG has valid metadata and no blocking loading", () => {
   assert.equal(TOOL_CATALOG.length, 81, `Expected exactly 81 tools, got ${TOOL_CATALOG.length}`);
 
   for (const tool of TOOL_CATALOG) {
-    const pagePath = path.join(ROOT_DIR, "app", "tools", tool.slug, "page.tsx");
+    const pagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", tool.slug, "page.tsx");
     assert.ok(existsSync(pagePath), `Tool ${tool.slug} missing page.tsx`);
 
     const content = readFileSync(pagePath, "utf-8");

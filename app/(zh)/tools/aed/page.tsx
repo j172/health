@@ -5,11 +5,14 @@ import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import AedContent from "@/components/Tools/AedContent";
 import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
+import { OG_LOCALE, ogAlternateLocales } from "@/lib/i18n/dictionary";
+import { buildHreflangAlternates } from "@/lib/i18n/translatedPages";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/aed`;
+const baseUrl = getBaseUrl();
+const canonical = `${baseUrl}/tools/aed`;
 const catalogEntry = getToolCatalogEntry("aed");
 
 export const metadata: Metadata = {
@@ -25,11 +28,16 @@ export const metadata: Metadata = {
     "黃金4分鐘",
     "急救設備地圖",
   ],
-  alternates: { canonical },
+  // issue #485: reciprocal hreflang — this zh page now declares its real
+  // /en/, /ja/, /ko/ siblings (and itself + x-default), replacing the
+  // absence of any such declaration before.
+  alternates: { canonical, languages: buildHreflangAlternates("/tools/aed", baseUrl) ?? undefined },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,
     url: canonical,
+    locale: OG_LOCALE["zh-TW"],
+    alternateLocale: ogAlternateLocales("zh-TW"),
   },
 };
 

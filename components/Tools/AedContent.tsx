@@ -11,15 +11,23 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import CopyAddressButton from "@/components/Tools/CopyAddressButton";
 
 const AedMapLeaflet = dynamic(() => import("@/components/Tools/AedMapLeaflet"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-[380px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900">
-      載入 AED 互動式地圖中…
-    </div>
+    <AedMapLoadingPlaceholder />
   ),
 });
+
+function AedMapLoadingPlaceholder() {
+  const { t } = useLanguage();
+  return (
+    <div className="flex h-[380px] w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-xs text-slate-400 dark:border-slate-800 dark:bg-slate-900">
+      {t("aedTool.mapLoading", "載入 AED 互動式地圖中…")}
+    </div>
+  );
+}
 
 interface AedExtra {
   locationDesc?: string;
@@ -28,17 +36,27 @@ interface AedExtra {
   open24Hours?: boolean;
 }
 
-function checkIsOpenNow(openHoursStr?: string, is24h?: boolean): { isOpen: boolean; label: string; badgeColor: string } {
+type Translator = (key: string, defaultValue?: string) => string;
+
+function checkIsOpenNow(
+  t: Translator,
+  openHoursStr?: string,
+  is24h?: boolean,
+): { isOpen: boolean; label: string; badgeColor: string } {
   if (is24h) {
-    return { isOpen: true, label: "🟢 24小時隨時可取", badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" };
+    return { isOpen: true, label: t("aedTool.open247", "🟢 24小時隨時可取"), badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" };
   }
   if (!openHoursStr) {
-    return { isOpen: true, label: "⚪ 開放時間依現場為準", badgeColor: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700" };
+    return { isOpen: true, label: t("aedTool.openUnknown", "⚪ 開放時間依現場為準"), badgeColor: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700" };
   }
 
+  // openHoursStr is government facility data (service_time) and may itself
+  // be in Chinese regardless of UI locale — only the badge LABEL
+  // surrounding it is translated, per issue #485's "government data stays
+  // Chinese" rule. The substring checks below match the raw Chinese data.
   const str = openHoursStr.toLowerCase();
   if (str.includes("24小時") || str.includes("全天候") || str.includes("24h")) {
-    return { isOpen: true, label: "🟢 24小時隨時可取", badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" };
+    return { isOpen: true, label: t("aedTool.open247", "🟢 24小時隨時可取"), badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" };
   }
 
   const now = new Date();
@@ -53,12 +71,14 @@ function checkIsOpenNow(openHoursStr?: string, is24h?: boolean): { isOpen: boole
     const endVal = parseInt(timeMatch[3], 10) * 60 + parseInt(timeMatch[4], 10);
 
     if (currentTimeVal >= startVal && currentTimeVal <= endVal) {
-      return { isOpen: true, label: "🟢 目前開放中", badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" };
+      return { isOpen: true, label: t("aedTool.openNow", "🟢 目前開放中"), badgeColor: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" };
     } else {
-      return { isOpen: false, label: "🔴 非開放時間（已閉館）", badgeColor: "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800" };
+      return { isOpen: false, label: t("aedTool.closedNow", "🔴 非開放時間（已閉館）"), badgeColor: "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-200 dark:border-rose-800" };
     }
   }
 
+  // Falls back to echoing the raw (Chinese) government opening-hours string
+  // verbatim — per issue #485, government data is never machine-translated.
   return { isOpen: true, label: `🕒 ${openHoursStr}`, badgeColor: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800" };
 }
 
@@ -67,7 +87,7 @@ export default function AedContent({
 }: {
   initialFacilities?: FacilityListItem[];
 }) {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const searchParams = useSearchParams();
   // issue #463：地圖彈出視窗「看附近的 AED」深連結帶入的 ?lat=&lng= 覆寫座標——
   // 有提供時以該點位為中心顯示結果，不需要使用者重新定位；沒有提供時行為不變。
@@ -162,7 +182,7 @@ export default function AedContent({
     return facilities
       .map((f) => {
         const extra = (f.extra_json as AedExtra) || {};
-        const openInfo = checkIsOpenNow(f.service_time || extra.openHours, extra.open24Hours);
+        const openInfo = checkIsOpenNow(t, f.service_time || extra.openHours, extra.open24Hours);
         return {
           ...f,
           extra,
@@ -176,7 +196,7 @@ export default function AedContent({
         }
         return true;
       });
-  }, [facilities, onlyOpenNow, selectedCategory]);
+  }, [facilities, onlyOpenNow, selectedCategory, t]);
 
   const closestThree = useMemo(() => {
     return processedFacilities.slice(0, 3);
@@ -193,10 +213,10 @@ export default function AedContent({
             </span>
             <div>
               <h2 className="text-lg font-black tracking-tight text-red-900 dark:text-red-100">
-                爭取黃金急救 4 分鐘！CPR + AED 搶救生命
+                {t("aedTool.bannerTitle", "爭取黃金急救 4 分鐘！CPR + AED 搶救生命")}
               </h2>
               <p className="mt-0.5 text-xs font-medium text-red-700 dark:text-red-300">
-                患者無意識、無呼吸時請立即呼救，撥打 119 並取下最近的 AED 依語音指示操作。
+                {t("aedTool.bannerDesc", "患者無意識、無呼吸時請立即呼救，撥打 119 並取下最近的 AED 依語音指示操作。")}
               </p>
             </div>
           </div>
@@ -205,7 +225,7 @@ export default function AedContent({
               href="tel:119"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-black text-white shadow-sm transition-all hover:bg-red-700 active:scale-95"
             >
-              📞 立即撥打 119
+              {t("aedTool.call119", "📞 立即撥打 119")}
             </a>
           </div>
         </div>
@@ -219,7 +239,7 @@ export default function AedContent({
         onCountyChange={setManualCounty}
         onDistrictChange={setManualDistrict}
         hasManualCoords={hasManualCoords}
-        facilityTypeName="AED 設備"
+        facilityTypeName={t("aedTool.facilityTypeName", "AED 設備")}
       />
 
       {/* 3. 互動式 AED 設施地圖 */}
@@ -227,14 +247,14 @@ export default function AedContent({
         <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
           <span className="font-bold flex items-center gap-1.5 text-slate-800 dark:text-slate-200">
             <span>🗺️</span>
-            <span>全國公共場所 AED 即時地圖</span>
+            <span>{t("aedTool.mapHeading", "全國公共場所 AED 即時地圖")}</span>
             {isExpanded && (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                周邊5km無設備，已自動擴大範圍
+                {t("aedTool.expandedNotice", "周邊5km無設備，已自動擴大範圍")}
               </span>
             )}
           </span>
-          <span>標示半徑 5km 搜尋範圍與詳細放置位置</span>
+          <span>{t("aedTool.radiusNote", "標示半徑 5km 搜尋範圍與詳細放置位置")}</span>
         </div>
         <div className="h-[380px] sm:h-[440px] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800">
           {!effectiveCoords ? (
@@ -256,15 +276,15 @@ export default function AedContent({
             <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 text-xs text-white">
               📍
             </span>
-            距離您最近的 AED
-            <span className="text-xs font-normal text-slate-500">（依 GPS 距離排列）</span>
+            {t("aedTool.nearestHeading", "距離您最近的 AED")}
+            <span className="text-xs font-normal text-slate-500">{t("aedTool.byDistance", "（依 GPS 距離排列）")}</span>
           </h3>
           {!effectiveCoords ? (
-            <span className="text-xs text-slate-500 animate-pulse">正在精確定位中...</span>
+            <span className="text-xs text-slate-500 animate-pulse">{t("aedTool.locating", "正在精確定位中...")}</span>
           ) : hasManualCoords ? (
-            <span className="text-xs text-indigo-600 dark:text-indigo-400">📍 已套用您選擇的地區</span>
+            <span className="text-xs text-indigo-600 dark:text-indigo-400">{t("aedTool.manualApplied", "📍 已套用您選擇的地區")}</span>
           ) : (
-            <span className="text-xs text-emerald-600 dark:text-emerald-400">已自動定位</span>
+            <span className="text-xs text-emerald-600 dark:text-emerald-400">{t("aedTool.autoLocated", "已自動定位")}</span>
           )}
         </div>
 
@@ -284,30 +304,44 @@ export default function AedContent({
                   </span>
                 </div>
 
-                <h4 className="mt-3 text-base font-bold text-slate-900 line-clamp-1 dark:text-slate-100">
-                  {item.name}
-                </h4>
+                <div className="mt-3 flex items-center gap-1.5">
+                  {/* issue #485: government facility name stays in Chinese
+                      verbatim — this badge is the added language-appropriate
+                      category label the issue asks for alongside it. */}
+                  <span className="shrink-0 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                    {t("aedTool.categoryBadge", "AED")}
+                  </span>
+                  <h4 className="text-base font-bold text-slate-900 line-clamp-1 dark:text-slate-100">
+                    {item.name}
+                  </h4>
+                </div>
 
                 {item.distance_km !== undefined && (
                   <p className="mt-1 text-sm font-extrabold text-emerald-600 dark:text-emerald-400">
-                    距離約 {item.distance_km < 1 ? `${Math.round(item.distance_km * 1000)} 公尺` : `${item.distance_km} 公里`}
+                    {item.distance_km < 1
+                      ? t("aedTool.distanceMetersTemplate", "距離約 {value} 公尺").replace("{value}", String(Math.round(item.distance_km * 1000)))
+                      : t("aedTool.distanceKmTemplate", "距離約 {value} 公里").replace("{value}", String(item.distance_km))}
                     <span className="ml-1 text-xs font-normal text-slate-500">
-                      (步行約 {Math.max(1, Math.round((item.distance_km * 1000) / 70))} 分鐘)
+                      {t("aedTool.walkingTimeTemplate", "(步行約 {min} 分鐘)").replace("{min}", String(Math.max(1, Math.round((item.distance_km * 1000) / 70))))}
                     </span>
                   </p>
                 )}
 
                 <div className="mt-3 rounded-xl bg-slate-50 p-3 text-xs leading-relaxed text-slate-700 dark:bg-slate-800/80 dark:text-slate-300">
                   <p className="font-bold text-indigo-600 dark:text-indigo-400">
-                    📍 放置地點：
+                    {t("aedTool.placementLabel", "📍 放置地點：")}
                   </p>
-                  <p className="mt-1 font-semibold">{item.service_item || item.extra.locationDesc || "請洽詢現場服務台"}</p>
+                  <p className="mt-1 font-semibold">{item.service_item || item.extra.locationDesc || t("aedTool.placementFallback", "請洽詢現場服務台")}</p>
                 </div>
 
                 {item.address && (
-                  <p className="mt-2 text-xs text-slate-500 line-clamp-1">
-                    {item.address}
-                  </p>
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <p className="text-xs text-slate-500 line-clamp-1">{item.address}</p>
+                    <CopyAddressButton
+                      address={item.address}
+                      className="shrink-0 rounded-lg px-2 py-1 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                    />
+                  </div>
                 )}
               </div>
 
@@ -333,7 +367,7 @@ export default function AedContent({
                     href={`tel:${item.phone.replace(/[^0-9]/g, "")}`}
                     className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                   >
-                    📞 管理電話
+                    {t("aedTool.managementPhone", "📞 管理電話")}
                   </a>
                 )}
               </div>
@@ -350,7 +384,7 @@ export default function AedContent({
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="搜尋場所名稱（如：高鐵、捷運、學校、活動中心）或地址"
+              placeholder={t("aedTool.searchPlaceholder", "搜尋場所名稱（如：高鐵、捷運、學校、活動中心）或地址")}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
@@ -358,19 +392,22 @@ export default function AedContent({
             type="submit"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-bold text-white shadow-xs transition-colors hover:bg-indigo-700"
           >
-            🔍 搜尋 AED
+            {t("aedTool.searchButton", "🔍 搜尋 AED")}
           </button>
         </form>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
           <div className="flex flex-wrap gap-2">
+            {/* issue #485: `id` stays the raw Chinese government category
+                string (it's matched against item.extra.category, which is
+                untranslated government data) — only `label` is localized. */}
             {[
-              { id: "", label: "全部場所" },
-              { id: "交通要道", label: "🚆 交通要道" },
-              { id: "觀光旅遊", label: "🏞️ 觀光旅遊" },
-              { id: "學校", label: "🏫 學校機構" },
-              { id: "政府機關", label: "🏛️ 公務機關" },
-              { id: "體育運動", label: "🏟️ 體育運動" },
+              { id: "", label: t("aedTool.categoryAll", "全部場所") },
+              { id: "交通要道", label: t("aedTool.categoryTransit", "🚆 交通要道") },
+              { id: "觀光旅遊", label: t("aedTool.categoryTourism", "🏞️ 觀光旅遊") },
+              { id: "學校", label: t("aedTool.categorySchool", "🏫 學校機構") },
+              { id: "政府機關", label: t("aedTool.categoryGovernment", "🏛️ 公務機關") },
+              { id: "體育運動", label: t("aedTool.categorySports", "🏟️ 體育運動") },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -394,7 +431,7 @@ export default function AedContent({
               onChange={(e) => setOnlyOpenNow(e.target.checked)}
               className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
             />
-            ⚡ 只顯示目前開放中（過濾已閉館鎖門場所）
+            {t("aedTool.onlyOpenCheckbox", "⚡ 只顯示目前開放中（過濾已閉館鎖門場所）")}
           </label>
         </div>
       </div>
@@ -402,17 +439,20 @@ export default function AedContent({
       {/* 4. 完整 AED 列表 */}
       <div className="space-y-3">
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>共找到 {processedFacilities.length} 處 AED 設備</span>
-          <span>資料每日同步：衛生福利部醫事司</span>
+          <span>{t("aedTool.foundCountTemplate", "共找到 {count} 處 AED 設備").replace("{count}", String(processedFacilities.length))}</span>
+          {/* "衛生福利部醫事司" is the issuing government agency's name —
+              kept in Chinese verbatim per issue #485; only the label
+              preceding it is translated. */}
+          <span>{t("aedTool.dataSyncLabel", "資料每日同步：")}衛生福利部醫事司</span>
         </div>
 
         {loading ? (
           <div className="py-12 text-center text-sm text-slate-500 animate-pulse">
-            載入 AED 設備資料中...
+            {t("aedTool.loadingList", "載入 AED 設備資料中...")}
           </div>
         ) : processedFacilities.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white py-12 text-center text-slate-500 dark:border-slate-800 dark:bg-slate-900">
-            查無符合條件的 AED 設置地點，請嘗試變更關鍵字或取消「只顯示開放中」篩選。
+            {t("aedTool.noResults", "查無符合條件的 AED 設置地點，請嘗試變更關鍵字或取消「只顯示開放中」篩選。")}
           </div>
         ) : (
           <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-900">
@@ -420,6 +460,9 @@ export default function AedContent({
               <div key={item.id} className="p-4 sm:p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between transition-colors hover:bg-slate-50/70 dark:hover:bg-slate-800/50">
                 <div className="space-y-1 max-w-xl">
                   <div className="flex items-center gap-2">
+                    <span className="shrink-0 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                      {t("aedTool.categoryBadge", "AED")}
+                    </span>
                     <span className="font-bold text-slate-900 text-base dark:text-slate-100">
                       {item.name}
                     </span>
@@ -429,13 +472,21 @@ export default function AedContent({
                   </div>
 
                   <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                    📍 詳細位置：{item.service_item || item.extra.locationDesc || "請洽現場服務人員"}
+                    {t("aedTool.detailLocationLabel", "📍 詳細位置：")}{item.service_item || item.extra.locationDesc || t("aedTool.detailLocationFallback", "請洽現場服務人員")}
                   </p>
 
-                  <p className="text-xs text-slate-500">
-                    {item.address || "未提供詳細地址"}
-                    {item.phone && ` ｜ 📞 ${item.phone}`}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-slate-500">
+                      {item.address || t("aedTool.noAddress", "未提供詳細地址")}
+                      {item.phone && ` ｜ 📞 ${item.phone}`}
+                    </p>
+                    {item.address && (
+                      <CopyAddressButton
+                        address={item.address}
+                        className="shrink-0 rounded-lg px-2 py-0.5 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                      />
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -470,28 +521,28 @@ export default function AedContent({
       {/* 5. 急救心法科普區（叫叫CD） */}
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/60">
         <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
-          💡 AED 急救口訣：「叫、叫、C、D」
+          {t("aedTool.mnemonicHeading", "💡 AED 急救口訣：「叫、叫、C、D」")}
         </h3>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl bg-white p-4 shadow-xs dark:bg-slate-800">
-            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">1. 叫</span>
-            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">評估意識與呼吸</p>
-            <p className="mt-0.5 text-[11px] text-slate-500">拍打患者雙肩並大聲呼喚，檢查胸部有無起伏。</p>
+            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{t("aedTool.step1Title", "1. 叫")}</span>
+            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">{t("aedTool.step1Desc", "評估意識與呼吸")}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">{t("aedTool.step1Detail", "拍打患者雙肩並大聲呼喚，檢查胸部有無起伏。")}</p>
           </div>
           <div className="rounded-xl bg-white p-4 shadow-xs dark:bg-slate-800">
-            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">2. 叫</span>
-            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">大聲呼救求援</p>
-            <p className="mt-0.5 text-[11px] text-slate-500">指定旁人撥打 119，並請人迅速取得最近的 AED。</p>
+            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{t("aedTool.step2Title", "2. 叫")}</span>
+            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">{t("aedTool.step2Desc", "大聲呼救求援")}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">{t("aedTool.step2Detail", "指定旁人撥打 119，並請人迅速取得最近的 AED。")}</p>
           </div>
           <div className="rounded-xl bg-white p-4 shadow-xs dark:bg-slate-800">
-            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">3. C (CPR)</span>
-            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">胸外按壓</p>
-            <p className="mt-0.5 text-[11px] text-slate-500">雙手重疊用力按壓胸骨下半段，每分鐘 100-120 下、深度 5-6 公分。</p>
+            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{t("aedTool.step3Title", "3. C (CPR)")}</span>
+            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">{t("aedTool.step3Desc", "胸外按壓")}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">{t("aedTool.step3Detail", "雙手重疊用力按壓胸骨下半段，每分鐘 100-120 下、深度 5-6 公分。")}</p>
           </div>
           <div className="rounded-xl bg-white p-4 shadow-xs dark:bg-slate-800">
-            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">4. D (Defibrillation)</span>
-            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">開啟 AED 遵從語音</p>
-            <p className="mt-0.5 text-[11px] text-slate-500">貼上電擊貼片，機具分析心律時所有人離患者，依指示按下電擊鈕。</p>
+            <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">{t("aedTool.step4Title", "4. D (Defibrillation)")}</span>
+            <p className="mt-1 text-xs font-bold text-slate-800 dark:text-slate-200">{t("aedTool.step4Desc", "開啟 AED 遵從語音")}</p>
+            <p className="mt-0.5 text-[11px] text-slate-500">{t("aedTool.step4Detail", "貼上電擊貼片，機具分析心律時所有人離患者，依指示按下電擊鈕。")}</p>
           </div>
         </div>
       </div>

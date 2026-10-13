@@ -6,29 +6,35 @@ import type { EmergencyRoomItem, EmergencyOverviewResult } from "@/lib/server/em
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 import { parseGeolocationOverrideFromSearchParams } from "@/lib/utils/geolocationOverride";
+import CopyAddressButton from "@/components/Tools/CopyAddressButton";
 
+// issue #485: `id` stays the raw city_code list used to filter against the
+// live DB's untranslated city_code column; only `labelKey` (looked up via
+// t()) changes per locale.
 const REGION_TABS = [
-  { id: "", label: "全台責任醫院" },
-  { id: "TPE,NTPC,KEE", label: "基北北" },
-  { id: "TYCG,HSC,HCH,MAL", label: "桃竹苗" },
-  { id: "TXG,CHW,NTO", label: "中彰投" },
-  { id: "YUN,CYI,CHY,TNN", label: "雲嘉南" },
-  { id: "KHH,PTT", label: "高屏" },
-  { id: "ILA,HUA,TTT", label: "宜花東" },
-  { id: "PEN,KIN,LIE", label: "外島" },
+  { id: "", labelKey: "erStatusTool.regionAll", labelDefault: "全台責任醫院" },
+  { id: "TPE,NTPC,KEE", labelKey: "erStatusTool.regionTpeNtpcKee", labelDefault: "基北北" },
+  { id: "TYCG,HSC,HCH,MAL", labelKey: "erStatusTool.regionTycgHscHchMal", labelDefault: "桃竹苗" },
+  { id: "TXG,CHW,NTO", labelKey: "erStatusTool.regionTxgChwNto", labelDefault: "中彰投" },
+  { id: "YUN,CYI,CHY,TNN", labelKey: "erStatusTool.regionYunCyiChyTnn", labelDefault: "雲嘉南" },
+  { id: "KHH,PTT", labelKey: "erStatusTool.regionKhhPtt", labelDefault: "高屏" },
+  { id: "ILA,HUA,TTT", labelKey: "erStatusTool.regionIlaHuaTtt", labelDefault: "宜花東" },
+  { id: "PEN,KIN,LIE", labelKey: "erStatusTool.regionPenKinLie", labelDefault: "外島" },
 ];
 
 function SparklineSvg({
   points,
   color = "#6366f1",
+  loadingLabel,
 }: {
   points?: number[];
   color?: string;
+  loadingLabel: string;
 }) {
   if (!points || points.length < 2) {
     return (
       <div className="flex h-10 w-full items-center justify-center text-[10px] text-slate-400">
-        累積時序中...
+        {loadingLabel}
       </div>
     );
   }
@@ -79,7 +85,7 @@ export default function EmergencyRoomContent({
 }: {
   initialData?: EmergencyOverviewResult;
 }) {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const searchParams = useSearchParams();
   // issue #463：地圖彈出視窗「看附近的急診」深連結帶入的 ?lat=&lng= 覆寫座標，
   // 在 client 端讀取（而不是讓 app/tools/er-status/page.tsx 讀取 searchParams）
@@ -160,11 +166,11 @@ export default function EmergencyRoomContent({
                 🚨
               </span>
               <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-                全台急診即時壅塞監測看板
+                {t("erStatusTool.dashboardTitle", "全台急診即時壅塞監測看板")}
               </h2>
             </div>
             <p className="mt-1 text-xs text-slate-500">
-              每 15 分鐘自動同步衛福部與各急救責任醫院最新回報數值 ｜ 建議輕症優先至診所就醫，將急診資源留給急重症
+              {t("erStatusTool.dashboardDesc", "每 15 分鐘自動同步衛福部與各急救責任醫院最新回報數值 ｜ 建議輕症優先至診所就醫，將急診資源留給急重症")}
             </p>
           </div>
 
@@ -174,7 +180,7 @@ export default function EmergencyRoomContent({
               disabled={loading}
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
-              🔄 {loading ? "同步中..." : "重新整理"}
+              🔄 {loading ? t("erStatusTool.refreshSyncing", "同步中...") : t("erStatusTool.refreshButton", "重新整理")}
             </button>
           </div>
         </div>
@@ -182,34 +188,34 @@ export default function EmergencyRoomContent({
         {/* 統計數字小卡 */}
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="rounded-2xl bg-slate-50 p-4 border border-slate-100 dark:bg-slate-800/60 dark:border-slate-800">
-            <span className="text-xs font-semibold text-slate-500">全國急救責任醫院</span>
+            <span className="text-xs font-semibold text-slate-500">{t("erStatusTool.statTotalHospitalsLabel", "全國急救責任醫院")}</span>
             <p className="mt-1 text-2xl font-black text-slate-900 dark:text-slate-100">
               {data?.totalHospitals || 0}
-              <span className="text-xs font-normal text-slate-500 ml-1">家</span>
+              <span className="text-xs font-normal text-slate-500 ml-1">{t("erStatusTool.unitHospitalsSuffix", "家")}</span>
             </p>
           </div>
 
           <div className="rounded-2xl bg-red-50 p-4 border border-red-100 dark:bg-red-950/30 dark:border-red-900/40">
-            <span className="text-xs font-semibold text-red-600 dark:text-red-400">119 滿線暫停後送</span>
+            <span className="text-xs font-semibold text-red-600 dark:text-red-400">{t("erStatusTool.statFullReportedLabel", "119 滿線暫停後送")}</span>
             <p className="mt-1 text-2xl font-black text-red-600 dark:text-red-400">
               {data?.fullReportedCount || 0}
-              <span className="text-xs font-normal text-red-500 ml-1">家警戒</span>
+              <span className="text-xs font-normal text-red-500 ml-1">{t("erStatusTool.unitAlertSuffix", "家警戒")}</span>
             </p>
           </div>
 
           <div className="rounded-2xl bg-amber-50 p-4 border border-amber-100 dark:bg-amber-950/30 dark:border-amber-900/40">
-            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">急診重度壅塞</span>
+            <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">{t("erStatusTool.statCriticalLabel", "急診重度壅塞")}</span>
             <p className="mt-1 text-2xl font-black text-amber-700 dark:text-amber-400">
               {data?.criticalCount || 0}
-              <span className="text-xs font-normal text-amber-600 ml-1">家</span>
+              <span className="text-xs font-normal text-amber-600 ml-1">{t("erStatusTool.unitHospitalsSuffix", "家")}</span>
             </p>
           </div>
 
           <div className="rounded-2xl bg-emerald-50 p-4 border border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900/40">
-            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">運作順暢醫院</span>
+            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{t("erStatusTool.statNormalLabel", "運作順暢醫院")}</span>
             <p className="mt-1 text-2xl font-black text-emerald-700 dark:text-emerald-400">
               {data?.normalCount || 0}
-              <span className="text-xs font-normal text-emerald-600 ml-1">家</span>
+              <span className="text-xs font-normal text-emerald-600 ml-1">{t("erStatusTool.unitHospitalsSuffix", "家")}</span>
             </p>
           </div>
         </div>
@@ -223,7 +229,7 @@ export default function EmergencyRoomContent({
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="搜尋醫院名稱、縣市或行政區（如：台大、林口長庚、北投）"
+              placeholder={t("erStatusTool.searchPlaceholder", "搜尋醫院名稱、縣市或行政區（如：台大、林口長庚、北投）")}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
@@ -242,7 +248,7 @@ export default function EmergencyRoomContent({
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
                 }`}
               >
-                {tab.label}
+                {t(tab.labelKey, tab.labelDefault)}
               </button>
             ))}
           </div>
@@ -255,7 +261,7 @@ export default function EmergencyRoomContent({
                 onChange={(e) => setOnlyFull(e.target.checked)}
                 className="h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
               />
-              🚨 只看 119 滿線
+              {t("erStatusTool.onlyFullCheckbox", "🚨 只看 119 滿線")}
             </label>
             <label className="flex items-center gap-1.5 cursor-pointer text-amber-600 dark:text-amber-400">
               <input
@@ -264,7 +270,7 @@ export default function EmergencyRoomContent({
                 onChange={(e) => setOnlyCritical(e.target.checked)}
                 className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
               />
-              ⚠️ 只看重度壅塞
+              {t("erStatusTool.onlyCriticalCheckbox", "⚠️ 只看重度壅塞")}
             </label>
           </div>
         </div>
@@ -273,20 +279,20 @@ export default function EmergencyRoomContent({
       {/* 3. 責任醫院列表 */}
       <div className="space-y-3">
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>共篩選出 {filteredHospitals.length} 所急救責任醫院</span>
-          <span>依 119 通報狀態與等待看診人數自動排序</span>
+          <span>{t("erStatusTool.filteredCountTemplate", "共篩選出 {count} 所急救責任醫院").replace("{count}", String(filteredHospitals.length))}</span>
+          <span>{t("erStatusTool.sortNote", "依 119 通報狀態與等待看診人數自動排序")}</span>
         </div>
 
         {loading && (!data || !data.items || data.items.length === 0) ? (
           <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
             <div className="inline-block w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">正在即時連線衛福部與全台急救責任醫院看板...</p>
+            <p className="mt-3 text-sm font-medium text-slate-600 dark:text-slate-300">{t("erStatusTool.loadingBoard", "正在即時連線衛福部與全台急救責任醫院看板...")}</p>
           </div>
         ) : filteredHospitals.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
             <span className="text-3xl">🏥</span>
-            <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">查無符合條件的急救責任醫院</p>
-            <p className="mt-1 text-xs text-slate-400">請嘗試清除關鍵字或切換區域篩選</p>
+            <p className="mt-3 text-sm font-bold text-slate-700 dark:text-slate-300">{t("erStatusTool.emptyTitle", "查無符合條件的急救責任醫院")}</p>
+            <p className="mt-1 text-xs text-slate-400">{t("erStatusTool.emptyHint", "請嘗試清除關鍵字或切換區域篩選")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -309,8 +315,8 @@ export default function EmergencyRoomContent({
                 {/* 119 滿線最頂部警示紅條 */}
                 {hospital.is_full_reported && (
                   <div className="bg-red-600 px-5 py-2 text-xs font-black tracking-wide text-white flex items-center justify-between animate-pulse">
-                    <span>🚨 119 滿線通報中：急診量能飽和，非重大傷病請避免前往！</span>
-                    <span>暫緩救護車後送</span>
+                    <span>{t("erStatusTool.fullReportedBanner", "🚨 119 滿線通報中：急診量能飽和，非重大傷病請避免前往！")}</span>
+                    <span>{t("erStatusTool.fullReportedSuspend", "暫緩救護車後送")}</span>
                   </div>
                 )}
 
@@ -333,34 +339,50 @@ export default function EmergencyRoomContent({
                               : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                           }`}
                         >
-                          {isCritical ? "🔴 嚴重壅塞" : isBusy ? "🟡 人潮偏多" : "🟢 正常就醫"}
+                          {isCritical
+                            ? t("erStatusTool.statusCritical", "🔴 嚴重壅塞")
+                            : isBusy
+                            ? t("erStatusTool.statusBusy", "🟡 人潮偏多")
+                            : t("erStatusTool.statusNormal", "🟢 正常就醫")}
                         </span>
                       </div>
 
-                      <h3 className="mt-1 text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">
-                        {hospital.hospital_name}
-                      </h3>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        {/* issue #485: hospital name stays in Chinese
+                            verbatim — this badge is the added
+                            language-appropriate category label. */}
+                        <span className="shrink-0 rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                          {t("erStatusTool.categoryBadge", "Hospital")}
+                        </span>
+                        <h3 className="text-lg font-black tracking-tight text-slate-900 dark:text-slate-100">
+                          {hospital.hospital_name}
+                        </h3>
+                      </div>
 
-                      <p className="mt-1 text-xs text-slate-500">
-                        {hospital.address} {hospital.phone ? `｜ 📞 ${hospital.phone}` : ""}
-                      </p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <p className="text-xs text-slate-500">
+                          {hospital.address} {hospital.phone ? `｜ 📞 ${hospital.phone}` : ""}
+                        </p>
+                        {hospital.address && <CopyAddressButton address={hospital.address} />}
+                      </div>
                     </div>
 
                     {/* 24 小時人潮走勢圖 */}
                     <div className="flex flex-col items-end gap-1">
                       <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                        <span>過去 24 小時人潮走勢</span>
+                        <span>{t("erStatusTool.trendLabel", "過去 24 小時人潮走勢")}</span>
                         {hospital.trend_direction === "up" ? (
-                          <span className="text-red-600 font-bold">🔺 上升中</span>
+                          <span className="text-red-600 font-bold">{t("erStatusTool.trendUp", "🔺 上升中")}</span>
                         ) : hospital.trend_direction === "down" ? (
-                          <span className="text-emerald-600 font-bold">🔻 趨緩中</span>
+                          <span className="text-emerald-600 font-bold">{t("erStatusTool.trendDown", "🔻 趨緩中")}</span>
                         ) : (
-                          <span className="text-slate-400">持平</span>
+                          <span className="text-slate-400">{t("erStatusTool.trendFlat", "持平")}</span>
                         )}
                       </div>
                       <SparklineSvg
                         points={hospital.trend_sparkline}
                         color={isCritical ? "#ef4444" : isBusy ? "#f59e0b" : "#10b981"}
+                        loadingLabel={t("erStatusTool.sparklineLoading", "累積時序中...")}
                       />
                     </div>
                   </div>
@@ -368,34 +390,34 @@ export default function EmergencyRoomContent({
                   {/* 4 大即時核心指標數據 */}
                   <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 dark:bg-slate-800/60 dark:border-slate-800">
-                      <span className="text-xs font-medium text-slate-500">等待看診人數</span>
+                      <span className="text-xs font-medium text-slate-500">{t("erStatusTool.metricWaitingConsultLabel", "等待看診人數")}</span>
                       <p className="mt-1 text-2xl font-black text-indigo-600 dark:text-indigo-400">
                         {hospital.waiting_consultation}
-                        <span className="text-xs font-normal text-slate-500 ml-1">人</span>
+                        <span className="text-xs font-normal text-slate-500 ml-1">{t("erStatusTool.unitPeopleSuffix", "人")}</span>
                       </p>
                     </div>
 
                     <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 dark:bg-slate-800/60 dark:border-slate-800">
-                      <span className="text-xs font-medium text-slate-500">等待推床人數</span>
+                      <span className="text-xs font-medium text-slate-500">{t("erStatusTool.metricWaitingBedLabel", "等待推床人數")}</span>
                       <p className={`mt-1 text-2xl font-black ${hospital.waiting_bed > 5 ? "text-amber-600 dark:text-amber-400" : "text-slate-900 dark:text-slate-100"}`}>
                         {hospital.waiting_bed}
-                        <span className="text-xs font-normal text-slate-500 ml-1">床</span>
+                        <span className="text-xs font-normal text-slate-500 ml-1">{t("erStatusTool.unitBedSuffix", "床")}</span>
                       </p>
                     </div>
 
                     <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 dark:bg-slate-800/60 dark:border-slate-800">
-                      <span className="text-xs font-medium text-slate-500">等待住院人數</span>
+                      <span className="text-xs font-medium text-slate-500">{t("erStatusTool.metricWaitingAdmissionLabel", "等待住院人數")}</span>
                       <p className="mt-1 text-2xl font-black text-slate-900 dark:text-slate-100">
                         {hospital.waiting_admission}
-                        <span className="text-xs font-normal text-slate-500 ml-1">人</span>
+                        <span className="text-xs font-normal text-slate-500 ml-1">{t("erStatusTool.unitPeopleSuffix", "人")}</span>
                       </p>
                     </div>
 
                     <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100 dark:bg-slate-800/60 dark:border-slate-800">
-                      <span className="text-xs font-medium text-slate-500">等待加護病房</span>
+                      <span className="text-xs font-medium text-slate-500">{t("erStatusTool.metricWaitingIcuLabel", "等待加護病房")}</span>
                       <p className={`mt-1 text-2xl font-black ${hospital.waiting_icu > 0 ? "text-red-600 dark:text-red-400" : "text-slate-900 dark:text-slate-100"}`}>
                         {hospital.waiting_icu}
-                        <span className="text-xs font-normal text-slate-500 ml-1">人</span>
+                        <span className="text-xs font-normal text-slate-500 ml-1">{t("erStatusTool.unitPeopleSuffix", "人")}</span>
                       </p>
                     </div>
                   </div>
@@ -403,7 +425,7 @@ export default function EmergencyRoomContent({
                   {/* 底部功能與展開 */}
                   <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 dark:border-slate-800 text-xs">
                     <span className="text-slate-400">
-                      更新時間：{hospital.reported_at}
+                      {t("erStatusTool.updatedAtLabel", "更新時間：")}{hospital.reported_at}
                     </span>
 
                     <div className="flex items-center gap-2">
@@ -427,7 +449,7 @@ export default function EmergencyRoomContent({
                           href={`tel:${hospital.phone.replace(/[^0-9]/g, "")}`}
                           className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 font-bold text-slate-700 hover:border-indigo-400 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                         >
-                          📞 聯絡電話
+                          {t("erStatusTool.contactPhone", "📞 聯絡電話")}
                         </a>
                       )}
                       <button
@@ -435,7 +457,7 @@ export default function EmergencyRoomContent({
                         onClick={() => setExpandedCode(isExpanded ? null : hospital.hospital_code)}
                         className="font-bold text-indigo-600 hover:underline dark:text-indigo-400 ml-2"
                       >
-                        {isExpanded ? "收合就醫指引 ▲" : "錯峰就醫建議 ▼"}
+                        {isExpanded ? t("erStatusTool.collapseGuide", "收合就醫指引 ▲") : t("erStatusTool.expandGuide", "錯峰就醫建議 ▼")}
                       </button>
                     </div>
                   </div>
@@ -443,10 +465,10 @@ export default function EmergencyRoomContent({
                   {/* 展開後的錯峰就醫指引 */}
                   {isExpanded && (
                     <div className="mt-4 rounded-xl bg-indigo-50/70 p-4 text-xs leading-relaxed text-indigo-950 dark:bg-indigo-950/40 dark:text-indigo-200 space-y-1.5">
-                      <p className="font-extrabold text-sm">💡 急診就醫與避開尖峰建議：</p>
-                      <p>• <strong>尖峰時段預警</strong>：依據急診歷史數據，每日晚間 19:00 至 23:00 為就醫最高峰，平均候診時間增加 40% 以上。</p>
-                      <p>• <strong>檢傷分類機制</strong>：急診採檢傷分類（一級復甦急救、二級危急、三級緊急、四級次緊急、五級非緊急），非生命危急病患須配合等候急重症病患優先處置。</p>
-                      <p>• <strong>輕症就醫替代方案</strong>：若屬輕微發燒、一般腸胃不適或擦傷，建議善用白天基層診所就診，可節省大幅等候時間與急診部分負擔費用。</p>
+                      <p className="font-extrabold text-sm">{t("erStatusTool.tipsHeading", "💡 急診就醫與避開尖峰建議：")}</p>
+                      <p>• <strong>{t("erStatusTool.tip1Label", "尖峰時段預警")}</strong>：{t("erStatusTool.tip1Text", "依據急診歷史數據，每日晚間 19:00 至 23:00 為就醫最高峰，平均候診時間增加 40% 以上。")}</p>
+                      <p>• <strong>{t("erStatusTool.tip2Label", "檢傷分類機制")}</strong>：{t("erStatusTool.tip2Text", "急診採檢傷分類（一級復甦急救、二級危急、三級緊急、四級次緊急、五級非緊急），非生命危急病患須配合等候急重症病患優先處置。")}</p>
+                      <p>• <strong>{t("erStatusTool.tip3Label", "輕症就醫替代方案")}</strong>：{t("erStatusTool.tip3Text", "若屬輕微發燒、一般腸胃不適或擦傷，建議善用白天基層診所就診，可節省大幅等候時間與急診部分負擔費用。")}</p>
                     </div>
                   )}
                 </div>

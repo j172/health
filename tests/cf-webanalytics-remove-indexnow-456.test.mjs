@@ -135,7 +135,7 @@ test("env.ts exposes cloudflareWebAnalyticsToken using the same optional-credent
 });
 
 test("app/layout.tsx renders CloudflareWebAnalytics alongside (not instead of) GoogleTag and MicrosoftClarity", () => {
-  const content = read("app", "layout.tsx");
+  const content = read("app", "(zh)", "layout.tsx");
   assert.match(content, /import CloudflareWebAnalytics from "@\/components\/Analytics\/CloudflareWebAnalytics";/);
   assert.match(content, /<CloudflareWebAnalytics\s*\/>/);
   // The two pre-existing analytics tools must be untouched by this change.

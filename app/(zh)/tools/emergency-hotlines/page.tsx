@@ -6,12 +6,15 @@ import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EmergencyHotlinesContent from "@/components/Tools/EmergencyHotlinesContent";
 import type { HotlineRecord } from "@/lib/server/hotlines/hotlinesQueries";
+import { OG_LOCALE, ogAlternateLocales } from "@/lib/i18n/dictionary";
+import { buildHreflangAlternates } from "@/lib/i18n/translatedPages";
 
 export const revalidate = 3600;
 export const runtime = "nodejs";
 
 const slug = "emergency-hotlines";
-const canonical = `${getBaseUrl()}/tools/${slug}`;
+const baseUrl = getBaseUrl();
+const canonical = `${baseUrl}/tools/${slug}`;
 const catalogEntry = getToolCatalogEntry(slug);
 
 export const metadata: Metadata = {
@@ -34,11 +37,14 @@ export const metadata: Metadata = {
     "緊急電話直撥",
     "各縣市1999代表號",
   ],
-  alternates: { canonical },
+  // issue #485: reciprocal hreflang to the real /en/, /ja/, /ko/ siblings.
+  alternates: { canonical, languages: buildHreflangAlternates(`/tools/${slug}`, baseUrl) ?? undefined },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,
     url: canonical,
+    locale: OG_LOCALE["zh-TW"],
+    alternateLocale: ogAlternateLocales("zh-TW"),
   },
 };
 

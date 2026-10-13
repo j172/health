@@ -53,8 +53,8 @@ test("the pre-existing /tools/hakka-community redirect now chains straight to lo
 
 test("the 3 retired standalone page directories no longer exist", () => {
   for (const slug of ["home-healthcare", "elder-welfare", "hakka-bogong"]) {
-    const pageDir = path.join(ROOT_DIR, "app", "tools", slug);
-    assert.ok(!fs.existsSync(pageDir), `app/tools/${slug} should be deleted, not just redirected around`);
+    const pageDir = path.join(ROOT_DIR, "app", "(zh)", "tools", slug);
+    assert.ok(!fs.existsSync(pageDir), `app/(zh)/tools/${slug} should be deleted, not just redirected around`);
   }
 });
 
@@ -99,14 +99,14 @@ test("en/ja/ko locale files no longer carry the 3 orphaned catalog translation k
 });
 
 test("facilityConfigs.ts still defines all 4 facility configs (not deleted — the merged page's type selector still switches between them)", () => {
-  const content = read("app", "tools", "facilityConfigs.ts");
+  const content = read("app", "(zh)", "tools", "facilityConfigs.ts");
   for (const key of ["long-term-care", "home-healthcare", "elder-welfare", "hakka-bogong"]) {
     assert.ok(content.includes(`"${key}":`), `facilityConfigs.ts should still define the "${key}" config`);
   }
 });
 
 test("the /tools index no longer lists home-healthcare/elder-welfare/hakka-bogong as their own TOOL_ICONS entries", () => {
-  const content = read("app", "tools", "page.tsx");
+  const content = read("app", "(zh)", "tools", "page.tsx");
   for (const slug of ["home-healthcare", "elder-welfare", "hakka-bogong"]) {
     assert.ok(!content.includes(`"${slug}"`), `/tools index page should no longer reference ${slug} as its own entry`);
   }
@@ -123,7 +123,7 @@ test("SeniorFriendlyContent no longer links to the retired /tools/elder-welfare 
 });
 
 test("long-term-care/page.tsx wraps its client content in Suspense (required by useSearchParams in the App Router)", () => {
-  const content = read("app", "tools", "long-term-care", "page.tsx");
+  const content = read("app", "(zh)", "tools", "long-term-care", "page.tsx");
   assert.match(content, /<Suspense/, "page.tsx should wrap <LongTermCareContent /> in a <Suspense> boundary");
   assert.match(content, /<LongTermCareContent/, "page.tsx should render LongTermCareContent");
 });
@@ -156,7 +156,7 @@ test("resolveInitialTypeKey falls back to long-term-care (the first/default type
 });
 
 test("the shipped LongTermCareContent.tsx still exports the same type-key allowlist and resolveInitialTypeKey shape asserted above", () => {
-  const content = read("app", "tools", "long-term-care", "LongTermCareContent.tsx");
+  const content = read("app", "(zh)", "tools", "long-term-care", "LongTermCareContent.tsx");
   assert.match(
     content,
     /export const LONG_TERM_CARE_TYPE_KEYS = \[\s*"long-term-care",\s*"home-healthcare",\s*"elder-welfare",\s*"hakka-bogong",?\s*\]/,

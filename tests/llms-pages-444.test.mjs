@@ -264,27 +264,27 @@ test("ToolPageShell.tsx declares its own per-tool llms.txt + markdown <link> tag
   );
 });
 
-test("app/news/[id]/page.tsx declares per-article llms.txt + markdown <link> tags, gated on isGov", () => {
-  const src = readSource("app", "news", "[id]", "page.tsx");
+test("app/(zh)/news/[id]/page.tsx declares per-article llms.txt + markdown <link> tags, gated on isGov", () => {
+  const src = readSource("app", "(zh)", "news", "[id]", "page.tsx");
   assert.ok(src.includes("{isGov && ("), "the <link> tags must be gated on the same isGov flag used for the redirect");
   assert.ok(src.includes('href={`/news/${news.id}/llms.txt`}'));
   assert.ok(src.includes('href={`/news/${news.id}/markdown`}'));
 });
 
-test("app/privacy/page.tsx declares its llms.txt + markdown <link> tags", () => {
-  const src = readSource("app", "privacy", "page.tsx");
+test("app/(zh)/privacy/page.tsx declares its llms.txt + markdown <link> tags", () => {
+  const src = readSource("app", "(zh)", "privacy", "page.tsx");
   assert.ok(src.includes('href="/privacy/llms.txt"'));
   assert.ok(src.includes('href="/privacy/markdown"'));
 });
 
-test("app/accessibility/page.tsx declares its llms.txt + markdown <link> tags", () => {
-  const src = readSource("app", "accessibility", "page.tsx");
+test("app/(zh)/accessibility/page.tsx declares its llms.txt + markdown <link> tags", () => {
+  const src = readSource("app", "(zh)", "accessibility", "page.tsx");
   assert.ok(src.includes('href="/accessibility/llms.txt"'));
   assert.ok(src.includes('href="/accessibility/markdown"'));
 });
 
-test("app/llm-info/page.tsx declares its own page-level llms.txt + markdown <link> tags (distinct from the site-wide ones)", () => {
-  const src = readSource("app", "llm-info", "page.tsx");
+test("app/(zh)/llm-info/page.tsx declares its own page-level llms.txt + markdown <link> tags (distinct from the site-wide ones)", () => {
+  const src = readSource("app", "(zh)", "llm-info", "page.tsx");
   assert.ok(src.includes('href="/llm-info/llms.txt"'));
   assert.ok(src.includes('href="/llm-info/markdown"'));
 });
@@ -294,16 +294,16 @@ test("app/llm-info/page.tsx declares its own page-level llms.txt + markdown <lin
 // ---------------------------------------------------------------------------
 
 const routeFiles = [
-  ["app", "tools", "[slug]", "llms.txt", "route.ts", "buildToolLlmsPageContent", "buildLlmsTxt"],
-  ["app", "tools", "[slug]", "markdown", "route.ts", "buildToolLlmsPageContent", "buildLlmsMarkdown"],
-  ["app", "news", "[id]", "llms.txt", "route.ts", "buildNewsLlmsPageContent", "buildLlmsTxt"],
-  ["app", "news", "[id]", "markdown", "route.ts", "buildNewsLlmsPageContent", "buildLlmsMarkdown"],
-  ["app", "privacy", "llms.txt", "route.ts", "buildPrivacyLlmsPageContent", "buildLlmsTxt"],
-  ["app", "privacy", "markdown", "route.ts", "buildPrivacyLlmsPageContent", "buildLlmsMarkdown"],
-  ["app", "accessibility", "llms.txt", "route.ts", "buildAccessibilityLlmsPageContent", "buildLlmsTxt"],
-  ["app", "accessibility", "markdown", "route.ts", "buildAccessibilityLlmsPageContent", "buildLlmsMarkdown"],
-  ["app", "llm-info", "llms.txt", "route.ts", "buildLlmInfoLlmsPageContent", "buildLlmsTxt"],
-  ["app", "llm-info", "markdown", "route.ts", "buildLlmInfoLlmsPageContent", "buildLlmsMarkdown"],
+  ["app", "(zh)", "tools", "[slug]", "llms.txt", "route.ts", "buildToolLlmsPageContent", "buildLlmsTxt"],
+  ["app", "(zh)", "tools", "[slug]", "markdown", "route.ts", "buildToolLlmsPageContent", "buildLlmsMarkdown"],
+  ["app", "(zh)", "news", "[id]", "llms.txt", "route.ts", "buildNewsLlmsPageContent", "buildLlmsTxt"],
+  ["app", "(zh)", "news", "[id]", "markdown", "route.ts", "buildNewsLlmsPageContent", "buildLlmsMarkdown"],
+  ["app", "(zh)", "privacy", "llms.txt", "route.ts", "buildPrivacyLlmsPageContent", "buildLlmsTxt"],
+  ["app", "(zh)", "privacy", "markdown", "route.ts", "buildPrivacyLlmsPageContent", "buildLlmsMarkdown"],
+  ["app", "(zh)", "accessibility", "llms.txt", "route.ts", "buildAccessibilityLlmsPageContent", "buildLlmsTxt"],
+  ["app", "(zh)", "accessibility", "markdown", "route.ts", "buildAccessibilityLlmsPageContent", "buildLlmsMarkdown"],
+  ["app", "(zh)", "llm-info", "llms.txt", "route.ts", "buildLlmInfoLlmsPageContent", "buildLlmsTxt"],
+  ["app", "(zh)", "llm-info", "markdown", "route.ts", "buildLlmInfoLlmsPageContent", "buildLlmsMarkdown"],
 ];
 
 for (const [...pathSegments] of routeFiles) {

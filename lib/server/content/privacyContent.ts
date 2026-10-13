@@ -130,7 +130,7 @@ export const PRIVACY_SUMMARY =
 
 /**
  * Builds the shared `LlmsPageContent` shape for `/privacy`, from exactly the
- * same `PRIVACY_SECTIONS`/`PRIVACY_CONTACT` data `app/privacy/page.tsx`
+ * same `PRIVACY_SECTIONS`/`PRIVACY_CONTACT` data `app/(zh)/privacy/page.tsx`
  * renders.
  */
 export function buildPrivacyLlmsPageContent(baseUrl: string): LlmsPageContent {

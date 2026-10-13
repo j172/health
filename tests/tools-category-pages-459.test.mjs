@@ -224,9 +224,9 @@ test("buildCategoryPageGraphJsonLd exists with a 3-level BreadcrumbList, a Colle
 // app/tools/category/[slug]/page.tsx — source-text inspection (JSX)
 // ---------------------------------------------------------------------------
 
-const categoryPagePath = path.join(ROOT_DIR, "app", "tools", "category", "[slug]", "page.tsx");
+const categoryPagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", "category", "[slug]", "page.tsx");
 
-test("app/tools/category/[slug]/page.tsx exists and is wired to buildCategoryPage + notFound()", () => {
+test("app/(zh)/tools/category/[slug]/page.tsx exists and is wired to buildCategoryPage + notFound()", () => {
   assert.ok(fs.existsSync(categoryPagePath), "the category landing page route must exist");
   const content = fs.readFileSync(categoryPagePath, "utf-8");
 
@@ -256,10 +256,10 @@ test("app/tools/category/[slug]/page.tsx exists and is wired to buildCategoryPag
 // app/tools/page.tsx — the hand-rolled CATEGORIES array must be gone
 // ---------------------------------------------------------------------------
 
-const toolsIndexPath = path.join(ROOT_DIR, "app", "tools", "page.tsx");
+const toolsIndexPath = path.join(ROOT_DIR, "app", "(zh)", "tools", "page.tsx");
 const toolsIndexContent = fs.readFileSync(toolsIndexPath, "utf-8");
 
-test("app/tools/page.tsx no longer declares its own hand-rolled CATEGORIES array or ToolCategory type", () => {
+test("app/(zh)/tools/page.tsx no longer declares its own hand-rolled CATEGORIES array or ToolCategory type", () => {
   assert.ok(
     !/const\s+CATEGORIES\s*:/.test(toolsIndexContent),
     "the old `const CATEGORIES: ToolCategory[] = [...]` array must be removed",
@@ -291,7 +291,7 @@ test("app/tools/page.tsx no longer declares its own hand-rolled CATEGORIES array
   );
 });
 
-test("app/tools/page.tsx derives its category sections from the shared navModel instead", () => {
+test("app/(zh)/tools/page.tsx derives its category sections from the shared navModel instead", () => {
   assert.ok(
     toolsIndexContent.includes('from "@/lib/server/tools/navModel"') &&
       toolsIndexContent.includes("buildCategoryPage"),

@@ -6,11 +6,14 @@ import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EmergencyRoomContent from "@/components/Tools/EmergencyRoomContent";
 import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 import { getEmergencyRoomOverview } from "@/lib/server/emergencyRooms/queries";
+import { OG_LOCALE, ogAlternateLocales } from "@/lib/i18n/dictionary";
+import { buildHreflangAlternates } from "@/lib/i18n/translatedPages";
 
 export const revalidate = 30;
 export const runtime = "nodejs";
 
-const canonical = `${getBaseUrl()}/tools/er-status`;
+const baseUrl = getBaseUrl();
+const canonical = `${baseUrl}/tools/er-status`;
 const catalogEntry = getToolCatalogEntry("er-status");
 
 export const metadata: Metadata = {
@@ -26,11 +29,14 @@ export const metadata: Metadata = {
     "119送醫分流",
     "全台急診候診查詢",
   ],
-  alternates: { canonical },
+  // issue #485: reciprocal hreflang to the real /en/, /ja/, /ko/ siblings.
+  alternates: { canonical, languages: buildHreflangAlternates("/tools/er-status", baseUrl) ?? undefined },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,
     url: canonical,
+    locale: OG_LOCALE["zh-TW"],
+    alternateLocale: ogAlternateLocales("zh-TW"),
   },
 };
 

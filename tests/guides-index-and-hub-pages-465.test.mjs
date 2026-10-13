@@ -165,10 +165,10 @@ test("buildLlmsMarkdown renders the guide's ordered steps and excludes nav/foote
 
 const readSource = (...segments) => fs.readFileSync(path.join(ROOT_DIR, ...segments), "utf-8");
 
-test("app/guides/page.tsx exists, lists all 5 GUIDES as cards linking to their hub page", () => {
-  const indexPath = path.join(ROOT_DIR, "app", "guides", "page.tsx");
-  assert.ok(fs.existsSync(indexPath), "app/guides/page.tsx must exist");
-  const src = readSource("app", "guides", "page.tsx");
+test("app/(zh)/guides/page.tsx exists, lists all 5 GUIDES as cards linking to their hub page", () => {
+  const indexPath = path.join(ROOT_DIR, "app", "(zh)", "guides", "page.tsx");
+  assert.ok(fs.existsSync(indexPath), "app/(zh)/guides/page.tsx must exist");
+  const src = readSource("app", "(zh)", "guides", "page.tsx");
 
   assert.ok(
     /import\s*{[^}]*\bGUIDES\b[^}]*}\s*from\s*"@\/lib\/server\/tools\/navModel"/.test(src),
@@ -182,8 +182,8 @@ test("app/guides/page.tsx exists, lists all 5 GUIDES as cards linking to their h
   assert.ok(src.includes("guide.title") && src.includes("guide.description"));
 });
 
-test("app/guides/page.tsx renders structured data via buildGuidesIndexGraphJsonLd", () => {
-  const src = readSource("app", "guides", "page.tsx");
+test("app/(zh)/guides/page.tsx renders structured data via buildGuidesIndexGraphJsonLd", () => {
+  const src = readSource("app", "(zh)", "guides", "page.tsx");
   assert.ok(
     src.includes("buildGuidesIndexGraphJsonLd") && src.includes('"application/ld+json"'),
     "must render a JSON-LD <script> built via buildGuidesIndexGraphJsonLd",
@@ -194,9 +194,9 @@ test("app/guides/page.tsx renders structured data via buildGuidesIndexGraphJsonL
 // 4. app/guides/[slug]/page.tsx — source-text inspection (JSX)
 // ---------------------------------------------------------------------------
 
-const hubPagePath = path.join(ROOT_DIR, "app", "guides", "[slug]", "page.tsx");
+const hubPagePath = path.join(ROOT_DIR, "app", "(zh)", "guides", "[slug]", "page.tsx");
 
-test("app/guides/[slug]/page.tsx exists and is wired to buildGuide + notFound()", () => {
+test("app/(zh)/guides/[slug]/page.tsx exists and is wired to buildGuide + notFound()", () => {
   assert.ok(fs.existsSync(hubPagePath), "the guide hub page route must exist");
   const src = fs.readFileSync(hubPagePath, "utf-8");
 
@@ -213,7 +213,7 @@ test("app/guides/[slug]/page.tsx exists and is wired to buildGuide + notFound()"
   );
 });
 
-test("app/guides/[slug]/page.tsx renders every step in order, linking to the step's real tool page with a 'why' explanation", () => {
+test("app/(zh)/guides/[slug]/page.tsx renders every step in order, linking to the step's real tool page with a 'why' explanation", () => {
   const src = fs.readFileSync(hubPagePath, "utf-8");
   assert.ok(src.includes("guide.steps.map"), "must map over guide.steps to render each step");
   assert.ok(src.includes("href={step.href}"), "each step card must link to the step's resolved tool href");
@@ -221,13 +221,13 @@ test("app/guides/[slug]/page.tsx renders every step in order, linking to the ste
   assert.ok(src.includes("{step.why}"), "must render the step's why-this-step explanation");
 });
 
-test("app/guides/[slug]/page.tsx renders a FAQ section from guide.faqs", () => {
+test("app/(zh)/guides/[slug]/page.tsx renders a FAQ section from guide.faqs", () => {
   const src = fs.readFileSync(hubPagePath, "utf-8");
   assert.ok(src.includes("guide.faqs.map"), "must map over guide.faqs to render the FAQ section");
   assert.ok(src.includes("faq.question") && src.includes("faq.answer"));
 });
 
-test("app/guides/[slug]/page.tsx declares its own per-guide llms.txt + markdown <link> tags", () => {
+test("app/(zh)/guides/[slug]/page.tsx declares its own per-guide llms.txt + markdown <link> tags", () => {
   const src = fs.readFileSync(hubPagePath, "utf-8");
   assert.ok(
     /<link\s+rel="alternate"\s+type="text\/plain"[^/]*href=\{`\/guides\/\$\{guide\.slug\}\/llms\.txt`\}/.test(src),
@@ -245,8 +245,8 @@ test("app/guides/[slug]/page.tsx declares its own per-guide llms.txt + markdown 
 // ---------------------------------------------------------------------------
 
 const routeFiles = [
-  ["app", "guides", "[slug]", "llms.txt", "route.ts", "buildGuideLlmsPageContent", "buildLlmsTxt", "text/plain"],
-  ["app", "guides", "[slug]", "markdown", "route.ts", "buildGuideLlmsPageContent", "buildLlmsMarkdown", "text/markdown"],
+  ["app", "(zh)", "guides", "[slug]", "llms.txt", "route.ts", "buildGuideLlmsPageContent", "buildLlmsTxt", "text/plain"],
+  ["app", "(zh)", "guides", "[slug]", "markdown", "route.ts", "buildGuideLlmsPageContent", "buildLlmsMarkdown", "text/markdown"],
 ];
 
 for (const [...pathSegments] of routeFiles) {

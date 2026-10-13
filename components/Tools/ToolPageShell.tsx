@@ -9,6 +9,10 @@ import { findRelatedNewsForTool } from "@/lib/server/content/relatedNewsForTool"
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import { displayDate, toTaipei } from "@/lib/format/news";
 import RecentToolRecorder from "@/components/Tools/RecentToolRecorder";
+import { getDictionary, type Locale } from "@/lib/i18n/dictionary";
+import { isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
+import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
+import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
 
 /**
  * Shared wrapper for every /tools/<slug> page.
@@ -44,16 +48,31 @@ export default async function ToolPageShell({
   title,
   children,
   maxWidthClassName = "max-w-3xl",
+  locale = "zh-TW",
 }: {
   slug: string;
   title: string;
   children: React.ReactNode;
   maxWidthClassName?: string;
+  /** issue #485: the 3 pilot /en//ja//ko/ pages pass their route locale so
+   * this shared shell — used by every /tools/<slug> page, translated or
+   * not — renders its own chrome and the catalog-derived directAnswer/FAQ
+   * in that language. Defaults to "zh-TW", so every one of the ~78 other
+   * (not yet translated) tool pages behaves byte-for-byte as before. */
+  locale?: Locale;
 }) {
   const baseUrl = getBaseUrl();
+  const { t } = getDictionary(locale);
   const catalogEntry = TOOL_CATALOG.find((tool) => tool.slug === slug);
-  const directAnswer = catalogEntry?.directAnswer ?? catalogEntry?.description ?? title;
-  const faqs = catalogEntry?.faqs ?? [];
+  const isTranslatedTool = isTranslatedToolSlug(slug);
+  // Only a translated tool's own catalog fields get swapped for the locale
+  // version — an untranslated tool stays Chinese regardless of `locale`
+  // (shouldn't happen in practice since app/[locale]/tools/<slug>/page.tsx
+  // only exists for translated slugs, but this keeps the fallback honest).
+  const localizedMeta =
+    isTranslatedTool && locale !== "zh-TW" ? getLocalizedToolMeta(slug, locale) : null;
+  const directAnswer = localizedMeta?.directAnswer ?? catalogEntry?.directAnswer ?? catalogEntry?.description ?? title;
+  const faqs = localizedMeta?.faqs ?? catalogEntry?.faqs ?? [];
   const scientificBasis = catalogEntry?.scientificBasis ?? [];
   const referenceTable = catalogEntry?.referenceTable;
   const formula = catalogEntry?.formula;
@@ -76,7 +95,13 @@ export default async function ToolPageShell({
   // no DB involved, so it's safe to call unconditionally).
   const guides = getGuidesForTool(slug);
 
-  const toolGraph = catalogEntry ? buildToolGraphJsonLd(catalogEntry) : null;
+  // issue #485: when a locale override exists, the JSON-LD graph is built
+  // from the SAME merged (title/description/directAnswer/faqs-overridden)
+  // entry the visible page renders, so a crawler never sees English visible
+  // text paired with Chinese structured data (or vice versa).
+  const localizedCatalogEntry =
+    catalogEntry && localizedMeta ? { ...catalogEntry, ...localizedMeta } : catalogEntry;
+  const toolGraph = localizedCatalogEntry ? buildToolGraphJsonLd(localizedCatalogEntry) : null;
   // Category breadcrumb level (issue #459): resolved from the catalog
   // entry's `group` via the shared getToolCategoryLink helper, kept in sync
   // with the JSON-LD BreadcrumbList buildToolGraphJsonLd builds for the same
@@ -113,18 +138,30 @@ export default async function ToolPageShell({
         <StabloHeader />
 
         <main className={`mx-auto px-4 py-8 sm:px-6 lg:px-8 ${maxWidthClassName}`}>
+          {/* issue #485 acceptance criterion 5: on the zh page of a
+              translated tool, a dismissible banner advertises the other
+              language versions exist — never an auto-redirect. */}
+          {isTranslatedTool && locale === "zh-TW" ? (
+            <OtherLanguagesBanner canonicalPath={`/tools/${slug}`} />
+          ) : null}
+
           {/* Breadcrumb navigation */}
           <nav className="mb-6 text-xs font-medium text-slate-600 dark:text-slate-400" aria-label="breadcrumb">
             <ol className="flex flex-wrap items-center gap-1.5">
               <li>
+                {/* issue #485: the home page and /tools index aren't
+                    themselves translated by this ticket (#486/#487/#488
+                    will grow TRANSLATED_PAGES to cover them) — these two
+                    breadcrumb links always point at the real, existing zh
+                    pages rather than a /{locale}/ URL that would 404. */}
                 <Link href="/" className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                  首頁
+                  {t("toolShell.home", "首頁")}
                 </Link>
               </li>
               <li aria-hidden="true" className="text-slate-300 dark:text-slate-700">/</li>
               <li>
                 <Link href="/tools" className="hover:text-indigo-600 dark:hover:text-indigo-400">
-                  工具
+                  {t("toolShell.toolsIndex", "工具")}
                 </Link>
               </li>
               <li aria-hidden="true" className="text-slate-300 dark:text-slate-700">/</li>
@@ -153,7 +190,7 @@ export default async function ToolPageShell({
               id="tool-last-updated"
               className="mb-4 text-right text-[11px] font-medium text-slate-500 dark:text-slate-400"
             >
-              最後更新：
+              {t("toolShell.lastUpdatedLabel", "最後更新：")}
               <time dateTime={catalogEntry.lastUpdated}>{toTaipei(catalogEntry.lastUpdated, "medium")}</time>
             </p>
           ) : null}
@@ -174,7 +211,7 @@ export default async function ToolPageShell({
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-tools-heading">
               <h2 id="related-tools-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>🔗</span>
-                <span>下一步：相關健康評估工具推薦</span>
+                <span>{t("toolShell.relatedToolsHeading", "下一步：相關健康評估工具推薦")}</span>
               </h2>
               <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {relatedTools.map((tool) => (
@@ -204,7 +241,7 @@ export default async function ToolPageShell({
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-news-heading">
               <h2 id="related-news-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>📰</span>
-                <span>相關新聞報導</span>
+                <span>{t("toolShell.relatedNewsHeading", "相關新聞報導")}</span>
               </h2>
               <ul className="mt-3 space-y-3">
                 {relatedNews.map((item) => (
@@ -233,7 +270,7 @@ export default async function ToolPageShell({
             <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900" aria-labelledby="related-guides-heading">
               <h2 id="related-guides-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                 <span>🧭</span>
-                <span>所屬生活情境指南</span>
+                <span>{t("toolShell.relatedGuidesHeading", "所屬生活情境指南")}</span>
               </h2>
               <div className="mt-3 flex flex-wrap gap-2">
                 {guides.map((guide) => (
@@ -263,9 +300,9 @@ export default async function ToolPageShell({
               <div className="mb-2 flex items-center justify-between">
                 <h2 id="aeo-summary-heading" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
                   <span>💡</span>
-                  <span>核心定義與重點快覽 (AEO Direct Answer)</span>
+                  <span>{t("toolShell.aeoHeading", "核心定義與重點快覽 (AEO Direct Answer)")}</span>
                 </h2>
-                <span className="font-mono text-[10px] text-slate-600">AI / Snippet Ready</span>
+                <span className="font-mono text-[10px] text-slate-600">{t("toolShell.aeoBadge", "AI / Snippet Ready")}</span>
               </div>
               <p className="font-medium leading-relaxed">{directAnswer}</p>
             </section>
@@ -283,7 +320,7 @@ export default async function ToolPageShell({
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-5 [&::-webkit-details-marker]:hidden">
                 <h2 id="formula-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span>📐</span>
-                  <span>計算公式與推算方法 (Formula & Calculation)</span>
+                  <span>{t("toolShell.formulaHeading", "計算公式與推算方法 (Formula & Calculation)")}</span>
                 </h2>
                 <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
               </summary>
@@ -302,7 +339,7 @@ export default async function ToolPageShell({
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-5 [&::-webkit-details-marker]:hidden">
                 <h2 id="reference-table-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span>📊</span>
-                  <span>{referenceTable.title || "標準對照與臨床指引表"}</span>
+                  <span>{referenceTable.title || t("toolShell.referenceTableDefaultTitle", "標準對照與臨床指引表")}</span>
                 </h2>
                 <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
               </summary>
@@ -340,7 +377,7 @@ export default async function ToolPageShell({
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-5 [&::-webkit-details-marker]:hidden">
                 <h2 id="scientific-basis-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span>🔬</span>
-                  <span>科學依據與官方參考指引 (Authoritative Citations & Basis)</span>
+                  <span>{t("toolShell.scientificBasisHeading", "科學依據與官方參考指引 (Authoritative Citations & Basis)")}</span>
                 </h2>
                 <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
               </summary>
@@ -387,7 +424,7 @@ export default async function ToolPageShell({
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2 p-6 [&::-webkit-details-marker]:hidden">
                 <h2 id="tool-faq-heading" className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span>❓</span>
-                  <span>常見問題解答 (FAQ)</span>
+                  <span>{t("toolShell.faqHeading", "常見問題解答 (FAQ)")}</span>
                 </h2>
                 <span aria-hidden="true" className="shrink-0 text-slate-400 transition-transform group-open:rotate-90 dark:text-slate-500">▸</span>
               </summary>
@@ -396,10 +433,10 @@ export default async function ToolPageShell({
                   {faqs.map((faq) => (
                     <div key={faq.question} className="rounded-xl bg-slate-50/75 p-4 dark:bg-slate-850">
                       <dt className="font-semibold text-xs text-slate-800 dark:text-slate-200">
-                        Q: {faq.question}
+                        {t("toolShell.faqQLabel", "Q:")} {faq.question}
                       </dt>
                       <dd className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        A: {faq.answer}
+                        {t("toolShell.faqALabel", "A:")} {faq.answer}
                       </dd>
                     </div>
                   ))}
@@ -414,8 +451,8 @@ export default async function ToolPageShell({
             <p className="flex items-start gap-2">
               <span className="text-base leading-none">⚕️</span>
               <span>
-                <strong>醫療資訊免責聲明：</strong>
-                {TOOL_MEDICAL_DISCLAIMER}
+                <strong>{t("toolShell.disclaimerLabel", "醫療資訊免責聲明：")}</strong>
+                {t("toolShell.disclaimerText", TOOL_MEDICAL_DISCLAIMER)}
               </span>
             </p>
           </section>

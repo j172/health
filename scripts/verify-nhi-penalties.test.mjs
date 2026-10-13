@@ -50,7 +50,7 @@ test("parseCsv & cleanCsvText handles headers with quotes, newlines and title ro
 });
 
 test("clinics config in facilityConfigs.ts includes '違規／停約' category filter and updated description", () => {
-  const configPath = path.join(process.cwd(), "app", "tools", "facilityConfigs.ts");
+  const configPath = path.join(process.cwd(), "app", "(zh)", "tools", "facilityConfigs.ts");
   const content = fs.readFileSync(configPath, "utf-8");
 
   assert.ok(content.includes('value: "違規／停約"'), "Should contain 違規／停約 category value");

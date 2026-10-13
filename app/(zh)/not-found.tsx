@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import Provider from "./(site)/Provider";
 

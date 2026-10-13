@@ -6,7 +6,7 @@
 // /images/ except news": issue #482 names exactly 3 fixed-count static
 // image categories (Logo, 工具圖示, 生活情境封面圖). Of those, only the
 // Logo (`public/images/logo/`) is an actual image file today —
-// `app/tools/page.tsx`'s TOOL_ICONS are emoji characters in a
+// `app/(zh)/tools/page.tsx`'s TOOL_ICONS are emoji characters in a
 // `Record<string, string>`, not image files, so "工具圖示" has nothing to
 // migrate; and the life-situation guide hub (#465) hasn't shipped any cover
 // image asset yet, so "生活情境封面圖" likewise has nothing to migrate yet.

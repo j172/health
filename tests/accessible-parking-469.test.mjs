@@ -43,7 +43,7 @@ registerHooks({
 
 const { aggregateNearbyTypes } = await import("../lib/server/nearby/aggregate.ts");
 const { NEARBY_MORE_TYPES, findNearbyTypeDef } = await import("../lib/server/nearby/registry.ts");
-const { facilitySearchConfigs } = await import("../app/tools/facilityConfigs.ts");
+const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfigs.ts");
 const { TOOL_CATALOG, getToolCatalogEntry } = await import("../lib/server/tools/catalog.ts");
 const { GUIDES, buildGuide, getGuidesForTool } = await import("../lib/server/tools/navModel.ts");
 
@@ -200,8 +200,8 @@ test('getGuidesForTool("accessible-parking") reverse-resolves to both guides', (
 // 5. Source-text inspection for the TDX client + sync wiring (real HTTP/DB)
 // ---------------------------------------------------------------------------
 
-test("app/tools/accessible-parking/page.tsx exists, has metadata+canonical, and renders FacilitySearchContent", () => {
-  const src = readSource("app", "tools", "accessible-parking", "page.tsx");
+test("app/(zh)/tools/accessible-parking/page.tsx exists, has metadata+canonical, and renders FacilitySearchContent", () => {
+  const src = readSource("app", "(zh)", "tools", "accessible-parking", "page.tsx");
   assert.ok(src.includes("metadata") || src.includes("Metadata"));
   assert.ok(src.includes("canonical"));
   assert.ok(src.includes("<FacilitySearchContent"));

@@ -55,7 +55,7 @@ export default async function StabloNewsLayout({
    * parent #438 §G): the status bar, 5 life-situation cards, and "最近使用
    * 的工具". Ignored for `variant === "archive"`. Kept as a prop (rather than
    * hardcoding those components here) so this shared layout file doesn't
-   * need to know about them directly — `app/(site)/page.tsx` composes them.
+   * need to know about them directly — `app/(zh)/(site)/page.tsx` composes them.
    */
   homeTopSections?: React.ReactNode;
 }) {
