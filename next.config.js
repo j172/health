@@ -75,10 +75,11 @@ const nextConfig = {
       // needs its own `has` entry since Next.js redirect `has` matching is
       // an exact query value match, not a wildcard. Issue #486 grew this
       // list from the original 3 pilot slugs to the full medical/transport/
-      // weather/disaster batch — keep this array in lockstep with
-      // lib/i18n/translatedPages.ts's TRANSLATED_TOOL_SLUGS (a sibling
-      // ticket, #487, grows this same list further for its own disjoint
-      // page batch).
+      // weather/disaster batch; issue #487 (below) adds 4 more
+      // (cool-spots/cultural-events/heritage-map/tourism-factories) plus 3
+      // translated STANDALONE pages — add a slug here ONLY once it's
+      // genuinely in TRANSLATED_TOOL_SLUGS (lib/i18n/translatedPages.ts)
+      // with real content, never ahead of it.
       ...["en", "ja", "ko"].flatMap((locale) =>
         [
           "aed",
@@ -95,6 +96,10 @@ const nextConfig = {
           "aqi",
           "uv",
           "disaster-map",
+          "cool-spots",
+          "cultural-events",
+          "heritage-map",
+          "tourism-factories",
         ].map((slug) => ({
           source: `/tools/${slug}`,
           has: [{ type: "query", key: "lang", value: locale }],
@@ -102,7 +107,23 @@ const nextConfig = {
           permanent: true,
         })),
       ),
-      // Every other `?lang=` hit (any other page, or the home page) has no
+      // issue #487: the same `?lang=` → real-path redirect, extended to the
+      // 3 translated STANDALONE (non-/tools/<slug>) pages — home ("/"),
+      // "/nearby", and the "typhoon-earthquake" life-situation guide. Kept
+      // as its own flatMap (rather than folded into the one above) since
+      // each entry's `destination` shape differs per page, not just per slug.
+      ...["en", "ja", "ko"].flatMap((locale) =>
+        [
+          { source: "/", destination: `/${locale}` },
+          { source: "/nearby", destination: `/${locale}/nearby` },
+          { source: "/guides/typhoon-earthquake", destination: `/${locale}/guides/typhoon-earthquake` },
+        ].map((rule) => ({
+          ...rule,
+          has: [{ type: "query", key: "lang", value: locale }],
+          permanent: true,
+        })),
+      ),
+      // Every other `?lang=` hit (any other page) has no
       // translated destination yet. Deliberately NOT redirected: Next.js
       // always forwards the incoming query string onto a redirect's
       // destination with no opt-out, so a same-path rule like

@@ -60,10 +60,11 @@ export function scopeEntryPath(entry: ScopePageEntry): string {
 }
 
 /**
- * Tool slugs with real, complete en/ja/ko content today (issue #485 ships
- * exactly these 3 pilot pages). `app/[locale]/tools/<slug>/page.tsx` exists
- * for each one of these and no others — keep this array and that directory
- * listing in lockstep (enforced by tests/i18n-routing-485.test.mjs).
+ * Tool slugs with real, complete en/ja/ko content today. Issue #485 shipped
+ * the first 3 pilot pages; issue #487 (parent #438 §Q, this batch: 涼適點／
+ * 藝文活動／文化資產／觀光工廠) adds 4 more. `app/[locale]/tools/<slug>/page.tsx`
+ * exists for each one of these and no others — keep this array and that
+ * directory listing in lockstep (enforced by tests/i18n-routing-485.test.mjs).
  */
 export const TRANSLATED_TOOL_SLUGS = [
   "emergency-hotlines",
@@ -81,18 +82,51 @@ export const TRANSLATED_TOOL_SLUGS = [
   "aqi",
   "uv",
   "disaster-map",
+  // Issue #487 (parent #438 §Q): leisure/culture batch.
+  "cool-spots",
+  "cultural-events",
+  "heritage-map",
+  "tourism-factories",
 ] as const;
 export type TranslatedToolSlug = (typeof TRANSLATED_TOOL_SLUGS)[number];
 
-export const TRANSLATED_PAGES: ScopePageEntry[] = TRANSLATED_TOOL_SLUGS.map((slug) => ({
-  kind: "tool" as const,
-  slug,
-}));
+/**
+ * Non-tool ("standalone") pages with real, complete en/ja/ko content —
+ * issue #487's extension of the #485 registry pattern to page *types* other
+ * than `/tools/<slug>`. `TRANSLATED_TOOL_SLUGS` alone can't represent "我附近"
+ * (`/nearby`), the homepage (`/`), or a `/guides/<slug>` life-situation guide,
+ * since none of those are `{ kind: "tool" }` scope entries — see
+ * `ScopePageEntry` above. Rather than inventing a second, parallel gating
+ * mechanism, this is the same `{kind, ...}` shape I18N_SCOPE_PAGES already
+ * uses, so `TRANSLATED_PAGES`/`TRANSLATED_CANONICAL_PATHS` below (and
+ * therefore `isTranslatedPath`, `buildHreflangAlternates`,
+ * `resolveLocaleSwitchTarget` — every consumer of this file) gate on exactly
+ * the same single source of truth for standalone pages as they already do
+ * for tools, with no special-casing anywhere else in this module. A future
+ * ticket growing this list only needs the matching `app/[locale]/**`
+ * route file(s) — same contract as `TRANSLATED_TOOL_SLUGS`.
+ */
+export const TRANSLATED_STANDALONE_PATHS: ScopePageEntry[] = [
+  { kind: "path", path: "/", label: "首頁" },
+  { kind: "path", path: "/nearby", label: "我附近" },
+  { kind: "path", path: "/guides/typhoon-earthquake", label: "颱風地震來了" },
+];
+
+export const TRANSLATED_PAGES: ScopePageEntry[] = [
+  ...TRANSLATED_TOOL_SLUGS.map((slug) => ({ kind: "tool" as const, slug })),
+  ...TRANSLATED_STANDALONE_PATHS,
+];
 
 export const TRANSLATED_CANONICAL_PATHS: string[] = TRANSLATED_PAGES.map(scopeEntryPath);
 
 export function isTranslatedToolSlug(slug: string): slug is TranslatedToolSlug {
   return (TRANSLATED_TOOL_SLUGS as readonly string[]).includes(slug);
+}
+
+/** True when `path` (a bare, unprefixed canonical path like "/nearby") is
+ * one of the translated standalone (non-tool) pages. */
+export function isTranslatedStandalonePath(path: string): boolean {
+  return TRANSLATED_STANDALONE_PATHS.some((entry) => scopeEntryPath(entry) === path);
 }
 
 /** True when `canonicalPath` (the zh, unprefixed path, e.g. "/tools/aed")

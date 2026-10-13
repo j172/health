@@ -2,6 +2,7 @@
 
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { SharedGeolocationResult } from "@/lib/hooks/useSharedGeolocation";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 /**
  * issue #478（母票 #438 §K）：地圖區塊在還沒有任何可用座標時顯示的佔位畫面
@@ -17,11 +18,16 @@ export default function MapPendingPlaceholder({
   geolocation: SharedGeolocationResult;
   className?: string;
 }) {
+  const { t } = useLanguage();
   return (
     <div
       className={`flex h-full flex-col items-center justify-center gap-2 bg-slate-50 text-center text-sm text-slate-400 dark:bg-slate-900 dark:text-slate-500 ${className}`}
     >
-      {geolocation.needsManualSelection ? <p className="px-6">請於上方選擇所在縣市，即可顯示地圖</p> : <LoadingOrb />}
+      {geolocation.needsManualSelection ? (
+        <p className="px-6">{t("mapPendingPlaceholder.manualSelectionHint", "請於上方選擇所在縣市，即可顯示地圖")}</p>
+      ) : (
+        <LoadingOrb />
+      )}
     </div>
   );
 }

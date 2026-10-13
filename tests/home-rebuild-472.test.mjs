@@ -308,7 +308,14 @@ test("components/Tools/RecentToolRecorder.tsx is a client component that calls r
 
 test("components/Home/GuideCardsSection.tsx renders all 5 GUIDES entries linking to /guides/<slug>, using plain copy (no persona labels)", () => {
   const src = readSource("components", "Home", "GuideCardsSection.tsx");
-  assert.ok(src.includes("GUIDES.map"));
+  // issue #487: the zh (default locale, unchanged behavior) path still maps
+  // every one of the 5 GUIDES — `guides` is `GUIDES` itself unless a
+  // /{locale}/ page passes a non-"zh-TW" locale, in which case it's a
+  // filtered subset (see that file's own doc comment). The substring check
+  // widened from the exact `"GUIDES.map"` match to allow for the `guides`
+  // intermediate variable this introduced.
+  assert.ok(src.includes("GUIDES"), "must still reference the shared GUIDES array, not a second copy of the data");
+  assert.match(src, /\.map\(\s*\(?\s*guide\b/, "must map over guide entries");
   assert.ok(src.includes("/guides/${guide.slug}"));
   for (const forbidden of ["觀光客", "病患"]) {
     assert.ok(!src.includes(forbidden), `must not use the forbidden persona label "${forbidden}"`);

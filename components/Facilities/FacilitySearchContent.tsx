@@ -164,22 +164,34 @@ export default function FacilitySearchContent({
   } = config;
 
   const { t, locale } = useLanguage();
+  // Issue #487: a hyphenated slug ("public-toilets", "cool-spots",
+  // "tourism-factories") must become camelCase before it's used as a
+  // dictionary namespace segment — a bare `${slug}Tool` would build
+  // "public-toiletsTool.title", which can never match the real
+  // "publicToiletsTool" key any dictionary file defines (JS/JSON object
+  // keys don't contain hyphens here), silently falling through to the zh
+  // `fallback` on every lookup. This was `#486`'s shipped behavior for
+  // "public-toilets" specifically (its `publicToiletsTool.*` dictionary
+  // entries exist with real translations but were never actually reachable)
+  // — fixed here rather than left in place, since this ticket's own
+  // "cool-spots"/"tourism-factories" slugs would hit the exact same bug.
+  const toCamelCase = (s: string): string => s.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
   // Issue #486: pure passthrough when `slug` is omitted (every pre-existing
   // caller) — `tc` then always returns `fallback` unchanged, so those 30+
-  // other /tools pages render byte-for-byte as before. When `slug` is set
-  // (clinics/pharmacies/public-toilets today), looks up
-  // `${slug}Tool.<key>` with the config's own Chinese string as the
-  // dictionary fallback.
-  const tc = (key: string, fallback: string): string => (slug ? t(`${slug}Tool.${key}`, fallback) : fallback);
+  // other /tools pages render byte-for-byte as before. When `slug` is set,
+  // looks up `${camelCase(slug)}Tool.<key>` with the config's own Chinese
+  // string as the dictionary fallback.
+  const tc = (key: string, fallback: string): string =>
+    slug ? t(`${toCamelCase(slug)}Tool.${key}`, fallback) : fallback;
 
-  // Issue #486: localized display copies of the config's own strings — the
-  // RAW `title`/`emptyStateNoKeyword` destructured above stay untouched and
-  // keep feeding `facilityNoun()` and `MapLocationBanner`'s
-  // `facilityTypeName` below, both of which only ever interpolate into
-  // always-Chinese sentence templates (facilityNoun's own regex, and
-  // MapLocationBanner's hardcoded 請改選您所在的縣市... copy, neither of
-  // which this ticket touches) — feeding those a translated noun would
-  // produce a mixed-language sentence instead of a clean one.
+  // Issue #486/#487: localized display copies of the config's own strings.
+  // `facilityNoun()` below is still fed the RAW `emptyStateNoKeyword`/`title`
+  // (its regex is zh-specific and can't parse a translated string) — its
+  // result then goes through `tc("noun", ...)` itself, so a tool with no
+  // translated noun of its own still gets the exact same zh noun as before,
+  // never a half-translated one. `MapLocationBanner`'s `facilityTypeName`
+  // DOES get the translated `displayTitle` (see below) now that issue #487
+  // translated that component's own sentence templates too.
   const displayTitle = tc("title", title);
   const displayDescription = tc("description", description);
   const displayNoteLine = noteLine ? tc("noteLine", noteLine) : noteLine;
@@ -379,16 +391,46 @@ export default function FacilitySearchContent({
     charityName: f.extra_json?.charityName,
   }));
 
-  const noun = facilityNoun(emptyStateNoKeyword, title);
+  // Issue #487: the noun itself is now also tc()-resolved — scoped per-slug
+  // exactly like every other `display*` override above, so a tool with no
+  // `${slug}Tool.noun` dictionary entry (every pre-existing one, including
+  // #486's clinics/pharmacies/public-toilets) gets the exact same
+  // `facilityNoun()`-derived zh noun as before (`tc` passes the fallback
+  // through unchanged), while a tool that DOES define one (cool-spots,
+  // tourism-factories) gets a real translated noun to interpolate below.
+  const noun = tc("noun", facilityNoun(emptyStateNoKeyword, title));
   const nearestKm = pagedFacilities.reduce((min, f) => {
     const km = Number(f.distance_km);
     return Number.isFinite(km) && km < min ? km : min;
   }, Infinity);
-  const nearestText = Number.isFinite(nearestKm) ? `（最近一處約 ${Math.round(nearestKm)} 公里）` : "";
+  // Issue #487: also tc()-scoped — a tool with no `${slug}Tool.*` override
+  // for these two keys renders the exact same hardcoded zh sentence as
+  // before (interpolating the zh `noun` above), so mixing a translated
+  // template with an untranslated noun (or vice versa) can't happen; only a
+  // tool that defines BOTH together ever sees a translated sentence.
+  // Not tc()-scoped (unlike fallbackNoticeSome/None below): this fragment
+  // never embeds `noun`, just a km number, so there's no mixed-language
+  // risk in sharing one generic translation across every tool immediately.
+  const nearestText = Number.isFinite(nearestKm)
+    ? t("facilitySearch.nearestSuffixTemplate", "（最近一處約 {km} 公里）").replace("{km}", String(Math.round(nearestKm)))
+    : "";
   const fallbackNotice = widenedRadius
     ? (initialNearbyCount && initialNearbyCount > 0
-        ? `您附近 ${radiusMeters / 1000} 公里內僅有 ${initialNearbyCount} 處${noun}，已自動依距離為您列出全台最近的${noun}${nearestText}。`
-        : `您附近 ${radiusMeters / 1000} 公里內沒有${noun}，以下依距離列出最近的${noun}${nearestText}。`)
+        ? tc(
+            "fallbackNoticeSome",
+            "您附近 {radius} 公里內僅有 {count} 處{noun}，已自動依距離為您列出全台最近的{noun}{nearestText}。",
+          )
+            .replace("{radius}", String(radiusMeters / 1000))
+            .replace("{count}", String(initialNearbyCount))
+            .replace(/\{noun\}/g, noun)
+            .replace("{nearestText}", nearestText)
+        : tc(
+            "fallbackNoticeNone",
+            "您附近 {radius} 公里內沒有{noun}，以下依距離列出最近的{noun}{nearestText}。",
+          )
+            .replace("{radius}", String(radiusMeters / 1000))
+            .replace(/\{noun\}/g, noun)
+            .replace("{nearestText}", nearestText))
     : null;
 
   const totalCount = total !== null ? total : pagedFacilities.length;
@@ -435,7 +477,7 @@ export default function FacilitySearchContent({
         {/* 第一列：22 縣市＋368 鄉鎮二級快速篩選 */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-slate-300 shrink-0">
-            <span>📍 地區快篩：</span>
+            <span>{t("facilitySearch.regionQuickFilterLabel", "📍 地區快篩：")}</span>
           </div>
           <CountyDistrictPicker
             county={county}
@@ -530,7 +572,12 @@ export default function FacilitySearchContent({
         geolocation={geolocation}
         hasManualCoords={Boolean(countyCentroid)}
         showPicker={false}
-        facilityTypeName={title || "機構據點"}
+        // Issue #487: MapLocationBanner's own sentence templates are now
+        // translated (t()-based, see that component), so this must feed it
+        // `displayTitle` (tc()-resolved) rather than the raw zh `title` —
+        // otherwise an English/Japanese/Korean sentence would end up with a
+        // Chinese noun stuck in the middle of it.
+        facilityTypeName={displayTitle || t("facilitySearch.defaultFacilityTypeName", "機構據點")}
       />
 
       {loading && (
@@ -666,13 +713,17 @@ export default function FacilitySearchContent({
                   )}
                   {typeof serviceItem === "object" && f.service_item && (
                     <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
-                      {serviceItem.label}
+                      {tc("serviceItemLabel", serviceItem.label)}
                       {f.service_item}
                     </p>
                   )}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
-                  {showGeocodeNote && f.lat === null && <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">（尚未完成地理定位，暫不顯示於地圖）</p>}
+                  {showGeocodeNote && f.lat === null && (
+                    <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">
+                      {t("facilitySearch.notGeocodedNote", "（尚未完成地理定位，暫不顯示於地圖）")}
+                    </p>
+                  )}
 
                   {/* Google 地圖導航按鈕 */}
                   <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 dark:border-slate-800">
@@ -699,7 +750,7 @@ export default function FacilitySearchContent({
                 totalItems={totalCount}
                 onPageChange={setPage}
                 onPageSizeChange={setPageSize}
-                itemLabel={`筆${noun}`}
+                itemLabel={t("facilitySearch.itemLabelTemplate", "筆{noun}").replace("{noun}", noun)}
               />
             </div>
           )}

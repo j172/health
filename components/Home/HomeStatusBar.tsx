@@ -7,6 +7,7 @@ import { useSidebarWidgetData } from "@/components/Tools/useSidebarWidgetData";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 import type { HomeStatusResponse, HomeStatusSection } from "@/app/api/home-status/route";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 /**
  * Homepage top status bar (issue #472, parent #438 §G acceptance criterion
@@ -108,6 +109,7 @@ function ErrorPill({ emoji, label, href, message }: { emoji: string; label: stri
 }
 
 export default function HomeStatusBar() {
+  const { t } = useLanguage();
   const geolocation = useSharedGeolocation();
   const [manualCounty, setManualCounty] = useState("");
   const [manualDistrict, setManualDistrict] = useState("");
@@ -153,7 +155,9 @@ export default function HomeStatusBar() {
       return <SkeletonPill key={label} emoji={emoji} label={label} />;
     }
     if (section.status === "error") {
-      return <ErrorPill key={label} emoji={emoji} label={label} href={href} message="載入失敗" />;
+      return (
+        <ErrorPill key={label} emoji={emoji} label={label} href={href} message={t("homePage.statusBar.loadFailed", "載入失敗")} />
+      );
     }
     if (section.status === "unavailable") {
       return (
@@ -166,7 +170,9 @@ export default function HomeStatusBar() {
           <span aria-hidden="true" className="text-xl leading-none">{emoji}</span>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">{label}</p>
-            <p className="truncate text-xs font-semibold text-amber-800 dark:text-amber-300">需要定位</p>
+            <p className="truncate text-xs font-semibold text-amber-800 dark:text-amber-300">
+              {t("homePage.statusBar.needsLocation", "需要定位")}
+            </p>
           </div>
         </button>
       );
@@ -179,60 +185,63 @@ export default function HomeStatusBar() {
   }
 
   return (
-    <section aria-label="即時狀態總覽" className="mb-8">
+    <section aria-label={t("homePage.statusBar.sectionAriaLabel", "即時狀態總覽")} className="mb-8">
       <div className="flex flex-wrap gap-3">
-        {renderSection(sections?.weather, "🌤️", "天氣", "/tools/weather-alerts", (weather) =>
+        {renderSection(sections?.weather, "🌤️", t("homePage.statusBar.weatherLabel", "天氣"), "/tools/weather-alerts", (weather) =>
           weather ? (
             <>
-              {weather.airTemperature ? `${weather.airTemperature}°C` : "即時觀測"} · {weather.weather || "舒適晴朗"}
+              {weather.airTemperature ? `${weather.airTemperature}°C` : t("homePage.statusBar.liveObservation", "即時觀測")} ·{" "}
+              {weather.weather || t("homePage.statusBar.comfortableDefault", "舒適晴朗")}
             </>
           ) : (
-            "暫無資料"
+            t("homePage.statusBar.noData", "暫無資料")
           ),
         )}
 
-        {renderSection(sections?.aqi, "🍃", "AQI", "/tools/aqi", (aqi) =>
+        {renderSection(sections?.aqi, "🍃", t("homePage.statusBar.aqiLabel", "AQI"), "/tools/aqi", (aqi) =>
           aqi ? (
             <>
               {aqi.aqiValue ?? "--"} · {aqi.aqiStatus}
             </>
           ) : (
-            "暫無資料"
+            t("homePage.statusBar.noData", "暫無資料")
           ),
         )}
 
-        {renderSection(sections?.uv, "☀️", "紫外線", "/tools/uv", (uv) =>
+        {renderSection(sections?.uv, "☀️", t("homePage.statusBar.uvLabel", "紫外線"), "/tools/uv", (uv) =>
           uv ? (
             <>
               {uv.uvIndex} · {uv.uvLabel}
             </>
           ) : (
-            "暫無資料"
+            t("homePage.statusBar.noData", "暫無資料")
           ),
         )}
 
-        {renderSection(sections?.earthquake, "🌍", "最新地震", "/tools/earthquakes", (quakes) =>
+        {renderSection(sections?.earthquake, "🌍", t("homePage.statusBar.earthquakeLabel", "最新地震"), "/tools/earthquakes", (quakes) =>
           quakes.length > 0 ? (
             <span style={{ color: magnitudeColor(quakes[0].magnitude) }}>
-              M{quakes[0].magnitude.toFixed(1)} {quakes[0].place_zh ?? quakes[0].place ?? "未知地點"}
+              M{quakes[0].magnitude.toFixed(1)} {quakes[0].place_zh ?? quakes[0].place ?? t("homePage.statusBar.unknownLocation", "未知地點")}
             </span>
           ) : (
-            "近期平穩"
+            t("homePage.statusBar.stableRecently", "近期平穩")
           ),
         )}
 
-        {renderSection(sections?.alerts, "⚠️", "警報", "/tools/weather-alerts", (alerts) =>
-          alerts.length > 0 ? `${alerts.length} 則有效警報` : "無特報",
+        {renderSection(sections?.alerts, "⚠️", t("homePage.statusBar.alertsLabel", "警報"), "/tools/weather-alerts", (alerts) =>
+          alerts.length > 0
+            ? t("homePage.statusBar.alertsCountTemplate", "{count} 則有效警報").replace("{count}", String(alerts.length))
+            : t("homePage.statusBar.noAlerts", "無特報"),
         )}
       </div>
 
       {needsLocationHint && (
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs dark:border-amber-900/60 dark:bg-amber-950/30">
           <p className="font-semibold text-amber-800 dark:text-amber-300">
-            {geolocation.status === "denied" && "您已拒絕定位授權，"}
-            {geolocation.status === "timeout" && "定位逾時，"}
-            {geolocation.status === "unsupported" && "瀏覽器不支援定位，"}
-            請改選您所在的縣市以顯示在地天氣、AQI 與 UV 指數。
+            {geolocation.status === "denied" && t("homePage.statusBar.deniedPrefix", "您已拒絕定位授權，")}
+            {geolocation.status === "timeout" && t("homePage.statusBar.timeoutPrefix", "定位逾時，")}
+            {geolocation.status === "unsupported" && t("homePage.statusBar.unsupportedPrefix", "瀏覽器不支援定位，")}
+            {t("homePage.statusBar.chooseCountyMessage", "請改選您所在的縣市以顯示在地天氣、AQI 與 UV 指數。")}
           </p>
           {!showPicker ? (
             <button
@@ -240,7 +249,7 @@ export default function HomeStatusBar() {
               onClick={() => setShowPicker(true)}
               className="mt-2 rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-900 dark:text-amber-200"
             >
-              選擇縣市
+              {t("homePage.statusBar.chooseCountyButton", "選擇縣市")}
             </button>
           ) : (
             <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -255,7 +264,7 @@ export default function HomeStatusBar() {
                 onClick={geolocation.refresh}
                 className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-800 hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-900 dark:text-amber-200"
               >
-                🔄 重新嘗試定位
+                {t("homePage.statusBar.retryLocationButton", "🔄 重新嘗試定位")}
               </button>
             </div>
           )}
@@ -264,9 +273,9 @@ export default function HomeStatusBar() {
 
       {apiStatus === "error" && data && (
         <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
-          重新整理失敗，顯示的可能是過期資料。
+          {t("homePage.statusBar.refreshFailedNotice", "重新整理失敗，顯示的可能是過期資料。")}
           <button type="button" onClick={refresh} className="ml-1 underline">
-            重試
+            {t("homePage.statusBar.retryButton", "重試")}
           </button>
         </p>
       )}
