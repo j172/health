@@ -83,11 +83,14 @@ const NEW_TOOL_SLUGS = ["cool-spots", "cultural-events", "heritage-map", "touris
 // 1. The 4 new tool pages
 // ---------------------------------------------------------------------------
 
-test("issue #487 adds exactly these 4 tool slugs on top of #485's 3", () => {
+test("issue #487 adds these 4 tool slugs (containment check — sibling ticket #486 also grows this same array)", () => {
   for (const slug of NEW_TOOL_SLUGS) {
     assert.ok(TRANSLATED_TOOL_SLUGS.includes(slug), `${slug} must be in TRANSLATED_TOOL_SLUGS`);
   }
-  assert.equal(TRANSLATED_TOOL_SLUGS.length, 7, "7 = #485's 3 pilots + #487's 4 — update this if a sibling ticket lands first");
+  // Not an exact-length snapshot: #486 (medical/transport/weather/disaster)
+  // landed in the same window and also grows this array, so the only safe
+  // assertion here is "at least the 3 pilots + this ticket's 4".
+  assert.ok(TRANSLATED_TOOL_SLUGS.length >= 7, "must contain at least #485's 3 pilots + #487's 4");
 });
 
 test("app/[locale]/tools/<slug>/page.tsx exists for each of the 4 new tool slugs", () => {
