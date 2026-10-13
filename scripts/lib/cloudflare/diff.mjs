@@ -64,7 +64,14 @@ export function reconcileManagedRules(desiredRules, liveRules) {
   const updated = desiredRules
     .filter((r) => liveByRef.has(r.ref))
     .map((r) => ({ ref: r.ref, from: liveByRef.get(r.ref), to: r }))
-    .filter(({ from, to }) => JSON.stringify(from) !== JSON.stringify(to));
+    // Compare with `adoptsLiveRuleId` stripped from `to`: it's a one-time
+    // migration sentinel (see nextRuleList below), never written to the
+    // live rule, so comparing it verbatim would report "updated" on every
+    // single future plan run forever once the rule is actually live.
+    .filter(({ from, to }) => {
+      const { adoptsLiveRuleId, ...toCompare } = to;
+      return JSON.stringify(from) !== JSON.stringify(toCompare);
+    });
 
   // A "removed" managed rule is one this file used to manage (its ref is
   // health-repo:* and it's live) but is no longer listed in zone-settings.json.
@@ -72,7 +79,20 @@ export function reconcileManagedRules(desiredRules, liveRules) {
     (r) => r.ref && r.ref.startsWith("health-repo:") && !desiredByRef.has(r.ref),
   );
 
-  const unmanagedPreserved = liveRules.filter((r) => !r.ref || !r.ref.startsWith("health-repo:"));
+  // issue #455: a desired rule can explicitly name a specific live
+  // unmanaged rule's id to take over via `adoptsLiveRuleId` — e.g. when a
+  // Cloudflare free-plan per-phase rule cap (confirmed live: exactly 1 rule
+  // for http_ratelimit) makes it impossible to add a new managed rule
+  // alongside an existing hand-added one covering overlapping ground, and a
+  // human has explicitly decided to consolidate them into one managed rule.
+  // This is intentionally an ALLOWLIST naming one specific id, never a
+  // blanket "replace unmanaged rules" switch — every other unmanaged rule
+  // (e.g. the documented SemrushBot/AhrefsBot block) is still preserved
+  // exactly as before.
+  const adoptedLiveRuleIds = new Set(desiredRules.map((r) => r.adoptsLiveRuleId).filter(Boolean));
+  const unmanagedPreserved = liveRules.filter(
+    (r) => (!r.ref || !r.ref.startsWith("health-repo:")) && !adoptedLiveRuleIds.has(r.id),
+  );
 
   // Rebuild the full rule list the apply step would PUT for this phase:
   // unmanaged live rules keep their original relative order and position
@@ -80,8 +100,16 @@ export function reconcileManagedRules(desiredRules, liveRules) {
   // else, like a bot block, still does), followed by this file's managed
   // rules in the order zone-settings.json lists them. Rules in `removed`
   // are dropped on purpose — that's the one case this file is allowed to
-  // delete a live rule, because it was this file that created it.
-  const nextRuleList = [...unmanagedPreserved, ...desiredRules];
+  // delete a live rule, because it was this file that created it. An
+  // adopted unmanaged rule is the other, explicit case: it's simply absent
+  // from `unmanagedPreserved` above, so it's naturally not re-included here
+  // either — the managed rule replacing it is already in `desiredRules`.
+  //
+  // `adoptsLiveRuleId` itself is not a real Cloudflare rule field (mapRules.mjs
+  // carries it through onto the mapped rule purely so this function can see
+  // it) — strip it back out here, since `nextRuleList` is what the apply
+  // script PUTs to the Cloudflare API verbatim.
+  const nextRuleList = [...unmanagedPreserved, ...desiredRules.map(({ adoptsLiveRuleId, ...rest }) => rest)];
 
   return { added, updated, removed, unmanagedPreserved, nextRuleList };
 }

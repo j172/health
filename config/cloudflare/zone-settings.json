@@ -92,24 +92,15 @@
     ],
     "rateLimitingRules": [
       {
-        "ref": "health-repo:protect-api-and-login",
-        "description": "Protect API & Login Rate Limits",
-        "expression": "starts_with(http.request.uri.path, \"/api/\") or starts_with(http.request.uri.path, \"/admin\")",
+        "ref": "health-repo:limit-bot-traffic",
+        "description": "Limit API/Admin & Non-Browser (Bot) Request Rate",
+        "note": "issue #455's required mitigation paired with allowing AI crawlers (2.0 §T item 348). Originally designed as a SEPARATE new rule alongside a 'protect-api-and-login' rule recreating an existing hand-added one — but Cloudflare's free plan caps the http_ratelimit phase at exactly 1 rule zone-wide (confirmed live via a 400 'exceeded the maximum number of rules in the phase http_ratelimit: 3 out of 1' on this ticket's first apply attempt), and that slot was already occupied by a live unmanaged rule doing exactly what 'protect-api-and-login' would have recreated ('Rate limit API and admin routes (30 req/10s -> Block 10s)', id 7d45ce60945c4efa8321feff7a38456a). Per explicit user decision (2026-10-13, this ticket's own review), merged both concerns into this one rule instead via adoptsLiveRuleId, rather than dropping either protection or leaving the AI-crawler throttle unimplemented. requestsPerPeriod/periodSeconds/mitigationTimeoutSeconds (30/10/10) reuse the already-proven-live values from the rule being replaced, rather than the original design's untested 20/60/60 — rate limiting counts per-source-IP (characteristics: cf.colo.id + ip.src, see mapRules.mjs), so 30 req/10s per individual bot IP is still a generous allowance for normal crawling while hard-capping the instantaneous per-IP burst rate that actually exhausts the host's LVE process ceiling (see ops_health_502_watchdog memory notes on prior NPROC-exhaustion incidents) — the risk this rule exists to catch is a single IP (bot or otherwise) hammering fast, not aggregate daily request volume. action is 'block' rather than 'managed_challenge'/'js_challenge': a legitimate crawler can't solve a JS challenge, so challenging bot traffic would silently defeat the entire point of allowing it in the first place; 'block' is a clean, bot-interpretable backoff signal that doesn't demand JS execution, and also preserves the original rule's own 'Block' action for the api/admin case.",
+        "expression": "cf.client.bot or starts_with(http.request.uri.path, \"/api/\") or starts_with(http.request.uri.path, \"/admin\")",
         "requestsPerPeriod": 30,
         "periodSeconds": 10,
-        "mitigationTimeoutSeconds": 60,
-        "action": "managed_challenge",
-        "enabled": true
-      },
-      {
-        "ref": "health-repo:limit-bot-traffic",
-        "description": "Limit Non-Browser (Bot) Request Rate",
-        "note": "issue #455's required mitigation paired with allowing AI crawlers (2.0 §T item 348): throttles verified-bot traffic specifically, zone-wide, so a single crawler cannot hammer the origin at a rate the host's known LVE process ceiling can't absorb (see ops_health_502_watchdog memory notes on prior NPROC-exhaustion incidents). cf.client.bot (free-plan-available, confirmed via Cloudflare's ruleset-engine field reference docs) flags known-good bots/crawlers, which is exactly the traffic class this unblock adds, without touching real browser visitors. action is 'block' rather than 'managed_challenge'/'js_challenge': those challenge types require solving a JS challenge, which a legitimate crawler cannot do, so challenging bot traffic would silently defeat the entire point of allowing it — 'block' instead just rejects requests over the limit outright (a clean, bot-interpretable backoff signal) without demanding JS execution.",
-        "expression": "cf.client.bot",
-        "requestsPerPeriod": 20,
-        "periodSeconds": 60,
-        "mitigationTimeoutSeconds": 60,
+        "mitigationTimeoutSeconds": 10,
         "action": "block",
+        "adoptsLiveRuleId": "7d45ce60945c4efa8321feff7a38456a",
         "enabled": true
       }
     ],
