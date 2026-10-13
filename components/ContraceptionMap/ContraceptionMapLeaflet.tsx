@@ -1,18 +1,14 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
+import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
+import type { BaseMapMarker } from "@/components/Map/BaseMap";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
 const clinicIcon = new L.DivIcon({
   className: "",
@@ -44,9 +40,6 @@ export interface ContraceptionPoint {
   source?: string;
 }
 
-import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
-
 export interface ContraceptionMapProps {
   points: ContraceptionPoint[];
   userLocation?: { lat: number; lng: number; isDefault: boolean };
@@ -54,71 +47,83 @@ export interface ContraceptionMapProps {
   zoom?: number;
 }
 
+/**
+ * 事後避孕藥友善診所／藥局地圖（issue #476：改用共用 BaseMap，底圖改為國土
+ * 測繪中心＋OSM 備援，標記群聚改為共用邏輯）。
+ *
+ * `showViewToggle={false}`：`ContraceptionMapContent.tsx` 的頁面層級已經有自己
+ * 的「地圖／清單」切換按鈕，BaseMap 內建的切換只會是地圖角落多出來的第二個
+ * 重複控制（見 issue #476 的決策）。
+ */
 export default function ContraceptionMapLeaflet({
   points,
   userLocation,
-  center = [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng],
+  center,
   zoom = 13,
 }: ContraceptionMapProps) {
-  const mapCenter: [number, number] = center || [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng];
+  const mapCenter: [number, number] = center ?? [userLocation?.lat ?? GEO_DEFAULTS.lat, userLocation?.lng ?? GEO_DEFAULTS.lng];
 
-  return (
-    <MapContainer center={mapCenter} zoom={zoom} className="h-full w-full" scrollWheelZoom>
-      <MapViewController center={mapCenter} zoom={zoom} />
-      <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
-
-      {userLocation && (
-        <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
-          <Popup>{userLocation.isDefault ? "預設位置：臺北101" : "您目前的位置"}</Popup>
-        </Marker>
-      )}
-
-      {points.map((p) => {
+  const markers: BaseMapMarker[] = useMemo(
+    () =>
+      points.map((p) => {
         const isClinic = p.category === "clinic";
-        const icon = isClinic ? clinicIcon : pharmacyIcon;
         const badgeClass = isClinic
           ? "bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300"
           : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300";
 
-        return (
-          <Marker key={`${p.category}-${p.id}`} position={[p.lat, p.lng]} icon={icon}>
-            <Popup maxWidth={280}>
-              <div className="text-sm leading-relaxed">
-                <div className="flex items-center gap-1.5">
-                  <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${badgeClass}`}>
-                    {isClinic ? "🏥 婦產科診所" : "💊 諮詢藥局"}
-                  </span>
-                  <span className="text-xs text-neutral-500">{p.city}</span>
-                </div>
-                <p className="mt-1 font-semibold text-neutral-900">{p.name}</p>
-                {p.address && <p className="text-xs text-neutral-600">{p.address}</p>}
-                {p.phone && (
-                  <p className="mt-1 text-xs text-neutral-500">
-                    📞 <a href={`tel:${p.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">{p.phone}</a>
-                  </p>
-                )}
-                <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-1.5 text-xs">
-                  <span className="text-[10px] text-neutral-400">BeOK 認證</span>
-                  <a
-                    href={appendOutboundUtm(
-                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        `${p.name} ${p.address}`,
-                      )}`,
-                      { medium: "map_navigation", campaign: "map_search" },
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-indigo-600 hover:underline"
-                  >
-                    Google 導航 ↗
-                  </a>
-                </div>
-                <PopupNearbyToolsLinks lat={p.lat} lng={p.lng} />
+        return {
+          id: `${p.category}-${p.id}`,
+          lat: p.lat,
+          lng: p.lng,
+          label: p.name,
+          sublabel: p.address,
+          icon: isClinic ? clinicIcon : pharmacyIcon,
+          popup: (
+            <div className="text-sm leading-relaxed">
+              <div className="flex items-center gap-1.5">
+                <span className={`rounded px-1.5 py-0.5 text-[11px] font-semibold ${badgeClass}`}>
+                  {isClinic ? "🏥 婦產科診所" : "💊 諮詢藥局"}
+                </span>
+                <span className="text-xs text-neutral-500">{p.city}</span>
               </div>
-            </Popup>
-          </Marker>
-        );
-      })}
-    </MapContainer>
+              <p className="mt-1 font-semibold text-neutral-900">{p.name}</p>
+              {p.address && <p className="text-xs text-neutral-600">{p.address}</p>}
+              {p.phone && (
+                <p className="mt-1 text-xs text-neutral-500">
+                  📞 <a href={`tel:${p.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">{p.phone}</a>
+                </p>
+              )}
+              <div className="mt-2 flex items-center justify-between border-t border-neutral-100 pt-1.5 text-xs">
+                <span className="text-[10px] text-neutral-400">BeOK 認證</span>
+                <a
+                  href={appendOutboundUtm(
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${p.name} ${p.address}`,
+                    )}`,
+                    { medium: "map_navigation", campaign: "map_search" },
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-indigo-600 hover:underline"
+                >
+                  Google 導航 ↗
+                </a>
+              </div>
+              <PopupNearbyToolsLinks lat={p.lat} lng={p.lng} />
+            </div>
+          ),
+        };
+      }),
+    [points],
+  );
+
+  return (
+    <BaseMap
+      markers={markers}
+      center={mapCenter}
+      zoom={zoom}
+      userLocation={userLocation}
+      showViewToggle={false}
+    />
   );
 }

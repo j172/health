@@ -1,24 +1,15 @@
 "use client";
 
-import React, { useMemo } from "react";
-import "leaflet/dist/leaflet.css";
+import { useMemo } from "react";
+import dynamic from "next/dynamic";
 import L from "leaflet";
-import { MapContainer, Marker, Popup, TileLayer, Circle } from "react-leaflet";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
-import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
+import type { BaseMapMarker } from "@/components/Map/BaseMap";
 import type { MapUserLocation } from "@/lib/types/mapUserLocation";
-import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
-// Webpack/Turbopack Leaflet default icon fix
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
 const createAedIcon = (isOpen24h: boolean) => {
   const bg = isOpen24h ? "#059669" : "#4f46e5"; // green for 24h, indigo for others
@@ -59,18 +50,18 @@ export interface AedMapLeafletProps {
   onSelectAed?: (id: number) => void;
 }
 
+/**
+ * AED 地圖（issue #476：改用共用 BaseMap，底圖改為國土測繪中心＋OSM 備援）。
+ *
+ * 不把 `userLocation.refresh` 轉接給 BaseMap 的內建定位按鈕——`AedContent.tsx`
+ * 已經有自己的 `MapLocationBanner`，重複一個定位按鈕只是疊加在地圖右上角的噪音
+ * （見 issue #476 的決策）。
+ */
 export default function AedMapLeaflet({
   facilities,
   userLocation,
   radiusMeters = 5000,
 }: AedMapLeafletProps) {
-  const center: [number, number] = useMemo(() => {
-    if (userLocation.lat && userLocation.lng) {
-      return [userLocation.lat, userLocation.lng];
-    }
-    return [GEO_DEFAULTS.lat, GEO_DEFAULTS.lng];
-  }, [userLocation.lat, userLocation.lng]);
-
   const validMarkers = useMemo(() => {
     return facilities.filter(
       (f) =>
@@ -81,138 +72,105 @@ export default function AedMapLeaflet({
     );
   }, [facilities]);
 
+  const markers: BaseMapMarker[] = useMemo(
+    () =>
+      validMarkers.map((item) => {
+        const extra = (item.extra_json as any) || {};
+        const is24h = Boolean(
+          extra.open24Hours ||
+            item.service_time?.includes("24小時") ||
+            item.service_time?.includes("全天候"),
+        );
+        const lat = Number(item.lat);
+        const lng = Number(item.lng);
+
+        return {
+          id: `aed-${item.id}`,
+          lat,
+          lng,
+          label: item.name,
+          sublabel: item.address ?? undefined,
+          icon: is24h ? aed24hIcon : aedNormalIcon,
+          popup: (
+            <div className="min-w-[200px] text-xs leading-relaxed text-slate-800">
+              <div className="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-1.5">
+                <span className="font-extrabold text-indigo-700 text-sm">{item.name}</span>
+                <span
+                  className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold text-white ${
+                    is24h ? "bg-emerald-600" : "bg-indigo-600"
+                  }`}
+                >
+                  {is24h ? "24H 可取" : "開放時間限時"}
+                </span>
+              </div>
+
+              <div className="mt-2 rounded bg-indigo-50/70 p-2 text-indigo-900">
+                <p className="font-bold text-[11px] text-indigo-600">📍 確切放置位置：</p>
+                <p className="font-semibold text-xs mt-0.5">
+                  {item.service_item || extra.locationDesc || "請洽現場服務台"}
+                </p>
+              </div>
+
+              {item.service_time && (
+                <p className="mt-1.5 text-slate-600">
+                  🕒 開放時間：{item.service_time}
+                </p>
+              )}
+
+              {item.address && (
+                <p className="mt-1 text-slate-500 line-clamp-1">
+                  🏠 {item.address}
+                </p>
+              )}
+
+              {item.phone && (
+                <p className="mt-1 text-slate-500">
+                  📞 {item.phone}
+                </p>
+              )}
+
+              <div className="mt-2.5 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2">
+                <a
+                  href={appendOutboundUtm(
+                    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+                    { medium: "map_navigation", campaign: "map_directions" },
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 inline-flex items-center justify-center gap-1 rounded bg-indigo-600 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-xs hover:bg-indigo-700 transition"
+                >
+                  🗺️ 一鍵路線導航
+                </a>
+                {item.phone && (
+                  <a
+                    href={`tel:${item.phone.replace(/[^0-9]/g, "")}`}
+                    className="inline-flex items-center justify-center rounded border border-slate-200 px-2 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition"
+                  >
+                    撥號
+                  </a>
+                )}
+              </div>
+              <PopupNearbyToolsLinks lat={lat} lng={lng} />
+            </div>
+          ),
+        };
+      }),
+    [validMarkers],
+  );
+
   return (
-    <div className="relative h-full w-full">
-      <MapContainer
-        center={center}
-        zoom={13}
-        className="h-full w-full rounded-2xl"
-        scrollWheelZoom
-      >
-        <MapViewController center={center} zoom={13} />
-        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
-
-        {/* 使用者位置與搜尋半徑 */}
-        {userLocation.lat && userLocation.lng && (
-          <>
-            <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
-              <Popup>
-                <div className="text-xs font-bold leading-relaxed">
-                  {userLocation.isDefault ? "📍 預設位置（臺北101）" : "🎯 您的目前位置"}
-                </div>
-              </Popup>
-            </Marker>
-            <Circle
-              center={[userLocation.lat, userLocation.lng]}
-              radius={radiusMeters}
-              pathOptions={{
-                color: "#4f46e5",
-                fillColor: "#6366f1",
-                fillOpacity: 0.08,
-                weight: 1.5,
-                dashArray: "4, 6",
-              }}
-            />
-          </>
-        )}
-
-        {/* AED Markers */}
-        {validMarkers.map((item) => {
-          const extra = (item.extra_json as any) || {};
-          const is24h = Boolean(
-            extra.open24Hours ||
-              item.service_time?.includes("24小時") ||
-              item.service_time?.includes("全天候"),
-          );
-          const icon = is24h ? aed24hIcon : aedNormalIcon;
-          const lat = Number(item.lat);
-          const lng = Number(item.lng);
-
-          return (
-            <Marker key={`aed-${item.id}`} position={[lat, lng]} icon={icon}>
-              <Popup>
-                <div className="min-w-[200px] text-xs leading-relaxed text-slate-800">
-                  <div className="flex items-center justify-between gap-1.5 border-b border-slate-100 pb-1.5">
-                    <span className="font-extrabold text-indigo-700 text-sm">{item.name}</span>
-                    <span
-                      className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold text-white ${
-                        is24h ? "bg-emerald-600" : "bg-indigo-600"
-                      }`}
-                    >
-                      {is24h ? "24H 可取" : "開放時間限時"}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 rounded bg-indigo-50/70 p-2 text-indigo-900">
-                    <p className="font-bold text-[11px] text-indigo-600">📍 確切放置位置：</p>
-                    <p className="font-semibold text-xs mt-0.5">
-                      {item.service_item || extra.locationDesc || "請洽現場服務台"}
-                    </p>
-                  </div>
-
-                  {item.service_time && (
-                    <p className="mt-1.5 text-slate-600">
-                      🕒 開放時間：{item.service_time}
-                    </p>
-                  )}
-
-                  {item.address && (
-                    <p className="mt-1 text-slate-500 line-clamp-1">
-                      🏠 {item.address}
-                    </p>
-                  )}
-
-                  {item.phone && (
-                    <p className="mt-1 text-slate-500">
-                      📞 {item.phone}
-                    </p>
-                  )}
-
-                  <div className="mt-2.5 pt-1.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                    <a
-                      href={appendOutboundUtm(
-                        `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-                        { medium: "map_navigation", campaign: "map_directions" },
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 inline-flex items-center justify-center gap-1 rounded bg-indigo-600 px-2.5 py-1.5 text-[11px] font-bold text-white shadow-xs hover:bg-indigo-700 transition"
-                    >
-                      🗺️ 一鍵路線導航
-                    </a>
-                    {item.phone && (
-                      <a
-                        href={`tel:${item.phone.replace(/[^0-9]/g, "")}`}
-                        className="inline-flex items-center justify-center rounded border border-slate-200 px-2 py-1.5 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition"
-                      >
-                        撥號
-                      </a>
-                    )}
-                  </div>
-                  <PopupNearbyToolsLinks lat={lat} lng={lng} />
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
-
-      {/* 地圖懸浮定位按鈕 */}
-      <div className="absolute top-3 right-3 z-[1000]">
-        <button
-          type="button"
-          onClick={() => userLocation.refresh?.()}
-          disabled={userLocation.refreshing}
-          title="重新定位至我的位置"
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-md transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-        >
-          {userLocation.refreshing ? (
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-          ) : (
-            <span className="text-base">🎯</span>
-          )}
-        </button>
-      </div>
-    </div>
+    <BaseMap
+      markers={markers}
+      userLocation={{ lat: userLocation.lat, lng: userLocation.lng, isDefault: userLocation.isDefault }}
+      circle={
+        userLocation.lat && userLocation.lng
+          ? {
+              center: [userLocation.lat, userLocation.lng],
+              radiusMeters,
+              pathOptions: { color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.08, weight: 1.5, dashArray: "4, 6" },
+            }
+          : undefined
+      }
+    />
   );
 }

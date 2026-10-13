@@ -344,7 +344,6 @@ export default function CpcStationsClient({
           userLocation={{ lat: mapOrigin.lat, lng: mapOrigin.lng, isDefault: !effectiveCoords }}
           selectedStationId={selectedStationId}
           onSelectStation={(st) => setSelectedStationId(st.id)}
-          onRecenter={() => geolocation.refresh()}
         />
         <div className="mt-2 text-right text-[11px] text-slate-600">
           地圖預設標記前 150 筆符合條件站點 · 點擊圖標可展開導航與詳細服務

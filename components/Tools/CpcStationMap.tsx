@@ -1,22 +1,13 @@
 "use client";
 
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { useMemo } from "react";
-import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
+import dynamic from "next/dynamic";
+import type { BaseMapMarker } from "@/components/Map/BaseMap";
 import type { CpcStationItem } from "@/lib/server/cpc/stations";
-import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
 
-// Webpack/Turbopack default marker fix
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
 const FUEL_TYPE_LABELS: Record<string, string> = {
   unleaded92: "無鉛92",
@@ -32,156 +23,138 @@ export interface CpcStationMapProps {
   userLocation: { lat: number; lng: number; isDefault: boolean };
   selectedStationId?: number | null;
   onSelectStation?: (station: CpcStationItem) => void;
-  onRecenter?: () => void;
 }
 
+/**
+ * 中油站點地圖（issue #476：改用共用 BaseMap，底圖改為國土測繪中心＋OSM 備援，
+ * 群聚與清單／地圖切換改為共用邏輯）。
+ *
+ * - `showViewToggle={false}`：`CpcStationsClient.tsx` 下方已經有自己完整的
+ *   站點清單卡片（含分頁、服務篩選），BaseMap 內建的簡易清單檢視只會是重複、
+ *   功能更少的第二份清單。
+ * - 不把定位按鈕轉接給 BaseMap——`CpcStationsClient.tsx` 已經有頁面上方的
+ *   「📍 定位附近加油站」按鈕與 `MapLocationBanner`，原本地圖右上角另一個
+ *   「我的位置」懸浮按鈕（`onRecenter`）只是重複，直接移除（見 issue #476 的決策）。
+ * - `focusMarkerId`／`onMarkerClick` 取代原本「`selectedStationId` 變動
+ *   → `MapContainer center` 跟著變 → `MapViewController` flyTo」的寫法：點擊地圖
+ *   上的站點圖標或外部清單卡片的「地圖定位此站」按鈕，地圖都會平移過去，縮放
+ *   層級不變，跟改版前的行為一致。
+ */
 export default function CpcStationMap({
   stations,
   userLocation,
   selectedStationId,
   onSelectStation,
-  onRecenter,
 }: CpcStationMapProps) {
-  const center: [number, number] = useMemo(() => {
-    if (selectedStationId) {
-      const target = stations.find((s) => s.id === selectedStationId);
-      if (target && target.lat && target.lng) {
-        return [target.lat, target.lng];
-      }
-    }
-    return [userLocation.lat, userLocation.lng];
-  }, [selectedStationId, stations, userLocation]);
+  const markers: BaseMapMarker[] = useMemo(
+    () =>
+      stations
+        .filter((station) => station.lat && station.lng)
+        .map((station) => ({
+          id: String(station.id),
+          lat: station.lat!,
+          lng: station.lng!,
+          label: station.name,
+          sublabel: station.address ?? undefined,
+          popup: (
+            <div className="max-w-[260px] text-xs leading-relaxed space-y-1.5 p-1">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-sm text-blue-800 dark:text-blue-600">
+                  {station.name}
+                </span>
+                <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-mono text-blue-800">
+                  {station.extra_json?.stationCode}
+                </span>
+              </div>
+
+              {station.address && (
+                <div className="text-slate-600">
+                  📍 {station.address}
+                </div>
+              )}
+
+              {station.phone && (
+                <div className="text-slate-600">
+                  📞 <a href={`tel:${station.phone}`} className="text-blue-600 hover:underline">{station.phone}</a>
+                </div>
+              )}
+
+              {station.distance_km !== undefined && (
+                <div className="text-[11px] font-semibold text-emerald-600">
+                  距離約 {station.distance_km.toFixed(1)} 公里
+                </div>
+              )}
+
+              {station.extra_json?.businessHours && (
+                <div className="text-slate-600">
+                  🕐 總營業時間：{station.extra_json.businessHours}
+                </div>
+              )}
+
+              {station.extra_json?.fuelTypes && (
+                <div className="flex flex-wrap gap-1">
+                  {Object.entries(station.extra_json.fuelTypes)
+                    .filter(([, v]) => v)
+                    .map(([k]) => (
+                      <span
+                        key={k}
+                        className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700"
+                      >
+                        {FUEL_TYPE_LABELS[k] || k}
+                      </span>
+                    ))}
+                </div>
+              )}
+
+              {/* Services tags */}
+              {station.extra_json?.services && (
+                <div className="mt-1 flex flex-wrap gap-1">
+                  {station.extra_json.services.map((svc) => (
+                    <span
+                      key={svc}
+                      className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700"
+                    >
+                      {svc}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-2 pt-1 border-t border-slate-100 flex justify-between items-center">
+                <a
+                  href={appendOutboundUtm(
+                    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+                      station.address || `${station.lat},${station.lng}`,
+                    )}`,
+                    { medium: "map_navigation", campaign: "map_directions" },
+                  )}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
+                >
+                  開啟 Google 導航 ↗
+                </a>
+              </div>
+              <PopupNearbyToolsLinks lat={station.lat} lng={station.lng} />
+            </div>
+          ),
+        })),
+    [stations],
+  );
 
   return (
     <div className="relative h-[480px] w-full overflow-hidden rounded-2xl border border-slate-200 shadow-sm dark:border-slate-800">
-      {onRecenter && (
-        <button
-          type="button"
-          onClick={onRecenter}
-          className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-blue-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-blue-300 border border-slate-200 dark:border-slate-800"
-          title="重新取得精準定位並移至我的位置"
-        >
-          <span>🎯</span>
-          <span>我的位置</span>
-        </button>
-      )}
-      <MapContainer
-        center={center}
+      <BaseMap
+        markers={markers}
         zoom={13}
-        className="h-full w-full z-0"
-        scrollWheelZoom={true}
-      >
-        <MapViewController center={center} zoom={13} />
-        <TileLayer attribution={OSM_TILE_ATTRIBUTION} url={OSM_TILE_URL} />
-
-        {/* User Location */}
-        <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
-          <Popup>
-            <div className="text-xs font-semibold">
-              {userLocation.isDefault ? "📍 預設位置（臺北）" : "📍 您目前的位置"}
-            </div>
-          </Popup>
-        </Marker>
-
-        {/* Stations */}
-        {stations.map((station) => {
-          if (!station.lat || !station.lng) return null;
-          const isSelected = selectedStationId === station.id;
-
-          return (
-            <Marker
-              key={station.id}
-              position={[station.lat, station.lng]}
-              eventHandlers={{
-                click: () => onSelectStation?.(station),
-              }}
-            >
-              <Popup>
-                <div className="max-w-[260px] text-xs leading-relaxed space-y-1.5 p-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-blue-800 dark:text-blue-600">
-                      {station.name}
-                    </span>
-                    <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-mono text-blue-800">
-                      {station.extra_json?.stationCode}
-                    </span>
-                  </div>
-
-                  {station.address && (
-                    <div className="text-slate-600">
-                      📍 {station.address}
-                    </div>
-                  )}
-
-                  {station.phone && (
-                    <div className="text-slate-600">
-                      📞 <a href={`tel:${station.phone}`} className="text-blue-600 hover:underline">{station.phone}</a>
-                    </div>
-                  )}
-
-                  {station.distance_km !== undefined && (
-                    <div className="text-[11px] font-semibold text-emerald-600">
-                      距離約 {station.distance_km.toFixed(1)} 公里
-                    </div>
-                  )}
-
-                  {station.extra_json?.businessHours && (
-                    <div className="text-slate-600">
-                      🕐 總營業時間：{station.extra_json.businessHours}
-                    </div>
-                  )}
-
-                  {station.extra_json?.fuelTypes && (
-                    <div className="flex flex-wrap gap-1">
-                      {Object.entries(station.extra_json.fuelTypes)
-                        .filter(([, v]) => v)
-                        .map(([k]) => (
-                          <span
-                            key={k}
-                            className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-700"
-                          >
-                            {FUEL_TYPE_LABELS[k] || k}
-                          </span>
-                        ))}
-                    </div>
-                  )}
-
-                  {/* Services tags */}
-                  {station.extra_json?.services && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {station.extra_json.services.map((svc) => (
-                        <span
-                          key={svc}
-                          className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700"
-                        >
-                          {svc}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="mt-2 pt-1 border-t border-slate-100 flex justify-between items-center">
-                    <a
-                      href={appendOutboundUtm(
-                        `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-                          station.address || `${station.lat},${station.lng}`,
-                        )}`,
-                        { medium: "map_navigation", campaign: "map_directions" },
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-blue-600 hover:text-blue-800 underline"
-                    >
-                      開啟 Google 導航 ↗
-                    </a>
-                  </div>
-                  <PopupNearbyToolsLinks lat={station.lat} lng={station.lng} />
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+        userLocation={{ lat: userLocation.lat, lng: userLocation.lng, isDefault: userLocation.isDefault }}
+        showViewToggle={false}
+        focusMarkerId={selectedStationId != null ? String(selectedStationId) : null}
+        onMarkerClick={(id) => {
+          const station = stations.find((s) => String(s.id) === id);
+          if (station) onSelectStation?.(station);
+        }}
+      />
     </div>
   );
 }

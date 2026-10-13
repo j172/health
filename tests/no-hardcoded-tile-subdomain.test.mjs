@@ -101,7 +101,11 @@ test("Regression Guard detection unit tests: correctly distinguishes subdomain v
   assert.deepEqual(findHardcodedTileSubdomainViolations(singleHost, "test.tsx"), []);
 });
 
-test("9 OSM map components all import the shared OSM_TILE_URL / OSM_TILE_ATTRIBUTION constants", () => {
+test("9 site-wide map components all delegate to the shared BaseMap instead of rendering their own <TileLayer> (issue #476)", () => {
+  // issue #476 deleted each page's own duplicated basemap/TileLayer logic in favor
+  // of components/Map/BaseMap.tsx, which is the single place <TileLayer> (now the
+  // NLSC-primary/OSM-fallback pair from components/Map/tileConfig.ts) is allowed to
+  // appear for these 9 — superseding this test's old per-file OSM_TILE_URL check.
   const rootDir = process.cwd();
   const expectedFiles = [
     "components/HeritageMap/HeritageMapLeaflet.tsx",
@@ -120,12 +124,16 @@ test("9 OSM map components all import the shared OSM_TILE_URL / OSM_TILE_ATTRIBU
     assert.ok(fs.existsSync(fullPath), `Missing expected map component: ${relPath}`);
     const content = fs.readFileSync(fullPath, "utf-8");
     assert.ok(
-      content.includes('from "@/lib/constants/mapTiles"'),
-      `${relPath} must import the shared tile constants from lib/constants/mapTiles`
+      content.includes('from "@/components/Map/BaseMap"'),
+      `${relPath} must delegate its basemap/clustering/list-toggle to the shared BaseMap component`
     );
     assert.ok(
-      content.includes("<TileLayer") && content.includes("OSM_TILE_URL"),
-      `${relPath} must use OSM_TILE_URL on its <TileLayer>`
+      !content.includes("<TileLayer"),
+      `${relPath} must not render its own <TileLayer> — that's now BaseMap's job exclusively`
+    );
+    assert.ok(
+      !content.includes('from "@/lib/constants/mapTiles"'),
+      `${relPath} must not import the old single-basemap OSM tile constants anymore`
     );
   }
 });
