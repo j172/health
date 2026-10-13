@@ -868,20 +868,61 @@ jobs:
       # and therefore no exposure to this Cloudflare block. They stay in this
       # deploy step too, harmlessly, as a same-day head start ahead of the
       # first cron tick.
+      # 2026-10-13: every step below this point POSTs to an /api/admin/*
+      # endpoint on https://health.j172.tw. #455's first-ever full live
+      # rollout of the Cloudflare WAF/bot ruleset made Cloudflare start
+      # challenge-paging ("Just a moment...") this runner's traffic to those
+      # endpoints — the same failure mode issue #156 and six-monthly-sync.yml
+      # already hit and fixed. Reusing that exact fix here instead of
+      # inventing a new one: scripts/lib/ssh-bridge.mjs runs a local HTTP
+      # server on 127.0.0.1:18080 that forwards each request as a remote curl
+      # against the production host's own 127.0.0.1:3000 over SSH, bypassing
+      # Cloudflare (and the blocked `ssh -L` tunnel, see the bridge's own
+      # comment) entirely. Every step from here on points HEALTH_BASE_URL (or
+      # its one inline curl) at that local bridge instead of the public
+      # domain — no import script itself needed to change.
+      - name: Start SSH loopback bridge
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          KEY_FILE="$RUNNER_TEMP/deploy_key"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+
+          SSH_KEY_FILE="$KEY_FILE" \
+          SSH_HOST="$SSH_HOST" \
+          SSH_PORT="$SSH_PORT" \
+          SSH_USER="$SSH_USER" \
+          PORT=18080 \
+          node scripts/lib/ssh-bridge.mjs &
+          echo $! > "$RUNNER_TEMP/bridge.pid"
+
+          echo "Waiting for ssh-bridge to listen on 127.0.0.1:18080..."
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/healthz >/dev/null 2>&1; then break; fi
+            sleep 0.2
+          done
+          curl -fsS http://127.0.0.1:18080/healthz
+          echo "SSH loopback bridge ready on 127.0.0.1:18080."
+
       - name: Sync culture shows
         continue-on-error: true
         timeout-minutes: 3
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
         run: |
-          curl -fsS -X POST "https://health.j172.tw/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
+          curl -fsS -X POST "http://127.0.0.1:18080/api/admin/culture-sync?type=shows" -H "x-rss-sync-admin-secret: $ADMIN_SECRET"
 
       - name: Import public art
         continue-on-error: true
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-public-art.mjs
 
       - name: Import green hotels (gp_p_43 + epr_p_02)
@@ -889,7 +930,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-green-hotels.mjs
 
@@ -898,7 +939,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-green-products.mjs
 
@@ -907,7 +948,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-carbon-footprint-products.mjs
 
@@ -916,7 +957,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-cool-spots.mjs
 
@@ -925,7 +966,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-iaq-premises.mjs
 
@@ -934,7 +975,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-cleaning-squads.mjs
 
@@ -943,7 +984,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-carbon-footprint-coefficients.mjs
 
@@ -952,7 +993,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
           MOENV_GP_API_KEY: ${{ secrets.MOENV_GP_API_KEY }}
         run: node scripts/import-moenv-aqx.mjs
 
@@ -961,7 +1002,7 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-wra-water-level.mjs
 
       - name: Import WRA reservoir status
@@ -969,8 +1010,16 @@ jobs:
         timeout-minutes: 5
         env:
           ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          HEALTH_BASE_URL: https://health.j172.tw
+          HEALTH_BASE_URL: http://127.0.0.1:18080
         run: node scripts/import-wra-reservoir-status.mjs
+
+      - name: Stop SSH loopback bridge
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/bridge.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/bridge.pid")" 2>/dev/null || true
+          fi
+          rm -f "$RUNNER_TEMP/deploy_key"
 
       # cool-spots/iaq-premises/cleaning-squads/green-restaurants (issues
       # #156, #163) each have their own daily in-process cron job
