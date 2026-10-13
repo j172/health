@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import SidebarWidgetShell from "./SidebarWidgetShell";
 import { useSidebarWidgetData } from "./useSidebarWidgetData";
-import { useGeolocation, getSavedLocation } from "@/components/Facilities/useGeolocation";
+import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
+import { getSavedLocation } from "@/components/Facilities/useGeolocation";
 
 export const TAIWAN_COUNTIES = [
   { name: "基隆市", lat: 25.1276, lng: 121.7392 },
@@ -119,7 +120,7 @@ function WeatherSvgIcon({ condition }: { condition: string | null }) {
 }
 
 export default function LocalWeatherSvgWidget() {
-  const geo = useGeolocation();
+  const geolocation = useSharedGeolocation();
   const [selectedCounty, setSelectedCounty] = useState<string>("auto");
 
   useEffect(() => {
@@ -129,22 +130,27 @@ export default function LocalWeatherSvgWidget() {
     }
   }, []);
 
+  // 手動選擇縣市優先；"auto" 時用 GPS 座標，拒絕/逾時/不支援時為 null——不會
+  // 再像舊版一樣悄悄套用臺北101，而是讓下方永遠可見的縣市選單（本頁原本就
+  // 有）成為明確的手動選擇入口。
   const activeCoords = useMemo(() => {
     const found = TAIWAN_COUNTIES.find((c) => c.name === selectedCounty);
-    return selectedCounty !== "auto" && found ? found : { lat: geo.lat, lng: geo.lng };
-  }, [selectedCounty, geo.lat, geo.lng]);
+    if (selectedCounty !== "auto" && found) return { lat: found.lat, lng: found.lng };
+    return geolocation.coords;
+  }, [selectedCounty, geolocation.coords]);
 
   const { status, data: weather, isRefreshing, refresh } = useSidebarWidgetData<StationWeather>({
-    buildUrl: () => `/api/weather-nearby?lat=${activeCoords.lat}&lng=${activeCoords.lng}`,
+    buildUrl: () => (activeCoords ? `/api/weather-nearby?lat=${activeCoords.lat}&lng=${activeCoords.lng}` : null),
     parse: (json) => {
       if (!json?.stationWeather) throw new Error("No stationWeather in /api/weather-nearby response");
       return json.stationWeather as StationWeather;
     },
-    deps: [activeCoords.lat, activeCoords.lng],
+    deps: [activeCoords?.lat, activeCoords?.lng],
   });
 
+  const needsManualSelection = selectedCounty === "auto" && geolocation.needsManualSelection;
   const hasError = status === "error";
-  const showSpinner = status === "loading" && !weather;
+  const showSpinner = status === "loading" && !weather && !needsManualSelection;
 
   // 定期自動刷新：使用者若開著頁面沒有互動（不改變地理座標、不切換縣市），
   // 上面依座標變化觸發的 effect 不會再被觸發，畫面會停留在打開當下那一刻的
@@ -163,7 +169,7 @@ export default function LocalWeatherSvgWidget() {
       try {
         localStorage.removeItem("user_selected_location");
       } catch {}
-      geo.refresh();
+      geolocation.refresh();
       return;
     }
 
@@ -172,9 +178,6 @@ export default function LocalWeatherSvgWidget() {
       try {
         localStorage.setItem("user_selected_location", JSON.stringify(found));
       } catch {}
-      window.dispatchEvent(
-        new CustomEvent("user-location-change", { detail: { lat: found.lat, lng: found.lng } }),
-      );
       // activeCoords 會因 selectedCounty 改變而重新計算，共用 hook 的 mount
       // effect 會偵測到 deps 變化並自動重新抓取，不需要在這裡手動呼叫。
     }
@@ -182,7 +185,7 @@ export default function LocalWeatherSvgWidget() {
 
   const handleRefresh = () => {
     if (selectedCounty === "auto") {
-      geo.refresh();
+      geolocation.refresh();
     } else {
       refresh();
     }
@@ -192,74 +195,89 @@ export default function LocalWeatherSvgWidget() {
     ? `${weather.county_name || ""}${weather.town_name || ""} (${weather.station_name || "即時測站"})`
     : "在地區域天氣";
 
-  return (
-    <SidebarWidgetShell
-      dotColorClass="bg-amber-500"
-      title="📍 即時在地天氣"
-      onRefresh={handleRefresh}
-      refreshing={isRefreshing || geo.refreshing}
-      showSpinner={showSpinner}
-      hasData={Boolean(weather)}
-      hasError={hasError}
-      emptyMessage="暫無測站即時天氣觀測資料"
-      errorMessage="載入失敗，無法取得即時天氣觀測"
-      footerHref="/tools/weather-alerts"
-      footerLabel="查詢全台即時降雨與測站 →"
-    >
-      {weather && (
-        <div>
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-                  {weather.air_temperature ? `${weather.air_temperature}°C` : "即時觀測"}
-                </span>
-                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                  {weather.weather || "舒適晴朗"}
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
-                {locationTitle} · 距離約 {weather.distance_km.toFixed(1)}km
-              </p>
-              {weather.precipitation && Number(weather.precipitation) > 0 && (
-                <p className="mt-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
-                  🌧️ 時雨量：{weather.precipitation} mm
-                </p>
-              )}
-            </div>
-            <div className="flex shrink-0 items-center justify-center">
-              <WeatherSvgIcon condition={weather.weather} />
-            </div>
-          </div>
+  // 縣市選單必須永遠可見、不受 hasData 影響（SidebarWidgetShell 在
+  // hasData=false 時完全不渲染 children）——否則定位拒絕/逾時時，使用者會卡
+  // 在「沒有資料可顯示」又看不到手動選擇縣市的入口的死胡同。這正是本票要求
+  // 的「明確提示手動選擇地點」：這裡不需要另外再加一個 CountyDistrictPicker
+  // ，本頁原本就有這個涵蓋全 22 縣市的選單。
+  const countySelector = (
+    <div className="mt-2.5 flex items-center justify-between gap-1 border-t border-slate-100 pt-2 dark:border-slate-800">
+      <div className="flex items-center gap-1.5">
+        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">切換地區：</span>
+        <select
+          aria-label="選擇所在縣市"
+          value={selectedCounty}
+          onChange={(e) => handleCountyChange(e.target.value)}
+          className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-700 hover:border-amber-400 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+        >
+          <option value="auto">🎯 GPS 自動定位</option>
+          {TAIWAN_COUNTIES.map((c) => (
+            <option key={c.name} value={c.name}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      {needsManualSelection && (
+        <span className="text-[10px] text-amber-600 dark:text-amber-400" title="未能取得您的定位，請改選縣市">
+          （未能定位，請改選縣市）
+        </span>
+      )}
+    </div>
+  );
 
-          <div className="mt-2.5 flex items-center justify-between gap-1 border-t border-slate-100 pt-2 dark:border-slate-800">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">切換地區：</span>
-              <select
-                aria-label="選擇所在縣市"
-                value={selectedCounty}
-                onChange={(e) => handleCountyChange(e.target.value)}
-                className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-semibold text-slate-700 hover:border-amber-400 focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-              >
-                <option value="auto">🎯 GPS 自動定位</option>
-                {TAIWAN_COUNTIES.map((c) => (
-                  <option key={c.name} value={c.name}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+  return (
+    <div>
+      <SidebarWidgetShell
+        dotColorClass="bg-amber-500"
+        title="📍 即時在地天氣"
+        onRefresh={handleRefresh}
+        refreshing={isRefreshing || geolocation.status === "locating" || geolocation.status === "awaiting-permission"}
+        showSpinner={showSpinner}
+        hasData={Boolean(weather)}
+        hasError={hasError}
+        emptyMessage="暫無測站即時天氣觀測資料"
+        errorMessage="載入失敗，無法取得即時天氣觀測"
+        footerHref="/tools/weather-alerts"
+        footerLabel="查詢全台即時降雨與測站 →"
+      >
+        {weather && (
+          <div>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+                    {weather.air_temperature ? `${weather.air_temperature}°C` : "即時觀測"}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    {weather.weather || "舒適晴朗"}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">
+                  {locationTitle} · 距離約 {weather.distance_km.toFixed(1)}km
+                </p>
+                {weather.precipitation && Number(weather.precipitation) > 0 && (
+                  <p className="mt-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400">
+                    🌧️ 時雨量：{weather.precipitation} mm
+                  </p>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center justify-center">
+                <WeatherSvgIcon condition={weather.weather} />
+              </div>
             </div>
-            {geo.isDefault && selectedCounty === "auto" && (
-              <span className="text-[10px] text-amber-600 dark:text-amber-400" title="定位權限未開啟，顯示臺北101">
-                (顯示臺北101)
-              </span>
+
+            {countySelector}
+            {hasError && (
+              <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">重新整理失敗，顯示的可能是過期資料</p>
             )}
           </div>
-          {hasError && (
-            <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">重新整理失敗，顯示的可能是過期資料</p>
-          )}
-        </div>
-      )}
-    </SidebarWidgetShell>
+        )}
+      </SidebarWidgetShell>
+      {/* SidebarWidgetShell 在 hasData=false 時不會渲染 children，所以還沒有
+          weather 資料時，縣市選單改在這裡（shell 外面）渲染，確保拒絕/逾時/
+          不支援時使用者一定看得到手動選擇縣市的入口。 */}
+      {!weather && countySelector}
+    </div>
   );
 }

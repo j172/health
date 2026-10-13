@@ -4,8 +4,10 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import type { ContraceptionPoint } from "./ContraceptionMapLeaflet";
-import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
@@ -52,7 +54,16 @@ const COUNTY_COORDINATES: Record<string, [number, number]> = {
 
 export default function ContraceptionMapContent() {
   const { locale } = useLanguage();
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
+  const locationRefreshing = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
   const [points, setPoints] = useState<ContraceptionPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,8 +129,8 @@ export default function ContraceptionMapContent() {
     if (selectedCounty !== "全部縣市" && COUNTY_COORDINATES[selectedCounty]) {
       return COUNTY_COORDINATES[selectedCounty];
     }
-    return [location.lat ?? GEO_DEFAULTS.lat, location.lng ?? GEO_DEFAULTS.lng];
-  }, [selectedCounty, location.lat, location.lng]);
+    return [effectiveCoords?.lat ?? GEO_DEFAULTS.lat, effectiveCoords?.lng ?? GEO_DEFAULTS.lng];
+  }, [selectedCounty, effectiveCoords]);
 
   const mapZoom = selectedCounty === "全部縣市" ? 13 : 12;
 
@@ -141,7 +152,15 @@ export default function ContraceptionMapContent() {
         </p>
       </div>
 
-      <MapLocationBanner location={location} facilityTypeName="避孕諮詢診所與藥局" />
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        facilityTypeName="避孕諮詢診所與藥局"
+      />
 
       {/* Filter controls */}
       <div className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-3.5 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
@@ -261,28 +280,34 @@ export default function ContraceptionMapContent() {
       {/* Main content display */}
       {viewMode === "map" ? (
         <div className="relative h-[65vh] min-h-[450px] w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-slate-800">
-          <button
-            type="button"
-            onClick={() => location.refresh()}
-            disabled={location.refreshing}
-            className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-sky-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-sky-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
-            title="重新取得精準定位並移至我的位置"
-          >
-            <span>🎯</span>
-            <span>{location.refreshing ? "定位中…" : "我的位置"}</span>
-          </button>
-          {loading ? (
-            <div className="flex h-full items-center justify-center">
-              <LoadingOrb />
-            </div>
+          {!effectiveCoords ? (
+            <MapPendingPlaceholder geolocation={geolocation} />
           ) : (
-            <ContraceptionMapLeaflet
-              key={`${selectedCounty}-${selectedCategory}-${mapCenter.join(",")}`}
-              points={filteredPoints}
-              userLocation={location}
-              center={mapCenter}
-              zoom={mapZoom}
-            />
+            <>
+              <button
+                type="button"
+                onClick={() => geolocation.refresh()}
+                disabled={locationRefreshing}
+                className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-sky-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-sky-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
+                title="重新取得精準定位並移至我的位置"
+              >
+                <span>🎯</span>
+                <span>{locationRefreshing ? "定位中…" : "我的位置"}</span>
+              </button>
+              {loading ? (
+                <div className="flex h-full items-center justify-center">
+                  <LoadingOrb />
+                </div>
+              ) : (
+                <ContraceptionMapLeaflet
+                  key={`${selectedCounty}-${selectedCategory}-${mapCenter.join(",")}`}
+                  points={filteredPoints}
+                  userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false }}
+                  center={mapCenter}
+                  zoom={mapZoom}
+                />
+              )}
+            </>
           )}
         </div>
       ) : (

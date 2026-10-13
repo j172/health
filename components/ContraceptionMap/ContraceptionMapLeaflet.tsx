@@ -45,7 +45,7 @@ export interface ContraceptionPoint {
 }
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 
 export interface ContraceptionMapProps {
   points: ContraceptionPoint[];

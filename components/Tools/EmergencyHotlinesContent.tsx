@@ -4,7 +4,7 @@ import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { HotlineRecord } from "@/lib/server/hotlines/hotlinesQueries";
 import { COUNTY_1999_LIST, type County1999Info } from "@/lib/server/hotlines/county1999";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
 
 interface Props {
   initialHotlines: HotlineRecord[];
@@ -59,16 +59,18 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
   const [selectedCountyCode, setSelectedCountyCode] = useState("TPE");
   const [copiedNumber, setCopiedNumber] = useState<string | null>(null);
 
-  const geo = useGeolocation();
+  const geolocation = useSharedGeolocation();
 
-  // Auto-select nearest county on GPS resolution if not default
+  // Auto-select nearest county on GPS resolution (never on a guessed default
+  // — issue #478: geolocation.coords is only non-null for a real GPS fix).
   useEffect(() => {
-    if (!geo.loading && !geo.isDefault && geo.lat && geo.lng) {
+    if (geolocation.coords) {
+      const { lat, lng } = geolocation.coords;
       let closestCode = "TPE";
       let minDistance = Infinity;
 
       for (const [code, pos] of Object.entries(COUNTY_CENTROIDS)) {
-        const d = (geo.lat - pos.lat) ** 2 + (geo.lng - pos.lng) ** 2;
+        const d = (lat - pos.lat) ** 2 + (lng - pos.lng) ** 2;
         if (d < minDistance) {
           minDistance = d;
           closestCode = code;
@@ -78,7 +80,7 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
         setSelectedCountyCode(closestCode);
       });
     }
-  }, [geo.loading, geo.isDefault, geo.lat, geo.lng]);
+  }, [geolocation.coords]);
 
   const selectedCounty: County1999Info = useMemo(() => {
     return (
@@ -316,13 +318,24 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
 
           <button
             type="button"
-            onClick={() => geo.refresh()}
+            onClick={() => geolocation.refresh()}
             className="inline-flex items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
           >
             <span>📍</span>
-            <span>{geo.loading ? "定位中..." : "重新自動定位縣市"}</span>
+            <span>
+              {geolocation.status === "locating" || geolocation.status === "awaiting-permission"
+                ? "定位中..."
+                : "重新自動定位縣市"}
+            </span>
           </button>
         </div>
+
+        {/* 拒絕/逾時/不支援時的明確提示——不需要另外加選擇器，下方本來就有涵蓋全 22 縣市的快選晶片 */}
+        {geolocation.needsManualSelection && (
+          <p className="mt-2 text-[11px] text-amber-600 dark:text-amber-400">
+            未能取得您的定位，請於下方自行點選所在縣市。
+          </p>
+        )}
 
         {/* County Chip Selector */}
         <div className="mt-4 flex flex-wrap gap-1.5">

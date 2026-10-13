@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import type { YouBikeStation } from "@/lib/server/youbike/types";
-import { useGeolocation, GEO_DEFAULTS } from "@/components/Facilities/useGeolocation";
+import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
@@ -55,7 +57,13 @@ export default function YoubikeContent({
   initialStations?: YouBikeStation[];
 }) {
   const { locale } = useLanguage();
-  const location = useGeolocation();
+  const geolocation = useSharedGeolocation();
+  const locationPending = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
+  // 雙軌即時渲染（延續既有行為）：還沒有 GPS 座標時先以臺北101為暫時中心點
+  // 立即顯示站點，不讓使用者乾等 GPS 授權彈窗；GPS 座標一旦到位就會接手。拒
+  // 絕/逾時/不支援時下方 MapLocationBanner 會指向上面既有的縣市分類頁籤，不
+  // 會讓使用者誤以為臺北101就是他的位置。
+  const mapOrigin = geolocation.coords ?? GEO_DEFAULTS;
   const [stations, setStations] = useState<YouBikeStation[]>(initialStations);
   const [loading, setLoading] = useState(false);
   const [selectedCity, setSelectedCity] = useState("");
@@ -93,35 +101,42 @@ export default function YoubikeContent({
     []
   );
 
-  // 雙軌即時渲染：初次載入立即以當前座標（預設或即時）發起查詢，不用乾等 GPS 授權視窗
+  // 雙軌即時渲染：初次載入立即以當前座標（GPS 或臺北101）發起查詢，不用乾等 GPS 授權視窗
   useEffect(() => {
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true;
-      fetchStations({
-        city: selectedCity,
-        kw: keyword,
-        lat: location.lat || GEO_DEFAULTS.lat,
-        lng: location.lng || GEO_DEFAULTS.lng,
-      });
-      return;
-    }
+    // Deferred via queueMicrotask (see lib/hooks/useSharedGeolocation.ts's
+    // own mount effect / docs/archive/specs/set-state-in-effect-fix.md,
+    // issue #121/#122): fetchStations() calls setState synchronously, which
+    // trips react-hooks/set-state-in-effect when called directly from an
+    // effect body.
+    queueMicrotask(() => {
+      if (!initialFetchDone.current) {
+        initialFetchDone.current = true;
+        fetchStations({
+          city: selectedCity,
+          kw: keyword,
+          lat: mapOrigin.lat,
+          lng: mapOrigin.lng,
+        });
+        return;
+      }
 
-    // 若使用者未手動選擇特定縣市或關鍵字，且 GPS 座標更新了，則平滑刷新周圍站點
-    if (!selectedCity && !keyword && location.lat && location.lng) {
-      fetchStations({
-        lat: location.lat,
-        lng: location.lng,
-      });
-    }
-  }, [location.lat, location.lng, selectedCity, keyword, fetchStations]);
+      // 若使用者未手動選擇特定縣市或關鍵字，且 GPS 座標更新了，則平滑刷新周圍站點
+      if (!selectedCity && !keyword && geolocation.coords) {
+        fetchStations({
+          lat: geolocation.coords.lat,
+          lng: geolocation.coords.lng,
+        });
+      }
+    });
+  }, [geolocation.coords, selectedCity, keyword, fetchStations, mapOrigin]);
 
   const handleCityChange = (cityCode: string) => {
     setSelectedCity(cityCode);
     fetchStations({
       city: cityCode,
       kw: keyword,
-      lat: cityCode ? undefined : location.lat,
-      lng: cityCode ? undefined : location.lng,
+      lat: cityCode ? undefined : mapOrigin.lat,
+      lng: cityCode ? undefined : mapOrigin.lng,
     });
   };
 
@@ -130,19 +145,19 @@ export default function YoubikeContent({
     fetchStations({
       city: selectedCity,
       kw: keyword,
-      lat: selectedCity ? undefined : location.lat,
-      lng: selectedCity ? undefined : location.lng,
+      lat: selectedCity ? undefined : mapOrigin.lat,
+      lng: selectedCity ? undefined : mapOrigin.lng,
     });
   };
 
   const handleLocateMe = () => {
     setSelectedCity("");
-    location.refresh();
+    geolocation.refresh();
     fetchStations({
       city: "",
       kw: keyword,
-      lat: location.lat,
-      lng: location.lng,
+      lat: mapOrigin.lat,
+      lng: mapOrigin.lng,
     });
   };
 
@@ -174,33 +189,24 @@ export default function YoubikeContent({
 
             <button
               onClick={handleLocateMe}
-              disabled={location.loading || location.refreshing}
+              disabled={locationPending}
               className="flex items-center gap-1.5 rounded-xl bg-yellow-500 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-yellow-600 disabled:opacity-50"
             >
               <span>🧭</span>
-              {location.loading || location.refreshing
+              {locationPending
                 ? "定位中..."
-                : location.isDefault
+                : !geolocation.coords
                 ? "以 101 為中心 (點擊重測)"
                 : "已定位 (點擊重測)"}
             </button>
           </div>
 
-          {/* 臺北 101 降級友善提示 */}
-          {!location.loading && location.isDefault && (
-            <div className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 px-3.5 py-2 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-              <span className="flex items-center gap-1.5">
-                <span>📍</span>
-                <span>定位權限未開啟或逾時，目前已自動切換至<strong>臺北 101</strong>周邊 3 公里站點。</span>
-              </span>
-              <button
-                onClick={handleLocateMe}
-                className="font-bold underline transition hover:text-amber-950 dark:hover:text-amber-100"
-              >
-                重試定位
-              </button>
-            </div>
-          )}
+          <MapLocationBanner
+            geolocation={geolocation}
+            hasManualCoords={Boolean(selectedCity)}
+            showPicker={false}
+            facilityTypeName="YouBike 站點"
+          />
 
           {/* City Selection Tabs */}
           <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -237,8 +243,8 @@ export default function YoubikeContent({
                     fetchStations({
                       city: selectedCity,
                       kw: "",
-                      lat: selectedCity ? undefined : location.lat,
-                      lng: selectedCity ? undefined : location.lng,
+                      lat: selectedCity ? undefined : mapOrigin.lat,
+                      lng: selectedCity ? undefined : mapOrigin.lng,
                     });
                   }}
                   className="absolute right-3 top-2.5 text-xs text-slate-600 hover:text-slate-600"
@@ -302,7 +308,7 @@ export default function YoubikeContent({
           <span>
             共找到 <strong className="text-slate-800 dark:text-slate-200">{filteredStations.length}</strong> 個站點
           </span>
-          {!selectedCity && !location.loading && (
+          {!selectedCity && !locationPending && (
             <span className="text-emerald-600 dark:text-emerald-400">已依距離由近到遠排序</span>
           )}
         </div>

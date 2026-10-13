@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type {
   InundationSensorItem,
@@ -81,7 +82,16 @@ const FALLBACK_INUNDATION_DATA: InundationMapOverview = {
 };
 
 export default function InundationMapContent() {
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
+  const locationRefreshing = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
   const [data, setData] = useState<InundationMapOverview | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
@@ -164,7 +174,15 @@ export default function InundationMapContent() {
         </div>
       </div>
 
-      <MapLocationBanner location={location} facilityTypeName="低窪積淹水測站與避難所" />
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        facilityTypeName="低窪積淹水測站與避難所"
+      />
 
       {/* 摘要概況卡片 */}
       {data?.summary && (
@@ -272,11 +290,15 @@ export default function InundationMapContent() {
               </span>
             </div>
             <div className="h-[380px] sm:h-[480px] w-full overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-              <InundationMapLeaflet
-                sensors={data?.sensors || []}
-                shelters={data?.shelters || []}
-                userLocation={location}
-              />
+              {!effectiveCoords ? (
+                <MapPendingPlaceholder geolocation={geolocation} />
+              ) : (
+                <InundationMapLeaflet
+                  sensors={data?.sensors || []}
+                  shelters={data?.shelters || []}
+                  userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false, refresh: geolocation.refresh, refreshing: locationRefreshing }}
+                />
+              )}
             </div>
           </div>
 

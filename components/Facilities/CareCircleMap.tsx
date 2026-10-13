@@ -2,8 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import type { MapMarker } from "@/components/Facilities/FacilityMap";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
+import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
@@ -74,7 +76,15 @@ export default function CareCircleMap({
   /** Short noun for the count/prompt copy, e.g. "長照機構", "伯公照護站". */
   resourceNoun: string;
 }) {
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
   const [radiusKm, setRadiusKm] = useState<CareCircleRadiusKm>(3);
   const [count, setCount] = useState<number | null>(null);
   const [markers, setMarkers] = useState<MapMarker[]>([]);
@@ -82,6 +92,7 @@ export default function CareCircleMap({
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (!effectiveCoords) return;
     let cancelled = false;
 
     (async () => {
@@ -89,8 +100,8 @@ export default function CareCircleMap({
         setLoading(true);
         const params = new URLSearchParams({
           type: facilityType,
-          lat: String(location.lat),
-          lng: String(location.lng),
+          lat: String(effectiveCoords.lat),
+          lng: String(effectiveCoords.lng),
           radius: String(radiusKm * 1000),
           sort: "distance",
           limit: String(CARE_CIRCLE_FETCH_LIMIT),
@@ -123,7 +134,7 @@ export default function CareCircleMap({
     return () => {
       cancelled = true;
     };
-  }, [facilityType, radiusKm, location.lat, location.lng]);
+  }, [facilityType, radiusKm, effectiveCoords]);
 
   const nextWiderRadiusKm = CARE_CIRCLE_RADII_KM.find((r) => r > radiusKm);
   const showWidenPrompt = !loading && !error && count === 0 && nextWiderRadiusKm !== undefined;
@@ -155,12 +166,22 @@ export default function CareCircleMap({
         </div>
 
         <div className="text-sm font-semibold text-indigo-900 dark:text-indigo-200" aria-live="polite">
-          {loading ? "計算中…" : error ? "計算失敗" : `圈內有 ${count ?? 0} 個${resourceNoun}`}
+          {!effectiveCoords ? "等待定位…" : loading ? "計算中…" : error ? "計算失敗" : `圈內有 ${count ?? 0} 個${resourceNoun}`}
         </div>
       </div>
 
       {/* 固定附註：直線距離，非實際車程（issue #484 要求貼近半徑控制元件，不可被埋藏） */}
       <p className="text-xs text-indigo-700 dark:text-indigo-300">ⓘ {CARE_CIRCLE_DISCLAIMER}</p>
+
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        facilityTypeName={resourceNoun}
+      />
 
       {showWidenPrompt && (
         <p className="rounded-xl bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
@@ -173,13 +194,22 @@ export default function CareCircleMap({
         </p>
       )}
 
-      {error ? (
+      {!effectiveCoords ? (
+        <div className="h-[320px] overflow-hidden rounded-xl border border-indigo-100 dark:border-indigo-900/60">
+          <MapPendingPlaceholder geolocation={geolocation} />
+        </div>
+      ) : error ? (
         <div className="rounded-xl bg-red-50 p-3 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
           照顧圈計算失敗，請稍後再試。
         </div>
       ) : (
         <div className="h-[320px] overflow-hidden rounded-xl border border-indigo-100 dark:border-indigo-900/60">
-          <FacilityMap userLocation={location} markers={markers} radiusMeters={radiusKm * 1000} showRadius />
+          <FacilityMap
+            userLocation={{ lat: effectiveCoords.lat, lng: effectiveCoords.lng, isDefault: false, refresh: geolocation.refresh }}
+            markers={markers}
+            radiusMeters={radiusKm * 1000}
+            showRadius
+          />
         </div>
       )}
     </div>

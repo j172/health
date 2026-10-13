@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -48,7 +48,15 @@ const FALLBACK_DATA: WaterOutagesOverview = {
 
 export default function WaterOutagesContent() {
   const { locale } = useLanguage();
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
   const [data, setData] = useState<WaterOutagesOverview>(FALLBACK_DATA);
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"active" | "scheduled" | "stations">("active");
@@ -89,7 +97,15 @@ export default function WaterOutagesContent() {
   return (
     <div className="space-y-6">
       {/* Location banner */}
-      <MapLocationBanner location={location} className="mb-2" />
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        className="mb-2"
+      />
 
       {/* Header Summary Statistics */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -218,7 +234,7 @@ export default function WaterOutagesContent() {
         <LeafletMap
           outages={data.activeOutages}
           waterStations={data.waterStations}
-          userLocation={!location.isDefault ? { lat: location.lat, lng: location.lng } : undefined}
+          userLocation={effectiveCoords ?? undefined}
         />
       </div>
 

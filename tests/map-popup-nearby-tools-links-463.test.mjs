@@ -145,11 +145,11 @@ test("useGeolocation.ts: re-exports the override type + client-side parser for e
 // The 3 target tool pages/components actually thread the override through.
 // ---------------------------------------------------------------------------
 
-test("AedContent.tsx: reads ?lat=&lng= via useSearchParams and passes it into useGeolocation", () => {
+test("AedContent.tsx: reads ?lat=&lng= via useSearchParams and passes it into useLocationWithManualFallback (issue #478: migrated off the old per-call-site useGeolocation hook onto the shared one, which still skips browser geolocation entirely when a valid override is present)", () => {
   const src = read("components/Tools/AedContent.tsx");
   assert.match(src, /import\s*\{\s*useSearchParams\s*\}\s*from\s*["']next\/navigation["']/);
   assert.match(src, /parseGeolocationOverrideFromSearchParams\(searchParams\)/);
-  assert.match(src, /useGeolocation\(locationOverride\)/);
+  assert.match(src, /useLocationWithManualFallback\(locationOverride\)/);
 });
 
 test("app/tools/aed/page.tsx: wraps AedContent in a Suspense boundary (required by useSearchParams in the App Router)", () => {
@@ -158,12 +158,13 @@ test("app/tools/aed/page.tsx: wraps AedContent in a Suspense boundary (required 
   assert.match(src, /<Suspense>\s*\n\s*<AedContent \/>\s*\n\s*<\/Suspense>/);
 });
 
-test("FacilitySearchContent.tsx: accepts a locationOverride prop and passes it into useGeolocation (no useSearchParams() of its own — shared by 30+ unrelated /tools pages)", () => {
+test("FacilitySearchContent.tsx: accepts a locationOverride prop and uses it to skip the shared geolocation hook's browser-geolocation effect entirely (issue #478: migrated off the old per-call-site useGeolocation hook; no useSearchParams() of its own — shared by 30+ unrelated /tools pages)", () => {
   const src = read("components/Facilities/FacilitySearchContent.tsx");
   assert.doesNotMatch(src, /from ["']next\/navigation["']/);
   assert.match(src, /locationOverride\s*=\s*null,?\s*\n\}:\s*\{/);
   assert.match(src, /locationOverride\?:\s*GeolocationOverride \| null;/);
-  assert.match(src, /useGeolocation\(locationOverride\)/);
+  assert.match(src, /const hasOverride = isValidGeolocationOverride\(locationOverride\);/);
+  assert.match(src, /useSharedGeolocation\(\{\s*skip:\s*hasOverride\s*\}\)/);
 });
 
 test("app/tools/pharmacies/page.tsx: server component resolves ?lat=&lng= from its own searchParams prop and forwards it", () => {

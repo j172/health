@@ -1,20 +1,55 @@
 "use client";
 
 import React from "react";
-import type { GeoLocation } from "@/components/Facilities/useGeolocation";
+import type { SharedGeolocationResult } from "@/lib/hooks/useSharedGeolocation";
+import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 
+/**
+ * issue #478（母票 #438 §K）：重寫自舊版 `MapLocationBanner`（曾吃
+ * `components/Facilities/useGeolocation.ts` 的 `GeoLocation` 形狀，拒絕/逾時
+ * 時顯示「目前顯示預設位置：臺北101」並靜默套用那個座標畫地圖——正是這次改版
+ * 要修掉的 bug class）。現在改吃 `useSharedGeolocation()`/
+ * `useLocationWithManualFallback()` 的形狀：拒絕/逾時/不支援時一律顯示「請手
+ * 動選擇縣市」，絕不自己套用任何座標。
+ */
 export interface MapLocationBannerProps {
-  location: GeoLocation;
+  geolocation: SharedGeolocationResult;
+  /** 使用者是否已經手動選擇了縣市（取得可用的 fallback 座標）。 */
+  hasManualCoords?: boolean;
+  manualCounty?: string;
+  manualDistrict?: string;
+  onCountyChange?: (county: string) => void;
+  onDistrictChange?: (district: string) => void;
+  /**
+   * 預設 true：在這個橫幅裡內嵌一個 `CountyDistrictPicker`。頁面本身已經有
+   * 自己的縣市／鄉鎮篩選器時（例如 `FacilitySearchContent` 的「地區快篩」），
+   * 設為 false 避免畫面上出現兩個重複的縣市選單——文字說明仍會指向頁面上既有
+   * 的那一個。
+   */
+  showPicker?: boolean;
   className?: string;
   facilityTypeName?: string; // e.g. "AED", "避難收容處所"
 }
 
+function manualSelectionReason(status: SharedGeolocationResult["status"]): string {
+  if (status === "denied") return "您已拒絕定位授權。";
+  if (status === "timeout") return "定位逾時，無法取得您目前的位置。";
+  if (status === "unsupported") return "您的瀏覽器不支援定位功能。";
+  return "無法取得您目前的位置。";
+}
+
 export default function MapLocationBanner({
-  location,
+  geolocation,
+  hasManualCoords = false,
+  manualCounty = "",
+  manualDistrict = "",
+  onCountyChange,
+  onDistrictChange,
+  showPicker = true,
   className = "",
   facilityTypeName = "周邊設施",
 }: MapLocationBannerProps) {
-  const { isDefault, loading, refreshing, awaitingPermission, refresh } = location;
+  const { status, awaitingPermission, needsManualSelection, refresh } = geolocation;
 
   // 1. 正在等待瀏覽器原生彈窗確認
   if (awaitingPermission) {
@@ -34,46 +69,69 @@ export default function MapLocationBanner({
     );
   }
 
-  // 2. 採用預設定位（臺北101）或定位失敗 / 權限遭拒
-  if (isDefault && !loading) {
+  // 2. 拒絕 / 逾時 / 不支援，且使用者尚未手動選擇縣市——明確提示手動選擇，絕不
+  //    靜默套用任何預設座標（這正是舊版 bug class：見檔案頂端說明）。
+  if (needsManualSelection && !hasManualCoords) {
     return (
       <div
-        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-xs text-amber-900 shadow-xs dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-200 ${className}`}
+        className={`space-y-3 rounded-xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-xs text-amber-900 shadow-xs dark:border-amber-800/80 dark:bg-amber-950/40 dark:text-amber-200 ${className}`}
       >
-        <div className="flex items-start sm:items-center gap-2.5">
+        <div className="flex items-start gap-2.5">
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white font-black text-xs">
             !
           </span>
-          <div className="leading-relaxed">
-            <span className="font-bold">尚未取得精準定位（目前顯示預設位置：臺北101）：</span>
-            <span className="text-amber-800 dark:text-amber-300">
-              建議開啟瀏覽器定位權限，以即時規劃最近的{facilityTypeName}與導航路線。
-            </span>
-          </div>
+          <p className="font-semibold leading-relaxed">
+            {manualSelectionReason(status)}
+            {showPicker ? `請改選您所在的縣市，以便查詢附近的${facilityTypeName}。` : `請使用上方的地區篩選，以便查詢附近的${facilityTypeName}。`}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {showPicker && onCountyChange && onDistrictChange && (
+            <CountyDistrictPicker
+              county={manualCounty}
+              district={manualDistrict}
+              onCountyChange={onCountyChange}
+              onDistrictChange={onDistrictChange}
+            />
+          )}
+          <button
+            type="button"
+            onClick={() => refresh()}
+            className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 font-bold text-amber-800 shadow-xs transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-900 dark:text-amber-200"
+          >
+            🔄 重新嘗試定位
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. 拒絕 / 逾時 / 不支援，但使用者已經手動選擇了縣市——明確標示這是手動選擇
+  //    的地區，不是 GPS 定位，同時仍提供「重新嘗試定位」切回 GPS 的路徑。
+  if (needsManualSelection && hasManualCoords) {
+    return (
+      <div
+        className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50/80 px-4 py-3 text-xs text-indigo-900 shadow-xs dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200 ${className}`}
+      >
+        <div className="flex items-start sm:items-center gap-2.5">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white text-xs">
+            📍
+          </span>
+          <p className="font-semibold leading-relaxed">目前顯示您選擇地區的{facilityTypeName}，並非即時 GPS 定位。</p>
         </div>
         <button
           type="button"
           onClick={() => refresh()}
-          disabled={refreshing}
-          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-amber-600 px-3.5 py-1.5 font-bold text-white shadow-xs transition-all hover:bg-amber-700 active:scale-95 disabled:opacity-50"
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95"
         >
-          {refreshing ? (
-            <>
-              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              <span>重新定位中…</span>
-            </>
-          ) : (
-            <>
-              <span>🎯 重新取得定位</span>
-            </>
-          )}
+          🎯 改用 GPS 重新定位
         </button>
       </div>
     );
   }
 
-  // 3. 已成功定位
-  if (!isDefault && !loading) {
+  // 4. 已成功取得 GPS 定位
+  if (status === "success") {
     return (
       <div
         className={`flex items-center justify-between gap-2 rounded-xl border border-emerald-200/80 bg-emerald-50/70 px-3.5 py-2 text-[11px] text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 ${className}`}
@@ -85,14 +143,14 @@ export default function MapLocationBanner({
         <button
           type="button"
           onClick={() => refresh()}
-          disabled={refreshing}
           className="text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 underline text-[11px] font-medium transition"
         >
-          {refreshing ? "重新整理中…" : "更新位置 ↻"}
+          更新位置 ↻
         </button>
       </div>
     );
   }
 
+  // 5. idle / locating：定位仍在進行中，呼叫端自行顯示「正在定位中」的狀態。
   return null;
 }

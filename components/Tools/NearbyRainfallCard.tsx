@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useGeolocation } from "@/components/Facilities/useGeolocation";
+import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
+import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import {
@@ -48,15 +49,24 @@ const LADDER: { key: keyof NearestRainfallStation; label: string }[] = [
 export default function NearbyRainfallCard() {
   // Both halves arrive in one response, so this resolves geolocation itself
   // rather than going through useNearestStation, which only surfaces `station`.
-  const location = useGeolocation();
+  const {
+    geolocation,
+    manualCounty,
+    manualDistrict,
+    setManualCounty,
+    setManualDistrict,
+    effectiveCoords,
+    hasManualCoords,
+  } = useLocationWithManualFallback();
   const [data, setData] = useState<{
     station: NearestRainfallStation | null;
     totals: RainfallAccumulationSummary | null;
   } | null>(null);
 
   useEffect(() => {
+    if (!effectiveCoords) return;
     let active = true;
-    fetchWithTimeout(`/api/rainfall/nearest?lat=${location.lat}&lng=${location.lng}`, { timeoutMs: 5000 })
+    fetchWithTimeout(`/api/rainfall/nearest?lat=${effectiveCoords.lat}&lng=${effectiveCoords.lng}`, { timeoutMs: 5000 })
       .then((res) => (res.ok ? res.json() : null))
       .then((body) => {
         if (active)
@@ -72,14 +82,13 @@ export default function NearbyRainfallCard() {
     return () => {
       active = false;
     };
-  }, [location.lat, location.lng]);
+  }, [effectiveCoords]);
 
   const station = data?.station ?? null;
   const totals = data?.totals ?? null;
-  const showSpinner = data === null && !station;
-  const isRefreshing = location.refreshing;
-  const isDefault = location.isDefault;
-  const refresh = location.refresh;
+  const showSpinner = Boolean(effectiveCoords) && data === null && !station;
+  const isRefreshing = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
+  const refresh = geolocation.refresh;
 
   return (
     <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800 dark:bg-slate-900">
@@ -110,11 +119,16 @@ export default function NearbyRainfallCard() {
         </button>
       </div>
 
-      {isDefault && !showSpinner ? (
-        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          未取得定位權限，目前顯示的是預設地點的雨量站。
-        </p>
-      ) : null}
+      <MapLocationBanner
+        geolocation={geolocation}
+        manualCounty={manualCounty}
+        manualDistrict={manualDistrict}
+        onCountyChange={setManualCounty}
+        onDistrictChange={setManualDistrict}
+        hasManualCoords={hasManualCoords}
+        className="mt-3"
+        facilityTypeName="雨量站"
+      />
 
       {showSpinner ? (
         <div className="flex justify-center py-10">
@@ -204,11 +218,11 @@ export default function NearbyRainfallCard() {
             </p>
           ) : null}
         </>
-      ) : (
+      ) : effectiveCoords ? (
         <p className="mt-5 rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-600 dark:bg-slate-800/60 dark:text-slate-400">
           附近三小時內查無回報的雨量站。
         </p>
-      )}
+      ) : null}
     </div>
   );
 }

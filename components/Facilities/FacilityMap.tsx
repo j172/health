@@ -3,7 +3,7 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { Circle, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import { GEO_DEFAULTS } from "./useGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
 
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";

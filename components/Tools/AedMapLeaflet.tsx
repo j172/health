@@ -6,7 +6,8 @@ import L from "leaflet";
 import { MapContainer, Marker, Popup, TileLayer, Circle } from "react-leaflet";
 import type { FacilityListItem } from "@/lib/server/facilities/queries";
 import MapViewController, { userLocationIcon } from "@/components/Common/MapViewController";
-import { GEO_DEFAULTS, type GeoLocation } from "@/components/Facilities/useGeolocation";
+import { GEO_DEFAULTS } from "@/lib/constants/geoDefaults";
+import type { MapUserLocation } from "@/lib/types/mapUserLocation";
 import { OSM_TILE_ATTRIBUTION, OSM_TILE_URL } from "@/lib/constants/mapTiles";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
@@ -52,7 +53,7 @@ const aedNormalIcon = createAedIcon(false);
 
 export interface AedMapLeafletProps {
   facilities: FacilityListItem[];
-  userLocation: GeoLocation;
+  userLocation: MapUserLocation;
   radiusMeters?: number;
   selectedAedId?: number | null;
   onSelectAed?: (id: number) => void;
@@ -200,7 +201,7 @@ export default function AedMapLeaflet({
       <div className="absolute top-3 right-3 z-[1000]">
         <button
           type="button"
-          onClick={() => userLocation.refresh()}
+          onClick={() => userLocation.refresh?.()}
           disabled={userLocation.refreshing}
           title="重新定位至我的位置"
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-md transition-all hover:bg-slate-50 active:scale-95 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
