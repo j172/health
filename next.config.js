@@ -71,11 +71,31 @@ const nextConfig = {
       // never actually served a translated page server-side (Googlebot
       // fetching `/tools/aed?lang=en` got back `<html lang="zh-Hant-TW">`
       // and Chinese content) — these permanently redirect to the real
-      // path-prefixed URL for the 3 pages that now have one. Each locale
+      // path-prefixed URL for every tool page that now has one. Each locale
       // needs its own `has` entry since Next.js redirect `has` matching is
-      // an exact query value match, not a wildcard.
+      // an exact query value match, not a wildcard. Issue #486 grew this
+      // list from the original 3 pilot slugs to the full medical/transport/
+      // weather/disaster batch — keep this array in lockstep with
+      // lib/i18n/translatedPages.ts's TRANSLATED_TOOL_SLUGS (a sibling
+      // ticket, #487, grows this same list further for its own disjoint
+      // page batch).
       ...["en", "ja", "ko"].flatMap((locale) =>
-        ["aed", "er-status", "emergency-hotlines"].map((slug) => ({
+        [
+          "aed",
+          "er-status",
+          "emergency-hotlines",
+          "clinics",
+          "pharmacies",
+          "public-toilets",
+          "youbike",
+          "metro-alerts",
+          "accessible-transit",
+          "weather-alerts",
+          "earthquakes",
+          "aqi",
+          "uv",
+          "disaster-map",
+        ].map((slug) => ({
           source: `/tools/${slug}`,
           has: [{ type: "query", key: "lang", value: locale }],
           destination: `/${locale}/tools/${slug}`,

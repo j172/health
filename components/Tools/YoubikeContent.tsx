@@ -12,8 +12,17 @@ import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/map
 // 與 lib/server/youbike/tdxClient.ts 的 TDX_CITIES 保持一致（issue #453：由 11
 // 個縣市擴充為 TDX 涵蓋的全部 15 個）。此處是 client component，無法直接 import
 // server-only 的 tdxClient.ts，故維持獨立的一份對照表。
+//
+// issue #486: county/city names here are real-world place names — same
+// "government/dynamic data, never machine-translated" rule issue #485
+// applied to station names/addresses — so CITIES[].label and
+// CITY_SHORT_LABELS stay in Chinese verbatim across all locales (this also
+// matches lib/i18n/toolContent.ts's own ja/ko "youbike" FAQ answers, which
+// keep these same county names in Chinese even in otherwise-Japanese/Korean
+// text). Only the one synthetic, non-place-name entry ("附近 3km") is a UI
+// label and goes through t().
 const CITIES = [
-  { code: "", label: "附近 3km" },
+  { code: "", labelKey: "youbikeTool.cityNearby", label: "附近 3km" },
   { code: "TPE", label: "臺北市" },
   { code: "NTPC", label: "新北市" },
   { code: "TYCG", label: "桃園市" },
@@ -33,6 +42,7 @@ const CITIES = [
 
 // code -> 短標籤（站卡上的縣市徽章用，比完整 label 更精簡），供下方站點卡片查表
 // 使用，取代舊版只認得臺北/新北、其餘全部誤標為「新竹」的寫死三元判斷。
+// 同上：縣市名稱屬地名／政府資料性質，不做機器翻譯。
 const CITY_SHORT_LABELS: Record<string, string> = {
   TPE: "臺北",
   NTPC: "新北",
@@ -56,7 +66,7 @@ export default function YoubikeContent({
 }: {
   initialStations?: YouBikeStation[];
 }) {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const geolocation = useSharedGeolocation();
   const locationPending = geolocation.status === "locating" || geolocation.status === "awaiting-permission";
   // 雙軌即時渲染（延續既有行為）：還沒有 GPS 座標時先以臺北101為暫時中心點
@@ -179,10 +189,10 @@ export default function YoubikeContent({
               </span>
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                  公共自行車即時站點車位 (YouBike 2.0)
+                  {t("youbikeTool.heading", "公共自行車即時站點車位 (YouBike 2.0)")}
                 </h2>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
-                  全台多縣市即時站點查詢，即時掌握可借車輛數與可還空位。
+                  {t("youbikeTool.subheading", "全台多縣市即時站點查詢，即時掌握可借車輛數與可還空位。")}
                 </p>
               </div>
             </div>
@@ -194,10 +204,10 @@ export default function YoubikeContent({
             >
               <span>🧭</span>
               {locationPending
-                ? "定位中..."
+                ? t("youbikeTool.locating", "定位中...")
                 : !geolocation.coords
-                ? "以 101 為中心 (點擊重測)"
-                : "已定位 (點擊重測)"}
+                ? t("youbikeTool.centerDefault", "以 101 為中心 (點擊重測)")
+                : t("youbikeTool.locatedRetap", "已定位 (點擊重測)")}
             </button>
           </div>
 
@@ -205,7 +215,7 @@ export default function YoubikeContent({
             geolocation={geolocation}
             hasManualCoords={Boolean(selectedCity)}
             showPicker={false}
-            facilityTypeName="YouBike 站點"
+            facilityTypeName={t("youbikeTool.facilityTypeName", "YouBike 站點")}
           />
 
           {/* City Selection Tabs */}
@@ -220,7 +230,7 @@ export default function YoubikeContent({
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 }`}
               >
-                {c.label}
+                {"labelKey" in c ? t(c.labelKey as string, c.label) : c.label}
               </button>
             ))}
           </div>
@@ -232,7 +242,10 @@ export default function YoubikeContent({
                 type="text"
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
-                placeholder="輸入站點名稱或路名（例：捷運中正紀念堂站、信義路）..."
+                placeholder={t(
+                  "youbikeTool.searchPlaceholder",
+                  "輸入站點名稱或路名（例：捷運中正紀念堂站、信義路）..."
+                )}
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition focus:border-yellow-500 focus:bg-white dark:border-slate-800 dark:bg-slate-950 dark:focus:bg-slate-900"
               />
               {keyword && (
@@ -259,7 +272,7 @@ export default function YoubikeContent({
                 type="submit"
                 className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
               >
-                搜尋
+                {t("youbikeTool.searchButton", "搜尋")}
               </button>
 
               <div className="flex rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
@@ -272,7 +285,7 @@ export default function YoubikeContent({
                       : "text-slate-600"
                   }`}
                 >
-                  全部
+                  {t("youbikeTool.filterAll", "全部")}
                 </button>
                 <button
                   type="button"
@@ -283,7 +296,7 @@ export default function YoubikeContent({
                       : "text-slate-600"
                   }`}
                 >
-                  有車
+                  {t("youbikeTool.filterHasBikes", "有車")}
                 </button>
                 <button
                   type="button"
@@ -294,7 +307,7 @@ export default function YoubikeContent({
                       : "text-slate-600"
                   }`}
                 >
-                  有空位
+                  {t("youbikeTool.filterHasSpaces", "有空位")}
                 </button>
               </div>
             </div>
@@ -306,26 +319,31 @@ export default function YoubikeContent({
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400 px-1">
           <span>
-            共找到 <strong className="text-slate-800 dark:text-slate-200">{filteredStations.length}</strong> 個站點
+            {t("youbikeTool.foundCountTemplate", "共找到 {count} 個站點").replace(
+              "{count}",
+              String(filteredStations.length)
+            )}
           </span>
           {!selectedCity && !locationPending && (
-            <span className="text-emerald-600 dark:text-emerald-400">已依距離由近到遠排序</span>
+            <span className="text-emerald-600 dark:text-emerald-400">
+              {t("youbikeTool.sortedByDistance", "已依距離由近到遠排序")}
+            </span>
           )}
         </div>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-600">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-yellow-500 border-t-transparent" />
-            <p className="mt-3 text-sm">正在查詢即時站點資料庫...</p>
+            <p className="mt-3 text-sm">{t("youbikeTool.loadingStations", "正在查詢即時站點資料庫...")}</p>
           </div>
         ) : filteredStations.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
             <span className="text-4xl">🚲</span>
             <h3 className="mt-3 text-base font-semibold text-slate-800 dark:text-slate-200">
-              查無符合條件的 YouBike 站點
+              {t("youbikeTool.noResultsHeading", "查無符合條件的 YouBike 站點")}
             </h3>
             <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-              請試著切換縣市、清除關鍵字或擴大搜尋半徑。
+              {t("youbikeTool.noResultsDesc", "請試著切換縣市、清除關鍵字或擴大搜尋半徑。")}
             </p>
           </div>
         ) : (
@@ -334,13 +352,13 @@ export default function YoubikeContent({
               const bikeRatio =
                 station.totalSpaces > 0 ? station.availableBikes / station.totalSpaces : 0;
               let statusBadge = "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800";
-              let statusText = "車輛充足";
+              let statusText = t("youbikeTool.statusSufficient", "車輛充足");
               if (station.availableBikes === 0) {
                 statusBadge = "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800";
-                statusText = "無車可借";
+                statusText = t("youbikeTool.statusNone", "無車可借");
               } else if (bikeRatio < 0.2) {
                 statusBadge = "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800";
-                statusText = "車輛偏少";
+                statusText = t("youbikeTool.statusLow", "車輛偏少");
               }
 
               return (
@@ -351,6 +369,10 @@ export default function YoubikeContent({
                   <div>
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-1.5">
+                        {/* issue #486: county/city short label is government
+                            place-name data — kept verbatim in Chinese, same
+                            as station name/district below (see the CITIES
+                            comment above). */}
                         <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                           {CITY_SHORT_LABELS[station.cityCode] || station.cityCode}
                         </span>
@@ -361,7 +383,10 @@ export default function YoubikeContent({
                         )}
                         {station.distanceKm !== undefined && (
                           <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/40 dark:text-blue-300">
-                            距您 {station.distanceKm} km
+                            {t("youbikeTool.distanceTemplate", "距您 {value} km").replace(
+                              "{value}",
+                              String(station.distanceKm)
+                            )}
                           </span>
                         )}
                       </div>
@@ -370,11 +395,14 @@ export default function YoubikeContent({
                       </span>
                     </div>
 
+                    {/* issue #486: station name/address are live government
+                        data (TDX feed), never machine-translated — same rule
+                        AedContent.tsx follows for facility names/addresses. */}
                     <h3 className="mt-2 text-base font-bold text-slate-900 dark:text-white">
                       {station.nameTw}
                     </h3>
                     <p className="mt-1 text-xs text-slate-600 dark:text-slate-400 line-clamp-1">
-                      {station.addressTw || "無詳細地址資訊"}
+                      {station.addressTw || t("youbikeTool.noAddressInfo", "無詳細地址資訊")}
                     </p>
                   </div>
 
@@ -386,11 +414,14 @@ export default function YoubikeContent({
                           {station.availableBikes}
                         </div>
                         <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                          可借車輛
+                          {t("youbikeTool.availableBikesLabel", "可借車輛")}
                         </div>
                         {station.availableEbikes > 0 && (
                           <div className="text-[10px] text-emerald-700 dark:text-emerald-300 font-medium">
-                            ⚡含電輔車 {station.availableEbikes} 台
+                            {t("youbikeTool.ebikeCountTemplate", "⚡含電輔車 {count} 台").replace(
+                              "{count}",
+                              String(station.availableEbikes)
+                            )}
                           </div>
                         )}
                       </div>
@@ -400,24 +431,32 @@ export default function YoubikeContent({
                           {station.emptySpaces}
                         </div>
                         <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                          可還空位
+                          {t("youbikeTool.emptySpacesLabel", "可還空位")}
                         </div>
                         <div className="text-[10px] text-slate-600">
-                          總車格 {station.totalSpaces}
+                          {t("youbikeTool.totalSpacesTemplate", "總車格 {count}").replace(
+                            "{count}",
+                            String(station.totalSpaces)
+                          )}
                         </div>
                       </div>
                     </div>
 
                     <div className="mt-3 flex items-center justify-between text-[11px] text-slate-600 pt-2 border-t border-slate-50 dark:border-slate-800/60">
                       <div className="flex items-center gap-1.5">
-                        <span>更新：{station.updatedAtSource?.slice(11, 16) || "即時"}</span>
+                        <span>
+                          {t("youbikeTool.updatedAtTemplate", "更新：{time}").replace(
+                            "{time}",
+                            station.updatedAtSource?.slice(11, 16) || t("youbikeTool.liveNow", "即時")
+                          )}
+                        </span>
                         {(() => {
                           if (!station.updatedAtSource) return null;
-                          const t = new Date(station.updatedAtSource).getTime();
-                          if (!isNaN(t) && Date.now() - t > 15 * 60 * 1000) {
+                          const t2 = new Date(station.updatedAtSource).getTime();
+                          if (!isNaN(t2) && Date.now() - t2 > 15 * 60 * 1000) {
                             return (
                               <span className="rounded bg-amber-50 px-1.5 py-0.2 text-[10px] font-medium text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
-                                更新延遲
+                                {t("youbikeTool.updateDelayedBadge", "更新延遲")}
                               </span>
                             );
                           }

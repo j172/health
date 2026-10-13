@@ -7,6 +7,7 @@ import type {
 } from "@/lib/server/cwa/queries";
 import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 const TAIWAN_COUNTIES = [
   "臺北市",
@@ -33,57 +34,69 @@ const TAIWAN_COUNTIES = [
   "連江縣",
 ];
 
+/**
+ * `locationName` stores either a real (government-data) county name —
+ * kept in Chinese verbatim, per issue #485 — or this sentinel when the
+ * "current GPS position" label applies instead of a county name. The
+ * sentinel is resolved to a translated label via t() at render time
+ * rather than baking translated text into state, so it reflects the
+ * active locale even after a language switch.
+ */
+const CURRENT_LOCATION_SENTINEL = "__current_location__";
+
 const formatRainValue = (val: string | number | null | undefined): string => {
   if (val == null || val === "" || val === "-99" || val === "-999") return "0.0";
   const num = typeof val === "number" ? val : parseFloat(String(val));
   return isNaN(num) || num < 0 ? "0.0" : num.toFixed(1);
 };
 
-const getRainIntensityBadge = (mm24: number, mm1: number) => {
+type Translator = (key: string, defaultValue?: string) => string;
+
+const getRainIntensityBadge = (t: Translator, mm24: number, mm1: number) => {
   if (mm24 >= 500) {
     return {
-      label: "超大豪雨",
+      label: t("weatherAlertsTool.rainIntensityExtreme", "超大豪雨"),
       bg: "bg-purple-600 text-white",
       border: "border-purple-300 dark:border-purple-800",
     };
   }
   if (mm24 >= 350 || mm1 >= 200) {
     return {
-      label: "大豪雨",
+      label: t("weatherAlertsTool.rainIntensityVeryHeavy", "大豪雨"),
       bg: "bg-red-600 text-white",
       border: "border-red-300 dark:border-red-800",
     };
   }
   if (mm24 >= 200 || mm1 >= 100) {
     return {
-      label: "豪雨",
+      label: t("weatherAlertsTool.rainIntensityHeavy", "豪雨"),
       bg: "bg-orange-500 text-white",
       border: "border-orange-300 dark:border-orange-800",
     };
   }
   if (mm24 >= 80 || mm1 >= 40) {
     return {
-      label: "大雨",
+      label: t("weatherAlertsTool.rainIntensityLarge", "大雨"),
       bg: "bg-amber-500 text-white",
       border: "border-amber-300 dark:border-amber-800",
     };
   }
   if (mm1 >= 10 || mm24 >= 20) {
     return {
-      label: "中雨",
+      label: t("weatherAlertsTool.rainIntensityModerate", "中雨"),
       bg: "bg-sky-500 text-white",
       border: "border-sky-300 dark:border-sky-800",
     };
   }
   if (mm1 > 0 || mm24 > 0) {
     return {
-      label: "小雨",
+      label: t("weatherAlertsTool.rainIntensityLight", "小雨"),
       bg: "bg-emerald-500 text-white",
       border: "border-emerald-300 dark:border-emerald-800",
     };
   }
   return {
-    label: "無明顯降雨",
+    label: t("weatherAlertsTool.rainIntensityNone", "無明顯降雨"),
     bg: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
     border: "border-slate-200 dark:border-slate-700",
   };
@@ -94,6 +107,7 @@ export default function WeatherRainfallLocator({
 }: {
   initialTopStations?: TopRainfallStation[];
 }) {
+  const { t } = useLanguage();
   const geolocation = useSharedGeolocation();
   const [locating, setLocating] = useState(false);
   const [selectedCounty, setSelectedCounty] = useState("");
@@ -128,19 +142,19 @@ export default function WeatherRainfallLocator({
           setTopStations(json.data.topStations);
         }
       } else {
-        setErrorMsg("無法取得該區域雨量資訊，請稍後再試。");
+        setErrorMsg(t("weatherAlertsTool.errorFetchFailed", "無法取得該區域雨量資訊，請稍後再試。"));
       }
     } catch (err) {
       console.error(err);
-      setErrorMsg("連線失敗，請檢查網路狀態。");
+      setErrorMsg(t("weatherAlertsTool.errorNetworkFailed", "連線失敗，請檢查網路狀態。"));
     } finally {
       setLocating(false);
     }
-  }, []);
+  }, [t]);
 
   const handleGeoLocate = () => {
     if (geolocation.status === "unsupported") {
-      setErrorMsg("您的瀏覽器不支援 GPS 地理定位。");
+      setErrorMsg(t("weatherAlertsTool.errorUnsupportedGps", "您的瀏覽器不支援 GPS 地理定位。"));
       return;
     }
     setLocating(true);
@@ -163,19 +177,23 @@ export default function WeatherRainfallLocator({
     queueMicrotask(() => {
       setManualGpsRequested(false);
       if (geolocation.coords) {
-        setLocationName("您的目前位置");
+        // Sentinel, not displayed directly — the UI label is resolved from
+        // CURRENT_LOCATION_SENTINEL via t() at render time, below, so a
+        // later language switch doesn't leave stale baked-in Chinese text
+        // sitting in this state.
+        setLocationName(CURRENT_LOCATION_SENTINEL);
         setSelectedCounty("");
         fetchRainfall({ lat: geolocation.coords.lat, lng: geolocation.coords.lng });
       } else {
         setLocating(false);
         if (geolocation.status === "denied") {
-          setErrorMsg("未取得定位權限，您可直接選擇縣市查詢。");
+          setErrorMsg(t("weatherAlertsTool.errorPermissionDenied", "未取得定位權限，您可直接選擇縣市查詢。"));
         } else {
-          setErrorMsg("定位失敗，請手動選擇縣市。");
+          setErrorMsg(t("weatherAlertsTool.errorLocationFailed", "定位失敗，請手動選擇縣市。"));
         }
       }
     });
-  }, [manualGpsRequested, geolocation.status, geolocation.coords, fetchRainfall]);
+  }, [manualGpsRequested, geolocation.status, geolocation.coords, fetchRainfall, t]);
 
   const handleCountyChange = (county: string) => {
     setSelectedCounty(county);
@@ -205,7 +223,7 @@ export default function WeatherRainfallLocator({
     autoGpsAppliedRef.current = true;
     const { lat, lng } = geolocation.coords;
     queueMicrotask(() => {
-      setLocationName("您的目前位置");
+      setLocationName(CURRENT_LOCATION_SENTINEL);
       setSelectedCounty("");
       fetchRainfall({ lat, lng });
     });
@@ -215,7 +233,11 @@ export default function WeatherRainfallLocator({
   const accumulation = rainfallData?.accumulation;
   const mm24 = parseFloat(realtime?.precip_24hr || "0") || 0;
   const mm1 = parseFloat(realtime?.precip_1hr || "0") || 0;
-  const badge = getRainIntensityBadge(mm24, mm1);
+  const badge = getRainIntensityBadge(t, mm24, mm1);
+  const referenceLabel =
+    locationName === CURRENT_LOCATION_SENTINEL
+      ? t("weatherAlertsTool.currentLocationLabel", "您的目前位置")
+      : locationName;
 
   return (
     <div className="space-y-6">
@@ -223,10 +245,13 @@ export default function WeatherRainfallLocator({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            🌧️ 即時雨量觀測站定位
+            {t("weatherAlertsTool.locatorHeading", "🌧️ 即時雨量觀測站定位")}
           </h3>
           <p className="mt-0.5 text-xs text-slate-600 dark:text-slate-400">
-            自動連線中央氣象署 1,300+ 座自動雨量站 (O-A0002-001) 與 38 署屬氣象站歷史統計 (C-B0025-001)
+            {t(
+              "weatherAlertsTool.locatorSubheading",
+              "自動連線中央氣象署 1,300+ 座自動雨量站 (O-A0002-001) 與 38 署屬氣象站歷史統計 (C-B0025-001)",
+            )}
           </p>
         </div>
 
@@ -238,16 +263,20 @@ export default function WeatherRainfallLocator({
             className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3.5 py-2 text-xs font-semibold text-indigo-700 shadow-xs transition-colors hover:bg-indigo-100 disabled:opacity-50 dark:border-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/80"
           >
             <span className={locating ? "animate-spin" : ""}>📍</span>
-            <span>{locating ? "定位查詢中..." : "GPS 重新定位"}</span>
+            <span>
+              {locating
+                ? t("weatherAlertsTool.locatingButton", "定位查詢中...")
+                : t("weatherAlertsTool.gpsRelocateButton", "GPS 重新定位")}
+            </span>
           </button>
 
           <select
             value={selectedCounty}
             onChange={(e) => handleCountyChange(e.target.value)}
             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
-            aria-label="選擇縣市"
+            aria-label={t("weatherAlertsTool.countySelectAriaLabel", "選擇縣市")}
           >
-            <option value="">-- 手動切換縣市 --</option>
+            <option value="">{t("weatherAlertsTool.countySelectDefaultOption", "-- 手動切換縣市 --")}</option>
             {TAIWAN_COUNTIES.map((c) => (
               <option key={c} value={c}>
                 {c}
@@ -271,7 +300,7 @@ export default function WeatherRainfallLocator({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-slate-900 dark:text-slate-100">
-                  {realtime?.station_name || "測站連線中..."}
+                  {realtime?.station_name || t("weatherAlertsTool.stationConnecting", "測站連線中...")}
                 </span>
                 <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-[11px] text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                   {realtime?.station_id || "--"}
@@ -281,18 +310,24 @@ export default function WeatherRainfallLocator({
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                📍 位於 {realtime?.county_name || ""}{realtime?.town_name || ""}
+                {t("weatherAlertsTool.locatedAtPrefix", "📍 位於 ")}
+                {realtime?.county_name || ""}{realtime?.town_name || ""}
                 {realtime?.distance_km != null && (
                   <span className="ml-1 font-semibold text-indigo-600 dark:text-indigo-400">
-                    （距離約 {realtime.distance_km.toFixed(1)} km）
+                    {t("weatherAlertsTool.distanceKmParenTemplate", "（距離約 {value} km）").replace(
+                      "{value}",
+                      realtime.distance_km.toFixed(1),
+                    )}
                   </span>
                 )}
-                {locationName && ` · 參考基準：${locationName}`}
+                {referenceLabel &&
+                  `${t("weatherAlertsTool.referenceBasisPrefix", " · 參考基準：")}${referenceLabel}`}
               </p>
             </div>
             {realtime?.obs_time && (
               <span className="text-[11px] text-slate-600">
-                觀測時間：{new Date(realtime.obs_time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}
+                {t("weatherAlertsTool.obsTimeLabel", "觀測時間：")}
+                {new Date(realtime.obs_time).toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}
               </span>
             )}
           </div>
@@ -300,28 +335,28 @@ export default function WeatherRainfallLocator({
           {/* Realtime Accumulation stats (O-A0002-001) */}
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">時雨量 (1小時)</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.hourlyRainLabel", "時雨量 (1小時)")}</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-slate-100">
                 {formatRainValue(realtime?.precip_1hr)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">3小時累積</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.rain3hrLabel", "3小時累積")}</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-slate-100">
                 {formatRainValue(realtime?.precip_3hr)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">24小時累積 (日雨量)</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.rain24hrLabel", "24小時累積 (日雨量)")}</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-indigo-600 dark:text-indigo-400">
                 {formatRainValue(realtime?.precip_24hr)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-white p-3 dark:border-slate-800/80 dark:bg-slate-850">
-              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">3天累積雨量</p>
+              <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.rain3daysLabel", "3天累積雨量")}</p>
               <p className="mt-1 font-mono text-xl font-extrabold text-slate-900 dark:text-slate-100">
                 {formatRainValue(realtime?.precip_3days)} <span className="text-xs font-normal text-slate-600">mm</span>
               </p>
@@ -331,30 +366,41 @@ export default function WeatherRainfallLocator({
           {/* Historical Accumulation stats (C-B0025-001) */}
           <div className="mt-4 rounded-xl border border-slate-200/70 bg-slate-50/70 p-3.5 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300">
-              <span>📊 氣象站中長期累積歷史 (C-B0025-001)：{accumulation?.station_name || "署屬測站"}</span>
+              <span>
+                {t("weatherAlertsTool.historicalAccumulationLabel", "📊 氣象站中長期累積歷史 (C-B0025-001)：")}
+                {accumulation?.station_name || t("weatherAlertsTool.defaultStationFallback", "署屬測站")}
+              </span>
               {accumulation?.distance_km != null && (
                 <span className="text-[11px] text-slate-600">
-                  距約 {accumulation.distance_km.toFixed(1)} km
+                  {t("weatherAlertsTool.distanceKmTemplate", "距約 {value} km").replace(
+                    "{value}",
+                    accumulation.distance_km.toFixed(1),
+                  )}
                 </span>
               )}
             </div>
             <div className="mt-2.5 grid grid-cols-3 gap-2 text-center text-xs">
               <div className="rounded-lg bg-white p-2 shadow-2xs dark:bg-slate-800">
-                <span className="text-slate-600 dark:text-slate-400">本月累積雨量</span>
+                <span className="text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.monthlyAccumulationLabel", "本月累積雨量")}</span>
                 <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
                   {accumulation?.month_mm != null ? accumulation.month_mm.toFixed(1) : "--"} mm
                 </p>
               </div>
               <div className="rounded-lg bg-white p-2 shadow-2xs dark:bg-slate-800">
-                <span className="text-slate-600 dark:text-slate-400">本年度累積雨量</span>
+                <span className="text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.yearlyAccumulationLabel", "本年度累積雨量")}</span>
                 <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
                   {accumulation?.year_mm != null ? accumulation.year_mm.toFixed(1) : "--"} mm
                 </p>
               </div>
               <div className="rounded-lg bg-white p-2 shadow-2xs dark:bg-slate-800">
-                <span className="text-slate-600 dark:text-slate-400">近30天降雨日</span>
+                <span className="text-slate-600 dark:text-slate-400">{t("weatherAlertsTool.wetDays30Label", "近30天降雨日")}</span>
                 <p className="mt-0.5 font-mono text-sm font-bold text-slate-900 dark:text-slate-100">
-                  {accumulation?.wet_days_30 != null ? `${accumulation.wet_days_30} 天` : "--"}
+                  {accumulation?.wet_days_30 != null
+                    ? t("weatherAlertsTool.daysUnitTemplate", "{value} 天").replace(
+                        "{value}",
+                        String(accumulation.wet_days_30),
+                      )
+                    : "--"}
                 </p>
               </div>
             </div>
@@ -365,10 +411,10 @@ export default function WeatherRainfallLocator({
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
             <h4 className="text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
-              🏆 全台 24H 雨量排行
+              {t("weatherAlertsTool.leaderboardHeading", "🏆 全台 24H 雨量排行")}
             </h4>
             <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 dark:bg-indigo-950 dark:text-indigo-400">
-              降雨熱區
+              {t("weatherAlertsTool.hotspotBadge", "降雨熱區")}
             </span>
           </div>
 
@@ -415,7 +461,7 @@ export default function WeatherRainfallLocator({
               })
             ) : (
               <p className="py-4 text-center text-xs text-slate-600">
-                目前全台各地降雨均未達顯著累積量。
+                {t("weatherAlertsTool.leaderboardEmpty", "目前全台各地降雨均未達顯著累積量。")}
               </p>
             )}
           </div>

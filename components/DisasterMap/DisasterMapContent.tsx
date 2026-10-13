@@ -18,21 +18,26 @@ import type { InundationRegion } from "@/lib/server/wra/fetchInundationRegions";
 import type { DebrisFlowAlertItem } from "@/lib/server/moa/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import CopyAddressButton from "@/components/Tools/CopyAddressButton";
 
 const DisasterMapLeaflet = dynamic(() => import("@/components/DisasterMap/DisasterMapLeaflet"), { ssr: false });
 
+type Translator = (key: string, defaultValue?: string) => string;
+
 interface LayerConfig {
   layer: DisasterLayer;
-  label: string;
   emoji: string;
   color: string;
   defaultOn: boolean;
 }
 
+// issue #486: labels are looked up via t() inside the component (see
+// `layerLabels` below) rather than hardcoded here, so this config stays
+// locale-agnostic.
 const LAYERS: LayerConfig[] = [
-  { layer: "shelter", label: "避難收容處所", emoji: "🏫", color: "#16a34a", defaultOn: true },
-  { layer: "rescue_unit", label: "消防救援單位", emoji: "🚒", color: "#dc2626", defaultOn: true },
-  { layer: "eoc_center", label: "應變中心", emoji: "🏢", color: "#2563eb", defaultOn: false },
+  { layer: "shelter", emoji: "🏫", color: "#16a34a", defaultOn: true },
+  { layer: "rescue_unit", emoji: "🚒", color: "#dc2626", defaultOn: true },
+  { layer: "eoc_center", emoji: "🏢", color: "#2563eb", defaultOn: false },
 ];
 
 const COUNTY_COORDS: Record<string, [number, number]> = {
@@ -70,8 +75,8 @@ function haversineDistKm(lat1: number, lon1: number, lat2: number, lon2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-const formatUpdatedAt = (iso: string | null): string => {
-  if (!iso) return "尚無同步紀錄";
+const formatUpdatedAt = (iso: string | null, t: Translator): string => {
+  if (!iso) return t("disasterMapTool.noSyncRecord", "尚無同步紀錄");
   try {
     return new Intl.DateTimeFormat("zh-TW", {
       timeZone: "Asia/Taipei",
@@ -87,7 +92,7 @@ const formatUpdatedAt = (iso: string | null): string => {
 };
 
 export default function DisasterMapContent() {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const {
     geolocation,
     manualCounty,
@@ -181,6 +186,9 @@ export default function DisasterMapContent() {
           setInundationRegions(wraIotRes.value.inundationRegions ?? []);
         }
       } catch (err: any) {
+        // `error` state isn't rendered anywhere in this component (pre-existing;
+        // out of scope for issue #486's i18n retrofit) — left as a plain
+        // literal so this effect's dependency array doesn't need `t`.
         if (!cancelled) setError(err?.message || "資料載入失敗");
       } finally {
         if (!cancelled) setLoading(false);
@@ -196,6 +204,14 @@ export default function DisasterMapContent() {
     for (const p of points) counts[p.layer] = (counts[p.layer] || 0) + 1;
     return counts;
   }, [points]);
+
+  // issue #486: layer checkbox labels, looked up here (not in the
+  // module-level LAYERS config) so they follow the active locale.
+  const layerLabels: Record<DisasterLayer, string> = {
+    shelter: t("disasterMapTool.layerShelter", "避難收容處所"),
+    rescue_unit: t("disasterMapTool.layerRescueUnit", "消防救援單位"),
+    eoc_center: t("disasterMapTool.layerEocCenter", "應變中心"),
+  };
 
   // 依照圖層勾選、縣市、關鍵字過濾
   const filteredPoints = useMemo(() => {
@@ -251,10 +267,13 @@ export default function DisasterMapContent() {
     <div className="space-y-6">
       <div>
         <h1 className="mb-2 text-3xl font-extrabold text-neutral-900 dark:text-slate-100 md:text-4xl tracking-tight">
-          🆘 防災地圖
+          {t("disasterMapTool.pageHeading", "🆘 防災地圖")}
         </h1>
         <p className="text-neutral-600 dark:text-slate-300 text-sm leading-relaxed">
-          整合內政部開放資料（全台 5,900+ 處避難收容處所、消防救援單位、縣市應變中心）與經濟部水利署即時水資源物聯網（淹水感測、堤防安全、地下水位），支援 GPS 即時定位與圖層切換查詢。
+          {t(
+            "disasterMapTool.pageDescription",
+            "整合內政部開放資料（全台 5,900+ 處避難收容處所、消防救援單位、縣市應變中心）與經濟部水利署即時水資源物聯網（淹水感測、堤防安全、地下水位），支援 GPS 即時定位與圖層切換查詢。",
+          )}
         </p>
       </div>
 
@@ -266,16 +285,20 @@ export default function DisasterMapContent() {
         onCountyChange={setManualCounty}
         onDistrictChange={setManualDistrict}
         hasManualCoords={hasManualCoords}
-        facilityTypeName="避難收容處所與救援單位"
+        facilityTypeName={t("disasterMapTool.facilityTypeName", "避難收容處所與救援單位")}
       />
 
       {/* 資料更新時間與免責聲明 */}
       <div className="rounded-2xl border border-amber-200/80 bg-amber-50/60 p-4 text-xs leading-relaxed text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
         <p className="font-semibold">
-          資料更新時間：{loading ? "載入中…" : formatUpdatedAt(updatedAt)}
+          {t("disasterMapTool.updatedAtLabel", "資料更新時間：")}
+          {loading ? t("disasterMapTool.loadingShort", "載入中…") : formatUpdatedAt(updatedAt, t)}
         </p>
         <p className="mt-1">
-          本頁避難設施資料每日定時同步；天災發生時之實際開設狀態，請務必以地方政府（消防局／區公所／災害應變中心）即時公告為準。
+          {t(
+            "disasterMapTool.disclaimerText",
+            "本頁避難設施資料每日定時同步；天災發生時之實際開設狀態，請務必以地方政府（消防局／區公所／災害應變中心）即時公告為準。",
+          )}
         </p>
       </div>
 
@@ -284,15 +307,19 @@ export default function DisasterMapContent() {
         <div className="flex items-center gap-2.5">
           <span className="text-xl">🌊</span>
           <div>
-            <div className="text-xs font-bold text-sky-950 dark:text-sky-300">需要查詢地下道與道路積水即時深度？</div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">水利署 IoT 即時路面感測地圖已上線，提供全台易積水路口公分級水深與防汛警戒</div>
+            <div className="text-xs font-bold text-sky-950 dark:text-sky-300">
+              {t("disasterMapTool.inundationBannerTitle", "需要查詢地下道與道路積水即時深度？")}
+            </div>
+            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              {t("disasterMapTool.inundationBannerDesc", "水利署 IoT 即時路面感測地圖已上線，提供全台易積水路口公分級水深與防汛警戒")}
+            </div>
           </div>
         </div>
         <Link
           href="/tools/inundation-map"
           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold whitespace-nowrap transition shadow-sm"
         >
-          <span>查看淹水感測地圖</span>
+          <span>{t("disasterMapTool.inundationBannerCta", "查看淹水感測地圖")}</span>
           <span>→</span>
         </Link>
       </div>
@@ -306,7 +333,9 @@ export default function DisasterMapContent() {
               onChange={handleCountyChange}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-800 focus:border-indigo-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
-              <option value="all">📍 全部縣市 ({points.length} 處)</option>
+              <option value="all">
+                {t("disasterMapTool.allCountiesTemplate", "📍 全部縣市 ({count} 處)").replace("{count}", String(points.length))}
+              </option>
               {Object.keys(COUNTY_COORDS).map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -319,7 +348,7 @@ export default function DisasterMapContent() {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="搜尋避難所名稱、地址（如：國小、活動中心、消防分隊）"
+              placeholder={t("disasterMapTool.searchPlaceholder", "搜尋避難所名稱、地址（如：國小、活動中心、消防分隊）")}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-900 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
@@ -339,7 +368,7 @@ export default function DisasterMapContent() {
                 className="h-3.5 w-3.5 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
               />
               <span aria-hidden="true">{l.emoji}</span>
-              <span>{l.label}</span>
+              <span>{layerLabels[l.layer]}</span>
               <span
                 className="rounded-full px-1.5 py-0.2 text-[10px] font-semibold text-white"
                 style={{ backgroundColor: l.color }}
@@ -357,7 +386,7 @@ export default function DisasterMapContent() {
               className="h-3.5 w-3.5 rounded border-sky-300 text-sky-600 focus:ring-sky-500"
             />
             <span aria-hidden="true">🌊</span>
-            <span>即時路面積水</span>
+            <span>{t("disasterMapTool.layerInundation", "即時路面積水")}</span>
             <span className="rounded-full bg-sky-600 px-1.5 py-0.2 text-[10px] font-semibold text-white">
               {inundationPoints.length}
             </span>
@@ -371,7 +400,7 @@ export default function DisasterMapContent() {
               className="h-3.5 w-3.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
             />
             <span aria-hidden="true">🧱</span>
-            <span>堤防結構監測</span>
+            <span>{t("disasterMapTool.layerDamStructure", "堤防結構監測")}</span>
             <span className="rounded-full bg-amber-600 px-1.5 py-0.2 text-[10px] font-semibold text-white">
               {damStructurePoints.length}
             </span>
@@ -385,7 +414,7 @@ export default function DisasterMapContent() {
               className="h-3.5 w-3.5 rounded border-teal-300 text-teal-600 focus:ring-teal-500"
             />
             <span aria-hidden="true">💧</span>
-            <span>地下水位</span>
+            <span>{t("disasterMapTool.layerGroundwater", "地下水位")}</span>
             <span className="rounded-full bg-teal-600 px-1.5 py-0.2 text-[10px] font-semibold text-white">
               {groundwaterPoints.length}
             </span>
@@ -399,7 +428,7 @@ export default function DisasterMapContent() {
               className="h-3.5 w-3.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
             />
             <span aria-hidden="true">⚠️</span>
-            <span>土石流警戒溪流</span>
+            <span>{t("disasterMapTool.layerDebrisFlow", "土石流警戒溪流")}</span>
             <span className="rounded-full bg-amber-600 px-1.5 py-0.2 text-[10px] font-semibold text-white">
               {debrisFlowPoints.length}
             </span>
@@ -436,11 +465,11 @@ export default function DisasterMapContent() {
               <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-600 text-xs text-white">
                 🏫
               </span>
-              距離您最近的避難處所與救援單位
-              <span className="text-xs font-normal text-slate-500">（依 GPS 距離排列）</span>
+              {t("disasterMapTool.nearestHeading", "距離您最近的避難處所與救援單位")}
+              <span className="text-xs font-normal text-slate-500">{t("disasterMapTool.byDistance", "（依 GPS 距離排列）")}</span>
             </h3>
             <span className="text-xs text-slate-500">
-              共顯示離您最近的 {closestShelters.length} 處
+              {t("disasterMapTool.nearestCountTemplate", "共顯示離您最近的 {count} 處").replace("{count}", String(closestShelters.length))}
             </span>
           </div>
 
@@ -459,13 +488,21 @@ export default function DisasterMapContent() {
                           isShelter ? "bg-emerald-600" : "bg-rose-600"
                         }`}
                       >
-                        {isShelter ? "🏫 避難處所" : "🚒 消防隊"}
+                        {isShelter
+                          ? t("disasterMapTool.badgeShelter", "🏫 避難處所")
+                          : t("disasterMapTool.badgeRescueUnit", "🚒 消防隊")}
                       </span>
                       {item.distKm !== undefined && (
                         <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
                           {item.distKm < 1
-                            ? `${Math.round(item.distKm * 1000)} 公尺`
-                            : `${item.distKm.toFixed(1)} 公里`}
+                            ? t("disasterMapTool.distanceMetersTemplate", "{value} 公尺").replace(
+                                "{value}",
+                                String(Math.round(item.distKm * 1000)),
+                              )
+                            : t("disasterMapTool.distanceKmTemplate", "{value} 公里").replace(
+                                "{value}",
+                                item.distKm.toFixed(1),
+                              )}
                         </span>
                       )}
                     </div>
@@ -475,15 +512,24 @@ export default function DisasterMapContent() {
                     </h4>
 
                     {item.address && (
-                      <p className="mt-1 text-xs text-slate-500 line-clamp-2">
-                        📍 {item.address}
-                      </p>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <p className="text-xs text-slate-500 line-clamp-2 flex-1">
+                          📍 {item.address}
+                        </p>
+                        <CopyAddressButton
+                          address={item.address}
+                          className="shrink-0 rounded-lg px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                        />
+                      </div>
                     )}
 
                     {isShelter && item.capacity !== null && (
                       <p className="mt-1 text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                        👥 預估容納：約 {item.capacity} 人
-                        {item.weakSuitable && " ｜ 適合避難弱者"}
+                        {t("disasterMapTool.capacityTemplate", "👥 預估容納：約 {count} 人").replace(
+                          "{count}",
+                          String(item.capacity),
+                        )}
+                        {item.weakSuitable && t("disasterMapTool.weakSuitableSuffix", " ｜ 適合避難弱者")}
                       </p>
                     )}
                   </div>
@@ -510,7 +556,7 @@ export default function DisasterMapContent() {
                         href={`tel:${item.phone.replace(/[^0-9]/g, "")}`}
                         className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                       >
-                        📞 撥號
+                        {t("disasterMapTool.callButton", "📞 撥號")}
                       </a>
                     )}
                   </div>

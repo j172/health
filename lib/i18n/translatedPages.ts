@@ -65,7 +65,23 @@ export function scopeEntryPath(entry: ScopePageEntry): string {
  * for each one of these and no others — keep this array and that directory
  * listing in lockstep (enforced by tests/i18n-routing-485.test.mjs).
  */
-export const TRANSLATED_TOOL_SLUGS = ["emergency-hotlines", "er-status", "aed"] as const;
+export const TRANSLATED_TOOL_SLUGS = [
+  "emergency-hotlines",
+  "er-status",
+  "aed",
+  // Issue #486 (parent #438 §Q): medical/transport/weather/disaster batch.
+  "clinics",
+  "pharmacies",
+  "public-toilets",
+  "youbike",
+  "metro-alerts",
+  "accessible-transit",
+  "weather-alerts",
+  "earthquakes",
+  "aqi",
+  "uv",
+  "disaster-map",
+] as const;
 export type TranslatedToolSlug = (typeof TRANSLATED_TOOL_SLUGS)[number];
 
 export const TRANSLATED_PAGES: ScopePageEntry[] = TRANSLATED_TOOL_SLUGS.map((slug) => ({

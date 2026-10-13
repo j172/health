@@ -18,6 +18,7 @@ import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import CopyAddressButton from "@/components/Tools/CopyAddressButton";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -120,6 +121,7 @@ const facilityNoun = (emptyStateNoKeyword: string, title: string): string => {
 export default function FacilitySearchContent({
   config,
   locationOverride = null,
+  slug,
 }: {
   config: FacilitySearchConfig;
   /**
@@ -130,6 +132,17 @@ export default function FacilitySearchContent({
    * browser-geolocation-first behavior exactly.
    */
   locationOverride?: GeolocationOverride | null;
+  /**
+   * Issue #486: when set, the handful of per-tool strings this config
+   * carries (title/description/etc.) are looked up under the
+   * `${slug}Tool.*` dictionary namespace, with the config's own Chinese
+   * value as the fallback — see `tc` below. Every one of the 30+ other
+   * callers of this shared component omits this prop entirely, so `tc`
+   * degenerates to a pure passthrough and their rendering is byte-for-byte
+   * unchanged. Government/dynamic facility data is never routed through
+   * `tc` — only the small set of config-authored UI strings are.
+   */
+  slug?: string;
 }) {
   const {
     facilityType,
@@ -150,7 +163,40 @@ export default function FacilitySearchContent({
     charityFilter,
   } = config;
 
-  const { locale } = useLanguage();
+  const { t, locale } = useLanguage();
+  // Issue #486: pure passthrough when `slug` is omitted (every pre-existing
+  // caller) — `tc` then always returns `fallback` unchanged, so those 30+
+  // other /tools pages render byte-for-byte as before. When `slug` is set
+  // (clinics/pharmacies/public-toilets today), looks up
+  // `${slug}Tool.<key>` with the config's own Chinese string as the
+  // dictionary fallback.
+  const tc = (key: string, fallback: string): string => (slug ? t(`${slug}Tool.${key}`, fallback) : fallback);
+
+  // Issue #486: localized display copies of the config's own strings — the
+  // RAW `title`/`emptyStateNoKeyword` destructured above stay untouched and
+  // keep feeding `facilityNoun()` and `MapLocationBanner`'s
+  // `facilityTypeName` below, both of which only ever interpolate into
+  // always-Chinese sentence templates (facilityNoun's own regex, and
+  // MapLocationBanner's hardcoded 請改選您所在的縣市... copy, neither of
+  // which this ticket touches) — feeding those a translated noun would
+  // produce a mixed-language sentence instead of a clean one.
+  const displayTitle = tc("title", title);
+  const displayDescription = tc("description", description);
+  const displayNoteLine = noteLine ? tc("noteLine", noteLine) : noteLine;
+  const displaySearchPlaceholder = tc("searchPlaceholder", searchPlaceholder);
+  const displayErrorText = tc("errorText", errorText);
+  const displayEmptyStateNoKeyword = tc("emptyStateNoKeyword", emptyStateNoKeyword);
+  const displayEmptyStateWithKeyword = tc("emptyStateWithKeyword", emptyStateWithKeyword);
+  // `locationDefaultWarning` itself is pre-existing dead config (destructured
+  // above but never rendered anywhere in this component, independently of
+  // this ticket) — nothing to wrap in `tc` since there's no render site for
+  // it today.
+  const displayCategories = categories?.map((c, idx) => ({
+    ...c,
+    label: tc(`categoryLabel${idx}`, c.label),
+  }));
+  const displayCharityFilterLabel = charityFilter ? tc("charityFilterLabel", charityFilter.label) : undefined;
+
   // issue #463：地圖彈出視窗「看附近的 AED／急診／藥局」深連結帶入的 ?lat=&lng=
   // 覆寫座標，由呼叫端（目前只有 /tools/pharmacies，一個 server component）在
   // page.tsx 解析 searchParams 後往下傳——FacilitySearchContent 被 30 個以上的
@@ -351,30 +397,34 @@ export default function FacilitySearchContent({
     <div className="space-y-6">
       <div>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">
-          {emoji} {title}
+          {emoji} {displayTitle}
         </h1>
-        <p className="text-neutral-600 dark:text-slate-300">{description}</p>
-        {noteLine && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">{noteLine}</p>}
+        <p className="text-neutral-600 dark:text-slate-300">{displayDescription}</p>
+        {displayNoteLine && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">{displayNoteLine}</p>}
       </div>
 
       {facilityType === "clinic" && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50/70 p-3.5 text-xs text-red-900 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
           <div className="flex items-center gap-2 font-medium">
             <span className="text-base">🚨</span>
-            <span>突發重症、劇烈胸痛或危及生命情況？請立即撥打 <strong>119</strong> 或查詢即時急診壅塞狀況。</span>
+            <span>
+              {t("facilitySearch.emergencyBannerPrefix", "突發重症、劇烈胸痛或危及生命情況？請立即撥打 ")}
+              <strong>119</strong>
+              {t("facilitySearch.emergencyBannerSuffix", " 或查詢即時急診壅塞狀況。")}
+            </span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <a
               href="/tools/er-status"
               className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 font-semibold text-red-800 hover:bg-red-200 dark:bg-red-900/50 dark:text-red-200"
             >
-              <span>🚑 全台急診即時看板 ↗</span>
+              <span>{t("facilitySearch.erBannerLinkLabel", "🚑 全台急診即時看板 ↗")}</span>
             </a>
             <a
               href="/tools/aed"
               className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2.5 py-1 font-semibold text-rose-800 hover:bg-rose-200 dark:bg-rose-900/50 dark:text-rose-200"
             >
-              <span>⚡ AED 急救地圖 ↗</span>
+              <span>{t("facilitySearch.aedBannerLinkLabel", "⚡ AED 急救地圖 ↗")}</span>
             </a>
           </div>
         </div>
@@ -403,23 +453,23 @@ export default function FacilitySearchContent({
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder={searchPlaceholder}
+              placeholder={displaySearchPlaceholder}
               className="w-full rounded-xl border border-neutral-300 bg-white px-4 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
           </div>
 
-          {categories && categories.length > 0 && (
+          {displayCategories && displayCategories.length > 0 && (
             <select
               value={category}
               onChange={(e) => {
                 setCategory(e.target.value);
                 setPage(1);
               }}
-              aria-label="業務分類篩選"
+              aria-label={t("facilitySearch.categoryFilterAriaLabel", "業務分類篩選")}
               className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             >
-              <option value="">全部分類</option>
-              {categories.map((c) => (
+              <option value="">{t("facilitySearch.allCategories", "全部分類")}</option>
+              {displayCategories.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
                 </option>
@@ -433,13 +483,13 @@ export default function FacilitySearchContent({
               setSort(e.target.value as typeof sort);
               setPage(1);
             }}
-            aria-label="排序方式"
+            aria-label={t("facilitySearch.sortAriaLabel", "排序方式")}
             className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
-            <option value="distance">📍 距離最近</option>
-            <option value="newest">✨ 最新登記</option>
-            <option value="name">🔤 名稱筆畫</option>
-            {categories && categories.length > 0 && <option value="category">🏷️ 依業務分類</option>}
+            <option value="distance">{t("facilitySearch.sortDistance", "📍 距離最近")}</option>
+            <option value="newest">{t("facilitySearch.sortNewest", "✨ 最新登記")}</option>
+            <option value="name">{t("facilitySearch.sortName", "🔤 名稱筆畫")}</option>
+            {categories && categories.length > 0 && <option value="category">{t("facilitySearch.sortCategory", "🏷️ 依業務分類")}</option>}
           </select>
 
           {charityFilter && (
@@ -453,7 +503,7 @@ export default function FacilitySearchContent({
                 }}
                 className="h-4 w-4 accent-primary"
               />
-              {charityFilter.label}
+              {displayCharityFilterLabel}
             </label>
           )}
 
@@ -461,7 +511,7 @@ export default function FacilitySearchContent({
             type="submit"
             className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-primaryho"
           >
-            搜尋
+            {t("facilitySearch.searchButton", "搜尋")}
           </button>
 
           {(keyword || county || district || category || onlyCharity || searchInput) && (
@@ -470,7 +520,7 @@ export default function FacilitySearchContent({
               onClick={handleResetAll}
               className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             >
-              重設
+              {t("facilitySearch.resetButton", "重設")}
             </button>
           )}
         </div>
@@ -489,7 +539,7 @@ export default function FacilitySearchContent({
         </div>
       )}
 
-      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{errorText}</div>}
+      {error && <div className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">{displayErrorText}</div>}
 
       {!loading && !error && facilities && (
         <>
@@ -509,14 +559,19 @@ export default function FacilitySearchContent({
           )}
 
           {totalCount === 0 ? (
-            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword || county ? emptyStateWithKeyword : emptyStateNoKeyword}</p>
+            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword || county ? displayEmptyStateWithKeyword : displayEmptyStateNoKeyword}</p>
           ) : (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-slate-400">
                 <span>
-                  共找到 <strong>{totalCount}</strong> 筆
-                  {allTotal !== null && allTotal > 0 && `（全台共收錄 ${allTotal} 筆）`}
-                  ・第 {page} 頁（每頁 {pageSize} 筆）
+                  {t("facilitySearch.resultsFoundPrefix", "共找到 ")}
+                  <strong>{totalCount}</strong>
+                  {t("facilitySearch.resultsFoundSuffix", " 筆")}
+                  {allTotal !== null && allTotal > 0 &&
+                    t("facilitySearch.allTotalTemplate", "（全台共收錄 {count} 筆）").replace("{count}", String(allTotal))}
+                  {t("facilitySearch.pageInfoTemplate", "・第 {page} 頁（每頁 {pageSize} 筆）")
+                    .replace("{page}", String(page))
+                    .replace("{pageSize}", String(pageSize))}
                 </span>
               </div>
 
@@ -586,7 +641,22 @@ export default function FacilitySearchContent({
                       )}
                     </div>
                   </div>
-                  {f.address && <p className="mt-1 text-sm text-neutral-600 dark:text-slate-300">{f.address}</p>}
+                  {f.address && (
+                    <div className="mt-1 flex items-center gap-2">
+                      <p className="text-sm text-neutral-600 dark:text-slate-300">{f.address}</p>
+                      {/* Issue #486: scoped to slug-enabled (currently
+                          clinics/pharmacies/public-toilets) pages only —
+                          intentionally not turned on for the other 30+
+                          facility pages sharing this component, to keep
+                          their rendering byte-for-byte unchanged. */}
+                      {slug && (
+                        <CopyAddressButton
+                          address={f.address}
+                          className="shrink-0 rounded-lg px-2 py-0.5 text-[11px] font-semibold text-primary hover:bg-zumthor dark:text-indigo-400 dark:hover:bg-indigo-950/40"
+                        />
+                      )}
+                    </div>
+                  )}
                   {f.phone && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">📞 {f.phone}</p>}
                   {f.extra_json?.serviceDistrict && (
                     <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
