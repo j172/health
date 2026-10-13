@@ -1,4 +1,4 @@
-import { facilitySearchConfigs } from "@/app/tools/facilityConfigs";
+import { facilitySearchConfigs } from "@/app/(zh)/tools/facilityConfigs";
 
 /**
  * Registry for the "/nearby" page (issue #466, parent #438 §F) — a single

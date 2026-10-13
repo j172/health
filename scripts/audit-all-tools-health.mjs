@@ -30,7 +30,7 @@ registerHooks({
 });
 
 const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
-const { facilitySearchConfigs } = await import("../app/tools/facilityConfigs.ts");
+const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfigs.ts");
 
 console.log("===============================================================");
 console.log("🏥 [Site-Wide Tools Comprehensive Health Audit] 全站工具深度健康審查");
@@ -45,7 +45,7 @@ let passedCount = 0;
 const toolAuditResults = [];
 
 for (const tool of TOOL_CATALOG) {
-  const pagePath = path.join(ROOT_DIR, "app", "tools", tool.slug, "page.tsx");
+  const pagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", tool.slug, "page.tsx");
   const result = {
     slug: tool.slug,
     title: tool.title,
@@ -111,7 +111,7 @@ for (const tool of TOOL_CATALOG) {
 }
 
 // 6. 檢查磁碟上的所有工具
-const toolsDir = path.join(ROOT_DIR, "app", "tools");
+const toolsDir = path.join(ROOT_DIR, "app", "(zh)", "tools");
 const diskDirs = readdirSync(toolsDir, { withFileTypes: true })
   .filter((d) => d.isDirectory() && existsSync(path.join(toolsDir, d.name, "page.tsx")))
   .map((d) => d.name);

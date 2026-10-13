@@ -13,7 +13,7 @@ export const LLM_INFO_SUMMARY =
 
 /**
  * Builds the shared `LlmsPageContent` shape for `/llm-info`, from exactly
- * the same `TOOL_CATALOG`/`TOOL_GROUP_META` data `app/llm-info/page.tsx`
+ * the same `TOOL_CATALOG`/`TOOL_GROUP_META` data `app/(zh)/llm-info/page.tsx`
  * serializes for `LlmInfoClient`. Tools are grouped into one section per
  * category (mirroring the page's own per-group filter tabs), and the data
  * source list is derived — not hand-authored — from the union of every

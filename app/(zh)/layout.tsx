@@ -1,5 +1,5 @@
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import type { Metadata, Viewport } from "next";
 import Provider from "./(site)/Provider";
 import { buildSiteGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
@@ -51,15 +51,16 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  // issue #485: the home page isn't itself one of this ticket's 3 pilot
+  // translated pages yet (it's on the eventual ~21-page list future tickets
+  // #486/#487/#488 will grow TRANSLATED_PAGES to cover) — so unlike before,
+  // this does NOT declare `?lang=en|ja|ko` alternates any more. Those were
+  // exactly the broken hreflang entries the issue calls out: Googlebot
+  // fetching `?lang=en` got back zh-Hant-TW HTML. Once the home page gets a
+  // real /en/ version, its own `alternates.languages` (via
+  // buildHreflangAlternates) will declare the real thing here.
   alternates: {
     canonical: getBaseUrl(),
-    languages: {
-      "zh-TW": getBaseUrl(),
-      en: `${getBaseUrl()}?lang=en`,
-      ja: `${getBaseUrl()}?lang=ja`,
-      ko: `${getBaseUrl()}?lang=ko`,
-      "x-default": getBaseUrl(),
-    },
   },
   openGraph: {
     type: "website",

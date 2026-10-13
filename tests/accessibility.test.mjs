@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 test("A11y: app/layout.tsx declares zh-Hant-TW and mounts SkipToContent + #main-content", () => {
-  const layoutPath = path.join(process.cwd(), "app", "layout.tsx");
+  const layoutPath = path.join(process.cwd(), "app", "(zh)", "layout.tsx");
   assert.ok(fs.existsSync(layoutPath), "app/layout.tsx must exist");
 
   const content = fs.readFileSync(layoutPath, "utf-8");
@@ -111,8 +111,8 @@ test("A11y: SiteNav.tsx and SiteFooter.tsx provide semantic landmarks and Access
 });
 
 test("A11y: app/accessibility/page.tsx provides full statement and shortcuts table", () => {
-  const pagePath = path.join(process.cwd(), "app", "accessibility", "page.tsx");
-  assert.ok(fs.existsSync(pagePath), "app/accessibility/page.tsx must exist");
+  const pagePath = path.join(process.cwd(), "app", "(zh)", "accessibility", "page.tsx");
+  assert.ok(fs.existsSync(pagePath), "app/(zh)/accessibility/page.tsx must exist");
 
   const content = fs.readFileSync(pagePath, "utf-8");
   assert.ok(

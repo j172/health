@@ -97,7 +97,7 @@ test("sports-coach: SiteFooter.tsx contains sportsCoach footer link with UTM and
 
 test("sports-coach: cram-schools tool page embeds compact dual cards for metawilo and sports-coach", () => {
   const pageContent = readFileSync(
-    path.join(ROOT_DIR, "app", "tools", "cram-schools", "page.tsx"),
+    path.join(ROOT_DIR, "app", "(zh)", "tools", "cram-schools", "page.tsx"),
     "utf-8"
   );
   assert.ok(

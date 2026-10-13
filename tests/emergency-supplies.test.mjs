@@ -33,8 +33,8 @@ test("Emergency Supplies: catalog entry exists and meets SEO/E-E-A-T specificati
 });
 
 test("Emergency Supplies: page and client component files exist and conform to architecture", () => {
-  const pagePath = path.join(process.cwd(), "app", "tools", "emergency-supplies", "page.tsx");
-  assert.ok(fs.existsSync(pagePath), "app/tools/emergency-supplies/page.tsx must exist");
+  const pagePath = path.join(process.cwd(), "app", "(zh)", "tools", "emergency-supplies", "page.tsx");
+  assert.ok(fs.existsSync(pagePath), "app/(zh)/tools/emergency-supplies/page.tsx must exist");
 
   const pageContent = fs.readFileSync(pagePath, "utf-8");
   assert.ok(

@@ -24,8 +24,8 @@ test("next.config.js redirects /tools/cpc-stations permanently to the stations t
 });
 
 test("the /tools/cpc-stations standalone page directory no longer exists (issue #483)", () => {
-  const pageDir = path.join(process.cwd(), "app", "tools", "cpc-stations");
-  assert.ok(!fs.existsSync(pageDir), "app/tools/cpc-stations should be deleted, not just redirected around");
+  const pageDir = path.join(process.cwd(), "app", "(zh)", "tools", "cpc-stations");
+  assert.ok(!fs.existsSync(pageDir), "app/(zh)/tools/cpc-stations should be deleted, not just redirected around");
 });
 
 test("catalog.ts no longer defines a standalone cpc-stations TOOL_CATALOG entry (issue #483)", () => {
@@ -76,7 +76,7 @@ test("en/ja/ko locale files no longer carry the orphaned cpc-stations catalog tr
 
 test("CpcPricesStationsContent.tsx reads ?tab= via useSearchParams and wires it to ToolTypeTabs' initialKey (issue #483)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "cpc-prices", "CpcPricesStationsContent.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "cpc-prices", "CpcPricesStationsContent.tsx"),
     "utf-8",
   );
   assert.match(content, /useSearchParams/, "should read the query string via next/navigation's useSearchParams");
@@ -85,7 +85,7 @@ test("CpcPricesStationsContent.tsx reads ?tab= via useSearchParams and wires it 
 
 test("the cpc-prices page wraps its client content in Suspense (required by useSearchParams in the App Router) (issue #483)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "cpc-prices", "page.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "cpc-prices", "page.tsx"),
     "utf-8",
   );
   assert.match(content, /<Suspense/, "page.tsx should wrap <CpcPricesStationsContent /> in a <Suspense> boundary");
@@ -93,7 +93,7 @@ test("the cpc-prices page wraps its client content in Suspense (required by useS
 
 test("the shipped cpc-prices page.tsx still fetches and passes through both the prices dataset and the stations dataset (issue #483)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "cpc-prices", "page.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "cpc-prices", "page.tsx"),
     "utf-8",
   );
   assert.match(content, /getCpcPrices\s*\(/, "page.tsx should still call getCpcPrices()");
@@ -138,7 +138,7 @@ test("resolveInitialTabKey falls back to undefined when ?tab= is not a known tab
 
 test("the shipped CpcPricesStationsContent.tsx still exports the same tab-key allowlist and validation shape asserted above (issue #483)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "cpc-prices", "CpcPricesStationsContent.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "cpc-prices", "CpcPricesStationsContent.tsx"),
     "utf-8",
   );
   assert.match(

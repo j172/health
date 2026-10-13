@@ -75,7 +75,7 @@ test("NEARBY_DEFAULT_TYPES has exactly the 8 types issue #466 asks for", () => {
 });
 
 test("the 6 facility-backed defaults are sourced from facilitySearchConfigs, not a re-declared copy", async () => {
-  const { facilitySearchConfigs } = await import("../app/tools/facilityConfigs.ts");
+  const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfigs.ts");
   for (const def of NEARBY_DEFAULT_TYPES) {
     if (def.kind !== "facility") continue;
     const cfg = facilitySearchConfigs[def.toolSlug];
@@ -199,16 +199,16 @@ test("buildNearbyLlmsPageContent's tool-backed sources link to the real /tools/<
 // 4. Source-text inspection for JSX / DB-backed files
 // ---------------------------------------------------------------------------
 
-test("app/nearby/page.tsx declares its llms.txt + markdown <link> tags and renders NearbyContent", () => {
-  const src = readSource("app", "nearby", "page.tsx");
+test("app/(zh)/nearby/page.tsx declares its llms.txt + markdown <link> tags and renders NearbyContent", () => {
+  const src = readSource("app", "(zh)", "nearby", "page.tsx");
   assert.ok(src.includes('href="/nearby/llms.txt"'));
   assert.ok(src.includes('href="/nearby/markdown"'));
   assert.ok(src.includes("<NearbyContent"));
 });
 
 for (const [routeDir, adapterFn, generatorFn, contentType] of [
-  [["app", "nearby", "llms.txt", "route.ts"], "buildNearbyLlmsPageContent", "buildLlmsTxt", "text/plain"],
-  [["app", "nearby", "markdown", "route.ts"], "buildNearbyLlmsPageContent", "buildLlmsMarkdown", "text/markdown"],
+  [["app", "(zh)", "nearby", "llms.txt", "route.ts"], "buildNearbyLlmsPageContent", "buildLlmsTxt", "text/plain"],
+  [["app", "(zh)", "nearby", "markdown", "route.ts"], "buildNearbyLlmsPageContent", "buildLlmsMarkdown", "text/markdown"],
 ]) {
   test(`${routeDir.join("/")} exists and calls ${adapterFn} + ${generatorFn}`, () => {
     const fullPath = path.join(ROOT_DIR, ...routeDir);

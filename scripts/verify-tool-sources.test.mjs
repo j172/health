@@ -170,7 +170,7 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
 });
 
 test("facilityConfigs has matching configurations for all facility tool pages", () => {
-  const configsPath = path.join(ROOT_DIR, "app", "tools", "facilityConfigs.ts");
+  const configsPath = path.join(ROOT_DIR, "app", "(zh)", "tools", "facilityConfigs.ts");
   const content = fs.readFileSync(configsPath, "utf-8");
 
   assert.ok(content.includes('"tourism-factories":'), "facilityConfigs must contain tourism-factories");
@@ -187,7 +187,7 @@ test("facilityConfigs has matching configurations for all facility tool pages", 
 test("All tool page files exist on disk", () => {
   const slugs = getCatalogSlugs();
   for (const slug of slugs) {
-    const pagePath = path.join(ROOT_DIR, "app", "tools", slug, "page.tsx");
+    const pagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", slug, "page.tsx");
     assert.ok(fs.existsSync(pagePath), `Page file missing for /tools/${slug}: ${pagePath}`);
   }
 });

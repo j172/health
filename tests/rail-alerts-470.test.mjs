@@ -266,8 +266,8 @@ test("db/mysql.ts migrates existing metro_alerts tables with ADD COLUMN IF NOT E
 //    criterion 2.
 // ---------------------------------------------------------------------------
 
-test("app/tools/metro-alerts/page.tsx and app/api/metro-alerts/route.ts still exist at the original path (slug unchanged)", () => {
-  assert.ok(existsSync(path.join(ROOT_DIR, "app", "tools", "metro-alerts", "page.tsx")));
+test("app/(zh)/tools/metro-alerts/page.tsx and app/api/metro-alerts/route.ts still exist at the original path (slug unchanged)", () => {
+  assert.ok(existsSync(path.join(ROOT_DIR, "app", "(zh)", "tools", "metro-alerts", "page.tsx")));
   assert.ok(existsSync(path.join(ROOT_DIR, "app", "api", "metro-alerts", "route.ts")));
 });
 
@@ -313,8 +313,8 @@ test("navModel.ts: the typhoon-earthquake guide has a step pointing at metro-ale
   assert.match(guideBlock, /toolSlug:\s*"metro-alerts"/);
 });
 
-test("app/guides/[slug]/page.tsx: fetches and renders a live active-alert-count badge specifically for the metro-alerts step", () => {
-  const src = readSource("app", "guides", "[slug]", "page.tsx");
+test("app/(zh)/guides/[slug]/page.tsx: fetches and renders a live active-alert-count badge specifically for the metro-alerts step", () => {
+  const src = readSource("app", "(zh)", "guides", "[slug]", "page.tsx");
   assert.match(src, /import\s*\{\s*getActiveMetroAlertsCount\s*\}\s*from\s*["']@\/lib\/server\/metroAlerts\/queries["']/);
   assert.match(src, /getActiveMetroAlertsCount\(\)/);
   assert.match(src, /step\.toolSlug === "metro-alerts"/);

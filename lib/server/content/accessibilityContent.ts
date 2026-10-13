@@ -72,7 +72,7 @@ export const ACCESSIBILITY_FEEDBACK_LINKS = [
 
 /**
  * Builds the shared `LlmsPageContent` shape for `/accessibility`, from
- * exactly the same `ACCESSIBILITY_*` data `app/accessibility/page.tsx`
+ * exactly the same `ACCESSIBILITY_*` data `app/(zh)/accessibility/page.tsx`
  * renders.
  */
 export function buildAccessibilityLlmsPageContent(baseUrl: string): LlmsPageContent {

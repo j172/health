@@ -37,8 +37,8 @@ test("the pre-existing green-hotels/green-products/green-restaurants redirects a
 });
 
 test("the /tools/green-shops standalone page directory no longer exists (issue #448)", () => {
-  const pageDir = path.join(process.cwd(), "app", "tools", "green-shops");
-  assert.ok(!fs.existsSync(pageDir), "app/tools/green-shops should be deleted, not just redirected around");
+  const pageDir = path.join(process.cwd(), "app", "(zh)", "tools", "green-shops");
+  assert.ok(!fs.existsSync(pageDir), "app/(zh)/tools/green-shops should be deleted, not just redirected around");
 });
 
 test("catalog.ts no longer defines a standalone green-shops TOOL_CATALOG entry (issue #448)", () => {
@@ -50,7 +50,7 @@ test("catalog.ts no longer defines a standalone green-shops TOOL_CATALOG entry (
 });
 
 test("the /tools index no longer references green-shops (issue #448)", () => {
-  const toolsIndexContent = fs.readFileSync(path.join(process.cwd(), "app", "tools", "page.tsx"), "utf-8");
+  const toolsIndexContent = fs.readFileSync(path.join(process.cwd(), "app", "(zh)", "tools", "page.tsx"), "utf-8");
   assert.ok(
     !toolsIndexContent.includes('"green-shops"'),
     "/tools index page should no longer list green-shops as its own entry",
@@ -63,7 +63,7 @@ test("facilityConfigs.ts still defines the shared green-shops facility config, r
   // <FacilitySearchContent config={facilitySearchConfigs["green-shops"]} />,
   // so removing it would break the tab that now serves this exact content.
   const facilityConfigsContent = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "facilityConfigs.ts"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "facilityConfigs.ts"),
     "utf-8",
   );
   assert.ok(
@@ -86,7 +86,7 @@ test("en/ja/ko locale files no longer carry the orphaned green-shops catalog tra
 
 test("GreenCertificationsContent.tsx reads ?tab= via useSearchParams and wires it to ToolTypeTabs' initialKey (issue #448)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "green-certifications", "GreenCertificationsContent.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "green-certifications", "GreenCertificationsContent.tsx"),
     "utf-8",
   );
   assert.match(content, /useSearchParams/, "should read the query string via next/navigation's useSearchParams");
@@ -95,7 +95,7 @@ test("GreenCertificationsContent.tsx reads ?tab= via useSearchParams and wires i
 
 test("the green-certifications page wraps its client content in Suspense (required by useSearchParams in the App Router) (issue #448)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "green-certifications", "page.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "green-certifications", "page.tsx"),
     "utf-8",
   );
   assert.match(content, /<Suspense/, "page.tsx should wrap <GreenCertificationsContent /> in a <Suspense> boundary");
@@ -141,7 +141,7 @@ test("resolveInitialTabKey falls back to undefined when ?tab= is not a known tab
 
 test("the shipped GreenCertificationsContent.tsx still exports the same tab-key allowlist and validation shape asserted above (issue #448)", () => {
   const content = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "green-certifications", "GreenCertificationsContent.tsx"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "green-certifications", "GreenCertificationsContent.tsx"),
     "utf-8",
   );
   assert.match(

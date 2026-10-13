@@ -18,7 +18,13 @@ test("app/context/LanguageContext.tsx: contains mounted hydration guard for Reac
     "Must set mounted to true after initial hydration effect",
   );
   assert.ok(
-    source.includes('const locale = mounted ? userLocale : "zh-TW";'),
-    "Must lock locale to zh-TW during SSR and initial hydration pass",
+    // issue #485 wraps the original `mounted ? userLocale : "zh-TW"`
+    // fallback in `forcedLocale ?? (...)` — a locale-prefixed /en//ja//ko/
+    // route passes forcedLocale and short-circuits past this hydration
+    // dance entirely (its server HTML already matches that locale from the
+    // first byte), while the default zh-TW tree's `mounted`-gated fallback
+    // for SSR/initial hydration is unchanged.
+    source.includes('const locale = forcedLocale ?? (mounted ? userLocale : "zh-TW");'),
+    "Must lock locale to zh-TW during SSR and initial hydration pass (or forcedLocale on a locked route)",
   );
 });

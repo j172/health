@@ -67,6 +67,35 @@ const nextConfig = {
         destination: "/tools/emergency-hotlines",
         permanent: false,
       },
+      // issue #485 (2.0 §Q): the old `?lang=en|ja|ko` query-param mechanism
+      // never actually served a translated page server-side (Googlebot
+      // fetching `/tools/aed?lang=en` got back `<html lang="zh-Hant-TW">`
+      // and Chinese content) — these permanently redirect to the real
+      // path-prefixed URL for the 3 pages that now have one. Each locale
+      // needs its own `has` entry since Next.js redirect `has` matching is
+      // an exact query value match, not a wildcard.
+      ...["en", "ja", "ko"].flatMap((locale) =>
+        ["aed", "er-status", "emergency-hotlines"].map((slug) => ({
+          source: `/tools/${slug}`,
+          has: [{ type: "query", key: "lang", value: locale }],
+          destination: `/${locale}/tools/${slug}`,
+          permanent: true,
+        })),
+      ),
+      // Every other `?lang=` hit (any other page, or the home page) has no
+      // translated destination yet. Deliberately NOT redirected: Next.js
+      // always forwards the incoming query string onto a redirect's
+      // destination with no opt-out, so a same-path rule like
+      // `source: "/:path*" -> destination: "/:path*"` redirects a request
+      // straight back to itself (confirmed live: `/tools/clinics?lang=en`
+      // came back as `308 Location: /tools/clinics?lang=en`, an infinite
+      // loop for every one of the ~78 pages with no translation yet) — an
+      // earlier version of this file had exactly that rule. These pages
+      // don't need a redirect at all: LanguageContext.tsx no longer reads
+      // the `lang` query param (its old `urlLang` handling was removed by
+      // this same ticket), so the param is simply ignored and the page
+      // renders normally in Chinese — which is exactly what the "untranslated
+      // pages stay Chinese-only" acceptance criterion asks for.
       {
         // issue #484 (2.0 §D merge item M4): "/tools/hakka-bogong" itself was
         // merged into "/tools/long-term-care?type=hakka-bogong" — this older

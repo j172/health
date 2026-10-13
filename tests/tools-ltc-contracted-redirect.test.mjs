@@ -26,13 +26,13 @@ test("next.config.js redirects /tools/ltc-contracted permanently to /tools/long-
 });
 
 test("the /tools/ltc-contracted ghost page directory no longer exists (issue #447)", () => {
-  const pageDir = path.join(process.cwd(), "app", "tools", "ltc-contracted");
-  assert.ok(!fs.existsSync(pageDir), "app/tools/ltc-contracted should be deleted, not just redirected around");
+  const pageDir = path.join(process.cwd(), "app", "(zh)", "tools", "ltc-contracted");
+  assert.ok(!fs.existsSync(pageDir), "app/(zh)/tools/ltc-contracted should be deleted, not just redirected around");
 });
 
 test("facilityConfigs.ts and the /tools index no longer reference ltc-contracted (issue #447)", () => {
   const facilityConfigsContent = fs.readFileSync(
-    path.join(process.cwd(), "app", "tools", "facilityConfigs.ts"),
+    path.join(process.cwd(), "app", "(zh)", "tools", "facilityConfigs.ts"),
     "utf-8",
   );
   assert.ok(
@@ -40,7 +40,7 @@ test("facilityConfigs.ts and the /tools index no longer reference ltc-contracted
     "facilityConfigs.ts should no longer define a ltc-contracted entry",
   );
 
-  const toolsIndexContent = fs.readFileSync(path.join(process.cwd(), "app", "tools", "page.tsx"), "utf-8");
+  const toolsIndexContent = fs.readFileSync(path.join(process.cwd(), "app", "(zh)", "tools", "page.tsx"), "utf-8");
   assert.ok(
     !toolsIndexContent.includes('"ltc-contracted"'),
     "/tools index page should no longer list ltc-contracted (e.g. in TOOL_ICONS)",

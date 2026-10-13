@@ -90,7 +90,7 @@ test("app/globals.css defines pb-safe via env(safe-area-inset-bottom)", () => {
 });
 
 test("app/layout.tsx sets viewport-fit=cover so env(safe-area-inset-bottom) resolves on iOS Safari", () => {
-  const layoutContent = read("app", "layout.tsx");
+  const layoutContent = read("app", "(zh)", "layout.tsx");
   assert.match(
     layoutContent,
     /viewportFit:\s*"cover"/,

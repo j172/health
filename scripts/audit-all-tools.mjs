@@ -10,7 +10,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const TOOLS_DIR = path.join(process.cwd(), "app", "tools");
+const TOOLS_DIR = path.join(process.cwd(), "app", "(zh)", "tools");
 const TOOL_DIRS = fs.readdirSync(TOOLS_DIR).filter((f) => {
   const full = path.join(TOOLS_DIR, f);
   return fs.statSync(full).isDirectory() && fs.existsSync(path.join(full, "page.tsx"));

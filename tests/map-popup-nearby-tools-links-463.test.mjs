@@ -152,8 +152,8 @@ test("AedContent.tsx: reads ?lat=&lng= via useSearchParams and passes it into us
   assert.match(src, /useLocationWithManualFallback\(locationOverride\)/);
 });
 
-test("app/tools/aed/page.tsx: wraps AedContent in a Suspense boundary (required by useSearchParams in the App Router)", () => {
-  const src = read("app/tools/aed/page.tsx");
+test("app/(zh)/tools/aed/page.tsx: wraps AedContent in a Suspense boundary (required by useSearchParams in the App Router)", () => {
+  const src = read("app/(zh)/tools/aed/page.tsx");
   assert.match(src, /import\s*\{\s*Suspense\s*\}\s*from\s*["']react["']/);
   assert.match(src, /<Suspense>\s*\n\s*<AedContent \/>\s*\n\s*<\/Suspense>/);
 });
@@ -167,8 +167,8 @@ test("FacilitySearchContent.tsx: accepts a locationOverride prop and uses it to 
   assert.match(src, /useSharedGeolocation\(\{\s*skip:\s*hasOverride\s*\}\)/);
 });
 
-test("app/tools/pharmacies/page.tsx: server component resolves ?lat=&lng= from its own searchParams prop and forwards it", () => {
-  const src = read("app/tools/pharmacies/page.tsx");
+test("app/(zh)/tools/pharmacies/page.tsx: server component resolves ?lat=&lng= from its own searchParams prop and forwards it", () => {
+  const src = read("app/(zh)/tools/pharmacies/page.tsx");
   assert.match(src, /searchParams:\s*Promise<\{\s*lat\?:\s*string;\s*lng\?:\s*string\s*\}>/);
   assert.match(src, /parseGeolocationOverrideFromPlainParams\(await searchParams\)/);
   assert.match(src, /<FacilitySearchContent[^>]*locationOverride=\{locationOverride\}/);
@@ -194,8 +194,8 @@ test("EmergencyRoomContent.tsx: reads ?lat=&lng= via useSearchParams (not a prop
   assert.match(src, /if \(locationOverride\) \{\s*\n\s*refreshData\(\);/);
 });
 
-test("app/tools/er-status/page.tsx: does NOT read searchParams server-side (preserves the 30s ISR cache for the general-visitor case) and wraps EmergencyRoomContent in Suspense", () => {
-  const src = read("app/tools/er-status/page.tsx");
+test("app/(zh)/tools/er-status/page.tsx: does NOT read searchParams server-side (preserves the 30s ISR cache for the general-visitor case) and wraps EmergencyRoomContent in Suspense", () => {
+  const src = read("app/(zh)/tools/er-status/page.tsx");
   assert.doesNotMatch(
     src,
     /searchParams\s*[:,)]|await\s+searchParams/,

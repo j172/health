@@ -3,6 +3,12 @@ import { listNewsForSitemap } from "@/lib/server/news/queries";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
 import { TOOL_CATALOG, isToolIndexable } from "@/lib/server/tools/catalog";
+import {
+  buildHreflangAlternates,
+  buildLocalizedPath,
+  PATH_LOCALES,
+  TRANSLATED_CANONICAL_PATHS,
+} from "@/lib/i18n/translatedPages";
 
 export const runtime = "nodejs";
 export const revalidate = 3600;
@@ -36,50 +42,46 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
   );
 
+  // issue #485: a translated tool's zh entry now declares real `/en/`,
+  // `/ja/`, `/ko/` alternates (via the same buildHreflangAlternates() the
+  // page's own metadata uses, so the two can't drift); every other tool
+  // gets no `languages` at all — not the broken `?lang=` ones this used to
+  // emit — since it genuinely has no foreign-language version yet.
   const toolEntries: MetadataRoute.Sitemap = TOOL_CATALOG.filter(
     isToolIndexable,
-  ).map((tool) => ({
-    url: `${baseUrl}/tools/${tool.slug}`,
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-    alternates: {
-      languages: {
-        "zh-TW": `${baseUrl}/tools/${tool.slug}`,
-        en: `${baseUrl}/tools/${tool.slug}?lang=en`,
-        ja: `${baseUrl}/tools/${tool.slug}?lang=ja`,
-        ko: `${baseUrl}/tools/${tool.slug}?lang=ko`,
-      },
-    },
-  }));
+  ).map((tool) => {
+    const canonicalPath = `/tools/${tool.slug}`;
+    const languages = buildHreflangAlternates(canonicalPath, baseUrl);
+    return {
+      url: `${baseUrl}${canonicalPath}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+      ...(languages ? { alternates: { languages } } : {}),
+    };
+  });
 
-  const homeAlternates = {
-    languages: {
-      "zh-TW": baseUrl,
-      en: `${baseUrl}?lang=en`,
-      ja: `${baseUrl}?lang=ja`,
-      ko: `${baseUrl}?lang=ko`,
-    },
-  };
+  // The /en/, /ja/, /ko/ sibling URLs themselves also need their own
+  // sitemap entries (each with the same reciprocal alternates) — crawlers
+  // discover a page's hreflang siblings fastest when every one of them is
+  // independently listed, not only cross-referenced from the zh entry.
+  const translatedLocaleEntries: MetadataRoute.Sitemap = TRANSLATED_CANONICAL_PATHS.flatMap(
+    (canonicalPath) =>
+      PATH_LOCALES.map((locale) => ({
+        url: `${baseUrl}${buildLocalizedPath(canonicalPath, locale)}`,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+        alternates: { languages: buildHreflangAlternates(canonicalPath, baseUrl) ?? undefined },
+      })),
+  );
 
   return [
-    { url: baseUrl, changeFrequency: "daily", priority: 1, alternates: homeAlternates },
+    { url: baseUrl, changeFrequency: "daily", priority: 1 },
     { url: `${baseUrl}/news`, changeFrequency: "hourly", priority: 0.9 },
-    {
-      url: `${baseUrl}/tools`,
-      changeFrequency: "monthly",
-      priority: 0.8,
-      alternates: {
-        languages: {
-          "zh-TW": `${baseUrl}/tools`,
-          en: `${baseUrl}/tools?lang=en`,
-          ja: `${baseUrl}/tools?lang=ja`,
-          ko: `${baseUrl}/tools?lang=ko`,
-        },
-      },
-    },
+    { url: `${baseUrl}/tools`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/llm-info`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
     ...toolEntries,
+    ...translatedLocaleEntries,
     ...sourceEntries,
     ...newsEntries,
   ];

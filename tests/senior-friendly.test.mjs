@@ -157,8 +157,8 @@ test("Senior Tourism catalog: TOOL_CATALOG has a senior-friendly entry in elder-
 });
 
 test("Senior Tourism page: /tools/senior-friendly page + component exist and follow ToolPageShell + lazy Date.now() conventions (issue #436)", () => {
-  const pageFile = path.join(process.cwd(), "app", "tools", "senior-friendly", "page.tsx");
-  assert.ok(fs.existsSync(pageFile), "app/tools/senior-friendly/page.tsx should exist");
+  const pageFile = path.join(process.cwd(), "app", "(zh)", "tools", "senior-friendly", "page.tsx");
+  assert.ok(fs.existsSync(pageFile), "app/(zh)/tools/senior-friendly/page.tsx should exist");
   const pageContent = fs.readFileSync(pageFile, "utf-8");
   assert.ok(pageContent.includes("ToolPageShell"), "page should use the shared ToolPageShell wrapper");
   assert.ok(pageContent.includes('getToolCatalogEntry("senior-friendly")'), "page should pull metadata from the catalog entry");
