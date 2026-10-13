@@ -25,44 +25,75 @@ export default function NewsSidebar({
   cwaAlerts = [],
   earthquakes = [],
   activeGroupKey,
+  hideStatusBarDuplicateWidgets = false,
 }: {
   trendingNews?: NewsListItem[];
   cwaAlerts?: CwaAlertItem[];
   earthquakes?: SignificantEarthquake[];
   activeGroupKey?: string;
+  /**
+   * Hides only the 5 widgets below that duplicate the homepage's new top
+   * status bar — items 1 `LocalWeatherSvgWidget`, 2
+   * `WeatherAlertSidebarWidget`, 4 `EarthquakeSidebarWidget`, 5
+   * `AqiSidebarWidget`, 6 `UvSidebarWidget` (issue #472, parent #438 §G).
+   * The homepage now covers that same weather/AQI/UV/earthquake/alerts
+   * ground via its own top status bar fed by a single `/api/home-status`
+   * aggregation call, so rendering these 5 again here would duplicate that
+   * and bring back their independent per-widget client fetches.
+   *
+   * Items 3 `ErStatusSidebarWidget`, 7 `CpcPriceSidebarWidget`, 8
+   * `WaterOutageSidebarWidget`, 9 `CdcAlertSidebarWidget`, 10
+   * `PestAlertSidebarWidget` are NOT covered by the new status bar and
+   * always render regardless of this flag — product decision (2026-10-13
+   * review of issue #472): keep all 10 original widgets' *content*
+   * reachable from the homepage, only consolidating the 5 that are now
+   * genuinely redundant.
+   *
+   * Defaults to `false` so `/news` archive pages are completely unaffected.
+   */
+  hideStatusBarDuplicateWidgets?: boolean;
 }) {
   const { t, locale, tDynamic } = useLanguage();
 
   return (
     <aside className="space-y-6" aria-label="側邊資訊欄">
-      {/* 1. 所在位置即時天氣 (CWA O-A0001-001) */}
-      <LocalWeatherSvgWidget />
+      {!hideStatusBarDuplicateWidgets && (
+        <>
+          {/* 1. 所在位置即時天氣 (CWA O-A0001-001) — covered by the home
+              status bar on home, so hidden there. */}
+          <LocalWeatherSvgWidget />
 
-      {/* 2. 氣象災害特警報 */}
-      <WeatherAlertSidebarWidget alerts={cwaAlerts} />
+          {/* 2. 氣象災害特警報 — covered by the home status bar on home. */}
+          <WeatherAlertSidebarWidget alerts={cwaAlerts} />
+        </>
+      )}
 
-      {/* 3. 全台急診即時看板 */}
+      {/* 3. 全台急診即時看板 — not covered by the home status bar, always renders. */}
       <ErStatusSidebarWidget />
 
-      {/* 4. 有感地震即時速報 */}
-      <EarthquakeSidebarWidget earthquakes={earthquakes} />
+      {!hideStatusBarDuplicateWidgets && (
+        <>
+          {/* 4. 有感地震即時速報 — covered by the home status bar on home. */}
+          <EarthquakeSidebarWidget earthquakes={earthquakes} />
 
-      {/* 5. 空氣品質 AQI */}
-      <AqiSidebarWidget />
+          {/* 5. 空氣品質 AQI — covered by the home status bar on home. */}
+          <AqiSidebarWidget />
 
-      {/* 6. 即時紫外線指數 */}
-      <UvSidebarWidget />
+          {/* 6. 即時紫外線指數 — covered by the home status bar on home. */}
+          <UvSidebarWidget />
+        </>
+      )}
 
-      {/* 7. 中油油價預測 */}
+      {/* 7. 中油油價預測 — not covered by the home status bar, always renders. */}
       <CpcPriceSidebarWidget />
 
-      {/* 8. 自來水即時停水通知 */}
+      {/* 8. 自來水即時停水通知 — not covered by the home status bar, always renders. */}
       <WaterOutageSidebarWidget />
 
-      {/* 9. 疾管署國際旅遊疫情 */}
+      {/* 9. 疾管署國際旅遊疫情 — not covered by the home status bar, always renders. */}
       <CdcAlertSidebarWidget />
 
-      {/* 10. 農業動植物疫情警報 */}
+      {/* 10. 農業動植物疫情警報 — not covered by the home status bar, always renders. */}
       <PestAlertSidebarWidget />
 
       {/* 11. 熱門焦點新聞 (依瀏覽量排序) */}

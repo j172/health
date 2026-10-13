@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { listDiverseHomeNews } from "@/lib/server/news/queries";
 import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
+import HomeStatusBar from "@/components/Home/HomeStatusBar";
+import GuideCardsSection from "@/components/Home/GuideCardsSection";
+import RecentToolsSection from "@/components/Home/RecentToolsSection";
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -45,7 +48,22 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph) }} />
-      <StabloNewsLayout items={items} variant="home" />
+      <StabloNewsLayout
+        items={items}
+        variant="home"
+        homeTopSections={
+          <>
+            {/* 首頁改版 (issue #472，母票 #438 §G)：定位感知狀態列、5 張生活情
+             * 境卡、最近使用的工具，依序排在焦點新聞與新聞列表之上。
+             * HomeStatusBar / RecentToolsSection 是 "use client" 元件，各自
+             * 在瀏覽器端才抓資料（定位、/api/home-status、localStorage），
+             * 不影響這個 Server Component 本身沿用的 60 秒 ISR 快取。 */}
+            <HomeStatusBar />
+            <GuideCardsSection />
+            <RecentToolsSection />
+          </>
+        }
+      />
     </>
   );
 }
