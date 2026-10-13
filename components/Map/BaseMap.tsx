@@ -90,6 +90,13 @@ export interface BaseMapProps {
   focusMarkerId?: string | null;
   /** 點擊地圖上單一標記點（非群聚）時呼叫，傳入該標記的 id；地圖仍會照常開啟其彈出視窗。 */
   onMarkerClick?: (id: string) => void;
+  /**
+   * 是否允許滑鼠滾輪縮放地圖，預設 true。地圖內嵌在可捲動的長列表中時（例如
+   * WaterOutagesLeaflet 原本的設定），使用者捲動頁面很容易不小心把地圖縮放
+   * 當成頁面捲動，應設為 false——遷移自各頁面原本各自在 `<MapContainer>` 上
+   * 設定的 `scrollWheelZoom`，見 issue #476。
+   */
+  scrollWheelZoom?: boolean;
 }
 
 function buildClusterIcon(count: number): L.DivIcon {
@@ -199,6 +206,7 @@ export default function BaseMap({
   circle,
   focusMarkerId,
   onMarkerClick,
+  scrollWheelZoom = true,
 }: BaseMapProps) {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [focusedCenter, setFocusedCenter] = useState<[number, number] | null>(null);
@@ -300,7 +308,7 @@ export default function BaseMap({
       )}
 
       {viewMode === "map" ? (
-        <MapContainer center={mapCenter} zoom={mapZoom} className="h-full w-full" scrollWheelZoom>
+        <MapContainer center={mapCenter} zoom={mapZoom} className="h-full w-full" scrollWheelZoom={scrollWheelZoom}>
           <MapViewController center={mapCenter} zoom={mapZoom} />
 
           {/* 備援底圖永遠掛載在下層；主要底圖失敗時把它的 opacity 降為 0，

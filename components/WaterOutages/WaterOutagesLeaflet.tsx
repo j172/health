@@ -123,6 +123,9 @@ export default function WaterOutagesLeaflet({
         center={defaultCenter}
         zoom={defaultZoom}
         userLocation={userLocation ? { lat: userLocation.lat, lng: userLocation.lng, isDefault: false } : undefined}
+        // 這個地圖內嵌在可捲動的停水/供水站清單頁面中，保留遷移前的設定，避免
+        // 使用者捲動頁面時不小心把地圖縮放當成頁面捲動（issue #476）。
+        scrollWheelZoom={false}
       />
     </div>
   );

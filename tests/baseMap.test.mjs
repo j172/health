@@ -76,6 +76,17 @@ test("BaseMap has a built-in locate button gated on userLocation.refresh being p
   assert.ok(baseMapSrc.includes("🎯"), "locate button should use the same target icon convention as the existing 9 map components");
 });
 
+test("BaseMap supports an optional scrollWheelZoom prop, defaulting to true (issue #476: WaterOutagesLeaflet relies on being able to opt out, since its map is embedded in a scrollable list)", () => {
+  assert.ok(/scrollWheelZoom\?:\s*boolean/.test(baseMapSrc), "BaseMapProps should declare an optional scrollWheelZoom prop");
+  assert.ok(/scrollWheelZoom\s*=\s*true/.test(baseMapSrc), "scrollWheelZoom should default to true, preserving the other 8 maps' pre-migration behavior");
+  assert.ok(/<MapContainer[^>]*scrollWheelZoom=\{scrollWheelZoom\}/.test(baseMapSrc), "the prop must actually reach the underlying MapContainer, not just be declared");
+});
+
+test("WaterOutagesLeaflet.tsx passes scrollWheelZoom={false} to BaseMap (issue #327's original setting, preserved across the issue #476 migration)", () => {
+  const src = fs.readFileSync(path.join(process.cwd(), "components/WaterOutages/WaterOutagesLeaflet.tsx"), "utf-8");
+  assert.ok(/<BaseMap[\s\S]{0,400}scrollWheelZoom=\{false\}/.test(src), "WaterOutagesLeaflet must opt out of scroll-wheel zoom, matching its pre-migration MapContainer setting");
+});
+
 test("BaseMap has built-in marker clustering wired to the current zoom level", () => {
   assert.ok(baseMapSrc.includes("import { clusterMarkers } from \"@/components/Map/clusterMarkers\""), "should delegate clustering to the pure clusterMarkers function");
   assert.ok(baseMapSrc.includes("useMapEvents"), "should re-cluster when the user zooms (not just on initial render)");
