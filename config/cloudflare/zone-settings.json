@@ -77,8 +77,9 @@
     "wafCustomRules": [
       {
         "ref": "health-repo:challenge-admin",
-        "description": "Challenge Untrusted Traffic on Admin",
-        "expression": "(starts_with(http.request.uri.path, \"/admin\") or starts_with(http.request.uri.path, \"/api/admin\")) and (cf.threat_score gt 0 or not ip.src.country in {\"TW\"})",
+        "description": "Challenge Untrusted Traffic on Admin Dashboard",
+        "note": "2026-10-13: scope narrowed from /admin + /api/admin down to /admin only. Shipping the ip.geoip.country -> ip.src.country fix (PR #538) made this rule actually fire for the first time (it had silently never matched before, since ip.geoip.country isn't a real field) — and it immediately started managed_challenge-ing the deploy pipeline's own legitimate /api/admin/* calls (culture-sync, MOENV/WRA imports, etc.), which run from GitHub Actions runners (non-TW IPs) and authenticate with their own x-rss-sync-admin-secret / ADMIN_SECRET header, not a browser session or geography. /api/admin/* doesn't need this geo/threat-score challenge on top of its own secret check; /admin (the human-facing dashboard UI) still does.",
+        "expression": "starts_with(http.request.uri.path, \"/admin\") and (cf.threat_score gt 0 or not ip.src.country in {\"TW\"})",
         "action": "managed_challenge",
         "enabled": true
       },
