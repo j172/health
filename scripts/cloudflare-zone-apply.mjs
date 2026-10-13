@@ -198,5 +198,12 @@ async function main() {
 
 main().catch((err) => {
   console.error(err instanceof Error ? err.message : err);
+  // CloudflareApiError carries the API's actual JSON error body (error
+  // codes/messages), which the bare .message string above never includes —
+  // print it too so a failed apply run's log actually explains *why*
+  // Cloudflare rejected the request, not just that it returned a 4xx.
+  if (err?.name === "CloudflareApiError" && err.body) {
+    console.error("Cloudflare API error body:", JSON.stringify(err.body, null, 2));
+  }
   process.exit(1);
 });
