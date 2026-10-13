@@ -102,13 +102,16 @@ test("parseZoneSettingsFile: aiSearch/aiUser/aiTraining accept null (genuinely u
   assert.doesNotThrow(() => parseZoneSettingsFile(raw));
 });
 
-test("parseZoneSettingsFile: the repo baseline has a health-repo:limit-bot-traffic rate-limiting rule targeting cf.client.bot (issue #455)", () => {
+test("parseZoneSettingsFile: the repo baseline has a health-repo:limit-bot-traffic rate-limiting rule covering bot traffic and api/admin (issue #455, merged with the pre-existing live rule due to the free-plan 1-rule cap)", () => {
   const raw = loadBaselineRaw();
   const parsed = parseZoneSettingsFile(raw);
   const rule = parsed.managedRules.rateLimitingRules.find((r) => r.ref === "health-repo:limit-bot-traffic");
   assert.ok(rule, "expected a health-repo:limit-bot-traffic rate-limiting rule");
-  assert.equal(rule.expression, "cf.client.bot");
+  assert.ok(rule.expression.includes("cf.client.bot"), "must still cover bot traffic");
+  assert.ok(rule.expression.includes('starts_with(http.request.uri.path, "/api/")'), "must still cover /api/ (merged from the adopted live rule)");
+  assert.ok(rule.expression.includes('starts_with(http.request.uri.path, "/admin")'), "must still cover /admin (merged from the adopted live rule)");
   assert.equal(rule.enabled, true);
+  assert.equal(rule.adoptsLiveRuleId, "7d45ce60945c4efa8321feff7a38456a");
   // Must not be a challenge action — a legitimate crawler can't solve a JS
   // challenge, so challenging bot traffic would defeat the point of #455's
   // AI-crawler unblock.
@@ -116,6 +119,20 @@ test("parseZoneSettingsFile: the repo baseline has a health-repo:limit-bot-traff
     rule.action === "block" || rule.action === "log",
     "action must not be managed_challenge/js_challenge for bot traffic",
   );
+});
+
+test("parseZoneSettingsFile: rateLimitingRules.adoptsLiveRuleId is optional and, when present, must be a non-empty string", () => {
+  const raw = loadBaselineRaw();
+  const [rule] = raw.managedRules.rateLimitingRules;
+  delete rule.adoptsLiveRuleId;
+  assert.doesNotThrow(() => parseZoneSettingsFile(raw), "adoptsLiveRuleId must be optional");
+
+  rule.adoptsLiveRuleId = "";
+  assert.throws(() => parseZoneSettingsFile(raw), /failed schema validation/, "an empty string must be rejected");
+
+  rule.adoptsLiveRuleId = "some-live-rule-id";
+  const parsed = parseZoneSettingsFile(raw);
+  assert.equal(parsed.managedRules.rateLimitingRules[0].adoptsLiveRuleId, "some-live-rule-id");
 });
 
 // ---------------------------------------------------------------------------

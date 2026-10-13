@@ -65,6 +65,33 @@ test("rateLimitingRuleToCloudflare: builds the ratelimit object", () => {
   assert.equal(cf.ratelimit.mitigation_timeout, 60);
 });
 
+test("rateLimitingRuleToCloudflare: carries adoptsLiveRuleId through when present (diff.mjs needs it on the mapped shape it actually reconciles against), omits it entirely when absent", () => {
+  const withSentinel = rateLimitingRuleToCloudflare({
+    ref: "health-repo:x",
+    description: "d",
+    expression: "true",
+    requestsPerPeriod: 30,
+    periodSeconds: 10,
+    mitigationTimeoutSeconds: 60,
+    action: "block",
+    enabled: true,
+    adoptsLiveRuleId: "live-id-123",
+  });
+  assert.equal(withSentinel.adoptsLiveRuleId, "live-id-123");
+
+  const without = rateLimitingRuleToCloudflare({
+    ref: "health-repo:x",
+    description: "d",
+    expression: "true",
+    requestsPerPeriod: 30,
+    periodSeconds: 10,
+    mitigationTimeoutSeconds: 60,
+    action: "block",
+    enabled: true,
+  });
+  assert.ok(!("adoptsLiveRuleId" in without));
+});
+
 test("responseHeaderTransformRuleToCloudflare: builds set + remove header operations", () => {
   const cf = responseHeaderTransformRuleToCloudflare({
     ref: "health-repo:x",

@@ -49,7 +49,12 @@ function renderRuleReconciliation(title, r) {
   if (r.added.length === 0 && r.updated.length === 0 && r.removed.length === 0) {
     lines.push("- no drift");
   }
-  for (const rule of r.added) lines.push(`- ➕ add \`${rule.ref}\` — ${rule.description}`);
+  for (const rule of r.added) {
+    const adoptSuffix = rule.adoptsLiveRuleId
+      ? ` (🔁 replaces/consolidates unmanaged live rule id ${rule.adoptsLiveRuleId})`
+      : "";
+    lines.push(`- ➕ add \`${rule.ref}\` — ${rule.description}${adoptSuffix}`);
+  }
   for (const u of r.updated) lines.push(`- ✏️ update \`${u.ref}\``);
   for (const rule of r.removed) lines.push(`- ➖ remove \`${rule.ref}\` (no longer in zone-settings.json)`);
   if (r.unmanagedPreserved.length > 0) {

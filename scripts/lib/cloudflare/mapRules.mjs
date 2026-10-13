@@ -63,6 +63,12 @@ export function rateLimitingRuleToCloudflare(rule) {
       mitigation_timeout: rule.mitigationTimeoutSeconds,
     },
     enabled: rule.enabled,
+    // Not a real Cloudflare API field — carried through only so
+    // reconcileManagedRules() in diff.mjs (which operates on this
+    // already-mapped shape, not the raw zone-settings.json rule) can see it.
+    // diff.mjs strips it back out before building the rule list that
+    // actually gets PUT to Cloudflare.
+    ...(rule.adoptsLiveRuleId ? { adoptsLiveRuleId: rule.adoptsLiveRuleId } : {}),
   };
 }
 

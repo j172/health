@@ -50,6 +50,15 @@ const rateLimitingRuleSchema = z.object({
   action: z.enum(["block", "managed_challenge", "js_challenge", "log"]),
   enabled: z.boolean(),
   note: z.string().optional(),
+  // issue #455: explicitly names one specific live unmanaged rule's
+  // Cloudflare-assigned id this managed rule takes over — see
+  // reconcileManagedRules() in diff.mjs for the safety property (an
+  // allowlist of exactly one id, never a blanket "replace unmanaged rules"
+  // switch). Only meaningful for rateLimitingRules today, since that's the
+  // phase with a confirmed-live free-plan rule cap forcing consolidation,
+  // but not restricted to it structurally in case another phase hits the
+  // same wall later.
+  adoptsLiveRuleId: z.string().min(1).optional(),
 });
 
 const responseHeaderTransformRuleSchema = z.object({
