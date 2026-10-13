@@ -177,5 +177,8 @@ async function main() {
 
 main().catch((err) => {
   console.error(err instanceof Error ? err.message : err);
+  if (err?.name === "CloudflareApiError" && err.body) {
+    console.error("Cloudflare API error body:", JSON.stringify(err.body, null, 2));
+  }
   process.exit(1);
 });
