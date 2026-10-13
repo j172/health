@@ -28,6 +28,7 @@ const cacheRuleSchema = z.object({
   edgeTtlMode: z.literal("respect_origin").optional(),
   browserTtlMode: z.literal("respect_origin").optional(),
   enabled: z.boolean(),
+  note: z.string().optional(),
 });
 
 const wafCustomRuleSchema = z.object({
@@ -36,6 +37,7 @@ const wafCustomRuleSchema = z.object({
   expression: z.string().min(1),
   action: z.enum(["block", "managed_challenge", "js_challenge", "skip", "log"]),
   enabled: z.boolean(),
+  note: z.string().optional(),
 });
 
 const rateLimitingRuleSchema = z.object({
@@ -47,6 +49,7 @@ const rateLimitingRuleSchema = z.object({
   mitigationTimeoutSeconds: z.number().int().positive(),
   action: z.enum(["block", "managed_challenge", "js_challenge", "log"]),
   enabled: z.boolean(),
+  note: z.string().optional(),
 });
 
 const responseHeaderTransformRuleSchema = z.object({
@@ -56,6 +59,7 @@ const responseHeaderTransformRuleSchema = z.object({
   setStatic: z.record(z.string(), z.string()).optional(),
   remove: z.array(z.string()).optional(),
   enabled: z.boolean(),
+  note: z.string().optional(),
 });
 
 const redirectRuleSchema = z.object({
@@ -66,6 +70,7 @@ const redirectRuleSchema = z.object({
   statusCode: z.union([z.literal(301), z.literal(302), z.literal(307), z.literal(308)]),
   preserveQueryString: z.boolean().optional(),
   enabled: z.boolean(),
+  note: z.string().optional(),
 });
 
 const documentedUnmanagedRuleSchema = z.object({
@@ -120,7 +125,23 @@ export const zoneSettingsFileSchema = z.object({
   }),
   botManagement: z.object({
     fightMode: z.boolean(),
+    // Legacy single-toggle field — Cloudflare confirms it still exists
+    // alongside the three category fields below (2026-07-01 AI traffic
+    // options changelog: the category controls "replace" the single
+    // toggle), but does not mark it deprecated in the API schema. Kept
+    // here so the apply script can explicitly set it rather than leave an
+    // ambiguous stale value.
     aiBotsProtection: z.enum(["block", "disabled", "only_on_ad_pages"]),
+    // issue #455 (2.0 §T): Cloudflare's 2026-07-01 Search/Agent/Training
+    // AI-crawler category model (free-plan-available), confirmed against
+    // Cloudflare's live API docs for PUT /zones/{id}/bot_management —
+    // field names ai_search/ai_user/ai_training. "disabled" = not
+    // blocked (allowed) for that category.
+    aiSearch: z.enum(["disabled", "block", "only_on_ad_pages"]).nullable(),
+    aiUser: z.enum(["disabled", "block", "only_on_ad_pages"]).nullable(),
+    // ai_training is the only one of the three with a documented
+    // "disallow" value in addition to "disabled"/"block"/"only_on_ad_pages".
+    aiTraining: z.enum(["disabled", "disallow", "block", "only_on_ad_pages"]).nullable(),
     crawlerProtection: z.enum(["enabled", "disabled"]).nullable(),
     note: z.string().optional(),
   }),
