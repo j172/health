@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import type { CulturalActivityItem } from "@/app/api/culture/shows/route";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
@@ -64,8 +64,36 @@ const CATEGORY_TABS = [
   { key: "15", label: "其他多元", icon: "📌" },
 ];
 
+/** Issue #487: dictionary sub-keys for each CATEGORY_TABS entry — dots
+ * aren't valid in a tab `key` ("1", "festival", …), so this maps each one to
+ * a safe `culturalEventsTool.categories.<name>` dictionary path instead of
+ * reusing `tab.key` directly as part of the lookup path. */
+const CATEGORY_DICTIONARY_KEYS: Record<string, string> = {
+  all: "all",
+  "6": "exhibitions",
+  "1": "music",
+  "2": "theater",
+  "3": "dance",
+  "4": "family",
+  "5": "indieMusic",
+  "7": "talks",
+  "8": "film",
+  "11": "variety",
+  "17": "concerts",
+  "13": "competitions",
+  "14": "auditions",
+  "16": "contests",
+  "19": "workshops",
+  festival: "festival",
+  venue_h: "venue",
+  npo: "npo",
+  charity_project: "charityProject",
+  ticketing: "ticketing",
+  "15": "other",
+};
+
 export default function CulturalEventsContent() {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const [items, setItems] = useState<CulturalActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -77,28 +105,31 @@ export default function CulturalEventsContent() {
 
   const { page, pageSize, setPage, setPageSize } = usePagination();
 
-  const loadData = async (cat: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const url = cat === "all" ? "/api/culture/shows" : `/api/culture/shows?category=${cat}`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.error || "載入活動失敗");
-      setItems(json.items || []);
-    } catch (err: any) {
-      setError(err.message || "無法連線至文化部藝文資料庫");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const loadData = useCallback(
+    async (cat: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const url = cat === "all" ? "/api/culture/shows" : `/api/culture/shows?category=${cat}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        if (!json.ok) throw new Error(json.error || t("culturalEventsTool.loadFailed", "載入活動失敗"));
+        setItems(json.items || []);
+      } catch (err: any) {
+        setError(err.message || t("culturalEventsTool.connectFailed", "無法連線至文化部藝文資料庫"));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
 
   useEffect(() => {
     queueMicrotask(() => {
       loadData(selectedCategory);
     });
-  }, [selectedCategory]);
+  }, [selectedCategory, loadData]);
 
   const filteredItems = useMemo(() => {
     const today = new Date();
@@ -167,7 +198,7 @@ export default function CulturalEventsContent() {
           }`}
         >
           <span>👨‍👩‍👧</span>
-          <span>親子友善</span>
+          <span>{t("culturalEventsTool.familyFriendly", "親子友善")}</span>
         </button>
         <span
           aria-hidden="true"
@@ -188,7 +219,9 @@ export default function CulturalEventsContent() {
             }`}
           >
             <span>{tab.icon}</span>
-            <span>{tab.label}</span>
+            <span>
+              {t(`culturalEventsTool.categories.${CATEGORY_DICTIONARY_KEYS[tab.key]}`, tab.label)}
+            </span>
           </button>
         ))}
       </div>
@@ -205,7 +238,10 @@ export default function CulturalEventsContent() {
                 setKeyword(e.target.value);
                 setPage(1);
               }}
-              placeholder="搜尋展覽、表演劇團、音樂會、場館或關鍵字..."
+              placeholder={t(
+                "culturalEventsTool.searchPlaceholder",
+                "搜尋展覽、表演劇團、音樂會、場館或關鍵字...",
+              )}
               className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-100 dark:placeholder-slate-500"
             />
             {keyword && (
@@ -217,24 +253,28 @@ export default function CulturalEventsContent() {
                 }}
                 className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-semibold text-slate-600 hover:text-slate-600 dark:hover:text-slate-200"
               >
-                清除
+                {t("culturalEventsTool.clearButton", "清除")}
               </button>
             )}
           </div>
 
-          {/* City Filter */}
+          {/* City Filter — issue #487: county/city NAMES stay Chinese (place
+              names, same convention as government facility addresses), only
+              the "all cities" sentinel option's display label is translated;
+              its VALUE stays "全部縣市" since that's the literal string
+              compared against elsewhere in this file. */}
           <select
             value={selectedCity}
             onChange={(e) => {
               setSelectedCity(e.target.value);
               setPage(1);
             }}
-            aria-label="選擇活動縣市"
+            aria-label={t("culturalEventsTool.cityFilterAriaLabel", "選擇活動縣市")}
             className="rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm font-medium text-slate-700 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
           >
             {TAIWAN_CITIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {c === "全部縣市" ? t("culturalEventsTool.allCities", "全部縣市") : c}
               </option>
             ))}
           </select>
@@ -253,7 +293,7 @@ export default function CulturalEventsContent() {
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               }`}
             >
-              全部檔期
+              {t("culturalEventsTool.timeFilterAll", "全部檔期")}
             </button>
             <button
               type="button"
@@ -267,7 +307,7 @@ export default function CulturalEventsContent() {
                   : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
               }`}
             >
-              本月檔期
+              {t("culturalEventsTool.timeFilterMonth", "本月檔期")}
             </button>
           </div>
         </div>
@@ -275,14 +315,18 @@ export default function CulturalEventsContent() {
         {/* Status bar & Page Size Switcher */}
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between text-xs text-slate-600 dark:text-slate-400">
           <div>
-            顯示第{" "}
+            {t("culturalEventsTool.showingRangePrefix", "顯示第")}{" "}
             <strong className="font-semibold text-indigo-600 dark:text-indigo-400">
               {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0} - {Math.min(currentPage * pageSize, totalItems)}
             </strong>{" "}
-            檔（共 <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{totalItems}</strong> 檔活動，第 {currentPage} / {totalPages} 頁）
+            {t("culturalEventsTool.showingRangeMid", "檔（共")}{" "}
+            <strong className="font-semibold text-indigo-600 dark:text-indigo-400">{totalItems}</strong>{" "}
+            {t("culturalEventsTool.showingRangeTailTemplate", "檔活動，第 {page} / {totalPages} 頁）")
+              .replace("{page}", String(currentPage))
+              .replace("{totalPages}", String(totalPages))}
           </div>
           <div className="flex items-center gap-2">
-            <span>每頁顯示</span>
+            <span>{t("culturalEventsTool.perPageLabel", "每頁顯示")}</span>
             <div className="flex items-center gap-1">
               {[30, 50, 100].map((size) => (
                 <button
@@ -327,7 +371,7 @@ export default function CulturalEventsContent() {
             onClick={() => loadData(selectedCategory)}
             className="mt-3 rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-rose-500"
           >
-            重新載入
+            {t("culturalEventsTool.retryButton", "重新載入")}
           </button>
         </div>
       )}
@@ -336,8 +380,12 @@ export default function CulturalEventsContent() {
       {!loading && !error && filteredItems.length === 0 && (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
           <span className="text-4xl">🎨</span>
-          <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">查無符合條件的藝文展演活動</h3>
-          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">可嘗試切換分類標籤、縣市或清除關鍵字搜尋。</p>
+          <h3 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">
+            {t("culturalEventsTool.emptyHeading", "查無符合條件的藝文展演活動")}
+          </h3>
+          <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
+            {t("culturalEventsTool.emptyDesc", "可嘗試切換分類標籤、縣市或清除關鍵字搜尋。")}
+          </p>
         </div>
       )}
 
@@ -404,7 +452,7 @@ export default function CulturalEventsContent() {
                         >
                           <div>
                             <div className="font-semibold text-slate-800 dark:text-slate-200">
-                              📍 {show.locationName || show.location || "展演場地"}
+                              📍 {show.locationName || show.location || t("culturalEventsTool.venueFallback", "展演場地")}
                             </div>
                             {show.location && show.location !== show.locationName && (
                               <div className="text-[11px] text-slate-600 dark:text-slate-400">
@@ -417,14 +465,19 @@ export default function CulturalEventsContent() {
                           </div>
                           {show.price && (
                             <span className="flex-shrink-0 rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
-                              {show.price.includes("免費") ? "免費入場" : show.price.slice(0, 20)}
+                              {show.price.includes("免費")
+                                ? t("culturalEventsTool.freeAdmission", "免費入場")
+                                : show.price.slice(0, 20)}
                             </span>
                           )}
                         </div>
                       ))}
                       {item.shows.length > 3 && (
                         <div className="text-center text-[11px] font-medium text-slate-600">
-                          共 {item.shows.length} 場演出場次
+                          {t("culturalEventsTool.showCountTemplate", "共 {count} 場演出場次").replace(
+                            "{count}",
+                            String(item.shows.length),
+                          )}
                         </div>
                       )}
                     </div>
@@ -458,8 +511,8 @@ export default function CulturalEventsContent() {
                         }`}
                       >
                         {item.category === "charity_project"
-                          ? "❤️ 前往支持募款 ↗"
-                          : "🎟️ 購票／活動官網 ↗"}
+                          ? t("culturalEventsTool.supportDonationLink", "❤️ 前往支持募款 ↗")
+                          : t("culturalEventsTool.ticketingLink", "🎟️ 購票／活動官網 ↗")}
                       </a>
                     )}
                   </div>
@@ -472,7 +525,7 @@ export default function CulturalEventsContent() {
             page={currentPage}
             pageSize={pageSize}
             totalItems={totalItems}
-            itemLabel="檔活動"
+            itemLabel={t("culturalEventsTool.paginationItemLabel", "檔活動")}
             onPageChange={(p) => {
               setPage(p);
               window.scrollTo({ top: 0, behavior: "smooth" });

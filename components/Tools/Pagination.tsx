@@ -1,6 +1,7 @@
 "use client";
 
 import { PAGE_SIZE_OPTIONS, type PageSizeOption } from "@/lib/hooks/usePagination";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export interface PaginationProps {
   page: number;
@@ -32,8 +33,10 @@ export default function Pagination({
   onPageChange,
   onPageSizeChange,
   pageSizeOptions = PAGE_SIZE_OPTIONS,
-  itemLabel = "筆",
+  itemLabel,
 }: PaginationProps) {
+  const { t } = useLanguage();
+  const resolvedItemLabel = itemLabel ?? t("pagination.defaultItemLabel", "筆");
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const currentPage = Math.min(Math.max(1, page), totalPages);
 
@@ -57,7 +60,7 @@ export default function Pagination({
     <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 dark:text-slate-400">
         <span>
-          共 {totalItems} {itemLabel}・每頁
+          {t("pagination.totalPrefix", "共")} {totalItems} {resolvedItemLabel}・{t("pagination.perPageLabel", "每頁")}
         </span>
         <div className="flex items-center gap-1.5">
           {pageSizeOptions.map((size) => (
@@ -79,9 +82,9 @@ export default function Pagination({
       </div>
 
       {totalPages > 1 && (
-        <nav aria-label="分頁" className="flex items-center gap-1.5 self-center sm:self-auto">
+        <nav aria-label={t("pagination.ariaLabel", "分頁")} className="flex items-center gap-1.5 self-center sm:self-auto">
           <button type="button" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)} className={navButtonClass}>
-            ‹ 上一頁
+            ‹ {t("pagination.prevLabel", "上一頁")}
           </button>
 
           {pages[0] > 1 && (
@@ -109,7 +112,7 @@ export default function Pagination({
           )}
 
           <button type="button" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)} className={navButtonClass}>
-            下一頁 ›
+            {t("pagination.nextLabel", "下一頁")} ›
           </button>
         </nav>
       )}

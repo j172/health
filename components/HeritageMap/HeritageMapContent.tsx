@@ -10,6 +10,8 @@ import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManual
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import MapPendingPlaceholder from "@/components/Common/MapPendingPlaceholder";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { useLanguage } from "@/app/context/LanguageContext";
+import type { Locale } from "@/lib/i18n/dictionary";
 
 const HeritageMapLeaflet = dynamic(() => import("@/components/HeritageMap/HeritageMapLeaflet"), { ssr: false });
 
@@ -29,6 +31,16 @@ const LAYERS: LayerConfig[] = [
   { category: "cultural_landscape", label: "文化景觀", emoji: "🏞️", color: "#16a34a" },
 ];
 
+/** Issue #487: dictionary sub-key for each LAYERS entry's translated label. */
+const LAYER_DICTIONARY_KEYS: Record<HeritageCategory, string> = {
+  building: "building",
+  archaeological_site: "archaeologicalSite",
+  memorial_building: "memorialBuilding",
+  settlement: "settlement",
+  historical_site: "historicalSite",
+  cultural_landscape: "culturalLandscape",
+};
+
 interface ApiResponse {
   ok: boolean;
   points?: HeritageAssetPoint[];
@@ -36,10 +48,17 @@ interface ApiResponse {
   error?: string;
 }
 
-const formatUpdatedAt = (iso: string | null): string => {
-  if (!iso) return "尚無同步紀錄";
+const INTL_LOCALE_TAG: Record<Locale, string> = {
+  "zh-TW": "zh-TW",
+  en: "en-US",
+  ja: "ja-JP",
+  ko: "ko-KR",
+};
+
+const formatUpdatedAt = (iso: string | null, locale: Locale, noSyncRecordLabel: string): string => {
+  if (!iso) return noSyncRecordLabel;
   try {
-    return new Intl.DateTimeFormat("zh-TW", {
+    return new Intl.DateTimeFormat(INTL_LOCALE_TAG[locale] ?? "zh-TW", {
       timeZone: "Asia/Taipei",
       year: "numeric",
       month: "2-digit",
@@ -53,6 +72,7 @@ const formatUpdatedAt = (iso: string | null): string => {
 };
 
 export default function HeritageMapContent() {
+  const { locale, t } = useLanguage();
   const {
     geolocation,
     manualCounty,
@@ -81,13 +101,13 @@ export default function HeritageMapContent() {
         const json: ApiResponse = await res.json();
         if (cancelled) return;
         if (!json.ok) {
-          setError(json.error || "資料載入失敗");
+          setError(json.error || t("heritageMapTool.dataLoadError", "資料載入失敗"));
         } else {
           setPoints(json.points ?? []);
           setUpdatedAt(json.updatedAt ?? null);
         }
       } catch (err: any) {
-        if (!cancelled) setError(err?.message || "資料載入失敗");
+        if (!cancelled) setError(err?.message || t("heritageMapTool.dataLoadError", "資料載入失敗"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -95,6 +115,9 @@ export default function HeritageMapContent() {
     return () => {
       cancelled = true;
     };
+    // Intentionally mount-once: `t` only changes if `locale` changes, which
+    // never happens mid-visit on a forcedLocale route (LanguageContext.tsx).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const countsByLayer = useMemo(() => {
@@ -126,10 +149,13 @@ export default function HeritageMapContent() {
     <div className="space-y-4">
       <div>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">
-          🏛️ 文化資產地圖
+          🏛️ {t("heritageMapTool.title", "文化資產地圖")}
         </h1>
         <p className="text-neutral-600 dark:text-slate-300">
-          整合文化部文化資產局開放資料：古蹟／歷史建築與考古遺址點位，可切換圖層查詢地點沿革與登錄理由。
+          {t(
+            "heritageMapTool.description",
+            "整合文化部文化資產局開放資料：古蹟／歷史建築與考古遺址點位，可切換圖層查詢地點沿革與登錄理由。",
+          )}
         </p>
       </div>
 
@@ -137,8 +163,10 @@ export default function HeritageMapContent() {
           unlike disaster-map, this data isn't safety-critical. */}
       <div className="rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 text-xs leading-relaxed text-neutral-600 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-300">
         <p>
-          資料來源：文化部文化資產局開放資料，最後同步時間：
-          {loading ? "載入中…" : formatUpdatedAt(updatedAt)}
+          {t("heritageMapTool.dataSourceLabel", "資料來源：文化部文化資產局開放資料，最後同步時間：")}
+          {loading
+            ? t("heritageMapTool.syncLoading", "載入中…")
+            : formatUpdatedAt(updatedAt, locale, t("heritageMapTool.noSyncRecord", "尚無同步紀錄"))}
         </p>
       </div>
 
@@ -149,7 +177,7 @@ export default function HeritageMapContent() {
         onCountyChange={setManualCounty}
         onDistrictChange={setManualDistrict}
         hasManualCoords={hasManualCoords}
-        facilityTypeName="文化資產據點"
+        facilityTypeName={t("heritageMapTool.facilityTypeName", "文化資產據點")}
       />
 
       {/* Layer toggles */}
@@ -166,7 +194,7 @@ export default function HeritageMapContent() {
               className="h-4 w-4 rounded border-neutral-300 text-indigo-600 focus:ring-indigo-500"
             />
             <span aria-hidden="true">{l.emoji}</span>
-            <span>{l.label}</span>
+            <span>{t(`heritageMapTool.layers.${LAYER_DICTIONARY_KEYS[l.category]}`, l.label)}</span>
             <span
               className="rounded-full px-1.5 py-0.5 text-[10px] font-semibold text-white"
               style={{ backgroundColor: l.color }}
@@ -194,10 +222,14 @@ export default function HeritageMapContent() {
               onClick={() => geolocation.refresh()}
               disabled={locationRefreshing}
               className="absolute right-3 top-3 z-[1000] flex items-center gap-1.5 rounded-lg bg-white/95 px-3 py-2 text-xs font-bold text-amber-700 shadow-md backdrop-blur-xs transition hover:bg-white active:scale-95 dark:bg-slate-900/95 dark:text-amber-300 border border-slate-200 dark:border-slate-800 disabled:opacity-50"
-              title="重新取得精準定位並移至我的位置"
+              title={t("heritageMapTool.recenterTitle", "重新取得精準定位並移至我的位置")}
             >
               <span>🎯</span>
-              <span>{locationRefreshing ? "定位中…" : "我的位置"}</span>
+              <span>
+                {locationRefreshing
+                  ? t("heritageMapTool.locating", "定位中…")
+                  : t("heritageMapTool.myLocation", "我的位置")}
+              </span>
             </button>
             {loading ? (
               <div className="flex h-full items-center justify-center">

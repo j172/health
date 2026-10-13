@@ -5,6 +5,8 @@ import { buildGuideGraphJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/
 import { GUIDES, buildGuide } from "@/lib/server/tools/navModel";
 import { getActiveMetroAlertsCount } from "@/lib/server/metroAlerts/queries";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
+import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
+import { isTranslatedGuideSlug } from "@/lib/i18n/guideContent";
 
 // StabloHeader renders a live DB-backed weather-alert bar (same reason every
 // /tools/<slug> and /tools/category/<slug> page sets this), so this route
@@ -136,6 +138,10 @@ export default async function GuideHubPage({
               </li>
             </ol>
           </nav>
+
+          {isTranslatedGuideSlug(guide.slug) ? (
+            <OtherLanguagesBanner canonicalPath={`/guides/${guide.slug}`} />
+          ) : null}
 
           <section className="mb-10">
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">

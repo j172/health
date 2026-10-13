@@ -5,6 +5,7 @@ import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 import HomeStatusBar from "@/components/Home/HomeStatusBar";
 import GuideCardsSection from "@/components/Home/GuideCardsSection";
 import RecentToolsSection from "@/components/Home/RecentToolsSection";
+import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -48,6 +49,14 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph) }} />
+      {/* issue #487 acceptance criterion 5 (extending #485's pattern to the
+       * homepage): a dismissible banner advertising /en//ja//ko/ exist now
+       * that "/" is in TRANSLATED_STANDALONE_PATHS. Placed here (rather than
+       * inside StabloNewsLayout, which every zh page shares) so it only
+       * shows up on the home page itself. */}
+      <div className="mx-auto max-w-5xl px-4 pt-6 sm:px-6 lg:px-8">
+        <OtherLanguagesBanner canonicalPath="/" />
+      </div>
       <StabloNewsLayout
         items={items}
         variant="home"

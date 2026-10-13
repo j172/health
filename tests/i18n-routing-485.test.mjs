@@ -109,12 +109,14 @@ test("app/[locale]/tools/ contains a page.tsx for exactly TRANSLATED_TOOL_SLUGS,
   }
 });
 
-test("app/[locale]/ has no page.tsx of its own yet (the home page isn't a pilot page in this ticket)", () => {
+test("app/[locale]/page.tsx exists once the home page itself is translated (issue #487)", () => {
   const localePageFile = path.join(ROOT_DIR, "app", "[locale]", "page.tsx");
-  assert.ok(
-    !fs.existsSync(localePageFile),
-    "app/[locale]/page.tsx must not exist until a future ticket actually translates the home page — " +
-      "otherwise /en, /ja, /ko would silently serve something instead of a clean 404",
+  const homeIsTranslated = TRANSLATED_CANONICAL_PATHS.includes("/");
+  assert.equal(
+    fs.existsSync(localePageFile),
+    homeIsTranslated,
+    "app/[locale]/page.tsx must exist if and only if '/' is in TRANSLATED_CANONICAL_PATHS — " +
+      "otherwise /en, /ja, /ko would either silently serve something unlisted, or 404 despite being listed",
   );
 });
 
@@ -194,7 +196,9 @@ test("buildHreflangAlternates returns null for a page with no translation", () =
   // untranslated" example regardless of how many more tickets grow
   // TRANSLATED_TOOL_SLUGS.
   assert.equal(buildHreflangAlternates("/tools/bmi", baseUrl), null);
-  assert.equal(buildHreflangAlternates("/", baseUrl), null, "the home page isn't translated by this ticket");
+  // Note: "/" (the home page) WAS untranslated as of issue #485 but issue
+  // #487 translated it — see tests/i18n-routing-487.test.mjs for its own
+  // (non-null) hreflang coverage assertion.
 });
 
 test("isTranslatedPath / TRANSLATED_CANONICAL_PATHS agree with TRANSLATED_TOOL_SLUGS", () => {
@@ -202,7 +206,11 @@ test("isTranslatedPath / TRANSLATED_CANONICAL_PATHS agree with TRANSLATED_TOOL_S
     assert.ok(isTranslatedPath(`/tools/${slug}`));
   }
   assert.ok(!isTranslatedPath("/tools/bmi"));
-  assert.equal(TRANSLATED_CANONICAL_PATHS.length, TRANSLATED_TOOL_SLUGS.length);
+  // issue #487: TRANSLATED_CANONICAL_PATHS also includes the translated
+  // STANDALONE pages ("/", "/nearby", "/guides/typhoon-earthquake" — see
+  // TRANSLATED_STANDALONE_PATHS), so it's no longer 1:1 with
+  // TRANSLATED_TOOL_SLUGS alone; it must be at least as long.
+  assert.ok(TRANSLATED_CANONICAL_PATHS.length >= TRANSLATED_TOOL_SLUGS.length);
 });
 
 // ---------------------------------------------------------------------------

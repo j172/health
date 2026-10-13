@@ -5,6 +5,7 @@ import {
   TAIWAN_COUNTIES,
   getDistrictsForCounty,
 } from "@/lib/constants/taiwanDistricts";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export interface CountyDistrictPickerProps {
   county: string;
@@ -23,6 +24,7 @@ export default function CountyDistrictPicker({
   disabled = false,
   className = "",
 }: CountyDistrictPickerProps) {
+  const { t } = useLanguage();
   const districts = useMemo(() => {
     return getDistrictsForCounty(county);
   }, [county]);
@@ -54,10 +56,10 @@ export default function CountyDistrictPicker({
           value={county}
           onChange={handleCountyChange}
           disabled={disabled}
-          aria-label="選擇縣市"
+          aria-label={t("countyPicker.countyAriaLabel", "選擇縣市")}
           className={`w-full ${selectClass}`}
         >
-          <option value="">全臺灣 (不限縣市)</option>
+          <option value="">{t("countyPicker.countyAllOption", "全臺灣 (不限縣市)")}</option>
           {TAIWAN_COUNTIES.map((c) => (
             <option key={c} value={c}>
               {c}
@@ -72,11 +74,13 @@ export default function CountyDistrictPicker({
           value={district}
           onChange={handleDistrictChange}
           disabled={disabled || !county || districts.length === 0}
-          aria-label="選擇鄉鎮市區"
+          aria-label={t("countyPicker.districtAriaLabel", "選擇鄉鎮市區")}
           className={`w-full ${selectClass}`}
         >
           <option value="">
-            {!county ? "鄉鎮市區 (請先選縣市)" : "全區 (不限鄉鎮)"}
+            {!county
+              ? t("countyPicker.districtPlaceholderNoCounty", "鄉鎮市區 (請先選縣市)")
+              : t("countyPicker.districtAllOption", "全區 (不限鄉鎮)")}
           </option>
           {districts.map((d) => (
             <option key={d} value={d}>
@@ -92,11 +96,11 @@ export default function CountyDistrictPicker({
           type="button"
           onClick={handleClear}
           disabled={disabled}
-          title="重設地區篩選"
+          title={t("countyPicker.clearTitle", "重設地區篩選")}
           className="flex items-center gap-1 rounded-xl border border-neutral-200 bg-neutral-100 px-2.5 py-2 text-xs font-semibold text-neutral-600 transition-colors hover:bg-neutral-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 disabled:opacity-50"
         >
           <span>✕</span>
-          <span className="hidden sm:inline">清除</span>
+          <span className="hidden sm:inline">{t("countyPicker.clearLabel", "清除")}</span>
         </button>
       )}
     </div>

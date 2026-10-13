@@ -3,6 +3,7 @@
 import React from "react";
 import type { SharedGeolocationResult } from "@/lib/hooks/useSharedGeolocation";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 /**
  * issue #478（母票 #438 §K）：重寫自舊版 `MapLocationBanner`（曾吃
@@ -31,11 +32,14 @@ export interface MapLocationBannerProps {
   facilityTypeName?: string; // e.g. "AED", "避難收容處所"
 }
 
-function manualSelectionReason(status: SharedGeolocationResult["status"]): string {
-  if (status === "denied") return "您已拒絕定位授權。";
-  if (status === "timeout") return "定位逾時，無法取得您目前的位置。";
-  if (status === "unsupported") return "您的瀏覽器不支援定位功能。";
-  return "無法取得您目前的位置。";
+function manualSelectionReason(
+  status: SharedGeolocationResult["status"],
+  t: (key: string, defaultValue?: string) => string,
+): string {
+  if (status === "denied") return t("mapLocationBanner.deniedReason", "您已拒絕定位授權。");
+  if (status === "timeout") return t("mapLocationBanner.timeoutReason", "定位逾時，無法取得您目前的位置。");
+  if (status === "unsupported") return t("mapLocationBanner.unsupportedReason", "您的瀏覽器不支援定位功能。");
+  return t("mapLocationBanner.defaultReason", "無法取得您目前的位置。");
 }
 
 export default function MapLocationBanner({
@@ -47,8 +51,10 @@ export default function MapLocationBanner({
   onDistrictChange,
   showPicker = true,
   className = "",
-  facilityTypeName = "周邊設施",
+  facilityTypeName,
 }: MapLocationBannerProps) {
+  const { t } = useLanguage();
+  const resolvedFacilityTypeName = facilityTypeName ?? t("mapLocationBanner.defaultFacilityTypeName", "周邊設施");
   const { status, awaitingPermission, needsManualSelection, refresh } = geolocation;
 
   // 1. 正在等待瀏覽器原生彈窗確認
@@ -62,7 +68,10 @@ export default function MapLocationBanner({
             📍
           </span>
           <p className="font-semibold leading-relaxed">
-            正在等待您在瀏覽器提示框中點選「允許」定位權限… 授權後地圖將立即自動定位至您附近的{facilityTypeName}。
+            {t(
+              "mapLocationBanner.awaitingPermissionTemplate",
+              "正在等待您在瀏覽器提示框中點選「允許」定位權限… 授權後地圖將立即自動定位至您附近的{type}。",
+            ).replace("{type}", resolvedFacilityTypeName)}
           </p>
         </div>
       </div>
@@ -81,8 +90,16 @@ export default function MapLocationBanner({
             !
           </span>
           <p className="font-semibold leading-relaxed">
-            {manualSelectionReason(status)}
-            {showPicker ? `請改選您所在的縣市，以便查詢附近的${facilityTypeName}。` : `請使用上方的地區篩選，以便查詢附近的${facilityTypeName}。`}
+            {manualSelectionReason(status, t)}
+            {showPicker
+              ? t("mapLocationBanner.manualPromptWithPicker", "請改選您所在的縣市，以便查詢附近的{type}。").replace(
+                  "{type}",
+                  resolvedFacilityTypeName,
+                )
+              : t("mapLocationBanner.manualPromptNoPicker", "請使用上方的地區篩選，以便查詢附近的{type}。").replace(
+                  "{type}",
+                  resolvedFacilityTypeName,
+                )}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -99,7 +116,7 @@ export default function MapLocationBanner({
             onClick={() => refresh()}
             className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-amber-300 bg-white px-3 py-1.5 font-bold text-amber-800 shadow-xs transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-900 dark:text-amber-200"
           >
-            🔄 重新嘗試定位
+            {t("mapLocationBanner.retryLocationButton", "🔄 重新嘗試定位")}
           </button>
         </div>
       </div>
@@ -117,14 +134,19 @@ export default function MapLocationBanner({
           <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white text-xs">
             📍
           </span>
-          <p className="font-semibold leading-relaxed">目前顯示您選擇地區的{facilityTypeName}，並非即時 GPS 定位。</p>
+          <p className="font-semibold leading-relaxed">
+            {t("mapLocationBanner.manualAreaNotice", "目前顯示您選擇地區的{type}，並非即時 GPS 定位。").replace(
+              "{type}",
+              resolvedFacilityTypeName,
+            )}
+          </p>
         </div>
         <button
           type="button"
           onClick={() => refresh()}
           className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 py-1.5 font-bold text-white shadow-xs transition-all hover:bg-indigo-700 active:scale-95"
         >
-          🎯 改用 GPS 重新定位
+          {t("mapLocationBanner.switchToGpsButton", "🎯 改用 GPS 重新定位")}
         </button>
       </div>
     );
@@ -138,14 +160,16 @@ export default function MapLocationBanner({
       >
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-          <span className="font-semibold">已成功取得您的即時定位，地圖與設施已依據距離排序</span>
+          <span className="font-semibold">
+            {t("mapLocationBanner.successNotice", "已成功取得您的即時定位，地圖與設施已依據距離排序")}
+          </span>
         </div>
         <button
           type="button"
           onClick={() => refresh()}
           className="text-emerald-700 hover:text-emerald-900 dark:text-emerald-400 dark:hover:text-emerald-200 underline text-[11px] font-medium transition"
         >
-          更新位置 ↻
+          {t("mapLocationBanner.refreshLocationLink", "更新位置 ↻")}
         </button>
       </div>
     );

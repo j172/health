@@ -992,6 +992,247 @@ const TOOL_I18N_CONTENT: Record<TranslatedToolSlug, Record<PathLocale, Localized
       ],
     },
   },
+
+  // Issue #487 (parent #438 §Q) — 4 leisure/culture pages added to the
+  // i18n batch. Same scope rule: title, description, directAnswer and FAQs
+  // are real human-reviewable translations; government/live data stays
+  // Chinese verbatim per the established convention.
+  "cool-spots": {
+    en: {
+      title: "Nationwide Cool Spots Map (Heatwave Relief Locations)",
+      description:
+        "Looks up the Ministry of Environment's \"Cool Map\" cool-spot registry — department stores, libraries, neighborhood activity centers, and other indoor locations the public can use to cool down, with each site's location and facility information. Source: Ministry of Environment open data.",
+      directAnswer:
+        "This tool searches the Ministry of Environment's \"Cool Map\" cool-spot registry, showing nearby indoor locations to escape summer heat, along with opening hours and facility information such as air conditioning and drinking water.",
+      faqs: [
+        {
+          question: "What is a \"cool spot\"?",
+          answer:
+            "A cool spot is an indoor location — a department store, library, or neighborhood activity center, for example — that the Ministry of Environment has catalogued during heatwaves because it offers air conditioning, seating, or drinking water, giving the public a nearby place to cool down and rest during extreme heat.",
+        },
+        {
+          question: "How do I know whether a cool spot has air conditioning or accessible facilities?",
+          answer:
+            "Each listing's \"Facility information\" field states whether that location offers air conditioning, restrooms, seating, drinking water, and accessible facilities, so users can choose a location that fits their needs.",
+        },
+      ],
+    },
+    ja: {
+      title: "全国涼適点（クールスポット）マップ",
+      description:
+        "環境部「Cool Map 涼適点」名簿を検索。百貨店、図書館、地域活動センターなど、暑さを避けて涼める屋内施設の位置と設備情報を提供します。データ提供：環境部オープンデータ。",
+      directAnswer:
+        "環境部の「Cool Map」涼適点名簿を検索し、夏の猛暑時に立ち寄れる屋内施設の位置、開放時間、冷房・給水設備などの情報を提供します。",
+      faqs: [
+        {
+          question: "「涼適点」とは何ですか？",
+          answer:
+            "涼適点とは、環境部が猛暑対策として指定した、冷房・座席・給水設備のある百貨店、図書館、地域活動センターなどの屋内施設で、猛暑時に立ち寄って涼める場所です。",
+        },
+        {
+          question: "涼適点に冷房や無障礙（バリアフリー）設備があるかはどうすればわかりますか？",
+          answer:
+            "各データの「設備情報」欄に、冷房・トイレ・座席・給水設備・バリアフリー設備の有無が表示されるため、ニーズに合った場所を選べます。",
+        },
+      ],
+    },
+    ko: {
+      title: "전국 쾌적 쉼터(Cool Spot) 지도",
+      description:
+        "환경부 'Cool Map 쾌적 쉼터' 명단을 조회합니다. 백화점, 도서관, 주민센터 등 더위를 피해 쉴 수 있는 실내 장소의 위치와 시설 정보를 제공합니다. 자료 제공: 환경부 공공데이터.",
+      directAnswer:
+        "환경부의 'Cool Map' 쾌적 쉼터 명단을 조회하여, 한여름 폭염 시 가까운 실내 장소의 위치와 운영 시간, 냉방·음수대 등 시설 정보를 확인할 수 있습니다.",
+      faqs: [
+        {
+          question: "'쾌적 쉼터'란 무엇인가요?",
+          answer:
+            "쾌적 쉼터는 환경부가 폭염에 대응하기 위해 지정한, 냉방·좌석·음수 시설이 있는 백화점, 도서관, 주민센터 등의 실내 장소로, 폭염 시 가까운 곳에서 더위를 피해 쉴 수 있는 장소입니다.",
+        },
+        {
+          question: "쾌적 쉼터에 냉방이나 무장애(접근성) 시설이 있는지 어떻게 알 수 있나요?",
+          answer:
+            "각 항목의 '시설 정보'란에 냉방, 화장실, 좌석, 음수대, 무장애 시설 제공 여부가 표시되어 있어 필요에 맞는 장소를 선택할 수 있습니다.",
+        },
+      ],
+    },
+  },
+  "cultural-events": {
+    en: {
+      title: "Nationwide Arts & Culture Events Directory (incl. Family-Friendly Activities)",
+      description:
+        "Aggregates the Ministry of Culture's nationwide arts-and-culture open data to search exhibitions, music, theater, talks, and other events across the country, with a \"Family-Friendly\" filter tag for quickly finding family theater, children's concerts, and family workshops. Source: Ministry of Culture open data.",
+      directAnswer:
+        "This tool connects live to the Ministry of Culture's arts-and-culture events system to search exhibitions, concerts, and talks nationwide, with a \"Family-Friendly\" filter tag that narrows results to family theater, children's concerts, and workshop programs only.",
+      faqs: [
+        {
+          question: "What categories of events does this cover?",
+          answer:
+            "It fully covers the Ministry of Culture's 19 arts-and-culture categories (exhibitions, music, theater, dance, family activities, talks, film, independent music, variety shows, arts competitions, concerts, workshops, and more), nationwide festivals, and cultural-district venues.",
+        },
+        {
+          question: "Does this page include the content of the former \"Nationwide Family Arts Activities\" tool?",
+          answer:
+            "Yes. The former \"Nationwide Family Arts Activities\" page has been merged into this one and now permanently redirects here — clicking the \"👨‍👩‍👧 Family-Friendly\" filter tag shows only family theater, children's concerts, and family workshop programs, matching the scope of the original page exactly.",
+        },
+      ],
+    },
+    ja: {
+      title: "全国芸術文化イベント・親子活動検索（親子向けイベント含む）",
+      description:
+        "文化部の全国芸術文化活動オープンデータを統合し、全国の展覧会、音楽、演劇、講座など各種イベントを検索。「親子向け」フィルタータグで親子劇場、子ども向けコンサート、親子ワークショップをすぐに絞り込めます。データ提供：文化部オープンデータ。",
+      directAnswer:
+        "文化部の芸術文化イベント情報システムにリアルタイムで接続し、全国の公演、コンサート、講座イベントを検索。「親子向け」フィルタータグに切り替えると、親子劇場、子ども向けコンサート、ワークショップ番組だけを表示できます。",
+      faqs: [
+        {
+          question: "イベント情報にはどのようなカテゴリーが含まれますか？",
+          answer:
+            "文化部の19種類の芸術文化活動（展覧会、音楽、演劇、舞踊、親子、講座、映画、インディーミュージック、バラエティ、芸術コンクール、コンサート、研修講座など）、全国の祭り行事、文化生活圏の施設を完全に網羅しています。",
+        },
+        {
+          question: "このページには以前の「全国親子藝文活動検索」の内容も含まれますか？",
+          answer:
+            "はい。以前の「全国親子藝文活動検索」ページはこのページに統合され、恒久的にこちらへリダイレクトされます。「👨‍👩‍👧 親子向け」フィルタータグをクリックすると、親子劇場、子ども向けコンサート、親子ワークショップなど、元のページと同じ範囲の番組だけが表示されます。",
+        },
+      ],
+    },
+    ko: {
+      title: "전국 문화예술 행사 및 가족 활동 안내(가족 친화 행사 포함)",
+      description:
+        "문화부의 전국 문화예술 행사 공공데이터를 통합하여 전국의 전시, 음악, 연극, 강연 등 다양한 행사를 조회합니다. '가족 친화' 필터 태그로 가족 극장, 어린이 음악회, 가족 워크숍을 빠르게 찾을 수 있습니다. 자료 제공: 문화부 공공데이터.",
+      directAnswer:
+        "문화부 문화예술 행사 정보 시스템에 실시간으로 연결하여 전국의 공연, 음악회, 강연 행사를 조회합니다. '가족 친화' 필터 태그로 전환하면 가족 극장, 어린이 음악회, 워크숍 프로그램만 볼 수 있습니다.",
+      faqs: [
+        {
+          question: "행사 정보에는 어떤 분류가 포함되나요?",
+          answer:
+            "문화부의 19개 문화예술 행사 분류(전시, 음악, 연극, 무용, 가족, 강연, 영화, 인디뮤직, 버라이어티, 문화예술 경연, 콘서트, 연수 과정 등)와 전국 축제 행사, 문화생활권 시설을 모두 포함합니다.",
+        },
+        {
+          question: "이 페이지에 기존 '전국 가족 문화예술 행사 조회'의 내용도 포함되나요?",
+          answer:
+            "네. 기존 '전국 가족 문화예술 행사 조회' 페이지는 이 페이지로 통합되어 영구적으로 리디렉션됩니다. '👨‍👩‍👧 가족 친화' 필터 태그를 클릭하면 가족 극장, 어린이 음악회, 가족 워크숍 등 기존 페이지와 동일한 범위의 프로그램만 볼 수 있습니다.",
+        },
+      ],
+    },
+  },
+  "heritage-map": {
+    en: {
+      title: "Cultural Heritage Map: Monuments, Historic Buildings & Archaeological Sites",
+      description:
+        "Aggregates the Bureau of Cultural Heritage's open data to map Taiwan's monuments, historic buildings, and archaeological sites nationwide, with switchable map layers and lookups of each site's history and the reasons for its designation.",
+      directAnswer:
+        "The Cultural Heritage Map aggregates the Bureau of Cultural Heritage's open data into a map of Taiwan's monuments/historic buildings (1,700+ cases) and archaeological sites (50+ cases), with switchable layers to look up each site's name, address, history, and reasons for designation.",
+      faqs: [
+        {
+          question: "How often is the Cultural Heritage Map's data updated?",
+          answer:
+            "This site periodically re-syncs cultural-heritage case data from the Bureau of Cultural Heritage's open data platform; the most recent sync time is shown at the top of the page.",
+        },
+        {
+          question: "What do the \"Monuments/Historic Buildings\" and \"Archaeological Sites\" layers each represent?",
+          answer:
+            "The Monuments/Historic Buildings layer covers cases designated or registered under the Cultural Heritage Preservation Act; the Archaeological Sites layer covers nationally, municipally, and county/city-designated archaeological site cases. Both layers' record counts and designation reasons come from the Bureau of Cultural Heritage's official database.",
+        },
+      ],
+    },
+    ja: {
+      title: "文化資産マップ：古跡／歴史的建築物／考古遺跡検索",
+      description:
+        "文化資産局のオープンデータを統合し、台湾全土の古跡、歴史的建築物、考古遺跡の位置を地図上で検索。レイヤー切り替え、沿革、登録理由の確認に対応しています。",
+      directAnswer:
+        "文化資産マップは文化資産局のオープンデータを統合し、台湾全土の古跡／歴史的建築物（1,700件以上）と考古遺跡（50件以上）の位置を地図上に表示。レイヤーを切り替えて名称、所在地、沿革、登録理由を確認できます。",
+      faqs: [
+        {
+          question: "文化資産マップのデータはどのくらいの頻度で更新されますか？",
+          answer:
+            "本サイトは文化資産局のオープンデータプラットフォームから文化資産案件データを不定期に再同期しており、最終同期時刻はページ上部に表示されます。",
+        },
+        {
+          question: "「古跡／歴史的建築物」と「考古遺跡」の2つのレイヤーはそれぞれ何を表しますか？",
+          answer:
+            "「古跡／歴史的建築物」レイヤーは文化資産保存法に基づき指定・登録された古跡・歴史的建築物の案件を、「考古遺跡」レイヤーは国定・直轄市定・県（市）定の考古遺跡案件を収録しています。件数と登録理由はいずれも文化資産局の公式データベースに基づいています。",
+        },
+      ],
+    },
+    ko: {
+      title: "문화유산 지도: 고적/역사건축물/고고유적 조회",
+      description:
+        "문화유산청의 공공데이터를 통합하여 대만 전역의 고적, 역사건축물, 고고유적 위치를 지도에서 조회합니다. 레이어 전환과 유래, 등록 이유 조회를 지원합니다.",
+      directAnswer:
+        "문화유산 지도는 문화유산청의 공공데이터를 통합하여 대만 전역의 고적/역사건축물(1,700건 이상)과 고고유적(50건 이상) 위치를 지도에 표시합니다. 레이어를 전환하여 명칭, 주소, 유래, 등록 이유를 조회할 수 있습니다.",
+      faqs: [
+        {
+          question: "문화유산 지도의 데이터는 얼마나 자주 업데이트되나요?",
+          answer:
+            "본 사이트는 문화유산청 공공데이터 플랫폼의 문화유산 안건 데이터를 비정기적으로 재동기화하며, 최근 동기화 시각은 페이지 상단에 표시됩니다.",
+        },
+        {
+          question: "'고적/역사건축물'과 '고고유적' 두 레이어는 각각 무엇을 나타내나요?",
+          answer:
+            "'고적/역사건축물' 레이어는 문화유산보존법에 따라 지정 또는 등록된 고적 및 역사건축물 안건을 포함하며, '고고유적' 레이어는 국가, 직할시, 현(시) 지정 고고유적 안건을 포함합니다. 두 레이어의 건수와 등록 이유는 모두 문화유산청의 공식 데이터베이스를 기반으로 합니다.",
+        },
+      ],
+    },
+  },
+  "tourism-factories": {
+    en: {
+      title: "Certified Tourism Factories Directory (Nationwide)",
+      description:
+        "Searches tourism factories and industrial-culture museums nationwide that have passed the Industrial Development Administration's evaluation. Source: Industrial Development Administration open data.",
+      directAnswer:
+        "A directory of tourism factories nationwide certified by the Industrial Development Administration, with a Northern/Central/Southern/Eastern Taiwan region filter, reservation phone numbers, factory addresses, and links to official websites.",
+      faqs: [
+        {
+          question: "What is an Industrial Development Administration-certified tourism factory?",
+          answer:
+            "A traditional manufacturing factory that has passed the Industrial Development Administration's \"Tourism Factory Guidance & Evaluation\" program, offering educational-and-entertaining services such as industrial-culture exhibits, production-process tours, and hands-on DIY experiences.",
+        },
+        {
+          question: "Do tourism factories require a reservation in advance?",
+          answer:
+            "Some tourism factories allow free, unguided visits, while others require joining a scheduled guided tour or calling ahead to reserve — it's best to call the phone number on the listing card before you go to confirm.",
+        },
+      ],
+    },
+    ja: {
+      title: "全台認証観光工場ディレクトリ",
+      description:
+        "経済部産業発展署の評価に合格した全台の観光工場と産業文化館を検索。データ提供：経済部産業発展署オープンデータ。",
+      directAnswer:
+        "経済部産業発展署の認証を受けた全台の優良観光工場名簿を収録。北部・中部・南部・東部の地域別フィルター、見学予約の電話番号、工場所在地、公式サイトへのリンクを提供します。",
+      faqs: [
+        {
+          question: "経済部認証観光工場とは何ですか？",
+          answer:
+            "経済部産業発展署の「観光工場指導評価」に合格した従来型製造工場で、産業文化の展示、製造工程の見学、DIY体験教室など、学びながら楽しめるサービスを提供しています。",
+        },
+        {
+          question: "観光工場の見学には事前予約が必要ですか？",
+          answer:
+            "一部の観光工場は自由見学が可能ですが、一部はガイドツアーの回次に合わせるか事前の電話予約が必要です。出発前にカード上の電話番号へ確認の電話を入れることをお勧めします。",
+        },
+      ],
+    },
+    ko: {
+      title: "전국 인증 관광공장 안내",
+      description:
+        "경제부 산업발전청의 평가를 통과한 전국의 관광공장과 산업문화관을 조회합니다. 자료 제공: 경제부 산업발전청 공공데이터.",
+      directAnswer:
+        "경제부 산업발전청의 인증을 받은 전국 우수 관광공장 명단을 수록하였으며, 북부/중부/남부/동부 지역별 분류, 예약 관람 전화번호, 공장 주소, 공식 웹사이트 링크를 제공합니다.",
+      faqs: [
+        {
+          question: "경제부 인증 관광공장이란 무엇인가요?",
+          answer:
+            "경제부 산업발전청의 '관광공장 지도평가'를 통과한 전통 제조공장으로, 산업문화 전시, 생산공정 견학, DIY 체험 교육 등 교육적이면서도 즐거운 서비스를 제공합니다.",
+        },
+        {
+          question: "관광공장 관람은 사전 예약이 필요한가요?",
+          answer:
+            "일부 관광공장은 자유 관람이 가능하지만, 일부는 가이드 투어 시간에 맞추거나 사전 전화 예약이 필요합니다. 방문 전 카드에 있는 전화번호로 먼저 확인 전화를 하는 것을 권장합니다.",
+        },
+      ],
+    },
+  },
 };
 
 /** Resolves the zh-TW baseline straight from TOOL_CATALOG — never stored

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { buildBreadcrumbJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import NearbyContent from "@/components/Nearby/NearbyContent";
+import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
 
 export const runtime = "nodejs";
 
@@ -58,6 +59,8 @@ export default function NearbyPage() {
             </span>
             <span aria-current="page">我附近</span>
           </nav>
+
+          <OtherLanguagesBanner canonicalPath="/nearby" />
 
           <div className="mb-6">
             <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">

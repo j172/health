@@ -7,6 +7,9 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { NEARBY_DEFAULT_TYPES, NEARBY_MORE_TYPES } from "@/lib/server/nearby/registry";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
+import { useLanguage } from "@/app/context/LanguageContext";
+import { getLocalizedNearbyLabel } from "@/lib/i18n/nearbyLabelContent";
+import { isPathLocale } from "@/lib/i18n/dictionary";
 
 /**
  * Client-owned geolocation + fetching for "/nearby" (issue #466). Mirrors
@@ -51,25 +54,46 @@ interface NearbyApiResponse {
 
 const DEFAULT_TYPE_KEYS = NEARBY_DEFAULT_TYPES.map((def) => def.key);
 
-function formatDistance(distanceKm: number | null): string {
+type Translator = (key: string, defaultValue?: string) => string;
+
+function formatDistance(distanceKm: number | null, t: Translator): string {
   if (distanceKm === null || !Number.isFinite(distanceKm)) return "";
-  return distanceKm < 1 ? `${Math.round(distanceKm * 1000)} 公尺` : `${distanceKm.toFixed(1)} 公里`;
+  return distanceKm < 1
+    ? t("nearbyPage.distanceMetersTemplate", "{value} 公尺").replace("{value}", String(Math.round(distanceKm * 1000)))
+    : t("nearbyPage.distanceKmTemplate", "{value} 公里").replace("{value}", distanceKm.toFixed(1));
 }
 
-function TypeResultCard({ result }: { result: NearbyTypeResult }) {
+function TypeResultCard({
+  result,
+  locale,
+  t,
+}: {
+  result: NearbyTypeResult;
+  locale: ReturnType<typeof useLanguage>["locale"];
+  t: Translator;
+}) {
+  // Issue #487: the API returns `label` in Chinese (it comes straight from
+  // the NearbyTypeDef registry) — on a /en//ja//ko/ page, re-resolve the
+  // display label from the translated registry (lib/i18n/nearbyLabelContent.ts)
+  // instead of showing that raw zh string, so "/nearby" is never a silent
+  // Chinese fallback on a translated locale.
+  const displayLabel = isPathLocale(locale) ? getLocalizedNearbyLabel(result.key, locale, result.label) : result.label;
+
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs dark:border-slate-700 dark:bg-slate-900">
       <h3 className="mb-2 flex items-center gap-1.5 text-base font-bold text-neutral-800 dark:text-slate-100">
         <span aria-hidden="true">{result.emoji}</span>
-        <span>{result.label}</span>
+        <span>{displayLabel}</span>
       </h3>
 
       {result.status === "error" ? (
         <p className="rounded-lg bg-red-50 p-2.5 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
-          查詢失敗，請稍後再試。
+          {t("nearbyPage.queryFailed", "查詢失敗，請稍後再試。")}
         </p>
       ) : result.items.length === 0 ? (
-        <p className="text-sm text-neutral-500 dark:text-slate-400">附近查無收錄的{result.label}。</p>
+        <p className="text-sm text-neutral-500 dark:text-slate-400">
+          {t("nearbyPage.cardEmptyTemplate", "附近查無收錄的{label}。").replace("{label}", displayLabel)}
+        </p>
       ) : (
         <ul className="space-y-2">
           {result.items.map((item) => (
@@ -82,7 +106,7 @@ function TypeResultCard({ result }: { result: NearbyTypeResult }) {
               </div>
               {item.distanceKm !== null ? (
                 <span className="shrink-0 whitespace-nowrap rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                  {formatDistance(item.distanceKm)}
+                  {formatDistance(item.distanceKm, t)}
                 </span>
               ) : null}
             </li>
@@ -94,6 +118,7 @@ function TypeResultCard({ result }: { result: NearbyTypeResult }) {
 }
 
 export default function NearbyContent() {
+  const { locale, t } = useLanguage();
   const geolocation = useSharedGeolocation();
   const [manualCounty, setManualCounty] = useState("");
   const [manualDistrict, setManualDistrict] = useState("");
@@ -190,30 +215,34 @@ export default function NearbyContent() {
   const showManualFallback = geolocation.needsManualSelection && !manualCoords;
 
   const manualFallbackReason = useMemo(() => {
-    if (geolocation.status === "denied") return "您已拒絕定位授權。";
-    if (geolocation.status === "timeout") return "定位逾時，無法取得您目前的位置。";
-    if (geolocation.status === "unsupported") return "您的瀏覽器不支援定位功能。";
-    return "無法取得您目前的位置。";
-  }, [geolocation.status]);
+    if (geolocation.status === "denied") return t("nearbyPage.manualReasonDenied", "您已拒絕定位授權。");
+    if (geolocation.status === "timeout") return t("nearbyPage.manualReasonTimeout", "定位逾時，無法取得您目前的位置。");
+    if (geolocation.status === "unsupported") return t("nearbyPage.manualReasonUnsupported", "您的瀏覽器不支援定位功能。");
+    return t("nearbyPage.manualReasonDefault", "無法取得您目前的位置。");
+  }, [geolocation.status, t]);
+
+  const resolveTypeLabel = (key: string, fallbackLabel: string): string =>
+    isPathLocale(locale) ? getLocalizedNearbyLabel(key, locale, fallbackLabel) : fallbackLabel;
 
   return (
     <div className="space-y-8">
       {geolocation.awaitingPermission && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
-          請在瀏覽器的定位授權彈出視窗中選擇「允許」，才能查詢您附近的急用點位。
+          {t("nearbyPage.awaitingPermission", "請在瀏覽器的定位授權彈出視窗中選擇「允許」，才能查詢您附近的急用點位。")}
         </div>
       )}
 
       {!effectiveCoords && (geolocation.status === "idle" || geolocation.status === "locating") && (
         <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-neutral-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-          正在為您定位…
+          {t("nearbyPage.locating", "正在為您定位…")}
         </div>
       )}
 
       {showManualFallback && (
         <div className="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
           <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-            {manualFallbackReason}請改選您所在的縣市，以便查詢附近的急用點位。
+            {manualFallbackReason}
+            {t("nearbyPage.manualPromptSuffix", "請改選您所在的縣市，以便查詢附近的急用點位。")}
           </p>
           <CountyDistrictPicker
             county={manualCounty}
@@ -226,25 +255,29 @@ export default function NearbyContent() {
             onClick={geolocation.refresh}
             className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-800 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-slate-900 dark:text-amber-200 dark:hover:bg-slate-800"
           >
-            🔄 重新嘗試定位
+            {t("nearbyPage.retryLocationButton", "🔄 重新嘗試定位")}
           </button>
         </div>
       )}
 
       {effectiveCoords && (
         <section>
-          <h2 className="mb-3 text-lg font-bold text-neutral-800 dark:text-slate-100">8 類急用點位（最近 3 筆）</h2>
+          <h2 className="mb-3 text-lg font-bold text-neutral-800 dark:text-slate-100">
+            {t("nearbyPage.defaultSectionHeading", "8 類急用點位（最近 3 筆）")}
+          </h2>
           {defaultLoading && !defaultResults ? (
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-neutral-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              查詢中…
+              {t("nearbyPage.queryingLoading", "查詢中…")}
             </div>
           ) : defaultError ? (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
-              查詢失敗，請稍後再試。
+              {t("nearbyPage.queryFailed", "查詢失敗，請稍後再試。")}
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {defaultResults?.map((result) => <TypeResultCard key={result.key} result={result} />)}
+              {defaultResults?.map((result) => (
+                <TypeResultCard key={result.key} result={result} locale={locale} t={t} />
+              ))}
             </div>
           )}
         </section>
@@ -259,7 +292,7 @@ export default function NearbyContent() {
             className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <span>{moreExpanded ? "▾" : "▸"}</span>
-            <span>更多類型</span>
+            <span>{t("nearbyPage.moreTypesToggle", "更多類型")}</span>
           </button>
 
           {moreExpanded && (
@@ -280,7 +313,7 @@ export default function NearbyContent() {
                           : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                       } disabled:cursor-wait disabled:opacity-60`}
                     >
-                      {def.emoji} {def.label}
+                      {def.emoji} {resolveTypeLabel(def.key, def.label)}
                       {loading ? "…" : ""}
                     </button>
                   );
@@ -290,7 +323,7 @@ export default function NearbyContent() {
               {Object.keys(moreResults).length > 0 && (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {Object.values(moreResults).map((result) => (
-                    <TypeResultCard key={result.key} result={result} />
+                    <TypeResultCard key={result.key} result={result} locale={locale} t={t} />
                   ))}
                 </div>
               )}
@@ -300,11 +333,11 @@ export default function NearbyContent() {
       )}
 
       <p className="text-xs text-neutral-400 dark:text-slate-500">
-        每類僅顯示最近 3 筆，完整列表與地圖可至各{" "}
+        {t("nearbyPage.footerPrefix", "每類僅顯示最近 3 筆，完整列表與地圖可至各")}{" "}
         <Link href="/tools" className="underline hover:text-neutral-600 dark:hover:text-slate-300">
-          設施查詢工具
+          {t("nearbyPage.footerLinkText", "設施查詢工具")}
         </Link>{" "}
-        頁面查看。
+        {t("nearbyPage.footerSuffix", "頁面查看。")}
       </p>
     </div>
   );
