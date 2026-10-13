@@ -243,10 +243,17 @@ test("next.config.js redirects ?lang={locale} to the real /{locale}/ URL for eac
   assert.match(content, /destination:\s*`\/\$\{locale\}\/tools\/\$\{slug\}`/);
 });
 
-test("next.config.js's catch-all ?lang= cleanup rule comes after the specific per-locale rules (array order matters for Next.js redirects)", () => {
+test("next.config.js does NOT have a generic ?lang= catch-all redirect for untranslated pages (regression guard: that rule was a same-path self-redirect loop)", () => {
   const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
-  const specificRuleIndex = content.indexOf('["en", "ja", "ko"].flatMap');
-  const catchAllIndex = content.indexOf('source: "/:path*"');
-  assert.ok(specificRuleIndex >= 0 && catchAllIndex >= 0, "both rule blocks must exist");
-  assert.ok(specificRuleIndex < catchAllIndex, "the 3 specific redirects must be listed before the generic ?lang= stripper");
+  // A rule shaped `source: "/:path*"` -> `destination: "/:path*"` redirects a
+  // request back to itself, since Next.js always forwards the incoming query
+  // string onto the destination with no way to strip it — confirmed live:
+  // `/tools/clinics?lang=en` came back `308 Location: /tools/clinics?lang=en`,
+  // an infinite loop for every untranslated page. Untranslated pages don't
+  // need a redirect at all: LanguageContext.tsx no longer reads `lang`, so
+  // the stray query param is simply ignored and the page renders in Chinese.
+  assert.ok(
+    !/source:\s*"\/:path\*"[\s\S]{0,200}has:\s*\[\{\s*type:\s*"query",\s*key:\s*"lang"\s*\}\]/.test(content),
+    "must not redirect every ?lang= URL to the same path — that is a self-redirect loop for every untranslated page",
+  );
 });
