@@ -1,0 +1,87 @@
+name: Anti-fraud / Addiction / News-topics Sync (Manual)
+
+# Manual trigger for the three admin-sync routes added by spec #562's first
+# batch (#564 fraud domains, #566 addiction-treatment facilities, #565 news
+# topics). Each already has its own recurring cadence once seeded
+# (fraud-domains: monthly cron; addiction-treatment: the regular facilities
+# sync cadence; news-topics: classified automatically going forward by
+# persistItems.ts) — this workflow exists only to run all three once, right
+# after they first ship, instead of waiting up to a month for the first
+# scheduled tick. Modeled directly on rss-sync-manual.yml's SSH-loopback
+# pattern (this host has no AllowTcpForwarding, so a classic `ssh -L` tunnel
+# silently breaks — see docs/domains memory — the Node-level loopback bridge
+# used by deploy-ftps.yml is this repo's one proven way through that).
+#
+# `execute_news_backfill` defaults to false (dry-run) so a first run can
+# sanity-check the topic-classification counts before anything is written.
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute_news_backfill:
+        description: "Actually write news-topics backfill results (unchecked = dry-run)"
+        type: boolean
+        default: false
+      news_backfill_days:
+        description: "Days of news_items to backfill topics for"
+        type: string
+        default: "90"
+
+concurrency:
+  group: deploy-ftps
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Trigger fraud-domains, addiction-treatment, and news-topics syncs via SSH loopback
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EXECUTE_NEWS_BACKFILL: ${{ inputs.execute_news_backfill }}
+          NEWS_BACKFILL_DAYS: ${{ inputs.news_backfill_days }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
+
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          EXEC_PARAM="0"
+          if [ "$EXECUTE_NEWS_BACKFILL" = "true" ]; then
+            EXEC_PARAM="1"
+          fi
+
+          echo "== Triggering /api/admin/fraud-domains-sync (#564, 176455) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/fraud-domains-sync'" | jq .
+
+          echo "== Triggering /api/admin/facilities-sync for addiction_treatment_133353 (#566) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\nheader = "Content-Type: application/json"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/facilities-sync' --data '{\"sources\":[\"addiction_treatment_133353\"]}'" | jq .
+
+          echo "== Triggering /api/admin/news-topics-backfill (#565, execute=$EXEC_PARAM, days=$NEWS_BACKFILL_DAYS) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/news-topics-backfill?execute=$EXEC_PARAM&days=$NEWS_BACKFILL_DAYS'" | jq .
+
+          echo "All three triggers sent (fire-and-forget 202s) -- check production logs for final counts."
