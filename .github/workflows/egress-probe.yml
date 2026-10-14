@@ -38,6 +38,7 @@ jobs:
           probe "mirrormedia category health"     "https://www.mirrormedia.mg/category/health"
           probe "opendata.wra.gov.tw (bot wall)"  "https://opendata.wra.gov.tw/api/v2/51ea7202-18fd-46e3-adae-4d05bc827a28?format=JSON"
           probe "mohw.gov.tw rss (control, OK)"   "https://www.mohw.gov.tw/rss-16-1.html"
+          probe "opendata.mohw.gov.tw (160903)"   "https://www.opendata.mohw.gov.tw/dataset/opendata/sfaa/160903/%E5%85%A8%E5%9C%8B%E7%A4%BE%E7%A6%8F%E4%B8%AD%E5%BF%83%E9%80%9A%E8%A8%8A%E9%8C%84.csv"
 
           echo
           echo "=== nhi.gov.tw header variants — is the 403 really about the IP? ==="
