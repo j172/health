@@ -30,6 +30,15 @@ export interface FacilityExtraJson {
   /** addiction_treatment facility type (#566) — data.gov.tw 133353's 戒治機構模式/戒治服務內容, which have no generic facilities column of their own. */
   addictionTreatmentMode?: string | null;
   addictionTreatmentService?: string | null;
+  /**
+   * kindergarten facility type (#602) — merged in from kiang/ap.ece.moe.edu.tw's
+   * preschools.json (a community mirror of 全國教保資訊網, not an official MOE
+   * field) by scripts/lib/kindergarten-merge.mjs. Only present on rows that
+   * matched a fresh (<=60 days old) kiang record.
+   */
+  category?: string | null;
+  monthlyFee?: number | null;
+  hasPenalty?: boolean;
   [key: string]: unknown;
 }
 
