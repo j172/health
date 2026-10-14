@@ -146,10 +146,15 @@ export const listRecentNewsForNewsSitemap = async (
 const KEYWORD_MATCH_SQL =
   "CONCAT(',', n.keywords, ',') LIKE CONCAT('%,', ?, ',%')";
 
+// `topic` and `group`/`source` are independent filters — a topic value and a
+// source/group value are both allowed to be present at once (issue #565:
+// "/news?topic= 篩選可與 group 並存"), unlike sourceName vs. sourceNames
+// which are mutually exclusive drill-down levels of the *same* filter.
 const buildNewsFilter = (
   sourceName?: string,
   keyword?: string,
   sourceNames?: string[],
+  topic?: string,
 ): { whereClause: string; params: unknown[] } => {
   const conditions: string[] = [];
   const params: unknown[] = [];
@@ -172,6 +177,12 @@ const buildNewsFilter = (
   if (keyword) {
     conditions.push(KEYWORD_MATCH_SQL);
     params.push(keyword);
+  }
+  if (topic) {
+    conditions.push(
+      "EXISTS (SELECT 1 FROM news_item_topics nt WHERE nt.news_item_id = n.id AND nt.topic = ?)",
+    );
+    params.push(topic);
   }
   return {
     whereClause: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "",
@@ -217,14 +228,16 @@ export const listLatestNews = async (
   sourceName?: string,
   keyword?: string,
   sourceNames?: string[],
+  topic?: string,
 ): Promise<NewsListItem[]> => {
-  const cacheKey = `list_news_${limit}_${offset}_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
+  const cacheKey = `list_news_${limit}_${offset}_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}_${topic ?? ""}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback([], async (conn) => {
       const { whereClause, params } = buildNewsFilter(
         sourceName,
         keyword,
         sourceNames,
+        topic,
       );
       const [rows] = await conn.query<RowDataPacket[]>(
         `
@@ -238,6 +251,42 @@ export const listLatestNews = async (
         [...params, limit, offset],
       );
 
+      return coerceCoords(rows) as unknown as NewsListItem[];
+    }),
+  );
+};
+
+/**
+ * Latest N news items carrying a given topic (issue #565), queried directly
+ * against `news_item_topics` rather than through `listLatestNews`'s
+ * recency-ordered pool. Tools that declare `newsTopic` in TOOL_CATALOG (see
+ * lib/server/content/relatedNewsForTool.ts) use this instead of the
+ * keyword-ranked `rankNewsForTool` over a 150-item pool — a sparse topic
+ * like anti-fraud can easily have fewer than a handful of hits inside the
+ * most recent 150 articles site-wide, which would make the tool page's
+ * "相關新聞" section go empty for days at a time even though plenty of
+ * on-topic articles exist further back. Querying the topic table directly
+ * has no such ceiling.
+ */
+export const listLatestNewsByTopic = async (
+  topic: string,
+  limit = 20,
+): Promise<NewsListItem[]> => {
+  const cacheKey = `list_news_by_topic_${topic}_${limit}`;
+  return memoizeQuery(cacheKey, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT ${NEWS_LIST_SELECT_SQL}
+        FROM news_items n
+        JOIN news_item_topics nt ON nt.news_item_id = n.id AND nt.topic = ?
+        LEFT JOIN news_card_images c ON c.news_item_id = n.id
+        WHERE n.source_name NOT IN (${EXCLUDED_SOURCES.map(() => "?").join(", ")})
+        ORDER BY COALESCE(n.published_at_utc, n.first_seen_at_utc) DESC
+        LIMIT ?
+        `,
+        [topic, ...EXCLUDED_SOURCES, limit],
+      );
       return coerceCoords(rows) as unknown as NewsListItem[];
     }),
   );
@@ -347,14 +396,16 @@ export const countNewsItems = async (
   sourceName?: string,
   keyword?: string,
   sourceNames?: string[],
+  topic?: string,
 ): Promise<number> => {
-  const cacheKey = `count_news_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}`;
+  const cacheKey = `count_news_${sourceName ?? ""}_${keyword ?? ""}_${(sourceNames ?? []).join(",")}_${topic ?? ""}`;
   return memoizeQuery(cacheKey, async () =>
     withConnectionFallback(0, async (conn) => {
       const { whereClause, params } = buildNewsFilter(
         sourceName,
         keyword,
         sourceNames,
+        topic,
       );
       const [rows] = await conn.query<RowDataPacket[]>(
         `SELECT COUNT(*) AS total FROM news_items n ${whereClause}`,

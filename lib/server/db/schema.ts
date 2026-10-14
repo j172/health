@@ -61,6 +61,29 @@ export const TABLE_DDL = {
         ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 新聞主題關聯表 (issue #565) — anti-fraud/anti-drug/tobacco today, but any
+  // future topic is just a new `topic` value, not a schema change. A
+  // relational table (rather than a JSON/text column on news_items) so
+  // `/news?topic=` and the per-topic related-news query can filter with a
+  // plain indexed WHERE/EXISTS instead of a LIKE scan over a packed column.
+  // PRIMARY KEY is the (news_item_id, topic) pair itself — no time column in
+  // any key, deliberately, per docs/domains/09-database-data-integrity.md's
+  // UNIQUE-KEY-with-a-timestamp bloat lesson (this table isn't a polling
+  // time series, but the same discipline applies: a row here means "this
+  // article currently carries this topic", not "this topic was seen on this
+  // article at this time", so there is nothing to accumulate).
+  newsItemTopics: `
+    CREATE TABLE IF NOT EXISTS news_item_topics (
+      news_item_id BIGINT NOT NULL,
+      topic VARCHAR(30) NOT NULL,
+      created_at DATETIME NOT NULL,
+      PRIMARY KEY (news_item_id, topic),
+      KEY idx_news_item_topics_topic (topic),
+      CONSTRAINT fk_news_item_topics_news_item FOREIGN KEY (news_item_id)
+        REFERENCES news_items(id)
+        ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   newsCardImages: `
     CREATE TABLE IF NOT EXISTS news_card_images (
       id BIGINT NOT NULL AUTO_INCREMENT,

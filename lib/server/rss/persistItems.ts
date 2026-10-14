@@ -6,6 +6,7 @@ import {
   withTransaction,
 } from "@/lib/server/db/mysql";
 import { extractLocationFromText } from "@/lib/server/news/geoExtractor";
+import { classifyNewsTopics } from "@/lib/server/news/classifyTopics";
 
 export interface PersistStats {
   inserted: number;
@@ -23,6 +24,33 @@ export interface PersistStats {
 const dateToSql = (value: Date | null): string | null => {
   if (!value) return null;
   return toSqlDateTime(value);
+};
+
+const clearAndInsertTopics = async (
+  newsItemId: number,
+  item: EnrichedRssItem,
+  now: string,
+  conn: Parameters<Parameters<typeof withTransaction>[0]>[0],
+) => {
+  const topics = classifyNewsTopics({
+    title: item.title,
+    summary: item.descriptionText,
+    sourceName: item.sourceName,
+  });
+
+  await conn.execute("DELETE FROM news_item_topics WHERE news_item_id = ?", [
+    newsItemId,
+  ]);
+
+  for (const topic of topics) {
+    await conn.execute(
+      `
+      INSERT INTO news_item_topics (news_item_id, topic, created_at)
+      VALUES (?, ?, ?)
+      `,
+      [newsItemId, topic, now],
+    );
+  }
 };
 
 const clearAndInsertAssets = async (
@@ -215,6 +243,7 @@ export const persistItems = async (
       );
 
       await clearAndInsertAssets(upsertResult.insertId, item.assets, now, conn);
+      await clearAndInsertTopics(upsertResult.insertId, item, now, conn);
 
       // Classify on what the database actually did, not on what the pre-SELECT
       // predicted. MySQL's convention for INSERT .. ON DUPLICATE KEY UPDATE is

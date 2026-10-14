@@ -1,5 +1,5 @@
 import type { ToolCatalogEntry } from "@/lib/server/tools/catalog";
-import { listLatestNews, type NewsListItem } from "@/lib/server/news/queries";
+import { listLatestNews, listLatestNewsByTopic, type NewsListItem } from "@/lib/server/news/queries";
 import { rankNewsForTool } from "@/lib/server/content/crossLinks";
 
 /**
@@ -23,12 +23,24 @@ import { rankNewsForTool } from "@/lib/server/content/crossLinks";
  * the same 60s window shares one cached pool and one real DB query — this
  * scales with "how often the cache expires", not "how many tool pages (or
  * repeat views of the same one) get requested".
+ *
+ * Issue #565 adds a second path: when `tool.newsTopic` is set (e.g.
+ * `mental-health` → "anti-drug", `smoking-cessation` → "tobacco"), this
+ * fetches the latest `limit` articles carrying that topic directly via
+ * `listLatestNewsByTopic`, instead of keyword-ranking the same 150-item
+ * recency pool every other tool uses. A sparse topic can have fewer than
+ * `limit` hits inside the most recent 150 articles site-wide on any given
+ * day — querying the topic table directly removes that ceiling. Tools
+ * without `newsTopic` keep the original pool+rank behavior unchanged.
  */
 export async function findRelatedNewsForTool(
   tool: ToolCatalogEntry,
   limit = 3,
   poolSize = 150,
 ): Promise<NewsListItem[]> {
+  if (tool.newsTopic) {
+    return listLatestNewsByTopic(tool.newsTopic, limit);
+  }
   const pool = await listLatestNews(poolSize, 0);
   return rankNewsForTool(tool, pool, limit);
 }

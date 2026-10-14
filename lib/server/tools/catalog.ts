@@ -1,4 +1,5 @@
 import { compareByStrokeOrder } from "./strokeOrder";
+import type { Topic } from "@/lib/server/news/classifyTopics";
 
 export interface ToolFaq {
   question: string;
@@ -121,6 +122,19 @@ export interface ToolCatalogEntry {
    * misuse (issue #136).
    */
   schemaType?: "MedicalWebPage" | "WebPage";
+  /**
+   * Declares this tool as belonging to one of lib/server/news/classifyTopics.ts's
+   * news topics (issue #565) — when set, the tool page's "相關新聞" section
+   * (lib/server/content/relatedNewsForTool.ts) fetches the latest N articles
+   * carrying this topic directly, instead of keyword-ranking a candidate
+   * pool of the 150 most recent articles site-wide. That pool-based ranking
+   * stays the default for every tool that omits this field; it only changes
+   * behavior for tools that opt in. `mental-health` → "anti-drug",
+   * `smoking-cessation` → "tobacco" are the first two (#562's plan); #564's
+   * anti-fraud tool (not yet merged as of this writing) sets its own
+   * "anti-fraud" value independently.
+   */
+  newsTopic?: Topic;
 }
 
 // Single source of truth for "what tools does this site have" — used by
@@ -3140,6 +3154,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     relatedSlugs: ["stress", "sleep", "clinics"],
     group: "medical-care",
     lastUpdated: "2026-10-12",
+    newsTopic: "anti-drug",
 
     schemaType: "MedicalWebPage",
     faqs: [
@@ -3179,6 +3194,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     relatedSlugs: ["clinics", "pharmacies", "health-checks"],
     group: "medical-care",
     lastUpdated: "2026-10-14",
+    newsTopic: "tobacco",
 
     schemaType: "MedicalWebPage",
     faqs: [

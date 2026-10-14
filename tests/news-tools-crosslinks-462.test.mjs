@@ -202,15 +202,27 @@ test("relatedNewsForTool.ts delegates ranking to the pure rankNewsForTool and re
     "relatedNewsForTool.ts must reuse crossLinks.ts's pure rankNewsForTool rather than re-implementing matching",
   );
   assert.ok(
-    /import\s*{\s*listLatestNews\s*,\s*type\s*NewsListItem\s*}\s*from\s*"@\/lib\/server\/news\/queries"/.test(
+    /import\s*{\s*listLatestNews\s*,\s*listLatestNewsByTopic\s*,\s*type\s*NewsListItem\s*}\s*from\s*"@\/lib\/server\/news\/queries"/.test(
       relatedNewsForToolContent,
     ),
-    "relatedNewsForTool.ts must fetch its candidate pool via listLatestNews",
+    "relatedNewsForTool.ts must fetch its candidate pool via listLatestNews (and, for issue #565, listLatestNewsByTopic)",
   );
   assert.ok(
     relatedNewsForToolContent.includes("const pool = await listLatestNews(poolSize, 0);"),
     "relatedNewsForTool.ts must call listLatestNews for its candidate pool — that function is already " +
       "memoizeQuery-cached in lib/server/news/queries.ts, which is this feature's caching mechanism",
+  );
+});
+
+// Issue #565: tools that declare TOOL_CATALOG's `newsTopic` field skip the
+// keyword-ranked pool entirely and go straight to the topic-scoped query.
+test("relatedNewsForTool.ts routes tools with a declared newsTopic to listLatestNewsByTopic instead of the keyword-ranked pool", () => {
+  assert.ok(
+    /if\s*\(\s*tool\.newsTopic\s*\)\s*{\s*return\s*listLatestNewsByTopic\(\s*tool\.newsTopic\s*,\s*limit\s*\)\s*;\s*}/.test(
+      relatedNewsForToolContent,
+    ),
+    "a tool with newsTopic set must return listLatestNewsByTopic(tool.newsTopic, limit) directly, " +
+      "bypassing listLatestNews/rankNewsForTool's 150-item pool ceiling",
   );
 });
 
