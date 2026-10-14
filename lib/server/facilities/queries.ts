@@ -27,6 +27,9 @@ export interface FacilityExtraJson {
   respiteCodes?: string[];
   serviceDistrict?: string | null;
   serviceObject?: string | null;
+  /** addiction_treatment facility type (#566) — data.gov.tw 133353's 戒治機構模式/戒治服務內容, which have no generic facilities column of their own. */
+  addictionTreatmentMode?: string | null;
+  addictionTreatmentService?: string | null;
   [key: string]: unknown;
 }
 

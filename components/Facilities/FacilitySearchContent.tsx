@@ -45,6 +45,17 @@ export interface FacilitySearchConfig {
   categories?: { value: string; label: string }[];
   /** When set, shows a checkbox next to the search bar that filters to rows with extra_json.charityUrl set. */
   charityFilter?: { label: string };
+  /**
+   * Free-form extra_json fields shown as additional lines on each card,
+   * beyond the handful of hardcoded ones below (charityUrl/abcLevel/
+   * emptySeats/evaluations/serviceDistrict+serviceObject/penalty). Added for
+   * #566 (成癮防治分頁 — 戒治機構模式／戒治服務內容 have no generic facilities
+   * column of their own) and kept generic — any `extra_json` key can be
+   * surfaced this way — so a later facility type (e.g. #571's methadone
+   * cross-district dosing or county drug-prevention centers) can reuse it
+   * without another change to this component.
+   */
+  extraFields?: { key: string; label: string }[];
 }
 
 interface FacilityItem {
@@ -75,6 +86,10 @@ interface FacilityItem {
     respiteCodes?: string[];
     serviceDistrict?: string | null;
     serviceObject?: string | null;
+    /** addiction_treatment facility type (#566) — surfaced via `extraFields`, not hardcoded like the fields above. */
+    addictionTreatmentMode?: string | null;
+    addictionTreatmentService?: string | null;
+    [key: string]: unknown;
   } | null;
   /**
    * Only present on GPS searches — the Haversine distance the API sorted the list by.
@@ -98,6 +113,14 @@ const NEARBY_FALLBACK_RADIUS_METERS = 500000;
  * search into an unbounded query.
  */
 const FETCH_LIMIT = 300;
+
+/**
+ * 法務部戒毒成功專線（#566 的成癮防治分頁要求固定顯示）。截至這張票完成時 #563
+ * （緊急電話資料修正：毒品防制諮詢專線號碼從誤植的 0800-024-555 改成這支）尚未
+ * 合併，data/government-hotlines.json 裡還是舊號碼，所以這裡先寫死；#563 合併
+ * 後應改成直接引用那份緊急電話資料，而不是維護第二個號碼來源。
+ */
+const ADDICTION_HOTLINE = "0800-770-885";
 
 /**
  * Pulls the tool's own noun out of copy it already carries, so the nearby-fallback
@@ -161,6 +184,7 @@ export default function FacilitySearchContent({
     locationDefaultWarning,
     categories,
     charityFilter,
+    extraFields,
   } = config;
 
   const { t, locale } = useLanguage();
@@ -208,6 +232,10 @@ export default function FacilitySearchContent({
     label: tc(`categoryLabel${idx}`, c.label),
   }));
   const displayCharityFilterLabel = charityFilter ? tc("charityFilterLabel", charityFilter.label) : undefined;
+  const displayExtraFields = extraFields?.map((f, idx) => ({
+    ...f,
+    label: tc(`extraFieldLabel${idx}`, f.label),
+  }));
 
   // issue #463：地圖彈出視窗「看附近的 AED／急診／藥局」深連結帶入的 ?lat=&lng=
   // 覆寫座標，由呼叫端（目前只有 /tools/pharmacies，一個 server component）在
@@ -472,6 +500,21 @@ export default function FacilitySearchContent({
         </div>
       )}
 
+      {facilityType === "addiction_treatment" && (
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-teal-200 bg-teal-50/70 p-3.5 text-xs text-teal-900 dark:border-teal-900/60 dark:bg-teal-950/30 dark:text-teal-300">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="text-base">☎️</span>
+            <span>
+              {t("facilitySearch.addictionHotlinePrefix", "想戒毒或擔心家人藥癮問題？歡迎撥打法務部戒毒成功專線 ")}
+              <a href={`tel:${ADDICTION_HOTLINE.replace(/-/g, "")}`} className="font-bold underline">
+                {ADDICTION_HOTLINE}
+              </a>
+              {t("facilitySearch.addictionHotlineSuffix", "（24 小時免付費）。")}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* 結構化篩選面板：縣市鄉鎮二級聯動 ＋ 關鍵字 ＋ 類別 ＋ 排序 */}
       <form onSubmit={handleSearch} className="flex flex-col gap-3 rounded-2xl border border-neutral-200 bg-neutral-50/60 p-4 dark:border-slate-800 dark:bg-slate-900/60 shadow-xs">
         {/* 第一列：22 縣市＋368 鄉鎮二級快速篩選 */}
@@ -717,6 +760,16 @@ export default function FacilitySearchContent({
                       {f.service_item}
                     </p>
                   )}
+                  {displayExtraFields?.map((ef) => {
+                    const value = f.extra_json?.[ef.key];
+                    if (!value) return null;
+                    return (
+                      <p key={ef.key} className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
+                        {ef.label}
+                        {String(value)}
+                      </p>
+                    );
+                  })}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
                   {showGeocodeNote && f.lat === null && (
