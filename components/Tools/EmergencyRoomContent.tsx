@@ -22,6 +22,23 @@ const REGION_TABS = [
   { id: "PEN,KIN,LIE", labelKey: "erStatusTool.regionPenKinLie", labelDefault: "外島" },
 ];
 
+// reported_at is a UTC ISO string (see lib/server/emergencyRooms/queries.ts);
+// show it as Taiwan time. A fixed timeZone keeps server and client output
+// identical, so hydration doesn't mismatch.
+const reportedAtFormatter = new Intl.DateTimeFormat("zh-TW", {
+  timeZone: "Asia/Taipei",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+function formatReportedAt(value: unknown): string {
+  const date = value instanceof Date ? value : new Date(String(value ?? ""));
+  return Number.isNaN(date.getTime()) ? String(value ?? "") : reportedAtFormatter.format(date);
+}
+
 function SparklineSvg({
   points,
   color = "#6366f1",
@@ -425,7 +442,7 @@ export default function EmergencyRoomContent({
                   {/* 底部功能與展開 */}
                   <div className="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 dark:border-slate-800 text-xs">
                     <span className="text-slate-400">
-                      {t("erStatusTool.updatedAtLabel", "更新時間：")}{hospital.reported_at}
+                      {t("erStatusTool.updatedAtLabel", "更新時間：")}{formatReportedAt(hospital.reported_at)}
                     </span>
 
                     <div className="flex items-center gap-2">
