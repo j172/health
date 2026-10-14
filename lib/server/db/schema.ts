@@ -1853,6 +1853,37 @@ export const TABLE_DDL = {
       INDEX idx_county (county)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 涉詐網域清單 (issue #564 / #562) — 目前只餵入警政署 176455「遭停止解析涉詐
+  // 網站」，之後 #567 會加數產署 165027（近乎每日）與警政署 160055（一次性歷史
+  // 匯入），因此 source 是獨立欄位，一個網域可能在多個來源各有一列。
+  //
+  // UNIQUE KEY 刻意只用 (domain, source) ——絕對不能把 report_year_month 或任何
+  // 時間欄位放進去。這個 repo 已經在 cwa_station_weather／cwa_rainfall／
+  // aqi_readings 等表上真實發生過「UNIQUE KEY 含時間欄位 → 每次同步的新時間值
+  // 都被當成新 row → 表無限膨脹」的事故（見 migrations/20260921_cwa_station_
+  // weather_narrow_unique_key.sql 等修復），176455 每月重新發佈同一批網域、月份
+  // 值逐月改變，若月份進了 key，93,840 列會每月再疊加一輪、從不覆蓋。
+  // report_year_month／site_nature 因此都是一般欄位：同步時對同一
+  // (domain, source) 做 UPDATE 覆蓋成最新值，first_seen 只在初次插入時寫入，
+  // last_seen 每次同步都更新。
+  fraudDomains: `
+    CREATE TABLE IF NOT EXISTS fraud_domains (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      domain VARCHAR(255) NOT NULL,
+      source VARCHAR(40) NOT NULL,
+      site_nature VARCHAR(100) NULL,
+      legal_basis VARCHAR(255) NULL,
+      applicant_org VARCHAR(255) NULL,
+      report_year_month VARCHAR(10) NULL,
+      first_seen DATETIME NOT NULL,
+      last_seen DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_fraud_domain_source (domain, source),
+      KEY idx_fraud_domain_last_seen (last_seen)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 
