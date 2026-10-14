@@ -11,6 +11,11 @@ import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties"
 import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
 import { fetchTdxAccessibleParking } from "@/lib/server/facilities/sources/tdxParking";
 import { fetchAddictionTreatmentFacilities } from "@/lib/server/facilities/sources/addictionTreatmentFacilities";
+import { fetchBabyFriendlyHospitalTaipei } from "@/lib/server/facilities/sources/babyFriendlyHospitalTaipei";
+import { fetchBabyFriendlyHospitalNewTaipei } from "@/lib/server/facilities/sources/babyFriendlyHospitalNewTaipei";
+import { fetchBabyFriendlyHospitalTaichung } from "@/lib/server/facilities/sources/babyFriendlyHospitalTaichung";
+import { fetchBabyFriendlyHospitalTainan } from "@/lib/server/facilities/sources/babyFriendlyHospitalTainan";
+import { fetchBabyFriendlyHospitalChanghua } from "@/lib/server/facilities/sources/babyFriendlyHospitalChanghua";
 import {
   fetchTaipeiChildcarePrivate,
   fetchTaipeiChildcarePublicPrivate,
@@ -65,6 +70,16 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // host yet — see the comment above fetchAddictionTreatmentFacilities() — confirm that
   // before relying on this source's scheduled runs.
   { key: "addiction_treatment_133353", fetch: fetchAddictionTreatmentFacilities },
+  // #614: 母嬰親善醫療院所地圖改用縣市真實資料，取代 build-expansion-seeds.mjs
+  // 的 4 筆手寫假資料。5 個縣市各自獨立來源鍵，可分別重跑——高雄（86397）刻意
+  // 不接：效期全數落在 2016–2019，已全部過期，不是可用的現行名單。每個來源
+  // 自己依該縣市實際的效期欄位格式過濾過期列（臺北/彰化有效期欄位，新北/臺中/
+  // 臺南沒有效期欄位可過濾，細節見各檔案開頭註解）。
+  { key: "baby_friendly_hospital_taipei_121200", fetch: fetchBabyFriendlyHospitalTaipei },
+  { key: "baby_friendly_hospital_new_taipei_123291", fetch: fetchBabyFriendlyHospitalNewTaipei },
+  { key: "baby_friendly_hospital_taichung_83649", fetch: fetchBabyFriendlyHospitalTaichung },
+  { key: "baby_friendly_hospital_tainan_150985", fetch: fetchBabyFriendlyHospitalTainan },
+  { key: "baby_friendly_hospital_changhua_30882", fetch: fetchBabyFriendlyHospitalChanghua },
   // #601 (parent #599): 托嬰中心與居家托育地圖，臺北＋新北骨架。5 個臺北來源
   // registered individually — taipei_childcare_121278 (私立) internally
   // re-fetches taipei_childcare_121981 (準公共) to dedupe the two tables'

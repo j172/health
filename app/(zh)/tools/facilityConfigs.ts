@@ -500,13 +500,16 @@ export const facilitySearchConfigs = {
   "baby-friendly-hospitals": {
     facilityType: "baby_friendly_hospital",
     emoji: "🤱",
-    title: "全國母嬰親善認證醫療院所地圖",
+    title: "母嬰親善醫療院所地圖",
     description:
-      "查詢國民健康署評鑑認證通過之母嬰親善醫療院所，提供 24 小時母嬰同室、母乳哺育指導與婦幼照護環境。資料來源：衛生福利部國民健康署。",
+      "查詢臺北市、新北市、臺中市、臺南市、彰化縣五縣市衛生局公告之母嬰親善醫療院所名單，並自動排除已過有效期的紀錄。目前僅收錄這五個縣市——其餘縣市（例如高雄市，現有公告效期已全數落在 2016～2019 年、不堪作為現行名單使用）尚未收錄；若所在縣市未列出或查無有效名單，請直接洽當地衛生局確認最新名冊。",
+    noteLine:
+      "各縣市資料查證於 2026-10-14：臺北市（19 家原始筆數，依效期逐筆過濾）、新北市（20 家，名冊標示 2026-02 更新）、臺中市（18 家）、臺南市（11 家，含座標）、彰化縣（5 家，效期至民國 116 年底／2027 年底）。",
     searchPlaceholder: "輸入婦產科、醫院名稱或地址關鍵字",
     errorText: "查詢母嬰親善醫療院所失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無認證的母嬰親善院所，可改用關鍵字搜尋。",
+    emptyStateNoKeyword: "附近查無收錄的母嬰親善院所，可改用關鍵字或地區快篩搜尋。",
     emptyStateWithKeyword: "查無符合的母嬰親善院所。",
+    emptyStateCounty: "本縣市暫無有效名單，請洽當地衛生局。",
     serviceItem: { label: "親善特色：" },
   },
   "rare-disease-care": {

@@ -42,6 +42,17 @@ export interface FacilitySearchConfig {
   showGeocodeNote?: boolean;
   /** Shown when the user hasn't searched by keyword and geolocation fell back to the default position. */
   locationDefaultWarning?: string;
+  /**
+   * Shown instead of `emptyStateNoKeyword`/`emptyStateWithKeyword` when the
+   * user has picked a specific county (地區快篩) and that county's result
+   * count is 0. Added for #614 (baby-friendly-hospitals) — some counties
+   * genuinely have no currently-valid rows (unsourced like Kaohsiung, or
+   * sourced but every row's validity date has lapsed), and a tool whose
+   * coverage is inherently partial by county should say so plainly rather
+   * than showing the same "no results for this search" copy a keyword miss
+   * would get. Omitted by every other facility page (no behavior change).
+   */
+  emptyStateCounty?: string;
   /** When set, shows a category filter + sort dropdown next to the search bar, matching against the facilities.service_item column. */
   categories?: { value: string; label: string }[];
   /** When set, shows a checkbox next to the search bar that filters to rows with extra_json.charityUrl set. */
@@ -198,6 +209,7 @@ export default function FacilitySearchContent({
     categories,
     charityFilter,
     extraFields,
+    emptyStateCounty,
   } = config;
 
   const { t, locale } = useLanguage();
@@ -236,6 +248,7 @@ export default function FacilitySearchContent({
   const displayErrorText = tc("errorText", errorText);
   const displayEmptyStateNoKeyword = tc("emptyStateNoKeyword", emptyStateNoKeyword);
   const displayEmptyStateWithKeyword = tc("emptyStateWithKeyword", emptyStateWithKeyword);
+  const displayEmptyStateCounty = emptyStateCounty ? tc("emptyStateCounty", emptyStateCounty) : undefined;
   // `locationDefaultWarning` itself is pre-existing dead config (destructured
   // above but never rendered anywhere in this component, independently of
   // this ticket) — nothing to wrap in `tc` since there's no render site for
@@ -662,7 +675,13 @@ export default function FacilitySearchContent({
           )}
 
           {totalCount === 0 ? (
-            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">{keyword || county ? displayEmptyStateWithKeyword : displayEmptyStateNoKeyword}</p>
+            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">
+              {county && displayEmptyStateCounty
+                ? displayEmptyStateCounty
+                : keyword || county
+                  ? displayEmptyStateWithKeyword
+                  : displayEmptyStateNoKeyword}
+            </p>
           ) : (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-slate-400">
