@@ -11,6 +11,7 @@ import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties"
 import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
 import { fetchTdxAccessibleParking } from "@/lib/server/facilities/sources/tdxParking";
 import { fetchAddictionTreatmentFacilities } from "@/lib/server/facilities/sources/addictionTreatmentFacilities";
+import { fetchNhplatformNursingInstitutions } from "@/lib/server/facilities/sources/nhplatformNursingInstitutions";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -53,6 +54,16 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // host yet — see the comment above fetchAddictionTreatmentFacilities() — confirm that
   // before relying on this source's scheduled runs.
   { key: "addiction_treatment_133353", fetch: fetchAddictionTreatmentFacilities },
+  // issue #612: 全國開業護理機構清冊 (data.gov.tw 115950) — one CSV fetch that
+  // produces records for TWO destinations: facilityType "postpartum_care"
+  // (241 rows, the new /tools/postpartum-care) and additional
+  // facilityType "long_term_care" rows for 一般護理之家/居家護理所 (merged into
+  // the existing /tools/long-term-care as two new category filter values).
+  // Self-contained WGS84 coordinates — no geocode backfill needed. Host
+  // reachability from the production host is unconfirmed; see the comment
+  // above fetchNhplatformNursingInstitutions() and
+  // .github/workflows/egress-probe.yml.
+  { key: "nhplatform_115950", fetch: fetchNhplatformNursingInstitutions },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —
