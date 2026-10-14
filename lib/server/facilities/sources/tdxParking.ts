@@ -1,6 +1,6 @@
 import "server-only";
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
-import { httpGetJson } from "@/lib/server/net/httpClient";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { getTdxToken } from "@/lib/server/tdx/auth";
 import { toCoordinate } from "@/lib/server/db/coords";
 import { TDX_BUS_CITIES } from "@/lib/server/transit/tdxBusClient";
@@ -125,10 +125,7 @@ function buildServiceItemText(label: string, available: number | undefined, tota
 }
 
 async function fetchJsonForCity<T>(url: string, token: string): Promise<T | null> {
-  const res = await httpGetJson<T>(url, {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<T>(url, token);
   if (res.status !== 200) {
     throw new Error(`TDX parking request ${url} returned status ${res.status}`);
   }
@@ -290,7 +287,11 @@ export async function fetchTdxAccessibleParking(): Promise<FacilityRecord[]> {
   }
 
   const records: FacilityRecord[] = [];
-  const batchSize = 3;
+  // Each task already fires 2 requests in parallel (static + availability),
+  // so 3 tasks at once meant 6 concurrent calls — every county got a 429 on
+  // the first live run. Run one county-kind at a time; 429s that still
+  // happen are retried with back-off inside tdxGetJsonWithRetry.
+  const batchSize = 1;
   for (let i = 0; i < tasks.length; i += batchSize) {
     const batch = tasks.slice(i, i + batchSize);
     const results = await Promise.allSettled(batch.map((task) => task.run()));

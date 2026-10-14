@@ -1,6 +1,6 @@
 import "server-only";
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
-import { httpGetJson } from "@/lib/server/net/httpClient";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { getTdxToken } from "@/lib/server/tdx/auth";
 import { toCoordinate } from "@/lib/server/db/coords";
 import { TDX_BUS_CITIES } from "@/lib/server/transit/tdxBusClient";
@@ -111,10 +111,7 @@ export async function fetchCityAudibleSignals(cityCode: string): Promise<Facilit
   const token = await getTdxToken();
   if (!token) return [];
 
-  const res = await httpGetJson<TdxApsWrapper | TdxApsItem[]>(apsUrl(cityConfig.tdxName), {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<TdxApsWrapper | TdxApsItem[]>(apsUrl(cityConfig.tdxName), token);
   if (res.status !== 200) {
     throw new Error(`TDX Traffic/Road/APS/City/${cityConfig.tdxName} returned status ${res.status}`);
   }
