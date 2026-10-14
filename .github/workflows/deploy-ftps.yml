@@ -593,6 +593,42 @@ jobs:
           echo "Timed out waiting for [DONE-FORCE-V4]"
           exit 1
 
+      # `next build` above runs on this runner with no database, so every
+      # DB-backed ISR page is prerendered from the "[mysql] Falling back to
+      # empty data" path (48 such fallbacks in a typical build log). Without
+      # this step those empty pages go live and get cached by Cloudflare —
+      # and since most tool pages use revalidate=300 or longer, a page
+      # requested soon after the restart is still "fresh" by Next's clock and
+      # keeps serving the empty build-time copy. Invalidate everything, then
+      # request each page so it regenerates from the real database, before
+      # the Cloudflare purge below lets visitors at the new build.
+      - name: Regenerate DB-backed ISR pages before purging Cloudflare
+        continue-on-error: true
+        timeout-minutes: 12
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          # Secret goes through curl's stdin config (-K -), never the remote
+          # argv, same as the news-image backfill step below.
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST http://127.0.0.1:3000/api/admin/revalidate-paths \
+                -H 'content-type: application/json' -d '{\"scope\":\"all\"}'"
+          echo
+
+          node scripts/list-warm-paths.mjs | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "bash -c $(printf %q "$(cat scripts/warm-isr-pages.sh)")"
+
       - name: Purge Cloudflare cache
         continue-on-error: true
         env:
