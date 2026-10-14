@@ -30,6 +30,23 @@ export interface FacilityExtraJson {
   /** addiction_treatment facility type (#566) — data.gov.tw 133353's 戒治機構模式/戒治服務內容, which have no generic facilities column of their own. */
   addictionTreatmentMode?: string | null;
   addictionTreatmentService?: string | null;
+  /**
+   * childcare_center/home_childcare_center facility types (#601) — surfaced
+   * via FacilitySearchContent's generic `extraFields`, same mechanism as the
+   * addictionTreatment* fields above. `category` is also mirrored onto the
+   * `service_item` column so the existing `categories` filter (which matches
+   * against `service_item`) works without any new filtering mechanism.
+   * `monthlyFee` has no populated source yet in this ticket's 臺北/新北 data —
+   * declared now so a later county with 月費 data can set it without another
+   * change to FacilitySearchContent.
+   */
+  category?: string | null;
+  approvedCapacity?: string | number | null;
+  actualCapacity?: string | number | null;
+  evaluationResult?: string | null;
+  monthlyFee?: string | number | null;
+  /** `YYYY-MM-DD` this site's own sync captured that county's snapshot — see childcareCenterShared.ts's `todayDataAsOf`. */
+  dataAsOf?: string | null;
   [key: string]: unknown;
 }
 
