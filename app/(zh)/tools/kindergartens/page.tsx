@@ -15,10 +15,14 @@ const catalogEntry = getToolCatalogEntry("kindergartens");
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["幼兒園", "幼兒園查詢", "公立幼兒園", "私立幼兒園", "非營利幼兒園", "教育部"],
+  keywords: ["幼兒園", "幼兒園查詢", "公立幼兒園", "私立幼兒園", "非營利幼兒園", "準公共幼兒園", "幼兒園月費", "教育部"],
   alternates: { canonical },
   robots: { index: false },
-  openGraph: { title: "全國幼兒園查詢", description: "查詢全國公立、私立與非營利幼兒園名錄。", url: canonical },
+  openGraph: {
+    title: "全國幼兒園查詢",
+    description: "查詢全國公立、私立、準公共與非營利幼兒園名錄，含月費與裁罰紀錄。",
+    url: canonical,
+  },
 };
 
 export default function KindergartensPage() {

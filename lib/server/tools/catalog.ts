@@ -1535,28 +1535,38 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
 
     schemaType: "WebPage",
     title: "全國幼兒園查詢",
-    keywords: ["幼兒園查詢", "托嬰", "幼稚園"],
+    keywords: ["幼兒園查詢", "托嬰", "幼稚園", "非營利幼兒園", "準公共幼兒園", "幼兒園月費", "幼兒園裁罰紀錄"],
     description:
-      "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航。資料來源：教育部開放資料。",
+      "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航；準公共／非營利分類、月費與裁罰紀錄來自民間轉錄全國教保資訊網（kiang/ap.ece.moe.edu.tw，MIT 授權）。",
     directAnswer:
-      "查詢全國公私立幼兒園名錄，涵蓋幼兒園設立別、核定人數、電話與所在地址。",
+      "查詢全國公立、私立、準公共與非營利幼兒園名錄，涵蓋設立別、月費、裁罰紀錄、電話與所在地址。",
     scientificBasis: [
       {
         title: "全國幼兒園名錄 (k1_new.json)",
         authority: "教育部統計處 (MOE)",
         url: "https://stats.moe.gov.tw",
       },
+      {
+        title: "全國教保資訊網民間轉錄 (preschools.json，MIT 授權，非官方 API)",
+        authority: "kiang/ap.ece.moe.edu.tw (GitHub, 轉錄自教育部全國教保資訊網)",
+        url: "https://ap.ece.moe.edu.tw",
+      },
     ],
     relatedSlugs: ["cram-schools", "child-welfare-institutions", "child-native-languages"],
     faqs: [
       {
-        question: "如何查詢附近的公立或私立幼兒園？",
+        question: "如何查詢附近的公立、私立、非營利或準公共幼兒園？",
         answer:
-          "開啟定位或在搜尋框輸入縣市與幼兒園名稱，可依公立、私立、非營利進行篩選並在地圖上查看位置。",
+          "開啟定位或在搜尋框輸入縣市與幼兒園名稱，可依公立、私立、非營利、準公共進行篩選並在地圖上查看位置。",
+      },
+      {
+        question: "月費、非營利／準公共分類與裁罰紀錄是教育部官方資料嗎？",
+        answer:
+          "不是。公/私立二分類與基本名錄來自教育部統計處官方開放資料，但非營利／準公共的進一步分類、月費與裁罰紀錄旗標來自民間轉錄全國教保資訊網的 kiang/ap.ece.moe.edu.tw 專案（MIT 授權），並非教育部官方欄位。若該民間轉錄超過 60 天未更新，站上會自動停用這些補充欄位，僅顯示教育部公/私立二分類。",
       },
       {
         question: "資料來源與更新頻率？",
-        answer: "資料來源為教育部統計處公開之全國幼兒園名錄開放資料。",
+        answer: "基本名錄來自教育部統計處公開之全國幼兒園名錄開放資料；補充的分類、月費與裁罰紀錄來自民間轉錄，隨來源更新頻率同步。",
       },
     ],
   },
