@@ -20,15 +20,21 @@
 // unique-transformations/month budget. They are not in the allowlist below,
 // and this module is never imported from components/News/.
 //
-// Known limitation, already confirmed (not a bug to work around): actually
-// turning on "Images > Transformations > Enable for zone" is a
-// dashboard-only action with no documented Cloudflare API — same situation
-// as Crawler Hints (see config/cloudflare/zone-settings.json's
-// `crawlerHints` field and scripts/cloudflare-zone-plan.mjs's note about
-// it). Until a human flips that toggle, every URL this helper builds will
-// 404/error at the edge — which is exactly why `onerror=redirect` is always
-// baked into the options string below: Cloudflare falls back to serving the
-// original, unmodified same-zone source image instead of a broken image.
+// 2026-10-14 correction: this was believed to be a dashboard-only toggle
+// with no documented Cloudflare API (same situation as Crawler Hints — see
+// config/cloudflare/zone-settings.json's `crawlerHints` field) — wrong.
+// PATCH /zones/{id}/settings/image_resizing exists and is now managed
+// through the usual config-as-code flow (zoneSettings.image_resizing in
+// config/cloudflare/zone-settings.json).
+//
+// Also corrected the same day: `onerror=redirect`'s graceful fallback only
+// applies to a transform failing on an image the edge actually reached —
+// confirmed live that while the zone-level feature was off, every URL this
+// helper built 404'd with a plain Cloudflare error page (including the site
+// logo, on every page) instead of falling back to the original image.
+// `onerror=redirect` is kept below regardless, for the cases it does cover
+// (a genuine transform failure on a present image), but it was never a
+// substitute for the zone setting actually being on.
 
 /** The only static-asset path prefixes this ticket allows to be rewritten
  * into a `/cdn-cgi/image/...` edge-transform URL. See the module comment

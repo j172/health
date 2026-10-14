@@ -28,7 +28,8 @@
     "brotli": "on",
     "early_hints": "on",
     "rocket_loader": "off",
-    "minify": { "css": "off", "html": "off", "js": "off" }
+    "minify": { "css": "off", "html": "off", "js": "off" },
+    "image_resizing": "on"
   },
   "tieredCache": {
     "smartTopologyEnable": "on",

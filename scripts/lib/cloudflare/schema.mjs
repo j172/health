@@ -123,6 +123,17 @@ export const zoneSettingsFileSchema = z.object({
     early_hints: onOff,
     rocket_loader: z.enum(["on", "off", "manual"]),
     minify: z.object({ css: onOff, html: onOff, js: onOff }),
+    // issue #482's lib/format/cfImageUrl.ts comment claimed enabling this had
+    // "no documented Cloudflare API" and required a dashboard-only toggle —
+    // confirmed wrong 2026-10-14: PATCH /zones/{id}/settings/image_resizing
+    // exists and accepts on/off/open. "on" (not "open") matches that file's
+    // own same-zone-only assumption. Left disabled until now, every
+    // /cdn-cgi/image/... URL cfImageUrl() built 404'd at the edge — including
+    // the site logo on every single page — instead of onerror=redirect's
+    // intended graceful fallback, which turns out to not apply to "the
+    // feature itself is off" (only to a transform failing on an image that
+    // was actually reached).
+    image_resizing: z.enum(["on", "off", "open"]),
   }),
   tieredCache: z.object({
     smartTopologyEnable: onOff,
