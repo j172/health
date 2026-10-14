@@ -26,6 +26,18 @@ test("parseZoneSettingsFile: rejects a missing required field", () => {
   assert.throws(() => parseZoneSettingsFile(raw), /failed schema validation/);
 });
 
+test("parseZoneSettingsFile: the repo baseline enables image_resizing (issue #482's cdn-cgi/image logo URLs 404 at the edge otherwise)", () => {
+  const raw = loadBaselineRaw();
+  const parsed = parseZoneSettingsFile(raw);
+  assert.equal(parsed.zoneSettings.image_resizing, "on");
+});
+
+test("parseZoneSettingsFile: image_resizing rejects a value outside on/off/open", () => {
+  const raw = loadBaselineRaw();
+  raw.zoneSettings.image_resizing = "enabled";
+  assert.throws(() => parseZoneSettingsFile(raw), /failed schema validation/);
+});
+
 test("parseZoneSettingsFile: rejects an invalid enum value", () => {
   const raw = loadBaselineRaw();
   raw.zoneSettings.ssl = "not-a-real-mode";
