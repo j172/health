@@ -1552,7 +1552,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://ap.ece.moe.edu.tw",
       },
     ],
-    relatedSlugs: ["cram-schools", "child-welfare-institutions", "child-native-languages"],
+    relatedSlugs: ["cram-schools", "child-welfare-institutions", "child-native-languages", "childcare-centers"],
     faqs: [
       {
         question: "如何查詢附近的公立、私立、非營利或準公共幼兒園？",
@@ -1567,6 +1567,65 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       {
         question: "資料來源與更新頻率？",
         answer: "基本名錄來自教育部統計處公開之全國幼兒園名錄開放資料；補充的分類、月費與裁罰紀錄來自民間轉錄，隨來源更新頻率同步。",
+      },
+    ],
+  },
+  {
+    // issue #601 (parent #599 §兒少福利與社福求助): 托嬰中心與居家托育地圖，先
+    // 用臺北、新北兩個縣市把骨架建好——新 facilityType（childcare_center 含
+    // extra_json.category 公辦民營/社區公共托育家園/準公共/私立、以及
+    // home_childcare_center）、匯入與驗證流程、臺北私立/準公共去重邏輯，供後續
+    // 六都＋新竹縣市/彰化/嘉義市的縣市票套用同一套模式（見
+    // lib/server/facilities/sources/taipeiChildcare.ts、ntpcChildcare.ts）。
+    slug: "childcare-centers",
+    group: "family",
+    lastUpdated: "2026-10-14",
+
+    schemaType: "WebPage",
+    title: "托嬰中心與居家托育地圖（臺北／新北）",
+    keywords: ["托嬰中心", "居家托育", "保母", "準公共托嬰中心", "公辦民營托嬰中心", "社區公共托育家園", "托育費用"],
+    description:
+      "查詢臺北市、新北市托嬰中心與居家托育服務中心（找保母的窗口），依公辦民營、社區公共托育家園、準公共、私立分類，顯示核定／實際收托人數與評鑑結果。資料來源：臺北市政府社會局、新北市政府社會局開放資料；其餘縣市請改用衛福部社家署全國系統性查詢。",
+    directAnswer:
+      "整合臺北、新北托嬰中心與居家托育服務中心名冊，依公辦民營、準公共、私立等分類查詢收托人數與評鑑結果。",
+    scientificBasis: [
+      {
+        title: "臺北市托嬰中心（私立／公辦民營／準公共／社區公共托育家園）開放資料",
+        authority: "臺北市政府社會局",
+        url: "https://data.taipei",
+      },
+      {
+        title: "新北市托嬰中心（私立／公共托育中心）與居家托育服務中心開放資料",
+        authority: "新北市政府社會局",
+        url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "托育管理資訊系統全國系統性查詢",
+        authority: "衛生福利部社會及家庭署 (SFAA)",
+        url: "https://ncwisweb.sfaa.gov.tw",
+      },
+    ],
+    relatedSlugs: ["kindergartens", "child-welfare-institutions", "cram-schools"],
+    faqs: [
+      {
+        question: "公辦民營、社區公共托育家園、準公共跟私立托嬰中心有什麼差別？",
+        answer:
+          "公辦民營、社區公共托育家園由政府出資、委託民間團體經營，收費較低；準公共托嬰中心是私立機構與地方政府簽約，家長可領準公共托育補助、收費也受政府規範；私立托嬰中心則完全自主訂價，未必有補助。",
+      },
+      {
+        question: "居家托育服務中心是托嬰機構嗎？",
+        answer:
+          "不是。居家托育服務中心是協助家長找保母的媒合與管理窗口，負責保母登記、媒合、訪視輔導與托育諮詢，本身不收托幼兒；托嬰中心才是實際收托幼兒的機構。",
+      },
+      {
+        question: "我家不在臺北或新北，可以查到資料嗎？",
+        answer:
+          "目前僅收錄臺北市、新北市，其餘縣市尚未建置。可改用頁面上連結的衛福部社家署「托育管理資訊系統全國系統性查詢」查詢其他縣市。",
+      },
+      {
+        question: "為什麼有些托嬰中心只出現在準公共分類，沒有重複列在私立分類？",
+        answer:
+          "同一家私立托嬰中心申請「準公共」資格後，會同時出現在臺北市的私立名冊跟準公共名冊裡。本站比對機構名稱與地址後，重疊的機構只顯示一筆、歸類為準公共（並帶出準公共名冊的核定/實際收托人數與評鑑結果），避免同一地點重複出現。",
       },
     ],
   },
