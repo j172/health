@@ -259,7 +259,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw",
       },
     ],
-    relatedSlugs: ["uv", "aqi", "emergency-supplies"],
+    relatedSlugs: ["uv", "aqi", "emergency-supplies", "global-watch"],
     faqs: [
       {
         question: "地震資料多久更新一次？",
@@ -1915,7 +1915,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.cdc.gov.tw",
       },
     ],
-    relatedSlugs: ["aqi", "uv", "weather-alerts"],
+    relatedSlugs: ["aqi", "uv", "weather-alerts", "global-watch"],
     faqs: [
       {
         question: "國際旅遊疫情建議等級如何劃分？",
@@ -2288,6 +2288,54 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "三個圖層（避難收容處所／消防救援單位／應變中心）分別代表什麼？",
         answer:
           "避難收容處所是災害發生時民眾可前往避難的場所；消防救援單位是消防隊點位，供查詢鄰近消防單位位置；應變中心是各縣市政府災害應變中心，通常與消防局同位置，負責統籌指揮救災。",
+      },
+    ],
+  },
+  {
+    // Issue #587 (parent #583): first ticket of the "全球動態地球／Global
+    // Watch" feature — ships only the MapLibre globe shell (vector/satellite
+    // toggle, reset-to-Taiwan, reduced-motion, WebGL fallback). No data
+    // layers yet (地震/颱風/全球災害/國際疫情/全球空品 are #588-#592+),
+    // so this entry stays deliberately thin — not in INDEXABLE_SLUGS yet
+    // (see that set's own doc comment on thin-shell pages), no FAQs beyond
+    // the shell's own real, shipped behavior. Will absorb `earthquakes` and
+    // `travel-epidemic-alerts` (see those entries' relatedSlugs) once their
+    // own item tickets land — do not pre-emptively remove those two entries
+    // here; #583's own ticket for that 301/catalog cleanup is separate.
+    slug: "global-watch",
+    group: "disaster-alerts",
+    lastUpdated: "2026-10-14",
+
+    schemaType: "WebPage",
+    title: "全球動態地球",
+    keywords: ["全球動態地球", "3D地球", "地球儀", "MapLibre", "全球地圖", "衛星影像"],
+    description:
+      "可拖曳旋轉、縮放的 3D 地球，拉近至城市層級自然轉為平面街道地圖；支援向量地圖與衛星影像切換，並可一鍵回到台灣預設視角。",
+    directAnswer:
+      "全球動態地球是一顆可拖曳旋轉、縮放的互動式 3D 地球（MapLibre GL JS globe 投影），拉近到街道層級會自然轉為平面地圖，提供向量地圖／衛星影像切換與「回到台灣」重置視角按鈕。",
+    scientificBasis: [
+      {
+        title: "OpenFreeMap 開放向量地圖資料",
+        authority: "OpenFreeMap（OpenMapTiles／OpenStreetMap 貢獻者）",
+        url: "https://www.openfreemap.org/",
+      },
+      {
+        title: "GIBS (Global Imagery Browse Services) — Blue Marble 公有領域影像",
+        authority: "NASA EOSDIS",
+        url: "https://www.earthdata.nasa.gov/data/tools/gibs",
+      },
+    ],
+    relatedSlugs: ["earthquakes", "travel-epidemic-alerts", "disaster-map", "weather-alerts"],
+    faqs: [
+      {
+        question: "全球動態地球目前提供哪些功能？",
+        answer:
+          "目前版本提供地球本身的瀏覽功能：可拖曳旋轉與縮放，拉近到城市層級會自然轉為平面街道地圖；可切換向量地圖與衛星影像兩種底圖；有一顆按鈕可隨時回到台灣為中心、可見西太平洋範圍的預設視角。地震、颱風、全球災害、國際疫情與全球空品等資料圖層將於後續版本陸續上線。",
+      },
+      {
+        question: "裝置不支援 WebGL 時會發生什麼事？",
+        answer:
+          "偵測不到 WebGL 時，本頁不會嘗試載入互動式地球，只會顯示一段文字說明，不會出現錯誤或空白畫面。",
       },
     ],
   },
