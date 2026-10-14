@@ -3158,10 +3158,10 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "smoking-cessation",
     title: "戒菸門診特約院所查詢：二代戒菸補助與戒菸衛教",
-    keywords: ["戒菸門診", "二代戒菸", "戒菸補助"],
+    keywords: ["戒菸門診", "二代戒菸", "戒菸補助", "戒菸院所查詢"],
     navLabel: "戒菸門診查詢",
     description:
-      "查詢全國提供衛生福利部國民健康署二代戒菸治療與戒菸衛教補助之特約醫院、基層診所與社區藥局，享藥品免部分負擔。",
+      "查詢衛生福利部國民健康署二代戒菸治療與戒菸衛教補助之特約醫院、基層診所與社區藥局示例，享藥品免部分負擔；目前僅收錄部分示例，完整的全國合約院所名單請至國民健康署戒菸服務查詢。",
     directAnswer:
       "二代戒菸服務由國健署補助戒菸門診診察費與戒菸藥品費用，透過專業醫師評估與尼古丁替代療法大幅提升戒菸成功率。",
     scientificBasis: [
@@ -3170,10 +3170,15 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         authority: "衛生福利部國民健康署",
         url: "https://www.hpa.gov.tw/",
       },
+      {
+        title: "國民健康署戒菸服務查詢（完整全國合約院所名單）",
+        authority: "衛生福利部國民健康署",
+        url: "https://ttc.hpa.gov.tw/",
+      },
     ],
     relatedSlugs: ["clinics", "pharmacies", "health-checks"],
     group: "medical-care",
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-14",
 
     schemaType: "MedicalWebPage",
     faqs: [
