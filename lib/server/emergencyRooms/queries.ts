@@ -23,15 +23,24 @@ interface ErRow extends RowDataPacket {
   is_full_reported: number;
   full_reported_note: string | null;
   congestion_level: string;
-  reported_at: string;
-  updated_at: string;
+  reported_at: Date | string;
+  updated_at: Date | string;
   distance_km?: number;
 }
 
 interface ErLogRow extends RowDataPacket {
   waiting_consultation: number;
-  reported_at: string;
+  reported_at: Date | string;
 }
+
+/**
+ * The pool runs with `dateStrings: false`, so DATETIME columns arrive as Date
+ * objects despite the `string` types downstream. Handing a Date to a client
+ * component crashed /tools/er-status with React error #31 ("Objects are not
+ * valid as a React child"), so normalise to an ISO string here.
+ */
+const toIsoString = (value: unknown): string =>
+  value instanceof Date ? value.toISOString() : String(value ?? "");
 
 /**
  * 查詢急診即時總覽看板資料
@@ -186,8 +195,8 @@ export async function getEmergencyRoomOverview(params?: {
         is_full_reported: r.is_full_reported === 1,
         full_reported_note: r.full_reported_note,
         congestion_level: r.congestion_level as CongestionLevel,
-        reported_at: r.reported_at,
-        updated_at: r.updated_at,
+        reported_at: toIsoString(r.reported_at),
+        updated_at: toIsoString(r.updated_at),
         distance_km: r.distance_km !== undefined ? Math.round(r.distance_km * 10) / 10 : undefined,
         trend_sparkline: sparkline,
         trend_direction: direction,
@@ -201,7 +210,7 @@ export async function getEmergencyRoomOverview(params?: {
       busyCount: Number(stats.busy_count) || 0,
       normalCount: Number(stats.normal_count) || 0,
       fullReportedCount: Number(stats.full_count) || 0,
-      updatedAt: stats.latest_report || new Date().toISOString(),
+      updatedAt: stats.latest_report ? toIsoString(stats.latest_report) : new Date().toISOString(),
       items,
     };
   });
@@ -294,7 +303,7 @@ export async function getEmergencyStatusByHospital(
       is_full_reported: r.is_full_reported === 1,
       full_reported_note: r.full_reported_note,
       congestion_level: r.congestion_level as CongestionLevel,
-      reported_at: r.reported_at,
+      reported_at: toIsoString(r.reported_at),
     };
   });
 }
