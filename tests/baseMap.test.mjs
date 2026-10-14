@@ -131,3 +131,15 @@ test("tileConfig attributions credit both NLSC and OpenStreetMap", async () => {
   assert.ok(PRIMARY_ATTRIBUTION.includes("國土測繪中心"));
   assert.ok(FALLBACK_ATTRIBUTION.includes("OpenStreetMap"));
 });
+
+// Live 2026-10-14: /tools/vet-clinics and /tools/tourism-factories crashed
+// with "Cannot read properties of undefined (reading 'createIcon')".
+// react-leaflet passes every prop straight into `new L.Marker(pos, options)`,
+// and Leaflet's setOptions copies an explicit `icon: undefined` over the
+// default icon — so any un-clustered marker without a custom icon (every
+// FacilityMap marker) took the whole page down.
+test("BaseMap never passes an undefined icon prop to a single marker", () => {
+  const src = fs.readFileSync(fileURLToPath(new URL("components/Map/BaseMap.tsx", REPO_ROOT)), "utf8");
+  assert.doesNotMatch(src, /icon=\{marker\.icon\}/, "icon={marker.icon} overrides Leaflet's default icon with undefined");
+  assert.match(src, /\.\.\.\(marker\.icon \? \{ icon: marker\.icon \} : \{\}\)/);
+});

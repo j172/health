@@ -153,7 +153,13 @@ function ClusteredMarkers({ markers, clusterRadiusPx, disableClusteringAtZoom, o
           <Marker
             key={marker.id}
             position={[marker.lat, marker.lng]}
-            icon={marker.icon}
+            // Only pass `icon` when set: react-leaflet hands every prop to
+            // `new L.Marker(pos, options)`, and Leaflet's setOptions copies an
+            // explicit `icon: undefined` over the default icon — the first
+            // un-clustered marker then crashes the whole page with "Cannot
+            // read properties of undefined (reading 'createIcon')" (seen live
+            // on /tools/vet-clinics and /tools/tourism-factories).
+            {...(marker.icon ? { icon: marker.icon } : {})}
             eventHandlers={onMarkerClick ? { click: () => onMarkerClick(marker.id) } : undefined}
           >
             {marker.popup && <Popup>{marker.popup}</Popup>}
