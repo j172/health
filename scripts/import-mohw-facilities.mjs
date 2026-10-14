@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 /**
- * Fetches ltcpap.mohw.gov.tw's long-term-care and health-check facility CSVs
- * and pushes the parsed records to the production /api/admin/facilities-import
- * endpoint.
+ * Fetches ltcpap.mohw.gov.tw's health-check facility CSV and pushes the
+ * parsed records to the production /api/admin/facilities-import endpoint.
  *
- * Why this runs locally instead of as part of the deployed app: the CSVs are
+ * (This script used to also import long-term-care facilities via
+ * importLongTermCare(), but that was removed in issue #605: it was
+ * superseded by scripts/import-mohw-ltc-gis.mjs back in #285, yet wrote
+ * degraded data — serviceItem hardcoded to null — under the same
+ * sourceKey, "mohw_ltc_full", that the newer script also writes. Re-running
+ * this old function would have silently clobbered the better data back to
+ * the degraded version. See #600 for the bug this caused in production.)
+ *
+ * Why this runs locally instead of as part of the deployed app: the CSV is
  * unreachable from both the production cPanel host and GitHub Actions
  * runners (both time out — likely an IP-range block on ltcpap.mohw.gov.tw's
  * side), but reachable fine from a regular residential/office network. Run
@@ -66,30 +73,6 @@ const toNum = (s) => {
   return isNaN(n) ? null : n;
 };
 
-async function importLongTermCare() {
-  console.log("Fetching ltc.csv (長照機構)...");
-  const rows = await fetchCsv("https://ltcpap.mohw.gov.tw/public/csv/ltc.csv");
-  console.log(`  ${rows.length} rows`);
-
-  const records = rows
-    .filter((r) => r["機構代碼"] && r["機構名稱"])
-    .map((r) => ({
-      facilityType: "long_term_care",
-      sourceKey: "mohw_ltc_full",
-      sourceId: r["機構代碼"],
-      name: r["機構名稱"],
-      address: r["地址全址"] || null,
-      phone: r["機構電話"] || null,
-      lat: toNum(r["緯度"]),
-      lng: toNum(r["經度"]),
-      serviceItem: null,
-      serviceTime: null,
-      dataOrg: "衛福部長照服務地圖",
-    }));
-
-  return records;
-}
-
 async function importHealthCheck() {
   console.log("Fetching hpa.csv (健檢機構)...");
   const rows = await fetchCsv("https://ltcpap.mohw.gov.tw/public/csv/hpa.csv");
@@ -126,10 +109,6 @@ async function submit(records) {
 }
 
 async function main() {
-  const ltc = await importLongTermCare();
-  const ltcResult = await submit(ltc);
-  console.log("長照機構 import result:", ltcResult);
-
   const hpa = await importHealthCheck();
   const hpaResult = await submit(hpa);
   console.log("健檢機構 import result:", hpaResult);
