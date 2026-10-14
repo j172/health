@@ -281,7 +281,17 @@ const ToolsMegaMenu = ({
   const noResultsMessage = noResultsTemplate.replace("{query}", trimmedQuery);
 
   return (
-    <div className="relative" ref={containerRef}>
+    // No `relative` here on purpose: the panel below is `absolute` and
+    // centers itself (`left-1/2 -translate-x-1/2`) on its nearest positioned
+    // ancestor. This trigger button sits well left-of-center in the nav bar
+    // (it's the 2nd of 5 items), so anchoring to *this* div centered a panel
+    // nearly as wide as the whole nav (w-[min(94vw,68rem)]) on an
+    // off-center point — overflowing off the left edge of the viewport on
+    // realistic desktop widths, not just narrow ones. The actual positioned
+    // ancestor is now the <nav> this component renders inside (see SiteNav's
+    // `<nav className="relative hidden items-center gap-1.5 lg:flex">`), so
+    // the panel centers under the whole nav cluster instead.
+    <div ref={containerRef}>
       <button
         ref={triggerRef}
         type="button"
@@ -573,7 +583,7 @@ export default function SiteNav() {
                 the hamburger drawer takes over (unchanged scope, #473). */}
             <nav
               aria-label="主要導覽"
-              className="hidden items-center gap-1.5 lg:flex"
+              className="relative hidden items-center gap-1.5 lg:flex"
             >
               <Link
                 href="/news"
