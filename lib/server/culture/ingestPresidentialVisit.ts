@@ -68,6 +68,12 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
     const startDate = `${nowYear}-01-01`;
     const endDate = `${nowYear}-12-31`;
 
+    // utcNowSql() returns a plain "YYYY-MM-DD HH:MM:SS" string meant to be
+    // bound as a parameter. It used to be interpolated straight into the SQL
+    // text — unquoted — so every write failed with a syntax error near the
+    // timestamp and this event never synced.
+    const now = utcNowSql();
+
     await withTransaction(async (conn) => {
       // 1. Upsert into cultural_events
       const [existing] = await conn.query<RowDataPacket[]>(
@@ -90,10 +96,10 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
             price = '完全免費 (Free)',
             start_date = ?,
             end_date = ?,
-            synced_at = ${utcNowSql()},
-            updated_at = ${utcNowSql()}
+            synced_at = ?,
+            updated_at = ?
            WHERE id = ?`,
-          [title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, eventId],
+          [title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, now, now, eventId],
         );
       } else {
         const [insertRes] = await conn.query<any>(
@@ -104,9 +110,9 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
           ) VALUES (
             ?, 'exhibition', ?, ?, 'https://www.president.gov.tw/Portals/0/fb.png', ?,
             '臺北市', '中華民國總統府', '完全免費 (Free)', ?, ?,
-            ${utcNowSql()}, ${utcNowSql()}, ${utcNowSql()}
+            ?, ?, ?
           )`,
-          [UID, title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate],
+          [UID, title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, now, now, now],
         );
         eventId = insertRes.insertId;
       }
@@ -118,13 +124,15 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
       await conn.query(
         `INSERT INTO cultural_event_shows (
           event_id, show_time, venue, address, city, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ${utcNowSql()}, ${utcNowSql()})`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           eventId,
           `${startDate} 09:00:00`,
           "中華民國總統府（平日 09:00~12:00 免費參觀）",
           "臺北市中正區重慶南路一段122號",
           "臺北市",
+          now,
+          now,
         ],
       );
 
@@ -133,13 +141,15 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
         await conn.query(
           `INSERT INTO cultural_event_shows (
             event_id, show_time, venue, address, city, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ${utcNowSql()}, ${utcNowSql()})`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [
             eventId,
             `${wDate} 09:00:00`,
             "中華民國總統府（假日大開放日 09:00~16:00）",
             "臺北市中正區重慶南路一段122號",
             "臺北市",
+            now,
+            now,
           ],
         );
       }
