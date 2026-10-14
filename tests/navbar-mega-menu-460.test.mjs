@@ -121,7 +121,7 @@ test("the logo links to \"/\" (serves as the removed 首頁 entry)", () => {
 test("desktop nav shows at lg: (1024px) and the hamburger/drawer are lg:hidden, not xl:", () => {
   assert.match(
     navContent,
-    /className="hidden items-center gap-1\.5 lg:flex"/,
+    /className="relative hidden items-center gap-1\.5 lg:flex"/,
     "desktop <nav> must unfold at lg: (>=1024px) per issue #460",
   );
   const hamburgerAndDrawer = navContent.match(/lg:hidden/g) || [];
@@ -132,6 +132,35 @@ test("desktop nav shows at lg: (1024px) and the hamburger/drawer are lg:hidden, 
   assert.ok(
     !/xl:flex/.test(navContent) && !/xl:hidden/.test(navContent),
     "no remaining xl: breakpoint should gate the desktop nav/hamburger (old 1280px threshold)",
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Live-confirmed 2026-10-14: the mega menu panel (w-[min(94vw,68rem)],
+// centered via left-1/2 -translate-x-1/2) was anchored to ToolsMegaMenu's
+// own trigger-button wrapper, which sits well left-of-center in the nav
+// (2nd of 5 items) — centering a panel nearly as wide as the whole nav on
+// an off-center point overflowed it off the left edge of the viewport on
+// realistic desktop widths. Fixed by anchoring the panel to the <nav>
+// wrapper instead, so it centers under the whole nav cluster.
+// ---------------------------------------------------------------------------
+
+test("ToolsMegaMenu's own wrapper is not a CSS positioning context, so its absolute panel anchors to an ancestor, not its own off-center trigger", () => {
+  const megaMenuStart = navContent.indexOf("const ToolsMegaMenu =");
+  const megaMenuEnd = navContent.indexOf("\nconst ", megaMenuStart + 1);
+  const megaMenuSrc = navContent.slice(megaMenuStart, megaMenuEnd === -1 ? undefined : megaMenuEnd);
+
+  assert.match(
+    megaMenuSrc,
+    /<div ref=\{containerRef\}>/,
+    "ToolsMegaMenu's own container div must not carry `relative` — that was the nearest positioned ancestor the overflowing panel anchored to",
+  );
+});
+
+test("the desktop <nav> wrapper is the positioned ancestor the mega menu panel now centers under", () => {
+  assert.match(
+    navContent,
+    /className="relative hidden items-center gap-1\.5 lg:flex"/,
   );
 });
 
