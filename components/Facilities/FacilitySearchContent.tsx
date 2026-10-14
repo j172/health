@@ -19,6 +19,7 @@ import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 import CopyAddressButton from "@/components/Tools/CopyAddressButton";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -100,6 +101,18 @@ interface FacilityItem {
     /** addiction_treatment facility type (#566) — surfaced via `extraFields`, not hardcoded like the fields above. */
     addictionTreatmentMode?: string | null;
     addictionTreatmentService?: string | null;
+    /**
+     * kindergarten facility type (#602) — from kiang/ap.ece.moe.edu.tw's
+     * preschools.json, a community mirror of 全國教保資訊網, merged in by
+     * scripts/lib/kindergarten-merge.mjs. Only present on rows that matched a
+     * fresh (<=60 days old) kiang record; `category` is also folded into
+     * `service_item` for filtering, but kept here too for completeness.
+     * `hasPenalty` is a flag only — the penalty record's actual content is
+     * never reproduced here, just a link out to the official site.
+     */
+    category?: string | null;
+    monthlyFee?: number | null;
+    hasPenalty?: boolean;
     [key: string]: unknown;
   } | null;
   /**
@@ -789,6 +802,31 @@ export default function FacilitySearchContent({
                       </p>
                     );
                   })}
+                  {/*
+                    Issue #602: a flag only, from kiang's community-mirrored
+                    `penalty` field (merged in by scripts/lib/kindergarten-
+                    merge.mjs) — distinct from the `extra_json.penalty` object
+                    below (FacilityPenaltyAccordion), which is the NHI-source
+                    penalty shape used by other facility types. Deliberately
+                    does not reproduce any penalty detail/content, only the
+                    flag plus an outbound link to the official 全國教保資訊網,
+                    per the issue's requirement.
+                  */}
+                  {facilityType === "kindergarten" && f.extra_json?.hasPenalty && (
+                    <p className="mt-1 text-xs font-medium text-red-600 dark:text-red-400">
+                      教保服務機構裁罰紀錄：有，詳情請查
+                      <a
+                        href={appendOutboundUtm("https://ap.ece.moe.edu.tw/", {
+                          medium: "kindergarten_penalty_record",
+                        })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-red-700 dark:hover:text-red-300"
+                      >
+                        全國教保資訊網 ↗
+                      </a>
+                    </p>
+                  )}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
                   {showGeocodeNote && f.lat === null && (

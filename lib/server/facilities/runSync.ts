@@ -16,6 +16,18 @@ import { fetchBabyFriendlyHospitalNewTaipei } from "@/lib/server/facilities/sour
 import { fetchBabyFriendlyHospitalTaichung } from "@/lib/server/facilities/sources/babyFriendlyHospitalTaichung";
 import { fetchBabyFriendlyHospitalTainan } from "@/lib/server/facilities/sources/babyFriendlyHospitalTainan";
 import { fetchBabyFriendlyHospitalChanghua } from "@/lib/server/facilities/sources/babyFriendlyHospitalChanghua";
+import {
+  fetchTaipeiChildcarePrivate,
+  fetchTaipeiChildcarePublicPrivate,
+  fetchTaipeiChildcareQuasi,
+  fetchTaipeiChildcareCommunity,
+  fetchTaipeiChildcareHomeCenter,
+} from "@/lib/server/facilities/sources/taipeiChildcare";
+import {
+  fetchNtpcChildcarePrivate,
+  fetchNtpcChildcarePublic,
+  fetchNtpcChildcareHomeCenter,
+} from "@/lib/server/facilities/sources/ntpcChildcare";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -68,6 +80,20 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "baby_friendly_hospital_taichung_83649", fetch: fetchBabyFriendlyHospitalTaichung },
   { key: "baby_friendly_hospital_tainan_150985", fetch: fetchBabyFriendlyHospitalTainan },
   { key: "baby_friendly_hospital_changhua_30882", fetch: fetchBabyFriendlyHospitalChanghua },
+  // #601 (parent #599): 托嬰中心與居家托育地圖，臺北＋新北骨架。5 個臺北來源
+  // registered individually — taipei_childcare_121278 (私立) internally
+  // re-fetches taipei_childcare_121981 (準公共) to dedupe the two tables'
+  // known overlap (see taipeiChildcare.ts's module comment); the other 4
+  // sources here are unaffected by that and can each be backfilled alone.
+  { key: "taipei_childcare_121278", fetch: fetchTaipeiChildcarePrivate },
+  { key: "taipei_childcare_121337", fetch: fetchTaipeiChildcarePublicPrivate },
+  { key: "taipei_childcare_121981", fetch: fetchTaipeiChildcareQuasi },
+  { key: "taipei_childcare_126984", fetch: fetchTaipeiChildcareCommunity },
+  { key: "taipei_childcare_126986", fetch: fetchTaipeiChildcareHomeCenter },
+  // 新北市的 3 個來源互相獨立，沒有臺北那種跨表重疊問題（見 ntpcChildcare.ts）。
+  { key: "ntpc_childcare_125380", fetch: fetchNtpcChildcarePrivate },
+  { key: "ntpc_childcare_126222", fetch: fetchNtpcChildcarePublic },
+  { key: "ntpc_childcare_125505", fetch: fetchNtpcChildcareHomeCenter },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —

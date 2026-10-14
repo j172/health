@@ -1884,6 +1884,44 @@ export const TABLE_DDL = {
       KEY idx_fraud_domain_last_seen (last_seen)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // GDACS（全球災害預警協調系統）事件 (issue #592 / #583) — 供颱風／全球災害／
+  // 地震警戒色疊加共用。見 lib/server/gdacs/。
+  //
+  // UNIQUE KEY 刻意只用 (event_type, event_id) —— 絕對不能把 episode_id、
+  // start_time、end_time 或任何時間/episode 欄位放進去。這個 repo 已經在
+  // cwa_station_weather／cwa_rainfall／aqi_readings／fraud_domains 等表上真實
+  // 發生過「UNIQUE KEY 含時間欄位 → 每次同步的新時間值都被當成新 row → 表無限
+  // 膨脹」的事故（見 migrations/20260921_cwa_station_weather_narrow_unique_key.sql
+  // 等修復）。GDACS 同一個 event_id 會隨著事件發展不斷發佈新的 episode_id，若把
+  // episode_id 放進 key，同一場災害的每一次重新評估都會多插一列，而不是覆蓋舊的
+  // 一列 —— episode_id／alert_level／start_time／end_time 因此都是一般欄位：
+  // 同步時對同一 (event_type, event_id) 做 UPDATE 覆蓋成最新 episode 的狀態。
+  gdacsEvents: `
+    CREATE TABLE IF NOT EXISTS gdacs_events (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      event_type VARCHAR(10) NOT NULL,
+      event_id VARCHAR(32) NOT NULL,
+      episode_id VARCHAR(32) NOT NULL DEFAULT '0',
+      alert_level VARCHAR(10) NOT NULL DEFAULT 'Green',
+      alert_score DECIMAL(6,3) NULL,
+      country_iso VARCHAR(3) NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      start_time DATETIME NULL,
+      end_time DATETIME NULL,
+      title VARCHAR(500) NOT NULL,
+      report_url VARCHAR(500) NULL,
+      basin VARCHAR(10) NULL,
+      track_geojson JSON NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_gdacs_event (event_type, event_id),
+      KEY idx_gdacs_alert_level (alert_level),
+      KEY idx_gdacs_end_time (end_time)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 
