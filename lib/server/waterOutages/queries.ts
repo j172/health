@@ -10,6 +10,9 @@ import type {
   EmergencyWaterStation,
   WaterOutagesOverview,
 } from "./types";
+import { deriveOutageStatus, taipeiWallClockToUtcIso, utcMsToTaipeiSql } from "./outageTime";
+
+const RESOLVED_LOOKBACK_MS = 24 * 60 * 60 * 1000;
 
 interface DbOutageRow extends RowDataPacket {
   id: number;
@@ -80,8 +83,12 @@ export async function getWaterOutagesOverview(filter?: {
 
   try {
     return await withConnection(async (conn) => {
-      let sql = "SELECT * FROM wra_water_outages WHERE 1=1";
-      const params: any[] = [];
+      const nowMs = Date.now();
+      // Only outages still running, upcoming, or finished within the last
+      // day — the table keeps every case WRA ever published, and rendering
+      // all of them (~1,700 cards) on one page is what users were seeing.
+      let sql = "SELECT * FROM wra_water_outages WHERE end_time >= ?";
+      const params: any[] = [utcMsToTaipeiSql(nowMs - RESOLVED_LOOKBACK_MS)];
 
       if (filter?.county && filter.county !== "all") {
         sql += " AND county = ?";
@@ -89,11 +96,10 @@ export async function getWaterOutagesOverview(filter?: {
       }
       sql += " ORDER BY start_time DESC";
 
+      // No early return to the seed data when this is empty: with the
+      // end_time window above, "no outages right now" is a real, common
+      // answer and must not be replaced by the seed's sample cases.
       const [rows] = await conn.query<DbOutageRow[]>(sql, params);
-
-      if (rows.length === 0) {
-        return getMemorySeedOverview(filter?.county);
-      }
 
       const allOutages: WaterOutageItem[] = rows.map((r) => {
         let stations: EmergencyWaterStation[] = [];
@@ -108,6 +114,8 @@ export async function getWaterOutagesOverview(filter?: {
           stations = [];
         }
 
+        const startTime = taipeiWallClockToUtcIso(r.start_time);
+        const endTime = taipeiWallClockToUtcIso(r.end_time);
         return {
           id: String(r.id),
           outageId: r.outage_id,
@@ -115,18 +123,12 @@ export async function getWaterOutagesOverview(filter?: {
           county: r.county,
           township: r.township,
           outageType: (r.outage_type as "planned" | "emergency") || "planned",
-          startTime:
-            r.start_time instanceof Date
-              ? r.start_time.toISOString()
-              : String(r.start_time),
-          endTime:
-            r.end_time instanceof Date
-              ? r.end_time.toISOString()
-              : String(r.end_time),
+          startTime,
+          endTime,
           affectedAreas: r.affected_areas,
           affectedHouseholds: Number(r.affected_households) || 0,
           contactPhone: r.contact_phone || undefined,
-          status: (r.status as "active" | "scheduled" | "resolved") || "active",
+          status: deriveOutageStatus(startTime, endTime, nowMs),
           lat: r.lat ? Number(r.lat) : undefined,
           lng: r.lng ? Number(r.lng) : undefined,
           waterStations: stations,
@@ -149,6 +151,7 @@ export async function getWaterOutagesOverview(filter?: {
 
       const counties = Array.from(
         new Set([
+          ...allOutages.map((o) => o.county),
           ...WATER_OUTAGES_SEED.map((o) => o.county),
           ...EMERGENCY_WATER_STATIONS_SEED.map((s) => s.county),
         ])
