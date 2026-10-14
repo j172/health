@@ -10,6 +10,7 @@ import { fetchMoenvGreenHotels } from "@/lib/server/facilities/sources/moenvGree
 import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties";
 import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
 import { fetchTdxAccessibleParking } from "@/lib/server/facilities/sources/tdxParking";
+import { fetchAddictionTreatmentFacilities } from "@/lib/server/facilities/sources/addictionTreatmentFacilities";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -45,6 +46,13 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // those 4 SpaceType values inside tdxParking.ts itself. Same per-county (and
   // per off-street/on-street kind) failure isolation as tdx_aps above.
   { key: "tdx_parking", fetch: fetchTdxAccessibleParking },
+  // #566: 心理健康地圖「成癮防治」分頁的主線資料——全國藥癮戒治/替代治療/非鴉片類
+  // 藥癮治療補助機構（data.gov.tw 133353）。No coordinates of its own, geocoded via
+  // the usual facilities-geocode backfill like every other address-only source here.
+  // The download URL (data.taipei) hasn't been verified reachable from the production
+  // host yet — see the comment above fetchAddictionTreatmentFacilities() — confirm that
+  // before relying on this source's scheduled runs.
+  { key: "addiction_treatment_133353", fetch: fetchAddictionTreatmentFacilities },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —

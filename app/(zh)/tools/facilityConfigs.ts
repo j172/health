@@ -443,6 +443,26 @@ export const facilitySearchConfigs = {
     emptyStateWithKeyword: "查無符合的心理諮商機構。",
     serviceItem: { label: "諮商服務項目：" },
   },
+  "addiction-treatment": {
+    facilityType: "addiction_treatment",
+    emoji: "💊",
+    title: "全國藥癮戒治與替代治療機構查詢",
+    description:
+      "查詢全國藥癮戒治機構、替代治療機構及非鴉片類藥癮治療補助機構，顯示戒治機構模式與服務內容。資料來源：衛生福利部（data.gov.tw 133353，臺北市立聯合醫院上架）。",
+    searchPlaceholder: "輸入機構名稱或縣市關鍵字",
+    errorText: "查詢藥癮戒治機構失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的藥癮戒治機構，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的藥癮戒治機構。",
+    showGeocodeNote: true,
+    // #566: 這兩個欄位在 facilities 表沒有通用對應欄位，放在 extra_json 裡，透過
+    // FacilitySearchContent 的通用 extraFields 顯示。#571 補上美沙冬跨區給藥院所和
+    // 各縣市毒品危害防制中心時，若有各自的額外欄位，可以用同一個機制加，不需要
+    // 再動 FacilitySearchContent。
+    extraFields: [
+      { key: "addictionTreatmentMode", label: "戒治機構模式：" },
+      { key: "addictionTreatmentService", label: "戒治服務內容：" },
+    ],
+  },
   "smoking-cessation": {
     facilityType: "smoking_cessation",
     emoji: "🚭",
