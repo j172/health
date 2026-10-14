@@ -5,6 +5,7 @@ import { runRssIngestion } from "@/lib/server/rss/runIngestion";
 import { runAqiSync } from "@/lib/server/aqi/runSync";
 import { runCwaSync } from "@/lib/server/cwa/runSync";
 import { runEarthquakeSync } from "@/lib/server/earthquakes/runSync";
+import { runEarthquakeRetentionCleanup } from "@/lib/server/earthquakes/runRetentionCleanup";
 import { buildDailyDraftQueue } from "@/lib/server/social/buildDailyDraftQueue";
 import { runFacilityHoursSync } from "@/lib/server/facilities/runHoursSync";
 import { assignMissingNewsCardImages } from "@/lib/server/news/cardImages";
@@ -200,6 +201,25 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "3,13,23,33,43,53 * * * *",
     runGuarded("earthquakes-sync-cron.log", () => runEarthquakeSync()),
+  );
+  // global_earthquakes retention cleanup (issue #582) — this table had no
+  // retention limit at all; USGS's all_hour feed alone writes rows forever
+  // even though every reader caps its lookback at 168 hours. Daily at
+  // 4:36am: hour 4 sits in this file's existing off-peak block alongside
+  // green-products (30), cool-spots (33), wra-catalog (30),
+  // carbon-footprint-products (45), carbon-footprint-coefficients (50),
+  // cleaning-squads (53), green-restaurants (58) — minute 36 isn't one of
+  // those. It also isn't on any hourly-grid job's minute, so it won't
+  // collide at 4am the way an hourly job's minute would: rss 5/35, aqi
+  // 20/50, cwa 15/45, earthquakes-sync 3/13/23/33/43/53,
+  // news-card-images+power-sync 0/10/20/30/40/50, water-outages 25,
+  // wra-water-outages 18/48, aqx-sync 10/40, wra-sync 8/38, wra-iot
+  // 12/27/42/57, youbike every-5, metro-alerts 0/30, emergency-rooms
+  // 7/22/37/52, transit-accessibility-alerts 16/46, senior-tourism-alerts
+  // 17/47.
+  cron.schedule(
+    "36 4 * * *",
+    runGuarded("earthquakes-retention-cleanup-cron.log", () => runEarthquakeRetentionCleanup()),
   );
   // Once daily — no specific business requirement on exact hour, 8am
   // server-local keeps it clear of the denser :00-ish traffic from the jobs
