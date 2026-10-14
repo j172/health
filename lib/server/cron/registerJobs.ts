@@ -43,6 +43,7 @@ import {
   runSeniorTourismAlertsSync,
   runSeniorCardSync,
 } from "@/lib/server/seniorTourism/runSync";
+import { runFraudDomainsSync } from "@/lib/server/antiFraud/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -438,5 +439,14 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "30 3 * * *",
     runGuarded("transit-bus-sync-cron.log", () => runTransitBusSync()),
+  );
+  // 警政署 176455「遭停止解析涉詐網站」(issue #564) — 來源約每月發佈一批新
+  // 名單，monthly 即可；第 1 天 05:12 是 off-peak 時段裡本檔案目前完全沒有
+  // day-of-month 限制、也沒被 5 點區段其他 job（power-mix 的 5 5、latest-books
+  // 的 30 5）佔用的分鐘。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // lib/server/antiFraud/runSync.ts。
+  cron.schedule(
+    "12 5 1 * *",
+    runGuarded("fraud-domains-sync-cron.log", () => runFraudDomainsSync()),
   );
 };

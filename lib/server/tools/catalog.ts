@@ -3593,7 +3593,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw/",
       },
     ],
-    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "travel-epidemic-alerts"],
+    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "travel-epidemic-alerts", "anti-fraud"],
     faqs: [
       {
         question: "手機在沒有 SIM 卡或沒有所屬電信訊號時該如何求救？",
@@ -3614,6 +3614,55 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "1925、1980 與 1995 心理輔導專線有何差別？",
         answer:
           "1925 是衛福部 24 小時免付費安心專線，專注於情緒困擾與自殺危機干預；1980 是救國團張老師專線，專門提供青少年成長、課業、親子與人際困擾輔導；1995 則是生命線協談專線，提供 24 小時人生低潮與家庭情感傾聽支持。",
+      },
+    ],
+  },
+  {
+    slug: "anti-fraud",
+    group: "disaster-alerts",
+    lastUpdated: "2026-10-14",
+
+    schemaType: "WebPage",
+    title: "防詐騙查詢：可疑網址涉詐網域比對",
+    keywords: ["詐騙", "可疑網址", "165", "涉詐網域", "網域查詢", "防詐騙"],
+    navLabel: "防詐騙查詢",
+    description:
+      "貼上收到的可疑網址或網域，比對內政部警政署「165反詐騙諮詢專線」每月公布之遭停止解析涉詐網站清單，查詢是否已被認定涉詐並停止解析，並顯示網站性質與停止解析月份。",
+    directAnswer:
+      "防詐騙查詢比對內政部警政署每月公布之涉詐網域清單，貼上可疑網址即可知道是否已被列為涉詐並停止解析；清單上沒有不代表安全，有疑慮請撥165查證。",
+    scientificBasis: [
+      {
+        title: "內政部警政署「165反詐騙諮詢專線_遭停止解析涉詐網站」開放資料",
+        authority: "內政部警政署",
+        url: "https://data.gov.tw/dataset/176455",
+      },
+      {
+        title: "165全民防騙網",
+        authority: "內政部警政署刑事警察局",
+        url: "https://165.npa.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["emergency-hotlines"],
+    faqs: [
+      {
+        question: "查詢結果顯示「不在清單上」，代表這個網址一定安全嗎？",
+        answer:
+          "不代表安全。涉詐網域清單是警政署接獲檢舉或查證後才公告，每月更新一批，新出現的詐騙網站可能還沒被列入。不在清單上只代表「目前還沒被公告」，如仍有疑慮，請撥打165反詐騙諮詢專線查證，切勿因查無結果而放心點擊、提供個資或匯款。",
+      },
+      {
+        question: "查到的網址已被列為涉詐，我該怎麼做？",
+        answer:
+          "請立即關閉頁面，不要點擊連結、不要提供個人資料或銀行帳戶資訊，更不要依指示匯款或轉帳。如已經匯款或提供資料，請立刻撥打165反詐騙諮詢專線或110報案，並聯繫銀行申請圈存止扣，同時保留對話紀錄與交易明細作為證據。",
+      },
+      {
+        question: "為什麼查詢子網域（例如 login.某網域.com）也會比對出結果？",
+        answer:
+          "詐騙集團常把同一個惡意網域架設在不同子網域下作案。本工具會從完整網址開始，依序往上層網域比對，只要上層的主網域已被警政署列入清單，底下的子網域也會顯示為已比中，避免被換個子網域就繞過查詢。但比對會在遇到公共網域後綴或 Shopify、Netlify 等共享平台網域時停止，不會因為平台本身被誤判，就把平台上所有商店都當成詐騙。",
+      },
+      {
+        question: "這個工具會不會記錄我查過的網址？",
+        answer:
+          "不會。查詢模組本身不寫入任何記錄檔，也不會把查詢內容存進資料庫；伺服器端也不會把您輸入的網址寫進任何紀錄或錯誤訊息。",
       },
     ],
   },
