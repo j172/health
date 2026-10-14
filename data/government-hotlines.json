@@ -506,7 +506,7 @@
     "description": "教育部於 2022 年啟用的 1953 反霸凌專線簡碼，取代舊長碼，提供 24 小時專人接聽與案件管制。"
   },
   {
-    "number": "0800-024-555",
+    "number": "0800-770-885",
     "name": "毒品防制諮詢專線",
     "agency": "法務部/衛生福利部",
     "category": "社會安全",
@@ -515,5 +515,27 @@
     "geographic_scope": "全國",
     "alternative_number": "各縣市毒品危害防制中心",
     "description": "藥物濫用諮詢、戒毒戒癮求助、美沙冬替代療法資訊、各縣市戒癮社會資源轉介。"
+  },
+  {
+    "number": "0800-636-363",
+    "name": "免費戒菸專線",
+    "agency": "衛生福利部國民健康署",
+    "category": "衛生醫療",
+    "billing": "免付費",
+    "service_hours": "週一至週六 09:00-21:00",
+    "geographic_scope": "全國",
+    "alternative_number": "各縣市合約戒菸門診院所",
+    "description": "提供戒菸諮詢與戒菸計畫規劃、電話與簡訊追蹤關懷，協助民眾戒除菸癮。"
+  },
+  {
+    "number": "0800-531-531",
+    "name": "菸害諮詢及檢舉服務專線",
+    "agency": "衛生福利部國民健康署",
+    "category": "衛生醫療",
+    "billing": "免付費",
+    "service_hours": "24小時",
+    "geographic_scope": "全國",
+    "alternative_number": "就近向所在地衛生局檢舉",
+    "description": "受理違法電子煙、加熱菸等類菸品製造輸入販賣展示廣告之檢舉與菸害防制法諮詢。"
   }
 ]
