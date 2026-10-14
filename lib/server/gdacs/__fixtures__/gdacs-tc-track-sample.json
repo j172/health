@@ -1,0 +1,776 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "bbox": [
+        -97,
+        11.2,
+        -97,
+        11.2
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -97,
+          11.2
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygonlabel": "Centroid",
+        "Class": "Point_Centroid",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -100.9,
+        12.6,
+        -100,
+        13.5
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -100,
+            12.6
+          ],
+          [
+            -100.9,
+            13.5
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_0",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -101.5,
+        13.5,
+        -100.9,
+        14.3
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -100.9,
+            13.5
+          ],
+          [
+            -101.5,
+            14.3
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_1",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -101.9,
+        14.3,
+        -101.5,
+        15.2
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -101.5,
+            14.3
+          ],
+          [
+            -101.9,
+            15.2
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_2",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -102.5,
+        15.2,
+        -101.9,
+        16.3
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -101.9,
+            15.2
+          ],
+          [
+            -102.5,
+            16.3
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_3",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -104.4,
+        16.3,
+        -102.5,
+        19
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -102.5,
+            16.3
+          ],
+          [
+            -104.4,
+            19
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_4",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -106,
+        19,
+        -104.4,
+        21
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -104.4,
+            19
+          ],
+          [
+            -106,
+            21
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_5",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -100,
+        11.8,
+        -98.6,
+        12.6
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -98.6,
+            11.8
+          ],
+          [
+            -100,
+            12.6
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "HU",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_6",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -97,
+        10.6,
+        -96.5,
+        11.2
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -96.5,
+            10.6
+          ],
+          [
+            -97,
+            11.2
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "TS",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": false,
+        "Class": "Line_Line_7",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -96.5,
+        9.8,
+        -96.5,
+        10.6
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -96.5,
+            9.8
+          ],
+          [
+            -96.5,
+            10.6
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "TS",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": false,
+        "Class": "Line_Line_8",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    },
+    {
+      "type": "Feature",
+      "bbox": [
+        -98.6,
+        11.2,
+        -97,
+        11.8
+      ],
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -97,
+            11.2
+          ],
+          [
+            -98.6,
+            11.8
+          ]
+        ]
+      },
+      "properties": {
+        "eventtype": "TC",
+        "eventid": 1001337,
+        "episodeid": 3,
+        "eventname": "TRUDY-26",
+        "glide": "",
+        "name": "Tropical Cyclone TRUDY-26",
+        "description": "Tropical Cyclone TRUDY-26",
+        "htmldescription": "Red Tropical Cyclone TRUDY-26 in Mexico from: 13 Oct 2026  to: 14 Oct 2026 .",
+        "icon": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconoverall": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "url": {
+          "geometry": "https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=1001337&episodeid=3",
+          "report": "https://www.gdacs.org/report.aspx?eventid=1001337&episodeid=3&eventtype=TC",
+          "details": "https://www.gdacs.org/gdacsapi/api/events/geteventdata?eventtype=TC&eventid=1001337"
+        },
+        "alertlevel": "Red",
+        "alertscore": 3,
+        "episodealertlevel": "Red",
+        "episodealertscore": 3,
+        "istemporary": "false",
+        "iscurrent": "true",
+        "country": "Mexico",
+        "fromdate": "2026-10-13T15:00:00",
+        "todate": "2026-10-14T03:00:00",
+        "datemodified": "2026-10-14T03:02:25",
+        "iso3": "MEX",
+        "source": "NOAA",
+        "sourceid": "",
+        "polygondate": "2026-10-14T03:00:00",
+        "polygonlabel": "TS",
+        "countryonland": "Mexico",
+        "affectedcountries": [
+          {
+            "iso2": "MX",
+            "iso3": "MEX",
+            "countryname": "Mexico"
+          }
+        ],
+        "severitydata": {
+          "severity": 212.9616,
+          "severitytext": "Tropical Storm (maximum wind speed of 213 km/h)",
+          "severityunit": "km/h"
+        },
+        "forecast": true,
+        "Class": "Line_Line_9",
+        "iconeventlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png",
+        "iconitemlink": "https://www.gdacs.org/images/gdacs_icons/maps/Red/TC.png"
+      }
+    }
+  ]
+}
