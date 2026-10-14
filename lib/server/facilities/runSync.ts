@@ -56,10 +56,18 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
 // welfare.mjs) succeeded immediately, confirming the same IP-range block
 // rather than a code bug. Run those two scripts by hand instead.
 
-export async function runFacilitySync(): Promise<FacilitySyncResult[]> {
-  const results: FacilitySyncResult[] = [];
+export const FACILITY_SOURCE_KEYS: readonly string[] = SOURCES.map((s) => s.key);
 
-  for (const source of SOURCES) {
+/**
+ * `only` limits the run to those source keys — e.g. backfilling a newly
+ * added source without re-fetching every other one (tens of thousands of
+ * rows) on the memory-capped host. Omitted = every source, as before.
+ */
+export async function runFacilitySync(only?: readonly string[]): Promise<FacilitySyncResult[]> {
+  const results: FacilitySyncResult[] = [];
+  const selected = only?.length ? SOURCES.filter((s) => only.includes(s.key)) : SOURCES;
+
+  for (const source of selected) {
     results.push(
       await runSource(source.key, ZERO_COUNTS, async () => {
         const records = await source.fetch();
