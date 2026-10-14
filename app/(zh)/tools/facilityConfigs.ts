@@ -301,6 +301,12 @@ export const facilitySearchConfigs = {
     title: "全國幼兒園查詢",
     description:
       "查詢全國公立、私立、準公共與非營利幼兒園名錄。資料來源：教育部開放資料。",
+    // issue #602: category/月費/裁罰紀錄欄位來自民間轉錄 kiang/ap.ece.moe.edu.tw
+    // 的 preschools.json（MIT 授權，轉錄自全國教保資訊網），並非教育部官方
+    // k1_new.json 本身的欄位；該民間轉錄逾 60 天未更新時會自動停用，屆時這些
+    // 園所僅會顯示教育部原始的公/私立二分類。
+    noteLine:
+      "非營利／準公共標記、月費與裁罰紀錄來自民間轉錄（kiang/ap.ece.moe.edu.tw，MIT 授權），非教育部官方欄位；若該轉錄超過 60 天未更新，將自動改回僅顯示教育部公/私立二分類。",
     searchPlaceholder: "輸入幼兒園名稱或縣市關鍵字",
     errorText: "查詢幼兒園資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的幼兒園，可改用關鍵字搜尋。",
@@ -310,7 +316,9 @@ export const facilitySearchConfigs = {
       { value: "公立", label: "公立幼兒園" },
       { value: "私立", label: "私立幼兒園" },
       { value: "非營利", label: "非營利幼兒園" },
+      { value: "準公共", label: "準公共幼兒園" },
     ],
+    extraFields: [{ key: "monthlyFee", label: "月費（元）：" }],
   },
   "cram-schools": {
     facilityType: "cram_school",
