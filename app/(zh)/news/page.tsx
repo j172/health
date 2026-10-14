@@ -3,7 +3,14 @@ import { countNewsItems, listLatestNews } from "@/lib/server/news/queries";
 import { buildNewsListJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+import { isTopic, type Topic } from "@/lib/server/news/classifyTopics";
 import StabloNewsLayout, { NEWS_PAGE_SIZE_OPTIONS, DEFAULT_NEWS_PAGE_SIZE } from "@/components/News/StabloNewsLayout";
+
+const TOPIC_LABELS: Record<Topic, string> = {
+  "anti-fraud": "防詐",
+  "anti-drug": "反毒",
+  tobacco: "菸害",
+};
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -13,34 +20,57 @@ const resolvePageSize = (sizeParam?: string): number => {
   return (NEWS_PAGE_SIZE_OPTIONS as readonly number[]).includes(requested) ? requested : DEFAULT_NEWS_PAGE_SIZE;
 };
 
-type NewsPageSearchParams = { page?: string; source?: string; keyword?: string; group?: string; size?: string };
+type NewsPageSearchParams = {
+  page?: string;
+  source?: string;
+  keyword?: string;
+  group?: string;
+  topic?: string;
+  size?: string;
+};
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<NewsPageSearchParams> }): Promise<Metadata> {
-  const { page: pageParam, source, keyword: keywordParam, group: groupParam, size: sizeParam } = await searchParams;
+  const { page: pageParam, source, keyword: keywordParam, group: groupParam, topic: topicParam, size: sizeParam } = await searchParams;
   const sourceName = source?.trim() || undefined;
   const keyword = keywordParam?.trim() || undefined;
   const group = !sourceName ? SOURCE_CATEGORIES.find((c) => c.key === groupParam?.trim()) : undefined;
+  // Independent of `group`/`sourceName` — both filters can be set at once (issue #565).
+  const trimmedTopic = topicParam?.trim();
+  const topic = trimmedTopic && isTopic(trimmedTopic) ? trimmedTopic : undefined;
+  const topicLabel = topic ? TOPIC_LABELS[topic] : null;
   const requestedPage = Number(pageParam);
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const pageSize = resolvePageSize(sizeParam);
   const sourceLabel = sourceName ? resolveAuthorLabel({ dept_name: null, source_name: sourceName, feed_name: sourceName }) : null;
 
-  const title = keyword ? `#${keyword} 相關新聞` : sourceLabel ? `${sourceLabel}新聞` : group ? `${group.label}新聞` : "最新新聞";
+  const title = keyword
+    ? `#${keyword} 相關新聞`
+    : sourceLabel
+      ? `${sourceLabel}新聞`
+      : topicLabel
+        ? `${topicLabel}新聞`
+        : group
+          ? `${group.label}新聞`
+          : "最新新聞";
   const description = keyword
     ? `包含關鍵字「${keyword}」的新聞。`
     : sourceLabel
       ? `彙整${sourceLabel}公告與報導，掌握最新動態。`
-      : group
-        ? `彙整${group.label}分類下所有來源的公告與報導，掌握最新動態。`
-        : SITE_DESCRIPTION;
+      : topicLabel
+        ? `彙整「${topicLabel}」主題的最新新聞與案例。`
+        : group
+          ? `彙整${group.label}分類下所有來源的公告與報導，掌握最新動態。`
+          : SITE_DESCRIPTION;
   const baseUrl = getBaseUrl();
-  const canonicalPath = keyword
-    ? `/news?keyword=${encodeURIComponent(keyword)}`
-    : sourceName
-      ? `/news?source=${encodeURIComponent(sourceName)}`
-      : group
-        ? `/news?group=${encodeURIComponent(group.key)}`
-        : "/news";
+  const canonicalParams = new URLSearchParams();
+  if (keyword) canonicalParams.set("keyword", keyword);
+  else if (sourceName) canonicalParams.set("source", sourceName);
+  else {
+    if (group) canonicalParams.set("group", group.key);
+    if (topic) canonicalParams.set("topic", topic);
+  }
+  const canonicalQuery = canonicalParams.toString();
+  const canonicalPath = `/news${canonicalQuery ? `?${canonicalQuery}` : ""}`;
   const canonical = `${baseUrl}${canonicalPath}`;
 
   return {
@@ -80,7 +110,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 }
 
 export default async function NewsPage({ searchParams }: { searchParams: Promise<NewsPageSearchParams> }) {
-  const { page: pageParam, source, keyword: keywordParam, group: groupParam, size: sizeParam } = await searchParams;
+  const { page: pageParam, source, keyword: keywordParam, group: groupParam, topic: topicParam, size: sizeParam } = await searchParams;
   const requestedPage = Number(pageParam);
   const currentPage = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const pageSize = resolvePageSize(sizeParam);
@@ -90,22 +120,36 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
   const group = !sourceName ? SOURCE_CATEGORIES.find((c) => c.key === groupParam?.trim()) : undefined;
   const groupKey = group?.key;
   const sourceNames = group?.sources.map((s) => s.sourceName);
+  // Independent of group/source — both can be set at the same time (issue #565).
+  const trimmedTopic = topicParam?.trim();
+  const topic = trimmedTopic && isTopic(trimmedTopic) ? trimmedTopic : undefined;
+  const topicLabel = topic ? TOPIC_LABELS[topic] : null;
 
   const [items, total] = await Promise.all([
-    listLatestNews(pageSize, (currentPage - 1) * pageSize, sourceName, keyword, sourceNames),
-    countNewsItems(sourceName, keyword, sourceNames),
+    listLatestNews(pageSize, (currentPage - 1) * pageSize, sourceName, keyword, sourceNames, topic),
+    countNewsItems(sourceName, keyword, sourceNames, topic),
   ]);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const sourceLabel = sourceName ? resolveAuthorLabel({ dept_name: null, source_name: sourceName, feed_name: sourceName }) : null;
-  const archiveTitle = keyword ? `#${keyword}` : (sourceLabel ?? group?.label);
+  const archiveTitle = keyword ? `#${keyword}` : (sourceLabel ?? (topicLabel ? `${topicLabel}主題新聞` : group?.label));
   const archiveDescription = keyword
     ? `包含關鍵字「${keyword}」的新聞。`
-    : group && !sourceName
-      ? `彙整${group.label}分類下所有來源的公告與報導。`
-      : undefined;
+    : topicLabel
+      ? `彙整「${topicLabel}」主題的最新新聞與案例。`
+      : group && !sourceName
+        ? `彙整${group.label}分類下所有來源的公告與報導。`
+        : undefined;
   const jsonLd = buildNewsListJsonLd(
     items,
-    keyword ? `#${keyword} 相關新聞` : sourceLabel ? `${sourceLabel}新聞` : group ? `${group.label}新聞` : "最新新聞",
+    keyword
+      ? `#${keyword} 相關新聞`
+      : sourceLabel
+        ? `${sourceLabel}新聞`
+        : topicLabel
+          ? `${topicLabel}新聞`
+          : group
+            ? `${group.label}新聞`
+            : "最新新聞",
   );
 
   return (
@@ -114,7 +158,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Promise
       <StabloNewsLayout
         items={items}
         variant="archive"
-        pagination={{ currentPage, totalPages, pageSize, sourceName, keyword, group: groupKey }}
+        pagination={{ currentPage, totalPages, pageSize, sourceName, keyword, group: groupKey, topic }}
         archiveTitle={archiveTitle}
         archiveDescription={archiveDescription}
         activeGroupKey={groupKey}

@@ -10,16 +10,19 @@ export interface Pagination {
   sourceName?: string;
   keyword?: string;
   group?: string;
+  /** /news?topic= (issue #565) — independent of `group`, both can be set at once. */
+  topic?: string;
 }
 
 export default function PaginationBar({ pagination }: { pagination: Pagination }) {
-  const { currentPage, totalPages, pageSize, sourceName, keyword, group } = pagination;
+  const { currentPage, totalPages, pageSize, sourceName, keyword, group, topic } = pagination;
 
   const buildUrl = (page: number, size: number) => {
     const params = new URLSearchParams();
     if (page > 1) params.set("page", String(page));
     if (size !== DEFAULT_NEWS_PAGE_SIZE) params.set("size", String(size));
     if (group) params.set("group", group);
+    if (topic) params.set("topic", topic);
     if (sourceName) params.set("source", sourceName);
     if (keyword) params.set("keyword", keyword);
     const str = params.toString();
