@@ -1,7 +1,8 @@
 import { load } from "cheerio";
 import { httpGetText } from "@/lib/server/net/httpClient";
-import { withConnection, utcNowSql, withTransaction } from "@/lib/server/db/mysql";
+import { utcNowSql, withTransaction } from "@/lib/server/db/mysql";
 import type { RowDataPacket } from "mysql2/promise";
+import { CATEGORY_LABELS } from "@/lib/server/culture/types";
 
 const PRESIDENTIAL_VISIT_URL = "https://www.president.gov.tw/Page/124";
 const UID = "gov_president_office_visit";
@@ -71,8 +72,20 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
     // utcNowSql() returns a plain "YYYY-MM-DD HH:MM:SS" string meant to be
     // bound as a parameter. It used to be interpolated straight into the SQL
     // text — unquoted — so every write failed with a syntax error near the
-    // timestamp and this event never synced.
+    // timestamp (fixed once); the write still failed after that, because the
+    // columns below (source_url/city/venue/price/synced_at on cultural_events,
+    // venue/address/updated_at on cultural_event_shows) were never part of
+    // either table — see schema.ts and the working writers (ingestShows.ts,
+    // ingestNpoActivities.ts) for the columns that actually exist. This venue
+    // is permanently open to visit, not a scheduled performance, so it's
+    // filed under the same "venue_h" (文化生活圈場館) category the UI already
+    // has a filter tab for, with location/location_name in cultural_event_shows
+    // instead of the nonexistent venue/address.
     const now = utcNowSql();
+    const category = "venue_h";
+    const categoryLabel = CATEGORY_LABELS[category];
+    const venueName = "中華民國總統府";
+    const address = "臺北市中正區重慶南路一段122號";
 
     await withTransaction(async (conn) => {
       // 1. Upsert into cultural_events
@@ -86,33 +99,28 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
         eventId = existing[0].id;
         await conn.query(
           `UPDATE cultural_events SET
-            category = 'exhibition',
+            category = ?,
+            category_label = ?,
             title = ?,
             description = ?,
             image_url = 'https://www.president.gov.tw/Portals/0/fb.png',
-            source_url = ?,
-            city = '臺北市',
-            venue = '中華民國總統府',
-            price = '完全免費 (Free)',
+            source_web_promote = ?,
             start_date = ?,
             end_date = ?,
-            synced_at = ?,
             updated_at = ?
            WHERE id = ?`,
-          [title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, now, now, eventId],
+          [category, categoryLabel, title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, now, eventId],
         );
       } else {
         const [insertRes] = await conn.query<any>(
           `INSERT INTO cultural_events (
-            uid, category, title, description, image_url, source_url,
-            city, venue, price, start_date, end_date,
-            synced_at, created_at, updated_at
+            uid, category, category_label, title, description, image_url, source_web_promote,
+            start_date, end_date, created_at, updated_at
           ) VALUES (
-            ?, 'exhibition', ?, ?, 'https://www.president.gov.tw/Portals/0/fb.png', ?,
-            '臺北市', '中華民國總統府', '完全免費 (Free)', ?, ?,
-            ?, ?, ?
+            ?, ?, ?, ?, ?, 'https://www.president.gov.tw/Portals/0/fb.png', ?,
+            ?, ?, ?, ?
           )`,
-          [UID, title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, now, now, now],
+          [UID, category, categoryLabel, title, description, PRESIDENTIAL_VISIT_URL, startDate, endDate, now, now],
         );
         eventId = insertRes.insertId;
       }
@@ -123,34 +131,18 @@ export async function runPresidentialVisitSync(): Promise<IngestPresidentialVisi
       // Add regular weekday permanent show
       await conn.query(
         `INSERT INTO cultural_event_shows (
-          event_id, show_time, venue, address, city, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          eventId,
-          `${startDate} 09:00:00`,
-          "中華民國總統府（平日 09:00~12:00 免費參觀）",
-          "臺北市中正區重慶南路一段122號",
-          "臺北市",
-          now,
-          now,
-        ],
+          event_id, show_time, location, location_name, city, on_sales, price, end_time, created_at
+        ) VALUES (?, ?, ?, ?, '臺北市', 'N', '完全免費 (Free)', ?, ?)`,
+        [eventId, `${startDate} 09:00:00`, address, `${venueName}（平日 09:00~12:00 免費參觀）`, `${startDate} 12:00:00`, now],
       );
 
       // Add specific weekend open house shows
       for (const wDate of weekendDates.slice(0, 12)) {
         await conn.query(
           `INSERT INTO cultural_event_shows (
-            event_id, show_time, venue, address, city, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [
-            eventId,
-            `${wDate} 09:00:00`,
-            "中華民國總統府（假日大開放日 09:00~16:00）",
-            "臺北市中正區重慶南路一段122號",
-            "臺北市",
-            now,
-            now,
-          ],
+            event_id, show_time, location, location_name, city, on_sales, price, end_time, created_at
+          ) VALUES (?, ?, ?, ?, '臺北市', 'N', '完全免費 (Free)', ?, ?)`,
+          [eventId, `${wDate} 09:00:00`, address, `${venueName}（假日大開放日 09:00~16:00）`, `${wDate} 16:00:00`, now],
         );
       }
     });
