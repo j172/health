@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { buildBreadcrumbJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
+import { buildNearbyJsonLdEntries } from "@/lib/server/seo/nearbyJsonLd";
+import { buildNearbyGraphJsonLd, serializeJsonLd } from "@/lib/server/seo/structuredData";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import NearbyContent from "@/components/Nearby/NearbyContent";
 import { isPathLocale, ogAlternateLocales, OG_LOCALE } from "@/lib/i18n/dictionary";
@@ -66,10 +68,18 @@ export default async function LocaleNearbyPage({ params }: { params: Params }) {
     { name: t("toolShell.home", "首頁"), url: baseUrl },
     { name: shortTitle, url: `${baseUrl}${buildLocalizedPath(CANONICAL_PATH, locale)}` },
   ]);
+  // Issue #438 §R: same ItemList of facility types as the zh page, plus this
+  // locale's `inLanguage` and a `translationOfWork` link back to /nearby.
+  // Nothing per-visitor (geolocation results stay client-side) is included.
+  const nearbyGraph = buildNearbyGraphJsonLd(
+    { name: meta.title, description: meta.description, entries: buildNearbyJsonLdEntries(baseUrl, locale) },
+    { locale },
+  );
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(nearbyGraph) }} />
       {/* Machine-readable sibling versions of this locale's "/nearby" page
        * (issue #488, extending issue #466's zh-only pattern) — built from
        * the exact same NearbyTypeDef registry + getLocalizedPageMeta this

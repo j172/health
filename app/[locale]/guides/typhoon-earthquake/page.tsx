@@ -112,7 +112,9 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
       why: meta.steps[step.toolSlug]?.why ?? step.why,
     })),
   };
-  const guideGraph = buildGuideGraphJsonLd(localizedGuideForGraph);
+  // Issue #438 §R "外語版": locale-prefixed URL, `inLanguage` and
+  // `translationOfWork` back to the zh hub page.
+  const guideGraph = buildGuideGraphJsonLd(localizedGuideForGraph, { locale });
 
   const hasMetroAlertsStep = guide.steps.some((step) => step.toolSlug === "metro-alerts");
   const activeMetroAlertsCount = hasMetroAlertsStep ? await getActiveMetroAlertsCount() : null;

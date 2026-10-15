@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { buildToolGraphJsonLd, getBaseUrl } from "@/lib/server/news/seo";
+import { serializeJsonLd } from "@/lib/server/seo/structuredData";
+import { loadToolPageSupplementJsonLd } from "@/lib/server/seo/toolPageStructuredData";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import { getGuidesForTool, getRelatedTools, getToolCategoryLink } from "@/lib/server/tools/navModel";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
@@ -116,7 +118,24 @@ export default async function ToolPageShell({
   // text paired with Chinese structured data (or vice versa).
   const localizedCatalogEntry =
     catalogEntry && localizedMeta ? { ...catalogEntry, ...localizedMeta } : catalogEntry;
-  const toolGraph = localizedCatalogEntry ? buildToolGraphJsonLd(localizedCatalogEntry) : null;
+  // Issue #438 §R "外語版": only when the entry above was actually swapped for
+  // its translation (`localizedMeta`) does the graph take the /{locale}/ URL,
+  // `inLanguage` and `translationOfWork` — a page still rendering the Chinese
+  // catalog body (e.g. the global-watch sub-routes) must not claim otherwise.
+  const toolGraph = localizedCatalogEntry
+    ? buildToolGraphJsonLd(localizedCatalogEntry, localizedMeta ? { locale } : {})
+    : null;
+  // Issue #438 §R: the tool-specific extra node — schema.org `Event`s on
+  // 藝文活動, a Hospital/MedicalClinic/Pharmacy/Place `ItemList` on the
+  // facility-list tools — or null for every other tool (and on any failure).
+  const supplementGraph = localizedCatalogEntry
+    ? await loadToolPageSupplementJsonLd({
+        slug,
+        title: localizedCatalogEntry.title,
+        description: localizedCatalogEntry.description,
+        locale: localizedMeta ? locale : "zh-TW",
+      })
+    : null;
   // Category breadcrumb level (issue #459): resolved from the catalog
   // entry's `group` via the shared getToolCategoryLink helper, kept in sync
   // with the JSON-LD BreadcrumbList buildToolGraphJsonLd builds for the same
@@ -131,6 +150,12 @@ export default async function ToolPageShell({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(toolGraph) }}
+        />
+      )}
+      {supplementGraph && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(supplementGraph) }}
         />
       )}
       {/* Machine-readable sibling versions of this specific tool page (issue
