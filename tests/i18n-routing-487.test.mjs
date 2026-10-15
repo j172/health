@@ -106,7 +106,22 @@ test("app/[locale]/tools/<slug>/page.tsx exists for each of the 4 new tool slugs
 
 test("TRANSLATED_STANDALONE_PATHS covers home, nearby, and the typhoon-earthquake guide", () => {
   const paths = TRANSLATED_STANDALONE_PATHS.map(scopeEntryPath);
-  assert.deepEqual([...paths].sort(), ["/", "/guides/typhoon-earthquake", "/nearby"]);
+  // Issue #588 (parent #583) grew this registry by one more standalone path
+  // (the first global-watch item sub-route) — a containment check here
+  // (matching how TRANSLATED_TOOL_SLUGS's own "always contains the 3 pilot
+  // pages" test is written) rather than the original point-in-time exact
+  // set, so a later ticket adding its own standalone path doesn't need to
+  // keep editing this specific assertion. Issue #589 added
+  // "/tools/global-watch/epidemics" the same way.
+  for (const expected of [
+    "/",
+    "/guides/typhoon-earthquake",
+    "/nearby",
+    "/tools/global-watch/earthquakes",
+    "/tools/global-watch/epidemics",
+  ]) {
+    assert.ok(paths.includes(expected), `${expected} must remain in TRANSLATED_STANDALONE_PATHS`);
+  }
   for (const p of paths) {
     assert.ok(isTranslatedStandalonePath(p), `${p} must report isTranslatedStandalonePath(true)`);
     assert.ok(TRANSLATED_CANONICAL_PATHS.includes(p), `${p} must be in TRANSLATED_CANONICAL_PATHS`);

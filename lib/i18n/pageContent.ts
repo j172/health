@@ -19,7 +19,7 @@ export interface LocalizedPageMeta {
   shortTitle?: string;
 }
 
-const PAGE_I18N_CONTENT: Record<"home" | "nearby", Record<PathLocale, LocalizedPageMeta>> = {
+const PAGE_I18N_CONTENT: Record<"home" | "nearby" | "globalWatchEarthquakes", Record<PathLocale, LocalizedPageMeta>> = {
   home: {
     en: {
       title: "j172tw Healthz",
@@ -57,8 +57,36 @@ const PAGE_I18N_CONTENT: Record<"home" | "nearby", Record<PathLocale, LocalizedP
         "위치를 한 번만 확인하면 AED, 의료기관, 약국, 공중화장실, 쾌적 쉼터, 무장애 ATM, 응급실 실시간 혼잡도, 대피소 등 긴급 지점을 동시에 조회할 수 있습니다. 각 유형별로 가장 가까운 3곳과 거리를 표시하며, 더 많은 시설 유형도 펼쳐서 확인할 수 있습니다.",
     },
   },
+  // Issue #588 (parent #583): the first global-watch item sub-route
+  // (`/tools/global-watch/earthquakes`). Not a TranslatedToolSlug (see
+  // lib/i18n/translatedPages.ts's TRANSLATED_STANDALONE_PATHS comment on
+  // why) and not a TOOL_CATALOG entry, so it needs its own per-locale
+  // title/description here rather than going through getLocalizedToolMeta.
+  globalWatchEarthquakes: {
+    en: {
+      title: "Global Watch: Earthquakes — Worldwide & Taiwan Significant Earthquake Tracker",
+      shortTitle: "Earthquakes",
+      description:
+        "Real-time significant earthquakes from the past 7 days — M4.0+ in Taiwan and M6.0+ worldwide — plotted on an interactive 3D globe (worldwide M4.5+ and Taiwan M4.0+ shown as globe markers), with epicenter, magnitude, depth, and tsunami-warning details.",
+    },
+    ja: {
+      title: "グローバルウォッチ：地震 — 台湾と世界の有意地震トラッカー",
+      shortTitle: "地震",
+      description:
+        "過去7日間の有意な地震（台湾でM4.0以上、世界でM6.0以上）をインタラクティブな3D地球儀上に表示（地球儀には世界M4.5以上・台湾M4.0以上を表示）。震源地・規模・深さ・津波警報情報を提供します。",
+    },
+    ko: {
+      title: "글로벌 워치: 지진 — 대만 및 전 세계 주요 지진 트래커",
+      shortTitle: "지진",
+      description:
+        "최근 7일간의 주요 지진(대만 M4.0 이상, 전 세계 M6.0 이상)을 인터랙티브 3D 지구본에 표시합니다（지구본에는 전 세계 M4.5 이상・대만 M4.0 이상을 표시). 진앙, 규모, 깊이, 해일 경보 정보를 제공합니다.",
+    },
+  },
 };
 
-export function getLocalizedPageMeta(page: "home" | "nearby", locale: PathLocale): LocalizedPageMeta {
+export function getLocalizedPageMeta(
+  page: "home" | "nearby" | "globalWatchEarthquakes",
+  locale: PathLocale,
+): LocalizedPageMeta {
   return PAGE_I18N_CONTENT[page][locale];
 }

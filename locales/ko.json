@@ -75,6 +75,7 @@
     "accessible-parking": "임산부·영유아/장애인/장애인콜택시 전용 주차구역 검색",
     "public-toilets": "공중화장실 검색",
     "child-welfare-institutions": "육아지원센터 및 아동복지시설 검색",
+    "early-intervention": "조기치료기관 및 발달 공동평가센터 검색",
     "kindergartens": "전국 유치원 및 어린이집 검색",
     "childcare-centers": "영아 보육시설 및 가정형 보육지원센터 검색",
     "cram-schools": "학원 및 보습학원 검색",
@@ -674,6 +675,12 @@
     "depthLabel": "깊이:",
     "officialReportLink": "공식 속보 ↗",
     "dataSource": "자료 제공: 중앙기상청(CWA, 대만 M4.0+) · 미국지질조사국(USGS, 전 세계 M6.0+)"
+  },
+  "globalWatchTool": {
+    "earthquakes": {
+      "legendHeading": "지구본 마커 범례:",
+      "legendTsunami": "해일 경보"
+    }
   },
   "aqiTool": {
     "outdoorSafetyPromoPrefix": "오늘 조깅, 자전거, 공원 나들이를 계획 중이신가요? 대기질, 체감온도, 자외선을 통합한",

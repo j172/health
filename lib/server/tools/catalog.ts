@@ -130,9 +130,8 @@ export interface ToolCatalogEntry {
    * pool of the 150 most recent articles site-wide. That pool-based ranking
    * stays the default for every tool that omits this field; it only changes
    * behavior for tools that opt in. `mental-health` → "anti-drug",
-   * `smoking-cessation` → "tobacco" are the first two (#562's plan); #564's
-   * anti-fraud tool (not yet merged as of this writing) sets its own
-   * "anti-fraud" value independently.
+   * `smoking-cessation` → "tobacco" are the first two (#562's plan);
+   * `anti-fraud` → "anti-fraud" (issue #570) is the third.
    */
   newsTopic?: Topic;
 }
@@ -1357,7 +1356,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops", "audible-signals"],
+    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops", "audible-signals", "early-intervention"],
     faqs: [
       {
         question: "資料涵蓋哪些身心障礙福利機構？",
@@ -1537,6 +1536,69 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "這個頁面是否包含原本「全國親子館查詢」與「兒少福利中心查詢」的內容？",
         answer:
           "是。這兩個原本獨立的工具已合併為本頁，原網址皆已 301 轉址於此，資料範圍與更新來源維持不變，僅以類型分頁取代原本的兩個獨立頁面。",
+      },
+    ],
+  },
+  {
+    slug: "early-intervention",
+    group: "family",
+    lastUpdated: "2026-10-14",
+
+    navLabel: "早期療育資源地圖",
+    title: "早期療育資源地圖：早療單位與聯合評估中心查詢",
+    keywords: ["早期療育", "發展遲緩", "聯合評估中心", "早療評估"],
+    description:
+      "查詢全國早期療育單位（衛生／社福／教育）與臺北、新北、高雄縣市兒童發展聯合評估中心，可依單位別、服務方式（時段／日間／到宅）篩選，支援關鍵字搜尋與附近定位。資料來源：衛生福利部社會及家庭署、臺北市政府、新北市政府、高雄市政府開放資料。",
+    directAnswer:
+      "查詢全國早期療育單位名冊與臺北、新北、高雄縣市兒童發展聯合評估中心，協助懷疑孩子發展遲緩的家長就近找到正式評估與療育服務據點。",
+    scientificBasis: [
+      {
+        title: "各縣市早期療育單位一覽表",
+        authority: "衛生福利部社會及家庭署 (SFAA)",
+        url: "https://www.sfaa.gov.tw",
+      },
+      {
+        title: "臺北市政府早期療育聯合評估中心暨評估鑑定醫院",
+        authority: "臺北市政府",
+        url: "https://data.taipei",
+      },
+      {
+        title: "新北市政府衛生局合作早期療育評估鑑定醫院",
+        authority: "新北市政府衛生局",
+        url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "新北市發展遲緩兒童評估鑑定醫院",
+        authority: "新北市政府",
+        url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "早期療育服務－兒童發展聯合評估中心與評估醫院",
+        authority: "高雄市政府",
+        url: "https://data.kcg.gov.tw",
+      },
+    ],
+    relatedSlugs: ["disability-welfare", "child-welfare-institutions", "child-safety-spots"],
+    faqs: [
+      {
+        question: "早療單位與聯合評估中心有什麼不同？",
+        answer:
+          "聯合評估中心（或評估鑑定醫院）提供正式的兒童發展評估與鑑定，用於確認是否符合早期療育資格；早療單位則是實際提供療育服務（物理、職能、語言治療等）的據點。建議懷疑孩子發展遲緩時，先至聯合評估中心完成評估，再依評估結果就近安排早療單位。",
+      },
+      {
+        question: "單位別（衛生／社福／教育）分別是什麼？",
+        answer:
+          "衛生單位多為醫院、診所附設的早療門診；社福單位為社會福利機構或基金會提供的療育據點；教育單位多為幼兒園、國小附設幼兒園的巡迴輔導班。可用上方篩選切換查看任一類型。",
+      },
+      {
+        question: "服務方式「時段」「日間」「到宅」分別是什麼？",
+        answer:
+          "「時段」是約定時段至定點接受療育；「日間」通常是全日型的療育安置；「到宅」則是服務人員至家中提供療育服務，多用於交通不便或年幼無法外出的個案，這類單位在資料中可能沒有固定地址。",
+      },
+      {
+        question: "為什麼只有臺北、新北、高雄三個縣市有聯合評估中心資料？",
+        answer:
+          "這三個縣市政府目前在 data.gov.tw 開放了各自的聯合評估中心／評估鑑定醫院名冊，其他縣市尚未開放對應的結構化開放資料，暫無法收錄；全國早期療育單位本身（衛生／社福／教育）則不受此限，涵蓋全部 22 縣市。",
       },
     ],
   },
@@ -3308,15 +3370,26 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "mental-health",
     title: "全國心理諮商所與成癮防治地圖：心衛中心、藥癮戒治機構查詢",
-    keywords: ["心理諮商所", "心理師", "心衛中心", "藥癮戒治", "戒毒", "替代治療"],
+    keywords: [
+      "心理諮商所",
+      "心理師",
+      "心衛中心",
+      "藥癮戒治",
+      "戒毒",
+      "替代治療",
+      "美沙冬",
+      "跨區給藥",
+      "毒防中心",
+      "毒品危害防制中心",
+    ],
     navLabel: "心理諮商所地圖",
     description:
-      // issue #566: 新增「成癮防治」分頁（全國藥癮戒治與替代治療機構），描述改成
-      // 涵蓋兩種資料類型，但刻意不提美沙冬／毒防中心——那兩類資料由 #571 補上，
-      // 留給那張票自己補這段文字，避免兩張票搶著改同一段描述造成衝突。
-      "查詢衛福部合法立案之公私立心理諮商所、臨床心理所與各縣市社區心理衛生中心，支援 1925 安心專線與專業晤談預約；另設「成癮防治」分頁，收錄全國藥癮戒治與替代治療機構，顯示法務部戒毒成功專線 0800-770-885。",
+      // issue #566: 新增「成癮防治」分頁（全國藥癮戒治與替代治療機構）。
+      // issue #571: 「成癮防治」分頁再加兩類資料——美沙冬跨區給藥院所（含給藥
+      // 時段）與 22 縣市毒品危害防制中心——描述一併補上，不再留空。
+      "查詢衛福部合法立案之公私立心理諮商所、臨床心理所與各縣市社區心理衛生中心，支援 1925 安心專線與專業晤談預約；另設「成癮防治」分頁，收錄全國藥癮戒治與替代治療機構、可跨區給藥的美沙冬院所（含給藥時段），以及 22 縣市毒品危害防制中心，顯示法務部戒毒成功專線 0800-770-885。",
     directAnswer:
-      "心理諮商係由考選部及格、領有執照之諮商或臨床心理師所提供之專業心理晤談與評估，協助處理情緒困擾、創傷及人際議題；頁內另有「成癮防治」分頁可查詢全國藥癮戒治機構。",
+      "心理諮商係由考選部及格、領有執照之諮商或臨床心理師所提供之專業心理晤談與評估，協助處理情緒困擾、創傷及人際議題；頁內另有「成癮防治」分頁可查詢全國藥癮戒治機構、美沙冬跨區給藥院所與各縣市毒品危害防制中心。",
     scientificBasis: [
       {
         title: "衛生福利部心理健康司《心理師法》及立案機構規範",
@@ -3328,10 +3401,20 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         authority: "臺北市立聯合醫院（data.gov.tw 133353）",
         url: "https://data.gov.tw/dataset/133353",
       },
+      {
+        title: "美沙冬跨區給藥服務機構名單",
+        authority: "臺北市立聯合醫院（data.gov.tw 133345）",
+        url: "https://data.gov.tw/dataset/133345",
+      },
+      {
+        title: "各地方毒防中心",
+        authority: "法務部反毒大本營",
+        url: "https://antidrug.moj.gov.tw/lp-33-1.html",
+      },
     ],
     relatedSlugs: ["stress", "sleep", "clinics"],
     group: "medical-care",
-    lastUpdated: "2026-10-14",
+    lastUpdated: "2026-10-15",
     newsTopic: "anti-drug",
 
     schemaType: "MedicalWebPage",
@@ -3349,17 +3432,38 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       {
         question: "家人有藥癮問題，可以撥打哪支專線求助？",
         answer:
-          "可撥打法務部戒毒成功專線 0800-770-885（24 小時免付費），或在本頁切換到「成癮防治」分頁，查詢離家最近的藥癮戒治與替代治療機構。",
+          "可撥打法務部戒毒成功專線 0800-770-885（24 小時免付費），或在本頁切換到「成癮防治」分頁，查詢離家最近的藥癮戒治與替代治療機構，以及所在縣市的毒品危害防制中心。",
+      },
+      {
+        question: "接受美沙冬治療，出差或旅行時要怎麼辦？",
+        answer:
+          "可在本頁「成癮防治」分頁切換到「跨區給藥」子分頁，查詢提供跨區給藥服務的美沙冬院所，頁面會顯示各院所的平日／假日／其他給藥時段與跨區給藥相關費用，建議事先致電確認。",
       },
     ],
   },
   {
     slug: "smoking-cessation",
-    title: "戒菸門診特約院所查詢：二代戒菸補助與戒菸衛教",
-    keywords: ["戒菸門診", "二代戒菸", "戒菸補助", "戒菸院所查詢"],
+    title: "全國戒菸門診特約院所查詢：二代戒菸補助與戒菸衛教",
+    // issue #573: 新增電子煙／加熱菸／喪屍煙彈／檳榔宣導內容後補上對應關鍵字，
+    // 讓 Ctrl+K 搜尋和站內搜尋可以用這幾個詞找到本頁。
+    keywords: [
+      "戒菸門診",
+      "二代戒菸",
+      "戒菸補助",
+      "戒菸院所查詢",
+      "全國戒菸院所",
+      "電子煙",
+      "加熱菸",
+      "喪屍煙彈",
+      "檳榔",
+    ],
     navLabel: "戒菸門診查詢",
+    // issue #569（parent #562）：國健署「各縣市合約戒菸醫療院所」（data.gov.tw
+    // 6954，2,838 家）全國表已上線同步，取代 #563 當時因為只有 6 筆手寫資料而
+    // 暫時改掉的「部分示例」警示文字——這不是恢復舊的（當時失真的）「全國」說
+    // 法，是資料本身現在真的涵蓋全國了才改回來。
     description:
-      "查詢衛生福利部國民健康署二代戒菸治療與戒菸衛教補助之特約醫院、基層診所與社區藥局示例，享藥品免部分負擔；目前僅收錄部分示例，完整的全國合約院所名單請至國民健康署戒菸服務查詢。",
+      "查詢全國提供二代戒菸治療與戒菸衛教補助之特約醫院、基層診所與社區藥局。資料來源：衛生福利部國民健康署「各縣市合約戒菸醫療院所」，收錄全國 2,838 家特約院所，享戒菸藥品免部分負擔。",
     directAnswer:
       "二代戒菸服務由國健署補助戒菸門診診察費與戒菸藥品費用，透過專業醫師評估與尼古丁替代療法大幅提升戒菸成功率。",
     scientificBasis: [
@@ -3369,7 +3473,12 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.hpa.gov.tw/",
       },
       {
-        title: "國民健康署戒菸服務查詢（完整全國合約院所名單）",
+        title: "國民健康署「各縣市合約戒菸醫療院所」開放資料（data.gov.tw 6954）",
+        authority: "衛生福利部國民健康署",
+        url: "https://data.gov.tw/dataset/6954",
+      },
+      {
+        title: "國民健康署戒菸服務查詢",
         authority: "衛生福利部國民健康署",
         url: "https://ttc.hpa.gov.tw/",
       },
@@ -3390,6 +3499,34 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "自行戒菸與到戒菸門診求助成功率有何差異？",
         answer:
           "單靠個人意志力戒菸之年成功率通常僅約 3~5%，而在專業醫師指導並搭配尼古丁貼片或口服藥物輔助下，成功率可大幅提升至 30% 以上。",
+      },
+      // issue #573: 以下 5 則改寫自國健署戒菸專線問答（data.gov.tw 9514，共 30
+      // 則），挑選「戒菸方法」「二代戒菸」「二手菸」三個主題中對一般讀者較實用
+      // 的題目，內容忠實但不照抄原文冗長的口語敘述。
+      {
+        question: "想戒菸，有哪些官方求助管道？",
+        answer:
+          "可撥打國健署免付費戒菸專線 0800-636-363（週一至週六 9:00-21:00，國定假日照常服務），由專業諮詢人員協助規劃戒菸計畫；各醫療院所戒菸門診與社區藥局也提供戒菸衛教與藥物治療。（資料來源：國健署戒菸專線問答）",
+      },
+      {
+        question: "戒菸有沒有一次就成功的快速方法？",
+        answer:
+          "沒有單一「最快」的戒菸方法，多數人需要反覆嘗試幾次才會成功。菸癮來襲時，深呼吸、喝水、嚼無糖口香糖或暫時離開情境，都能幫助撐過最難受的幾分鐘，重點是持續練習並肯定自己每一次成功撐過的經驗。（資料來源：國健署戒菸專線問答）",
+      },
+      {
+        question: "政府有補助戒菸門診的藥物費用嗎？",
+        answer:
+          "國健署的二代戒菸治療計畫每人每年最多補助 2 次療程，每次療程 8 週，須在同一醫療院所內完成；戒菸藥品比照健保部分負擔收費，低收入戶可免收部分負擔費用。（資料來源：國健署戒菸專線問答）",
+      },
+      {
+        question: "二手菸真的比自己吸菸還毒嗎？",
+        answer:
+          "二手菸包含吸菸者吐出的菸與菸支燃燒時冒出的菸，所含有毒物質濃度約為吸菸者直接吸入的 3 至 5 倍；因此身處吸菸環境中，即使不是吸菸者本人，吸入的危害也可能更高。（資料來源：國健署戒菸專線問答）",
+      },
+      {
+        question: "長期暴露在二手菸環境會有什麼健康風險？",
+        answer:
+          "經常吸入二手菸會讓罹患心臟病的風險增加將近一倍，短時間處於菸霧瀰漫的環境也可能出現胸悶、頭痛、頭暈等不適；長期則會提高肺癌、鼻咽癌、氣喘與心血管疾病的風險。（資料來源：國健署戒菸專線問答）",
       },
     ],
   },
@@ -3869,7 +4006,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "anti-fraud",
     group: "disaster-alerts",
-    lastUpdated: "2026-10-14",
+    lastUpdated: "2026-10-15",
 
     schemaType: "WebPage",
     title: "防詐騙查詢：可疑網址涉詐網域比對",
@@ -3900,8 +4037,23 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         authority: "內政部警政署刑事警察局",
         url: "https://165.npa.gov.tw/",
       },
+      {
+        title: "內政部警政署「打詐儀錶板打擊詐欺成效」開放資料",
+        authority: "內政部警政署",
+        url: "https://data.gov.tw/dataset/172159",
+      },
+      {
+        title: "金融監督管理委員會「打詐儀表板」開放資料",
+        authority: "金融監督管理委員會",
+        url: "https://data.gov.tw/dataset/11198",
+      },
     ],
     relatedSlugs: ["emergency-hotlines"],
+    // issue #570: 這個工具宣告自己的反詐新聞主題，所以 ToolPageShell 的「相關新聞
+    // 報導」改成直接依 news_item_topics 查詢最新 anti-fraud 新聞（見
+    // lib/server/content/relatedNewsForTool.ts），不再用關鍵字排名 150 筆最新新聞
+    // 池——避免近期健康新聞一多，詐騙新聞就被擠出候選池而顯示空白。
+    newsTopic: "anti-fraud",
     faqs: [
       {
         question: "查詢結果顯示「不在清單上」，代表這個網址一定安全嗎？",

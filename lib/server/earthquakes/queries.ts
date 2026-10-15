@@ -202,3 +202,51 @@ export const getTieredEarthquakes = async (hours = 168, limit = 50): Promise<Sig
       return rows.map(mapEarthquakeRow);
     }),
   );
+
+export interface GlobeWatchEarthquakeRow extends SignificantEarthquake {
+  lat: number;
+  lng: number;
+  /** True when `sources_json` includes a CWA report — the globe's own,
+   * wider threshold (lib/tools/globeWatch/earthquakeGlobeFeatures.ts)
+   * treats a CWA-sourced M4.0+ event the same as a worldwide M4.5+ one. */
+  cwa_sourced: boolean;
+}
+
+const mapGlobeWatchEarthquakeRow = (r: RowDataPacket): GlobeWatchEarthquakeRow => ({
+  ...mapEarthquakeRow(r),
+  lat: Number(r.lat),
+  lng: Number(r.lng),
+  cwa_sourced: Number(r.cwa_sourced ?? 0) === 1,
+});
+
+/**
+ * Issue #588 (parent #583): candidate rows for the global-watch earthquake
+ * item's GLOBE markers — deliberately a wider fetch than `getTieredEarthquakes`
+ * (M4.0+ worldwide, not just the "顯著" tier), since the globe's own
+ * threshold (worldwide M4.5+ OR CWA-sourced M4.0+) is applied afterward by
+ * the pure `lib/tools/globeWatch/earthquakeGlobeFeatures.ts` module, not by
+ * this query. `getTieredEarthquakes` itself is untouched — the server list
+ * keeps fetching from it exactly as before. `hours` defaults to a few days
+ * wider than the globe's own 7-day lookback so that lookback cutoff is
+ * enforced by the pure transform module (testable against fixtures),
+ * never silently by this query's own window.
+ */
+export const getGlobeWatchEarthquakeCandidates = async (
+  hours = 192,
+  limit = 500,
+): Promise<GlobeWatchEarthquakeRow[]> =>
+  memoizeQuery(`earthquakes_globewatch_${hours}_${limit}`, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `SELECT id, event_time, magnitude, depth_km, lat, lng, place, place_zh, tsunami_warning, primary_source, url,
+                JSON_CONTAINS_PATH(sources_json, 'one', '$.cwa') AS cwa_sourced
+         FROM global_earthquakes
+         WHERE event_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? HOUR)
+           AND magnitude >= 4.0
+         ORDER BY event_time DESC
+         LIMIT ?`,
+        [hours, limit],
+      );
+      return rows.map(mapGlobeWatchEarthquakeRow);
+    }),
+  );

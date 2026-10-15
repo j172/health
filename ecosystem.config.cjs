@@ -5,7 +5,17 @@ module.exports = {
       cwd: '/home/tw123457/health_app',
       script: 'node_modules/next/dist/bin/next',
       args: 'start',
-      interpreter: '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node',
+      // Issue #481: production was switched to Node 24 on 2026-10-13 via a
+      // one-off `pm2 restart health-web --interpreter .../v24.19.0/bin/node
+      // --update-env`, but that command was never reflected here. Every
+      // deploy since has run `pm2 startOrRestart ecosystem.config.cjs --only
+      // health-web` (see .remote-health-index.php), which re-reads this file
+      // and silently reverted the interpreter back to v20.20.2 on each one —
+      // confirmed live 2026-10-15 (Day 2 of the 7-day observation period):
+      // `pm2 jlist` showed health-web running v20.20.2 again. v20.20.2 stays
+      // installed on the host for the documented rollback path
+      // (docs/domains/11-hosting-ops-incidents.md §1.2).
+      interpreter: '/home/tw123457/.nvm/versions/node/v24.19.0/bin/node',
       instances: 1,
       exec_mode: 'fork',
       // V8 sizes its default heap ceiling (~4.3GB observed) off the host's full

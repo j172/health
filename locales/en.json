@@ -75,6 +75,7 @@
     "accessible-parking": "Accessible & Parent-Child Parking Finder",
     "public-toilets": "Public Toilet Finder",
     "child-welfare-institutions": "Parent-Child Center & Child Welfare Center Finder",
+    "early-intervention": "Early Intervention Unit & Joint Assessment Center Finder",
     "kindergartens": "Kindergarten Directory Finder",
     "childcare-centers": "Infant Childcare & Home-Based Childcare Center Finder",
     "cram-schools": "Cram School Directory Finder",
@@ -671,6 +672,12 @@
     "depthLabel": "Depth:",
     "officialReportLink": "Official report ↗",
     "dataSource": "Source: Central Weather Administration (CWA, Taiwan M4.0+) · U.S. Geological Survey (USGS, global M6.0+)"
+  },
+  "globalWatchTool": {
+    "earthquakes": {
+      "legendHeading": "Globe marker legend:",
+      "legendTsunami": "Tsunami warning"
+    }
   },
   "aqiTool": {
     "outdoorSafetyPromoPrefix": "Planning to run, cycle, or take the kids to the park today? Instantly check the",

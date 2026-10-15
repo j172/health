@@ -66,6 +66,7 @@ function getFacilitySeedFallback(
     lng?: number;
     radiusMeters?: number;
     serviceItem?: string;
+    serviceMethod?: string;
     onlyCharity?: boolean;
     sort?: string;
     limit?: number;
@@ -165,6 +166,14 @@ function getFacilitySeedFallback(
       list = list.filter((item) => item.service_item && item.service_item.includes(cat));
     }
 
+    // 4b. Second filter dimension (extra_json.serviceMethod — see
+    // searchFacilities()'s serviceMethod param for why this needs its own
+    // extra_json-keyed filter instead of reusing service_item).
+    if (options.serviceMethod) {
+      const sm = options.serviceMethod.trim();
+      list = list.filter((item) => item.extra_json?.serviceMethod && String(item.extra_json.serviceMethod).includes(sm));
+    }
+
     // 5. Charity filter
     if (options.onlyCharity) {
       list = list.filter((item) => item.extra_json?.charityUrl);
@@ -238,6 +247,7 @@ export async function GET(request: NextRequest) {
   const lng = params.get("lng") ? Number(params.get("lng")) : undefined;
   const radiusMeters = params.get("radius") ? Number(params.get("radius")) : undefined;
   const serviceItem = params.get("category")?.trim() || undefined;
+  const serviceMethod = params.get("serviceMethod")?.trim() || undefined;
   const onlyCharity = params.get("charity") === "1" || undefined;
   const sortParam = params.get("sort");
   const sort =
@@ -265,6 +275,7 @@ export async function GET(request: NextRequest) {
         lng,
         radiusMeters,
         serviceItem,
+        serviceMethod,
         onlyCharity,
         sort,
         limit,
@@ -275,7 +286,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const hasFilters = Boolean(keyword || county || district || serviceItem || onlyCharity);
+    const hasFilters = Boolean(keyword || county || district || serviceItem || serviceMethod || onlyCharity);
 
     const [facilities, allTotal, filteredTotal] = await Promise.all([
       searchFacilities({
@@ -287,6 +298,7 @@ export async function GET(request: NextRequest) {
         lng,
         radiusMeters,
         serviceItem,
+        serviceMethod,
         onlyCharity,
         sort,
         limit,
@@ -294,7 +306,7 @@ export async function GET(request: NextRequest) {
       }),
       countFacilities(facilityType),
       hasFilters
-        ? countFilteredFacilities(facilityType, { keyword, county, district, serviceItem, onlyCharity })
+        ? countFilteredFacilities(facilityType, { keyword, county, district, serviceItem, serviceMethod, onlyCharity })
         : Promise.resolve(null),
     ]);
 
@@ -318,6 +330,7 @@ export async function GET(request: NextRequest) {
       lng,
       radiusMeters,
       serviceItem,
+      serviceMethod,
       onlyCharity,
       sort,
       limit,
@@ -338,6 +351,7 @@ export async function GET(request: NextRequest) {
       lng,
       radiusMeters,
       serviceItem,
+      serviceMethod,
       onlyCharity,
       sort,
       limit,

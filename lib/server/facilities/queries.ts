@@ -31,6 +31,19 @@ export interface FacilityExtraJson {
   addictionTreatmentMode?: string | null;
   addictionTreatmentService?: string | null;
   /**
+   * early_intervention_unit facility type (#613) — 130229's 服務方式 (時段/
+   * 到宅/日間, combined like "時段、到宅") and 療育服務內容. serviceMethod is
+   * the second filter dimension the tool page offers alongside 單位別
+   * (stored in the generic `service_item` column, like every other facility
+   * type's category filter) — see searchFacilities()'s `serviceMethod` param.
+   */
+  serviceMethod?: string | null;
+  serviceContent?: string | null;
+  /** The 4 county joint-assessment-center supplementary sources (#613) — centerType is 臺北's own 機構類型 distinction; note/department are each a single source's own supplementary text field. */
+  centerType?: string | null;
+  note?: string | null;
+  department?: string | null;
+  /**
    * baby_friendly_hospital facility type (#614) — per-row validity date
    * (ISO YYYY-MM-DD), for the counties whose source actually has one
    * (Taipei 121200, Changhua 30882). Rows past this date are already
@@ -45,6 +58,20 @@ export interface FacilityExtraJson {
    * never used to filter.
    */
   dataVerifiedAt?: string | null;
+  /**
+   * methadone_cross_district facility type (#571) — data.gov.tw 133345's
+   * dosing-time windows and per-service fees, which (like #566's fields
+   * above) have no generic facilities column of their own. See
+   * methadoneCrossDistrict.ts.
+   */
+  methadoneWeekdayDosingTime?: string | null;
+  methadoneHolidayDosingTime?: string | null;
+  methadoneOtherDosingTime?: string | null;
+  methadoneTransferInFee?: string | null;
+  methadoneCrossDistrictFee?: string | null;
+  methadoneTransferOutFee?: string | null;
+  methadoneEvaluationFee?: string | null;
+  methadoneNotes?: string | null;
   /**
    * `category` and `monthlyFee` are shared across two independent facility
    * families that both landed around the same time and happened to pick the
@@ -75,6 +102,24 @@ export interface FacilityExtraJson {
   hasPenalty?: boolean;
   /** `YYYY-MM-DD` this site's own sync captured that county's snapshot — see childcareCenterShared.ts's `todayDataAsOf`. */
   dataAsOf?: string | null;
+  /**
+   * issue #606 (childcare_center, 桃園/臺南 only — don't invent these for a
+   * county whose dataset doesn't have them): 臺南 6178 ships both 每學期註冊/
+   * 教材費 (`registrationFee`) and 每月副食品費 (`mealFee`) as columns separate
+   * from `monthlyFee`; 桃園's two sources have no registration/meal fee of
+   * their own.
+   */
+  registrationFee?: string | number | null;
+  mealFee?: string | number | null;
+  /**
+   * issue #606 (childcare_center, 高雄 only): 128099/128100 together are only
+   * 53+17 rows, last refreshed 2025-06 per data.gov.tw's own dataset
+   * metadata — a free-text caveat surfaced per-row (via extraFields in
+   * facilityConfigs.ts and a dedicated warning line in
+   * FacilitySearchContent.tsx) so it reads as "possibly incomplete,
+   * dated" data rather than a complete up-to-date county list.
+   */
+  dataNote?: string | null;
   [key: string]: unknown;
 }
 
@@ -292,6 +337,16 @@ export interface FacilitySearchParams {
   offset?: number;
   /** Substring match against the facilities.service_item column (e.g. a hospital tier, pharmacy contract type, or one badge within a combined multi-badge value). */
   serviceItem?: string;
+  /**
+   * Substring match against `extra_json.serviceMethod` — a second,
+   * independent filter dimension alongside `serviceItem` (issue #613's
+   * early_intervention_unit needs both 單位別 AND 服務方式 filterable at
+   * once, which a single `service_item` column/`categories` dropdown can't
+   * express). Generic by key name rather than hardcoded to this one
+   * facility type, so a future facility type needing the same
+   * two-dimension shape can reuse it without another query change.
+   */
+  serviceMethod?: string;
   /** When true, only rows whose extra_json carries a charityUrl (see scripts/enrich-disability-charity-sales.mjs). */
   onlyCharity?: boolean;
   sort?: "distance" | "name" | "category" | "newest";
@@ -321,6 +376,7 @@ export const searchFacilities = async ({
   limit = 30,
   offset = 0,
   serviceItem,
+  serviceMethod,
   onlyCharity,
   sort,
 }: FacilitySearchParams): Promise<FacilityListItem[]> =>
@@ -356,6 +412,11 @@ export const searchFacilities = async ({
       // category values are substrings of one another.
       conditions.push("service_item LIKE ?");
       params.push(`%${serviceItem}%`);
+    }
+
+    if (serviceMethod) {
+      conditions.push("JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.serviceMethod')) LIKE ?");
+      params.push(`%${serviceMethod}%`);
     }
 
     if (onlyCharity) {
@@ -437,6 +498,8 @@ export interface FacilityCountFilters {
   county?: string;
   district?: string;
   serviceItem?: string;
+  /** See FacilitySearchParams.serviceMethod. */
+  serviceMethod?: string;
   onlyCharity?: boolean;
 }
 
@@ -474,6 +537,11 @@ export const countFilteredFacilities = async (
     } else if (filters.serviceItem) {
       conditions.push("service_item LIKE ?");
       params.push(`%${filters.serviceItem}%`);
+    }
+
+    if (filters.serviceMethod) {
+      conditions.push("JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.serviceMethod')) LIKE ?");
+      params.push(`%${filters.serviceMethod}%`);
     }
 
     if (filters.onlyCharity) {
