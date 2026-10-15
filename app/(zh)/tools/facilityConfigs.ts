@@ -688,6 +688,40 @@ export const facilitySearchConfigs = {
       { value: "復康巴士", label: "🚐 復康巴士" },
     ],
   },
+  "early-intervention": {
+    facilityType: "early_intervention_unit",
+    emoji: "🧒",
+    title: "早期療育資源地圖",
+    description:
+      "查詢全國早期療育單位（衛生／社福／教育）與縣市兒童發展聯合評估中心，支援依單位別、服務方式篩選。資料來源：衛生福利部社會及家庭署（data.gov.tw 130229）及臺北市、新北市、高雄市政府開放資料。",
+    noteLine: "聯合評估中心用於正式發展評估與鑑定；早療單位則提供實際療育服務——懷疑孩子發展遲緩，可先至聯合評估中心評估，再依評估結果就近安排早療單位。",
+    searchPlaceholder: "輸入單位名稱或縣市關鍵字",
+    errorText: "查詢早期療育資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的早療單位，可改用關鍵字或擴大搜尋範圍。",
+    emptyStateWithKeyword: "查無符合的早療單位。",
+    serviceItem: { label: "單位別：" },
+    categories: [
+      { value: "衛生單位", label: "🏥 衛生單位" },
+      { value: "社福單位", label: "🤝 社福單位" },
+      { value: "教育單位", label: "🏫 教育單位" },
+      { value: "聯合評估中心", label: "🩺 聯合評估中心" },
+    ],
+    serviceMethodFilter: {
+      ariaLabel: "服務方式篩選",
+      allLabel: "全部服務方式",
+      options: [
+        { value: "時段", label: "⏰ 時段療育" },
+        { value: "日間", label: "☀️ 日間療育" },
+        { value: "到宅", label: "🏠 到宅服務" },
+      ],
+    },
+    extraFields: [
+      { key: "serviceMethod", label: "服務方式：" },
+      { key: "serviceContent", label: "療育服務內容：" },
+      { key: "centerType", label: "機構類型：" },
+      { key: "note", label: "備註：" },
+    ],
+  },
   // issue #601 (parent #599): 托嬰中心與居家托育地圖，先用臺北／新北兩個縣市把
   // 骨架建好。childcare_center 與 home_childcare_center 是兩個不同的 facilityType
   // （托嬰機構本身 vs. 協助家長找保母的居家托育服務中心媒合窗口），各自一個

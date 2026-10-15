@@ -75,6 +75,21 @@ export function parseCsv(text: string): Record<string, string>[] {
 export const toHalfwidthDigits = (s: string): string => s.replace(/[０-９]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xff10 + 0x30));
 
 /**
+ * Collapses embedded line breaks and extra whitespace out of a unit/org name
+ * — some county open-data CSV exports (confirmed live on New Taipei's
+ * 125231/123786 early-intervention joint-assessment-center sources, issue
+ * #613) wrap a long institution name across two lines inside one quoted CSV
+ * cell (e.g. `"國泰醫療財團法人\n汐止國泰綜合醫院"`), which parseCsv's quoted-
+ * field handling correctly preserves as a literal `\n` rather than silently
+ * dropping. Used for the `sourceId`-bearing name itself (so the same real
+ * institution doesn't get two different keys depending on whether upstream
+ * happened to wrap the line that month) — intentionally collapses to no
+ * space at all, not one, since Chinese org names never have meaningful
+ * inter-character spaces of their own.
+ */
+export const normalizeUnitName = (raw: string): string => raw.replace(/\s+/g, "").trim();
+
+/**
  * Some MOHW county/district-level sources already ship a complete address in
  * their 地址 column (county+district+street), but the ingest script also
  * prepends 縣市/鄉鎮市區 unconditionally (safe for the rows that need it,

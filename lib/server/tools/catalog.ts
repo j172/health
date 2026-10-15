@@ -1356,7 +1356,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops", "audible-signals"],
+    relatedSlugs: ["disability-atm", "long-term-care", "child-welfare-institutions", "sheltered-workshops", "audible-signals", "early-intervention"],
     faqs: [
       {
         question: "資料涵蓋哪些身心障礙福利機構？",
@@ -1536,6 +1536,69 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "這個頁面是否包含原本「全國親子館查詢」與「兒少福利中心查詢」的內容？",
         answer:
           "是。這兩個原本獨立的工具已合併為本頁，原網址皆已 301 轉址於此，資料範圍與更新來源維持不變，僅以類型分頁取代原本的兩個獨立頁面。",
+      },
+    ],
+  },
+  {
+    slug: "early-intervention",
+    group: "family",
+    lastUpdated: "2026-10-14",
+
+    navLabel: "早期療育資源地圖",
+    title: "早期療育資源地圖：早療單位與聯合評估中心查詢",
+    keywords: ["早期療育", "發展遲緩", "聯合評估中心", "早療評估"],
+    description:
+      "查詢全國早期療育單位（衛生／社福／教育）與臺北、新北、高雄縣市兒童發展聯合評估中心，可依單位別、服務方式（時段／日間／到宅）篩選，支援關鍵字搜尋與附近定位。資料來源：衛生福利部社會及家庭署、臺北市政府、新北市政府、高雄市政府開放資料。",
+    directAnswer:
+      "查詢全國早期療育單位名冊與臺北、新北、高雄縣市兒童發展聯合評估中心，協助懷疑孩子發展遲緩的家長就近找到正式評估與療育服務據點。",
+    scientificBasis: [
+      {
+        title: "各縣市早期療育單位一覽表",
+        authority: "衛生福利部社會及家庭署 (SFAA)",
+        url: "https://www.sfaa.gov.tw",
+      },
+      {
+        title: "臺北市政府早期療育聯合評估中心暨評估鑑定醫院",
+        authority: "臺北市政府",
+        url: "https://data.taipei",
+      },
+      {
+        title: "新北市政府衛生局合作早期療育評估鑑定醫院",
+        authority: "新北市政府衛生局",
+        url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "新北市發展遲緩兒童評估鑑定醫院",
+        authority: "新北市政府",
+        url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "早期療育服務－兒童發展聯合評估中心與評估醫院",
+        authority: "高雄市政府",
+        url: "https://data.kcg.gov.tw",
+      },
+    ],
+    relatedSlugs: ["disability-welfare", "child-welfare-institutions", "child-safety-spots"],
+    faqs: [
+      {
+        question: "早療單位與聯合評估中心有什麼不同？",
+        answer:
+          "聯合評估中心（或評估鑑定醫院）提供正式的兒童發展評估與鑑定，用於確認是否符合早期療育資格；早療單位則是實際提供療育服務（物理、職能、語言治療等）的據點。建議懷疑孩子發展遲緩時，先至聯合評估中心完成評估，再依評估結果就近安排早療單位。",
+      },
+      {
+        question: "單位別（衛生／社福／教育）分別是什麼？",
+        answer:
+          "衛生單位多為醫院、診所附設的早療門診；社福單位為社會福利機構或基金會提供的療育據點；教育單位多為幼兒園、國小附設幼兒園的巡迴輔導班。可用上方篩選切換查看任一類型。",
+      },
+      {
+        question: "服務方式「時段」「日間」「到宅」分別是什麼？",
+        answer:
+          "「時段」是約定時段至定點接受療育；「日間」通常是全日型的療育安置；「到宅」則是服務人員至家中提供療育服務，多用於交通不便或年幼無法外出的個案，這類單位在資料中可能沒有固定地址。",
+      },
+      {
+        question: "為什麼只有臺北、新北、高雄三個縣市有聯合評估中心資料？",
+        answer:
+          "這三個縣市政府目前在 data.gov.tw 開放了各自的聯合評估中心／評估鑑定醫院名冊，其他縣市尚未開放對應的結構化開放資料，暫無法收錄；全國早期療育單位本身（衛生／社福／教育）則不受此限，涵蓋全部 22 縣市。",
       },
     ],
   },

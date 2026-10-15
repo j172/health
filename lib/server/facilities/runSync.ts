@@ -11,6 +11,13 @@ import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties"
 import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
 import { fetchTdxAccessibleParking } from "@/lib/server/facilities/sources/tdxParking";
 import { fetchAddictionTreatmentFacilities } from "@/lib/server/facilities/sources/addictionTreatmentFacilities";
+import { fetchEarlyInterventionUnits } from "@/lib/server/facilities/sources/earlyInterventionUnits";
+import {
+  fetchTaipeiJointAssessmentCenters,
+  fetchNtpcHealthJointAssessmentCenters,
+  fetchNtpcDevDelayJointAssessmentCenters,
+  fetchKhhJointAssessmentCenters,
+} from "@/lib/server/facilities/sources/jointAssessmentCenters";
 import { fetchNhplatformNursingInstitutions } from "@/lib/server/facilities/sources/nhplatformNursingInstitutions";
 import { fetchBabyFriendlyHospitalTaipei } from "@/lib/server/facilities/sources/babyFriendlyHospitalTaipei";
 import { fetchBabyFriendlyHospitalNewTaipei } from "@/lib/server/facilities/sources/babyFriendlyHospitalNewTaipei";
@@ -81,6 +88,19 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // host yet — see the comment above fetchAddictionTreatmentFacilities() — confirm that
   // before relying on this source's scheduled runs.
   { key: "addiction_treatment_133353", fetch: fetchAddictionTreatmentFacilities },
+  // #613: 早期療育資源地圖 — national 130229 ODS source (衛福部社家署
+  // 「各縣市早期療育單位一覽表」, ~1,339 rows) plus 4 independent county
+  // 聯合評估中心 supplementary sources, each its own rerunnable key so any
+  // one can be backfilled/re-synced without re-fetching the national
+  // dataset. No coordinates of their own except khh_joint_assessment_128165
+  // (which already carries real lat/lng) — the other 4 feed the usual
+  // facilities-geocode batch pipeline (see geocodeBatch.ts's
+  // SOURCES_IN_PRIORITY).
+  { key: "mohw_early_intervention_130229", fetch: fetchEarlyInterventionUnits },
+  { key: "taipei_joint_assessment_135454", fetch: fetchTaipeiJointAssessmentCenters },
+  { key: "ntpc_joint_assessment_125231", fetch: fetchNtpcHealthJointAssessmentCenters },
+  { key: "ntpc_joint_assessment_123786", fetch: fetchNtpcDevDelayJointAssessmentCenters },
+  { key: "khh_joint_assessment_128165", fetch: fetchKhhJointAssessmentCenters },
   // issue #612: 全國開業護理機構清冊 (data.gov.tw 115950) — one CSV fetch that
   // produces records for TWO destinations: facilityType "postpartum_care"
   // (241 rows, the new /tools/postpartum-care) and additional
