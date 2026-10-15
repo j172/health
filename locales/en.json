@@ -671,6 +671,7 @@
     "tsunamiWarning": "🌊 Tsunami Warning",
     "depthLabel": "Depth:",
     "officialReportLink": "Official report ↗",
+    "gdacsAlertLevel": "GDACS Alert Level:",
     "dataSource": "Source: Central Weather Administration (CWA, Taiwan M4.0+) · U.S. Geological Survey (USGS, global M6.0+)"
   },
   "globalWatchTool": {

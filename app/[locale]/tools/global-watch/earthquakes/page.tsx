@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getGlobeWatchEarthquakeCandidates, getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
+import { getRecentEqGdacsEvents } from "@/lib/server/gdacs/queries";
 import { buildBreadcrumbJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import GlobeWatchEarthquakesItem from "@/components/Tools/GlobeWatch/GlobeWatchEarthquakesItem";
@@ -69,9 +70,10 @@ export default async function LocaleGlobalWatchEarthquakesPage({ params }: { par
   const canonical = `${baseUrl}${buildLocalizedPath(CANONICAL_PATH, locale)}`;
   const globalWatchHref = buildLocalizedPath("/tools/global-watch", locale);
 
-  const [earthquakes, globeCandidates] = await Promise.all([
+  const [earthquakes, globeCandidates, gdacsEqEvents] = await Promise.all([
     getTieredEarthquakes(168, 100),
     getGlobeWatchEarthquakeCandidates(),
+    getRecentEqGdacsEvents(),
   ]);
 
   const globeRows: EarthquakeGlobeRow[] = globeCandidates.map((row) => ({
@@ -127,7 +129,7 @@ export default async function LocaleGlobalWatchEarthquakesPage({ params }: { par
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{meta.description}</p>
 
             <div className="mt-6">
-              <GlobeWatchEarthquakesItem earthquakes={earthquakes} globeRows={globeRows} />
+              <GlobeWatchEarthquakesItem earthquakes={earthquakes} globeRows={globeRows} gdacsEvents={gdacsEqEvents} />
             </div>
           </div>
         </main>

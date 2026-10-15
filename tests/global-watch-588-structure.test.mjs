@@ -147,9 +147,9 @@ test("GlobeWatchGlobe creates a GeoJSON source + two circle layers for earthquak
   assert.match(globeSrc, /filter:\s*\["==",\s*\["get",\s*"isTsunami"\],\s*true\]/);
 });
 
-test("GlobeWatchGlobe's circle layer paints radius/color straight from the feature properties the pure transform module computed (AC: 標記大小/顏色依規模分級)", () => {
+test("GlobeWatchGlobe's circle layer paints radius/color straight from the feature properties the pure transform module computed (AC: 標記大小/顏色依規模分級), falling back from issue #595's GDACS color to the original markerColor when unmatched", () => {
   assert.match(globeSrc, /"circle-radius":\s*\["get",\s*"markerRadiusPx"\]/);
-  assert.match(globeSrc, /"circle-color":\s*\["get",\s*"markerColor"\]/);
+  assert.match(globeSrc, /"circle-color":\s*\["coalesce",\s*\["get",\s*"gdacsColor"\],\s*\["get",\s*"markerColor"\]\]/);
 });
 
 test("GlobeWatchGlobe binds a click handler on the earthquake circle layer that opens a MapLibre Popup built from EarthquakeGlobeFeatureProperties", () => {
@@ -177,8 +177,8 @@ test("GlobeWatchClient forwards an optional earthquakes prop straight to GlobeWa
 // AC: shared M4/M6/M7 filter + list-click-flies-globe + item tabs
 // ---------------------------------------------------------------------------
 
-test("GlobeWatchEarthquakesItem lifts one filterMinMag state value and passes it to both the globe feature collection and EarthquakeContent", () => {
-  assert.match(itemSrc, /buildEarthquakeGlobeFeatureCollection\(globeRows, \{ minMagnitude: filterMinMag \}\)/);
+test("GlobeWatchEarthquakesItem lifts one filterMinMag state value and passes it to both the globe feature collection and EarthquakeContent (issue #595 adds gdacsEvents alongside it, never replacing it)", () => {
+  assert.match(itemSrc, /buildEarthquakeGlobeFeatureCollection\(globeRows, \{ minMagnitude: filterMinMag, gdacsEvents \}\)/);
   assert.match(itemSrc, /filterMinMag=\{filterMinMag\}/);
   assert.match(itemSrc, /onFilterChange=\{setFilterMinMag\}/);
 });

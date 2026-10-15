@@ -19,6 +19,14 @@
  * window) specifically so this module's own fixture-based tests can prove
  * "an event older than 7 days doesn't make it onto the globe" without a
  * database in the loop.
+ *
+ * Issue #595 (parent #583, blocked by #588/#592 — both merged): adds an
+ * optional GDACS EQ severity overlay on top of the markers this module
+ * already builds. This does NOT change the globe threshold, the list rule,
+ * or the M4/M6/M7 UI filter above — it only attaches an extra
+ * `gdacsAlertLevel`/`gdacsColor` pair to a feature when a GDACS EQ-type
+ * event (from gdacs_events, already fetched by the caller — see
+ * lib/server/gdacs/queries.ts's getRecentEqGdacsEvents) matches it.
  */
 
 export const GLOBE_EARTHQUAKE_LOOKBACK_HOURS = 24 * 7;
@@ -122,11 +130,33 @@ export interface EarthquakeGlobeFeatureProperties {
   bucketKey: MagnitudeBucket["key"];
   markerColor: string;
   markerRadiusPx: number;
+  /**
+   * Issue #595: the matched GDACS EQ event's alert level, or `null` when no
+   * GDACS event matched this earthquake — in which case the marker keeps
+   * its original magnitude-based color (AC: "沒有對應事件的地震維持原本規模配色").
+   */
+  gdacsAlertLevel: GdacsEqAlertLevel | null;
+  /** `GDACS_ALERT_LEVEL_COLORS[gdacsAlertLevel]`, or `null` when unmatched.
+   * Kept as a precomputed color (rather than making the MapLibre paint
+   * expression look up the level itself) so the globe layer only ever needs
+   * `["coalesce", ["get", "gdacsColor"], ["get", "markerColor"]]` —
+   * consistent with how `markerColor`/`markerRadiusPx` are already
+   * precomputed above instead of derived in MapLibre expressions. */
+  gdacsColor: string | null;
+  /** The matched GDACS event's own event_id — null when unmatched. Not
+   * currently rendered anywhere, but kept for a future "open the GDACS
+   * report" link without re-matching. */
+  gdacsEventId: string | null;
+  /** The matched GDACS event's report URL — null when unmatched. */
+  gdacsReportUrl: string | null;
 }
 
 export type EarthquakeGlobePointFeature = GeoJSON.Feature<GeoJSON.Point, EarthquakeGlobeFeatureProperties>;
 
-export function toEarthquakeGlobeFeature(row: EarthquakeGlobeRow): EarthquakeGlobePointFeature {
+export function toEarthquakeGlobeFeature(
+  row: EarthquakeGlobeRow,
+  gdacsMatch: GdacsEqEventRow | null = null,
+): EarthquakeGlobePointFeature {
   const magnitude = typeof row.magnitude === "number" ? row.magnitude : Number(row.magnitude) || 0;
   const bucket = resolveMagnitudeBucket(magnitude);
   const eventTimeIso = row.eventTime instanceof Date ? row.eventTime.toISOString() : String(row.eventTime);
@@ -149,8 +179,109 @@ export function toEarthquakeGlobeFeature(row: EarthquakeGlobeRow): EarthquakeGlo
       bucketKey: bucket.key,
       markerColor: bucket.color,
       markerRadiusPx: bucket.radiusPx,
+      gdacsAlertLevel: gdacsMatch?.alertLevel ?? null,
+      gdacsColor: gdacsMatch ? GDACS_ALERT_LEVEL_COLORS[gdacsMatch.alertLevel] : null,
+      gdacsEventId: gdacsMatch?.eventId ?? null,
+      gdacsReportUrl: gdacsMatch?.reportUrl ?? null,
     },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Issue #595: GDACS EQ severity-color overlay
+// ---------------------------------------------------------------------------
+
+/** Mirrors lib/server/gdacs/types.ts's `GdacsAlertLevel` — declared locally
+ * (not imported) so this module stays what its header comment promises:
+ * pure, with zero DB-layer coupling, even a type-only one. */
+export type GdacsEqAlertLevel = "Green" | "Orange" | "Red";
+
+/** GDACS's own three-tier severity color, as hex — this item's only use of
+ * it (AC: "疊加 GDACS 的紅/橙/綠警戒色"). Exported so a future item (e.g. the
+ * still-unbuilt "全球災害" item, #583's third tab) can reuse the exact same
+ * mapping instead of inventing its own. */
+export const GDACS_ALERT_LEVEL_COLORS: Record<GdacsEqAlertLevel, string> = {
+  Green: "#22c55e",
+  Orange: "#f97316",
+  Red: "#dc2626",
+};
+
+/**
+ * A GDACS event of type EQ, already fetched from `gdacs_events` by the
+ * caller (see lib/server/gdacs/queries.ts's getRecentEqGdacsEvents) — this
+ * module never queries the DB itself. Deliberately a narrower shape than
+ * `IncomingGdacsEvent` (no episodeId/countryIso/basin/trackGeoJson, none of
+ * which the earthquake-severity overlay needs).
+ */
+export interface GdacsEqEventRow {
+  eventId: string;
+  alertLevel: GdacsEqAlertLevel;
+  lat: number;
+  lng: number;
+  /** GDACS's `fromdate` — ISO 8601 string, Date, or null (not expected in
+   * practice for an EQ event, but tolerated the same way `endTime` is
+   * elsewhere in this GDACS pipeline). */
+  startTime: string | Date | null;
+  reportUrl: string | null;
+}
+
+// Matching an earthquake row against a GDACS EQ event is the same kind of
+// cross-source fuzzy match lib/server/earthquakes/queries.ts's
+// upsertEarthquake already does for USGS/EMSC/CWA — no shared ID exists
+// across GDACS and this app's own global_earthquakes rows, so "is this
+// GDACS event reporting the same earthquake" is time + distance proximity,
+// not an exact key join. The distance tolerance reuses upsertEarthquake's
+// MATCH_DISTANCE_KM (150km) exactly, for the same reason it was tuned that
+// way there: different networks' epicenter picks can disagree by tens of
+// km. The time tolerance is deliberately much wider than upsertEarthquake's
+// 120-second one (6 hours here) because GDACS only creates/updates an EQ
+// event once its own significance assessment finishes, which can trail the
+// originating network's report by hours — unlike USGS/EMSC/CWA, GDACS isn't
+// polling the same near-real-time origin-time feed.
+export const GDACS_EQ_MATCH_TIME_WINDOW_HOURS = 6;
+export const GDACS_EQ_MATCH_DISTANCE_KM = 150;
+
+const EARTH_RADIUS_KM = 6371;
+const toRadians = (deg: number): number => (deg * Math.PI) / 180;
+
+const haversineDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(Math.min(1, a)));
+};
+
+/**
+ * Finds the best-matching GDACS EQ event for an earthquake row (closest in
+ * time, among those within both the time and distance tolerance), or
+ * `null` when none matches — the overlay is additive, so "no match" must
+ * never throw or fall back to a guess. A GDACS event with a null
+ * `startTime` never matches (there's nothing to compare).
+ */
+export function matchGdacsEqEvent(
+  row: EarthquakeGlobeRow,
+  gdacsEvents: GdacsEqEventRow[],
+): GdacsEqEventRow | null {
+  const rowTimeMs = toEpochMs(row.eventTime);
+  let best: { event: GdacsEqEventRow; timeDiffMs: number } | null = null;
+
+  for (const event of gdacsEvents) {
+    if (event.startTime == null) continue;
+    const eventTimeMs = toEpochMs(event.startTime);
+    const timeDiffMs = Math.abs(rowTimeMs - eventTimeMs);
+    if (timeDiffMs > GDACS_EQ_MATCH_TIME_WINDOW_HOURS * 60 * 60 * 1000) continue;
+
+    const distanceKm = haversineDistanceKm(row.lat, row.lng, event.lat, event.lng);
+    if (distanceKm > GDACS_EQ_MATCH_DISTANCE_KM) continue;
+
+    if (!best || timeDiffMs < best.timeDiffMs) {
+      best = { event, timeDiffMs };
+    }
+  }
+
+  return best?.event ?? null;
 }
 
 export type EarthquakeGlobeFeatureCollection = GeoJSON.FeatureCollection<
@@ -164,13 +295,20 @@ export type EarthquakeGlobeFeatureCollection = GeoJSON.FeatureCollection<
  * then the shared M4/M6/M7 UI filter (`minMagnitude`, same tier the list
  * uses — AC: "M4/M6/M7 篩選同時套用在地球標記與清單"), then maps to GeoJSON
  * point features.
+ *
+ * `options.gdacsEvents` (issue #595) is applied strictly AFTER both of
+ * those filters, purely as an extra per-feature color attachment — passing
+ * it (or not) never changes which rows make it into the collection, only
+ * whether a surviving feature additionally carries `gdacsAlertLevel`/
+ * `gdacsColor` (AC: "不影響既有的規模篩選（M4/M6/M7）與清單規則").
  */
 export function buildEarthquakeGlobeFeatureCollection(
   rows: EarthquakeGlobeRow[],
-  options: { minMagnitude?: number; now?: Date } = {},
+  options: { minMagnitude?: number; now?: Date; gdacsEvents?: GdacsEqEventRow[] } = {},
 ): EarthquakeGlobeFeatureCollection {
   const minMagnitude = options.minMagnitude ?? 0;
   const now = options.now ?? new Date();
+  const gdacsEvents = options.gdacsEvents ?? [];
 
   const features = rows
     .filter((row) => isGlobeEarthquake(row, now))
@@ -178,7 +316,7 @@ export function buildEarthquakeGlobeFeatureCollection(
       const mag = typeof row.magnitude === "number" ? row.magnitude : Number(row.magnitude);
       return !Number.isNaN(mag) && mag >= minMagnitude;
     })
-    .map(toEarthquakeGlobeFeature);
+    .map((row) => toEarthquakeGlobeFeature(row, gdacsEvents.length > 0 ? matchGdacsEqEvent(row, gdacsEvents) : null));
 
   return { type: "FeatureCollection", features };
 }
