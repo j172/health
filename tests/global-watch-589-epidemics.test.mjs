@@ -309,8 +309,8 @@ const globeSrc = fs.readFileSync(
   path.join(ROOT_DIR, "components", "Tools", "GlobeWatch", "GlobeWatchEpidemicsGlobe.tsx"),
   "utf-8",
 );
-const itemNavSrc = fs.readFileSync(
-  path.join(ROOT_DIR, "components", "Tools", "GlobeWatch", "GlobeWatchItemNav.tsx"),
+const itemsRegistrySrc = fs.readFileSync(
+  path.join(ROOT_DIR, "lib", "tools", "globeWatch", "items.ts"),
   "utf-8",
 );
 
@@ -327,13 +327,19 @@ test("the zh epidemics page carries over TravelEpidemicAlertsContent (disease se
   assert.match(zhPageSrc, /<TravelEpidemicAlertsContent\s*\/>/);
 });
 
-test("the zh epidemics page renders the item nav and the epidemics globe client", () => {
-  assert.match(zhPageSrc, /<GlobeWatchItemNav\s*\/>/);
+test("the zh epidemics page renders the shared item-switcher tab bar and the epidemics globe client", () => {
+  // Issue #588 merged into main with its own GLOBE_WATCH_ITEMS registry
+  // (lib/tools/globeWatch/items.ts) + GlobeWatchItemTabs.tsx switcher while
+  // this PR was in flight — reconciled by deleting this PR's independent
+  // GlobeWatchItemNav.tsx and using #588's component instead (items.ts
+  // upgraded with per-locale labels, epidemics added to its array; see that
+  // file's doc comment).
+  assert.match(zhPageSrc, /<GlobeWatchItemTabs\s*\/>/);
   assert.match(zhPageSrc, /<GlobeWatchEpidemicsClient\s*\/>/);
 });
 
-test("the root global-watch shell page (issue #587) now also renders the item nav", () => {
-  assert.match(rootZhPageSrc, /GlobeWatchItemNav/);
+test("the root global-watch shell page (issue #587) now also renders the shared item-switcher tab bar", () => {
+  assert.match(rootZhPageSrc, /<GlobeWatchItemTabs\s*\/>/);
 });
 
 test("the locale epidemics page follows the earthquakes locale-page pattern: generateStaticParams over PATH_LOCALES, notFound() guard, and hreflang alternates", () => {
@@ -374,10 +380,22 @@ test("GlobeWatchEpidemicsGlobe uses MapLibre's globe projection and wires a clic
   assert.match(globeSrc, /onSelectCountryRef\.current\(iso\)/);
 });
 
-test("GlobeWatchItemNav exports GLOBE_WATCH_ITEMS as a plain, obviously-extensible array (not hardcoded JSX per item)", () => {
-  assert.match(itemNavSrc, /export const GLOBE_WATCH_ITEMS: GlobeWatchItemDef\[\] = \[/);
-  assert.match(itemNavSrc, /key:\s*"epidemics"/);
-  assert.match(itemNavSrc, /href:\s*"\/tools\/global-watch\/epidemics"/);
+test("the epidemics item is registered in the shared GLOBE_WATCH_ITEMS registry (lib/tools/globeWatch/items.ts) with a full per-locale label, alongside #588's earthquakes entry", async () => {
+  assert.match(itemsRegistrySrc, /key:\s*"epidemics"/);
+  assert.match(itemsRegistrySrc, /path:\s*"\/tools\/global-watch\/epidemics"/);
+
+  const { GLOBE_WATCH_ITEMS } = await import("../lib/tools/globeWatch/items.ts");
+  const epidemics = GLOBE_WATCH_ITEMS.find((item) => item.key === "epidemics");
+  assert.ok(epidemics, "expected an epidemics entry in GLOBE_WATCH_ITEMS");
+  assert.equal(epidemics.path, "/tools/global-watch/epidemics");
+  for (const locale of ["zh-TW", "en", "ja", "ko"]) {
+    const text = epidemics.label?.[locale];
+    assert.ok(typeof text === "string" && text.trim().length > 0, `epidemics.label.${locale} must be non-empty`);
+  }
+  assert.ok(
+    GLOBE_WATCH_ITEMS.some((item) => item.key === "earthquakes"),
+    "the pre-existing #588 earthquakes entry must still be present, unremoved",
+  );
 });
 
 // ---------------------------------------------------------------------------

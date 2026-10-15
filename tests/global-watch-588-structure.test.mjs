@@ -200,11 +200,26 @@ test("GlobeWatchItemTabs renders from the GLOBE_WATCH_ITEMS registry and builds 
   assert.match(tabsSrc, /buildLocalizedPath\(item\.path, locale\)/);
 });
 
-test("GLOBE_WATCH_ITEMS currently hosts exactly the earthquake item, with an extensible (not over-built) shape", async () => {
+test("GLOBE_WATCH_ITEMS keeps hosting the earthquake item (now with a locale-aware label) as later items join the array", async () => {
+  // Issue #589 grew this from a 1-item array to 2 (earthquakes + 國際疫情),
+  // replacing the original exact-length(1) snapshot with a containment
+  // check on the earthquakes entry specifically — the same "at least"
+  // pattern this suite's other registries (TRANSLATED_TOOL_SLUGS etc.) use
+  // once a second item makes an exact-length assertion brittle.
   const { GLOBE_WATCH_ITEMS } = await import("../lib/tools/globeWatch/items.ts");
-  assert.equal(GLOBE_WATCH_ITEMS.length, 1);
-  assert.equal(GLOBE_WATCH_ITEMS[0].key, "earthquakes");
-  assert.equal(GLOBE_WATCH_ITEMS[0].path, "/tools/global-watch/earthquakes");
+  assert.ok(GLOBE_WATCH_ITEMS.length >= 2, "expected at least earthquakes + epidemics");
+
+  const earthquakes = GLOBE_WATCH_ITEMS.find((item) => item.key === "earthquakes");
+  assert.ok(earthquakes, "earthquakes entry must still exist");
+  assert.equal(earthquakes.path, "/tools/global-watch/earthquakes");
+  // Issue #589: GlobeWatchItemDef grew a `label` map (per-locale) alongside
+  // the original `labelDefault` — every item, including this pre-existing
+  // one, must have real (non-empty, non-placeholder) text for all 4 locales.
+  for (const locale of ["zh-TW", "en", "ja", "ko"]) {
+    const text = earthquakes.label?.[locale];
+    assert.ok(typeof text === "string" && text.trim().length > 0, `earthquakes.label.${locale} must be non-empty`);
+  }
+  assert.equal(earthquakes.label["zh-TW"], earthquakes.labelDefault, "labelDefault must still match the zh-TW label");
 });
 
 // ---------------------------------------------------------------------------

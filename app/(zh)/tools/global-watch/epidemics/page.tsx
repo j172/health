@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import GlobeWatchItemNav from "@/components/Tools/GlobeWatch/GlobeWatchItemNav";
+import GlobeWatchItemTabs from "@/components/Tools/GlobeWatch/GlobeWatchItemTabs";
 import GlobeWatchEpidemicsClient from "@/components/Tools/GlobeWatch/GlobeWatchEpidemicsClient";
 import TravelEpidemicAlertsContent from "@/components/Epidemic/TravelEpidemicAlertsContent";
 
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 export default function GlobalWatchEpidemicsPage() {
   return (
     <ToolPageShell slug="global-watch" title={catalogEntry.title + "｜國際疫情"} maxWidthClassName="max-w-5xl">
-      <GlobeWatchItemNav />
+      <GlobeWatchItemTabs />
 
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         依疾病管制署「國際間旅遊疫情建議等級」資料，將各國依最高等級上色：

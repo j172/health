@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import GlobeWatchItemNav from "@/components/Tools/GlobeWatch/GlobeWatchItemNav";
+import GlobeWatchItemTabs from "@/components/Tools/GlobeWatch/GlobeWatchItemTabs";
 import GlobeWatchEpidemicsClient from "@/components/Tools/GlobeWatch/GlobeWatchEpidemicsClient";
 import TravelEpidemicAlertsContent from "@/components/Epidemic/TravelEpidemicAlertsContent";
 import { isPathLocale, ogAlternateLocales, OG_LOCALE, type PathLocale } from "@/lib/i18n/dictionary";
@@ -98,7 +98,7 @@ export default async function LocaleGlobalWatchEpidemicsPage({ params }: { param
       maxWidthClassName="max-w-5xl"
       locale={locale}
     >
-      <GlobeWatchItemNav locale={locale} />
+      <GlobeWatchItemTabs />
 
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">{BODY_TEXT[locale]}</p>
 

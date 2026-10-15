@@ -4,7 +4,7 @@ import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import GlobeWatchClient from "@/components/Tools/GlobeWatch/GlobeWatchClient";
-import GlobeWatchItemNav from "@/components/Tools/GlobeWatch/GlobeWatchItemNav";
+import GlobeWatchItemTabs from "@/components/Tools/GlobeWatch/GlobeWatchItemTabs";
 
 // Issue #587 (parent #583): globe-shell-only first ticket. StabloHeader
 // (rendered inside ToolPageShell) carries a live DB-backed weather-alert
@@ -31,11 +31,11 @@ export const metadata: Metadata = {
 export default function GlobalWatchPage() {
   return (
     <ToolPageShell slug="global-watch" title={catalogEntry.title} maxWidthClassName="max-w-5xl">
-      {/* Issue #589 (parent #583): the item switcher first appears here so a
-          visitor landing on the bare shell can reach the 國際疫情 item —
-          see GlobeWatchItemNav's own doc comment for why this list has
-          exactly one entry today. */}
-      <GlobeWatchItemNav />
+      {/* Issue #588/#589 (parent #583): the shared item-switcher tab bar
+          (lib/tools/globeWatch/items.ts's GLOBE_WATCH_ITEMS, rendered by
+          GlobeWatchItemTabs) so a visitor landing on the bare shell can
+          reach either item. */}
+      <GlobeWatchItemTabs />
 
       <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
         拖曳可旋轉地球、滾動可縮放；拉近到城市層級時會自然轉為平面街道地圖。右上角可切換向量地圖與衛星影像，或一鍵回到台灣預設視角。

@@ -76,9 +76,19 @@ export default function GlobeWatchEpidemicsGlobe({
   const mapRef = useRef<MapLibreMap | null>(null);
   const boundariesLoadedRef = useRef(false);
   const dataRef = useRef(data);
-  dataRef.current = data;
   const onSelectCountryRef = useRef(onSelectCountry);
-  onSelectCountryRef.current = onSelectCountry;
+
+  // "Latest ref" pattern: these two mirror the current `data`/
+  // `onSelectCountry` props for the mount-once effect below (which reads
+  // them from event callbacks, not from render) to read without being
+  // retriggered by every data/callback-identity change. Assigning `.current`
+  // must happen in an effect, not during render itself (react-hooks/refs).
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+  useEffect(() => {
+    onSelectCountryRef.current = onSelectCountry;
+  }, [onSelectCountry]);
 
   const [basemapMode, setBasemapMode] = useState<BasemapMode>("vector");
   const [attributionHtml, setAttributionHtml] = useState(OPENFREEMAP_ATTRIBUTION_HTML);
