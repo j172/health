@@ -32,6 +32,10 @@ import {
   fetchNtpcChildcarePublic,
   fetchNtpcChildcareHomeCenter,
 } from "@/lib/server/facilities/sources/ntpcChildcare";
+import { fetchHsinchuCityChildcare } from "@/lib/server/facilities/sources/hsinchuCityChildcare";
+import { fetchHsinchuCountyChildcare } from "@/lib/server/facilities/sources/hsinchuCountyChildcare";
+import { fetchChanghuaChildcare } from "@/lib/server/facilities/sources/changhuaChildcare";
+import { fetchChiayiCityChildcare } from "@/lib/server/facilities/sources/chiayiCityChildcare";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -128,6 +132,23 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "ntpc_childcare_125380", fetch: fetchNtpcChildcarePrivate },
   { key: "ntpc_childcare_126222", fetch: fetchNtpcChildcarePublic },
   { key: "ntpc_childcare_125505", fetch: fetchNtpcChildcareHomeCenter },
+  // #607 (parent #599): 新竹市/新竹縣/彰化/嘉義市托嬰中心來源，補完 #601 骨架的
+  // 後續縣市票之一（跟 #606 的六都剩餘四縣市平行進行，互不依賴）。新竹市/彰化兩
+  // 縣市的名冊都沒有公辦民營/準公共/私立的分類欄位，category/serviceItem 留
+  // null（見各自檔案開頭註解），不是遺漏。新竹縣/彰化兩個來源是 cp950/Big5
+  // 編碼；嘉義市自帶經緯度，不需要額外 geocode。reachability（egress-probe
+  // runs https://github.com/j172/health/actions/runs/38556225761 和
+  // https://github.com/j172/health/actions/runs/38707357085，2026-10-14/15）：
+  // email.chcg.gov.tw（彰化）從正式主機、GitHub runner 皆可連線，可安心排程；
+  // odws.hccg.gov.tw（新竹市）、ws.hsinchu.gov.tw（新竹縣）從兩邊都連線逾時
+  // （不是單純 host IP 被擋——兩邊都連不到，不是能用 runner relay 解決的情況）；
+  // data.chiayi.gov.tw（嘉義市）從 GitHub runner 可連線但從正式主機逾時（典型
+  // host IP 被擋的情況，但這張票刻意不建 SSH-loopback relay，見
+  // chiayiCityChildcare.ts 開頭註解）。部署前請重新確認這三個來源的連線狀況。
+  { key: "hccg_childcare_67734", fetch: fetchHsinchuCityChildcare },
+  { key: "hsinchu_county_childcare_109321", fetch: fetchHsinchuCountyChildcare },
+  { key: "changhua_childcare_95198", fetch: fetchChanghuaChildcare },
+  { key: "chiayi_city_childcare_63093", fetch: fetchChiayiCityChildcare },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —

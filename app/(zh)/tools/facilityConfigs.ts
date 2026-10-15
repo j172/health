@@ -692,13 +692,13 @@ export const facilitySearchConfigs = {
   // 骨架建好。childcare_center 與 home_childcare_center 是兩個不同的 facilityType
   // （托嬰機構本身 vs. 協助家長找保母的居家托育服務中心媒合窗口），各自一個
   // config entry，由頁面用類型分頁切換——跟 long-term-care 合併 4 種類型的既有
-  // 模式一樣。
+  // 模式一樣。issue #607 加入新竹市/新竹縣/彰化/嘉義市四個縣市。
   "childcare-centers": {
     facilityType: "childcare_center",
     emoji: "🍼",
-    title: "全國托嬰中心查詢（臺北／新北）",
+    title: "全國托嬰中心查詢（臺北／新北／新竹市／新竹縣／彰化／嘉義市）",
     description:
-      "查詢臺北市、新北市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數與評鑑結果。資料來源：臺北市政府社會局、新北市政府社會局開放資料。目前僅涵蓋臺北、新北，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。",
+      "查詢臺北市、新北市、新竹市、新竹縣、彰化縣、嘉義市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與收費資訊。資料來源：各縣市政府社會局（處）開放資料。目前僅涵蓋上述六縣市，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。",
     searchPlaceholder: "輸入托嬰中心名稱、行政區或地址關鍵字",
     errorText: "查詢托嬰中心資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的托嬰中心，可改用關鍵字搜尋。",
@@ -713,13 +713,13 @@ export const facilitySearchConfigs = {
     ],
     // approvedCapacity/actualCapacity/evaluationResult/monthlyFee are only
     // ever present on rows whose source actually has that column (121981 準
-    // 公共 has all three except monthlyFee; 121337/125380 有 approvedCapacity
-    // only; 126984/126986/126222 have none) — FacilitySearchContent's
-    // extraFields already only renders a field when the row's extra_json
-    // actually has it, so no "N/A" placeholders show up for the rows that
-    // don't have a given field. monthlyFee has no populated source yet in
-    // this ticket, kept here so a later county with 月費 data needs no
-    // further change here or to FacilitySearchContent.
+    // 公共 has all three except monthlyFee; 121337/125380/109321(#607 新竹縣)/
+    // 63093(#607 嘉義市) have approvedCapacity only — 109321 also has
+    // monthlyFee, the first source in this family to populate it; 126984/
+    // 126986/126222/67734(#607 新竹市)/95198(#607 彰化) have none) —
+    // FacilitySearchContent's extraFields already only renders a field when
+    // the row's extra_json actually has it, so no "N/A" placeholders show up
+    // for the rows that don't have a given field.
     extraFields: [
       { key: "approvedCapacity", label: "核定收托人數：" },
       { key: "actualCapacity", label: "實際收托人數：" },
