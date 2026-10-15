@@ -915,6 +915,8 @@
     "defaultSectionHeading": "8 Default Urgent-Use Point Types (Nearest 3)",
     "queryingLoading": "Searching…",
     "moreTypesToggle": "More types",
+    "dataAsOfTemplate": "Data as of {date}",
+    "dataSourceTemplate": "Based on open data from {source}; not determined by this site",
     "footerPrefix": "Each type shows only the nearest 3 results — see the full list and map on each",
     "footerLinkText": "facility search tool",
     "footerSuffix": "page."

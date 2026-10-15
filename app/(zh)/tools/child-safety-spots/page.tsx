@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
@@ -29,6 +30,19 @@ export default function ChildSafetySpotsPage() {
         contextTitle="婦幼與人身安全聯防"
         contextDescription="除警政署公告之路段與治安顧慮點外，建議前往「台灣罪犯圖鑑」查核重大性犯罪公開判決紀錄，落實生活環境全方位防護。"
       />
+      {/* Issue #677: the 管轄 police branch named on each row is also searchable by distance — in /nearby. */}
+      <Link
+        href="/nearby"
+        className="mb-4 flex items-start gap-3 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-900 transition-colors hover:bg-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-200 dark:hover:bg-indigo-950/50"
+      >
+        <span aria-hidden="true" className="text-xl">
+          🚓
+        </span>
+        <span>
+          <strong className="font-semibold">找離您最近的派出所、分局</strong>
+          ：到「我附近」定位後展開「更多類型」，即可查看最近的警察局、分局、分駐所與派出所的地址與電話（資料依內政部警政署公開資料整理；緊急時請撥 110）。
+        </span>
+      </Link>
       <FacilitySearchContent config={facilitySearchConfigs["child-safety-spots"]} />
     </ToolPageShell>
   );

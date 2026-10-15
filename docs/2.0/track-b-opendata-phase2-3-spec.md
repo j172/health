@@ -126,8 +126,9 @@
 - **筆數（實測）**：1,687（研究文件 1,686）。名稱含「派出所」1,282、「分駐所」212，其餘為警察局與分局。
 - **URL 帶日期**：檔名 `1150930.zip` 是發布日，下次更新網址會變。每次同步要先打 `https://data.gov.tw/api/v2/rest/dataset/5958` 取最新 `resourceDownloadUrl`（本文實測該 API 回 200，且 probe 對照組 `data.gov.tw` 從正式主機通）。
 - **座標陷阱（實測）**：43 筆 `POINT_X < 150000`（澎湖 28、金門 9、連江 6），這些是 **TWD97 119°E 帶**（澎湖例：X=103598）。現有 `lib/server/facilities/twd97.ts` 只實作 121°E 帶，用它轉會超出台灣邊界而回 `null`。需擴充中央經線參數，或讓這 43 筆走既有 geocode 批次。
+  - **實作時更正（#677，2026-10-16 逐列實測）**：上面這段「119°E 帶、現有 `twd97.ts` 轉不了」**不成立**。1150930 版的離島列（含 `POINT_X < 150000` 的 43 筆與東引共 44 筆）其實是 **121°E 中央經線、東偏移延伸到台灣西岸之外**（金門的 X 甚至是負值，如 −21575），現有 121°E 反算對全部 44 筆都回非 `null` 且落在正確的縣（用獨立的 Krüger 正算反驗，誤差 < 1 公尺）；把同一組數字當 119°E 讀反而會掉進台灣海峽。另發現一筆資料缺陷：`豐丘派出所` 的 `POINT_Y` 是 `POINT_X` 的複本（235144.53），該列沿用同址 `信義分局`／`信義派出所` 的座標。`twd97.ts` 仍加上 `centralMeridianDeg` 參數，匯入時依「該列地址所屬縣是否包住 121°E 讀值」才改試 119°E，以防日後發布端改版。
 - **落點**：facilities，`source_key = police_station_5958`、`facility_type = police_station`；加入 `lib/server/nearby/registry` 並與 `child-safety-spots` 互連。
-- **主機風險**：**`www.tgos.tw`（檔案下載）未驗證**。伺服器端程式連的是 `addr.tgos.tw`（地理編碼，`geocodeProviders.ts`），是另一個主機；`www.tgos.tw` 只有離線腳本 `scripts/extract-district-centroids.mjs` 用過。→ B-0 的 probe。
+- **主機風險**：**`www.tgos.tw`（檔案下載）已驗證不通**：2026-10-15 egress probe（run `38764893673`）顯示從正式主機與 GitHub runner **兩邊都回 403**。從住宅網路各種 User-Agent（無、curl、Chrome、node、python-requests）與有無 Referer 一律 200，因此是 IP 範圍封鎖，不是標頭問題，也沒有 runner relay 可走。→ 改採「住宅網路手動匯入」：`scripts/import-police-stations-5958.mjs`（#677），列入 six-monthly 人工清單；`data.gov.tw` 解析 API 兩邊皆通，用來取每次發布的最新 ZIP 網址。伺服器端程式連的 `addr.tgos.tw`（地理編碼，`geocodeProviders.ts`）是另一個主機，不受影響。
 
 #### C-3 交通事故熱點（新工具，**受 §7 D2 管制**）
 
@@ -208,7 +209,7 @@
 | `data.moa.gov.tw` | D-2 | **主機與 runner 皆 200**（run `38764893673`，`ForestFireAlertWCF` 7,765 bytes，2026-10-15）；B-12 可由主機直接抓 |
 | `data.taipei` | D-1 臺北路線 | 2026-10-15 probe：正式主機對 133345 資源回 200 |
 | `data.ntpc.gov.tw` | D-1 新北 | **主機與 runner 皆 200**（run `38764893673`）：125664 路線 3.6 MB（主機約 8 秒）、122972 即時位置 196 bytes（約 0.4 秒）；B-16／B-17 可由主機直接抓 |
-| `www.tgos.tw` | C-2 | **主機與 runner 皆 403**（run `38764893673`，5958 ZIP）；`data.gov.tw` 解析 API 兩邊皆 200。runner 抓取＋SSH loopback 也行不通 → B-9 改走**住宅網路手動匯入**（#677） |
+| `www.tgos.tw` | C-2 | **主機與 runner 皆 403**（run `38764893673`，5958 ZIP）；`data.gov.tw` 解析 API 兩邊皆 200。runner 抓取＋SSH loopback 也行不通 → B-9 改走**住宅網路手動匯入**（#677，`scripts/import-police-stations-5958.mjs`）；住宅網路各種 User-Agent／Referer 都是 200，確認是 IP 範圍封鎖而非標頭問題 |
 | `newdatacenter.taichung.gov.tw` | D-1 即時位置 | **主機與 runner 皆 200**（run `38764893673`，83558，約 1.3 秒）→ B-18 只做臺中（#680） |
 | `soa.tainan.gov.tw`、`openapi.kcg.gov.tw` | D-1 即時位置 | **主機與 runner 皆逾時 20 秒**（run `38764893673`）→ 臺南、高雄在覆蓋表標「暫無即時資料」，不做 |
 | `nhplatform.mohw.gov.tw` | §2.2 | **主機與 runner 兩邊逾時**（2026-10-15，run `38764893673` 再次確認），非 relay 能解；走住宅網路手動匯入（#678，D7） |

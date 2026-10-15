@@ -2,7 +2,13 @@ import "server-only";
 import { searchFacilities } from "@/lib/server/facilities/queries";
 import { getEmergencyRoomOverview } from "@/lib/server/emergencyRooms/queries";
 import { getNearestDisasterPoints } from "@/lib/server/disaster/queries";
-import { aggregateNearbyTypes, type NearbyItem, type NearbyTypeResult, type NearbyTypeTask } from "./aggregate";
+import {
+  aggregateNearbyTypes,
+  buildFacilityNearbyExtra,
+  type NearbyItem,
+  type NearbyTypeResult,
+  type NearbyTypeTask,
+} from "./aggregate";
 import { findNearbyTypeDef, type NearbyTypeDef } from "./registry";
 
 /**
@@ -40,6 +46,7 @@ function buildTask(def: NearbyTypeDef, lat: number, lng: number, limit: number):
           lat: row.lat,
           lng: row.lng,
           distanceKm: typeof row.distance_km === "number" ? Math.round(row.distance_km * 10) / 10 : null,
+          extra: buildFacilityNearbyExtra(row),
         }));
       }
 

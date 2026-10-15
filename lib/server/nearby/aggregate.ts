@@ -29,6 +29,28 @@ export interface NearbyItem {
   extra?: Record<string, unknown>;
 }
 
+/**
+ * What a facility row contributes to `NearbyItem.extra`: only its data date
+ * (`extra_json.dataAsOf`, `YYYY-MM-DD`) and the source organisation (`data_org`), so the
+ * "/nearby" card can say how fresh the list is and whose open data it is (issue #677:
+ * 派出所 is imported by hand about twice a year, so the date matters). Nothing else from
+ * `extra_json` leaks into the API. `undefined` — not `{}` — when the row carries no
+ * data date, which keeps every other facility type's payload exactly as before.
+ */
+export function buildFacilityNearbyExtra(row: { extra_json: unknown; data_org: string | null }): Record<string, unknown> | undefined {
+  let extra: unknown = row.extra_json;
+  if (typeof extra === "string") {
+    try {
+      extra = JSON.parse(extra);
+    } catch {
+      return undefined;
+    }
+  }
+  const dataAsOf = (extra as { dataAsOf?: unknown } | null)?.dataAsOf;
+  if (typeof dataAsOf !== "string" || !dataAsOf) return undefined;
+  return row.data_org ? { dataAsOf, dataOrg: row.data_org } : { dataAsOf };
+}
+
 export interface NearbyTypeTask {
   key: string;
   label: string;
