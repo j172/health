@@ -1,6 +1,6 @@
 import "server-only";
-import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { TAIWAN_COUNTIES } from "@/lib/constants/taiwanDistricts";
 
 /**
@@ -74,11 +74,14 @@ export async function fetchStationCountyMap(system: RailSystem): Promise<Map<str
   if (!token) return map;
 
   try {
-    const res = await httpGetJson<TdxBasicStationItem[]>(basicStationUrl(system), {
-      headers: { authorization: `Bearer ${token}`, accept: "application/json" },
+    // Shares the process-wide 5 req/min TDX limiter with the Senior/Rail calls.
+    const res = await tdxGetJsonWithRetry<TdxBasicStationItem[]>(basicStationUrl(system), token, {
       timeoutMs: 12000,
     });
-    if (res.status !== 200 || !Array.isArray(res.data)) return map;
+    if (res.status !== 200 || !Array.isArray(res.data)) {
+      console.warn(`fetchStationCountyMap(${system}) returned status ${res.status}`);
+      return map;
+    }
 
     for (const st of res.data) {
       const county = extractCounty(st.StationAddress);
