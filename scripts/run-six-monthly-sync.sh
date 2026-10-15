@@ -7,13 +7,14 @@
 #   ADMIN_SECRET=<x-rss-sync-admin-secret value> bash scripts/run-six-monthly-sync.sh
 #
 # What this does NOT cover:
-# - The MOHW long-term-care GIS ecosystem CSVs, and the MOHW disability/elder
-#   welfare institution directories (ltcpgis.mohw.gov.tw / opendata.mohw.gov.tw).
+# - The MOHW long-term-care GIS ecosystem CSVs, and the MOHW disability/elder/
+#   social-welfare-center directories (ltcpgis.mohw.gov.tw / opendata.mohw.gov.tw).
 #   Empirically confirmed unreachable from BOTH the production host and GitHub
 #   Actions runners (timeout/IP block on server hosts) — they can be imported
 #   by running scripts/import-mohw-ltc-gis.mjs, import-mohw-disability-welfare.mjs,
-#   and import-mohw-elder-welfare.mjs by hand from a regular residential/office
-#   network, every ~6 months. This script still handles the geocoding backfill
+#   import-mohw-elder-welfare.mjs, and (issue #603) import-mohw-social-welfare-
+#   centers.mjs by hand from a regular residential/office network, every ~6
+#   months. This script still handles the geocoding backfill
 #   for whichever of these were last imported that way (LTC GIS already ships
 #   98%+ coordinates directly).
 # - The TFDA food nutrition/operator databases — those are large enough
@@ -78,6 +79,7 @@ COMBOS=(
   "disability_welfare mohw_disability_welfare"
   "disability_atm nfcc_accessible_atm"
   "elder_welfare mohw_elder_welfare"
+  "social_welfare_center mohw_social_welfare_center"
   "child_welfare_nursery mohw_child_welfare_nursery"
   "child_welfare_center mohw_child_welfare_center"
   "hakka_community hakka_dtst20230600002"

@@ -49,11 +49,26 @@ export default async function ToolPageShell({
   children,
   maxWidthClassName = "max-w-3xl",
   locale = "zh-TW",
+  skipRecentToolTracking = false,
 }: {
   slug: string;
   title: string;
   children: React.ReactNode;
   maxWidthClassName?: string;
+  /**
+   * issue #603: `social-welfare-centers` (and any future tool in the same
+   * "someone sharing this device must not be able to tell it was opened"
+   * category — e.g. domestic-violence/addiction help pages) sets this true
+   * to skip `RecentToolRecorder` below. That component unconditionally
+   * writes this slug into the device-wide `localStorage` "最近使用的工具"
+   * list on every other tool page — exactly the kind of trace this one
+   * ticket's quick-exit button and no-storage requirement exist to avoid,
+   * so the one site-wide convenience feature that writes storage
+   * unconditionally needs its own explicit opt-out rather than silently
+   * applying here as "free" infrastructure. Defaults to false (unchanged
+   * behavior) for every other tool.
+   */
+  skipRecentToolTracking?: boolean;
   /** issue #485: the 3 pilot /en//ja//ko/ pages pass their route locale so
    * this shared shell — used by every /tools/<slug> page, translated or
    * not — renders its own chrome and the catalog-derived directAnswer/FAQ
@@ -149,8 +164,9 @@ export default async function ToolPageShell({
 
       {/* 最近使用的工具 (issue #472): records this slug into the device-only
        * localStorage list the homepage reads back — see
-       * components/Home/RecentToolsSection.tsx. */}
-      <RecentToolRecorder slug={slug} />
+       * components/Home/RecentToolsSection.tsx. Skipped when
+       * `skipRecentToolTracking` is set (issue #603). */}
+      {!skipRecentToolTracking && <RecentToolRecorder slug={slug} />}
 
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <StabloHeader />

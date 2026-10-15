@@ -563,6 +563,18 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
                         {item.alternative_number}
                       </div>
                     )}
+
+                    {/* issue #603: 113（保護專線）／1957（福利諮詢專線）額外連到
+                        社福中心與社工求助，讓需要找社工、社福中心的人不必只靠
+                        通話，也能先看情境引導內容或查住家附近的社福中心。 */}
+                    {(item.number === "113" || item.number === "1957") && (
+                      <Link
+                        href="/tools/social-welfare-centers"
+                        className="mt-2 block text-[11px] font-semibold text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
+                      >
+                        🤝 找住家附近的社福中心、社工求助指引 →
+                      </Link>
+                    )}
                   </div>
 
                   {/* Bottom Action Buttons */}

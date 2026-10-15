@@ -57,8 +57,12 @@ const { getRelatedTools } = await import("../lib/server/tools/navModel.ts");
 // 都 ≥ 4").
 // ---------------------------------------------------------------------------
 
-test("every one of the 82 TOOL_CATALOG tools gets >= 4 related tools from getRelatedTools", () => {
-  assert.equal(TOOL_CATALOG.length, 82, "expected the catalog to have 82 tools");
+test("every TOOL_CATALOG tool gets >= 4 related tools from getRelatedTools", () => {
+  // Not pinned to an exact count here (unlike catalog.test.mjs's dedicated
+  // count assertion) — this test's job is the >= 4 structural guarantee for
+  // every entry, whatever the current total is; issue #603 added the 83rd
+  // ("social-welfare-centers") on 2026-10-14.
+  assert.ok(TOOL_CATALOG.length > 0, "TOOL_CATALOG should not be empty");
   for (const tool of TOOL_CATALOG) {
     const related = getRelatedTools(tool.slug);
     assert.ok(
