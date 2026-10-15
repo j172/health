@@ -1067,19 +1067,24 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "drugs",
     group: "medical-care",
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-15",
 
     title: "藥品查詢",
-    keywords: ["藥品查詢", "許可證字號", "辨識藥品"],
+    keywords: ["藥品查詢", "許可證字號", "辨識藥品", "藥品短缺", "缺藥"],
     description:
-      "查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵，協助辨識藥品。",
+      "查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵，並可查看食藥署公告的藥品短缺名單。",
     directAnswer:
-      "查詢衛福部食藥署核准之中西藥品許可證字號、中英文品名、適應症、劑型、外觀顏色與形狀特徵，協助民眾與專業人員核對藥品資訊。",
+      "查詢衛福部食藥署核准之中西藥品許可證字號、中英文品名、適應症、劑型、外觀顏色與形狀特徵，協助民眾與專業人員核對藥品資訊；另可查詢食藥署公告的藥品短缺（缺藥）名單與供應狀態。",
     scientificBasis: [
       {
         title: "西藥、醫療器材及化粧品許可證資料庫",
         authority: "衛生福利部食品藥物管理署 (TFDA)",
         url: "https://www.fda.gov.tw",
+      },
+      {
+        title: "經評估有替代藥品／無替代藥品品項資料集（藥品短缺）",
+        authority: "衛生福利部食品藥物管理署 (TFDA)",
+        url: "https://data.gov.tw/dataset/54504",
       },
     ],
     relatedSlugs: ["pharmacies", "food-nutrition", "clinics"],
@@ -1088,6 +1093,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "可以查詢哪些藥品資訊？",
         answer:
           "可查詢藥品的許可證字號、中英文品名、劑型、外觀顏色、形狀等資訊，資料來源為衛福部食藥署核准藥品資料庫。",
+      },
+      {
+        question: "我的藥缺貨了，可以在這裡查到嗎？",
+        answer:
+          "可以。「藥品短缺」分頁列出食藥署公告的缺藥品項、供應狀態與替代藥品建議，每週同步一次。內容為食藥署公告原文，非本站判定；是否換藥請洽原處方醫師或藥師。",
       },
       {
         question: "這個工具能取代藥師諮詢嗎？",

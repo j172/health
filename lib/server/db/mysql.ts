@@ -80,6 +80,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.facilities);
   await p.query(TABLE_DDL.drugs);
   await p.query(TABLE_DDL.tfdaDrugIngredients);
+  // TFDA drug shortages (issue #670) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.drugShortages);
   await p.query(TABLE_DDL.aqiReadings);
   await p.query(TABLE_DDL.pm25Readings);
   await p.query(TABLE_DDL.aqiForecasts);

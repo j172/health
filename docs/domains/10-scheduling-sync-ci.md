@@ -36,6 +36,7 @@
 ## 2. 長期有效的決策
 
 - GitHub Actions 的排程會延遲 5–15 分鐘，原本錯開的排程可能擠在一起，推高主機 NPROC；新增排程必須參考現有分鐘數錯開。
+- **in-app cron 有自動 lint**（#669）：`lib/server/cron/cronCollisions.test.mjs` 解析 `registerJobs.ts` 內所有 `cron.schedule` 運算式，凍結一份「既有同 tick 配對」清單（含已知的 `30 4 * * *` green-products／wra-catalog 雙排程），**任何新 job 與既有 job 同 tick 都會讓測試失敗**，訊息會列出目前沒有任何 job 使用的分鐘。不要把新配對加進清單，換一個沒人用的分鐘。此 lint 只涵蓋 `registerJobs.ts`，GitHub Actions 的 `schedule:` 仍要人工對照本節的表。
 - 共用 concurrency group 時，`cancel-in-progress: true` 會**跨 workflow** 取消別人；長時間任務不可與之同組同時段。
 - 打主機 API 一律用 SSH loopback（`scripts/lib/ssh-loopback.mjs`），不打公開網址（Cloudflare 會對 runner 發 JS 挑戰）。
 - Cloudflare 快取清除失敗不得中斷部署（`continue-on-error`）。

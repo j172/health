@@ -61,21 +61,76 @@ const targets = {
   "data.taipei 133345 (methadone_cross_district, control: sibling 133353 OK)":
     "https://data.taipei/api/dataset/2e4dcb8a-af96-4170-a5dc-32b5dc7e9247/resource/dc82ccb5-1138-4c91-b948-56f53ab3d243/download",
   "antidrug.moj.gov.tw (anti_drug_center_moj)": "https://antidrug.moj.gov.tw/lp-33-1-1-60.html",
+
+  // ------------------------------------------------------------------
+  // issue #669 (B-0, parent: docs/2.0/track-b-opendata-phase2-3-spec.md):
+  // every Track B upstream host that spec §3 marks 未驗證, each probed with
+  // the exact resource the ticket that depends on it will fetch. The
+  // coordinating session runs this once after the PR merges and back-fills
+  // spec §3 from the output. (The runner-side half of the same list lives in
+  // egress-probe.yml; tests/egress-probe-track-b-669.test.mjs keeps the two
+  // in sync.) Values may be `{ url, range }` for large files: only the status
+  // line matters here, so those ask for the first KiB (a server that ignores
+  // Range is still cut off by the 20s curl cap).
+  // ------------------------------------------------------------------
+
+  // B-9: 派出所 5958. The ZIP's file name carries a publish date, so the sync
+  // resolves the current URL from the data.gov.tw API first — probe both.
+  "data.gov.tw api 5958 (URL resolver)": "https://data.gov.tw/api/v2/rest/dataset/5958",
+  "www.tgos.tw 5958 ZIP (B-9)":
+    "https://www.tgos.tw/tgos/VirtualDir/Product/9927eb8a-efed-40c0-8bc4-83121ad6834a/1150930.zip",
+
+  // B-16 / B-17: 新北 路線 125664 (3.6 MB CSV, daily import) + 即時位置 122972.
+  "data.ntpc.gov.tw 125664 routes (B-16)": {
+    url: "https://data.ntpc.gov.tw/api/datasets/edc3ad26-8ae7-4916-a00b-bc6048d19bf8/csv/file",
+    range: "0-1023",
+  },
+  "data.ntpc.gov.tw 122972 live (B-17)":
+    "https://data.ntpc.gov.tw/api/datasets/28ab4122-60e1-4065-98e5-abccb69aaca6/csv/file",
+
+  // B-18: 臺中 83558, 臺南 136310, 高雄 138256 即時位置.
+  "newdatacenter.taichung.gov.tw 83558 (B-18)":
+    "https://newdatacenter.taichung.gov.tw/api/v1/no-auth/resource.download?rid=c923ad20-2ec6-43b9-b3ab-54527e99f7bc",
+  "soa.tainan.gov.tw 136310 (B-18)":
+    "https://soa.tainan.gov.tw/Api/Service/Get/2c8a70d5-06f2-4353-9e92-c40d33bcd969",
+  "openapi.kcg.gov.tw 138256 (B-18)":
+    "https://openapi.kcg.gov.tw/Api/Service/Get/aaf4ce4b-4ca8-43de-bfaf-6dc97e89cac0",
+
+  // opdadm.moi.gov.tw: a resource the site already uses in production
+  // (176455) as the control, then 7317 失物招領's own path (spec §8 item 1;
+  // 28.9 MB, hence the range; D3 has since cancelled the 失物招領 tool, so
+  // that row is informational only). The A1/A2 事故 resource URLs aren't
+  // recorded anywhere in the repo (the spec elides them) and D2 cancelled
+  // that feature, so they are deliberately not probed.
+  "opdadm.moi.gov.tw 176455 (live control)":
+    "https://opdadm.moi.gov.tw/api/v1/no-auth/resource/api/dataset/29E8E643-88ED-4952-B21E-BD42A3B7108C/resource/81B3145B-8134-4B01-9FAE-1D62638B4E78/download",
+  "opdadm.moi.gov.tw 7317 (spec §8)": {
+    url: "https://opdadm.moi.gov.tw/api/v1/no-auth/resource/api/dataset/E1060AE4-ACCE-4960-9EDC-EF52681B9570/resource/82770E4D-D01D-441F-9FD4-FBE1E7B086F6/download",
+    range: "0-1023",
+  },
+
+  // data.moa.gov.tw is already used in production, but through the older
+  // Service/OpenData/TransService.aspx path; spec §3 says the /api/v1/ path
+  // that B-12 林火 will use was never probed individually.
+  "data.moa.gov.tw ForestFireAlertWCF (B-12)":
+    "https://data.moa.gov.tw/api/v1/ForestFireAlertWCF/?CreateDate=2026-10-15",
 };
 
 const main = () => {
   try {
-    for (const [label, url] of Object.entries(targets)) {
+    for (const [label, target] of Object.entries(targets)) {
+      const { url, range } = typeof target === "string" ? { url: target } : target;
       const remote = [
         "curl -sS -o /dev/null --max-time 20",
+        ...(range ? ["-r", shellQuote(range)] : []),
         "-w",
-        shellQuote("http_code=%{http_code} time=%{time_total}"),
+        shellQuote("http_code=%{http_code} time=%{time_total} size=%{size_download}"),
         shellQuote(url),
       ].join(" ");
       const result = ssh.call(remote, { retries: 0 });
       const out = (result.stdout || "").trim();
       const err = (result.stderr || "").trim().split("\n")[0] || "";
-      console.log(`${label.padEnd(28)} exit=${result.status} ${out} ${err}`);
+      console.log(`${label.padEnd(46)} exit=${result.status} ${out} ${err}`);
     }
   } finally {
     ssh.close();

@@ -35,14 +35,13 @@ const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
 const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfigs.ts");
 
 test("Site-wide tools health: every tool in TOOL_CATALOG has valid metadata and no blocking loading", () => {
-  // 82 baseline + #601 childcare-centers + #587 global-watch + #604
-  // child-subsidies + #612 postpartum-care + #613 early-intervention + #603
-  // social-welfare-centers + #615 ltc-benefits, all merged independently on
-  // 2026-10-14/15, minus #590's retirement of "earthquakes" and #591's
-  // retirement of "travel-epidemic-alerts" (both 301'd to global-watch's
-  // own item sub-routes) — verified directly against the resolved
-  // catalog.ts.
-  assert.equal(TOOL_CATALOG.length, 87, `Expected exactly 87 tools, got ${TOOL_CATALOG.length}`);
+  // issue #669 (B-0): no exact tool count here. A literal that every
+  // tool-adding PR bumps silently merges wrong when two PRs each add one
+  // (see lib/server/tools/catalog.test.mjs for the structural checks that
+  // replaced it: per-group 8-15 limit, one group per tool, unique slugs).
+  assert.ok(TOOL_CATALOG.length > 0, "TOOL_CATALOG should not be empty");
+  const slugs = TOOL_CATALOG.map((tool) => tool.slug);
+  assert.equal(new Set(slugs).size, slugs.length, "every tool slug must appear exactly once");
 
   for (const tool of TOOL_CATALOG) {
     const pagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", tool.slug, "page.tsx");
