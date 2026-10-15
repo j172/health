@@ -3,10 +3,16 @@
 import { useState } from "react";
 import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
 import ToolTypeTabs from "@/components/Tools/ToolTypeTabs";
+import { GARBAGE_COVERAGE } from "@/lib/tools/garbageTrucks/coverage";
 import { facilitySearchConfigs } from "../facilityConfigs";
 import GarbageCoverageTable from "./GarbageCoverageTable";
 import GarbageLiveTab from "./GarbageLiveTab";
 import GarbageRoutesTab from "./GarbageRoutesTab";
+
+/** Counties with live truck positions (#679, #680), straight from the coverage data. */
+const LIVE_COUNTY_NAMES = GARBAGE_COVERAGE.filter((row) => row.live === "available")
+  .map((row) => row.county)
+  .join("、");
 
 const ROUTES_TAB = "garbage-routes";
 const LIVE_TAB = "garbage-live";
@@ -43,7 +49,7 @@ export default function CleaningSquadsContent() {
       <header>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">🚛 垃圾車與清潔隊</h1>
         <p className="text-neutral-600 dark:text-slate-300">
-          查詢臺北市、新北市垃圾車的收運路線與時間，新北市另可查看垃圾車即時位置，並可查詢各縣市地方清潔隊的聯絡電話與地址。
+          查詢臺北市、新北市垃圾車的收運路線與時間，{LIVE_COUNTY_NAMES}另可查看垃圾車即時位置，並可查詢各縣市地方清潔隊的聯絡電話與地址。
         </p>
       </header>
 

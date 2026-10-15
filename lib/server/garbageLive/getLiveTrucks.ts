@@ -1,4 +1,5 @@
 import {
+  DEFAULT_FRESHNESS,
   LIVE_TRUCK_CITIES,
   classifyTruckAge,
   type LiveTruck,
@@ -6,6 +7,7 @@ import {
   type LiveTrucksCityResult,
   type LiveTrucksResponse,
   type LiveUnavailableReason,
+  type TruckFreshnessWindow,
   type TruckPosition,
 } from "@/lib/tools/garbageTrucks/live";
 import type { LiveDeps, LiveTruckAdapter } from "@/lib/server/garbageLive/types";
@@ -143,12 +145,15 @@ function loadSnapshot(
 
 const sourceOf = (adapter: LiveTruckAdapter) => ({ label: adapter.sourceLabel, datasetUrl: adapter.datasetUrl });
 
+/** The window an adapter's positions are judged by: its own declaration, else the shared default. */
+const freshnessOf = (adapter: LiveTruckAdapter): TruckFreshnessWindow => adapter.freshness ?? DEFAULT_FRESHNESS;
+
 /**
- * Judges a snapshot's positions against `nowMs`: fresh and stale ones are
- * returned (stale flagged, freshest first); expired and impossible ones are
- * only counted.
+ * Judges a snapshot's positions against `nowMs` and the city's freshness
+ * window: fresh and stale ones are returned (stale flagged, freshest first);
+ * expired and impossible ones are only counted.
  */
-function judgePositions(positions: TruckPosition[], nowMs: number) {
+function judgePositions(positions: TruckPosition[], nowMs: number, window: TruckFreshnessWindow) {
   const trucks: LiveTruck[] = [];
   let hiddenCount = 0;
   let newestBelievableMs: number | null = null;
@@ -156,7 +161,7 @@ function judgePositions(positions: TruckPosition[], nowMs: number) {
   for (const position of positions) {
     const recordedMs = Date.parse(position.recordedAt);
     const ageSeconds = Math.round((nowMs - recordedMs) / 1000);
-    const freshness = classifyTruckAge(ageSeconds);
+    const freshness = classifyTruckAge(ageSeconds, window);
     if (freshness === "invalid") {
       hiddenCount += 1;
       continue;
@@ -201,6 +206,7 @@ export async function getLiveTrucks(city: LiveTruckCity, deps: LiveDeps = {}): P
     reason,
     trucks: [],
     hiddenCount: 0,
+    freshness: freshnessOf(adapter),
     dataAsOf: null,
     fetchedAt: null,
     source: sourceOf(adapter),
@@ -209,7 +215,8 @@ export async function getLiveTrucks(city: LiveTruckCity, deps: LiveDeps = {}): P
   try {
     const snapshot = await loadSnapshot(city, adapter, resolved);
     const nowMs = resolved.now();
-    const judged = judgePositions(snapshot.positions, nowMs);
+    const freshness = freshnessOf(adapter);
+    const judged = judgePositions(snapshot.positions, nowMs, freshness);
     return {
       city,
       county: adapter.county,
@@ -217,6 +224,7 @@ export async function getLiveTrucks(city: LiveTruckCity, deps: LiveDeps = {}): P
       reason: null,
       trucks: judged.trucks,
       hiddenCount: judged.hiddenCount,
+      freshness,
       dataAsOf: judged.dataAsOf,
       fetchedAt: new Date(snapshot.fetchedAtMs).toISOString(),
       source: sourceOf(adapter),

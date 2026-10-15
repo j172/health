@@ -7,8 +7,6 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { GARBAGE_COVERAGE } from "@/lib/tools/garbageTrucks/coverage";
 import {
-  LIVE_EXPIRED_AGE_SECONDS,
-  LIVE_FRESH_MAX_AGE_SECONDS,
   formatTaipeiDateTime,
   formatTruckAge,
   type LiveTrucksCityResult,
@@ -26,9 +24,6 @@ const GarbageLiveMap = dynamic(() => import("./GarbageLiveMap"), {
 
 /** While the tab stays open and visible the page asks again this often (the server caches ~90 s, so this is cheap). */
 const AUTO_REFRESH_MS = 60_000;
-
-const FRESH_MINUTES = LIVE_FRESH_MAX_AGE_SECONDS / 60;
-const EXPIRED_MINUTES = LIVE_EXPIRED_AGE_SECONDS / 60;
 
 const liveCounties = GARBAGE_COVERAGE.filter((row) => row.live === "available").map((row) => row.county);
 const unreachableCounties = GARBAGE_COVERAGE.filter((row) => row.live === "unavailable").map((row) => row.county);
@@ -129,7 +124,7 @@ export default function GarbageLiveTab({ onFindSquad }: { onFindSquad: (county: 
         其他縣市：{unreachableCounties.join("、")}的即時位置資料集目前無法取得（標示為「暫無即時資料」），其餘縣市尚未提供，詳見上方「各縣市資料覆蓋範圍」。
       </p>
 
-      <SourceNote />
+      <SourceNote sources={data ? data.cities.map((city) => city.source) : []} />
     </div>
   );
 }
@@ -167,6 +162,9 @@ function CityLive({
 
   const dataAge =
     result.dataAsOf === null ? null : Math.round((Date.parse(generatedAt) - Date.parse(result.dataAsOf)) / 1000);
+  // Each city's thresholds come with its response (臺中市 refreshes every ~10 minutes, 新北市 every ~2).
+  const freshMinutes = Math.round(result.freshness.freshMaxAgeSeconds / 60);
+  const expiredMinutes = Math.round(result.freshness.expiredAfterSeconds / 60);
 
   return (
     <section aria-label={`${result.county}垃圾車即時位置`} className="space-y-3">
@@ -186,8 +184,8 @@ function CityLive({
       {result.trucks.length > 0 ? (
         <>
           <p className="text-xs text-neutral-500 dark:text-slate-400">
-            目前顯示 {result.trucks.length} 輛。綠色為 {FRESH_MINUTES} 分鐘內回報；灰色半透明表示超過 {FRESH_MINUTES} 分鐘未更新（資料較舊，車輛可能已移動或停止回報）。
-            {result.hiddenCount > 0 ? `另有 ${result.hiddenCount} 輛超過 ${EXPIRED_MINUTES} 分鐘未更新或時間異常，已隱藏。` : ""}
+            目前顯示 {result.trucks.length} 輛。綠色為 {freshMinutes} 分鐘內回報；灰色半透明表示超過 {freshMinutes} 分鐘未更新（資料較舊，車輛可能已移動或停止回報）。
+            {result.hiddenCount > 0 ? `另有 ${result.hiddenCount} 輛超過 ${expiredMinutes} 分鐘未更新或時間異常，已隱藏。` : ""}
           </p>
           <GarbageLiveMap trucks={result.trucks} />
         </>
@@ -197,26 +195,41 @@ function CityLive({
           className="rounded-xl bg-neutral-100 p-4 text-sm text-neutral-700 dark:bg-slate-800 dark:text-slate-300"
         >
           目前沒有最近回報位置的垃圾車。垃圾車只在收運時段回報位置，非收運時段看不到車輛是正常的；表定時間請看「路線與收運時間」分頁。
-          {result.hiddenCount > 0 ? `（另有 ${result.hiddenCount} 輛的最後回報已超過 ${EXPIRED_MINUTES} 分鐘，不予顯示。）` : ""}
+          {result.hiddenCount > 0 ? `（另有 ${result.hiddenCount} 輛的最後回報已超過 ${expiredMinutes} 分鐘，不予顯示。）` : ""}
         </p>
       )}
     </section>
   );
 }
 
-function SourceNote() {
+/**
+ * Credits every dataset whose positions are on screen: the list comes from the
+ * API's per-city `source`, so a city added to the registry is attributed
+ * without editing this page. Before the first response arrives it names the
+ * data's origin generically.
+ */
+function SourceNote({ sources }: { sources: LiveTrucksCityResult["source"][] }) {
   return (
     <p className="text-xs leading-relaxed text-neutral-500 dark:text-slate-400">
-      資料來源：新北市政府資料開放平臺「新北市垃圾車即時位置」（
-      <a
-        href={appendOutboundUtm("https://data.gov.tw/dataset/122972", { medium: "data_source", campaign: "cleaning_squads_tool" })}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline"
-      >
-        data.gov.tw 122972
-      </a>
-      ），依政府資料開放授權條款－第1版提供（data.gov.tw 目錄標示）。本頁依市府公開資料呈現車輛最後回報的位置，非本站判定；位置可能延遲或中斷，實際到站時間請以各區清潔隊公告為準。
+      資料來源：
+      {sources.length === 0
+        ? "各市政府資料開放平臺（data.gov.tw）"
+        : sources.map((source, index) => (
+            <span key={source.datasetUrl}>
+              {index > 0 ? "、" : ""}
+              {source.label}（
+              <a
+                href={appendOutboundUtm(source.datasetUrl, { medium: "data_source", campaign: "cleaning_squads_tool" })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                data.gov.tw {source.datasetUrl.split("/").pop()}
+              </a>
+              ）
+            </span>
+          ))}
+      ，依政府資料開放授權條款－第1版提供（data.gov.tw 目錄標示）。本頁依市府公開資料呈現車輛最後回報的位置，非本站判定；位置可能延遲或中斷，實際到站時間請以各區清潔隊公告為準。
     </p>
   );
 }

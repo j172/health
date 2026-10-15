@@ -1,5 +1,5 @@
 import type { TaiwanCounty } from "@/lib/constants/taiwanDistricts";
-import type { LiveTruckCity, TruckPosition } from "@/lib/tools/garbageTrucks/live";
+import type { LiveTruckCity, TruckFreshnessWindow, TruckPosition } from "@/lib/tools/garbageTrucks/live";
 
 /**
  * The county-pluggable skeleton of the live garbage-truck layer (issue #679).
@@ -8,8 +8,8 @@ import type { LiveTruckCity, TruckPosition } from "@/lib/tools/garbageTrucks/liv
  * endpoint's raw text into `TruckPosition[]`. Everything else — the request,
  * in-flight de-duplication, the 60-120 s cache, freshness judgement, per-county
  * degradation, the route and the map — is generic and lives in getLiveTrucks.ts
- * and the page. Ticket #680 adds 臺中市 by writing one more adapter file and
- * registering it in registry.ts; no other server code changes.
+ * and the page. Ticket #680 added 臺中市 by writing one more adapter file and
+ * registering it in registry.ts; no other server code changed.
  *
  * Contract for `parse`:
  *  - input is the response body as text (CSV, or JSON text — the adapter decides);
@@ -32,6 +32,13 @@ export interface LiveTruckAdapter {
   datasetUrl: string;
   /** The upstream URL fetched when a visitor opens the page. Never sent to the browser. */
   endpoint: string;
+  /**
+   * How old a position may be before it is flagged 「資料較舊」 and before it is
+   * hidden. Optional: omit it and the shared default (10 / 30 minutes, sized for
+   * a feed that refreshes every ~2 minutes) applies. Declare it when the feed
+   * refreshes more slowly, with the dataset's update interval as the basis.
+   */
+  freshness?: TruckFreshnessWindow;
   parse(rawText: string): TruckPosition[];
 }
 
