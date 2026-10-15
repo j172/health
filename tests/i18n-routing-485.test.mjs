@@ -72,6 +72,7 @@ registerHooks({
 const {
   TRANSLATED_TOOL_SLUGS,
   TRANSLATED_CANONICAL_PATHS,
+  TRANSLATED_STANDALONE_PATHS,
   PATH_LOCALES,
   isTranslatedPath,
   buildHreflangAlternates,
@@ -110,18 +111,19 @@ test("app/[locale]/tools/ contains a page.tsx for exactly TRANSLATED_TOOL_SLUGS,
   // instead as `path` entries in TRANSLATED_STANDALONE_PATHS — see that
   // array's comment). It's allowed here as a second, explicit exception
   // for the same reason "[slug]" is: it hosts nested item sub-routes
-  // (`earthquakes` today, more as #583's other items ship) rather than a
-  // flat `/tools/<slug>/page.tsx` itself, so this guardrail's intent —
-  // never let an untranslated tool slug grow a foreign-language URL by
-  // accident — still holds, enforced below instead by asserting the base
-  // page.tsx does NOT exist while the item sub-route's does.
+  // (`earthquakes`, then #589's `epidemics`, more as #583's other items
+  // ship) rather than a flat `/tools/<slug>/page.tsx` itself, so this
+  // guardrail's intent — never let an untranslated tool slug grow a
+  // foreign-language URL by accident — still holds, enforced below instead
+  // by asserting the base page.tsx does NOT exist while each item
+  // sub-route's does.
   assert.deepEqual(
     entries,
     [...TRANSLATED_TOOL_SLUGS, "[slug]", "global-watch"].sort(),
     "app/[locale]/tools/ subdirectories must exactly match TRANSLATED_TOOL_SLUGS (plus the issue #488 " +
-      "[slug] llms.txt/markdown route and the issue #588 global-watch item-sub-route directory) — this is " +
-      "the guardrail that keeps every other (not-yet-translated) page from ever growing a half-finished " +
-      "foreign-language URL",
+      "[slug] llms.txt/markdown route and the issue #588/#589 global-watch item-sub-route directory) — " +
+      "this is the guardrail that keeps every other (not-yet-translated) page from ever growing a " +
+      "half-finished foreign-language URL",
   );
 
   for (const slug of TRANSLATED_TOOL_SLUGS) {
@@ -147,6 +149,22 @@ test("app/[locale]/tools/ contains a page.tsx for exactly TRANSLATED_TOOL_SLUGS,
   for (const routeType of ["llms.txt", "markdown"]) {
     const routePath = path.join(localeToolsDir, "[slug]", routeType, "route.ts");
     assert.ok(fs.existsSync(routePath), `app/[locale]/tools/[slug]/${routeType}/route.ts must exist`);
+  }
+  // (the "global-watch/page.tsx must NOT exist" check above already covers
+  // issue #589's epidemics item too — same base-page-stays-zh-only rule.)
+});
+
+test("app/[locale]/tools/global-watch/<item>/page.tsx exists for every global-watch item registered in TRANSLATED_STANDALONE_PATHS (issue #589)", () => {
+  const localeToolsDir = path.join(ROOT_DIR, "app", "[locale]", "tools");
+  const globalWatchItemPaths = TRANSLATED_STANDALONE_PATHS.filter(
+    (entry) => entry.kind === "path" && entry.path.startsWith("/tools/global-watch/"),
+  );
+  assert.ok(globalWatchItemPaths.length > 0, "expected at least the 國際疫情/epidemics item to be registered");
+
+  for (const entry of globalWatchItemPaths) {
+    const segments = entry.path.replace(/^\/tools\//, "").split("/"); // ["global-watch", "epidemics"]
+    const pagePath = path.join(localeToolsDir, ...segments, "page.tsx");
+    assert.ok(fs.existsSync(pagePath), `${pagePath} must exist for translated path ${entry.path}`);
   }
 });
 

@@ -8,11 +8,20 @@ import { GLOBE_WATCH_ITEMS } from "@/lib/tools/globeWatch/items";
 
 /**
  * Issue #588 (parent #583): minimal "單選分頁" item switcher for
- * `/tools/global-watch/*` — currently hosts exactly one item (地震), per
- * `GLOBE_WATCH_ITEMS`'s own doc comment on staying unopinionated about
- * items that don't exist yet. Highlights the active item from the current
- * (locale-stripped) pathname and builds each link through
+ * `/tools/global-watch/*`, reading `GLOBE_WATCH_ITEMS` so a later item only
+ * ever needs to grow that array. Highlights the active item from the
+ * current (locale-stripped) pathname and builds each link through
  * `buildLocalizedPath` so it stays correct under `/en/`, `/ja/`, `/ko/`.
+ *
+ * Issue #589 (parent #583): now renders `item.label[locale]` instead of
+ * the single zh-only `labelDefault` — #588 shipped the latter when there
+ * was only one item (no locale-mismatch was visible yet with a single,
+ * unambiguous 🌍 emoji + "地震" tab); landing 國際疫情 as a second tab made
+ * the gap real on the `/en/`/`/ja/`/`/ko/` pages, so `items.ts`'s registry
+ * grew a `label` map and this is its only consumer. Falls back to
+ * `labelDefault` if a locale is somehow missing from the map (defensive;
+ * `Record<Locale, string>` already requires every locale at the type
+ * level, so this should never actually trigger).
  */
 export default function GlobeWatchItemTabs() {
   const pathname = usePathname() ?? "/tools/global-watch";
@@ -36,7 +45,7 @@ export default function GlobeWatchItemTabs() {
             }`}
           >
             <span aria-hidden="true">{item.emoji}</span>
-            <span>{item.labelDefault}</span>
+            <span>{item.label[locale] ?? item.labelDefault}</span>
           </Link>
         );
       })}
