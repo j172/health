@@ -13,9 +13,11 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 83 tools registered", () => {
+test("TOOL_CATALOG has exactly 85 tools registered", () => {
+  // 82 baseline + #601 childcare-centers + #587 global-watch + #604
+  // child-subsidies, all merged independently on 2026-10-14.
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 83, `Expected 83 tools in catalog, got ${slugs.length}`);
+  assert.equal(slugs.length, 85, `Expected 85 tools in catalog, got ${slugs.length}`);
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {

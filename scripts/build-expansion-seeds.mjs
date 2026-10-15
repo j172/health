@@ -30,7 +30,7 @@ if (fs.existsSync(shelteredSource)) {
     JSON.stringify(formatted, null, 2),
     "utf-8"
   );
-  console.log(`✅ [1/13] sheltered_workshop.json generated (${formatted.length} items)`);
+  console.log(`✅ [1/12] sheltered_workshop.json generated (${formatted.length} items)`);
 }
 
 // 2. mental_health.json
@@ -107,7 +107,7 @@ const mentalHealthSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "mental_health.json"), JSON.stringify(mentalHealthSeeds, null, 2), "utf-8");
-console.log(`✅ [2/13] mental_health.json generated (${mentalHealthSeeds.length} items)`);
+console.log(`✅ [2/12] mental_health.json generated (${mentalHealthSeeds.length} items)`);
 
 // 3. smoking_cessation.json
 const smokingSeeds = [
@@ -173,7 +173,7 @@ const smokingSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "smoking_cessation.json"), JSON.stringify(smokingSeeds, null, 2), "utf-8");
-console.log(`✅ [3/13] smoking_cessation.json generated (${smokingSeeds.length} items)`);
+console.log(`✅ [3/12] smoking_cessation.json generated (${smokingSeeds.length} items)`);
 
 // 4. adult_preventive_care.json
 const adultCareSeeds = [
@@ -219,55 +219,18 @@ const adultCareSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "adult_preventive_care.json"), JSON.stringify(adultCareSeeds, null, 2), "utf-8");
-console.log(`✅ [4/13] adult_preventive_care.json generated (${adultCareSeeds.length} items)`);
+console.log(`✅ [4/12] adult_preventive_care.json generated (${adultCareSeeds.length} items)`);
 
-// 5. baby_friendly_hospital.json
-const babyHospitals = [
-  {
-    id: 1,
-    name: "國立臺灣大學醫學院附設醫院（母嬰親善認證）",
-    address: "臺北市中正區中山南路8號（兒童醫院）",
-    phone: "02-23123456",
-    lat: 25.041245,
-    lng: 121.518541,
-    service_item: "母嬰同室友善醫院、純母乳哺餵諮詢、高危險妊娠與新生兒加護",
-    extra_json: { certifiedUntil: "2027-12-31", roomingIn: true, lactationConsultant: true }
-  },
-  {
-    id: 2,
-    name: "台北婦幼醫療財團法人婦幼綜合醫院",
-    address: "臺北市中正區福州街12號",
-    phone: "02-23916470",
-    lat: 25.029851,
-    lng: 121.519245,
-    service_item: "母嬰親善醫療院所認證、24小時母嬰同室、母乳諮詢專線",
-    extra_json: { certifiedUntil: "2027-12-31", roomingIn: true }
-  },
-  {
-    id: 3,
-    name: "中國醫藥大學兒童醫院（母嬰親善認證）",
-    address: "臺中市北區育德路2號",
-    phone: "04-22052121",
-    lat: 24.156541,
-    lng: 120.682145,
-    service_item: "母嬰親善醫院認證、國際泌乳顧問指導、溫柔生產諮詢",
-    extra_json: { certifiedUntil: "2026-12-31", roomingIn: true }
-  },
-  {
-    id: 4,
-    name: "高雄榮民總醫院（母嬰親善認證）",
-    address: "高雄市左營區大中一路386號",
-    phone: "07-3422121",
-    lat: 22.678541,
-    lng: 120.320145,
-    service_item: "母嬰親善醫療院所認證、早產兒母乳庫特約、袋鼠護理指導",
-    extra_json: { certifiedUntil: "2027-12-31", roomingIn: true }
-  }
-];
-fs.writeFileSync(path.join(seedsDir, "baby_friendly_hospital.json"), JSON.stringify(babyHospitals, null, 2), "utf-8");
-console.log(`✅ [5/13] baby_friendly_hospital.json generated (${babyHospitals.length} items)`);
+// baby_friendly_hospital.json is intentionally NOT generated here anymore
+// (issue #614) — the 4 handwritten records that used to live in this spot
+// (one of which didn't even correspond to a real institution) are replaced
+// by 5 real county open-data sources wired into
+// lib/server/facilities/runSync.ts's SOURCES registry
+// (baby_friendly_hospital_{taipei_121200,new_taipei_123291,taichung_83649,
+// tainan_150985,changhua_30882}), synced the same way every other facility
+// source is — not through this seed-generation script.
 
-// 6. rare_disease_care.json
+// 5. rare_disease_care.json
 const rareDiseaseSeeds = [
   {
     id: 1,
@@ -311,9 +274,9 @@ const rareDiseaseSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "rare_disease_care.json"), JSON.stringify(rareDiseaseSeeds, null, 2), "utf-8");
-console.log(`✅ [6/13] rare_disease_care.json generated (${rareDiseaseSeeds.length} items)`);
+console.log(`✅ [5/12] rare_disease_care.json generated (${rareDiseaseSeeds.length} items)`);
 
-// 7. organ_donation_hospital.json
+// 6. organ_donation_hospital.json
 const organDonationSeeds = [
   {
     id: 1,
@@ -367,9 +330,9 @@ const organDonationSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "organ_donation_hospital.json"), JSON.stringify(organDonationSeeds, null, 2), "utf-8");
-console.log(`✅ [7/13] organ_donation_hospital.json generated (${organDonationSeeds.length} items)`);
+console.log(`✅ [6/12] organ_donation_hospital.json generated (${organDonationSeeds.length} items)`);
 
-// 8. home_emergency_care.json
+// 7. home_emergency_care.json
 const homeEmergencySeeds = [
   {
     id: 1,
@@ -413,9 +376,9 @@ const homeEmergencySeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "home_emergency_care.json"), JSON.stringify(homeEmergencySeeds, null, 2), "utf-8");
-console.log(`✅ [8/13] home_emergency_care.json generated (${homeEmergencySeeds.length} items)`);
+console.log(`✅ [7/12] home_emergency_care.json generated (${homeEmergencySeeds.length} items)`);
 
-// 9. pesticide_sales.json
+// 8. pesticide_sales.json
 const pesticideSeeds = [
   {
     id: 1,
@@ -459,9 +422,9 @@ const pesticideSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "pesticide_sales.json"), JSON.stringify(pesticideSeeds, null, 2), "utf-8");
-console.log(`✅ [9/13] pesticide_sales.json generated (${pesticideSeeds.length} items)`);
+console.log(`✅ [8/12] pesticide_sales.json generated (${pesticideSeeds.length} items)`);
 
-// 10. green_shop.json
+// 9. green_shop.json
 const greenShopSource = path.join(seedsDir, "ntpc_green_shops.json");
 if (fs.existsSync(greenShopSource)) {
   const raw = JSON.parse(fs.readFileSync(greenShopSource, "utf-8"));
@@ -477,7 +440,7 @@ if (fs.existsSync(greenShopSource)) {
     extra_json: item.extra || item.extra_json || null,
   }));
   fs.writeFileSync(path.join(seedsDir, "green_shop.json"), JSON.stringify(formatted, null, 2), "utf-8");
-  console.log(`✅ [10/13] green_shop.json generated (${formatted.length} items)`);
+  console.log(`✅ [9/12] green_shop.json generated (${formatted.length} items)`);
 } else {
   const fallbackGreenShops = [
     {
@@ -502,10 +465,10 @@ if (fs.existsSync(greenShopSource)) {
     }
   ];
   fs.writeFileSync(path.join(seedsDir, "green_shop.json"), JSON.stringify(fallbackGreenShops, null, 2), "utf-8");
-  console.log(`✅ [10/13] green_shop.json generated (${fallbackGreenShops.length} items)`);
+  console.log(`✅ [9/12] green_shop.json generated (${fallbackGreenShops.length} items)`);
 }
 
-// 11. hearing_aid_subsidy.json
+// 10. hearing_aid_subsidy.json
 const hearingAidSeeds = [
   {
     id: 1,
@@ -549,9 +512,9 @@ const hearingAidSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "hearing_aid_subsidy.json"), JSON.stringify(hearingAidSeeds, null, 2), "utf-8");
-console.log(`✅ [11/13] hearing_aid_subsidy.json generated (${hearingAidSeeds.length} items)`);
+console.log(`✅ [10/12] hearing_aid_subsidy.json generated (${hearingAidSeeds.length} items)`);
 
-// 12. funeral_facility.json
+// 11. funeral_facility.json
 const funeralSeeds = [
   {
     id: 1,
@@ -605,9 +568,9 @@ const funeralSeeds = [
   }
 ];
 fs.writeFileSync(path.join(seedsDir, "funeral_facility.json"), JSON.stringify(funeralSeeds, null, 2), "utf-8");
-console.log(`✅ [12/13] funeral_facility.json generated (${funeralSeeds.length} items)`);
+console.log(`✅ [11/12] funeral_facility.json generated (${funeralSeeds.length} items)`);
 
-// 13. health_supplements_seed.json
+// 12. health_supplements_seed.json
 const supplementsSeed = [
   {
     license_no: "衛部健食字第A00001號",
@@ -723,6 +686,6 @@ const supplementsSeed = [
   }
 ];
 fs.writeFileSync(path.join(ROOT_DIR, "data", "health-supplements-seed.json"), JSON.stringify(supplementsSeed, null, 2), "utf-8");
-console.log(`✅ [13/13] health-supplements-seed.json generated (${supplementsSeed.length} items)`);
+console.log(`✅ [12/12] health-supplements-seed.json generated (${supplementsSeed.length} items)`);
 
 console.log("\n🎉 全數 13 款新工具之備援種子資料建立完畢！");
