@@ -36,10 +36,18 @@ export interface GarbageRouteStopRecord {
   memo: string | null;
 }
 
+/** The two phases a source reports from inside fetch(), so the sync can log memory at each. */
+export type GarbageRouteFetchStage = "after_fetch" | "after_parse";
+
+export interface GarbageRouteFetchHooks {
+  /** Called once the body is downloaded ("after_fetch") and once it is parsed ("after_parse"). */
+  onStage?: (stage: GarbageRouteFetchStage, detail?: Record<string, number>) => void;
+}
+
 /** One configured upstream: what to fetch and how to turn it into rows for one city. */
 export interface GarbageRouteSource {
   city: GarbageRouteCity;
   /** ingest_errors.feed_code and run-summary label. */
   sourceKey: string;
-  fetch: () => Promise<GarbageRouteStopRecord[]>;
+  fetch: (hooks?: GarbageRouteFetchHooks) => Promise<GarbageRouteStopRecord[]>;
 }

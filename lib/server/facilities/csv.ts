@@ -7,68 +7,116 @@
  */
 export const decodeBig5 = (buffer: Buffer): string => new TextDecoder("big5").decode(buffer);
 
+const CHAR_QUOTE = 34; // "
+const CHAR_COMMA = 44; // ,
+const CHAR_CR = 13; // \r
+const CHAR_LF = 10; // \n
+const CHAR_BOM = 0xfeff;
+
+/** A row that is just empty/whitespace text (a blank line) is not data. */
+const isBlankRow = (row: readonly string[]): boolean => row.length <= 1 && (row[0] ?? "").trim() === "";
+
 /**
- * CSV parser operating on the whole text as one character stream, not
- * line-split first — some MOHW exports (e.g. the elder-welfare-institution
- * dataset's 收容對象 column) embed literal newlines inside quoted fields
- * (e.g. `"安養\n養護"`), which a split-on-newline-first parser would corrupt
- * by treating as two separate rows. Handles quoted fields (with embedded
- * commas and newlines) and "" as an escaped quote.
+ * Incremental CSV tokenizer: yields one row (untrimmed cells) at a time, so a
+ * caller can turn each row into its final shape and let the raw cells go
+ * instead of holding every cell of the file at once. Blank lines are skipped.
+ *
+ * Operates on the whole text as one character stream, not line-split first —
+ * some MOHW exports (e.g. the elder-welfare-institution dataset's 收容對象
+ * column) embed literal newlines inside quoted fields (e.g. `"安養\n養護"`),
+ * which a split-on-newline-first parser would corrupt by treating as two
+ * separate rows. Handles quoted fields (with embedded commas and newlines) and
+ * "" as an escaped quote; a stray `"` inside an unquoted cell toggles quoting
+ * (the long-standing behaviour every source here was written against); `\r`
+ * outside quotes is dropped and `\n` ends the row.
+ *
+ * Cells are cut out of the text with slice()/indexOf() rather than appended
+ * character by character: it is several times faster and does not create one
+ * throw-away string per character.
  */
-export function parseCsv(text: string): Record<string, string>[] {
-  const cleaned = text.replace(/^﻿/, "");
-  const rows: string[][] = [];
-  let row: string[] = [];
+export function* iterateCsvRows(text: string): Generator<string[], void, undefined> {
+  const length = text.length;
+  let i = text.charCodeAt(0) === CHAR_BOM ? 1 : 0;
+  // Start of the run of ordinary characters not yet appended to `cell`.
+  let runStart = i;
   let cell = "";
-  let inQuotes = false;
+  let row: string[] = [];
 
-  for (let i = 0; i < cleaned.length; i++) {
-    const char = cleaned[i];
+  while (i < length) {
+    const code = text.charCodeAt(i);
 
-    if (inQuotes) {
-      if (char === '"') {
-        if (cleaned[i + 1] === '"') {
-          cell += '"';
-          i++;
-        } else {
-          inQuotes = false;
+    if (code === CHAR_QUOTE) {
+      cell += text.slice(runStart, i);
+      i++;
+      // Quoted section: copy up to the closing quote; `""` is a literal quote and stays quoted.
+      for (;;) {
+        const close = text.indexOf('"', i);
+        if (close === -1) {
+          cell += text.slice(i);
+          i = length;
+          break;
         }
-      } else {
-        cell += char;
+        cell += text.slice(i, close);
+        if (text.charCodeAt(close + 1) === CHAR_QUOTE) {
+          cell += '"';
+          i = close + 2;
+        } else {
+          i = close + 1;
+          break;
+        }
       }
-      continue;
-    }
-
-    if (char === '"') {
-      inQuotes = true;
-    } else if (char === ",") {
+      runStart = i;
+    } else if (code === CHAR_COMMA) {
+      cell += text.slice(runStart, i);
       row.push(cell);
       cell = "";
-    } else if (char === "\r") {
-      // skip — \n (below) ends the row
-    } else if (char === "\n") {
+      i++;
+      runStart = i;
+    } else if (code === CHAR_LF) {
+      cell += text.slice(runStart, i);
       row.push(cell);
-      rows.push(row);
+      cell = "";
+      i++;
+      runStart = i;
+      const finished = row;
       row = [];
-      cell = "";
+      if (!isBlankRow(finished)) yield finished;
+    } else if (code === CHAR_CR) {
+      // skip — \n ends the row
+      cell += text.slice(runStart, i);
+      i++;
+      runStart = i;
     } else {
-      cell += char;
+      i++;
     }
   }
+
+  cell += text.slice(runStart, length);
   if (cell.length > 0 || row.length > 0) {
     row.push(cell);
-    rows.push(row);
+    if (!isBlankRow(row)) yield row;
   }
+}
 
-  const nonEmptyRows = rows.filter((r) => r.length > 1 || (r[0] ?? "").trim() !== "");
-  if (nonEmptyRows.length === 0) return [];
+/**
+ * Parses a whole CSV text into header-keyed records (cells trimmed). See
+ * iterateCsvRows for the dialect. Materialises every row — fine for the small
+ * and medium sources; a source with tens of thousands of rows should iterate
+ * with iterateCsvRows and build its own, leaner, per-row result instead.
+ */
+export function parseCsv(text: string): Record<string, string>[] {
+  const rows = iterateCsvRows(text);
+  const first = rows.next();
+  if (first.done) return [];
 
-  const headers = nonEmptyRows[0].map((h) => h.trim());
-  return nonEmptyRows.slice(1).map((cells) => {
+  const headers = first.value.map((h) => h.trim());
+  const records: Record<string, string>[] = [];
+  for (const cells of rows) {
     const record: Record<string, string> = {};
     headers.forEach((h, i) => (record[h] = (cells[i] ?? "").trim()));
-    return record;
-  });
+    records.push(record);
+  }
+  return records;
 }
 
 /** TFDA/MOL/NHI datasets frequently use fullwidth digits (０-９) in addresses/phones. */
