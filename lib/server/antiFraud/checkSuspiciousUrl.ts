@@ -12,6 +12,8 @@ export interface DomainHit {
   source: string;
   siteNature: string | null;
   reportedYearMonth: string | null;
+  /** Free-text description for a source with no 網站性質-style classification (165027/160055) — see FraudDomainRecord's doc comment. Null for 176455. */
+  fraudDescription: string | null;
 }
 
 export type CheckSuspiciousUrlStatus = "matched" | "not-listed" | "invalid";

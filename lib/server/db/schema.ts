@@ -1866,6 +1866,15 @@ export const TABLE_DDL = {
   // report_year_month／site_nature 因此都是一般欄位：同步時對同一
   // (domain, source) 做 UPDATE 覆蓋成最新值，first_seen 只在初次插入時寫入，
   // last_seen 每次同步都更新。
+  //
+  // issue #567 加入 moda_165027（數產署，近乎每日）、police_160055（警政署
+  // 假投資網站，一次性歷史匯入）兩個來源，沿用同一張表、同一個 (domain,
+  // source) UNIQUE KEY 設計——同一網域出現在多個來源時各存一列，查詢時分別
+  // 列出，不合併。這兩個來源都沒有 176455 的「網站性質」分類欄位，只有自由
+  // 文字描述（165027 的「一頁式數位經濟詐騙網站」、160055 的「網站名稱」），
+  // 新增 fraud_description 欄位承接，不塞進 site_nature 冒充分類。
+  // report_year_month 同時承接 165027/160055 的 8 位數 YYYYMMDD 日期字串
+  // （與 176455 的 5 位數民國年月字串共用欄位，UI 依位數區分格式）。
   fraudDomains: `
     CREATE TABLE IF NOT EXISTS fraud_domains (
       id BIGINT NOT NULL AUTO_INCREMENT,
@@ -1875,6 +1884,7 @@ export const TABLE_DDL = {
       legal_basis VARCHAR(255) NULL,
       applicant_org VARCHAR(255) NULL,
       report_year_month VARCHAR(10) NULL,
+      fraud_description VARCHAR(255) NULL,
       first_seen DATETIME NOT NULL,
       last_seen DATETIME NOT NULL,
       created_at DATETIME NOT NULL,

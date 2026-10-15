@@ -44,7 +44,7 @@ import {
   runSeniorTourismAlertsSync,
   runSeniorCardSync,
 } from "@/lib/server/seniorTourism/runSync";
-import { runFraudDomainsSync } from "@/lib/server/antiFraud/runSync";
+import { runFraudDomainsSync, runModa165027Sync } from "@/lib/server/antiFraud/runSync";
 import { runGdacsSync, runGdacsCleanup } from "@/lib/server/gdacs/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -469,6 +469,17 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "12 5 1 * *",
     runGuarded("fraud-domains-sync-cron.log", () => runFraudDomainsSync()),
+  );
+  // 數產署 165027「詐騙網域停止解析清單」(issue #567) — 近乎每日更新，填補
+  // 176455 每月批次之間的空窗期；5am 區段的 22 分未被本檔案任何其他 job
+  // 佔用（5am 已用：5 的 power-mix、12 的 fraud-domains-sync(僅每月 1 號)、
+  // 30 的 latest-books-sync）。這個 job 自己再用 withAdvisoryLock
+  // (moda_165027_sync_lock，與 176455 的 fraud_domains_sync_lock 不同) 防
+  // 重疊，見 lib/server/antiFraud/runSync.ts。160055（已停更的歷史資料）
+  // 刻意不排程——只在部署後手動跑一次 scripts/import-police-160055.mjs。
+  cron.schedule(
+    "22 5 * * *",
+    runGuarded("moda-165027-sync-cron.log", () => runModa165027Sync()),
   );
   // GDACS 全球災害事件 (issue #592 / #583) — 每 30 分鐘一次，供「颱風」「全球
   // 災害」項目與「地震」警戒色疊加共用。14/44 這兩個分鐘在本檔案目前完全沒被
