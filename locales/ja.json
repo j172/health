@@ -680,6 +680,13 @@
     "earthquakes": {
       "legendHeading": "地球儀マーカー凡例：",
       "legendTsunami": "津波警報"
+    },
+    "disasters": {
+      "legendHeading": "警戒レベル凡例：",
+      "typeFilterHeading": "表示する災害種別：",
+      "readOriginal": "原文を読む ↗",
+      "unknownCountry": "不明な地点",
+      "emptyStateTemplate": "現在、{type}の事件はありません"
     }
   },
   "aqiTool": {

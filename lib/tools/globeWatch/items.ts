@@ -61,4 +61,18 @@ export const GLOBE_WATCH_ITEMS: GlobeWatchItemDef[] = [
     labelDefault: "國際疫情",
     label: { "zh-TW": "國際疫情", en: "Epidemics", ja: "国際感染症", ko: "국제 감염병" },
   },
+  // Issue #594 (parent #583): the "全球災害" (disasters) item — GDACS's
+  // flood/volcano/drought/wildfire events (EQ/TC are separate items, see
+  // lib/tools/globeWatch/disastersTransform.ts's doc comment). Labels follow
+  // the same "shortened existing vocabulary, not invented from scratch"
+  // convention as the two entries above — en "Disasters" / ja "災害" /
+  // ko "재해" are plain, widely-used translations of 災害, consistent with
+  // this repo's own disaster-map tool naming.
+  {
+    key: "disasters",
+    path: "/tools/global-watch/disasters",
+    emoji: "⚠️",
+    labelDefault: "全球災害",
+    label: { "zh-TW": "全球災害", en: "Disasters", ja: "災害", ko: "재해" },
+  },
 ];

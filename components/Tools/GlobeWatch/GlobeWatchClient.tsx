@@ -6,7 +6,7 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { detectWebglSupport, defaultWebglProbe } from "@/lib/tools/globeWatch/webgl";
 import GlobeWatchStatusPanel from "./GlobeWatchStatusPanel";
-import type { EarthquakeGlobeLayerProps } from "./GlobeWatchGlobe";
+import type { EarthquakeGlobeLayerProps, DisasterGlobeLayerProps } from "./GlobeWatchGlobe";
 
 // Issue #587 (parent #583): the only place in this feature that imports
 // MapLibre at all — and only via `next/dynamic(..., { ssr: false })`, same
@@ -36,11 +36,15 @@ const GlobeWatchGlobe = dynamic(() => import("./GlobeWatchGlobe"), {
  */
 export default function GlobeWatchClient({
   earthquakes,
+  disasters,
 }: {
   /** Issue #588: optional earthquake data layer, forwarded straight through
    * to GlobeWatchGlobe. Omitted by the bare `/tools/global-watch` page
    * (#587), which renders exactly as before. */
   earthquakes?: EarthquakeGlobeLayerProps;
+  /** Issue #594: optional "全球災害" (disasters) data layer, forwarded
+   * straight through to GlobeWatchGlobe. */
+  disasters?: DisasterGlobeLayerProps;
 }) {
   const { locale } = useLanguage();
   const reducedMotion = usePrefersReducedMotion();
@@ -58,7 +62,9 @@ export default function GlobeWatchClient({
       className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900"
       data-testid="globe-watch-frame"
     >
-      {webglSupported === true && <GlobeWatchGlobe locale={locale} reducedMotion={reducedMotion} earthquakes={earthquakes} />}
+      {webglSupported === true && (
+        <GlobeWatchGlobe locale={locale} reducedMotion={reducedMotion} earthquakes={earthquakes} disasters={disasters} />
+      )}
       {webglSupported === false && (
         <GlobeWatchStatusPanel
           variant="unsupported"

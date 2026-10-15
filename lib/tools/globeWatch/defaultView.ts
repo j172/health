@@ -38,3 +38,12 @@ export const RESET_VIEW_FLY_DURATION_MS = 1600;
  */
 export const EARTHQUAKE_FLY_DURATION_MS = 1400;
 export const EARTHQUAKE_FLY_ZOOM = 5;
+
+/**
+ * Issue #594 (parent #583): "點擊清單項目時地球飛到該事件的位置" for the 全球災害
+ * (disasters) item — same shape/rationale as the earthquake constants above,
+ * kept separate rather than reused since a later item could want its own
+ * timing without this one drifting.
+ */
+export const DISASTER_FLY_DURATION_MS = 1400;
+export const DISASTER_FLY_ZOOM = 5;
