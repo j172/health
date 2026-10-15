@@ -76,6 +76,7 @@
     "public-toilets": "Public Toilet Finder",
     "child-welfare-institutions": "Parent-Child Center & Child Welfare Center Finder",
     "kindergartens": "Kindergarten Directory Finder",
+    "childcare-centers": "Infant Childcare & Home-Based Childcare Center Finder",
     "cram-schools": "Cram School Directory Finder",
     "child-safety-spots": "Child & Women Safety Alert Spot Finder",
     "child-native-languages": "Child & Youth Native Languages Dictionary (Taiwanese & Hakka)",
@@ -92,6 +93,7 @@
     "aqx-monitoring": "Extended Air Quality Monitoring Data (AQX Series)",
     "water-conditions": "Real-Time Water Conditions (River Water Level & Reservoir Status)",
     "disaster-map": "Disaster Shelter & Rescue Unit Map",
+    "global-watch": "Global Watch (3D Earth)",
     "heritage-map": "Heritage Assets Map (Monuments & Archaeological Sites)",
     "bookstores": "National Physical & Independent Bookstore Finder",
     "tourism-factories": "Certified Tourism Factory & Cultural Center Finder",
@@ -120,6 +122,7 @@
     "adult-preventive-care": "Adult Health Check & Free Cancer Screening Facility Finder",
     "baby-friendly-hospitals": "Baby-Friendly Hospital Map (Rooming-In & Breastfeeding Certified)",
     "postpartum-care": "Postpartum Care Center Map (Certification & Validity Status)",
+    "child-subsidies": "Child Subsidy Overview (Parenting Allowance, Childcare & School Subsidies, Birth Grant, IVF Subsidy)",
     "rare-disease-care": "Rare Disease Care Center & Diagnosis Hospital Finder",
     "organ-donation-hospitals": "Organ Donation Designated Hospital Finder",
     "home-emergency-care": "Home Emergency Care Contracted Facility Finder (NHI)",
@@ -222,6 +225,9 @@
     },
     "travel-health": {
       "title": "Travel & Epidemic Prevention"
+    },
+    "fraud-and-addiction": {
+      "title": "Avoiding Fraud & Addiction"
     }
   },
   "toolShell": {

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "growth-allowance-executive",
+    "title": "0–18歲成長津貼（行政院方案）",
+    "proposedBy": "executive",
+    "summary": "行政院規劃0至18歲兒少每人每月發放成長津貼5,000元，搭配「弱勢兒少發展帳戶」等配套，估算每名孩子從0到18歲至少可累積108萬元支持。原規劃以行政命令推動，預算已編入2027年中央政府總預算案，尚未完成立法院預算審議。實施方式尚未確定，以主管機關公告為準。",
+    "ageRange": { "minMonths": 0, "maxMonths": 216 },
+    "targetStartDate": "2027-01-01",
+    "sourceUrl": "https://www.nownews.com/news/6866736",
+    "lastVerified": "2026-10-14"
+  },
+  {
+    "id": "growth-allowance-legislative",
+    "title": "台灣兒少成長及未來帳戶條例（立法院三讀，在野黨版）",
+    "proposedBy": "legislative",
+    "summary": "立法院於2026年7月24日三讀通過《台灣兒少成長及未來帳戶條例》（國民黨、民眾黨團推動），並於8月7日咨請總統公布；行政院長卓榮泰於8月17日宣布不予副署，主張條例侵害行政院憲法上的預算提案權與權力分立原則，爭議尚未解決。條例內容為政府於孩童出生時撥入6萬元啟動金，並於0至18歲間持續發放成長津貼與帳戶撥補款，估算累積總額約114萬元；家長可自行存款且金額無上限，雇主每年最高可贊助5萬元；帳戶開戶人滿18歲後提款須證明用途（就學、就業、職業訓練、創業、購屋或租屋）。目前因行政院不予副署而懸而未決，是否、何時正式上路尚未確定，實施方式尚未確定，以主管機關公告為準。",
+    "ageRange": { "minMonths": 0, "maxMonths": 216 },
+    "targetStartDate": null,
+    "sourceUrl": "https://www.nownews.com/news/6866736",
+    "lastVerified": "2026-10-14"
+  }
+]

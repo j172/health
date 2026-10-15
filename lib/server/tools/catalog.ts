@@ -259,7 +259,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw",
       },
     ],
-    relatedSlugs: ["uv", "aqi", "emergency-supplies"],
+    relatedSlugs: ["uv", "aqi", "emergency-supplies", "global-watch"],
     faqs: [
       {
         question: "地震資料多久更新一次？",
@@ -1547,28 +1547,97 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
 
     schemaType: "WebPage",
     title: "全國幼兒園查詢",
-    keywords: ["幼兒園查詢", "托嬰", "幼稚園"],
+    keywords: ["幼兒園查詢", "托嬰", "幼稚園", "非營利幼兒園", "準公共幼兒園", "幼兒園月費", "幼兒園裁罰紀錄"],
     description:
-      "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航。資料來源：教育部開放資料。",
+      "查詢全國公立、私立、準公共與非營利幼兒園名錄，提供核定招收人數、設立許可、地址電話與地圖導航；準公共／非營利分類、月費與裁罰紀錄來自民間轉錄全國教保資訊網（kiang/ap.ece.moe.edu.tw，MIT 授權）。",
     directAnswer:
-      "查詢全國公私立幼兒園名錄，涵蓋幼兒園設立別、核定人數、電話與所在地址。",
+      "查詢全國公立、私立、準公共與非營利幼兒園名錄，涵蓋設立別、月費、裁罰紀錄、電話與所在地址。",
     scientificBasis: [
       {
         title: "全國幼兒園名錄 (k1_new.json)",
         authority: "教育部統計處 (MOE)",
         url: "https://stats.moe.gov.tw",
       },
+      {
+        title: "全國教保資訊網民間轉錄 (preschools.json，MIT 授權，非官方 API)",
+        authority: "kiang/ap.ece.moe.edu.tw (GitHub, 轉錄自教育部全國教保資訊網)",
+        url: "https://ap.ece.moe.edu.tw",
+      },
     ],
-    relatedSlugs: ["cram-schools", "child-welfare-institutions", "child-native-languages"],
+    relatedSlugs: ["cram-schools", "child-welfare-institutions", "child-native-languages", "childcare-centers"],
     faqs: [
       {
-        question: "如何查詢附近的公立或私立幼兒園？",
+        question: "如何查詢附近的公立、私立、非營利或準公共幼兒園？",
         answer:
-          "開啟定位或在搜尋框輸入縣市與幼兒園名稱，可依公立、私立、非營利進行篩選並在地圖上查看位置。",
+          "開啟定位或在搜尋框輸入縣市與幼兒園名稱，可依公立、私立、非營利、準公共進行篩選並在地圖上查看位置。",
+      },
+      {
+        question: "月費、非營利／準公共分類與裁罰紀錄是教育部官方資料嗎？",
+        answer:
+          "不是。公/私立二分類與基本名錄來自教育部統計處官方開放資料，但非營利／準公共的進一步分類、月費與裁罰紀錄旗標來自民間轉錄全國教保資訊網的 kiang/ap.ece.moe.edu.tw 專案（MIT 授權），並非教育部官方欄位。若該民間轉錄超過 60 天未更新，站上會自動停用這些補充欄位，僅顯示教育部公/私立二分類。",
       },
       {
         question: "資料來源與更新頻率？",
-        answer: "資料來源為教育部統計處公開之全國幼兒園名錄開放資料。",
+        answer: "基本名錄來自教育部統計處公開之全國幼兒園名錄開放資料；補充的分類、月費與裁罰紀錄來自民間轉錄，隨來源更新頻率同步。",
+      },
+    ],
+  },
+  {
+    // issue #601 (parent #599 §兒少福利與社福求助): 托嬰中心與居家托育地圖，先
+    // 用臺北、新北兩個縣市把骨架建好——新 facilityType（childcare_center 含
+    // extra_json.category 公辦民營/社區公共托育家園/準公共/私立、以及
+    // home_childcare_center）、匯入與驗證流程、臺北私立/準公共去重邏輯，供後續
+    // 六都＋新竹縣市/彰化/嘉義市的縣市票套用同一套模式（見
+    // lib/server/facilities/sources/taipeiChildcare.ts、ntpcChildcare.ts）。
+    slug: "childcare-centers",
+    group: "family",
+    lastUpdated: "2026-10-14",
+
+    schemaType: "WebPage",
+    title: "托嬰中心與居家托育地圖（臺北／新北）",
+    keywords: ["托嬰中心", "居家托育", "保母", "準公共托嬰中心", "公辦民營托嬰中心", "社區公共托育家園", "托育費用"],
+    description:
+      "查詢臺北市、新北市托嬰中心與居家托育服務中心（找保母的窗口），依公辦民營、社區公共托育家園、準公共、私立分類，顯示核定／實際收托人數與評鑑結果。資料來源：臺北市政府社會局、新北市政府社會局開放資料；其餘縣市請改用衛福部社家署全國系統性查詢。",
+    directAnswer:
+      "整合臺北、新北托嬰中心與居家托育服務中心名冊，依公辦民營、準公共、私立等分類查詢收托人數與評鑑結果。",
+    scientificBasis: [
+      {
+        title: "臺北市托嬰中心（私立／公辦民營／準公共／社區公共托育家園）開放資料",
+        authority: "臺北市政府社會局",
+        url: "https://data.taipei",
+      },
+      {
+        title: "新北市托嬰中心（私立／公共托育中心）與居家托育服務中心開放資料",
+        authority: "新北市政府社會局",
+        url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "托育管理資訊系統全國系統性查詢",
+        authority: "衛生福利部社會及家庭署 (SFAA)",
+        url: "https://ncwisweb.sfaa.gov.tw",
+      },
+    ],
+    relatedSlugs: ["kindergartens", "child-welfare-institutions", "cram-schools"],
+    faqs: [
+      {
+        question: "公辦民營、社區公共托育家園、準公共跟私立托嬰中心有什麼差別？",
+        answer:
+          "公辦民營、社區公共托育家園由政府出資、委託民間團體經營，收費較低；準公共托嬰中心是私立機構與地方政府簽約，家長可領準公共托育補助、收費也受政府規範；私立托嬰中心則完全自主訂價，未必有補助。",
+      },
+      {
+        question: "居家托育服務中心是托嬰機構嗎？",
+        answer:
+          "不是。居家托育服務中心是協助家長找保母的媒合與管理窗口，負責保母登記、媒合、訪視輔導與托育諮詢，本身不收托幼兒；托嬰中心才是實際收托幼兒的機構。",
+      },
+      {
+        question: "我家不在臺北或新北，可以查到資料嗎？",
+        answer:
+          "目前僅收錄臺北市、新北市，其餘縣市尚未建置。可改用頁面上連結的衛福部社家署「托育管理資訊系統全國系統性查詢」查詢其他縣市。",
+      },
+      {
+        question: "為什麼有些托嬰中心只出現在準公共分類，沒有重複列在私立分類？",
+        answer:
+          "同一家私立托嬰中心申請「準公共」資格後，會同時出現在臺北市的私立名冊跟準公共名冊裡。本站比對機構名稱與地址後，重疊的機構只顯示一筆、歸類為準公共（並帶出準公共名冊的核定/實際收托人數與評鑑結果），避免同一地點重複出現。",
       },
     ],
   },
@@ -1899,7 +1968,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.cdc.gov.tw",
       },
     ],
-    relatedSlugs: ["aqi", "uv", "weather-alerts"],
+    relatedSlugs: ["aqi", "uv", "weather-alerts", "global-watch"],
     faqs: [
       {
         question: "國際旅遊疫情建議等級如何劃分？",
@@ -2272,6 +2341,54 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "三個圖層（避難收容處所／消防救援單位／應變中心）分別代表什麼？",
         answer:
           "避難收容處所是災害發生時民眾可前往避難的場所；消防救援單位是消防隊點位，供查詢鄰近消防單位位置；應變中心是各縣市政府災害應變中心，通常與消防局同位置，負責統籌指揮救災。",
+      },
+    ],
+  },
+  {
+    // Issue #587 (parent #583): first ticket of the "全球動態地球／Global
+    // Watch" feature — ships only the MapLibre globe shell (vector/satellite
+    // toggle, reset-to-Taiwan, reduced-motion, WebGL fallback). No data
+    // layers yet (地震/颱風/全球災害/國際疫情/全球空品 are #588-#592+),
+    // so this entry stays deliberately thin — not in INDEXABLE_SLUGS yet
+    // (see that set's own doc comment on thin-shell pages), no FAQs beyond
+    // the shell's own real, shipped behavior. Will absorb `earthquakes` and
+    // `travel-epidemic-alerts` (see those entries' relatedSlugs) once their
+    // own item tickets land — do not pre-emptively remove those two entries
+    // here; #583's own ticket for that 301/catalog cleanup is separate.
+    slug: "global-watch",
+    group: "disaster-alerts",
+    lastUpdated: "2026-10-14",
+
+    schemaType: "WebPage",
+    title: "全球動態地球",
+    keywords: ["全球動態地球", "3D地球", "地球儀", "MapLibre", "全球地圖", "衛星影像"],
+    description:
+      "可拖曳旋轉、縮放的 3D 地球，拉近至城市層級自然轉為平面街道地圖；支援向量地圖與衛星影像切換，並可一鍵回到台灣預設視角。",
+    directAnswer:
+      "全球動態地球是一顆可拖曳旋轉、縮放的互動式 3D 地球（MapLibre GL JS globe 投影），拉近到街道層級會自然轉為平面地圖，提供向量地圖／衛星影像切換與「回到台灣」重置視角按鈕。",
+    scientificBasis: [
+      {
+        title: "OpenFreeMap 開放向量地圖資料",
+        authority: "OpenFreeMap（OpenMapTiles／OpenStreetMap 貢獻者）",
+        url: "https://www.openfreemap.org/",
+      },
+      {
+        title: "GIBS (Global Imagery Browse Services) — Blue Marble 公有領域影像",
+        authority: "NASA EOSDIS",
+        url: "https://www.earthdata.nasa.gov/data/tools/gibs",
+      },
+    ],
+    relatedSlugs: ["earthquakes", "travel-epidemic-alerts", "disaster-map", "weather-alerts"],
+    faqs: [
+      {
+        question: "全球動態地球目前提供哪些功能？",
+        answer:
+          "目前版本提供地球本身的瀏覽功能：可拖曳旋轉與縮放，拉近到城市層級會自然轉為平面街道地圖；可切換向量地圖與衛星影像兩種底圖；有一顆按鈕可隨時回到台灣為中心、可見西太平洋範圍的預設視角。地震、颱風、全球災害、國際疫情與全球空品等資料圖層將於後續版本陸續上線。",
+      },
+      {
+        question: "裝置不支援 WebGL 時會發生什麼事？",
+        answer:
+          "偵測不到 WebGL 時，本頁不會嘗試載入互動式地球，只會顯示一段文字說明，不會出現錯誤或空白畫面。",
       },
     ],
   },
@@ -3316,9 +3433,9 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     keywords: ["母嬰親善醫院", "母嬰同室", "母乳哺育"],
     navLabel: "母嬰親善醫療院所",
     description:
-      "查詢國健署評鑑通過之母嬰親善醫療院所名冊，提供 24 小時母嬰同室、母乳庫合作與專業國際泌乳顧問指導之友善生產環境。",
+      "查詢臺北市、新北市、臺中市、臺南市、彰化縣五縣市衛生局公告之母嬰親善醫療院所名單，自動排除已過效期的紀錄並標示各縣市資料查證日期。其餘縣市（例如高雄市，現有公告效期已全數落在 2016～2019 年、不堪作為現行名單使用）尚未收錄，請洽當地衛生局確認最新名冊。",
     directAnswer:
-      "母嬰親善醫院係指符合世界衛生組織及國健署標準，支持母親自主決定生產方式、落實母嬰同室並全面推廣純母乳哺育之醫療院所。",
+      "母嬰親善醫院係指符合世界衛生組織及國健署母嬰親善認證基準、落實 24 小時母嬰同室並全面推廣純母乳哺育之醫療院所；本站目前僅收錄臺北市、新北市、臺中市、臺南市、彰化縣五縣市衛生局公告且仍在效期內的認證名單，其餘縣市尚未收錄。",
     scientificBasis: [
       {
         title: "衛生福利部國民健康署母嬰親善醫療院所認證基準",
@@ -3326,9 +3443,9 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.hpa.gov.tw/",
       },
     ],
-    relatedSlugs: ["breastfeeding-rooms", "postpartum-care", "contraception-map", "child-welfare-institutions", "accessible-parking"],
+    relatedSlugs: ["breastfeeding-rooms", "postpartum-care", "contraception-map", "child-welfare-institutions", "accessible-parking", "child-subsidies"],
     group: "family",
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-14",
 
     schemaType: "MedicalWebPage",
     faqs: [
@@ -3341,6 +3458,85 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "實施「24小時母嬰同室」對新生兒與產婦有何益處？",
         answer:
           "母嬰同室能讓母親即時辨識新生兒飢餓訊號並依需求餵食，促進母乳分泌並建立安全依附感，同時降低新生兒院內交叉感染風險。",
+      },
+      {
+        question: "為什麼我所在的縣市查不到母嬰親善醫院？",
+        answer:
+          "本工具目前只收錄臺北市、新北市、臺中市、臺南市、彰化縣這五縣市衛生局公告且仍在效期內的名單；其餘縣市（例如高雄市，現有公告效期已全數過期）尚未收錄，或該縣市公告名單剛好全數過期，兩種情況都會顯示「本縣市暫無有效名單，請洽當地衛生局」，請直接向當地衛生局確認最新名冊。",
+      },
+    ],
+  },
+  {
+    slug: "child-subsidies",
+    title: "育兒補助總覽：育兒津貼／托育補助／就學補助／生育補助快速查詢",
+    keywords: [
+      "育兒津貼",
+      "托育補助",
+      "就學補助",
+      "生育補助10萬",
+      "試管嬰兒補助3.0",
+      "準公共托嬰",
+      "準公共幼兒園",
+      "0-18歲成長津貼",
+      "台灣兒少成長及未來帳戶條例",
+    ],
+    navLabel: "育兒補助總覽",
+    description:
+      "彙整育兒津貼、0–2歲托育補助、2–6歲就學補助／育兒津貼、5歲就學補助、生育補助與試管嬰兒補助3.0等7項現行育兒相關補助，附純前端快速查詢（輸入年齡、照顧方式、胎次與福利身分即可試算金額，不送出任何資料），並以中性說明彙整尚未上路的0–18歲成長津貼兩個競爭方案。",
+    directAnswer:
+      "育兒補助總覽彙整育兒津貼、托育補助、2–6歲就學補助、5歲就學補助、生育補助（每胎10萬元）、試管嬰兒補助3.0等7項現行制度的金額與資格，並提供純前端快速查詢試算；尚未上路的0–18歲成長津貼（行政院版與立法院三讀之在野黨版）另闢專區中性說明，不列入試算。",
+    scientificBasis: [
+      {
+        title: "育兒津貼及托育準公共化實施計畫",
+        authority: "衛生福利部社會及家庭署",
+        url: "https://www.sfaa.gov.tw/sfaa/list/5e0",
+      },
+      {
+        title: "2歲以上未滿5歲幼兒育兒津貼及5歲至入國民小學前幼兒就學補助",
+        authority: "教育部全國教保資訊網",
+        url: "https://www.ece.moe.edu.tw/ch/subsidy/",
+      },
+      {
+        title: "勞工保險生育給付加發生育補助作業要點",
+        authority: "勞動部勞工保險局",
+        url: "https://www.mol.gov.tw/1607/1632/1640/84736/",
+      },
+      {
+        title: "擴大不孕症（試管嬰兒）治療補助方案3.0",
+        authority: "衛生福利部國民健康署",
+        url: "https://mohw.gov.tw/cp-16-85394-1.html",
+      },
+    ],
+    relatedSlugs: ["emergency-hotlines", "baby-friendly-hospitals", "child-welfare-institutions"],
+    group: "family",
+    lastUpdated: "2026-10-14",
+
+    schemaType: "WebPage",
+    faqs: [
+      {
+        question: "育兒津貼和托育補助可以一起領嗎？",
+        answer:
+          "不行，兩者互斥、只能擇一請領。送公共化托育機構或準公共保母／托嬰中心的家庭請領托育補助（金額較高，依機構類型與胎次每月7,000至15,000元不等）；自行照顧或未送上述機構的家庭則請領育兒津貼（每月5,000至7,000元）。",
+      },
+      {
+        question: "就讀公立、非營利或準公共幼兒園後，還能再領2–6歲育兒津貼或5歲就學補助嗎？",
+        answer:
+          "不能。就讀這三類「平價教保服務機構」的幼兒，改以政府直接支付幼兒園差額、家長每月自付金額設有上限（公立最高1,000元、非營利最高2,000元、準公共最高3,000元，依胎次遞減，低收入戶／中低收入戶一律免費）的方式減輕負擔，不得同時請領現金形式的育兒津貼或5歲就學補助。",
+      },
+      {
+        question: "生育補助10萬元和試管嬰兒補助3.0是什麼時候開始的？",
+        answer:
+          "生育補助自115（2026）年1月1日起由政府另編公務預算，將請領勞保生育給付之本國籍女性勞工（含與本國籍結婚之外籍配偶）的每胎給付加發至合計10萬元；試管嬰兒補助3.0自114（2025）年11月1日起實施，受術妻未滿39歲者第1次療程最高補助15萬元。",
+      },
+      {
+        question: "0–18歲成長津貼是現在就能申請的補助嗎？",
+        answer:
+          "還不能。0–18歲成長津貼目前有行政院版方案與立法院三讀通過之在野黨版《台灣兒少成長及未來帳戶條例》兩案並存，且行政院已對立法院三讀版本不予副署，爭議尚未解決，兩案皆尚未正式上路。本工具將其列在「已宣布、尚未上路」區塊中性說明，不會出現在快速查詢結果中，請以主管機關正式公告為準。",
+      },
+      {
+        question: "快速查詢會不會把我輸入的年齡、所得狀況送到伺服器或記錄下來？",
+        answer:
+          "不會。快速查詢的比對計算完全在瀏覽器端進行，資料在頁面載入時就已經由伺服器端一次性傳入，之後選擇年齡、照顧方式、胎次或福利身分都不會發出任何網路請求，也不會寫入瀏覽器的本機儲存空間。",
       },
     ],
   },

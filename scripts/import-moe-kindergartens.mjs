@@ -1,21 +1,56 @@
 #!/usr/bin/env node
 /**
- * Fetches Ministry of Education (MOE) Kindergarten Directory (k1_new.json)
- * filters for the latest active academic year, normalizes fields,
- * and pushes the records to production's /api/admin/facilities-import endpoint.
+ * Fetches Ministry of Education (MOE) Kindergarten Directory (k1_new.json),
+ * filters for the latest active academic year, normalizes fields, merges in
+ * kiang/ap.ece.moe.edu.tw's `preschools.json` (issue #602 — a MIT-licensed
+ * community mirror of 全國教保資訊網 carrying the 非營利/準公共 split, monthly
+ * fee, and penalty-record flag that MOE's own k1_new.json doesn't have), and
+ * pushes the merged records to production's /api/admin/facilities-import
+ * endpoint.
  *
  * Usage:
  *   ADMIN_SECRET=<x-rss-sync-admin-secret value> node scripts/import-moe-kindergartens.mjs
  */
 import { toHalfwidthDigits, normalizeAddress } from "./lib/mohw-csv.mjs";
+import { mergeKindergartenSources } from "./lib/kindergarten-merge.mjs";
 
 const SOURCE_URL = "https://stats.moe.gov.tw/files/opendata/k1_new.json";
+const KIANG_SOURCE_URL = "https://kiang.github.io/ap.ece.moe.edu.tw/preschools.json";
 const BASE_URL = process.env.HEALTH_BASE_URL || "https://health.j172.tw";
 const ADMIN_SECRET = process.env.ADMIN_SECRET || process.env.RSS_SYNC_ADMIN_SECRET;
 
 if (!ADMIN_SECRET) {
   console.error("Missing ADMIN_SECRET or RSS_SYNC_ADMIN_SECRET env var.");
   process.exit(1);
+}
+
+/**
+ * Fetches kiang's preschools.json. Returns `{ records: [], fetchedAt: null }`
+ * on any failure (network error, non-2xx, bad JSON shape) rather than
+ * throwing — this supplementary source enriching MOE's own data must never
+ * take down the whole import if kiang.github.io happens to be unreachable.
+ * `fetchedAt` is derived from the response's `Last-Modified` header (falling
+ * back to "now" if that header is missing) so that mergeKindergartenSources's
+ * 60-day staleness guard tracks when kiang's *data* was last actually
+ * updated, not merely when this script last happened to run successfully.
+ */
+async function fetchKiangPreschools() {
+  try {
+    const res = await fetch(KIANG_SOURCE_URL, { headers: { "User-Agent": "j172-health-sync/1.0" } });
+    if (!res.ok) {
+      console.warn(`⚠️  kiang preschools.json 下載失敗（HTTP ${res.status}），本次僅使用教育部公/私立二分類資料。`);
+      return { records: [], fetchedAt: null };
+    }
+    const lastModified = res.headers.get("last-modified");
+    const fetchedAt = lastModified && !Number.isNaN(new Date(lastModified).getTime()) ? new Date(lastModified) : new Date();
+    const geojson = await res.json();
+    const records = Array.isArray(geojson?.features) ? geojson.features.map((feature) => feature.properties) : [];
+    console.log(`kiang preschools.json 下載完成：${records.length} 筆（Last-Modified: ${fetchedAt.toISOString()}）。`);
+    return { records, fetchedAt };
+  } catch (err) {
+    console.warn(`⚠️  kiang preschools.json 下載發生例外（${err.message}），本次僅使用教育部公/私立二分類資料。`);
+    return { records: [], fetchedAt: null };
+  }
 }
 
 async function submitChunk(records, chunkIndex, totalChunks) {
@@ -93,15 +128,23 @@ async function main() {
       };
     });
 
-  console.log(`有效幼兒園資料: ${records.length} 筆，開始分批匯入資料庫...`);
+  console.log(`有效幼兒園資料: ${records.length} 筆。開始下載 kiang/ap.ece.moe.edu.tw 補充資料...`);
+  console.log(`🎯 來源: ${KIANG_SOURCE_URL}`);
+
+  const { records: kiangRecords, fetchedAt: kiangFetchedAt } = await fetchKiangPreschools();
+  const mergedRecords = mergeKindergartenSources(records, kiangRecords, kiangFetchedAt);
+  const matchedCount = mergedRecords.filter((r) => r.extra?.category).length;
+  console.log(`已補上非營利／準公共分類、月費、裁罰紀錄的幼兒園: ${matchedCount} / ${mergedRecords.length} 筆。`);
+
+  console.log(`開始分批匯入資料庫...`);
 
   const CHUNK_SIZE = 500;
-  const totalChunks = Math.ceil(records.length / CHUNK_SIZE);
+  const totalChunks = Math.ceil(mergedRecords.length / CHUNK_SIZE);
   let totalInserted = 0;
   let totalUpdated = 0;
 
-  for (let i = 0; i < records.length; i += CHUNK_SIZE) {
-    const chunk = records.slice(i, i + CHUNK_SIZE);
+  for (let i = 0; i < mergedRecords.length; i += CHUNK_SIZE) {
+    const chunk = mergedRecords.slice(i, i + CHUNK_SIZE);
     const chunkIdx = Math.floor(i / CHUNK_SIZE);
     try {
       const result = await submitChunk(chunk, chunkIdx, totalChunks);
@@ -114,7 +157,7 @@ async function main() {
 
   console.log("\n=================================================");
   console.log("🎉 全國幼兒園名錄資料匯入完成！");
-  console.log(`📊 總筆數: ${records.length} | 新增: ${totalInserted} | 更新: ${totalUpdated}`);
+  console.log(`📊 總筆數: ${mergedRecords.length} | 新增: ${totalInserted} | 更新: ${totalUpdated} | 已補充分類: ${matchedCount}`);
   console.log("=================================================");
 }
 

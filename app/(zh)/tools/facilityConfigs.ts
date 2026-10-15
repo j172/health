@@ -323,6 +323,12 @@ export const facilitySearchConfigs = {
     title: "全國幼兒園查詢",
     description:
       "查詢全國公立、私立、準公共與非營利幼兒園名錄。資料來源：教育部開放資料。",
+    // issue #602: category/月費/裁罰紀錄欄位來自民間轉錄 kiang/ap.ece.moe.edu.tw
+    // 的 preschools.json（MIT 授權，轉錄自全國教保資訊網），並非教育部官方
+    // k1_new.json 本身的欄位；該民間轉錄逾 60 天未更新時會自動停用，屆時這些
+    // 園所僅會顯示教育部原始的公/私立二分類。
+    noteLine:
+      "非營利／準公共標記、月費與裁罰紀錄來自民間轉錄（kiang/ap.ece.moe.edu.tw，MIT 授權），非教育部官方欄位；若該轉錄超過 60 天未更新，將自動改回僅顯示教育部公/私立二分類。",
     searchPlaceholder: "輸入幼兒園名稱或縣市關鍵字",
     errorText: "查詢幼兒園資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的幼兒園，可改用關鍵字搜尋。",
@@ -332,7 +338,9 @@ export const facilitySearchConfigs = {
       { value: "公立", label: "公立幼兒園" },
       { value: "私立", label: "私立幼兒園" },
       { value: "非營利", label: "非營利幼兒園" },
+      { value: "準公共", label: "準公共幼兒園" },
     ],
+    extraFields: [{ key: "monthlyFee", label: "月費（元）：" }],
   },
   "cram-schools": {
     facilityType: "cram_school",
@@ -514,13 +522,16 @@ export const facilitySearchConfigs = {
   "baby-friendly-hospitals": {
     facilityType: "baby_friendly_hospital",
     emoji: "🤱",
-    title: "全國母嬰親善認證醫療院所地圖",
+    title: "母嬰親善醫療院所地圖",
     description:
-      "查詢國民健康署評鑑認證通過之母嬰親善醫療院所，提供 24 小時母嬰同室、母乳哺育指導與婦幼照護環境。資料來源：衛生福利部國民健康署。",
+      "查詢臺北市、新北市、臺中市、臺南市、彰化縣五縣市衛生局公告之母嬰親善醫療院所名單，並自動排除已過有效期的紀錄。目前僅收錄這五個縣市——其餘縣市（例如高雄市，現有公告效期已全數落在 2016～2019 年、不堪作為現行名單使用）尚未收錄；若所在縣市未列出或查無有效名單，請直接洽當地衛生局確認最新名冊。",
+    noteLine:
+      "各縣市資料查證於 2026-10-14：臺北市（19 家原始筆數，依效期逐筆過濾）、新北市（20 家，名冊標示 2026-02 更新）、臺中市（18 家）、臺南市（11 家，含座標）、彰化縣（5 家，效期至民國 116 年底／2027 年底）。",
     searchPlaceholder: "輸入婦產科、醫院名稱或地址關鍵字",
     errorText: "查詢母嬰親善醫療院所失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無認證的母嬰親善院所，可改用關鍵字搜尋。",
+    emptyStateNoKeyword: "附近查無收錄的母嬰親善院所，可改用關鍵字或地區快篩搜尋。",
     emptyStateWithKeyword: "查無符合的母嬰親善院所。",
+    emptyStateCounty: "本縣市暫無有效名單，請洽當地衛生局。",
     serviceItem: { label: "親善特色：" },
   },
   "rare-disease-care": {
@@ -624,5 +635,58 @@ export const facilitySearchConfigs = {
       { value: "身心障礙機車車位", label: "🛵 身心障礙機車" },
       { value: "復康巴士", label: "🚐 復康巴士" },
     ],
+  },
+  // issue #601 (parent #599): 托嬰中心與居家托育地圖，先用臺北／新北兩個縣市把
+  // 骨架建好。childcare_center 與 home_childcare_center 是兩個不同的 facilityType
+  // （托嬰機構本身 vs. 協助家長找保母的居家托育服務中心媒合窗口），各自一個
+  // config entry，由頁面用類型分頁切換——跟 long-term-care 合併 4 種類型的既有
+  // 模式一樣。
+  "childcare-centers": {
+    facilityType: "childcare_center",
+    emoji: "🍼",
+    title: "全國托嬰中心查詢（臺北／新北）",
+    description:
+      "查詢臺北市、新北市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數與評鑑結果。資料來源：臺北市政府社會局、新北市政府社會局開放資料。目前僅涵蓋臺北、新北，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。",
+    searchPlaceholder: "輸入托嬰中心名稱、行政區或地址關鍵字",
+    errorText: "查詢托嬰中心資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的托嬰中心，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的托嬰中心。",
+    serviceItem: { label: "分類：" },
+    showGeocodeNote: true,
+    categories: [
+      { value: "公辦民營", label: "🏛️ 公辦民營" },
+      { value: "社區公共托育家園", label: "🏡 社區公共托育家園" },
+      { value: "準公共", label: "🤝 準公共" },
+      { value: "私立", label: "🏢 私立" },
+    ],
+    // approvedCapacity/actualCapacity/evaluationResult/monthlyFee are only
+    // ever present on rows whose source actually has that column (121981 準
+    // 公共 has all three except monthlyFee; 121337/125380 有 approvedCapacity
+    // only; 126984/126986/126222 have none) — FacilitySearchContent's
+    // extraFields already only renders a field when the row's extra_json
+    // actually has it, so no "N/A" placeholders show up for the rows that
+    // don't have a given field. monthlyFee has no populated source yet in
+    // this ticket, kept here so a later county with 月費 data needs no
+    // further change here or to FacilitySearchContent.
+    extraFields: [
+      { key: "approvedCapacity", label: "核定收托人數：" },
+      { key: "actualCapacity", label: "實際收托人數：" },
+      { key: "evaluationResult", label: "評鑑結果：" },
+      { key: "monthlyFee", label: "月費：" },
+      { key: "dataAsOf", label: "本站資料同步日期：" },
+    ],
+  },
+  "home-childcare-centers": {
+    facilityType: "home_childcare_center",
+    emoji: "👩‍👧",
+    title: "全國居家托育服務中心查詢（臺北／新北）",
+    description:
+      "查詢臺北市、新北市居家托育服務中心（找保母的窗口），提供轄區保母媒合、訪視輔導與托育諮詢服務。資料來源：臺北市政府社會局、新北市政府社會局開放資料。目前僅涵蓋臺北、新北，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。",
+    searchPlaceholder: "輸入中心名稱、行政區或地址關鍵字",
+    errorText: "查詢居家托育服務中心資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的居家托育服務中心，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的居家托育服務中心。",
+    showGeocodeNote: true,
+    extraFields: [{ key: "dataAsOf", label: "本站資料同步日期：" }],
   },
 } satisfies Record<string, FacilitySearchConfig>;
