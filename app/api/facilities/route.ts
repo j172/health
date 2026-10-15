@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "node:fs";
 import path from "node:path";
 import { countFacilities, countFilteredFacilities, searchFacilities } from "@/lib/server/facilities/queries";
+import { getFacilitySourceDataStatus } from "@/lib/server/facilities/dataStatus";
+import { parseDataStatusSourceParam } from "@/lib/format/facilityDataStatus";
 
 import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
 import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
@@ -265,6 +267,10 @@ export async function GET(request: NextRequest) {
   const serviceItem = params.get("category")?.trim() || undefined;
   const serviceMethod = params.get("serviceMethod")?.trim() || undefined;
   const onlyCharity = params.get("charity") === "1" || undefined;
+  // Opt-in (issue #678): asks for the row count + newest import date of ONE
+  // source_key inside this facility type, for tools backed by a manually
+  // imported source. Absent = no extra query and an unchanged response.
+  const dataStatusSource = parseDataStatusSourceParam(params.get("dataStatusSource"));
   const sortParam = params.get("sort");
   const sort =
     sortParam === "distance" || sortParam === "name" || sortParam === "category" || sortParam === "newest"
@@ -304,7 +310,7 @@ export async function GET(request: NextRequest) {
 
     const hasFilters = Boolean(keyword || county || district || serviceItem || serviceMethod || onlyCharity);
 
-    const [facilities, allTotal, filteredTotal] = await Promise.all([
+    const [facilities, allTotal, filteredTotal, dataStatus] = await Promise.all([
       searchFacilities({
         facilityType,
         keyword,
@@ -324,6 +330,11 @@ export async function GET(request: NextRequest) {
       hasFilters
         ? countFilteredFacilities(facilityType, { keyword, county, district, serviceItem, serviceMethod, onlyCharity })
         : Promise.resolve(null),
+      // A failed status query degrades to "unknown" (field omitted), never to
+      // a 500 for the whole list and never to a fake zero-row 「資料暫缺」.
+      dataStatusSource
+        ? getFacilitySourceDataStatus(facilityType, dataStatusSource).catch(() => null)
+        : Promise.resolve(null),
     ]);
 
     if (allTotal > 0) {
@@ -334,6 +345,7 @@ export async function GET(request: NextRequest) {
         allTotal,
         page,
         pageSize: limit,
+        ...(dataStatus ? { dataStatus } : {}),
       });
     }
 
@@ -356,7 +368,14 @@ export async function GET(request: NextRequest) {
       return jsonWithCache({ ...fallback, page, pageSize: limit });
     }
 
-    return jsonWithCache({ facilities, total: 0, allTotal: 0, page, pageSize: limit });
+    return jsonWithCache({
+      facilities,
+      total: 0,
+      allTotal: 0,
+      page,
+      pageSize: limit,
+      ...(dataStatus ? { dataStatus } : {}),
+    });
   } catch (error) {
     console.warn("GET /api/facilities DB query failed, attempting seed fallback:", error);
     const fallback = getFacilitySeedFallback(facilityType, {

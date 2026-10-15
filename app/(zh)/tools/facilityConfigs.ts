@@ -116,6 +116,16 @@ export const facilitySearchConfigs = {
       { value: "一般護理之家", label: "🏥 一般護理之家" },
       { value: "居家護理所", label: "🏠 居家護理所" },
     ],
+    // issue #678: 115950 只能由住宅網路手動匯入（主機與 GitHub runner 都連不到），
+    // 選到這兩個分類時顯示資料日期，或在該來源 0 筆時誠實標示「資料暫缺」。
+    dataStatus: {
+      sourceKey: "nhplatform_115950_ltc",
+      subject: "一般護理之家與居家護理所",
+      sourceLabel: "衛福部「全國開業護理機構清冊」（data.gov.tw 115950）",
+      sourceUrl: "https://data.gov.tw/dataset/115950",
+      onlyForCategories: ["一般護理之家", "居家護理所"],
+      partialNote: "目前列出的結果（若有）只來自長照地理資訊系統的住宿型機構，並不完整。",
+    },
   },
   "postpartum-care": {
     // issue #612: data.gov.tw 115950「全國開業護理機構清冊」裡的產後護理之家
@@ -134,6 +144,13 @@ export const facilitySearchConfigs = {
       { key: "postpartumBeds", label: "🛏️ 產後護理床：" },
       { key: "infantBeds", label: "👶 嬰兒床：" },
     ],
+    // issue #678: 同上——這個工具的資料全部來自 115950，表內 0 筆時標示「資料暫缺」。
+    dataStatus: {
+      sourceKey: "nhplatform_115950_postpartum",
+      subject: "產後護理之家",
+      sourceLabel: "衛福部「全國開業護理機構清冊」（data.gov.tw 115950）",
+      sourceUrl: "https://data.gov.tw/dataset/115950",
+    },
   },
   "vet-clinics": {
     facilityType: "vet_clinic",

@@ -255,3 +255,11 @@ jobs:
       # listed here, was retired — its ltc_contracted facility type was a
       # narrower duplicate of what import-mohw-ltc-gis.mjs's all.csv/ltc.csv
       # already ingests as facility_type "long_term_care".)
+      #
+      # Also NOT run here (issue #678, Track B B-8): data.gov.tw 115950
+      # 全國開業護理機構清冊 on nhplatform.mohw.gov.tw — same *.mohw.gov.tw
+      # family, timed out from BOTH the production host and a GitHub runner in
+      # the 2026-10-15 egress probes, so a runner relay cannot help either (owner
+      # decision D7: no relay). Run scripts/import-nhplatform-nursing-institutions.mjs
+      # by hand from a residential/office network every ~6 months; the full
+      # manual-import list lives in docs/domains/10-scheduling-sync-ci.md §1.3.

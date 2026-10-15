@@ -17,6 +17,12 @@
 #   months. This script still handles the geocoding backfill
 #   for whichever of these were last imported that way (LTC GIS already ships
 #   98%+ coordinates directly).
+# - The nationwide nursing-institution register (data.gov.tw 115950,
+#   nhplatform.mohw.gov.tw; 產後護理之家 + 一般護理之家 + 居家護理所) — timed out
+#   from both the host and a runner in the 2026-10-15 egress probes (issue #678).
+#   Import it by hand from a residential/office network with
+#   scripts/import-nhplatform-nursing-institutions.mjs, every ~6 months. It ships
+#   its own WGS84 coordinates, so it needs no geocoding backfill.
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-

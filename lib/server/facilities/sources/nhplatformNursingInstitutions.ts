@@ -14,16 +14,25 @@ import { validateImportRows } from "@/lib/server/validation/importSchema";
 //     同步記一份供卡片顯示用。
 //
 // 下載網址是 data.gov.tw dataset API（https://data.gov.tw/api/v2/rest/dataset/115950）
-// 回傳的 resourceDownloadUrl，實測於 2026-10-14 從本次開發所在環境直接 curl 成功
+// 回傳的 resourceDownloadUrl，實測於 2026-10-14 從一般住宅網路直接 curl 成功
 // （HTTP 200、無轉址、回傳 348KB 真實 CSV，檔名 114年12月全國開業護理機構清冊.csv）。
-// 但這個環境不是正式主機也不是 GitHub Actions runner —
-// nhplatform.mohw.gov.tw 是否真的能從正式主機連線**仍未驗證**，已加入
-// .github/workflows/egress-probe.yml 兩側探測；部署後第一次排程跑之前，務必跑一次
-// 該 workflow（或 `node scripts/gha-egress-probe-host.mjs`）確認正式主機連得到，
-// 連不到才需要建 GitHub runner relay。這個 dl-3820 網址本身是 nhplatform 的資源
-// permalink（資料每年更新一次時，平台慣例是同網址覆蓋新檔，不是每次換新 hash），
-// 所以像其他來源一樣直接 pin 住，不每次呼叫 dataset API 多繞一次。
-const SOURCE_URL = "https://nhplatform.mohw.gov.tw/dl-3820-74883655f255416abc752bef29cbd7aa.html";
+//
+// 可達性（issue #678，Track B B-8）：2026-10-15 的 egress-probe（Actions run
+// 38724026473、38764893673）顯示 nhplatform.mohw.gov.tw 從**正式主機與 GitHub
+// runner 兩邊都逾時**——是 IP 範圍封鎖，不是程式問題，runner relay 也解決不了。
+// 擁有者決議（spec §7.1 D7）：不蓋 relay；下方 fetchNhplatformNursingInstitutions()
+// 在 facilities-sync 裡仍會嘗試（網路一旦放行就自動恢復），但實務上的更新途徑是
+// 住宅網路手動匯入 scripts/import-nhplatform-nursing-institutions.mjs（共用這個檔案
+// 的 parseNhplatformNursingCsv()，不複製欄位對應），登記在半年人工清單
+// （docs/domains/10-scheduling-sync-ci.md §1.3）。表內沒有資料時，頁面會誠實標示
+// 「資料暫缺」，見 lib/format/facilityDataStatus.ts。
+//
+// 這個 dl-3820 網址本身是 nhplatform 的資源 permalink（資料每年更新一次時，平台
+// 慣例是同網址覆蓋新檔，不是每次換新 hash），所以像其他來源一樣直接 pin 住，不每次
+// 呼叫 dataset API 多繞一次。
+export const NHPLATFORM_NURSING_SOURCE_URL =
+  "https://nhplatform.mohw.gov.tw/dl-3820-74883655f255416abc752bef29cbd7aa.html";
+const SOURCE_URL = NHPLATFORM_NURSING_SOURCE_URL;
 
 interface NhplatformNursingRow {
   機構代碼: string;
@@ -169,14 +178,15 @@ export function mapRowToFacilityRecord(r: NhplatformNursingRow): FacilityRecord 
   return null;
 }
 
-export async function fetchNhplatformNursingInstitutions(): Promise<FacilityRecord[]> {
-  // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
-  // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
-  const { status, text } = await httpGetText(SOURCE_URL);
-  if (status < 200 || status >= 300) {
-    throw new Error(`Nursing institutions nationwide list (115950) request failed: HTTP ${status}`);
-  }
-
+/**
+ * CSV text → facility records, shared by the facilities-sync fetch below and
+ * the manual residential-network importer
+ * (scripts/import-nhplatform-nursing-institutions.mjs). Throws (via
+ * validateImportRows) when a critical column is missing — which is also what
+ * happens when the response is an HTML error/denial page instead of the CSV —
+ * so a bad download can never be mapped into garbage records.
+ */
+export function parseNhplatformNursingCsv(text: string): FacilityRecord[] {
   const raw = parseCsv(text) as unknown as NhplatformNursingRow[];
   validateImportRows("Nursing institutions nationwide list (115950)", nhplatformNursingRawSchema, raw);
 
@@ -186,4 +196,15 @@ export async function fetchNhplatformNursingInstitutions(): Promise<FacilityReco
     if (record) records.push(record);
   }
   return records;
+}
+
+export async function fetchNhplatformNursingInstitutions(): Promise<FacilityRecord[]> {
+  // Deliberately not the global fetch() — undici's WASM llhttp parser OOMs
+  // on this host's low ulimit -v; see lib/server/net/httpClient.ts.
+  const { status, text } = await httpGetText(SOURCE_URL);
+  if (status < 200 || status >= 300) {
+    throw new Error(`Nursing institutions nationwide list (115950) request failed: HTTP ${status}`);
+  }
+
+  return parseNhplatformNursingCsv(text);
 }
