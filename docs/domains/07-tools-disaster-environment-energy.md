@@ -11,7 +11,7 @@
 |---|---|---|---|
 | 防災避難地圖 | [/tools/disaster-map](https://health.j172.tw/tools/disaster-map) | 內政部：避難收容 5,973、消防救援 770、應變中心 25 | 獨立表 `disaster_response_points`（`layer` 區分）；MarkerCluster；可疊加農業部土石流警戒 |
 | 積淹水感測地圖 | [/tools/inundation-map](https://health.j172.tw/tools/inundation-map) | 水利署 IoT 路面淹水感測＋河川水位警戒 | 已有真正的 Leaflet 地圖（`InundationMapLeaflet`） |
-| 停水與供水站 | [/tools/water-outages](https://health.j172.tw/tools/water-outages) | 台水＋北水 | 新表 `wra_water_outages` 已接上真實擷取（`ingestWraWaterOutages.ts`） |
+| 停水與供水站 | [/tools/water-outages](https://health.j172.tw/tools/water-outages) | 台水＋北水 | 新表 `wra_water_outages` 已接上真實擷取（`ingestWraWaterOutages.ts`）；「水質」分頁（`#quality`，Track B B-13／#673）讀 `water_hardness_township`（台水 36605 鄉鎮總硬度 340 筆，`lib/server/waterQuality/`，每月 2 日 05:29 同步；臺北市／金門縣／連江縣不在台水轄區，頁面明寫） |
 | 水情（水位＋水庫） | [/tools/water-conditions](https://health.j172.tw/tools/water-conditions) | 水利署 | 站名目錄補強、SVG 量尺／水塔視覺 |
 | 氣象警報與雨量 | [/tools/weather-alerts](https://health.j172.tw/tools/weather-alerts) | 氣象署 W-C0033／W-C0034、C-B0025、O-A0002 | 依 GPS 或縣市找最近雨量站；側欄另含海嘯與鄉鎮危險天氣 |
 | 電力概況 | [/tools/power-grid-overview](https://health.j172.tw/tools/power-grid-overview) | 台電機組即時、能源署配比、核電廠周邊輻射 | 不做地圖，表格呈現 |

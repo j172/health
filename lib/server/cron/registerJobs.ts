@@ -19,6 +19,7 @@ import { runPublicArtSync } from "@/lib/server/culture/ingestPublicArt";
 import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
 import { runWraWaterOutagesSync } from "@/lib/server/waterOutages/ingestWraWaterOutages";
+import { runWaterQualitySync } from "@/lib/server/waterQuality/runSync";
 import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
@@ -303,6 +304,18 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "18,48 * * * *",
     runGuarded("wra-water-outages-cron.log", () => runWraWaterOutagesSync()),
+  );
+  // 水質分頁 (issue #673 / Track B B-13) — 台水 36605 鄉鎮總硬度，目錄標示每 3
+  // 個月更新，所以每月 2 日 05:29 跑一次即可（日後 B-14 的淨水場檢驗結果也掛
+  // 在同一個 job 裡，見 lib/server/waterQuality/runSync.ts）。29 分不在任何
+  // 其他 job 的分鐘格線上，也不是 youbike 每 5 分鐘格線的倍數；5 點區段已用的
+  // 分鐘是 5、12(僅每月 1 日)、15(僅週六)、18(僅每月 1 日)、22、30，加上每小時
+  // job 的分鐘——29 與它們都不會在同一個 tick 碰撞（由 waterQuality 的
+  // dbConventions.test.mjs 逐一解析所有 cron 運算式驗證）。這個 job 自己再用
+  // withAdvisoryLock 防重疊。
+  cron.schedule(
+    "29 5 2 * *",
+    runGuarded("water-quality-sync-cron.log", () => runWaterQualitySync()),
   );
   // Green products sync daily at 4:30am
   cron.schedule(

@@ -1787,6 +1787,29 @@ export const TABLE_DDL = {
       INDEX idx_water_outages_time (start_time, end_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 台水「用戶水質資訊公開」(data.gov.tw 36605) 鄉鎮總硬度 (issue #673 / Track B
+  // B-13) — /tools/water-outages 的「水質」分頁。見 lib/server/waterQuality/。
+  //
+  // UNIQUE KEY 刻意只用 (county, district)：這是「最新狀態表」，每次同步都是對
+  // 同一列做 UPDATE，不是新增一列。絕對不能把 synced_at 或任何時間欄位放進
+  // key —— 這個 repo 已在 cwa_station_weather／cwa_rainfall／aqi_readings 等表
+  // 上真實發生過「UNIQUE KEY 含時間欄位 → 每次同步都多插一列 → 表無限膨脹」
+  // 的事故。synced_at 與 hardness_mg_l 因此都是一般欄位；來源已不再列出的
+  // 鄉鎮由 runSync.ts 在通過 planSnapshotReconcile 防呆後，以 synced_at 刪除。
+  waterHardnessTownship: `
+    CREATE TABLE IF NOT EXISTS water_hardness_township (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      county VARCHAR(16) NOT NULL,
+      district VARCHAR(32) NOT NULL,
+      hardness_mg_l DECIMAL(8,2) NOT NULL,
+      unit VARCHAR(16) NOT NULL DEFAULT '毫克/公升',
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_water_hardness_township (county, district)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   moaDebrisFlowAlerts: `
     CREATE TABLE IF NOT EXISTS moa_debris_flow_alerts (
       id BIGINT NOT NULL AUTO_INCREMENT,
