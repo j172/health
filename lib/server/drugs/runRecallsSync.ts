@@ -1,6 +1,6 @@
 import { withAdvisoryLock } from "@/lib/server/db/mysql";
 import { createIngestionRun, finishIngestionRun, writeIngestionError } from "@/lib/server/logging/ingestionLogger";
-import { replaceDrugRecallsSnapshot } from "@/lib/server/drugs/recallQueries";
+import { upsertDrugRecalls } from "@/lib/server/drugs/recallQueries";
 import { DRUG_RECALL_SOURCE, fetchDrugRecalls } from "@/lib/server/drugs/sources/tfdaDrugRecalls";
 import { runSource } from "@/lib/server/sync/runSource";
 
@@ -14,9 +14,6 @@ export interface DrugRecallsSyncResult {
   fetched: number;
   inserted: number;
   updated: number;
-  deleted: number;
-  /** Set when the stale-row delete was skipped because the snapshot looked broken (the upsert still happened). */
-  reconcileSkippedReason: string | null;
   error: string | null;
 }
 
@@ -25,8 +22,6 @@ const emptyResult = (error: string | null): DrugRecallsSyncResult => ({
   fetched: 0,
   inserted: 0,
   updated: 0,
-  deleted: 0,
-  reconcileSkippedReason: null,
   error,
 });
 
@@ -36,15 +31,18 @@ const emptyResult = (error: string | null): DrugRecallsSyncResult => ({
  * memory concern; it goes through runSource so a failure is reported, not
  * thrown.
  *
- * An empty parse is reported as an error rather than a quiet success: the
- * register holds ~1,700 historical rows, so zero means a broken export, and
- * the snapshot reconcile must never see it as "everything was withdrawn".
+ * Upsert only — the recall table is an append-only event archive, unlike B-4's
+ * shortage tables that mirror a "latest state" list; this sync never deletes.
+ *
+ * Two protections against a broken export, both reported as an error (and into
+ * ingest_errors) with nothing written: an empty parse (the register holds
+ * ~1,700 historical rows, so zero means a broken export), and a response far
+ * smaller than what is already stored (upsertDrugRecalls' plausibility guard).
  *
  * Takes out its own MySQL advisory lock (distinct from the shortage sync's) so
  * an overrunning tick or a manual trigger that lands on top of the cron is
- * skipped rather than running twice. Failures — and a snapshot the reconcile
- * guard refused to delete against — are written to the shared ingest_errors
- * table via writeIngestionError.
+ * skipped rather than running twice. Failures are written to the shared
+ * ingest_errors table via writeIngestionError.
  */
 export async function runDrugRecallsSync(): Promise<DrugRecallsSyncResult> {
   const startedAt = new Date();
@@ -53,14 +51,14 @@ export async function runDrugRecallsSync(): Promise<DrugRecallsSyncResult> {
   const lockResult = await withAdvisoryLock(LOCK_NAME, 1, async () => {
     const outcome = await runSource<Omit<DrugRecallsSyncResult, "error">>(
       DRUG_RECALL_SOURCE.sourceKey,
-      { datasetId: DRUG_RECALL_SOURCE.datasetId, fetched: 0, inserted: 0, updated: 0, deleted: 0, reconcileSkippedReason: null },
+      { datasetId: DRUG_RECALL_SOURCE.datasetId, fetched: 0, inserted: 0, updated: 0 },
       async () => {
         const records = await fetchDrugRecalls();
         if (records.length === 0) {
           throw new Error(`TFDA drug recall ${DRUG_RECALL_SOURCE.datasetId} parsed to 0 rows; refusing to treat an empty export as the register`);
         }
-        const snapshot = await replaceDrugRecallsSnapshot(records);
-        return { datasetId: DRUG_RECALL_SOURCE.datasetId, fetched: records.length, ...snapshot };
+        const counts = await upsertDrugRecalls(records);
+        return { datasetId: DRUG_RECALL_SOURCE.datasetId, fetched: records.length, ...counts };
       },
     );
 
@@ -69,17 +67,14 @@ export async function runDrugRecallsSync(): Promise<DrugRecallsSyncResult> {
       fetched: outcome.fetched,
       inserted: outcome.inserted,
       updated: outcome.updated,
-      deleted: outcome.deleted,
-      reconcileSkippedReason: outcome.reconcileSkippedReason,
       error: outcome.error,
     };
 
-    const problem = result.error ?? (result.reconcileSkippedReason ? `reconcile skipped: ${result.reconcileSkippedReason}` : null);
-    if (problem) {
+    if (result.error) {
       await writeIngestionError({
         runId,
         feedCode: DRUG_RECALL_FEED_CODE,
-        message: `[${DRUG_RECALL_SOURCE.datasetId}] ${problem}`,
+        message: `[${DRUG_RECALL_SOURCE.datasetId}] ${result.error}`,
         detail: { sourceKey: DRUG_RECALL_SOURCE.sourceKey, datasetId: DRUG_RECALL_SOURCE.datasetId },
       });
     }

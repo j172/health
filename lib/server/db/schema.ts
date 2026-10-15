@@ -328,10 +328,11 @@ export const TABLE_DDL = {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // TFDA 回收藥品 (data.gov.tw 6947; issue #675, spec A-2 / B-5) — the upstream
-  // export is the full recall register since 2008 (1,713 rows), and the weekly
-  // sync mirrors it with a guarded snapshot reconcile (lib/server/drugs/
-  // shortageSnapshot.ts) so a corrected or withdrawn entry does not linger as a
-  // duplicate.
+  // export is the full recall register since 2008 (1,713 rows). An APPEND-ONLY
+  // event archive (spec: 事件檔，只增不刪): the weekly sync only upserts and
+  // never deletes, so a row the upstream later drops or re-keys keeps its
+  // 「曾被回收」 history (unlike drug_shortages' guarded snapshot reconcile). A
+  // too-small or empty export is refused before any write instead.
   //
   // No clean natural key, so row_key is a SHA-256 of the spec's
   // (文號, 許可證字號, 批號) triple plus an occurrence counter for fully
@@ -365,8 +366,8 @@ export const TABLE_DDL = {
   // One row per canonical license number a recall row names (29 of the 1,713
   // rows list several), so the 「曾被回收」 badge finds a drug whichever license
   // of a multi-license recall it carries. Derived from drug_recalls.row_key
-  // (which hashes the license text, so the set never changes for a given key);
-  // orphans are removed when the parent row is reconciled away.
+  // (which hashes the license text, so the set never changes for a given key),
+  // inserted with INSERT IGNORE and never deleted, like its parent.
   drugRecallLicenses: `
     CREATE TABLE IF NOT EXISTS drug_recall_licenses (
       id BIGINT NOT NULL AUTO_INCREMENT,

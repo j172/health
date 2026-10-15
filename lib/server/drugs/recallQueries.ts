@@ -6,29 +6,33 @@ import { RECALL_LEVELS, RECALL_LEVEL_UNSPECIFIED, type DrugRecallRecord, type Re
 /** Rows per round-trip: batch_no runs to ~1.8 KB and reason to ~0.6 KB per row, so keep chunks modest. */
 const UPSERT_BATCH_SIZE = 100;
 
-export interface DrugRecallSnapshotResult {
+export interface DrugRecallUpsertResult {
   inserted: number;
   updated: number;
-  deleted: number;
-  /** Why the stale-row delete was skipped, or null when it ran (or had nothing to do). Surfaced to ingest_errors by the runner. */
-  reconcileSkippedReason: string | null;
 }
 
 /**
- * Applies the fresh 6947 snapshot to drug_recalls (+ its license rows): upsert
- * every row by row_key, then — only if the snapshot looks plausibly complete
- * (the same guard B-4's shortage tables use, see decideSnapshotReconcile) —
- * remove the rows this run did not refresh, i.e. entries the upstream register
- * no longer lists (a corrected entry gets a new key, so its old row must go).
+ * Upserts the fresh 6947 register into drug_recalls (+ its license rows) by
+ * row_key. APPEND-ONLY, unlike B-4's shortage tables: a recall is a historical
+ * event, so a row the upstream later drops (or re-keys by editing its 文號 /
+ * 許可證字號 / 批號) is never deleted here — 「曾被回收」 must not disappear
+ * because the agency tidied its export. Nothing in this module deletes from
+ * drug_recalls or drug_recall_licenses.
  *
- * "Did not refresh" is `synced_at < <this run's timestamp>`: every row the
- * upsert touches is stamped with that timestamp, so older stamps are exactly
- * the rows missing from the snapshot.
+ * Plausibility guard, evaluated BEFORE any write: if the fresh response is
+ * empty or has far fewer rows than the table already holds (the same rule B-4
+ * uses, see decideSnapshotReconcile), it is treated as a broken export — this
+ * throws, nothing is written, and the runner records it in ingest_errors.
  */
-export const replaceDrugRecallsSnapshot = async (records: DrugRecallRecord[]): Promise<DrugRecallSnapshotResult> =>
+export const upsertDrugRecalls = async (records: DrugRecallRecord[]): Promise<DrugRecallUpsertResult> =>
   withConnection(async (conn) => {
     const [countRows] = await conn.query<RowDataPacket[]>(`SELECT COUNT(*) AS total FROM drug_recalls`);
     const existing = Number((countRows[0] as { total: number }).total);
+
+    const decision = decideSnapshotReconcile({ fetched: records.length, existing, noDataPlaceholder: false });
+    if (!decision.reconcile) {
+      throw new Error(`drug recall write skipped, nothing changed: ${decision.reason}`);
+    }
 
     const syncedAt = utcNowSql();
     let inserted = 0;
@@ -84,21 +88,7 @@ export const replaceDrugRecallsSnapshot = async (records: DrugRecallRecord[]): P
       }
     }
 
-    const decision = decideSnapshotReconcile({ fetched: records.length, existing, noDataPlaceholder: false });
-    if (!decision.reconcile) {
-      return { inserted, updated, deleted: 0, reconcileSkippedReason: decision.reason };
-    }
-
-    const [deleteResult] = await conn.query(`DELETE FROM drug_recalls WHERE synced_at < ?`, [syncedAt]);
-    const deleted = (deleteResult as { affectedRows: number }).affectedRows;
-
-    // License rows whose recall row is gone (just deleted above).
-    await conn.query(
-      `DELETE l FROM drug_recall_licenses l
-       LEFT JOIN drug_recalls r ON r.row_key = l.recall_row_key
-       WHERE r.id IS NULL`,
-    );
-    return { inserted, updated, deleted, reconcileSkippedReason: null };
+    return { inserted, updated };
   });
 
 export interface DrugRecallListItem {
