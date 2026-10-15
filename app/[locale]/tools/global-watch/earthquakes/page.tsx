@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getGlobeWatchEarthquakeCandidates, getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
 import { getRecentEqGdacsEvents } from "@/lib/server/gdacs/queries";
 import { buildBreadcrumbJsonLd, getBaseUrl } from "@/lib/server/news/seo";
+import { buildLocalizedWebPageJsonLd, serializeJsonLd } from "@/lib/server/seo/structuredData";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import GlobeWatchEarthquakesItem from "@/components/Tools/GlobeWatch/GlobeWatchEarthquakesItem";
 import { isPathLocale, ogAlternateLocales, OG_LOCALE } from "@/lib/i18n/dictionary";
@@ -96,10 +97,17 @@ export default async function LocaleGlobalWatchEarthquakesPage({ params }: { par
     { name: GLOBAL_WATCH_LABEL[locale], url: `${baseUrl}${globalWatchHref}` },
     { name: meta.shortTitle ?? meta.title, url: canonical },
   ]);
+  // Issue #438 §R "外語版": the breadcrumb alone has no `inLanguage`; this
+  // WebPage node adds it plus `translationOfWork` back to the zh page.
+  const localizedPage = buildLocalizedWebPageJsonLd(
+    { name: meta.title, description: meta.description, canonicalPath: CANONICAL_PATH },
+    { locale },
+  );
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(localizedPage) }} />
       <div className="min-h-screen bg-slate-50/50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
         <StabloHeader />
 

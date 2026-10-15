@@ -9,6 +9,7 @@ import {
   type Guide,
   type GuidePageModel,
 } from "@/lib/server/tools/navModel";
+import { resolvePageLocale, type PageLocaleOptions } from "@/lib/server/seo/pageLocale";
 
 /**
  * og:image resolution for an article. Falls back to a source-branded
@@ -319,10 +320,21 @@ export const buildArticleGraphJsonLd = (news: NewsDetailItem): Record<string, un
 /**
  * Composite Schema.org @graph for /tools/<slug> pages.
  * Combines Organization + WebSite + BreadcrumbList + MedicalWebPage/WebPage + WebApplication + FAQPage + Citations.
+ *
+ * `options.locale` (issue #438 §R, "外語版"): on a /en /ja /ko version the
+ * page/app nodes take the locale-prefixed URL as their identity, carry that
+ * locale as `inLanguage`, and link back to the zh page via
+ * `translationOfWork`. The caller passes the already-localized `tool` entry
+ * (see ToolPageShell), so the visible text and the structured data stay in
+ * the same language. Omitted (the default) = unchanged zh output.
  */
-export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unknown> => {
+export const buildToolGraphJsonLd = (
+  tool: ToolCatalogEntry,
+  options: PageLocaleOptions = {},
+): Record<string, unknown> => {
   const baseUrl = getBaseUrl();
-  const canonical = `${baseUrl}/tools/${tool.slug}`;
+  const pageLocale = resolvePageLocale(baseUrl, `/tools/${tool.slug}`, options);
+  const canonical = pageLocale.url;
   const pageType = tool.schemaType ?? "MedicalWebPage";
   // Issue #459: 4-level breadcrumb (首頁 / 工具 / 分類 / 工具), resolved via
   // the shared getToolCategoryLink helper so this JSON-LD representation
@@ -357,7 +369,8 @@ export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unk
       url: canonical,
       description: tool.description,
       abstract: tool.directAnswer,
-      inLanguage: ["zh-TW", "zh-Hant"],
+      inLanguage: pageLocale.isLocalized ? pageLocale.inLanguage : ["zh-TW", "zh-Hant"],
+      ...pageLocale.translationLinks,
       isPartOf: { "@id": `${baseUrl}/#website` },
       breadcrumb: { "@id": `${canonical}#breadcrumb` },
       mainEntity: { "@id": `${canonical}#app` },
@@ -380,7 +393,7 @@ export const buildToolGraphJsonLd = (tool: ToolCatalogEntry): Record<string, unk
       name: tool.title,
       url: canonical,
       description: tool.description,
-      inLanguage: "zh-TW",
+      inLanguage: pageLocale.inLanguage,
       applicationCategory: "HealthApplication",
       operatingSystem: "Any",
       isAccessibleForFree: true,
@@ -475,10 +488,18 @@ export const buildCategoryPageGraphJsonLd = (category: CategoryPageModel): Recor
  * has FAQs (every one of the 5 GUIDES does, but this mirrors
  * `buildToolGraphJsonLd`'s `tool.faqs.length > 0` guard rather than assuming
  * it).
+ *
+ * `options.locale` (issue #438 §R, "外語版"): see `buildToolGraphJsonLd`. The
+ * caller passes the already-localized `guide` model, so only the page node's
+ * identity, `inLanguage` and `translationOfWork` change here.
  */
-export const buildGuideGraphJsonLd = (guide: GuidePageModel): Record<string, unknown> => {
+export const buildGuideGraphJsonLd = (
+  guide: GuidePageModel,
+  options: PageLocaleOptions = {},
+): Record<string, unknown> => {
   const baseUrl = getBaseUrl();
-  const canonical = `${baseUrl}/guides/${guide.slug}`;
+  const pageLocale = resolvePageLocale(baseUrl, `/guides/${guide.slug}`, options);
+  const canonical = pageLocale.url;
   const guidesIndexUrl = `${baseUrl}/guides`;
 
   const graph: Record<string, unknown>[] = [
@@ -502,7 +523,8 @@ export const buildGuideGraphJsonLd = (guide: GuidePageModel): Record<string, unk
       isPartOf: { "@id": `${baseUrl}/#website` },
       breadcrumb: { "@id": `${canonical}#breadcrumb` },
       mainEntity: { "@id": `${canonical}#howto` },
-      inLanguage: "zh-TW",
+      inLanguage: pageLocale.inLanguage,
+      ...pageLocale.translationLinks,
       speakable: {
         "@type": "SpeakableSpecification",
         cssSelector: ["h1", "#guide-direct-answer"],
@@ -607,9 +629,18 @@ export const buildGuidesIndexGraphJsonLd = (guides: Guide[]): Record<string, unk
 
 /**
  * Composite Schema.org @graph for Home page.
+ *
+ * `options.locale` (issue #438 §R, "外語版"): on /en /ja /ko the WebPage node
+ * takes the locale-prefixed URL, that locale's `name`/`description` (the
+ * caller's `getLocalizedPageMeta("home", locale)`), `inLanguage`, and a
+ * `translationOfWork` link back to the zh homepage. Omitted = unchanged zh output.
  */
-export const buildHomeGraphJsonLd = (items: NewsListItem[]): Record<string, unknown> => {
+export const buildHomeGraphJsonLd = (
+  items: NewsListItem[],
+  options: PageLocaleOptions & { name?: string; description?: string } = {},
+): Record<string, unknown> => {
   const baseUrl = getBaseUrl();
+  const pageLocale = resolvePageLocale(baseUrl, "/", options);
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -618,12 +649,13 @@ export const buildHomeGraphJsonLd = (items: NewsListItem[]): Record<string, unkn
       ...buildSiteNavigationElements(baseUrl),
       {
         "@type": "WebPage",
-        "@id": `${baseUrl}/#webpage`,
-        url: baseUrl,
-        name: SITE_NAME,
-        description: SITE_DESCRIPTION,
+        "@id": pageLocale.isLocalized ? `${pageLocale.url}#webpage` : `${baseUrl}/#webpage`,
+        url: pageLocale.url,
+        name: options.name ?? SITE_NAME,
+        description: options.description ?? SITE_DESCRIPTION,
         isPartOf: { "@id": `${baseUrl}/#website` },
-        inLanguage: "zh-TW",
+        inLanguage: pageLocale.inLanguage,
+        ...pageLocale.translationLinks,
       },
       {
         "@type": "ItemList",

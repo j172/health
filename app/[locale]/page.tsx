@@ -89,9 +89,15 @@ export default async function LocaleHome({ params }: { params: Params }) {
   if (!isPathLocale(locale)) notFound();
 
   const items = await listDiverseHomeNews(30, 3);
-  const homeGraph = buildHomeGraphJsonLd(items);
-
   const meta = getLocalizedPageMeta("home", locale);
+  // Issue #438 §R "外語版": the WebPage node carries this locale's URL,
+  // name/description, `inLanguage` and `translationOfWork` back to "/".
+  const homeGraph = buildHomeGraphJsonLd(items, {
+    locale,
+    canonicalPath: CANONICAL_PATH,
+    name: meta.title,
+    description: meta.description,
+  });
 
   return (
     <>

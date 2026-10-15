@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { buildBreadcrumbJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
+import { buildNearbyJsonLdEntries } from "@/lib/server/seo/nearbyJsonLd";
+import { buildNearbyGraphJsonLd, serializeJsonLd } from "@/lib/server/seo/structuredData";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import NearbyContent from "@/components/Nearby/NearbyContent";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
@@ -17,8 +19,10 @@ const NEARBY_DESCRIPTION =
  * CareCircleMap.tsx / FacilitySearchContent.tsx's consumers) — all
  * geolocation + fetching lives in the client component below.
  */
+const NEARBY_TITLE = "我附近：一次定位看全部急用點位";
+
 export const metadata: Metadata = {
-  title: "我附近：一次定位看全部急用點位",
+  title: NEARBY_TITLE,
   description: NEARBY_DESCRIPTION,
   alternates: {
     canonical: `${getBaseUrl()}/nearby`,
@@ -37,10 +41,19 @@ export default function NearbyPage() {
     { name: "首頁", url: baseUrl },
     { name: "我附近", url: `${baseUrl}/nearby` },
   ]);
+  // Issue #438 §R (我附近 → ItemList): the 8 facility types this page looks up,
+  // each linking to its tool page. The visitor's own results depend on live
+  // geolocation and stay client-side — nothing per-user is in this JSON-LD.
+  const nearbyGraph = buildNearbyGraphJsonLd({
+    name: NEARBY_TITLE,
+    description: NEARBY_DESCRIPTION,
+    entries: buildNearbyJsonLdEntries(baseUrl),
+  });
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(nearbyGraph) }} />
       {/* Machine-readable sibling versions of this page (issue #444 pattern, issue #466),
        * built from the exact same NearbyTypeDef registry NearbyContent.tsx renders from
        * via lib/server/content/nearbyContent.ts. */}
