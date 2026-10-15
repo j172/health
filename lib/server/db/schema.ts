@@ -1866,6 +1866,15 @@ export const TABLE_DDL = {
   // report_year_month／site_nature 因此都是一般欄位：同步時對同一
   // (domain, source) 做 UPDATE 覆蓋成最新值，first_seen 只在初次插入時寫入，
   // last_seen 每次同步都更新。
+  //
+  // issue #567 加入 moda_165027（數產署，近乎每日）、police_160055（警政署
+  // 假投資網站，一次性歷史匯入）兩個來源，沿用同一張表、同一個 (domain,
+  // source) UNIQUE KEY 設計——同一網域出現在多個來源時各存一列，查詢時分別
+  // 列出，不合併。這兩個來源都沒有 176455 的「網站性質」分類欄位，只有自由
+  // 文字描述（165027 的「一頁式數位經濟詐騙網站」、160055 的「網站名稱」），
+  // 新增 fraud_description 欄位承接，不塞進 site_nature 冒充分類。
+  // report_year_month 同時承接 165027/160055 的 8 位數 YYYYMMDD 日期字串
+  // （與 176455 的 5 位數民國年月字串共用欄位，UI 依位數區分格式）。
   fraudDomains: `
     CREATE TABLE IF NOT EXISTS fraud_domains (
       id BIGINT NOT NULL AUTO_INCREMENT,
@@ -1875,6 +1884,7 @@ export const TABLE_DDL = {
       legal_basis VARCHAR(255) NULL,
       applicant_org VARCHAR(255) NULL,
       report_year_month VARCHAR(10) NULL,
+      fraud_description VARCHAR(255) NULL,
       first_seen DATETIME NOT NULL,
       last_seen DATETIME NOT NULL,
       created_at DATETIME NOT NULL,
@@ -1882,6 +1892,44 @@ export const TABLE_DDL = {
       PRIMARY KEY (id),
       UNIQUE KEY uq_fraud_domain_source (domain, source),
       KEY idx_fraud_domain_last_seen (last_seen)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // GDACS（全球災害預警協調系統）事件 (issue #592 / #583) — 供颱風／全球災害／
+  // 地震警戒色疊加共用。見 lib/server/gdacs/。
+  //
+  // UNIQUE KEY 刻意只用 (event_type, event_id) —— 絕對不能把 episode_id、
+  // start_time、end_time 或任何時間/episode 欄位放進去。這個 repo 已經在
+  // cwa_station_weather／cwa_rainfall／aqi_readings／fraud_domains 等表上真實
+  // 發生過「UNIQUE KEY 含時間欄位 → 每次同步的新時間值都被當成新 row → 表無限
+  // 膨脹」的事故（見 migrations/20260921_cwa_station_weather_narrow_unique_key.sql
+  // 等修復）。GDACS 同一個 event_id 會隨著事件發展不斷發佈新的 episode_id，若把
+  // episode_id 放進 key，同一場災害的每一次重新評估都會多插一列，而不是覆蓋舊的
+  // 一列 —— episode_id／alert_level／start_time／end_time 因此都是一般欄位：
+  // 同步時對同一 (event_type, event_id) 做 UPDATE 覆蓋成最新 episode 的狀態。
+  gdacsEvents: `
+    CREATE TABLE IF NOT EXISTS gdacs_events (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      event_type VARCHAR(10) NOT NULL,
+      event_id VARCHAR(32) NOT NULL,
+      episode_id VARCHAR(32) NOT NULL DEFAULT '0',
+      alert_level VARCHAR(10) NOT NULL DEFAULT 'Green',
+      alert_score DECIMAL(6,3) NULL,
+      country_iso VARCHAR(3) NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      start_time DATETIME NULL,
+      end_time DATETIME NULL,
+      title VARCHAR(500) NOT NULL,
+      report_url VARCHAR(500) NULL,
+      basin VARCHAR(10) NULL,
+      track_geojson JSON NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_gdacs_event (event_type, event_id),
+      KEY idx_gdacs_alert_level (alert_level),
+      KEY idx_gdacs_end_time (end_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
 };

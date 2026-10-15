@@ -43,6 +43,51 @@ export interface FacilityExtraJson {
   centerType?: string | null;
   note?: string | null;
   department?: string | null;
+  /**
+   * baby_friendly_hospital facility type (#614) — per-row validity date
+   * (ISO YYYY-MM-DD), for the counties whose source actually has one
+   * (Taipei 121200, Changhua 30882). Rows past this date are already
+   * filtered out before insertion (see babyFriendlyHospitalShared.ts), so
+   * by the time a row reaches the DB this is purely informational.
+   */
+  validUntil?: string | null;
+  /**
+   * baby_friendly_hospital facility type (#614) — New Taipei's 123291 has
+   * no per-row expiry, only a single county-wide "list last
+   * updated/confirmed on this date" stamp shared by every row. Display-only,
+   * never used to filter.
+   */
+  dataVerifiedAt?: string | null;
+  /**
+   * `category` and `monthlyFee` are shared across two independent facility
+   * families that both landed around the same time and happened to pick the
+   * same field names — kept as one declaration rather than two to avoid a
+   * silent type collision:
+   *   - childcare_center/home_childcare_center (#601): `category` is one of
+   *     the 4 childcare-center types (公辦民營/社區公共托育家園/準公共/私立),
+   *     mirrored onto `service_item` so the existing `categories` filter
+   *     works without a new filtering mechanism. `monthlyFee` has no
+   *     populated source yet in #601's 臺北/新北 data — declared now so a
+   *     later county with 月費 data can set it without another change to
+   *     FacilitySearchContent. `approvedCapacity`/`actualCapacity`/
+   *     `evaluationResult`/`dataAsOf` are also childcare-center-only.
+   *   - kindergarten (#602): `category` is the kiang-derived 公立/非營利/
+   *     準公共/私立 split (merged in from kiang/ap.ece.moe.edu.tw's
+   *     preschools.json, a community mirror of 全國教保資訊網 — not an
+   *     official MOE field — by scripts/lib/kindergarten-merge.mjs; only
+   *     present on rows that matched a fresh (<=60 days old) kiang record).
+   *     `hasPenalty` is kindergarten-only.
+   * `monthlyFee`'s type is widened to `string | number | null` to cover both
+   * sources' actual shapes (childcare's future sources may emit either).
+   */
+  category?: string | null;
+  approvedCapacity?: string | number | null;
+  actualCapacity?: string | number | null;
+  evaluationResult?: string | null;
+  monthlyFee?: string | number | null;
+  hasPenalty?: boolean;
+  /** `YYYY-MM-DD` this site's own sync captured that county's snapshot — see childcareCenterShared.ts's `todayDataAsOf`. */
+  dataAsOf?: string | null;
   [key: string]: unknown;
 }
 

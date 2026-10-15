@@ -77,6 +77,7 @@
     "child-welfare-institutions": "子育て支援・児童福祉センター検索",
     "early-intervention": "早期療育機関・発達合同評価センター検索",
     "kindergartens": "全台湾幼稚園・保育園検索",
+    "childcare-centers": "乳児託児所・居家保育サービスセンター検索",
     "cram-schools": "学習塾・補習班検索",
     "child-safety-spots": "児童・女性安全保護ステーション",
     "child-native-languages": "台湾語・客家語 母語学習辞典",
@@ -93,6 +94,7 @@
     "aqx-monitoring": "大気汚染常時監視詳細データ",
     "water-conditions": "河川水位・ダム貯水率リアルタイム情報",
     "disaster-map": "台湾災害避難所・緊急救援拠点マップ",
+    "global-watch": "グローバルウォッチ（3D地球儀）",
     "heritage-map": "台湾文化遺産・史跡・考古遺跡マップ",
     "bookstores": "台湾独立系書店・実店舗書店検索",
     "tourism-factories": "台湾観光工場・見学施設検索",
@@ -120,6 +122,8 @@
     "smoking-cessation": "禁煙外来提携医療機関検索（禁煙補助制度）",
     "adult-preventive-care": "成人健康診断・公費がん検診機関検索",
     "baby-friendly-hospitals": "赤ちゃんにやさしい病院マップ（母子同室・母乳育児認証）",
+    "postpartum-care": "産後ケアセンターマップ（評鑑結果・有効期限確認）",
+    "child-subsidies": "育児補助金まとめ（育児手当・保育／就学補助・出産補助・体外受精助成）",
     "rare-disease-care": "難病ケア相談センター・確定診断病院検索",
     "organ-donation-hospitals": "臓器提供指定責任病院検索",
     "home-emergency-care": "健保在宅急性期ケア提携機関検索",
@@ -225,6 +229,9 @@
     },
     "travel-health": {
       "title": "海外渡航と防疫"
+    },
+    "fraud-and-addiction": {
+      "title": "詐欺と依存症から身を守る"
     }
   },
   "toolShell": {
@@ -420,7 +427,8 @@
     "resetSearchButton": "検索条件をリセット",
     "altNumberLabel": "代替番号：",
     "dialButton": "📞 ワンタップ発信",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "不審なURLを確認"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "突然の重症、激しい胸痛、または生命に危険が及ぶ状況ですか？直ちに ",

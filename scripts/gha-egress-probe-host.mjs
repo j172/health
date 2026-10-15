@@ -32,6 +32,13 @@ const targets = {
   "od.cdc.gov.tw dengue csv": "https://od.cdc.gov.tw/eic/MosIndex_All_last12m.csv",
   "od.cdc.gov.tw root": "https://od.cdc.gov.tw/",
   "data.gov.tw (control)": "https://data.gov.tw/dataset/24161",
+  // issue #612: nhplatform.mohw.gov.tw (全國開業護理機構清冊, data.gov.tw
+  // 115950) — reachable from this development environment (2026-10-14,
+  // HTTP 200, no redirect) but never confirmed from the production host.
+  // Run this before relying on the "nhplatform_115950" facilities-sync
+  // source's scheduled runs.
+  "nhplatform.mohw.gov.tw (115950 CSV)":
+    "https://nhplatform.mohw.gov.tw/dl-3820-74883655f255416abc752bef29cbd7aa.html",
 };
 
 const main = () => {

@@ -44,7 +44,8 @@ import {
   runSeniorTourismAlertsSync,
   runSeniorCardSync,
 } from "@/lib/server/seniorTourism/runSync";
-import { runFraudDomainsSync } from "@/lib/server/antiFraud/runSync";
+import { runFraudDomainsSync, runModa165027Sync } from "@/lib/server/antiFraud/runSync";
+import { runGdacsSync, runGdacsCleanup } from "@/lib/server/gdacs/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -468,5 +469,39 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "12 5 1 * *",
     runGuarded("fraud-domains-sync-cron.log", () => runFraudDomainsSync()),
+  );
+  // 數產署 165027「詐騙網域停止解析清單」(issue #567) — 近乎每日更新，填補
+  // 176455 每月批次之間的空窗期；5am 區段的 22 分未被本檔案任何其他 job
+  // 佔用（5am 已用：5 的 power-mix、12 的 fraud-domains-sync(僅每月 1 號)、
+  // 30 的 latest-books-sync）。這個 job 自己再用 withAdvisoryLock
+  // (moda_165027_sync_lock，與 176455 的 fraud_domains_sync_lock 不同) 防
+  // 重疊，見 lib/server/antiFraud/runSync.ts。160055（已停更的歷史資料）
+  // 刻意不排程——只在部署後手動跑一次 scripts/import-police-160055.mjs。
+  cron.schedule(
+    "22 5 * * *",
+    runGuarded("moda-165027-sync-cron.log", () => runModa165027Sync()),
+  );
+  // GDACS 全球災害事件 (issue #592 / #583) — 每 30 分鐘一次，供「颱風」「全球
+  // 災害」項目與「地震」警戒色疊加共用。14/44 這兩個分鐘在本檔案目前完全沒被
+  // 任何其他 job 佔用：不在 rss 的 5/35、aqi 的 20/50、cwa 的 15/45、earthquakes
+  // 的 3/13/23/33/43/53、news-card-images+power-realtime 的
+  // 0/10/20/30/40/50、water-outages 的 25、wra-water-outages 的 18/48、aqx 的
+  // 10/40、wra-sync 的 8/38、wra-iot 的 12/27/42/57、metro-alerts 的
+  // 0/30、emergency-rooms 的 7/22/37/52、transit-accessibility-alerts 的
+  // 16/46、senior-tourism-alerts 的 17/47，也不是 youbike 的每 5 分鐘格線
+  // (0/5/10/.../55) 上。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // lib/server/gdacs/runSync.ts。
+  cron.schedule(
+    "14,44 * * * *",
+    runGuarded("gdacs-sync-cron.log", () => runGdacsSync()),
+  );
+  // GDACS 事件保留期清除 (issue #592) — 已結束 (end_time 非 null) 超過 30 天的
+  // 事件每日清除一次。4 點區段裡 40 分未被 green-products/wra-catalog 的
+  // 30、carbon-footprint-products 的 45、carbon-footprint-coefficients 的
+  // 50、cool-spots 的 33、iaq-premises 的 38、cleaning-squads 的 53、
+  // green-restaurants 的 58 佔用。
+  cron.schedule(
+    "40 4 * * *",
+    runGuarded("gdacs-cleanup-cron.log", () => runGdacsCleanup()),
   );
 };
