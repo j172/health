@@ -9,6 +9,8 @@ interface DomainHit {
   source: string;
   siteNature: string | null;
   reportedYearMonth: string | null;
+  /** 165027/160055 的自由文字說明（沒有「網站性質」分類時才有值，見 issue #567）。 */
+  fraudDescription: string | null;
 }
 
 interface CheckResponse {
@@ -20,14 +22,27 @@ interface CheckResponse {
 
 const SOURCE_LABELS: Record<string, string> = {
   police_176455: "內政部警政署 165 反詐騙諮詢專線",
+  moda_165027: "數位發展部 詐騙網域停止解析清單",
+  police_160055: "內政部警政署 假投資（博弈）網站（歷史資料）",
 };
 
-/** "11509" (民國年月) -> "民國115年09月"。格式不符時原樣顯示，避免吞掉真實資料。 */
+/**
+ * Formats this tool's two "when" shapes (see FraudDomainRecord's doc
+ * comment in lib/server/antiFraud/sources/police176455.ts):
+ *   - 176455's 民國年月 (4-5 digits, e.g. "11509") -> "民國115年09月"
+ *   - 165027/160055's Gregorian YYYYMMDD (8 digits, e.g. "20261008") ->
+ *     "2026/10/08"
+ * Anything else is shown as-is rather than guessed, so real data is never
+ * silently swallowed by a format mismatch.
+ */
 function formatReportedYearMonth(raw: string | null): string | null {
   if (!raw) return null;
-  const match = /^(\d{2,3})(\d{2})$/.exec(raw.trim());
-  if (!match) return raw;
-  return `民國${match[1]}年${match[2]}月`;
+  const trimmed = raw.trim();
+  const ymd = /^(\d{4})(\d{2})(\d{2})$/.exec(trimmed);
+  if (ymd) return `${ymd[1]}/${ymd[2]}/${ymd[3]}`;
+  const rocYm = /^(\d{2,3})(\d{2})$/.exec(trimmed);
+  if (rocYm) return `民國${rocYm[1]}年${rocYm[2]}月`;
+  return raw;
 }
 
 function formatLastSyncedAt(iso: string | null): string | null {
@@ -87,7 +102,7 @@ export default function AntiFraudChecker() {
       <div>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">🔍 防詐騙查詢</h1>
         <p className="text-neutral-600 dark:text-slate-300">
-          貼上收到的可疑網址，查詢這個網域是否已被內政部警政署列為涉詐並停止解析。本工具不會記錄、儲存或回傳您查詢過的任何網址。
+          貼上收到的可疑網址，查詢這個網域是否已被內政部警政署、數位發展部列為涉詐並停止解析。本工具不會記錄、儲存或回傳您查詢過的任何網址。
         </p>
       </div>
 
@@ -160,9 +175,23 @@ export default function AntiFraudChecker() {
                 <dl className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
                   <dt className="text-neutral-500 dark:text-slate-400">比對網域</dt>
                   <dd className="break-all font-medium text-neutral-800 dark:text-slate-100">{hit.domain}</dd>
-                  <dt className="text-neutral-500 dark:text-slate-400">網站性質</dt>
-                  <dd className="text-neutral-800 dark:text-slate-100">{hit.siteNature || "未標註"}</dd>
-                  <dt className="text-neutral-500 dark:text-slate-400">停止解析月份</dt>
+                  {hit.siteNature ? (
+                    <>
+                      <dt className="text-neutral-500 dark:text-slate-400">網站性質</dt>
+                      <dd className="text-neutral-800 dark:text-slate-100">{hit.siteNature}</dd>
+                    </>
+                  ) : hit.fraudDescription ? (
+                    <>
+                      <dt className="text-neutral-500 dark:text-slate-400">說明</dt>
+                      <dd className="text-neutral-800 dark:text-slate-100">{hit.fraudDescription}</dd>
+                    </>
+                  ) : (
+                    <>
+                      <dt className="text-neutral-500 dark:text-slate-400">網站性質</dt>
+                      <dd className="text-neutral-800 dark:text-slate-100">未標註</dd>
+                    </>
+                  )}
+                  <dt className="text-neutral-500 dark:text-slate-400">停止解析時間</dt>
                   <dd className="text-neutral-800 dark:text-slate-100">
                     {formatReportedYearMonth(hit.reportedYearMonth) || "未標註"}
                   </dd>
@@ -197,7 +226,7 @@ export default function AntiFraudChecker() {
 
       <p className="px-4 text-center text-xs text-neutral-500 dark:text-slate-400">
         ⚠️
-        本工具僅比對內政部警政署公開之涉詐網域清單，查詢結果僅供參考，不構成法律或投資建議。可疑電話或 LINE ID 請改撥
+        本工具僅比對內政部警政署、數位發展部公開之涉詐網域清單，查詢結果僅供參考，不構成法律或投資建議。可疑電話或 LINE ID 請改撥
         165 查證。
       </p>
     </div>

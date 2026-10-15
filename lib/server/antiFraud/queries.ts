@@ -25,13 +25,14 @@ export const upsertFraudDomains = async (
     records,
     `
     INSERT INTO fraud_domains
-      (domain, source, site_nature, legal_basis, applicant_org, report_year_month, first_seen, last_seen, created_at, updated_at)
+      (domain, source, site_nature, legal_basis, applicant_org, report_year_month, fraud_description, first_seen, last_seen, created_at, updated_at)
     VALUES ?
     ON DUPLICATE KEY UPDATE
       site_nature = VALUES(site_nature),
       legal_basis = VALUES(legal_basis),
       applicant_org = VALUES(applicant_org),
       report_year_month = VALUES(report_year_month),
+      fraud_description = VALUES(fraud_description),
       last_seen = VALUES(last_seen),
       updated_at = VALUES(updated_at)
     `,
@@ -42,6 +43,7 @@ export const upsertFraudDomains = async (
       r.legalBasis,
       r.applicantOrg,
       r.reportedYearMonth,
+      r.fraudDescription,
       now,
       now,
       now,
@@ -65,7 +67,7 @@ export const findFraudDomainsByHosts = async (
 
   return withConnection(async (conn) => {
     const [rows] = await conn.query<RowDataPacket[]>(
-      `SELECT domain, source, site_nature, report_year_month FROM fraud_domains WHERE domain IN (?)`,
+      `SELECT domain, source, site_nature, report_year_month, fraud_description FROM fraud_domains WHERE domain IN (?)`,
       [candidates],
     );
     return rows.map((row) => ({
@@ -73,6 +75,7 @@ export const findFraudDomainsByHosts = async (
       source: row.source,
       siteNature: row.site_nature,
       reportedYearMonth: row.report_year_month,
+      fraudDescription: row.fraud_description,
     }));
   });
 };
