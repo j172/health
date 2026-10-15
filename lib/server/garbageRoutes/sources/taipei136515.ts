@@ -1,7 +1,7 @@
 import { httpGetText } from "@/lib/server/net/httpClient";
 import { parseCsv } from "@/lib/server/facilities/csv";
 import { normalizeClock } from "@/lib/tools/garbageTrucks/schedule";
-import type { GarbageRouteStopRecord } from "@/lib/server/garbageRoutes/types";
+import type { GarbageRouteFetchHooks, GarbageRouteStopRecord } from "@/lib/server/garbageRoutes/types";
 import { assertHeaderColumns, parseCoordinates, textOrNull } from "@/lib/server/garbageRoutes/sources/shared";
 
 // 臺北市垃圾車點位路線資訊 — data.gov.tw dataset 136515 (臺北市政府資料大平臺).
@@ -98,11 +98,14 @@ export function parseTaipeiRoutes(csvText: string): GarbageRouteStopRecord[] {
   return records;
 }
 
-export async function fetchTaipeiRoutes(): Promise<GarbageRouteStopRecord[]> {
+export async function fetchTaipeiRoutes(hooks: GarbageRouteFetchHooks = {}): Promise<GarbageRouteStopRecord[]> {
   // Shared httpClient, never the global fetch() — undici's WASM parser OOMs on this host.
   const { status, text } = await httpGetText(SOURCE_URL, { timeoutMs: 60_000 });
   if (status < 200 || status >= 300) {
     throw new Error(`臺北市垃圾車路線 (136515) request failed: HTTP ${status}`);
   }
-  return parseTaipeiRoutes(text);
+  hooks.onStage?.("after_fetch", { chars: text.length });
+  const records = parseTaipeiRoutes(text);
+  hooks.onStage?.("after_parse", { rows: records.length });
+  return records;
 }

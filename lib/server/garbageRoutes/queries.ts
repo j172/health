@@ -1,9 +1,12 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection } from "@/lib/server/db/mysql";
-import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
+import { chunkedUpsert, type ChunkedUpsertOptions } from "@/lib/server/db/chunkedUpsert";
 import { memoizeQuery } from "@/lib/server/cache/memo";
 import type { GarbageRouteCity, GarbageRouteStopRecord } from "@/lib/server/garbageRoutes/types";
 import { escapeLike, type GarbageRouteSearchParams } from "@/lib/server/garbageRoutes/searchParams";
+
+/** Rows per INSERT in the route sync (chunkedUpsert's default is 500). */
+export const GARBAGE_ROUTE_UPSERT_BATCH_SIZE = 200;
 
 /**
  * Upserts one city's stops keyed by (city, line_id, stop_rank) — matches
@@ -14,6 +17,7 @@ import { escapeLike, type GarbageRouteSearchParams } from "@/lib/server/garbageR
  */
 export const upsertGarbageRouteStops = async (
   records: GarbageRouteStopRecord[],
+  options: Pick<ChunkedUpsertOptions, "onBatch"> = {},
 ): Promise<{ inserted: number; updated: number }> => {
   if (records.length === 0) return { inserted: 0, updated: 0 };
 
@@ -65,6 +69,9 @@ export const upsertGarbageRouteStops = async (
       now,
       now,
     ],
+    // Small statements (~40 KB instead of ~140 KB) and a hand-back to the event loop
+    // between them: the 新北 file is 26.6k rows, and this runs inside the web process.
+    { batchSize: GARBAGE_ROUTE_UPSERT_BATCH_SIZE, yieldBetweenBatches: true, onBatch: options.onBatch },
   );
 };
 

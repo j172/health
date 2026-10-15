@@ -22,6 +22,15 @@
  * Takes its own MySQL advisory lock (same withAdvisoryLock pattern as the
  * anti-fraud syncs) so an overrunning run is skipped rather than racing the
  * next tick.
+ *
+ * Memory / event loop: this runs inside health-web (768 MB heap cap, ~450 MB
+ * already resident, serving traffic and every other cron). The first
+ * production run restarted that process while 新北 (26.6k rows) was being
+ * processed, so every step is now bounded: rows are parsed as a stream and
+ * handed back to the event loop every few hundred rows, upserted in 200-row
+ * statements with a hand-back after each, and a city's rows are released
+ * before the next city starts. Each stage also writes one JSON line with the
+ * heap / RSS at that moment (stageLog.ts), so a future crash names its step.
  */
 import { withAdvisoryLock, utcNowSql } from "@/lib/server/db/mysql";
 import {
@@ -29,7 +38,8 @@ import {
   finishIngestionRun,
   writeIngestionError,
 } from "@/lib/server/logging/ingestionLogger";
-import type { GarbageRouteCity, GarbageRouteSource } from "@/lib/server/garbageRoutes/types";
+import { yieldToEventLoop } from "@/lib/server/sync/yieldToEventLoop";
+import type { GarbageRouteCity, GarbageRouteSource, GarbageRouteStopRecord } from "@/lib/server/garbageRoutes/types";
 import { fetchTaipeiRoutes, TAIPEI_136515_SOURCE_KEY } from "@/lib/server/garbageRoutes/sources/taipei136515";
 import { fetchNtpcRoutes, NTPC_125664_SOURCE_KEY } from "@/lib/server/garbageRoutes/sources/ntpc125664";
 import {
@@ -38,6 +48,7 @@ import {
   upsertGarbageRouteStops,
 } from "@/lib/server/garbageRoutes/queries";
 import { decideSnapshotPrune } from "@/lib/server/garbageRoutes/reconcile";
+import { createStageLogger, UPSERT_LOG_EVERY_BATCHES } from "@/lib/server/garbageRoutes/stageLog";
 
 const SYNC_LOCK_NAME = "garbage_routes_sync_lock";
 
@@ -82,33 +93,53 @@ export async function runGarbageRoutesSync(): Promise<GarbageRoutesSyncResult> {
 
     for (const source of GARBAGE_ROUTE_SOURCES) {
       const result = emptyCityResult(source.city);
+      const stage = createStageLogger({ runId, city: source.city, runStartedAtMs: startedAt.getTime() });
+      // Only this city's rows are ever held, and they are dropped (collectable) before the
+      // next city starts — the two cities must never be resident together.
+      let records: GarbageRouteStopRecord[] | null = null;
       try {
+        stage("before_fetch");
         const previousCount = await countGarbageRouteStops(source.city);
         // Taken before the upsert so every row this run writes has synced_at >= it.
         const runStartedAtSql = utcNowSql();
 
-        const records = await source.fetch();
-        result.fetched = records.length;
+        records = await source.fetch({ onStage: stage });
+        const fetched = records.length;
+        result.fetched = fetched;
 
-        if (records.length > 0) {
-          const { inserted, updated } = await upsertGarbageRouteStops(records);
+        if (fetched > 0) {
+          const { inserted, updated } = await upsertGarbageRouteStops(records, {
+            onBatch: ({ batch, rowsDone, rowsTotal }) => {
+              if (batch % UPSERT_LOG_EVERY_BATCHES === 0 && rowsDone < rowsTotal) {
+                stage("after_upsert_batches", { batch, rowsDone, rowsTotal });
+              }
+            },
+          });
           result.inserted = inserted;
           result.updated = updated;
         }
+        records = null;
+        stage("after_upsert", { fetched, inserted: result.inserted, updated: result.updated });
 
-        const decision = decideSnapshotPrune({ fetched: records.length, previousCount });
+        const decision = decideSnapshotPrune({ fetched, previousCount });
         if (decision.prune) {
           result.pruned = await pruneUnseenGarbageRouteStops(source.city, runStartedAtSql);
+          stage("after_prune", { pruned: result.pruned });
         } else {
           result.pruneSkippedReason = decision.reason;
           await writeIngestionError({ runId, feedCode: source.sourceKey, message: decision.reason });
+          stage("after_prune", { pruned: 0, pruneSkipped: true });
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown garbage-routes sync error";
         result.error = message;
+        stage("city_failed", { error: message });
         await writeIngestionError({ runId, feedCode: source.sourceKey, message });
       }
+      records = null;
       results.push(result);
+      // Let the event loop (and the garbage collector) catch up before the next city's download.
+      await yieldToEventLoop();
     }
 
     return results;
