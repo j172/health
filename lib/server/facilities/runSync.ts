@@ -1,4 +1,4 @@
-import { upsertFacilities, type FacilityRecord } from "@/lib/server/facilities/queries";
+import { upsertFacilities, deleteFacilitiesBySourceKeyForCounty, type FacilityRecord } from "@/lib/server/facilities/queries";
 import { fetchTfdaPharmacies } from "@/lib/server/facilities/sources/tfdaPharmacies";
 import { fetchMolHealthCheckFacilities } from "@/lib/server/facilities/sources/molHealthCheckFacility";
 import { fetchMolOccupationalInjuryHospitals } from "@/lib/server/facilities/sources/molOccupationalInjuryHospital";
@@ -27,6 +27,16 @@ import { fetchBabyFriendlyHospitalChanghua } from "@/lib/server/facilities/sourc
 import { fetchHpaSmokingCessationFacilities } from "@/lib/server/facilities/sources/hpaSmokingCessation";
 import { fetchMethadoneCrossDistrict } from "@/lib/server/facilities/sources/methadoneCrossDistrict";
 import { fetchAntiDrugCenters } from "@/lib/server/facilities/sources/antiDrugCenters";
+import { fetchSmokingCessationTaipei } from "@/lib/server/facilities/sources/smokingCessationTaipei";
+import { fetchSmokingCessationNtpc, fetchSmokingCessationNtpcDental } from "@/lib/server/facilities/sources/smokingCessationNtpc";
+import { fetchSmokingCessationTaoyuan } from "@/lib/server/facilities/sources/smokingCessationTaoyuan";
+import { fetchSmokingCessationTaichung } from "@/lib/server/facilities/sources/smokingCessationTaichung";
+import { fetchSmokingCessationTainan } from "@/lib/server/facilities/sources/smokingCessationTainan";
+import { fetchSmokingCessationKaohsiung } from "@/lib/server/facilities/sources/smokingCessationKaohsiung";
+import {
+  SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+  SMOKING_CESSATION_COUNTY_MATCH,
+} from "@/lib/server/facilities/sources/smokingCessationCountyShared";
 import {
   fetchTaipeiChildcarePrivate,
   fetchTaipeiChildcarePublicPrivate,
@@ -62,9 +72,24 @@ export interface FacilitySyncResult {
 
 const ZERO_COUNTS = { fetched: 0, inserted: 0, updated: 0 };
 
+interface FacilitySourceEntry {
+  key: string;
+  fetch: () => Promise<FacilityRecord[]>;
+  /**
+   * issue #572: when set, deletes the matching slice of one OTHER source's
+   * rows (identified by facilityType+sourceKey) before this source's own
+   * rows are upserted — the "六都整批替換" mechanism smoking_cessation's 6
+   * county sources use to batch-replace their county's slice of the
+   * national baseline (hpaSmokingCessation.ts, #569) instead of a row-by-
+   * row dedupe. See runFacilitySync()'s loop for the fetch-before-delete
+   * ordering that keeps this safe against a failed/empty fetch.
+   */
+  replaceBaselineForCounty?: { facilityType: string; sourceKey: string; countyNameVariants: readonly string[] };
+}
+
 // Registry of facility sources — add one entry per source as they're wired up
 // (drugs, health-checks, etc.), each behind its own fetch function.
-const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
+const SOURCES: FacilitySourceEntry[] = [
   { key: "tfda_pharmacy", fetch: fetchTfdaPharmacies },
   { key: "mol_labor_checkup", fetch: fetchMolHealthCheckFacilities },
   { key: "mol_occupational_injury", fetch: fetchMolOccupationalInjuryHospitals },
@@ -138,6 +163,80 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // fetchHpaSmokingCessationFacilities() — confirm that before relying on
   // this source's scheduled runs.
   { key: "hpa_smoking_cessation_6954", fetch: fetchHpaSmokingCessationFacilities },
+  // #572 (parent #562): 六都戒菸特約機構覆蓋——各縣市資料比國健署全國表（上一條）
+  // 更新，依縣市整批替換，不逐筆比對去重。`replaceBaselineForCounty` 讓
+  // runFacilitySync() 在這些來源各自成功 fetch 之後（見下方迴圈的 fetch-先-
+  // delete-後順序），刪掉 hpa_smoking_cessation_6954 底下屬於該縣市的列，再
+  // upsert 這個來源自己的列——兩者絕不會同時存在重複顯示。新北的兩個來源
+  // （一般院所 124244／牙醫 125915）共用同一份縣市比對清單：兩者都會嘗試刪除，
+  // 但只有先跑的那個真的有刪除動作，第二個是 no-op，細節見
+  // smokingCessationCountyShared.ts 的模組註解。6 個來源都還沒有從正式主機
+  // 驗證過（臺北/新北/臺中/臺南/高雄已在這張票重新從一般網路 curl 確認過欄位和
+  // 筆數；桃園因 opendata.tycg.gov.tw 這次連不上，沿用票上文件記載的欄位，
+  // 未重新驗證），部署前請用 admin facilities-sync 端點逐一帶 `sources` 確認。
+  {
+    key: "smoking_cessation_taipei_121898",
+    fetch: fetchSmokingCessationTaipei,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_taipei_121898,
+    },
+  },
+  {
+    key: "smoking_cessation_ntpc_124244",
+    fetch: fetchSmokingCessationNtpc,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_ntpc_124244,
+    },
+  },
+  {
+    key: "smoking_cessation_ntpc_dental_125915",
+    fetch: fetchSmokingCessationNtpcDental,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_ntpc_dental_125915,
+    },
+  },
+  {
+    key: "smoking_cessation_taoyuan_33872",
+    fetch: fetchSmokingCessationTaoyuan,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_taoyuan_33872,
+    },
+  },
+  {
+    key: "smoking_cessation_taichung_81720",
+    fetch: fetchSmokingCessationTaichung,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_taichung_81720,
+    },
+  },
+  {
+    key: "smoking_cessation_tainan_140122",
+    fetch: fetchSmokingCessationTainan,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_tainan_140122,
+    },
+  },
+  {
+    key: "smoking_cessation_kaohsiung_87259",
+    fetch: fetchSmokingCessationKaohsiung,
+    replaceBaselineForCounty: {
+      facilityType: "smoking_cessation",
+      sourceKey: SMOKING_CESSATION_BASELINE_SOURCE_KEY,
+      countyNameVariants: SMOKING_CESSATION_COUNTY_MATCH.smoking_cessation_kaohsiung_87259,
+    },
+  },
   // #571 (parent #562): 成癮防治分頁的另外兩類資料——美沙冬跨區給藥院所
   // （data.gov.tw 133345）和 22 縣市毒品危害防制中心（反毒大本營靜態列表頁）。兩者
   // 都沒有座標，一樣交給既有 geocode 批次處理。這兩個來源的下載網址都是從一般住宅
@@ -217,7 +316,26 @@ export async function runFacilitySync(only?: readonly string[]): Promise<Facilit
   for (const source of selected) {
     results.push(
       await runSource(source.key, ZERO_COUNTS, async () => {
+        // Fetch BEFORE any delete, deliberately — if the network call
+        // throws (upstream down, HTTP error, schema validation failure),
+        // runSource()'s try/catch records the error and nothing below ever
+        // runs, so a county source's own fetch failure can never wipe out
+        // the national baseline rows it would otherwise have replaced
+        // (issue #572: that baseline data staying put beats this county
+        // silently going empty until the next successful sync).
         const records = await source.fetch();
+        // A non-empty fetch is also required before the replace-delete
+        // runs: an upstream returning HTTP 200 with zero usable rows (a
+        // malformed/empty response that still passes the status check) must
+        // never be allowed to delete a real county's worth of existing
+        // baseline rows and insert nothing in their place.
+        if (source.replaceBaselineForCounty && records.length > 0) {
+          await deleteFacilitiesBySourceKeyForCounty(
+            source.replaceBaselineForCounty.facilityType,
+            source.replaceBaselineForCounty.sourceKey,
+            source.replaceBaselineForCounty.countyNameVariants,
+          );
+        }
         const { inserted, updated } = await upsertFacilities(records);
         return { fetched: records.length, inserted, updated };
       }),

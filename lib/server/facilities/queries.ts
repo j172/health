@@ -31,6 +31,15 @@ export interface FacilityExtraJson {
   addictionTreatmentMode?: string | null;
   addictionTreatmentService?: string | null;
   /**
+   * smoking_cessation facility type (#569/#572) — 給藥/衛教 already existed
+   * (smokingMedication/smokingEducation, #569); #572 adds the 3rd flag,
+   * 僅調劑 (smokingDispensingOnly), which only 臺北 121898's six-都覆蓋 source
+   * ships as an explicit column among the 6 county sources — every other
+   * source (the national baseline and the other 5 counties) always carries
+   * this as null, never an inferred guess.
+   */
+  smokingDispensingOnly?: string | null;
+  /**
    * early_intervention_unit facility type (#613) — 130229's 服務方式 (時段/
    * 到宅/日間, combined like "時段、到宅") and 療育服務內容. serviceMethod is
    * the second filter dimension the tool page offers alongside 單位別
@@ -606,6 +615,36 @@ export const countFacilities = async (facilityType: string): Promise<number> =>
 export const deleteFacilitiesByType = async (facilityType: string): Promise<number> =>
   withConnection(async (conn) => {
     const [result] = await conn.query("DELETE FROM facilities WHERE facility_type = ?", [facilityType]);
+    return (result as { affectedRows: number }).affectedRows;
+  });
+
+/**
+ * Deletes the rows of one (facilityType, sourceKey) baseline whose address
+ * matches any of the given county-name substrings — the "六都整批替換" bulk
+ * replacement issue #572 calls for (smoking_cessation's national baseline,
+ * hpa_smoking_cessation_6954, gets its 臺北/新北/桃園/臺中/臺南/高雄 rows removed
+ * this way, one county at a time, right before that county's own smoking-
+ * cessation source upserts its rows under its own sourceKey). Deliberately a
+ * bulk substring match, not a row-by-row sourceId comparison — the ticket
+ * explicitly calls for "不做逐筆比對去重".
+ *
+ * `countyNameVariants` being empty is a no-op (returns 0) rather than
+ * matching every row — a caller passing an empty list by mistake must never
+ * turn into "delete everything under this source".
+ */
+export const deleteFacilitiesBySourceKeyForCounty = async (
+  facilityType: string,
+  sourceKey: string,
+  countyNameVariants: readonly string[],
+): Promise<number> =>
+  withConnection(async (conn) => {
+    if (countyNameVariants.length === 0) return 0;
+    const likeConditions = countyNameVariants.map(() => "address LIKE ?").join(" OR ");
+    const params: unknown[] = [facilityType, sourceKey, ...countyNameVariants.map((c) => `%${c}%`)];
+    const [result] = await conn.query(
+      `DELETE FROM facilities WHERE facility_type = ? AND source_key = ? AND (${likeConditions})`,
+      params,
+    );
     return (result as { affectedRows: number }).affectedRows;
   });
 

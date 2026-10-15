@@ -105,6 +105,22 @@ export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
   { facilityType: "early_intervention_unit", sourceKey: "taipei_joint_assessment_135454", label: "臺北市早療聯合評估中心" },
   { facilityType: "early_intervention_unit", sourceKey: "ntpc_joint_assessment_125231", label: "新北市衛生局合作早療評估醫院" },
   { facilityType: "early_intervention_unit", sourceKey: "ntpc_joint_assessment_123786", label: "新北市發展遲緩兒童評估醫院" },
+  // #572 (parent #562): 六都戒菸特約機構覆蓋，加上它們取代的國健署全國基底
+  // (hpa_smoking_cessation_6954, #569) — that national source was never added
+  // here when #569 landed, a pre-existing gap this ticket also fixes (its
+  // tool page's "nearby" search would otherwise never surface any of these
+  // rows). 新北的兩個來源 (124244/125915) currently ship every row with blank
+  // coordinates despite the ticket's table claiming otherwise (see
+  // smokingCessationNtpc.ts's module comment) — registered here too for that
+  // reason. 臺南 (140122) is deliberately NOT listed — its rows carry real
+  // 緯度/經度 of their own (see smokingCessationTainan.ts).
+  { facilityType: "smoking_cessation", sourceKey: "hpa_smoking_cessation_6954", label: "戒菸特約機構（國健署全國表）" },
+  { facilityType: "smoking_cessation", sourceKey: "smoking_cessation_taipei_121898", label: "臺北市戒菸特約機構" },
+  { facilityType: "smoking_cessation", sourceKey: "smoking_cessation_ntpc_124244", label: "新北市戒菸特約機構" },
+  { facilityType: "smoking_cessation", sourceKey: "smoking_cessation_ntpc_dental_125915", label: "新北市戒菸特約牙醫診所" },
+  { facilityType: "smoking_cessation", sourceKey: "smoking_cessation_taoyuan_33872", label: "桃園市戒菸特約機構" },
+  { facilityType: "smoking_cessation", sourceKey: "smoking_cessation_taichung_81720", label: "臺中市戒菸特約機構" },
+  { facilityType: "smoking_cessation", sourceKey: "smoking_cessation_kaohsiung_87259", label: "高雄市戒菸特約機構" },
 ];
 
 export interface GeocodeBatchSourceSummary {

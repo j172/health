@@ -535,10 +535,16 @@ export const facilitySearchConfigs = {
     emoji: "🚭",
     title: "全國戒菸治療與衛教特約院所查詢",
     description:
-      "查詢全國提供二代戒菸補助之特約醫院、基層診所與社區藥局。享戒菸藥品免部分負擔及衛教諮詢。資料來源：衛生福利部國民健康署「各縣市合約戒菸醫療院所」（2,838 家）。",
+      "查詢全國提供二代戒菸補助之特約醫院、基層診所與社區藥局。享戒菸藥品免部分負擔及衛教諮詢。資料來源：衛生福利部國民健康署「各縣市合約戒菸醫療院所」（全國基底）；臺北市、新北市、桃園市、臺中市、臺南市、高雄市則改用各市政府衛生局自有、較新的名冊整批替換。",
     // issue #569（parent #562）：國健署 6954 全國表已上線同步，取代原本只有 6
     // 筆手寫資料時的「部分示例」警示文字。noteLine 改為顯示資料本身的日期
     // （各筆 extra_json.dataAsOf，本站同步當天的日期）而非再次提醒資料不完整。
+    // issue #572：六都改用各市政府衛生局名冊整批替換國健署全國表裡屬於該縣市的
+    // 列（不逐筆比對去重，見 runSync.ts 的 replaceBaselineForCounty）。noteLine
+    // 列出各縣市來源，供使用者對照頁面上逐筆顯示的「本站資料同步日期」
+    // （extra_json.dataAsOf，見下方 extraFields）。
+    noteLine:
+      "六都資料來源：臺北市衛生局（121898）、新北市衛生局（124244／牙醫 125915）、桃園市衛生局（33872）、臺中市衛生局（81720）、臺南市衛生局（140122）、高雄市衛生局（87259），其餘縣市沿用國健署全國表；每筆資料的同步日期見下方「本站資料同步日期」。",
     searchPlaceholder: "輸入院所、藥局名稱或地址關鍵字",
     errorText: "查詢戒菸特約院所失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的戒菸特約院所，可改用關鍵字搜尋。",
@@ -553,9 +559,13 @@ export const facilitySearchConfigs = {
       { value: "藥局", label: "藥局" },
       { value: "衛生所", label: "衛生所" },
     ],
+    // issue #572：新增「僅調劑」(smokingDispensingOnly) 顯示——目前只有臺北市
+    // 的來源有這個欄位，其餘來源留 null，FacilitySearchContent 的 extraFields
+    // 機制本身就會在值為 null 時跳過顯示，不需要額外處理。
     extraFields: [
       { key: "smokingMedication", label: "戒菸給藥：" },
       { key: "smokingEducation", label: "戒菸衛教：" },
+      { key: "smokingDispensingOnly", label: "戒菸調劑：" },
       { key: "dataAsOf", label: "本站資料同步日期：" },
     ],
   },
