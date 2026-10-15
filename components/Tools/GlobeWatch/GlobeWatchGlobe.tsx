@@ -41,6 +41,7 @@ import type {
 } from "@/lib/tools/globeWatch/disastersTransform";
 import { resolveDisasterTypeName, DISASTER_TYPE_NAMES } from "@/lib/tools/globeWatch/disasterTypeNames";
 import { resolveAlertLevelName } from "@/lib/tools/globeWatch/disasterAlertLevelNames";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { resolveCountryName as resolveDisasterCountryName } from "@/lib/tools/globeWatch/disasterCountryNames";
 
 type BasemapMode = "vector" | "satellite";
@@ -159,7 +160,7 @@ const buildEarthquakePopupHtml = (
     ? `<div style="margin-top:4px;font-weight:600;color:${escapeHtml(properties.gdacsColor ?? "#374151")};">${escapeHtml(labels.gdacsAlertLabel ?? "GDACS:")} ${escapeHtml(properties.gdacsAlertLevel)}</div>`
     : "";
   const linkHtml = properties.url
-    ? `<div style="margin-top:4px;"><a href="${escapeHtml(properties.url)}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.sourceLinkLabel)}</a></div>`
+    ? `<div style="margin-top:4px;"><a href="${escapeHtml(appendOutboundUtm(properties.url, { medium: "tool_outbound", campaign: "global_watch_earthquakes" }))}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.sourceLinkLabel)}</a></div>`
     : "";
 
   return `<div style="font-size:12px;line-height:1.6;min-width:180px;">
@@ -185,7 +186,7 @@ const buildDisasterPopupHtml = (
     : escapeHtml(labels.unknownCountryLabel);
   const titleHtml = escapeHtml(properties.title);
   const linkHtml = properties.reportUrl
-    ? `<div style="margin-top:4px;"><a href="${escapeHtml(properties.reportUrl)}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.readOriginalLabel)}</a></div>`
+    ? `<div style="margin-top:4px;"><a href="${escapeHtml(appendOutboundUtm(properties.reportUrl, { medium: "tool_outbound", campaign: "global_watch_disasters" }))}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.readOriginalLabel)}</a></div>`
     : "";
 
   return `<div style="font-size:12px;line-height:1.6;min-width:200px;">

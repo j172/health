@@ -6,6 +6,7 @@ import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const TAIWAN_CITIES = [
   "全部縣市",
@@ -501,7 +502,10 @@ export default function CulturalEventsContent() {
 
                     {promoUrl && (
                       <a
-                        href={promoUrl}
+                        href={appendOutboundUtm(promoUrl, {
+                          medium: "tool_outbound",
+                          campaign: "cultural_events",
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`flex-1 rounded-xl px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors ${

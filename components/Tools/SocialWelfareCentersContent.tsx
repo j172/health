@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { COUNTY_1999_LIST } from "@/lib/server/hotlines/county1999";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import {
   QUICK_EXIT_URL,
   SITUATIONS,
@@ -155,7 +156,10 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
                         <>
                           {" "}
                           <a
-                            href={step.href}
+                            href={appendOutboundUtm(step.href, {
+                              medium: "tool_outbound",
+                              campaign: "social_welfare_centers",
+                            })}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-medium text-indigo-600 underline hover:text-indigo-700 dark:text-indigo-400"
@@ -186,7 +190,10 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
             <p className="text-xs text-neutral-500 dark:text-slate-400">
               官方出處：
               <a
-                href={selectedSituation.officialSource.url}
+                href={appendOutboundUtm(selectedSituation.officialSource.url, {
+                  medium: "tool_outbound",
+                  campaign: "social_welfare_centers",
+                })}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="ml-1 underline hover:text-indigo-600 dark:hover:text-indigo-400"
@@ -212,7 +219,10 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
         <p className="mt-3 text-xs text-neutral-500 dark:text-slate-400">
           官方出處：
           <a
-            href={SOCIAL_WORKER_VISIT_SOURCE.url}
+            href={appendOutboundUtm(SOCIAL_WORKER_VISIT_SOURCE.url, {
+              medium: "tool_outbound",
+              campaign: "social_welfare_centers",
+            })}
             target="_blank"
             rel="noopener noreferrer"
             className="ml-1 underline hover:text-indigo-600 dark:hover:text-indigo-400"

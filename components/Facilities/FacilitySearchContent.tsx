@@ -779,7 +779,11 @@ export default function FacilitySearchContent({
                       )}
                       {f.extra_json?.charityUrl && (
                         <a
-                          href={f.extra_json.charityUrl}
+                          href={appendOutboundUtm(f.extra_json.charityUrl, {
+                            medium: "tool_outbound",
+                            campaign: "facility_search",
+                            content: "charity_list",
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-600 border border-rose-200 shadow-sm transition-all hover:bg-rose-100 hover:border-rose-300 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 dark:hover:bg-rose-900/60"

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { BaseMapMarker } from "@/components/Map/BaseMap";
 import PopupNearbyToolsLinks from "@/components/Map/PopupNearbyToolsLinks";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
@@ -54,7 +55,11 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
         {m.charityUrl && (
           <div className="mt-2 pt-1.5 border-t border-neutral-100">
             <a
-              href={m.charityUrl}
+              href={appendOutboundUtm(m.charityUrl, {
+                medium: "tool_outbound",
+                campaign: "facility_search",
+                content: "charity_map_popup",
+              })}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 rounded bg-rose-500 px-2.5 py-1 text-xs font-semibold !text-white hover:bg-rose-600 transition-colors shadow-sm"

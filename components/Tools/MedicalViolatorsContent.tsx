@@ -374,7 +374,10 @@ export default function MedicalViolatorsContent({
                       {item.links.map((link, idx) => (
                         <a
                           key={idx}
-                          href={link.url}
+                          href={appendOutboundUtm(link.url, {
+                            medium: "tool_outbound",
+                            campaign: "medical_violators",
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-semibold text-slate-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-700 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-rose-800 dark:hover:bg-slate-750 dark:hover:text-rose-300"

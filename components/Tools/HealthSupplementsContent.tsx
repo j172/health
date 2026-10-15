@@ -5,6 +5,7 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import defaultSeed from "@/data/health-supplements-seed.json";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 export interface HealthSupplement {
   license_no: string;
@@ -255,7 +256,10 @@ export default function HealthSupplementsContent() {
                         {item.source_url && (
                           <p>
                             <a
-                              href={item.source_url}
+                              href={appendOutboundUtm(item.source_url, {
+                                medium: "tool_outbound",
+                                campaign: "health_supplements",
+                              })}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1 font-semibold text-emerald-600 hover:underline dark:text-emerald-400"

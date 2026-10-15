@@ -408,7 +408,11 @@ export default function NpoOrganizationsContent() {
                         <span>🛡️</span>
                         {badge.url ? (
                           <a
-                            href={badge.url}
+                            href={appendOutboundUtm(badge.url, {
+                              medium: "tool_outbound",
+                              campaign: "npo_organizations",
+                              content: "trust_badge",
+                            })}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:underline"
@@ -470,7 +474,11 @@ export default function NpoOrganizationsContent() {
                 <div className="flex flex-wrap items-center gap-2 pt-1">
                   {item.storeUrl && (
                     <a
-                      href={item.storeUrl}
+                      href={appendOutboundUtm(item.storeUrl, {
+                        medium: "tool_outbound",
+                        campaign: "npo_organizations",
+                        content: "store",
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white shadow-2xs hover:bg-amber-600 transition"
@@ -483,7 +491,11 @@ export default function NpoOrganizationsContent() {
 
                   {item.website && (
                     <a
-                      href={item.website}
+                      href={appendOutboundUtm(item.website, {
+                        medium: "tool_outbound",
+                        campaign: "npo_organizations",
+                        content: "website",
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 rounded-lg bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-100 dark:bg-teal-950/60 dark:text-teal-300 dark:hover:bg-teal-900/80"

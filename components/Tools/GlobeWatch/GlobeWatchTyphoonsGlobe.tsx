@@ -24,6 +24,7 @@ import {
 } from "@/lib/tools/globeWatch/basemapStyles";
 import { RESET_VIEW_FLY_DURATION_MS, TAIWAN_DEFAULT_VIEW } from "@/lib/tools/globeWatch/defaultView";
 import { resolveCameraTransition, resolveFlyDurationMs } from "@/lib/tools/globeWatch/motion";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import type { TyphoonPointProperties, TyphoonsGlobeData } from "@/lib/tools/globeWatch/typhoonsTransform";
 
 type BasemapMode = "vector" | "satellite";
@@ -243,7 +244,7 @@ function buildTyphoonPopupHtml(
       ? escapeHtml(labels.westPacificLabel)
       : escapeHtml(`GDACS${properties.basin ? ` · ${properties.basin}` : ""}${properties.alertLevel ? ` · ${properties.alertLevel}` : ""}`);
   const linkHtml = properties.web
-    ? `<div style="margin-top:4px;"><a href="${escapeHtml(properties.web)}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.sourceLinkLabel)}</a></div>`
+    ? `<div style="margin-top:4px;"><a href="${escapeHtml(appendOutboundUtm(properties.web, { medium: "tool_outbound", campaign: "global_watch_typhoons" }))}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.sourceLinkLabel)}</a></div>`
     : "";
 
   return `<div style="font-size:12px;line-height:1.6;min-width:180px;">

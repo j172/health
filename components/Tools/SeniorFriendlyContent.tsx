@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import type { SeniorFriendlyOverview } from "@/lib/server/seniorTourism/types";
 
 export default function SeniorFriendlyContent() {
@@ -222,7 +223,10 @@ export default function SeniorFriendlyContent() {
                     {card.infoUrl && (
                       <div className="pt-3 border-t border-slate-100 dark:border-slate-700">
                         <a
-                          href={card.infoUrl}
+                          href={appendOutboundUtm(card.infoUrl, {
+                            medium: "tool_outbound",
+                            campaign: "senior_friendly",
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-sm"
@@ -314,7 +318,10 @@ export default function SeniorFriendlyContent() {
                               )}
                               {s.serviceUrl && (
                                 <a
-                                  href={s.serviceUrl}
+                                  href={appendOutboundUtm(s.serviceUrl, {
+                                    medium: "tool_outbound",
+                                    campaign: "senior_friendly",
+                                  })}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline"
@@ -367,7 +374,10 @@ export default function SeniorFriendlyContent() {
                     </div>
                     {p.bookingUrl && (
                       <a
-                        href={p.bookingUrl}
+                        href={appendOutboundUtm(p.bookingUrl, {
+                          medium: "tool_outbound",
+                          campaign: "senior_friendly",
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-sm"

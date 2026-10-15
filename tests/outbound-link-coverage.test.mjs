@@ -12,21 +12,22 @@ import path from "node:path";
 // Scope and known limitations (documented on purpose, same spirit as
 // tests/no-hardcoded-tile-subdomain.test.mjs's pragmatic regex-based guard —
 // this is a source-text scanner, not a full AST/dataflow analysis):
-//   - Only flags hrefs where a literal `https://`/`http://` string appears
-//     directly inside the `href=` attribute's own value (a plain string, or
-//     a template literal, optionally behind a `foo || "https://..."`
-//     fallback). A bare-identifier href (`href={item.website}`,
-//     `href={ref.url}`) can't be judged by scanning source text alone —
-//     those are dynamic per-record URLs (NPO/charity/hospital/product data
-//     from the DB) or values already wrapped one level removed (see the
-//     dedicated structural tests below for the specific choke points of
-//     that kind this repo has: ToolPageShell's scientificBasis citations,
-//     HeroImage's stock-photo attribution, the shared Google Maps/tile
-//     constants). This is intentionally the same boundary the acceptance
-//     criteria draws when it excludes "infrastructure-only" / non-clickable
-//     strings — a dynamic record URL with no literal domain in source isn't
-//     something this guard can see, so it's out of scope here by
-//     construction, not by an allowlist.
+//   - The literal-URL scanner below (findUnwrappedExternalHrefs) only flags
+//     hrefs where a literal `https://`/`http://` string appears directly
+//     inside the `href=` attribute's own value (a plain string, or a
+//     template literal, optionally behind a `foo || "https://..."`
+//     fallback). It cannot see a dynamic per-record URL
+//     (`href={item.website}`, `href={ref.url}`), which is what the second
+//     scanner (findUnwrappedDynamicExternalHrefs, PRD #438 §M / 接縫 ②)
+//     covers: a dynamic href is treated as external when its own tag carries
+//     target="_blank" / rel="noopener|noreferrer", or its value reads a
+//     URL-ish property (`.url`, `.web`, `.website`, `.link`, `*Url`). Such an
+//     href must go through appendOutboundUtm()/buildOutboundLink(), or be
+//     listed in DYNAMIC_HREF_ALLOWLIST with a reason. The detection is a
+//     heuristic, not dataflow analysis: a dynamic href to an external site
+//     that has neither signal (no target/rel, non-URL-ish name) is invisible
+//     to it, so name such props `*Url` / use target="_blank" like the rest of
+//     the repo does.
 //   - mailto: / tel: hrefs never contain "https://" so they're naturally
 //     excluded.
 //   - A link to this site's own domain (health.j172.tw) is not "站外" and is
@@ -225,4 +226,299 @@ test("Structural Guard: shared map attribution and Google Maps navigation consta
     mapNavigation.includes(WRAP_TOKEN),
     "lib/utils/mapNavigation.ts's buildGoogleMapsDirUrl (13+ importers) must wrap its returned URL",
   );
+});
+
+// ---------------------------------------------------------------------------
+// Dynamic hrefs (PRD #438 §M, 接縫 ②): `href={item.website}`, `href={ref.url}`
+// and HTML-string popups (`<a href="${escapeHtml(props.url)}">`).
+//
+// The literal-URL scanner above cannot see these, so this second scanner
+// extracts each dynamic href expression plus its enclosing opening tag and
+// decides whether it points off-site from two cheap signals (no dataflow):
+//   1. the tag carries target="_blank" or rel="…noopener|noreferrer…" — this
+//      repo only puts those on external links; or
+//   2. the expression reads a URL-ish property (`.url`, `.web`, `.website`,
+//      `.link`, `*Url`, `*_url`) — function calls like `buildUrl(…)` are not.
+// An external-looking dynamic href passes only if it is wrapped by one of the
+// UTM builders below (inline, or by the `const x = appendOutboundUtm(…)`
+// declaration it references), or is listed in DYNAMIC_HREF_ALLOWLIST with a
+// reason. Allowlist entries are keyed by file + normalized expression (never a
+// line number, so unrelated edits can't make the test flaky) and a stale entry
+// fails the test so the list can't rot.
+// ---------------------------------------------------------------------------
+
+// Helpers that attach utm_source=health.j172.tw themselves. buildGoogleMapsDirUrl
+// wraps its return value at its single choke point (see the structural guard
+// above); the other two are the outboundLink.ts helpers.
+const UTM_WRAPPERS = [
+  "appendOutboundUtm(",
+  "buildOutboundLink(",
+  "buildGoogleMapsDirUrl(",
+];
+
+const DYNAMIC_HREF_ALLOWLIST = [
+  {
+    file: "components/Common/ContextualPartnerCard.tsx",
+    expr: "targetUrl",
+    reason:
+      "built by buildContextualPartnerUrl(), which injects the same utm_source=health.j172.tw (+ contextual_banner / civic_partner) and respects upstream UTM; covered by lib/constants/contextualPartners.test.mjs",
+  },
+  {
+    file: "components/Common/OutRedirectCountdown.tsx",
+    expr: "targetUrl",
+    reason:
+      "the /out interstitial's fallback link; app/(zh)/(site)/out/page.tsx already passes validateOutboundUrl() output through appendOutboundUtm() before handing it over",
+  },
+  {
+    file: "components/News/SiteFooter.tsx",
+    expr: "href",
+    reason:
+      "FooterExternalLink / SocialIcon are pass-through wrappers; every caller already supplies an appendOutboundUtm()-wrapped value (civic-partner links from lib/server/tools/navModel.ts, social icons wrapped at their call sites)",
+  },
+  {
+    file: "app/(zh)/news/[id]/page.tsx",
+    expr: "asset.url",
+    reason:
+      "news attachment file downloads (government PDF/DOC etc.) are intentionally left without query parameters, to avoid old servers rejecting them or splitting the cache (owner decision on PR #664: attachments excluded, everything else tagged)",
+  },
+  {
+    file: "app/(zh)/accessibility/page.tsx",
+    expr: "ACCESSIBILITY_FEEDBACK_LINKS[1].url",
+    reason: "a mailto: link; appending ?utm_* to a mailto: URL would corrupt it",
+  },
+];
+
+// `.url` / `.web` / `.website` / `.link` / `.fooUrl` / `.foo_url` (not a call), or
+// an expression that is just such a bare identifier (`promoUrl`, `targetUrl`).
+// Deliberately not a substring match: `escapeXml(`${baseUrl}/feed.xml`)` and
+// `buildUrl(1, size)` mention "Url" but are internal.
+const URLISH_NAME =
+  /\.(?:\w*Url|\w*_url|url|web|website|link)\b(?!\s*\()|^(?:\w*Url|\w*_url|url|web|website|link)!?$/i;
+const EXTERNAL_TAG_SIGNAL =
+  /\btarget\s*=\s*(?:"_blank"|\{\s*["'`]_blank["'`]|'_blank')|\brel\s*=\s*(?:"[^"]*|\{[^}]*)(?:noopener|noreferrer)/;
+
+function skipString(src, i) {
+  const quote = src[i];
+  i += 1;
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === "\\") {
+      i += 2;
+      continue;
+    }
+    if (quote === "`" && ch === "$" && src[i + 1] === "{") {
+      i = skipBraces(src, i + 1);
+      continue;
+    }
+    if (ch === quote) return i + 1;
+    i += 1;
+  }
+  return i;
+}
+
+// src[i] must be "{"; returns the index just past the matching "}".
+function skipBraces(src, i) {
+  let depth = 0;
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === '"' || ch === "'" || ch === "`") {
+      i = skipString(src, i);
+      continue;
+    }
+    if (ch === "{") depth += 1;
+    else if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) return i + 1;
+    }
+    i += 1;
+  }
+  return i;
+}
+
+// The opening tag (`<a …>`) that contains `hrefIdx`, or "" if it can't be found.
+function enclosingOpeningTag(src, hrefIdx) {
+  let start = hrefIdx;
+  while (start >= 0) {
+    start = src.lastIndexOf("<", start);
+    if (start === -1) return "";
+    if (/[A-Za-z]/.test(src[start + 1] ?? "")) break;
+    start -= 1;
+  }
+  let i = start + 1;
+  while (i < src.length) {
+    const ch = src[i];
+    if (ch === '"' || ch === "'") {
+      i = skipString(src, i);
+      continue;
+    }
+    if (ch === "{") {
+      i = skipBraces(src, i);
+      continue;
+    }
+    if (ch === ">") return i > hrefIdx ? src.slice(start, i + 1) : "";
+    i += 1;
+  }
+  return "";
+}
+
+const normalizeExpr = (expr) => expr.replace(/\s+/g, " ").trim();
+const lineOf = (src, idx) => src.slice(0, idx).split("\n").length;
+const hasWrapper = (text) => UTM_WRAPPERS.some((token) => text.includes(token));
+
+function isWrappedByLocalDeclaration(src, identifier) {
+  if (!/^[A-Za-z_$][\w$]*$/.test(identifier)) return false;
+  const declaration = new RegExp(
+    `\\b(?:const|let)\\s+${identifier.replace(/\$/g, "\\$")}\\b[^=;]*=([^;]*)`,
+  );
+  const match = src.match(declaration);
+  return Boolean(match && hasWrapper(match[1]));
+}
+
+export function findUnwrappedDynamicExternalHrefs(fileContent, filePath = "") {
+  const violations = [];
+
+  // (a) JSX: href={ expression }
+  const jsxPattern = /\bhref\s*=\s*\{/g;
+  let match;
+  while ((match = jsxPattern.exec(fileContent))) {
+    const openIdx = match.index + match[0].length - 1;
+    const end = skipBraces(fileContent, openIdx);
+    const expr = normalizeExpr(fileContent.slice(openIdx + 1, end - 1));
+    // A literal-led value (`"/x"`, `` `/news/${id}` ``, `"https://…"`) names its
+    // destination in source; the literal-URL scanner owns the external ones.
+    if (!expr || /^["'`]/.test(expr)) continue;
+
+    const tag = enclosingOpeningTag(fileContent, match.index);
+    const looksExternal = EXTERNAL_TAG_SIGNAL.test(tag) || URLISH_NAME.test(expr);
+    if (!looksExternal) continue;
+    if (hasWrapper(expr) || isWrappedByLocalDeclaration(fileContent, expr)) continue;
+
+    violations.push({
+      file: filePath,
+      line: lineOf(fileContent, match.index),
+      expr,
+      code: `href={${expr}}`,
+    });
+  }
+
+  // (b) HTML strings: <a href="${ expression }" …>
+  const htmlPattern = /\bhref=\\?(["'])\$\{/g;
+  while ((match = htmlPattern.exec(fileContent))) {
+    const openIdx = match.index + match[0].length - 1;
+    const end = skipBraces(fileContent, openIdx);
+    const expr = normalizeExpr(fileContent.slice(openIdx + 1, end - 1));
+    const tagEnd = fileContent.indexOf(">", end);
+    const tag = fileContent.slice(match.index, tagEnd === -1 ? end : tagEnd);
+
+    const looksExternal = EXTERNAL_TAG_SIGNAL.test(tag) || URLISH_NAME.test(expr);
+    if (!looksExternal) continue;
+    if (hasWrapper(expr)) continue;
+    // A module-level SCREAMING_CASE constant in a file that builds its URLs with
+    // appendOutboundUtm() (tile attribution links) is wrapped at its definition.
+    if (/^[A-Z][A-Z0-9_]*$/.test(expr) && fileContent.includes("appendOutboundUtm(")) continue;
+
+    violations.push({
+      file: filePath,
+      line: lineOf(fileContent, match.index),
+      expr,
+      code: `href="\${${expr}}"`,
+    });
+  }
+
+  return violations;
+}
+
+const isAllowlisted = (violation) =>
+  DYNAMIC_HREF_ALLOWLIST.find(
+    (entry) => entry.file === violation.file && entry.expr === violation.expr,
+  );
+
+test("Regression Guard: no dynamic external href bypasses appendOutboundUtm() (PRD #438 §M)", () => {
+  const rootDir = process.cwd();
+  const sourceDirs = ["app", "components", "lib"].map((dir) => path.join(rootDir, dir));
+  const files = sourceDirs.flatMap((dir) => getAllSourceFiles(dir));
+  assert.ok(files.length > 20, `Expected multiple source files, found ${files.length}`);
+
+  const used = new Set();
+  const offenders = [];
+
+  for (const file of files) {
+    if (path.basename(file) === "outbound-link-coverage.test.mjs") continue;
+    const content = fs.readFileSync(file, "utf-8");
+    // Cheap pre-filter keeps the scan fast: no `href` token, nothing to inspect.
+    if (!content.includes("href")) continue;
+    const relPath = path.relative(rootDir, file).replace(/\\/g, "/");
+    for (const violation of findUnwrappedDynamicExternalHrefs(content, relPath)) {
+      const entry = isAllowlisted(violation);
+      if (entry) used.add(entry);
+      else offenders.push(violation);
+    }
+  }
+
+  if (offenders.length > 0) {
+    const details = offenders.map((v) => `  - ${v.file}:${v.line} -> ${v.code}`).join("\n");
+    assert.fail(
+      `Found dynamic external href(s) not routed through a UTM helper (PRD #438 §M):\n${details}\nWrap with appendOutboundUtm() from '@/lib/format/outboundLink', e.g. href={appendOutboundUtm(item.url, { medium: "tool_outbound", campaign: "<tool_slug>" })}, or add a DYNAMIC_HREF_ALLOWLIST entry with a reason (e.g. mailto:).`,
+    );
+  }
+
+  const stale = DYNAMIC_HREF_ALLOWLIST.filter((entry) => !used.has(entry));
+  assert.deepEqual(
+    stale.map((entry) => `${entry.file} :: ${entry.expr}`),
+    [],
+    "Stale DYNAMIC_HREF_ALLOWLIST entries — the href no longer exists or is now wrapped; remove them.",
+  );
+  for (const entry of DYNAMIC_HREF_ALLOWLIST) {
+    assert.ok(entry.reason && entry.reason.length > 10, `Allowlist entry for ${entry.file} needs a reason`);
+  }
+});
+
+test("Regression Guard detection unit tests: dynamic external hrefs", () => {
+  const scan = (src) => findUnwrappedDynamicExternalHrefs(src, "test.tsx");
+
+  // Flagged: bare URL-ish property, with and without target/rel.
+  assert.equal(scan(`<a href={item.website} target="_blank" rel="noopener noreferrer">x</a>`).length, 1);
+  assert.equal(scan(`<a href={item.url}>x</a>`).length, 1);
+  assert.equal(scan(`<a href={m.mapUrl!}>x</a>`).length, 1);
+  assert.equal(scan(`<a href={item.web || fallback}>x</a>`).length, 1);
+  // Flagged: non-URL-ish name, but the tag opens a new tab (external marker).
+  assert.equal(scan(`<a href={step.href} target="_blank" rel="noopener noreferrer">x</a>`).length, 1);
+  assert.equal(scan(`<a\n  className="a>b"\n  href={step.href}\n  rel="noreferrer noopener"\n>x</a>`).length, 1);
+  // Flagged: HTML-string popup.
+  assert.equal(
+    scan("const h = `<a href=\"${escapeHtml(properties.url)}\" target=\"_blank\">x</a>`;").length,
+    1,
+  );
+
+  // Not flagged: wrapped inline (also across lines and behind a fallback).
+  assert.deepEqual(scan(`<a href={appendOutboundUtm(item.website, { medium: "tool_outbound" })} target="_blank">x</a>`), []);
+  assert.deepEqual(scan(`<a href={appendOutboundUtm(\n  item.web || "https://x.tw",\n  { medium: "m" },\n)}>x</a>`), []);
+  assert.deepEqual(scan(`<a href={buildOutboundLink(item.url)}>x</a>`), []);
+  assert.deepEqual(scan(`<a href={buildGoogleMapsDirUrl({ name: n })} target="_blank">x</a>`), []);
+  assert.deepEqual(
+    scan("const h = `<a href=\"${escapeHtml(appendOutboundUtm(properties.url, { medium: \"m\" }))}\" target=\"_blank\">x</a>`;"),
+    [],
+  );
+  // Not flagged: wrapped via the local declaration the href references.
+  assert.deepEqual(
+    scan(`const sourceUrl = appendOutboundUtm("https://g.co", { medium: "m" });\n<a href={sourceUrl} target="_blank">x</a>`),
+    [],
+  );
+  // Flagged: a same-named local that is NOT wrapped.
+  assert.equal(scan(`const sourceUrl = compute();\n<a href={sourceUrl} target="_blank">x</a>`).length, 1);
+  // Not flagged: internal navigation and non-URL-ish builders.
+  assert.deepEqual(scan(`<Link href={item.href}>x</Link>`), []);
+  assert.deepEqual(scan(`<Link href={buildUrl(1, size)}>x</Link>`), []);
+  assert.deepEqual(scan(`<Link href={\`/news/\${id}\`}>x</Link>`), []);
+  assert.deepEqual(scan(`<Link href={buildLocalizedPath(item.path, locale)}>x</Link>`), []);
+  // Not flagged: literal-led values belong to the literal-URL scanner.
+  assert.deepEqual(scan(`<a href={"https://example.com"} target="_blank">x</a>`), []);
+  // Not flagged: HTML string pointing at a wrapped module constant / an internal URL.
+  assert.deepEqual(
+    scan("const U = appendOutboundUtm(\"https://o.org\");\nconst a = `<a href=\"${U}\" target=\"_blank\">x</a>`;"),
+    [],
+  );
+  assert.deepEqual(scan("const a = `<atom:link href=\"${escapeXml(`${baseUrl}/feed.xml`)}\" rel=\"self\" />`;"), []);
+  // Allowlist keys are normalized expressions, independent of line breaks.
+  assert.equal(scan(`<a href={\n  item.url\n}>x</a>`)[0].expr, "item.url");
 });

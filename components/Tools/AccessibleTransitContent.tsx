@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import type {
   AccessibleTransitRoute,
   AccessibleTransitFacility,
@@ -494,7 +495,10 @@ export default function AccessibleTransitContent() {
                       .map((m, mIdx) => (
                         <div key={mIdx} className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
                           <a
-                            href={m.mapUrl!}
+                            href={appendOutboundUtm(m.mapUrl!, {
+                              medium: "tool_outbound",
+                              campaign: "accessible_transit",
+                            })}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"

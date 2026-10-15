@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildLocalizedPath } from "@/lib/i18n/translatedPages";
 import type { TyphoonsGlobeData } from "@/lib/tools/globeWatch/typhoonsTransform";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import GlobeWatchItemTabs from "./GlobeWatchItemTabs";
 import GlobeWatchTyphoonsClient from "./GlobeWatchTyphoonsClient";
 import GlobeWatchTyphoonsLegend from "./GlobeWatchTyphoonsLegend";
@@ -85,7 +86,10 @@ export default function GlobeWatchTyphoonsItem({ data }: { data: TyphoonsGlobeDa
                 {item.detail && <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{item.detail}</p>}
                 {item.web && (
                   <a
-                    href={item.web}
+                    href={appendOutboundUtm(item.web, {
+                      medium: "tool_outbound",
+                      campaign: "global_watch_typhoons",
+                    })}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-1 inline-block text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"

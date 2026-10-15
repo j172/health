@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { useLanguage, type Locale } from "@/app/context/LanguageContext";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 // Event time is always shown in Taiwan's local clock (Asia/Taipei) regardless
 // of UI locale — only the date/time *formatting convention* (digit order,
@@ -247,7 +248,10 @@ export default function EarthquakeContent({
 
                   {item.url && (
                     <a
-                      href={item.url}
+                      href={appendOutboundUtm(item.url, {
+                        medium: "tool_outbound",
+                        campaign: "global_watch_earthquakes",
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-bold text-indigo-600 hover:underline dark:text-indigo-400"
