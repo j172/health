@@ -11,8 +11,10 @@ import { normalizeAddress } from "@/lib/server/facilities/csv";
 
 /**
  * 戶政司行政區域代碼. Started with just Taipei/New Taipei (#601); issue #606
- * adds the remaining four 六都 (Taoyuan/Taichung/Tainan/Kaohsiung) — same
- * codes `addictionTreatmentFacilities.ts` already uses for these four.
+ * adds the remaining four 六都 (Taoyuan/Taichung/Tainan/Kaohsiung) and issue
+ * #607 adds 新竹市/新竹縣/彰化/嘉義市 — all codes cross-checked against
+ * addictionTreatmentFacilities.ts's `ADDICTION_TREATMENT_COUNTY_NAME_BY_CODE`,
+ * which already tabulates all 22 counties' codes.
  */
 export const CHILDCARE_COUNTY_CODE = {
   taipei: "63000",
@@ -21,6 +23,10 @@ export const CHILDCARE_COUNTY_CODE = {
   taichung: "66000",
   tainan: "67000",
   kaohsiung: "64000",
+  hsinchuCity: "10018",
+  hsinchuCounty: "10004",
+  changhua: "10007",
+  chiayiCity: "10020",
 } as const;
 
 /** The 4-value `extra_json.category` enum for `childcare_center` rows (issue #601 AC). */

@@ -726,13 +726,14 @@ export const facilitySearchConfigs = {
   // 骨架建好。childcare_center 與 home_childcare_center 是兩個不同的 facilityType
   // （托嬰機構本身 vs. 協助家長找保母的居家托育服務中心媒合窗口），各自一個
   // config entry，由頁面用類型分頁切換——跟 long-term-care 合併 4 種類型的既有
-  // 模式一樣。
+  // 模式一樣。issue #606 加入六都剩餘四縣市（桃園／臺中／臺南／高雄），issue
+  // #607 平行加入新竹市/新竹縣/彰化/嘉義市四個縣市。
   "childcare-centers": {
     facilityType: "childcare_center",
     emoji: "🍼",
-    title: "全國托嬰中心查詢（六都）",
+    title: "全國托嬰中心查詢（六都＋新竹市／新竹縣／彰化／嘉義市）",
     description:
-      "查詢臺北市、新北市、桃園市、臺中市、臺南市、高雄市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與月費等資訊。資料來源：各市政府社會局開放資料。目前僅涵蓋六都，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。高雄市資料筆數偏少且停留在2025年6月，可能未反映最新全量名冊，詳見各筆資料下方標示。",
+      "查詢臺北市、新北市、桃園市、臺中市、臺南市、高雄市、新竹市、新竹縣、彰化縣、嘉義市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與收費資訊。資料來源：各縣市政府社會局（處）開放資料。目前僅涵蓋上述十縣市，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。高雄市資料筆數偏少且停留在2025年6月，可能未反映最新全量名冊，詳見各筆資料下方標示。",
     searchPlaceholder: "輸入托嬰中心名稱、行政區或地址關鍵字",
     errorText: "查詢托嬰中心資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的托嬰中心，可改用關鍵字搜尋。",
@@ -749,9 +750,10 @@ export const facilitySearchConfigs = {
     // registrationFee/mealFee/dataNote are only ever present on rows whose
     // source actually has that column — e.g. 121981/168385 有評鑑結果,
     // 83669/168379/168385 有月費, 6178 有月費/註冊費/副食品費但沒有評鑑結果,
-    // 126984/126986/126222 全都沒有 — FacilitySearchContent 的 extraFields
-    // 只在 extra_json 真的有該欄位時才顯示，所以沒有資料的縣市不會出現 "N/A"
-    // 之類的空白佔位。dataNote 目前只有高雄（128099/128100）會設定，用來標示
+    // 109321(#607 新竹縣) 有月費, 126984/126986/126222/67734(#607 新竹市)/
+    // 95198(#607 彰化) 全都沒有 — FacilitySearchContent 的 extraFields 只在
+    // extra_json 真的有該欄位時才顯示，所以沒有資料的縣市不會出現 "N/A" 之類
+    // 的空白佔位。dataNote 目前只有高雄（128099/128100）會設定，用來標示
     // 「資料可能不完整」，見 kaohsiungChildcare.ts。
     extraFields: [
       { key: "approvedCapacity", label: "核定收托人數：" },
