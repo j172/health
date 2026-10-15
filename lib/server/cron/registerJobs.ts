@@ -45,6 +45,10 @@ import {
   runSeniorCardSync,
 } from "@/lib/server/seniorTourism/runSync";
 import { runFraudDomainsSync, runModa165027Sync } from "@/lib/server/antiFraud/runSync";
+import {
+  runPoliceFraudInterdictionStatsSync,
+  runFscFraudAdStatsSync,
+} from "@/lib/server/antiFraud/runTrendSync";
 import { runGdacsSync, runGdacsCleanup } from "@/lib/server/gdacs/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -480,6 +484,26 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "22 5 * * *",
     runGuarded("moda-165027-sync-cron.log", () => runModa165027Sync()),
+  );
+  // 警政署 172159「打詐儀錶板打擊詐欺成效」(issue #570) — 來源每月發佈一列全
+  // 國彙總統計，monthly 即可；第 1 天 05:18——rebase 合併時發現原本選的 22 分
+  // 會跟上面 moda-165027-sync 的「每日 22 分」在每月 1 號當天同一分鐘撞在一
+  // 起（moda 是 daily，這個是 monthly on day 1，兩者在 1 號那天是同一個
+  // tick），改成 18 分避開；18 分目前本檔案沒有其他 job 使用。這個 job 自己再
+  // 用 withAdvisoryLock 防重疊，見 lib/server/antiFraud/runTrendSync.ts。
+  cron.schedule(
+    "18 5 1 * *",
+    runGuarded("police-172159-stats-sync-cron.log", () => runPoliceFraudInterdictionStatsSync()),
+  );
+  // 金管會 11198「打詐儀表板」違規投資廣告 (issue #570) — 來源每週發佈一列
+  // (確認過往紀錄固定在週五)，所以排在每週六 05:15，給來源一天緩衝；05 點區段
+  // 目前沒有其他 job 用到週六限定、分鐘 15 的組合（daily 5 點 job 只用了
+  // 5/22/30 這三個分鐘，與這個每週六才跑一次的 job 不會真的撞在同一個 tick
+  // 上）。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // lib/server/antiFraud/runTrendSync.ts。
+  cron.schedule(
+    "15 5 * * 6",
+    runGuarded("fsc-11198-stats-sync-cron.log", () => runFscFraudAdStatsSync()),
   );
   // GDACS 全球災害事件 (issue #592 / #583) — 每 30 分鐘一次，供「颱風」「全球
   // 災害」項目與「地震」警戒色疊加共用。14/44 這兩個分鐘在本檔案目前完全沒被

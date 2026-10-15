@@ -130,9 +130,8 @@ export interface ToolCatalogEntry {
    * pool of the 150 most recent articles site-wide. That pool-based ranking
    * stays the default for every tool that omits this field; it only changes
    * behavior for tools that opt in. `mental-health` → "anti-drug",
-   * `smoking-cessation` → "tobacco" are the first two (#562's plan); #564's
-   * anti-fraud tool (not yet merged as of this writing) sets its own
-   * "anti-fraud" value independently.
+   * `smoking-cessation` → "tobacco" are the first two (#562's plan);
+   * `anti-fraud` → "anti-fraud" (issue #570) is the third.
    */
   newsTopic?: Topic;
 }
@@ -3944,7 +3943,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "anti-fraud",
     group: "disaster-alerts",
-    lastUpdated: "2026-10-14",
+    lastUpdated: "2026-10-15",
 
     schemaType: "WebPage",
     title: "防詐騙查詢：可疑網址涉詐網域比對",
@@ -3975,8 +3974,23 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         authority: "內政部警政署刑事警察局",
         url: "https://165.npa.gov.tw/",
       },
+      {
+        title: "內政部警政署「打詐儀錶板打擊詐欺成效」開放資料",
+        authority: "內政部警政署",
+        url: "https://data.gov.tw/dataset/172159",
+      },
+      {
+        title: "金融監督管理委員會「打詐儀表板」開放資料",
+        authority: "金融監督管理委員會",
+        url: "https://data.gov.tw/dataset/11198",
+      },
     ],
     relatedSlugs: ["emergency-hotlines"],
+    // issue #570: 這個工具宣告自己的反詐新聞主題，所以 ToolPageShell 的「相關新聞
+    // 報導」改成直接依 news_item_topics 查詢最新 anti-fraud 新聞（見
+    // lib/server/content/relatedNewsForTool.ts），不再用關鍵字排名 150 筆最新新聞
+    // 池——避免近期健康新聞一多，詐騙新聞就被擠出候選池而顯示空白。
+    newsTopic: "anti-fraud",
     faqs: [
       {
         question: "查詢結果顯示「不在清單上」，代表這個網址一定安全嗎？",
