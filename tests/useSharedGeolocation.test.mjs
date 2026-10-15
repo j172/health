@@ -392,3 +392,116 @@ test("Integration check: does not import from any existing call site / page (thi
   assert.ok(!content.includes('from "@/components/'), "must not depend on any existing component or page");
   assert.ok(!content.includes('from "@/app/'), "must not depend on any existing page");
 });
+
+// --- `persist: false` (no browser storage at all) — exercised against the REAL shipped module ---
+//
+// Unlike the controller above (a structurally identical reimplementation), these
+// import lib/hooks/useSharedGeolocation.ts itself. It only imports "react", so
+// Node's native TS-stripping loader can load it, and resolveSharedLocation is a
+// plain function that touches only the `navigator` / `sessionStorage` globals,
+// which we stub per test. This is what protects the privacy promise of
+// /tools/social-welfare-centers (issue #603: the page must never write browser
+// storage), now that the page's geolocation goes through this hook.
+
+function withBrowserGlobals({ geolocation, storage }, fn) {
+  const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, "navigator");
+  const originalSessionStorage = Object.getOwnPropertyDescriptor(globalThis, "sessionStorage");
+  Object.defineProperty(globalThis, "navigator", { value: { geolocation }, configurable: true, writable: true });
+  Object.defineProperty(globalThis, "sessionStorage", { value: storage, configurable: true, writable: true });
+  const restore = () => {
+    if (originalNavigator) Object.defineProperty(globalThis, "navigator", originalNavigator);
+    else delete globalThis.navigator;
+    if (originalSessionStorage) Object.defineProperty(globalThis, "sessionStorage", originalSessionStorage);
+    else delete globalThis.sessionStorage;
+  };
+  return Promise.resolve(fn()).finally(restore);
+}
+
+function createSpyStorage(initial = {}) {
+  const map = new Map(Object.entries(initial));
+  const calls = { getItem: 0, setItem: 0, removeItem: 0 };
+  return {
+    calls,
+    snapshot: () => Object.fromEntries(map),
+    getItem: (k) => {
+      calls.getItem += 1;
+      return map.has(k) ? map.get(k) : null;
+    },
+    setItem: (k, v) => {
+      calls.setItem += 1;
+      map.set(k, v);
+    },
+    removeItem: (k) => {
+      calls.removeItem += 1;
+      map.delete(k);
+    },
+  };
+}
+
+const sharedHookModule = await import("../lib/hooks/useSharedGeolocation.ts");
+
+test("real module: resolveSharedLocation({ persist: false }) never reads, writes or clears sessionStorage — and ignores an existing cached result", async () => {
+  const staleCache = JSON.stringify({ status: "success", lat: 1, lng: 2 });
+  const storage = createSpyStorage({ [sharedHookModule.SHARED_GEOLOCATION_SESSION_KEY]: staleCache });
+  let getCurrentPositionCalls = 0;
+  const geolocation = {
+    getCurrentPosition: (onSuccess) => {
+      getCurrentPositionCalls += 1;
+      onSuccess({ coords: { latitude: 24.1, longitude: 120.6 } });
+    },
+  };
+  sharedHookModule.__resetSharedGeolocationModuleStateForTests();
+  const outcome = await withBrowserGlobals({ geolocation, storage }, () =>
+    sharedHookModule.resolveSharedLocation({ persist: false }),
+  );
+  assert.deepEqual(outcome, { status: "success", lat: 24.1, lng: 120.6 }, "must use the fresh browser fix, not the stale cache");
+  assert.equal(getCurrentPositionCalls, 1);
+  assert.deepEqual(storage.calls, { getItem: 0, setItem: 0, removeItem: 0 }, "persist:false must not touch browser storage in any way");
+  assert.equal(storage.snapshot()[sharedHookModule.SHARED_GEOLOCATION_SESSION_KEY], staleCache, "the existing cache entry must be left exactly as it was");
+});
+
+test("real module: persist:false still reports explicit denied / timeout / unsupported statuses without touching storage", async () => {
+  for (const [label, geolocation, expected] of [
+    ["denied", { getCurrentPosition: (_ok, onError) => onError({ code: 1 }) }, "denied"],
+    ["timeout", { getCurrentPosition: (_ok, onError) => onError({ code: 3 }) }, "timeout"],
+    ["unsupported", undefined, "unsupported"],
+  ]) {
+    const storage = createSpyStorage();
+    sharedHookModule.__resetSharedGeolocationModuleStateForTests();
+    const outcome = await withBrowserGlobals({ geolocation, storage }, () =>
+      sharedHookModule.resolveSharedLocation({ persist: false }),
+    );
+    assert.equal(outcome.status, expected, label);
+    assert.deepEqual(storage.calls, { getItem: 0, setItem: 0, removeItem: 0 }, `${label}: no storage access`);
+  }
+});
+
+test("real module: the default (persist unset) still caches the outcome in sessionStorage — persist:false must not have changed the shared default", async () => {
+  const storage = createSpyStorage();
+  const geolocation = {
+    getCurrentPosition: (onSuccess) => onSuccess({ coords: { latitude: 25.0, longitude: 121.5 } }),
+  };
+  sharedHookModule.__resetSharedGeolocationModuleStateForTests();
+  await withBrowserGlobals({ geolocation, storage }, () => sharedHookModule.resolveSharedLocation());
+  assert.equal(storage.calls.setItem, 1);
+  assert.deepEqual(JSON.parse(storage.snapshot()[sharedHookModule.SHARED_GEOLOCATION_SESSION_KEY]), {
+    status: "success",
+    lat: 25.0,
+    lng: 121.5,
+  });
+});
+
+test("Integration check: useSharedGeolocation exposes `skip` and `persist` options, and persist:false also skips the cache read in run() and the cache clear in refresh()", () => {
+  const content = fs.readFileSync(path.join(process.cwd(), "lib/hooks/useSharedGeolocation.ts"), "utf-8");
+  assert.ok(/skip\?:\s*boolean/.test(content), "must expose the skip option (deep-link coordinate override, issue #478)");
+  assert.ok(/persist\?:\s*boolean/.test(content), "must expose the persist option (no browser storage, issue #603)");
+  assert.ok(/if \(persist && !forceRefresh\)/.test(content), "run() must only read the session cache when persist is true");
+  assert.ok(/if \(persist\) clearSessionCache\(\);/.test(content), "refresh() must only clear the session cache when persist is true");
+  assert.ok(/if \(!persist\) return requestBrowserLocation\(onAwaitingPermission\);/.test(content), "resolveSharedLocation must bypass cache read/write and in-flight sharing when persist is false");
+});
+
+test("Integration check: the permission-aware timeout constants are unchanged (persist/skip must not alter timeout semantics)", () => {
+  const content = fs.readFileSync(path.join(process.cwd(), "lib/hooks/useSharedGeolocation.ts"), "utf-8");
+  assert.ok(/export const DECIDED_TIMEOUT_MS = 6000;/.test(content));
+  assert.ok(/export const PROMPT_TIMEOUT_MS = 12_000;/.test(content));
+});

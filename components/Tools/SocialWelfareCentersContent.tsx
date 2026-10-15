@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { COUNTY_1999_LIST } from "@/lib/server/hotlines/county1999";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
 import {
   QUICK_EXIT_URL,
   SITUATIONS,
@@ -45,8 +46,6 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
   const [selectedSituationId, setSelectedSituationId] = useState<string | null>(null);
   const [county, setCounty] = useState("");
   const [keyword, setKeyword] = useState("");
-  const [locating, setLocating] = useState(false);
-  const [locateError, setLocateError] = useState<string | null>(null);
 
   const quickExit = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -62,26 +61,43 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [quickExit]);
 
+  // 定位一律走全站共用的 useSharedGeolocation（母票 #438 §K：瀏覽器定位 API
+  // 只允許出現在那支 hook，由 tests/geolocation-hook-only.test.mjs 掃描強制），
+  // 逾時邏輯因此會正確等待瀏覽器的原生授權彈窗，而不是寫死 10 秒。
+  //
+  // 兩個選項都是為了維持本頁原本的行為與隱私承諾：
+  //   - `skip: true`：mount 時不自動定位、不跳出授權彈窗，只有使用者按下
+  //     「使用目前位置」、呼叫 refresh() 才會定位（與改版前相同）。
+  //   - `persist: false`：不讀、不寫、不清瀏覽器的任何儲存空間（hook 預設會
+  //     快取定位結果供全站共用），維持本頁「完全不留下瀏覽器端紀錄」的承諾。
+  const geolocation = useSharedGeolocation({ skip: true, persist: false });
+  const { status: geolocationStatus, coords: geolocationCoords, refresh: refreshGeolocation } = geolocation;
+
+  const locating = geolocationStatus === "locating" || geolocationStatus === "awaiting-permission";
+  const locateError =
+    geolocationStatus === "unsupported"
+      ? "此裝置或瀏覽器不支援定位，請改用下方選單選擇縣市。"
+      : geolocationStatus === "denied" || geolocationStatus === "timeout"
+        ? "無法取得目前位置，請改用下方選單選擇縣市。"
+        : null;
+
   const handleLocate = useCallback(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setLocateError("此裝置或瀏覽器不支援定位，請改用下方選單選擇縣市。");
-      return;
-    }
-    setLocating(true);
-    setLocateError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setLocating(false);
-        const nearest = resolveNearestCounty(position.coords.latitude, position.coords.longitude);
-        if (nearest) setCounty(nearest);
-      },
-      () => {
-        setLocating(false);
-        setLocateError("無法取得目前位置，請改用下方選單選擇縣市。");
-      },
-      { timeout: 10_000 },
-    );
-  }, []);
+    refreshGeolocation();
+  }, [refreshGeolocation]);
+
+  // 定位成功後把縣市下拉選單切到最近的縣市。只在每次「新的定位結果」（coords
+  // 是新物件）時套用一次，之後使用者手動改選縣市不會被搶走。Deferred via
+  // queueMicrotask（同 lib/hooks/useSharedGeolocation.ts 的 mount effect，見
+  // docs/archive/specs/set-state-in-effect-fix.md）以符合
+  // react-hooks/set-state-in-effect。
+  useEffect(() => {
+    if (!geolocationCoords) return;
+    const nearest = resolveNearestCounty(geolocationCoords.lat, geolocationCoords.lng);
+    if (!nearest) return;
+    queueMicrotask(() => {
+      setCounty(nearest);
+    });
+  }, [geolocationCoords]);
 
   const filteredCenters = useMemo(
     () => filterSocialWelfareCenters(centers, { county, keyword }),

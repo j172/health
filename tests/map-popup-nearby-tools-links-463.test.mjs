@@ -53,8 +53,9 @@ function read(relPath) {
 
 // ---------------------------------------------------------------------------
 // Real behavior tests for the shared override-parsing helpers. These are the
-// exact functions components/Facilities/useGeolocation.ts's `override`
-// parameter relies on (via isValidGeolocationOverride) and that
+// exact functions the `?lat=&lng=` override relies on (via
+// isValidGeolocationOverride, formerly through the old useGeolocation hook's
+// `override` parameter) and that
 // AedContent.tsx / app/tools/pharmacies/page.tsx / app/tools/er-status/page.tsx
 // call to turn an incoming request into that parameter — not a
 // reimplementation, the real shipped module.
@@ -109,39 +110,13 @@ test("parseGeolocationOverrideFromPlainParams: server-side (Next.js awaited sear
 });
 
 // ---------------------------------------------------------------------------
-// useGeolocation.ts wiring: confirm the hook actually uses these helpers to
-// (a) seed its initial state from the override when valid, and (b) skip the
-// browser-geolocation effect entirely in that case, while preserving the
-// exact pre-existing behavior (browser geolocation → saved location →
-// GEO_DEFAULTS) whenever no override is supplied. We can't render the hook
-// here (no DOM/React renderer wired into plain `node --test`, same
-// constraint documented in tests/useSharedGeolocation.test.mjs), so this is
-// a source-text integration check against the shipped file.
-// ---------------------------------------------------------------------------
-
-test("useGeolocation.ts: override parameter seeds initial state and short-circuits the browser-geolocation effect", () => {
-  const src = read("components/Facilities/useGeolocation.ts");
-
-  assert.match(src, /import\s*\{[^}]*isValidGeolocationOverride[^}]*\}\s*from\s*["']@\/lib\/utils\/geolocationOverride["']/s);
-  assert.match(src, /export function useGeolocation\(override\?:\s*GeolocationOverride \| null\)/);
-  assert.match(src, /const hasOverride = isValidGeolocationOverride\(override\);/);
-  // Initial useState branches on hasOverride: override coordinates, isDefault
-  // false, loading false (no spinner, no permission prompt) when present.
-  assert.match(src, /hasOverride\s*\n\s*\?\s*\{\s*\n\s*lat:\s*override!\.lat,\s*\n\s*lng:\s*override!\.lng,\s*\n\s*isDefault:\s*false,\s*\n\s*loading:\s*false,/);
-  // The mount effect must bail out before calling locate()/getSavedLocation() when hasOverride.
-  assert.match(src, /if \(hasOverride\) return;[\s\S]{0,400}locate\(300_000, "initial"\);/);
-  // refresh() must NOT be short-circuited by override — a user can still manually re-locate.
-  const refreshFn = src.slice(src.indexOf("const refresh = useCallback"));
-  assert.match(refreshFn, /locate\(0, "refresh"\);/);
-});
-
-test("useGeolocation.ts: re-exports the override type + client-side parser for existing call sites", () => {
-  const src = read("components/Facilities/useGeolocation.ts");
-  assert.match(src, /export type \{ GeolocationOverride \};/);
-  assert.match(src, /export \{ parseGeolocationOverrideFromSearchParams \};/);
-});
-
-// ---------------------------------------------------------------------------
+// (The old "useGeolocation.ts wiring" source-text checks that used to live here
+// guarded components/Facilities/useGeolocation.ts's `override` parameter. That
+// hook had no remaining callers after issue #478 moved everything onto
+// useSharedGeolocation's `skip` option, and was deleted — PRD #438 §K — so the
+// override is now exercised through the call-site checks below plus
+// useSharedGeolocation's `skip` option checks in tests/useSharedGeolocation.test.mjs.)
+//
 // The 3 target tool pages/components actually thread the override through.
 // ---------------------------------------------------------------------------
 

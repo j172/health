@@ -3,27 +3,43 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
-test("useGeolocation initial state is hydration-safe (no synchronous localStorage read)", () => {
-  const file = path.join(process.cwd(), "components/Facilities/useGeolocation.ts");
+test("useSharedGeolocation initial state is hydration-safe (static values, no synchronous storage read)", () => {
+  // The old components/Facilities/useGeolocation.ts (whose useState initialiser
+  // this test used to guard) was deleted once every caller moved to the shared
+  // hook (PRD #438 §K). The same hydration rule applies to the shared hook:
+  // server and first client render must both see the same static idle state.
+  const file = path.join(process.cwd(), "lib/hooks/useSharedGeolocation.ts");
   const content = fs.readFileSync(file, "utf8");
 
-  // Verify useState does not call getSavedLocation inside its initialiser
-  const useStateMatch = content.match(/useState<GeoState>\(\(\)\s*=>\s*([\s\S]*?)\);\r?\n\s*const attempted/);
-  assert.ok(useStateMatch, "should find useState<GeoState> initializer");
   assert.ok(
-    !useStateMatch[1].includes("getSavedLocation"),
-    "useState initial state must NOT read getSavedLocation synchronously (causes React 418 hydration error)",
+    content.includes('useState<SharedGeolocationStatus>("idle")'),
+    'status must start as the static "idle" so SSR and the first client render match (a synchronous sessionStorage read here causes React 418)',
   );
   assert.ok(
-    useStateMatch[1].includes("isDefault: true"),
-    "initial state must have isDefault: true to match SSR output exactly",
+    content.includes("useState<SharedGeolocationCoords | null>(null)"),
+    "coords must start as static null so SSR and the first client render match",
   );
 
-  // Verify getSavedLocation is synced inside useEffect after mount
+  // The session cache is only consulted from run(), which the mount effect
+  // defers via queueMicrotask — never from a useState initialiser.
   assert.ok(
-    content.includes("const saved = getSavedLocation();"),
-    "must call getSavedLocation inside useEffect for post-hydration sync",
+    !/useState[^;]*readSessionCache/.test(content),
+    "useState initialisers must NOT call readSessionCache synchronously",
   );
+  assert.ok(content.includes("queueMicrotask"), "the cached-result path must be deferred past hydration via queueMicrotask");
+});
+
+test("getSavedLocation lives in lib/client/savedLocation.ts and is only ever read after mount (never in a useState initialiser)", () => {
+  const savedLocation = fs.readFileSync(path.join(process.cwd(), "lib/client/savedLocation.ts"), "utf8");
+  assert.ok(savedLocation.includes("export function getSavedLocation"), "getSavedLocation must be exported from lib/client/savedLocation.ts");
+  assert.ok(savedLocation.includes('typeof window === "undefined"'), "getSavedLocation must be SSR-safe");
+
+  const widget = fs.readFileSync(path.join(process.cwd(), "components/Tools/LocalWeatherSvgWidget.tsx"), "utf8");
+  assert.ok(
+    widget.includes('from "@/lib/client/savedLocation"'),
+    "LocalWeatherSvgWidget must import getSavedLocation from lib/client/savedLocation",
+  );
+  assert.ok(!/useState[^;]*getSavedLocation/.test(widget), "useState initialisers must NOT call getSavedLocation synchronously");
 });
 
 test("LocalWeatherSvgWidget initializes selectedCounty to 'auto' to prevent hydration mismatch", () => {

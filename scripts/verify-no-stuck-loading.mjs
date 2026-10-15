@@ -11,8 +11,9 @@ console.log("🔍 [Health Tool Loading Health Check] 正在檢驗全站工具載
 let errors = 0;
 let checkedCount = 0;
 
-// 1. 檢查 useGeolocation.ts 的逾時設定
-const geoHookPath = path.join(rootDir, "components/Facilities/useGeolocation.ts");
+// 1. 檢查共用定位 hook (useSharedGeolocation.ts) 的逾時設定
+// （舊版 components/Facilities/useGeolocation.ts 已於全站定位收斂時刪除，見母票 #438 §K）
+const geoHookPath = path.join(rootDir, "lib/hooks/useSharedGeolocation.ts");
 const geoHookContent = fs.readFileSync(geoHookPath, "utf-8");
 
 const promptTimeoutMatch = geoHookContent.match(/PROMPT_TIMEOUT_MS\s*=\s*([\d_]+)/);
@@ -25,14 +26,14 @@ if (!promptTimeout || promptTimeout > 15000) {
   console.error(`❌ PROMPT_TIMEOUT_MS (${promptTimeout}ms) 過高或遺失，可能導致瀏覽器授權等待卡死！`);
   errors++;
 } else {
-  console.log(`✅ useGeolocation.ts PROMPT_TIMEOUT_MS 設定為安全值: ${promptTimeout}ms`);
+  console.log(`✅ useSharedGeolocation.ts PROMPT_TIMEOUT_MS 設定為安全值: ${promptTimeout}ms`);
 }
 
 if (!decidedTimeout || decidedTimeout > 8000) {
   console.error(`❌ DECIDED_TIMEOUT_MS (${decidedTimeout}ms) 過高或遺失！`);
   errors++;
 } else {
-  console.log(`✅ useGeolocation.ts DECIDED_TIMEOUT_MS 設定為安全值: ${decidedTimeout}ms`);
+  console.log(`✅ useSharedGeolocation.ts DECIDED_TIMEOUT_MS 設定為安全值: ${decidedTimeout}ms`);
 }
 
 // 2. 檢驗關鍵組件是否依然殘留 if (location.loading) return 或 if (geo.loading) 等阻斷式等待

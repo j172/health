@@ -88,6 +88,17 @@ test("neither SocialWelfareCentersContent.tsx nor socialWelfareCentersShared.ts 
   }
 });
 
+test("geolocation goes through useSharedGeolocation with { skip: true, persist: false } — never navigator.geolocation directly, and never the hook's default sessionStorage cache", () => {
+  // PRD #438 §K: only the shared hook may touch the browser geolocation API
+  // (see tests/geolocation-hook-only.test.mjs). This page's no-browser-storage
+  // promise (above) forbids the shared hook's default result cache, and its
+  // "locate only when the user presses the button" behavior needs skip:true so
+  // no permission prompt fires on page load.
+  assert.match(SOURCE_TEXT, /useSharedGeolocation\(\s*\{\s*skip:\s*true,\s*persist:\s*false\s*\}\s*\)/);
+  assert.doesNotMatch(SOURCE_TEXT, /navigator\s*\.\s*geolocation/);
+  assert.doesNotMatch(SOURCE_TEXT, /getCurrentPosition/);
+});
+
 test("the quick-exit button uses location.replace (so the browser Back button can't return here), not location.href or router.push", () => {
   assert.match(SOURCE_TEXT, /window\.location\.replace\(QUICK_EXIT_URL\)/);
   assert.doesNotMatch(SOURCE_TEXT, /location\.href\s*=/);

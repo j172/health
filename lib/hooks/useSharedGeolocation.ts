@@ -91,9 +91,10 @@ export interface PermissionAwareTimeout {
  * Permissions API 不可用或丟例外時（部分較舊的 Safari）退回原本的短秒數，
  * 不影響既有相容性。
  *
- * 與 `components/Facilities/useGeolocation.ts` 的 `resolveGeolocationTimeout`
- * 是同一套邏輯的獨立實作（本票刻意不去改既有檔案，見檔案頂端說明）；#478
- * 把既有呼叫點改用這支共用 hook 之後，那邊的實作應該可以整個刪除。
+ * 舊版 `components/Facilities/useGeolocation.ts` 的 `resolveGeolocationTimeout`
+ * 是同一套邏輯的獨立實作；#478 把呼叫點改用這支共用 hook 之後，舊檔案已整個
+ * 刪除。母票 #438 §K 要求 `navigator.geolocation` 只能出現在本檔案，由
+ * `tests/geolocation-hook-only.test.mjs` 掃描強制。
  */
 export async function resolvePermissionAwareTimeout(
   decidedTimeoutMs: number = DECIDED_TIMEOUT_MS,
@@ -177,9 +178,18 @@ export function resolveSharedLocation(
   options: {
     forceRefresh?: boolean;
     onAwaitingPermission?: (awaiting: boolean) => void;
+    /**
+     * `false` 時完全不讀、不寫、不清 sessionStorage 快取，也不與其他進行中的
+     * 請求共用——每次呼叫都是一次獨立、用完即丟的瀏覽器定位。給「不得在瀏覽器
+     * 留下任何紀錄」的頁面使用（例如 `/tools/social-welfare-centers`，見 issue
+     * #603）。預設 `true`。
+     */
+    persist?: boolean;
   } = {},
 ): Promise<GeolocationOutcome> {
-  const { forceRefresh = false, onAwaitingPermission = () => {} } = options;
+  const { forceRefresh = false, onAwaitingPermission = () => {}, persist = true } = options;
+
+  if (!persist) return requestBrowserLocation(onAwaitingPermission);
 
   if (!forceRefresh) {
     const cached = readSessionCache();
@@ -218,6 +228,16 @@ export interface UseSharedGeolocationOptions {
    * 預設 `false`，與既有呼叫端（`NearbyContent`／`HomeStatusBar`）完全相容。
    */
   skip?: boolean;
+  /**
+   * 預設 `true`：結果快取在 sessionStorage、同一瀏覽階段內跨頁共用（見檔案
+   * 頂端說明）。`false` 時這支 hook 完全不碰任何瀏覽器儲存空間——mount 時不
+   * 讀快取、定位完成後不寫入、`refresh()` 也不清除既有快取，結果只存在這個
+   * hook 實例的 React state。給「不得在瀏覽器留下任何紀錄」的頁面使用（例如
+   * 社福中心與社工求助頁，issue #603：使用者可能正在避開同住者的查看）。
+   * 通常搭配 `skip: true` 達到「只在使用者明確按下按鈕、呼叫 `refresh()` 時
+   * 才定位」的效果。
+   */
+  persist?: boolean;
 }
 
 /**
@@ -226,7 +246,7 @@ export interface UseSharedGeolocationOptions {
  * 授權詢問。
  */
 export function useSharedGeolocation(options: UseSharedGeolocationOptions = {}): SharedGeolocationResult {
-  const { skip = false } = options;
+  const { skip = false, persist = true } = options;
   const [status, setStatus] = useState<SharedGeolocationStatus>("idle");
   const [coords, setCoords] = useState<SharedGeolocationCoords | null>(null);
   const isMountedRef = useRef(true);
@@ -239,7 +259,7 @@ export function useSharedGeolocation(options: UseSharedGeolocationOptions = {}):
   }, []);
 
   const run = useCallback((forceRefresh: boolean) => {
-    if (!forceRefresh) {
+    if (persist && !forceRefresh) {
       const cached = readSessionCache();
       if (cached) {
         setStatus(cached.status);
@@ -251,6 +271,7 @@ export function useSharedGeolocation(options: UseSharedGeolocationOptions = {}):
     setStatus("locating");
     resolveSharedLocation({
       forceRefresh,
+      persist,
       onAwaitingPermission: (awaiting) => {
         if (!isMountedRef.current) return;
         setStatus(awaiting ? "awaiting-permission" : "locating");
@@ -260,7 +281,7 @@ export function useSharedGeolocation(options: UseSharedGeolocationOptions = {}):
       setStatus(outcome.status);
       setCoords(coordsFromOutcome(outcome));
     });
-  }, []);
+  }, [persist]);
 
   useEffect(() => {
     if (skip) return;
@@ -276,9 +297,9 @@ export function useSharedGeolocation(options: UseSharedGeolocationOptions = {}):
   }, [run, skip]);
 
   const refresh = useCallback(() => {
-    clearSessionCache();
+    if (persist) clearSessionCache();
     run(true);
-  }, [run]);
+  }, [persist, run]);
 
   const needsManualSelection = status === "denied" || status === "timeout" || status === "unsupported";
 
