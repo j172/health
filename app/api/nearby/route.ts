@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { fetchNearbyResults } from "@/lib/server/nearby/queries";
 import { NEARBY_DEFAULT_TYPE_KEYS, NEARBY_MAX_TYPES_PER_REQUEST } from "@/lib/server/nearby/registry";
 
@@ -53,5 +54,5 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { results, unknownKeys } = await fetchNearbyResults(requestedKeys, lat, lng, limit);
 
-  return NextResponse.json({ lat, lng, limit, results, unknownKeys });
+  return NextResponse.json({ lat, lng, limit, results, unknownKeys }, cacheInit("none"));
 }

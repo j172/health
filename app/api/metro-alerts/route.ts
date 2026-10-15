@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getMetroAlerts } from "@/lib/server/metroAlerts/queries";
 
 export const runtime = "nodejs";
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const alerts = await getMetroAlerts({ lineName, stationName, alertType, limit });
-    return NextResponse.json({ ok: true, count: alerts.length, alerts });
+    return NextResponse.json({ ok: true, count: alerts.length, alerts }, cacheInit("live"));
   } catch (error) {
     console.error("Error in /api/metro-alerts:", error);
     return NextResponse.json({ ok: false, error: "無法取得捷運即時公告" }, { status: 500 });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import fs from "node:fs";
 import path from "node:path";
 import { searchPetAdoptions } from "@/lib/server/petAdoption/queries";
@@ -76,16 +77,16 @@ export async function GET(request: NextRequest) {
   try {
     const data = await searchPetAdoptions({ kind, sex, bodytype, city, keyword, page, limit });
     if (data.totalAll > 0) {
-      return NextResponse.json(data);
+      return NextResponse.json(data, cacheInit("medium"));
     }
     // If DB is empty, use bundled seed fallback
     const fallback = getSeedFallback(kind, sex, bodytype, city, keyword, page, limit);
-    return NextResponse.json(fallback);
+    return NextResponse.json(fallback, cacheInit("medium"));
   } catch (error) {
     console.warn("GET /api/pet-adoptions DB query failed, falling back to seed:", error);
     const fallback = getSeedFallback(kind, sex, bodytype, city, keyword, page, limit);
     if (fallback.totalAll > 0) {
-      return NextResponse.json(fallback);
+      return NextResponse.json(fallback, cacheInit("medium"));
     }
     return NextResponse.json({ error: "查詢認領養資料失敗" }, { status: 500 });
   }

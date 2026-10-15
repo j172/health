@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getDebrisFlowOverview } from "@/lib/server/moa/queries";
 
 export const runtime = "nodejs";
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       ok: true,
       ...data,
-    });
+    }, cacheInit("medium"));
   } catch (error) {
     console.error("Error in /api/disaster/debris-flow:", error);
     return NextResponse.json(

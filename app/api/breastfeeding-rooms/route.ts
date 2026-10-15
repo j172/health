@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import breastfeedingSeed from "@/data/breastfeeding-rooms-seed.json";
 import { normalizeCountyName } from "@/lib/constants/taiwanDistricts";
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
       total: points.length,
       updatedAt: (breastfeedingSeed as any).updatedAt || null,
       points,
-    });
+    }, cacheInit("reference"));
   } catch (error: any) {
     console.error("GET /api/breastfeeding-rooms error:", error);
     return NextResponse.json(

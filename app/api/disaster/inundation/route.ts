@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getInundationPoints } from "@/lib/server/wra/inundation";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ export async function GET() {
       count: points.length,
       points,
       updatedAt: new Date().toISOString(),
-    });
+    }, cacheInit("live"));
   } catch (error) {
     console.error("Error in /api/disaster/inundation:", error);
     return NextResponse.json(

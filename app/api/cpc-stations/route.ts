@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { searchCpcStations } from "@/lib/server/cpc/stations";
 
 export const runtime = "nodejs";
@@ -27,7 +28,8 @@ export async function GET(request: NextRequest) {
       limit,
     });
 
-    return NextResponse.json({ ok: true, ...data });
+    // lat/lng are the caller's own coordinates: never shared-cache those.
+    return NextResponse.json({ ok: true, ...data }, cacheInit(latParam || lngParam ? "none" : "reference"));
   } catch (error: any) {
     console.error("GET /api/cpc-stations error:", error);
     return NextResponse.json(

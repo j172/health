@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { searchYouBikeStations } from "@/lib/server/youbike/queries";
 
 export const runtime = "nodejs";
@@ -29,7 +30,8 @@ export async function GET(req: NextRequest) {
       limit,
     });
 
-    return NextResponse.json({ ok: true, ...result });
+    // lat/lng are the caller's own coordinates: never shared-cache those.
+    return NextResponse.json({ ok: true, ...result }, cacheInit(latStr || lngStr ? "none" : "fast"));
   } catch (error) {
     console.error("Error in /api/youbike:", error);
     return NextResponse.json({ ok: false, error: "無法取得 YouBike 站點資訊" }, { status: 500 });

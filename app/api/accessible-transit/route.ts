@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getTransitAccessibilityOverview } from "@/lib/server/transit/queries";
 
 export const runtime = "nodejs";
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
       ok: true,
       ...data,
       updatedAt: new Date().toISOString(),
-    });
+    }, cacheInit("medium"));
   } catch (error) {
     console.error("Error in /api/accessible-transit:", error);
     return NextResponse.json(

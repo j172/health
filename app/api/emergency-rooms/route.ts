@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getEmergencyRoomOverview, getSidebarEmergencyHighlights } from "@/lib/server/emergencyRooms/queries";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ export async function GET(request: Request): Promise<NextResponse> {
     if (widget === "true") {
       const city = searchParams.get("city") || "TPE";
       const data = await getSidebarEmergencyHighlights(city);
-      return NextResponse.json({ ok: true, ...data });
+      return NextResponse.json({ ok: true, ...data }, cacheInit("live"));
     }
 
     const cityCode = searchParams.get("city") || undefined;
@@ -32,7 +33,8 @@ export async function GET(request: Request): Promise<NextResponse> {
       lng,
     });
 
-    return NextResponse.json(result);
+    // lat/lng are the caller's own coordinates: never shared-cache those.
+    return NextResponse.json(result, cacheInit(latStr || lngStr ? "none" : "live"));
   } catch (error) {
     console.error("Error in /api/emergency-rooms:", error);
     return NextResponse.json(

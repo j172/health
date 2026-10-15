@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import contraceptionSeed from "@/data/contraception-map-seed.json";
 
 export const runtime = "nodejs";
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest) {
       pharmaciesCount: (contraceptionSeed as any).pharmaciesCount || 798,
       updatedAt: (contraceptionSeed as any).updatedAt || null,
       points,
-    });
+    }, cacheInit("reference"));
   } catch (error: any) {
     console.error("GET /api/contraception-map error:", error);
     return NextResponse.json(

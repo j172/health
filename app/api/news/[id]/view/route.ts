@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import { consumeRateLimit, clientAddress } from "@/lib/server/http/rateLimit";
 
@@ -45,12 +46,12 @@ export async function POST(
 
   const userAgent = request.headers.get("user-agent") ?? "";
   if (BOT_USER_AGENT_PATTERN.test(userAgent)) {
-    return NextResponse.json({ ok: true, counted: false });
+    return NextResponse.json({ ok: true, counted: false }, cacheInit("none"));
   }
 
   const cookieName = `nv_${numericId}`;
   if (request.cookies.get(cookieName)) {
-    return NextResponse.json({ ok: true, counted: false });
+    return NextResponse.json({ ok: true, counted: false }, cacheInit("none"));
   }
 
   try {
@@ -68,7 +69,7 @@ export async function POST(
     );
   }
 
-  const response = NextResponse.json({ ok: true, counted: true });
+  const response = NextResponse.json({ ok: true, counted: true }, cacheInit("none"));
   response.cookies.set(cookieName, "1", {
     maxAge: VIEW_COOKIE_MAX_AGE_SECONDS,
     httpOnly: true,
