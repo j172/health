@@ -19,10 +19,14 @@ function read(...parts) {
   return fs.readFileSync(path.join(ROOT_DIR, ...parts), "utf-8");
 }
 
-test("next.config.js redirects all 3 retired long-term-care-family URLs permanently, each to its matching ?type=", () => {
-  const content = read("next.config.js");
-  assert.match(content, /async redirects\(\)/, "next.config.js should define the shared redirects() function");
+// Moved out of next.config.js's redirects() into middleware.ts / a shared
+// data file 2026-10-15 — every permanent (308) redirect on the site was
+// 500ing because next.config.js's redirects() always adds a non-standard
+// Refresh header that this host's Cloudflare/LiteSpeed path can't handle.
+// See tests/middleware-permanent-redirects.test.mjs for the full story.
+const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
 
+test("the redirect rules permanently send all 3 retired long-term-care-family URLs, each to its matching ?type=", () => {
   const expectations = [
     ["/tools/home-healthcare", "/tools/long-term-care?type=home-healthcare"],
     ["/tools/elder-welfare", "/tools/long-term-care?type=elder-welfare"],
@@ -30,23 +34,23 @@ test("next.config.js redirects all 3 retired long-term-care-family URLs permanen
   ];
 
   for (const [source, destination] of expectations) {
-    const re = new RegExp(
-      `source:\\s*"${source.replace(/\//g, "\\/")}",\\s*destination:\\s*"${destination.replace(/[/?]/g, "\\$&")}",\\s*permanent:\\s*true,?`,
-    );
-    assert.ok(re.test(content), `redirects() should contain a permanent (301) entry from ${source} to ${destination}`);
+    const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === source && !r.has);
+    assert.ok(rule, `expected a redirect rule for ${source}`);
+    assert.equal(rule.destination, destination);
+    assert.equal(rule.permanent, true);
   }
 });
 
 test("the pre-existing /tools/hakka-community redirect now chains straight to long-term-care's hakka-bogong type, not the retired hakka-bogong page", () => {
-  const content = read("next.config.js");
-  assert.ok(
-    /source:\s*"\/tools\/hakka-community",\s*destination:\s*"\/tools\/long-term-care\?type=hakka-bogong",\s*permanent:\s*true,?/.test(
-      content,
-    ),
+  const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/tools/hakka-community");
+  assert.ok(rule, "expected a redirect rule for /tools/hakka-community");
+  assert.equal(
+    rule.destination,
+    "/tools/long-term-care?type=hakka-bogong",
     "/tools/hakka-community should 301 to /tools/long-term-care?type=hakka-bogong now that /tools/hakka-bogong itself is retired",
   );
   assert.ok(
-    !/destination:\s*"\/tools\/hakka-bogong"/.test(content),
+    !PERMANENT_REDIRECT_RULES.some((r) => r.destination === "/tools/hakka-bogong"),
     "no redirect should still point at the now-deleted /tools/hakka-bogong page",
   );
 });

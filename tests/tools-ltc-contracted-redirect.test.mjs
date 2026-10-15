@@ -9,20 +9,17 @@ import path from "node:path";
 // item it offered). It is retired, not merged — replaced by a permanent
 // redirect to the page that already has everything it had.
 
-test("next.config.js redirects /tools/ltc-contracted permanently to /tools/long-term-care (issue #447)", () => {
-  const content = fs.readFileSync(path.join(process.cwd(), "next.config.js"), "utf-8");
-
-  assert.match(content, /async redirects\(\)/, "next.config.js should define the shared redirects() function");
-
-  assert.ok(
-    /\{\s*\/\/[^{}]*\{\s*source:\s*"\/tools\/ltc-contracted",\s*destination:\s*"\/tools\/long-term-care",\s*permanent:\s*true,?\s*\}/.test(
-      content,
-    ) ||
-      /source:\s*"\/tools\/ltc-contracted",\s*destination:\s*"\/tools\/long-term-care",\s*permanent:\s*true,?/.test(
-        content,
-      ),
-    "redirects() should contain a permanent (301) entry from /tools/ltc-contracted to /tools/long-term-care",
-  );
+test("the redirect rules permanently send /tools/ltc-contracted to /tools/long-term-care (issue #447)", async () => {
+  // Moved out of next.config.js's redirects() into middleware.ts / a shared
+  // data file 2026-10-15 — every permanent (308) redirect on the site was
+  // 500ing because next.config.js's redirects() always adds a non-standard
+  // Refresh header that this host's Cloudflare/LiteSpeed path can't handle.
+  // See tests/middleware-permanent-redirects.test.mjs for the full story.
+  const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
+  const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/tools/ltc-contracted");
+  assert.ok(rule, "expected a redirect rule for /tools/ltc-contracted");
+  assert.equal(rule.destination, "/tools/long-term-care");
+  assert.equal(rule.permanent, true);
 });
 
 test("the /tools/ltc-contracted ghost page directory no longer exists (issue #447)", () => {

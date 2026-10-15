@@ -10,28 +10,28 @@ import path from "node:path";
 // on /tools/green-certifications. It is retired, not merged — replaced by a
 // permanent redirect that lands directly on the matching tab via `?tab=`.
 
-test("next.config.js redirects /tools/green-shops permanently to the green-shops tab on /tools/green-certifications (issue #448)", () => {
-  const content = fs.readFileSync(path.join(process.cwd(), "next.config.js"), "utf-8");
+// Moved out of next.config.js's redirects() into middleware.ts / a shared
+// data file 2026-10-15 — every permanent (308) redirect on the site was
+// 500ing because next.config.js's redirects() always adds a non-standard
+// Refresh header that this host's Cloudflare/LiteSpeed path can't handle.
+// See tests/middleware-permanent-redirects.test.mjs for the full story.
+const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
 
-  assert.match(content, /async redirects\(\)/, "next.config.js should define the shared redirects() function");
-
-  assert.ok(
-    /source:\s*"\/tools\/green-shops",\s*destination:\s*"\/tools\/green-certifications\?tab=green-shops",\s*permanent:\s*true,?/.test(
-      content,
-    ),
-    "redirects() should contain a permanent (301) entry from /tools/green-shops to /tools/green-certifications?tab=green-shops",
-  );
+test("the redirect rules permanently send /tools/green-shops to the green-shops tab on /tools/green-certifications (issue #448)", () => {
+  const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/tools/green-shops");
+  assert.ok(rule, "expected a redirect rule for /tools/green-shops");
+  assert.equal(rule.destination, "/tools/green-certifications?tab=green-shops");
+  assert.equal(rule.permanent, true);
 });
 
 test("the pre-existing green-hotels/green-products/green-restaurants redirects also carry ?tab= now that the mechanism exists (issue #448 follow-up)", () => {
-  const content = fs.readFileSync(path.join(process.cwd(), "next.config.js"), "utf-8");
-
   for (const key of ["green-hotels", "green-products", "green-restaurants"]) {
-    assert.ok(
-      new RegExp(
-        `source:\\s*"/tools/${key}",\\s*destination:\\s*"/tools/green-certifications\\?tab=${key}",\\s*permanent:\\s*true,?`,
-      ).test(content),
-      `redirects() entry for /tools/${key} should carry ?tab=${key} so it lands on its own tab, not the default`,
+    const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === `/tools/${key}`);
+    assert.ok(rule, `expected a redirect rule for /tools/${key}`);
+    assert.equal(
+      rule.destination,
+      `/tools/green-certifications?tab=${key}`,
+      `redirect for /tools/${key} should carry ?tab=${key} so it lands on its own tab, not the default`,
     );
   }
 });

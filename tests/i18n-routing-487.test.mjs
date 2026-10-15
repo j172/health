@@ -238,21 +238,26 @@ test("app/[locale]/page.tsx, app/[locale]/nearby/page.tsx, and the typhoon-earth
 });
 
 // ---------------------------------------------------------------------------
-// 5. next.config.js redirects (source-text inspection)
+// 5. Redirect rules — moved out of next.config.js's redirects() into
+// middleware.ts / lib/redirects/permanentRedirectRules.ts 2026-10-15, same
+// reasoning as tests/i18n-routing-485.test.mjs and
+// tests/middleware-permanent-redirects.test.mjs.
 // ---------------------------------------------------------------------------
 
-test("next.config.js's ?lang= redirect list covers all 7 translated tool slugs", () => {
-  const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
-  assert.match(content, /async redirects\(\)/);
+test("the redirect rules' ?lang= list covers all 7 translated tool slugs", async () => {
+  const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
   for (const slug of [...TRANSLATED_TOOL_SLUGS]) {
-    assert.ok(content.includes(`"${slug}"`), `next.config.js must mention "${slug}" in its redirect list`);
+    const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === `/tools/${slug}` && r.has);
+    assert.ok(rule, `the redirect rules must include a ?lang= rule for "${slug}"`);
   }
 });
 
-test("next.config.js still has no generic ?lang= catch-all redirect (regression guard from issue #485)", () => {
-  const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
-  assert.ok(
-    !/source:\s*"\/:path\*"[\s\S]{0,200}has:\s*\[\{\s*type:\s*"query",\s*key:\s*"lang"\s*\}\]/.test(content),
+test("there is still no generic ?lang= catch-all redirect (regression guard from issue #485)", async () => {
+  const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
+  const catchAll = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/:path*" || r.destination === "/:path*");
+  assert.equal(
+    catchAll,
+    undefined,
     "must not redirect every ?lang= URL to the same path — that is a self-redirect loop for every untranslated page",
   );
 });
