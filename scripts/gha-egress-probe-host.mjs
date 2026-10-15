@@ -50,6 +50,17 @@ const targets = {
   // this script's own module doc comment).
   "www.who.int api/news DON list":
     "https://www.who.int/api/news/diseaseoutbreaknews?sf_provider=dynamicProvider372&sf_culture=en&$top=1",
+  // #571 (parent #562): facilities-sync for both these sources came back
+  // with zero rows in production on 2026-10-15 (two separate runs, incl. a
+  // standalone retry) despite the fetchers themselves producing the exact
+  // documented row counts (65, 22) when run locally against the same live
+  // URLs. data.taipei itself isn't broadly blocked (addiction_treatment_133353,
+  // a sibling data.taipei resource, wrote 216 rows the same run) — this
+  // checks whether it's this specific resource, or antidrug.moj.gov.tw as a
+  // central .gov.tw domain, that's blocked from the host's IP specifically.
+  "data.taipei 133345 (methadone_cross_district, control: sibling 133353 OK)":
+    "https://data.taipei/api/dataset/2e4dcb8a-af96-4170-a5dc-32b5dc7e9247/resource/dc82ccb5-1138-4c91-b948-56f53ab3d243/download",
+  "antidrug.moj.gov.tw (anti_drug_center_moj)": "https://antidrug.moj.gov.tw/lp-33-1-1-60.html",
 };
 
 const main = () => {
