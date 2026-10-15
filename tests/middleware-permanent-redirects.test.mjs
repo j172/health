@@ -5,19 +5,29 @@ import { existsSync } from "node:fs";
 import { registerHooks } from "node:module";
 import { fileURLToPath } from "node:url";
 
-// Live 2026-10-15: EVERY permanent (308) redirect on the site returned 500 —
-// not just a handful of old ones, all 80+ entries, including one shipped
-// the same day (#590's /tools/earthquakes). Root cause: next.config.js's
-// redirects() always adds a non-standard `Refresh` header to any 308
-// (node_modules/next/dist/server/base-http/index.js), and something between
-// Cloudflare and this host's LiteSpeed-fronted origin can't handle that —
-// confirmed NOT this session's own Node 24 switch (#634, ruled out by a
-// controlled rollback-and-retest: still 500 on v20.20.2) and NOT any
-// Cloudflare WAF/Transform/Page Rule (none found via the API touch
-// Location/Refresh or inspect redirect responses at all). Moved every
-// permanent redirect to middleware.ts, which uses NextResponse.redirect() —
-// confirmed to never add that header by reading
-// node_modules/next/dist/server/web/spec-extension/response.js.
+// Live 2026-10-15: EVERY permanent redirect on the site returned 500 — not
+// just a handful of old ones, all 80+ entries, including one shipped the
+// same day (#590's /tools/earthquakes). Root cause, found in two rounds:
+//
+// Round 1: next.config.js's redirects() always adds a non-standard
+// `Refresh` header to any 308 (node_modules/next/dist/server/base-http/
+// index.js, an IE11-compat shim), and something between Cloudflare and
+// this host's LiteSpeed-fronted origin can't handle that — confirmed NOT
+// this session's own Node 24 switch (#634, ruled out by a controlled
+// rollback-and-retest: still 500 on v20.20.2) and NOT any Cloudflare WAF/
+// Transform/Page Rule. Moved every permanent redirect to middleware.ts.
+//
+// Round 2: moving to middleware.ts (still issuing 308) did NOT fix it —
+// node_modules/next/dist/server/lib/router-server.js's own request handler
+// adds the exact same Refresh header to ANY response whose
+// statusCode === RedirectStatusCode.PermanentRedirect (308) and has no
+// body stream, which includes a middleware's NextResponse.redirect()
+// result (a redirect has no body). Confirmed live by curling the origin
+// directly and seeing Refresh on a middleware-issued redirect. Fixed by
+// using HTTP 301 instead of 308 — RedirectStatusCode only maps 308 to
+// PermanentRedirect (node_modules/next/dist/client/components/
+// redirect-status-code.js), so 301 never matches either Refresh-adding
+// check, in next.config.js's code path or router-server.js's.
 
 const REPO_ROOT = fileURLToPath(new URL("../", import.meta.url));
 registerHooks({
@@ -59,11 +69,13 @@ test("next.config.js no longer defines any permanent:true redirect — only the 
   assert.match(code, /permanent:\s*false/);
 });
 
-test("middleware.ts uses NextResponse.redirect(), never next.config.js-style redirects() for permanent redirects", () => {
+test("middleware.ts uses NextResponse.redirect() with HTTP 301, never 308 (308 gets the Refresh header re-added by router-server.js even from middleware) or next.config.js-style redirects()", () => {
   const content = read("middleware.ts");
   assert.match(content, /NextResponse\.redirect\(/);
-  assert.match(content, /\b308\b/);
+  assert.match(content, /\b301\b/);
   assert.match(content, /PERMANENT_REDIRECT_RULES/);
+  const code = stripLineComments(content);
+  assert.doesNotMatch(code, /NextResponse\.redirect\([^)]*,\s*308\s*\)/, "308 re-triggers the Refresh-header bug via router-server.js even from middleware — must stay 301");
 });
 
 test("the rules file carries over every previously-hand-written simple redirect", () => {
@@ -157,7 +169,7 @@ test("middleware's matcher covers every rule's source path prefix", () => {
   }
 });
 
-test("simulated request matching reproduces NextResponse.redirect(url, 308) with no Refresh header involved", () => {
+test("simulated request matching reproduces NextResponse.redirect(url, 301) — not 308, which router-server.js re-adds Refresh to even from middleware", () => {
   // Pure logic reimplementation of middleware.ts's matching loop — same
   // shape as this repo's established convention for verifying "use client"/
   // Edge-runtime files that can't be imported directly by node --test (see
@@ -166,18 +178,18 @@ test("simulated request matching reproduces NextResponse.redirect(url, 308) with
     for (const rule of PERMANENT_REDIRECT_RULES) {
       if (rule.source !== pathname) continue;
       if (rule.has && searchParams.get(rule.has.key) !== rule.has.value) continue;
-      return { destination: rule.destination, status: 308 };
+      return { destination: rule.destination, status: 301 };
     }
     return null;
   }
 
   assert.deepEqual(resolveRedirect("/tools/green-shops", new URLSearchParams()), {
     destination: "/tools/green-certifications?tab=green-shops",
-    status: 308,
+    status: 301,
   });
   assert.deepEqual(resolveRedirect("/tools/aed", new URLSearchParams("lang=en")), {
     destination: "/en/tools/aed",
-    status: 308,
+    status: 301,
   });
   assert.equal(resolveRedirect("/tools/aed", new URLSearchParams("lang=fr")), null, "unsupported locale must not match");
   assert.equal(resolveRedirect("/tools/aed", new URLSearchParams()), null, "no lang param must not match a ?lang= rule");
