@@ -233,6 +233,22 @@ function getFacilitySeedFallback(
   }
 }
 
+// 2026-10-15: this route had no Cache-Control of its own, so it fell
+// through to a default (Cache-Control: max-age=1800, cf-cache-status: HIT)
+// applied somewhere upstream of this app to every /api/* response lacking
+// an explicit header — confirmed not set by this app, next.config.js,
+// middleware.ts, or the .remote-health-index.php proxy (which forwards
+// origin headers verbatim). Admin-synced facility data could then read as
+// stale/empty for up to 30 minutes after a sync. A short explicit TTL here
+// is enough to make Cloudflare/the host respect it instead of falling back
+// to that default — confirmed live: routes with their own explicit
+// Cache-Control (even `no-store`) are always honored exactly as declared.
+const FACILITIES_CACHE_HEADERS = { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" };
+
+function jsonWithCache(data: unknown): NextResponse {
+  return NextResponse.json(data, { headers: FACILITIES_CACHE_HEADERS });
+}
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const facilityType = params.get("type")?.trim() || params.get("facilityType")?.trim();
@@ -282,7 +298,7 @@ export async function GET(request: NextRequest) {
         offset,
       });
       if (fallback) {
-        return NextResponse.json({ ...fallback, page, pageSize: limit });
+        return jsonWithCache({ ...fallback, page, pageSize: limit });
       }
     }
 
@@ -312,7 +328,7 @@ export async function GET(request: NextRequest) {
 
     if (allTotal > 0) {
       const total = typeof filteredTotal === "number" ? filteredTotal : allTotal;
-      return NextResponse.json({
+      return jsonWithCache({
         facilities,
         total,
         allTotal,
@@ -337,10 +353,10 @@ export async function GET(request: NextRequest) {
       offset,
     });
     if (fallback) {
-      return NextResponse.json({ ...fallback, page, pageSize: limit });
+      return jsonWithCache({ ...fallback, page, pageSize: limit });
     }
 
-    return NextResponse.json({ facilities, total: 0, allTotal: 0, page, pageSize: limit });
+    return jsonWithCache({ facilities, total: 0, allTotal: 0, page, pageSize: limit });
   } catch (error) {
     console.warn("GET /api/facilities DB query failed, attempting seed fallback:", error);
     const fallback = getFacilitySeedFallback(facilityType, {
@@ -358,7 +374,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
     if (fallback) {
-      return NextResponse.json({ ...fallback, page, pageSize: limit });
+      return jsonWithCache({ ...fallback, page, pageSize: limit });
     }
     return NextResponse.json({ error: "查詢機構資料失敗" }, { status: 502 });
   }
