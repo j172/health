@@ -187,14 +187,21 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "chiayi_city_childcare_63093", fetch: fetchChiayiCityChildcare },
 ];
 
-// mohw_disability_welfare and mohw_elder_welfare are NOT registered here —
-// opendata.mohw.gov.tw is a mohw.gov.tw subdomain, the same apex domain as
-// ltcpap.mohw.gov.tw (confirmed unreachable from this host and GitHub
-// Actions runners); a facilities-sync run attempting them came back with
-// zero rows, and running the equivalent fetch from a residential network
-// (scripts/import-mohw-disability-welfare.mjs, scripts/import-mohw-elder-
-// welfare.mjs) succeeded immediately, confirming the same IP-range block
-// rather than a code bug. Run those two scripts by hand instead.
+// mohw_disability_welfare, mohw_elder_welfare, and (issue #603)
+// mohw_social_welfare_center are NOT registered here — opendata.mohw.gov.tw
+// is a mohw.gov.tw subdomain, the same apex domain as ltcpap.mohw.gov.tw
+// (confirmed unreachable from this host and GitHub Actions runners); a
+// facilities-sync run attempting them came back with zero rows, and running
+// the equivalent fetch from a residential network (scripts/import-mohw-
+// disability-welfare.mjs, scripts/import-mohw-elder-welfare.mjs,
+// scripts/import-mohw-social-welfare-centers.mjs) succeeded immediately,
+// confirming the same IP-range block rather than a code bug. Issue #603
+// re-confirmed this empirically on 2026-10-14 for this exact dataset (data.gov.tw
+// 160903) via .github/workflows/egress-probe.yml: a GitHub Actions runner's
+// curl timed out after 25s, and a probe from the production host over the
+// SSH loopback (scripts/gha-egress-probe-host.mjs) timed out after 20s —
+// both legs unreachable, not a code bug or a transient blip. Run these
+// three scripts by hand instead, from a residential/office network.
 
 export const FACILITY_SOURCE_KEYS: readonly string[] = SOURCES.map((s) => s.key);
 

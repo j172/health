@@ -1,0 +1,1874 @@
+[
+  {
+    "id": 1,
+    "name": "士林社會福利服務中心",
+    "address": "臺北市士林區基河路140號1樓",
+    "phone": "02-2835-0247",
+    "lat": null,
+    "lng": null,
+    "service_item": "士林區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 2,
+    "name": "大同社會福利服務中心",
+    "address": "臺北市大同區昌吉街57號6樓",
+    "phone": "02-2597-4280",
+    "lat": null,
+    "lng": null,
+    "service_item": "大同區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 3,
+    "name": "大安社會福利服務中心",
+    "address": "臺北市大安區四維路198巷30弄5號2樓之9",
+    "phone": "02-2700-0960",
+    "lat": null,
+    "lng": null,
+    "service_item": "大安區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 4,
+    "name": "中山社會福利服務中心",
+    "address": "臺北市中山區合江街137號3樓",
+    "phone": "02-2515-6222",
+    "lat": null,
+    "lng": null,
+    "service_item": "中山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 5,
+    "name": "中正社會福利服務中心",
+    "address": "臺北市中正區延平南路207號6樓",
+    "phone": "02-2396-2340",
+    "lat": null,
+    "lng": null,
+    "service_item": "中正區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 6,
+    "name": "內湖社會福利服務中心",
+    "address": "臺北市內湖區星雲街161巷3號4樓",
+    "phone": "02-2792-8701",
+    "lat": null,
+    "lng": null,
+    "service_item": "內湖區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 7,
+    "name": "文山社會福利服務中心",
+    "address": "臺北市文山區興隆路二段160號6樓",
+    "phone": "02-2932-3587",
+    "lat": null,
+    "lng": null,
+    "service_item": "文山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 8,
+    "name": "北投社會福利服務中心",
+    "address": "臺北市北投區新市街30號5樓",
+    "phone": "02-2894-2640",
+    "lat": null,
+    "lng": null,
+    "service_item": "北投區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 9,
+    "name": "松山社會福利服務中心",
+    "address": "臺北市松山區民生東路五段163-1號9樓",
+    "phone": "02-2756-5018",
+    "lat": null,
+    "lng": null,
+    "service_item": "松山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 10,
+    "name": "信義社會福利服務中心",
+    "address": "臺北市信義區松隆路36號5樓",
+    "phone": "02-2761-6515",
+    "lat": null,
+    "lng": null,
+    "service_item": "信義區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 11,
+    "name": "南港社會福利服務中心",
+    "address": "臺北市南港區市民大道8段367號3樓",
+    "phone": "02-2783-1407",
+    "lat": null,
+    "lng": null,
+    "service_item": "南港區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 12,
+    "name": "萬華社會福利服務中心",
+    "address": "臺北市萬華區梧州街36號5樓",
+    "phone": "02-2336-5700",
+    "lat": null,
+    "lng": null,
+    "service_item": "萬華區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 13,
+    "name": "板橋第一社會福利服務中心",
+    "address": "新北市板橋區漢生東路258號3樓",
+    "phone": "02-2953-7301",
+    "lat": null,
+    "lng": null,
+    "service_item": "板橋區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 14,
+    "name": "板橋第二社會福利服務中心",
+    "address": "新北市板橋區漢生東路258號3樓",
+    "phone": "02-2953-7301",
+    "lat": null,
+    "lng": null,
+    "service_item": null,
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 15,
+    "name": "土城社會福利服務中心",
+    "address": "新北市土城區中正路18號5樓",
+    "phone": "02-2265-6069",
+    "lat": null,
+    "lng": null,
+    "service_item": "土城區、三峽區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 16,
+    "name": "文山社會福利服務中心",
+    "address": "新北市新店區北新路一段86號10樓",
+    "phone": "02-2911-1819",
+    "lat": null,
+    "lng": null,
+    "service_item": "石碇區、新店區、深坑區、坪林區、烏來區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 17,
+    "name": "三重社會福利服務中心",
+    "address": "新北市三重區溪尾街73號3樓",
+    "phone": "02-2982-6255",
+    "lat": null,
+    "lng": null,
+    "service_item": "三重區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 18,
+    "name": "北海岸社會福利服務中心",
+    "address": "新北市淡水區中山北路二段375號8樓",
+    "phone": "02-2622-1615",
+    "lat": null,
+    "lng": null,
+    "service_item": "淡水區、三芝區、石門區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 19,
+    "name": "新莊社會福利服務中心",
+    "address": "新北市新莊區福營路277號4樓",
+    "phone": "02-2906-7980",
+    "lat": null,
+    "lng": null,
+    "service_item": "新莊區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 20,
+    "name": "泰五林社會福利服務中心",
+    "address": "新北市新莊區福營路277號4樓",
+    "phone": "02-2906-7980",
+    "lat": null,
+    "lng": null,
+    "service_item": "泰山區、林口區、五股區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 21,
+    "name": "永和社會福利服務中心",
+    "address": "新北市中和區南山路236號9樓",
+    "phone": "02-8668-8826",
+    "lat": null,
+    "lng": null,
+    "service_item": "永和區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 22,
+    "name": "中和社會福利服務中心",
+    "address": "新北市中和區南山路236號9樓",
+    "phone": "02-8668-8826",
+    "lat": null,
+    "lng": null,
+    "service_item": "中和區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 23,
+    "name": "七星社會福利服務中心",
+    "address": "新北市汐止區新台五路一段268號7樓",
+    "phone": "02-2647-0855",
+    "lat": null,
+    "lng": null,
+    "service_item": "汐止區、金山區、萬里區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 24,
+    "name": "蘆洲社會福利服務中心",
+    "address": "新北市蘆洲區集賢路245號6樓",
+    "phone": "02-2289-1300",
+    "lat": null,
+    "lng": null,
+    "service_item": "蘆洲區、八里區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 25,
+    "name": "樹鶯社會福利服務中心",
+    "address": "新北市樹林區保安街一段7號3樓",
+    "phone": "02-2675-0315",
+    "lat": null,
+    "lng": null,
+    "service_item": "樹林區、鶯歌區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 26,
+    "name": "瑞芳社會福利服務中心",
+    "address": "新北市瑞芳區瑞芳街23號4樓",
+    "phone": "02-2496-6116",
+    "lat": null,
+    "lng": null,
+    "service_item": "雙溪區、瑞芳區、貢寮區、平溪區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 27,
+    "name": "桃園家庭服務中心",
+    "address": "桃園市桃園區陽明三街33號4樓",
+    "phone": "03-2182-778",
+    "lat": null,
+    "lng": null,
+    "service_item": "桃園區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 28,
+    "name": "中路家庭服務中心",
+    "address": "桃園市桃園區國豐三街123號5樓",
+    "phone": "03-370-0886",
+    "lat": null,
+    "lng": null,
+    "service_item": "桃園區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 29,
+    "name": "蘆竹家庭服務中心",
+    "address": "桃園市蘆竹區南崁里南崁路152號3樓",
+    "phone": "03-2127-678",
+    "lat": null,
+    "lng": null,
+    "service_item": "蘆竹區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 30,
+    "name": "八德家庭服務中心",
+    "address": "桃園市八德區興豐路287號4樓",
+    "phone": "03-3652-105",
+    "lat": null,
+    "lng": null,
+    "service_item": "八德區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 31,
+    "name": "中壢家庭服務中心",
+    "address": "桃園市中壢區元化路159號1樓",
+    "phone": "03-4220-126",
+    "lat": null,
+    "lng": null,
+    "service_item": "中壢區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 32,
+    "name": "內壢家庭服務中心",
+    "address": "桃園市中壢區文化二路219號4樓",
+    "phone": "03-433-3219",
+    "lat": null,
+    "lng": null,
+    "service_item": "中壢區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 33,
+    "name": "觀音家庭服務中心",
+    "address": "桃園市觀音區觀新路52號",
+    "phone": "03-4732-320",
+    "lat": null,
+    "lng": null,
+    "service_item": "觀音區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 34,
+    "name": "大園家庭服務中心",
+    "address": "桃園市大園區大觀路118號2樓",
+    "phone": "03-3867-128",
+    "lat": null,
+    "lng": null,
+    "service_item": "大園區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 35,
+    "name": "大溪家庭服務中心",
+    "address": "桃園市大溪區中正路56號",
+    "phone": "03-3883-060",
+    "lat": null,
+    "lng": null,
+    "service_item": "大溪區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 36,
+    "name": "復興家庭服務中心",
+    "address": "桃園市復興區羅浮里3鄰68之6號",
+    "phone": "03-3821-110",
+    "lat": null,
+    "lng": null,
+    "service_item": "復興區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 37,
+    "name": "龜山家庭服務中心",
+    "address": "桃園市龜山區自強南路97號2樓",
+    "phone": "03-3208-485",
+    "lat": null,
+    "lng": null,
+    "service_item": "龜山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 38,
+    "name": "龍潭家庭服務中心",
+    "address": "桃園市龍潭區凌雲里干城路19巷30號",
+    "phone": "03-4790-231",
+    "lat": null,
+    "lng": null,
+    "service_item": "龍潭區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 39,
+    "name": "平鎮家庭服務中心",
+    "address": "桃園市平鎮區延平路一段168號3樓",
+    "phone": "03-4911-910",
+    "lat": null,
+    "lng": null,
+    "service_item": "平鎮區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 40,
+    "name": "楊梅家庭服務中心",
+    "address": "桃園市楊梅區校前路324巷148號3樓",
+    "phone": "03-4750-067",
+    "lat": null,
+    "lng": null,
+    "service_item": "楊梅區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 41,
+    "name": "新屋家庭服務中心",
+    "address": "桃園市新屋區中山路277號1樓",
+    "phone": "03-4970-225",
+    "lat": null,
+    "lng": null,
+    "service_item": "新屋區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 42,
+    "name": "北區家庭福利服務中心",
+    "address": "臺中市西區五權五街285號2樓",
+    "phone": "04-2206-2790",
+    "lat": null,
+    "lng": null,
+    "service_item": "北區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 43,
+    "name": "北屯家庭福利服務中心",
+    "address": "臺中市北屯區旱溪西路3段260號3樓",
+    "phone": "04-2437-2339",
+    "lat": null,
+    "lng": null,
+    "service_item": "北屯區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 44,
+    "name": "西區家庭福利服務中心",
+    "address": "臺中市西區五權五街285號2樓",
+    "phone": "04-2375-5055",
+    "lat": null,
+    "lng": null,
+    "service_item": "中區、西區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 45,
+    "name": "沙鹿家庭福利服務中心",
+    "address": "臺中市沙鹿區福幼街8號3樓",
+    "phone": "04-2635-1988",
+    "lat": null,
+    "lng": null,
+    "service_item": "沙鹿區、清水區、梧棲區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 46,
+    "name": "太平家庭福利服務中心",
+    "address": "臺中市太平區興隆路1段91號4樓",
+    "phone": "04-2275-7419",
+    "lat": null,
+    "lng": null,
+    "service_item": "太平區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 47,
+    "name": "豐原家庭福利服務中心",
+    "address": "臺中市豐原區陽明街36號3樓",
+    "phone": "04-2228-9111#38622、38631~42、38645",
+    "lat": null,
+    "lng": null,
+    "service_item": "豐原區、后里區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 48,
+    "name": "大甲家庭福利服務中心",
+    "address": "臺中市大甲區水源路169號2樓",
+    "phone": "04-2680-3385",
+    "lat": null,
+    "lng": null,
+    "service_item": "大甲區、外埔區、大安區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 49,
+    "name": "石岡家庭福利服務中心",
+    "address": "臺中市石岡區豐勢路134號2樓",
+    "phone": "04-2582-6369",
+    "lat": null,
+    "lng": null,
+    "service_item": "石岡區、東勢區、新社區、和平區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 50,
+    "name": "大里家庭福利服務中心",
+    "address": "臺中市大里區甲興路100號4樓",
+    "phone": "04-2270-2595",
+    "lat": null,
+    "lng": null,
+    "service_item": "大里區、霧峰區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 51,
+    "name": "大雅家庭福利服務中心",
+    "address": "臺中市大雅區雅環路2段301號3樓",
+    "phone": "04-2566-1900",
+    "lat": null,
+    "lng": null,
+    "service_item": "大雅區、潭子區、神岡區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 52,
+    "name": "西屯家庭福利服務中心",
+    "address": "臺中市西屯區市政北二路386 號6 樓",
+    "phone": "04-2251-2939",
+    "lat": null,
+    "lng": null,
+    "service_item": "西屯區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 53,
+    "name": "東區家庭福利服務中心",
+    "address": "臺中市東區台中路99號",
+    "phone": "04-2222-0289",
+    "lat": null,
+    "lng": null,
+    "service_item": "東區、南區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 54,
+    "name": "南屯家庭福利服務中心",
+    "address": "臺中市南屯區南屯路2段407號5樓",
+    "phone": "04-2380-8825",
+    "lat": null,
+    "lng": null,
+    "service_item": "南屯區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 55,
+    "name": "烏日家庭福利服務中心",
+    "address": "臺中市烏日區長樂街141號3樓",
+    "phone": "04-2336-2033",
+    "lat": null,
+    "lng": null,
+    "service_item": "烏日區、大肚區、龍井區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 56,
+    "name": "新營區社會福利服務中心",
+    "address": "臺南市新營區府西路36號",
+    "phone": "06-6354-466",
+    "lat": null,
+    "lng": null,
+    "service_item": "新營區、鹽水區、白河區、柳營區、後壁區、東山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 57,
+    "name": "北門區社會福利服務中心",
+    "address": "臺南市佳里區中山路458號",
+    "phone": "06-7235-727",
+    "lat": null,
+    "lng": null,
+    "service_item": "佳里區、學甲區、西港區、七股區、將軍區、北門區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 58,
+    "name": "善化區社會福利服務中心",
+    "address": "臺南市善化區中山路353號",
+    "phone": "06-5812-251",
+    "lat": null,
+    "lng": null,
+    "service_item": "善化區、新市區、安定區、新化區、山上區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 59,
+    "name": "玉井區社會福利服務中心",
+    "address": "臺南市玉井區中正路7號2樓",
+    "phone": "06-5744-616",
+    "lat": null,
+    "lng": null,
+    "service_item": "玉井區、楠西區、南化區、左鎮區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 60,
+    "name": "新豐區社會福利服務中心",
+    "address": "臺南市歸仁區中山路2段2號3樓",
+    "phone": "06-3387-851",
+    "lat": null,
+    "lng": null,
+    "service_item": "仁德區、歸仁區、關廟區、龍崎嶇",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 61,
+    "name": "安平區社會福利服務中心",
+    "address": "臺南市安平區安北路42號4樓",
+    "phone": "06-2231-000",
+    "lat": null,
+    "lng": null,
+    "service_item": "中西區、安平區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 62,
+    "name": "永康區社會福利服務中心",
+    "address": "臺南市永康區忠勇街51號3樓",
+    "phone": "06-3110-230",
+    "lat": null,
+    "lng": null,
+    "service_item": "永康區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 63,
+    "name": "安南區社會福利服務中心",
+    "address": "臺南市安南區安中路一段213號2樓",
+    "phone": "06-2552-330",
+    "lat": null,
+    "lng": null,
+    "service_item": "安南區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 64,
+    "name": "麻豆區社會福利服務中心",
+    "address": "臺南市麻豆區忠孝路6號4樓",
+    "phone": "06-5711-500",
+    "lat": null,
+    "lng": null,
+    "service_item": "麻豆區、下營區、六甲區、官田區、大內區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 65,
+    "name": "南區社會福利服務中心",
+    "address": "臺南市南區南門路263號",
+    "phone": "06-2150795",
+    "lat": null,
+    "lng": null,
+    "service_item": "南區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 66,
+    "name": "東區社會福利服務中心",
+    "address": "臺南市東區林森路二段500號C棟4樓",
+    "phone": "06-2090860、06-2090861、FAX:06-2090862",
+    "lat": null,
+    "lng": null,
+    "service_item": "東區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 67,
+    "name": "北區社會福利服務中心",
+    "address": "臺南市北區北園街8巷8號",
+    "phone": "06-2092736",
+    "lat": null,
+    "lng": null,
+    "service_item": "北區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 68,
+    "name": "左營社會福利服務中心",
+    "address": "高雄市左營區實踐路4號",
+    "phone": "07-5852-250",
+    "lat": null,
+    "lng": null,
+    "service_item": "左營區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 69,
+    "name": "三民社會福利服務中心",
+    "address": "高雄市三民區大順二路468號7樓",
+    "phone": "07-3962-334",
+    "lat": null,
+    "lng": null,
+    "service_item": "三民區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 70,
+    "name": "新興社會福利服務中心",
+    "address": "高雄市新興區中正三路36號",
+    "phone": "07-2361-912",
+    "lat": null,
+    "lng": null,
+    "service_item": "新興區、前金區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 71,
+    "name": "楠梓社會福利服務中心",
+    "address": "高雄市楠梓區德賢路139號",
+    "phone": "07-3662-166",
+    "lat": null,
+    "lng": null,
+    "service_item": "楠梓區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 72,
+    "name": "前鎮社會福利服務中心",
+    "address": "高雄市前鎮區康定路115號",
+    "phone": "07-8121-462",
+    "lat": null,
+    "lng": null,
+    "service_item": "前鎮區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 73,
+    "name": "苓雅社會福利服務中心",
+    "address": "高雄市苓雅區凱旋二路5號",
+    "phone": "07-7111-915",
+    "lat": null,
+    "lng": null,
+    "service_item": "苓雅區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 74,
+    "name": "小港社會福利服務中心",
+    "address": "高雄市小港區博學路369號5樓",
+    "phone": "07-8016-920",
+    "lat": null,
+    "lng": null,
+    "service_item": "小港區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 75,
+    "name": "鹽埕社會福利服務中心",
+    "address": "高雄市鹽埕區大仁路179號4樓",
+    "phone": "07-5210-235",
+    "lat": null,
+    "lng": null,
+    "service_item": "鹽埕區、鼓山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 76,
+    "name": "旗津社會福利服務中心",
+    "address": "高雄市旗津區旗津三路2號4樓",
+    "phone": "07-5711-885",
+    "lat": null,
+    "lng": null,
+    "service_item": "旗津區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 77,
+    "name": "仁武社會福利服務中心",
+    "address": "高雄市仁武區水管路三段776號",
+    "phone": "07-3759-595",
+    "lat": null,
+    "lng": null,
+    "service_item": "大社區、大樹區、仁武區、鳥松區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 78,
+    "name": "鳳山社會福利服務中心",
+    "address": "高雄市鳳山區光復路二段120號",
+    "phone": "07-7427-247",
+    "lat": null,
+    "lng": null,
+    "service_item": "鳳山區國泰路以北共41里",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 79,
+    "name": "大寮社會福利服務中心",
+    "address": "高雄市大寮區進學路129巷2號之1",
+    "phone": "07-7813-005",
+    "lat": null,
+    "lng": null,
+    "service_item": "大寮區、林園區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 80,
+    "name": "鳳山五甲社會福利服務中心",
+    "address": "高雄市鳳山區五甲二路472號7樓",
+    "phone": "07-7131-116",
+    "lat": null,
+    "lng": null,
+    "service_item": "鳳山區國泰路以南共35里",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 81,
+    "name": "岡山社會福利服務中心",
+    "address": "高雄市岡山區竹圍南街99號",
+    "phone": "07-6220-733",
+    "lat": null,
+    "lng": null,
+    "service_item": "岡山區、橋頭區、燕巢區、梓官區、永安區、彌陀區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 82,
+    "name": "路竹社會福利服務中心",
+    "address": "高雄市路竹區中正路51號3樓",
+    "phone": "07-6962-726",
+    "lat": null,
+    "lng": null,
+    "service_item": "路竹區、湖內區、茄萣區、阿蓮區、田寮區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 83,
+    "name": "旗山社會福利服務中心",
+    "address": "高雄市旗山區中正路199號",
+    "phone": "07-6617-464",
+    "lat": null,
+    "lng": null,
+    "service_item": "旗山區、美濃區、內門區、杉林區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 84,
+    "name": "六龜社會福利服務中心",
+    "address": "高雄市六龜區光復路102號",
+    "phone": "07-6891-031",
+    "lat": null,
+    "lng": null,
+    "service_item": "六龜區、桃源區、茂林區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 85,
+    "name": "甲仙社會福利服務中心",
+    "address": "高雄市甲仙區中正路65之1號",
+    "phone": "07-6751-920",
+    "lat": null,
+    "lng": null,
+    "service_item": "甲仙區、那瑪夏區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 86,
+    "name": "社會福利服務中心-礁溪中心",
+    "address": "宜蘭縣礁溪鄉礁溪路4段126號1樓",
+    "phone": "03-9886-775",
+    "lat": null,
+    "lng": null,
+    "service_item": "頭城鎮、礁溪鄉、壯圍鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 87,
+    "name": "社會福利服務中心-宜蘭中心",
+    "address": "宜蘭縣宜蘭市農權路3段11巷3號",
+    "phone": "03-9313-116",
+    "lat": null,
+    "lng": null,
+    "service_item": "宜蘭市、員山鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 88,
+    "name": "社會福利服務中心-羅東中心",
+    "address": "宜蘭縣羅東鎮天祥路171號3樓",
+    "phone": "03-9533-927",
+    "lat": null,
+    "lng": null,
+    "service_item": "羅東鎮、冬山鄉、五結鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 89,
+    "name": "社會福利服務中心-蘇澳中心",
+    "address": "宜蘭縣蘇澳鎮隘丁路36號2樓",
+    "phone": "03-9908-116",
+    "lat": null,
+    "lng": null,
+    "service_item": "蘇澳鎮、南澳鎮",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 90,
+    "name": "社會福利服務中心-三星中心",
+    "address": "宜蘭縣三星鄉集慶村集義路186號2樓",
+    "phone": "03-9892-995",
+    "lat": null,
+    "lng": null,
+    "service_item": "三星鄉、大同鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 91,
+    "name": "新竹縣竹北區社會福利服務中心",
+    "address": "新竹縣竹北市縣政二路620號",
+    "phone": "03-5586-581",
+    "lat": null,
+    "lng": null,
+    "service_item": "竹北市",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 92,
+    "name": "新竹縣新湖區社會福利服務中心",
+    "address": "新竹縣新埔鎮中正路776號2樓",
+    "phone": "03-5583-823",
+    "lat": null,
+    "lng": null,
+    "service_item": "新豐鄉、湖口鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 93,
+    "name": "新竹縣竹東區社會福利服務中心",
+    "address": "新竹縣竹東鎮中豐路三段58號",
+    "phone": "03-5100-818",
+    "lat": null,
+    "lng": null,
+    "service_item": "竹東鎮、寶山鄉、北埔鄉、峨眉鄉、五峰鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 94,
+    "name": "新竹縣新埔區社會福利服務中心",
+    "address": "新竹縣新埔鎮中正路776號2樓",
+    "phone": "03-5891-500",
+    "lat": null,
+    "lng": null,
+    "service_item": "新埔鎮、關西鎮",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 95,
+    "name": "新竹縣橫山區社會福利服務中心",
+    "address": "新竹縣橫山鄉永昌街53號",
+    "phone": "03-5933-232",
+    "lat": null,
+    "lng": null,
+    "service_item": "橫山鄉、尖石鄉、芎林鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 96,
+    "name": "苗栗區社會福利服務中心",
+    "address": "苗栗縣苗栗市金鳳街22號2樓",
+    "phone": "037-366146、037-366151",
+    "lat": null,
+    "lng": null,
+    "service_item": "苗栗市、頭屋鄉、公館鄉、銅鑼鄉、三義鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 97,
+    "name": "竹南區社會福利服務中心",
+    "address": "苗栗縣竹南鎮大埔里公義路936號",
+    "phone": "037-558397、037-558398",
+    "lat": null,
+    "lng": null,
+    "service_item": "後龍鎮、竹南鎮、造橋鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 98,
+    "name": "獅潭區社會福利服務中心",
+    "address": "苗栗縣獅潭鄉竹木村汶水30-2號",
+    "phone": "037-992028",
+    "lat": null,
+    "lng": null,
+    "service_item": "獅潭鄉、大湖鄉、泰安鄉、卓蘭鎮",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 99,
+    "name": "通苑區社會福利服務中心",
+    "address": "苗栗縣通霄鎮平安里環市路二段9鄰715號2樓",
+    "phone": "037-761505",
+    "lat": null,
+    "lng": null,
+    "service_item": "通霄鎮、苑裡鎮、西湖鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 100,
+    "name": "頭份區社會福利服務中心",
+    "address": "苗栗縣頭份市富強3街70號1樓",
+    "phone": "037-558391、037-558392",
+    "lat": null,
+    "lng": null,
+    "service_item": "頭份市、三灣鄉、南庄鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 101,
+    "name": "二林家庭福利服務中心",
+    "address": "彰化縣二林鎮明德街249號2樓",
+    "phone": "04-8950-023",
+    "lat": null,
+    "lng": null,
+    "service_item": "二林鎮、芳苑鄉、大城鄉、竹塘鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 102,
+    "name": "溪湖家庭福利服務中心",
+    "address": "彰化縣溪湖鎮文東街9號2樓",
+    "phone": "04-8850-566",
+    "lat": null,
+    "lng": null,
+    "service_item": "溪湖鎮、埔鹽鄉、埔心鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 103,
+    "name": "鹿港區家庭福利服務中心",
+    "address": "彰化縣鹿港鎮中正路531號",
+    "phone": "04-7778-195",
+    "lat": null,
+    "lng": null,
+    "service_item": "鹿港鎮、福興鄉、秀水鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 104,
+    "name": "和美區家庭福利服務中心",
+    "address": "彰化縣和美鎮和平街19號",
+    "phone": "04-7562-295",
+    "lat": null,
+    "lng": null,
+    "service_item": "和美鎮、線西鄉、伸港鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 105,
+    "name": "員林區家庭福利服務中心",
+    "address": "彰化縣員林市中山南路167巷15弄22號2樓",
+    "phone": "04-8378-885",
+    "lat": null,
+    "lng": null,
+    "service_item": "員林市、大村鄉、永靖鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 106,
+    "name": "彰化區家庭福利服務中心",
+    "address": "彰化縣彰化市長順街76號",
+    "phone": "04-7272-185",
+    "lat": null,
+    "lng": null,
+    "service_item": "彰化市、花壇鄉、芬園鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 107,
+    "name": "田中區家庭福利服務中心",
+    "address": "彰化縣田中鎮斗中路一段222號3樓",
+    "phone": "04-8760-051",
+    "lat": null,
+    "lng": null,
+    "service_item": "社頭鄉、田中鎮、二水鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 108,
+    "name": "北斗區家庭福利服務中心",
+    "address": "彰化縣北斗鎮公所街2號4樓",
+    "phone": "04-8889-995",
+    "lat": null,
+    "lng": null,
+    "service_item": "北斗鎮、田尾鄉、埤頭鄉、溪州鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 109,
+    "name": "南投區社會福利服務中心",
+    "address": "南投縣南投市文化路201號2樓",
+    "phone": "049-2242-250",
+    "lat": null,
+    "lng": null,
+    "service_item": "南投市、名間鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 110,
+    "name": "埔里區社會福利服務中心",
+    "address": "南投縣埔里鎮八德路17號",
+    "phone": "049-2422-851",
+    "lat": null,
+    "lng": null,
+    "service_item": "仁愛鄉、埔里鎮、國姓鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 111,
+    "name": "水里區社會福利服務中心",
+    "address": "南投縣水里鄉民生路112號",
+    "phone": "049-2773-236",
+    "lat": null,
+    "lng": null,
+    "service_item": "水里鄉、集集鎮、魚池鄉、信義鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 112,
+    "name": "竹鹿區社會福利服務中心",
+    "address": "南投縣竹山鎮大禮路50號3樓",
+    "phone": "049-2657-138",
+    "lat": null,
+    "lng": null,
+    "service_item": "竹山鎮、鹿谷鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 113,
+    "name": "草屯區社會福利服務中心",
+    "address": "南投縣草屯鎮中正路557-17號",
+    "phone": "049-2564-549",
+    "lat": null,
+    "lng": null,
+    "service_item": "草屯鎮、中寮鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 114,
+    "name": "虎尾區社會福利服務中心",
+    "address": "雲林縣虎尾鎮光明路70號1樓",
+    "phone": "05-6313-535、05-6331-919",
+    "lat": null,
+    "lng": null,
+    "service_item": "虎尾鎮、土庫鎮、褒忠鄉、東勢鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 115,
+    "name": "台西區社會福利服務中心",
+    "address": "雲林縣臺西鄉中山路293號",
+    "phone": "05-6980-287、05-6980-237",
+    "lat": null,
+    "lng": null,
+    "service_item": "台西鄉、麥寮鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 116,
+    "name": "北港區社會福利服務中心",
+    "address": "雲林縣北港鎮公園路332號",
+    "phone": "05-7834-492、05-7830-406",
+    "lat": null,
+    "lng": null,
+    "service_item": "元長鄉、北港鎮、水林鄉、口湖鄉、四湖鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 117,
+    "name": "西螺區社會福利服務中心",
+    "address": "雲林縣西螺鎮中山路227號3樓",
+    "phone": "05-5879-072、05-5879-020",
+    "lat": null,
+    "lng": null,
+    "service_item": "西螺鎮、二崙鄉、崙背鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 118,
+    "name": "斗南區社會福利服務中心",
+    "address": "雲林縣斗南鎮莒光街33號",
+    "phone": "05-5977-676、05-5975-050",
+    "lat": null,
+    "lng": null,
+    "service_item": "斗南鎮、古坑鄉、大埤鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 119,
+    "name": "斗六區社會福利服務中心",
+    "address": "雲林縣斗六市府前街58號",
+    "phone": "05-5371-007、05-5371-008",
+    "lat": null,
+    "lng": null,
+    "service_item": "斗六市、林內鄉、莿桐鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 120,
+    "name": "日安民雄社會福利服務中心",
+    "address": "嘉義縣民雄鄉興中村江厝店29-4號",
+    "phone": "05-2207-017#17",
+    "lat": null,
+    "lng": null,
+    "service_item": "民雄鄉、大林鎮、溪口鄉、新港鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 121,
+    "name": "日安竹崎社會福利服務中心",
+    "address": "嘉義縣竹崎鄉鹿滿村鹿鳴路2號",
+    "phone": "05-2611-120#11",
+    "lat": null,
+    "lng": null,
+    "service_item": "竹崎鄉、梅山鄉、阿里山鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 122,
+    "name": "日安水上社會福利服務中心",
+    "address": "嘉義縣水上鄉柳林村92號",
+    "phone": "05-2680-901#11",
+    "lat": null,
+    "lng": null,
+    "service_item": "太保市、水上鄉、鹿草鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 123,
+    "name": "日安朴子社會福利服務中心",
+    "address": "嘉義縣朴子市山通路7號2樓",
+    "phone": "05-3790-220#20",
+    "lat": null,
+    "lng": null,
+    "service_item": "朴子市、六腳鄉、東石鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 124,
+    "name": "日安中埔社會福利服務中心",
+    "address": "嘉義縣中埔鄉金蘭村頂山門29號",
+    "phone": "05-2392-100#11",
+    "lat": null,
+    "lng": null,
+    "service_item": "中埔鄉、番路鄉、大埔鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 125,
+    "name": "日安布袋社會福利服務中心",
+    "address": "嘉義縣布袋鎮中山路206號",
+    "phone": "05-3470-322#10",
+    "lat": null,
+    "lng": null,
+    "service_item": "義竹鄉、布袋鎮",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 126,
+    "name": "屏東社會福利服務中心",
+    "address": "屏東縣屏東市華正路95號",
+    "phone": "08-7385-188",
+    "lat": null,
+    "lng": null,
+    "service_item": "屏東市、萬丹鄉、長治鄉、麟洛鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 127,
+    "name": "鹽埔社會福利服務中心",
+    "address": "屏東縣鹽埔鄉勝利路193號",
+    "phone": "08-7930-669",
+    "lat": null,
+    "lng": null,
+    "service_item": "鹽埔鄉、九如鄉、高樹鄉、里港鄉、三地門鄉、霧台鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 128,
+    "name": "東港社會福利服務中心",
+    "address": "屏東縣東港鎮朝安里新生三路175號3樓",
+    "phone": "08-8330-958",
+    "lat": null,
+    "lng": null,
+    "service_item": "東港鎮、南州鄉、林邊鄉、崁頂鄉、新園鄉、琉球鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 129,
+    "name": "恆春社會福利服務中心",
+    "address": "屏東縣恆春鎮文化路33號",
+    "phone": "08-8891-233",
+    "lat": null,
+    "lng": null,
+    "service_item": "車城鄉、牡丹鄉、滿州鄉、恆春鎮",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 130,
+    "name": "潮州社會福利服務中心",
+    "address": "屏東縣潮州鎮光春路292號",
+    "phone": "08-7891-694 、08-7891696",
+    "lat": null,
+    "lng": null,
+    "service_item": "潮州鎮、竹田鄉、新埤鄉、來義鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 131,
+    "name": "內埔社會福利服務中心",
+    "address": "屏東縣內埔鄉內田村學人路627號",
+    "phone": "08-7790-363",
+    "lat": null,
+    "lng": null,
+    "service_item": "內埔鄉、萬巒鄉、瑪家鄉、泰武鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 132,
+    "name": "枋寮社會福利服務中心",
+    "address": "屏東縣枋寮鄉德興路183號2樓",
+    "phone": "08-8788-540",
+    "lat": null,
+    "lng": null,
+    "service_item": "佳冬鄉、枋寮鄉、春日鄉、獅子鄉、枋山鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 133,
+    "name": "海岸線區社會福利服務中心",
+    "address": "台東縣成功鎮中華路6號",
+    "phone": "089-850995",
+    "lat": null,
+    "lng": null,
+    "service_item": "東河鄉、成功鎮、長濱鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 134,
+    "name": "南迴線區社會福利服務中心",
+    "address": "臺東縣大武鄉大武街21巷1號2樓",
+    "phone": "089-790139、089-790141",
+    "lat": null,
+    "lng": null,
+    "service_item": "太麻里鄉、金峰鄉、大武鄉、達仁鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 135,
+    "name": "臺東市區社會福利服務中心",
+    "address": "臺東縣臺東市中華路一段111巷5之1號",
+    "phone": "089-343972、089-340758、089-345547",
+    "lat": null,
+    "lng": null,
+    "service_item": "臺東市、卑南鄉、綠島鄉、蘭嶼鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 136,
+    "name": "縱谷線區社會福利服務中心",
+    "address": "臺東縣關山鎮民權路61號",
+    "phone": "089-814177、089-814782",
+    "lat": null,
+    "lng": null,
+    "service_item": "關山鎮、池上鄉、海瑞鄉、鹿野鄉、延平鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 137,
+    "name": "花蓮縣新秀社會福利服務中心",
+    "address": "花蓮縣新城鄉大漢村民有街101號",
+    "phone": "03-8269-322、03-8269-335",
+    "lat": null,
+    "lng": null,
+    "service_item": "新城鄉、秀林鄉(文蘭村、銅門村除外)",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 138,
+    "name": "花蓮縣花蓮市社會福利服務中心",
+    "address": "花蓮縣花蓮市文苑路12號1樓",
+    "phone": "03-8220-552",
+    "lat": null,
+    "lng": null,
+    "service_item": "花蓮市(共44里)",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 139,
+    "name": "花蓮縣吉安社會福利服務中心",
+    "address": "花蓮縣吉安鄉中山路三段462號3樓",
+    "phone": "03-8545-699",
+    "lat": null,
+    "lng": null,
+    "service_item": "吉安鄉(含秀林鄉文蘭村、銅門村)",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 140,
+    "name": "花蓮縣中區社會福利服務中心",
+    "address": "花蓮縣鳳林鎮中華路2號2樓",
+    "phone": "03-8763-913、03-8763-528",
+    "lat": null,
+    "lng": null,
+    "service_item": "壽豐鄉、鳳林鎮、光復鄉、萬榮鄉、豐濱鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 141,
+    "name": "花蓮縣南區社會福利服務中心",
+    "address": "花蓮縣玉里鎮永昌里莊敬路8號3樓",
+    "phone": "03-8886-610、03-8886-675",
+    "lat": null,
+    "lng": null,
+    "service_item": "瑞穗鄉、玉里鎮、富里鄉、卓溪鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 142,
+    "name": "望安七美社會福利服務中心",
+    "address": "澎湖縣望安鄉西安村121-3號",
+    "phone": "06-9991-085",
+    "lat": null,
+    "lng": null,
+    "service_item": "望安鄉，七美鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 143,
+    "name": "白沙西嶼社會福利服務中心",
+    "address": "澎湖縣西嶼鄉小門村11-9號",
+    "phone": "06-9983-810",
+    "lat": null,
+    "lng": null,
+    "service_item": "白沙鄉、西嶼鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 144,
+    "name": "馬公湖西社會福利服務中心",
+    "address": "澎湖縣馬公市貿商街60號",
+    "phone": "06-9274-167",
+    "lat": null,
+    "lng": null,
+    "service_item": "馬公市、湖西鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 145,
+    "name": "正義社會福利服務中心",
+    "address": "基隆市中正區中船路11號3樓",
+    "phone": "02-2421-3941、02-2421-3942",
+    "lat": null,
+    "lng": null,
+    "service_item": "中正區、信義區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 146,
+    "name": "仁山社會福利服務中心",
+    "address": "基隆市中山區復興路114號",
+    "phone": "02-2437-6697、02-2437-6698",
+    "lat": null,
+    "lng": null,
+    "service_item": "中山區、仁愛區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 147,
+    "name": "安樂社會福利服務中心",
+    "address": "基隆市安樂區麥金路482號4樓",
+    "phone": "02-2432-1271",
+    "lat": null,
+    "lng": null,
+    "service_item": "安樂區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 148,
+    "name": "暖七社會福利服務中心",
+    "address": "基隆市七堵區自治街15號",
+    "phone": "02-2456-2677、02-2456-2687",
+    "lat": null,
+    "lng": null,
+    "service_item": "基隆市暖暖、七堵全區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 149,
+    "name": "新竹市東區社會福利服務中心",
+    "address": "新竹市金城一路50-7號",
+    "phone": "03-5710-523",
+    "lat": null,
+    "lng": null,
+    "service_item": "東區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 150,
+    "name": "新竹市北區社會福利服務中心",
+    "address": "新竹市南勢六街11號3樓",
+    "phone": "03-5232-055",
+    "lat": null,
+    "lng": null,
+    "service_item": "北區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 151,
+    "name": "新竹市香山區社會福利服務中心",
+    "address": "新竹市長興街262巷38號",
+    "phone": "03-5181-309",
+    "lat": null,
+    "lng": null,
+    "service_item": "香山區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 152,
+    "name": "嘉義市東區社會福利服務中心",
+    "address": "嘉義市東區興業東路555號",
+    "phone": "05-2163-370(成人組)                  、05-2163-373(兒少組)、  傳真05-2163-378",
+    "lat": null,
+    "lng": null,
+    "service_item": "嘉義市東區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 153,
+    "name": "嘉義市西區社會福利服務中心",
+    "address": "嘉義市西區忠義街158-1號",
+    "phone": "05-2230-118(成人組)、05-2231-525(兒少組)、傳真05-2232-755",
+    "lat": null,
+    "lng": null,
+    "service_item": "嘉義市西區",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 154,
+    "name": "金城社會福利服務中心",
+    "address": "金門縣金城鎮環島北路一段38巷12弄12號",
+    "phone": "082-324846",
+    "lat": null,
+    "lng": null,
+    "service_item": "金城鎮、金寧鄉、烈嶼鄉",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 155,
+    "name": "金湖社會福利服務中心",
+    "address": "金門縣金湖鎮中正路1-1號2樓",
+    "phone": "082-330100",
+    "lat": null,
+    "lng": null,
+    "service_item": "金湖鎮、金沙鎮",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  },
+  {
+    "id": 156,
+    "name": "連江縣社會福利服務中心",
+    "address": "連江縣南竿鄉介壽村260-3號",
+    "phone": "0836-22625、0836-23330、傳真：0836-22646",
+    "lat": null,
+    "lng": null,
+    "service_item": "連江縣",
+    "extra_json": {
+      "dataOrg": "衛生福利部社會及家庭署"
+    }
+  }
+]

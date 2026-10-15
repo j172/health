@@ -57,11 +57,18 @@ const { getRelatedTools } = await import("../lib/server/tools/navModel.ts");
 // 都 ≥ 4").
 // ---------------------------------------------------------------------------
 
-test("every one of the 87 TOOL_CATALOG tools gets >= 4 related tools from getRelatedTools", () => {
-  // 82 baseline + #601 childcare-centers + #587 global-watch + #604
-  // child-subsidies + #612 postpartum-care (all merged independently on
-  // 2026-10-14) + #613 early-intervention (2026-10-15).
-  assert.equal(TOOL_CATALOG.length, 87, "expected the catalog to have 87 tools");
+test("every TOOL_CATALOG tool gets >= 4 related tools from getRelatedTools", () => {
+  // Not pinned to an exact count here (unlike catalog.test.mjs's dedicated
+  // count assertion, which is where the real total — 82 baseline + #601
+  // childcare-centers + #587 global-watch + #604 child-subsidies + #612
+  // postpartum-care + #613 early-intervention + #603 social-welfare-centers
+  // = 88 as of 2026-10-15 — is tracked) — this test's job is just the >= 4
+  // structural guarantee for every entry, whatever the current total is.
+  // (Deliberately de-hardcoded during #603's merge: this exact-count
+  // assertion was one of 4 files that kept silently under-counting whenever
+  // two sibling PRs each bumped the same literal to the same number — see
+  // [[ops_catalog_count_silent_merge_collision]].)
+  assert.ok(TOOL_CATALOG.length > 0, "TOOL_CATALOG should not be empty");
   for (const tool of TOOL_CATALOG) {
     const related = getRelatedTools(tool.slug);
     assert.ok(
