@@ -32,6 +32,7 @@ import { runYouBikeSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
+import { runDrugShortagesSync } from "@/lib/server/drugs/runShortagesSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
 import {
@@ -405,6 +406,20 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "30 5 * * *",
     runGuarded("latest-books-sync-cron.log", () => runLatestBooksSync()),
+  );
+  // 食藥署藥品短缺 54504/54505 (issue #670) — 目錄標示每 7 日更新，weekly 即可；
+  // 週一 02:32。分鐘 32 不在任何「每小時」job 的格線上 (rss 5/35、aqi 20/50、
+  // cwa 15/45、earthquakes 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、
+  // water-outages 25、wra-water-outages 18/48、emergency-rooms 7/22/37/52、
+  // transit-accessibility-alerts 16/46、senior-tourism-alerts 17/47、gdacs
+  // 14/44、wra-iot 12/27/42/57、metro-alerts 0/30、news-card-images+power
+  // 0/10/20/30/40/50、youbike 每 5 分鐘)，2 點區段目前只有 cdc-alerts 的 15
+  // 分。刻意不用 spec 提議的 34 分，避免與同期其他 FDA 週更 ticket 撞同一個
+  // tick。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // lib/server/drugs/runShortagesSync.ts。
+  cron.schedule(
+    "32 2 * * 1",
+    runGuarded("drug-shortages-sync-cron.log", () => runDrugShortagesSync()),
   );
   // 全台電力概況儀表板 (issue #177) — 台電 d006001 各機組即時發電量 + d525001
   // 核電廠周邊輻射偵測站都約每 10 分鐘更新一次，比照 wra-sync 的 30 分鐘級距

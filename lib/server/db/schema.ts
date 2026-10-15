@@ -293,6 +293,40 @@ export const TABLE_DDL = {
       KEY idx_drug_ingredient_name (ingredient_name(100))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TFDA 藥品短缺 (data.gov.tw 54504 經評估有替代藥品 / 54505 經評估無替代藥品;
+  // issue #670, spec docs/2.0/track-b-opendata-phase2-3-spec.md A-2) — a
+  // "latest state" table: a shortage that is resolved drops out of the
+  // upstream list, and the weekly sync then deletes that row (guarded
+  // snapshot reconcile, lib/server/drugs/shortageSnapshot.ts).
+  //
+  // No clean natural key: 許可證字號 repeats (236 distinct over 238 rows) and
+  // 編號 is a re-generated 1..N sequence, so row_key is a SHA-256 of the row's
+  // identifying content (dataset, license, name, status wording) plus an
+  // occurrence counter for fully identical rows — same shape as
+  // tfda_drug_ingredients.row_key above. The UNIQUE KEY is row_key ONLY:
+  // announced_on (公告更新時間) and every other time column are plain columns,
+  // never part of any key (the cwa_station_weather row-bloat bug class).
+  // license_no is a plain index for the join to drugs.license_no.
+  drugShortages: `
+    CREATE TABLE IF NOT EXISTS drug_shortages (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      source_key VARCHAR(40) NOT NULL,
+      row_key CHAR(64) NOT NULL,
+      has_alternative TINYINT(1) NOT NULL,
+      license_no VARCHAR(50) NOT NULL,
+      name_zh VARCHAR(255) NOT NULL,
+      name_en VARCHAR(255) NULL,
+      announced_on DATE NULL,
+      supply_status TEXT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_drug_shortage_row (row_key),
+      KEY idx_drug_shortage_license (license_no),
+      KEY idx_drug_shortage_source (source_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestErrors: `
     CREATE TABLE IF NOT EXISTS ingest_errors (
       id BIGINT NOT NULL AUTO_INCREMENT,
