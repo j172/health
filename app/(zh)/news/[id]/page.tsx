@@ -325,10 +325,7 @@ export default async function NewsDetailPage({
                   {attachments.map((asset) => (
                     <li key={asset.id}>
                       <a
-                        href={appendOutboundUtm(asset.url, {
-                          medium: "news_attachment",
-                          campaign: "news_source",
-                        })}
+                        href={asset.url}
                         target="_blank"
                         rel="noreferrer noopener"
                         className="font-medium text-indigo-600 underline decoration-indigo-200 underline-offset-4 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"

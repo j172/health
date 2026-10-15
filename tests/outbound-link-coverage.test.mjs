@@ -276,6 +276,12 @@ const DYNAMIC_HREF_ALLOWLIST = [
       "FooterExternalLink / SocialIcon are pass-through wrappers; every caller already supplies an appendOutboundUtm()-wrapped value (civic-partner links from lib/server/tools/navModel.ts, social icons wrapped at their call sites)",
   },
   {
+    file: "app/(zh)/news/[id]/page.tsx",
+    expr: "asset.url",
+    reason:
+      "news attachment file downloads (government PDF/DOC etc.) are intentionally left without query parameters, to avoid old servers rejecting them or splitting the cache (owner decision on PR #664: attachments excluded, everything else tagged)",
+  },
+  {
     file: "app/(zh)/accessibility/page.tsx",
     expr: "ACCESSIBILITY_FEEDBACK_LINKS[1].url",
     reason: "a mailto: link; appending ?utm_* to a mailto: URL would corrupt it",
