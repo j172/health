@@ -42,7 +42,6 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   { kind: "tool", slug: "metro-alerts" },
   { kind: "tool", slug: "accessible-transit" },
   { kind: "tool", slug: "weather-alerts" },
-  { kind: "tool", slug: "earthquakes" },
   { kind: "tool", slug: "aqi" },
   { kind: "tool", slug: "uv" },
   { kind: "tool", slug: "disaster-map" },
@@ -97,7 +96,11 @@ export const TRANSLATED_TOOL_SLUGS = [
   "metro-alerts",
   "accessible-transit",
   "weather-alerts",
-  "earthquakes",
+  // "earthquakes" was retired by issue #590 (parent #583) — its real en/ja/
+  // ko content now lives at the "/tools/global-watch/earthquakes" item
+  // sub-route, registered as a `path` entry in TRANSLATED_STANDALONE_PATHS
+  // below instead (it was never a flat `/tools/<slug>` page to begin with
+  // once #588 shipped; this ticket just removed the old flat page too).
   "aqi",
   "uv",
   "disaster-map",

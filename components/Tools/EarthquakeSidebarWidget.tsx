@@ -114,7 +114,7 @@ export default function EarthquakeSidebarWidget({
 
       <div className="mt-4 border-t border-slate-100 pt-3 dark:border-slate-800">
         <Link
-          href="/tools/earthquakes"
+          href="/tools/global-watch/earthquakes"
           className="flex items-center justify-between text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
         >
           <span>查看全部地震動態</span>

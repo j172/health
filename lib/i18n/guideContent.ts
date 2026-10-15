@@ -45,7 +45,7 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "Watch weather alerts",
           why: "Typhoons, heavy rain, and similar disasters usually come with advance warning — continuously watching live weather alerts and rainfall information is the earliest first-hand information available for disaster preparation.",
         },
-        earthquakes: {
+        "global-watch": {
           caption: "Check the latest earthquake information",
           why: "Earthquakes can't be warned about in advance, but right after one strikes you can immediately check the epicenter, magnitude, depth, and any tsunami warning, helping you decide whether further evacuation or aftershock precautions are needed.",
         },
@@ -101,7 +101,7 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "気象警報を確認する",
           why: "台風や大雨などの災害には多くの場合事前の警告があります。リアルタイムの気象警報と降雨情報を継続的に確認することが、災害対応の準備で最初に得られる一次情報です。",
         },
-        earthquakes: {
+        "global-watch": {
           caption: "最新の地震情報を確認する",
           why: "地震は事前に警告できませんが、発生後すぐに震源地、規模、深さ、津波警報を確認することで、さらなる避難や余震への備えが必要かどうかを判断できます。",
         },
@@ -157,7 +157,7 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "기상 경보 확인하기",
           why: "태풍, 폭우 등의 재해는 대부분 사전 경고가 있습니다. 실시간 기상 경보와 강우 정보를 지속적으로 확인하는 것이 재해 대응 준비에서 가장 먼저 얻을 수 있는 1차 정보입니다.",
         },
-        earthquakes: {
+        "global-watch": {
           caption: "최신 지진 정보 조회하기",
           why: "지진은 사전에 경고할 수 없지만, 발생 직후 진앙, 규모, 깊이, 해일 경보를 즉시 확인하여 추가 대피나 여진 대비가 필요한지 판단하는 데 도움이 됩니다.",
         },

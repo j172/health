@@ -218,7 +218,7 @@ export default function HomeStatusBar() {
           ),
         )}
 
-        {renderSection(sections?.earthquake, "🌍", t("homePage.statusBar.earthquakeLabel", "最新地震"), "/tools/earthquakes", (quakes) =>
+        {renderSection(sections?.earthquake, "🌍", t("homePage.statusBar.earthquakeLabel", "最新地震"), "/tools/global-watch/earthquakes", (quakes) =>
           quakes.length > 0 ? (
             <span style={{ color: magnitudeColor(quakes[0].magnitude) }}>
               M{quakes[0].magnitude.toFixed(1)} {quakes[0].place_zh ?? quakes[0].place ?? t("homePage.statusBar.unknownLocation", "未知地點")}

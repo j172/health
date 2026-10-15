@@ -74,12 +74,17 @@ export default function EarthquakeContent({
   earthquakes: SignificantEarthquake[];
   /**
    * Issue #588 (parent #583): optional controlled-filter props, additive and
-   * fully backward-compatible — when omitted (every existing caller, e.g.
-   * app/(zh)/tools/earthquakes/page.tsx), this component manages its own
-   * `filterMinMag` state exactly as before. The global-watch earthquake
+   * fully backward-compatible — when omitted, this component manages its
+   * own `filterMinMag` state exactly as before. The global-watch earthquake
    * item (GlobeWatchEarthquakesItem.tsx) passes these to lift the M4/M6/M7
    * filter up so it drives the globe markers and this list together (AC:
    * "M4/M6/M7 篩選同時套用在地球標記與清單").
+   *
+   * Issue #590 (parent #583): this component used to live at
+   * app/(zh)/tools/earthquakes/EarthquakeContent.tsx and be shared by both
+   * that standalone page and this global-watch item; #590 retired the
+   * standalone page (301s to the global-watch item now), so this moved here
+   * as its one remaining caller.
    */
   filterMinMag?: number;
   onFilterChange?: (value: number) => void;

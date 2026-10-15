@@ -74,6 +74,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })),
   );
 
+  // issue #590 (parent #583): global-watch's item sub-routes (e.g.
+  // "/tools/global-watch/earthquakes") are real, independently indexable
+  // pages with their own canonical/hreflang, but — unlike every other
+  // /tools/<slug> page — they have no TOOL_CATALOG entry of their own (see
+  // translatedPages.ts's TRANSLATED_STANDALONE_PATHS doc comment on why),
+  // so `toolEntries` above never covers their zh URL, and
+  // `translatedLocaleEntries` above only ever adds their en/ja/ko siblings.
+  // Scoped to "/tools/global-watch/" specifically (not every path-kind
+  // TRANSLATED_STANDALONE_PATHS entry) since "/", "/nearby" etc. are
+  // deliberately left out of the sitemap.
+  const globalWatchItemEntries: MetadataRoute.Sitemap = TRANSLATED_CANONICAL_PATHS.filter((canonicalPath) =>
+    canonicalPath.startsWith("/tools/global-watch/"),
+  ).map((canonicalPath) => ({
+    url: `${baseUrl}${canonicalPath}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+    alternates: { languages: buildHreflangAlternates(canonicalPath, baseUrl) ?? undefined },
+  }));
+
   return [
     { url: baseUrl, changeFrequency: "daily", priority: 1 },
     { url: `${baseUrl}/news`, changeFrequency: "hourly", priority: 0.9 },
@@ -81,6 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/llm-info`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
     ...toolEntries,
+    ...globalWatchItemEntries,
     ...translatedLocaleEntries,
     ...sourceEntries,
     ...newsEntries,

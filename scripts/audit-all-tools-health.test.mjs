@@ -38,9 +38,11 @@ test("Site-wide tools health: every tool in TOOL_CATALOG has valid metadata and 
   // 82 baseline + #601 childcare-centers + #587 global-watch + #604
   // child-subsidies + #612 postpartum-care + #613 early-intervention + #603
   // social-welfare-centers + #615 ltc-benefits, all merged independently on
-  // 2026-10-14/15, minus #591's retirement of travel-epidemic-alerts (301'd
-  // to global-watch).
-  assert.equal(TOOL_CATALOG.length, 88, `Expected exactly 88 tools, got ${TOOL_CATALOG.length}`);
+  // 2026-10-14/15, minus #590's retirement of "earthquakes" and #591's
+  // retirement of "travel-epidemic-alerts" (both 301'd to global-watch's
+  // own item sub-routes) — verified directly against the resolved
+  // catalog.ts.
+  assert.equal(TOOL_CATALOG.length, 87, `Expected exactly 87 tools, got ${TOOL_CATALOG.length}`);
 
   for (const tool of TOOL_CATALOG) {
     const pagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", tool.slug, "page.tsx");

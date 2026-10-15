@@ -92,7 +92,6 @@ const nextConfig = {
           "metro-alerts",
           "accessible-transit",
           "weather-alerts",
-          "earthquakes",
           "aqi",
           "uv",
           "disaster-map",
@@ -259,6 +258,23 @@ const nextConfig = {
         destination: "/tools/long-term-care?type=hakka-bogong",
         permanent: true,
       },
+      // issue #590 (parent #583) — "/tools/earthquakes" is retired in favor
+      // of its global-watch item sub-route, "/tools/global-watch/earthquakes"
+      // (shipped by issue #588). Unlike the ?tab=/?type= retirements above,
+      // earthquakes was itself a TRANSLATED_TOOL_SLUGS entry (now removed
+      // from that list) with real en/ja/ko content, so its 3 locale-prefixed
+      // siblings need their own 301s too — straight to the item sub-route's
+      // own real translated content (also issue #588), not back to zh.
+      {
+        source: "/tools/earthquakes",
+        destination: "/tools/global-watch/earthquakes",
+        permanent: true,
+      },
+      ...["en", "ja", "ko"].map((locale) => ({
+        source: `/${locale}/tools/earthquakes`,
+        destination: `/${locale}/tools/global-watch/earthquakes`,
+        permanent: true,
+      })),
       // issue #591 (parent #583, global-watch merge) — "/tools/travel-epidemic-alerts"
       // (國際旅遊疫情與即時情報地圖) is retired in favor of the 國際疫情 item that
       // #589 already shipped inside global-watch (which reuses this same page's

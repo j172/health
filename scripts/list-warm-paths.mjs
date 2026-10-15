@@ -27,17 +27,49 @@ const staticRouteDirs = (dir) => {
     .map((entry) => entry.name);
 };
 
+// issue #590 (parent #583): a directory like "global-watch" can host nested
+// item sub-routes ("global-watch/earthquakes") one level deeper than
+// staticRouteDirs looks — the retired "/tools/earthquakes" flat page's real
+// content moved to exactly this shape, and without this, nothing ever warms
+// it (the "empty build-time prerender" bug this whole script exists to
+// prevent, on the DB-backed page that replaced the one staticRouteDirs used
+// to warm directly). Deliberately independent of whether the parent
+// directory also has its own page.tsx (the zh side's "global-watch" does —
+// the base shell page — while the locale side's deliberately doesn't, per
+// tests/i18n-routing-485.test.mjs's guardrail); either way, both the
+// parent's own page (if any, via staticRouteDirs) and its nested items (via
+// this) need warming, so this never skips a directory just because
+// staticRouteDirs already covered it too.
+const nestedStaticRouteDirs = (dir) => {
+  if (!fs.existsSync(dir)) return [];
+  const nested = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || !/^[a-z0-9-]+$/.test(entry.name)) continue;
+    const subDir = path.join(dir, entry.name);
+    for (const item of staticRouteDirs(subDir)) {
+      nested.push(`${entry.name}/${item}`);
+    }
+  }
+  return nested;
+};
+
 export function listWarmPaths(repoRoot) {
   const catalog = fs.readFileSync(path.join(repoRoot, "lib", "server", "tools", "catalog.ts"), "utf8");
   const catalogSlugs = [...catalog.matchAll(/slug: "([a-z0-9-]+)"/g)].map((m) => m[1]);
 
-  const localeToolDirs = staticRouteDirs(path.join(repoRoot, "app", "[locale]", "tools"));
+  const zhToolsDir = path.join(repoRoot, "app", "(zh)", "tools");
+  const localeToolsDir = path.join(repoRoot, "app", "[locale]", "tools");
+  const localeToolDirs = staticRouteDirs(localeToolsDir);
+  const zhNestedToolDirs = nestedStaticRouteDirs(zhToolsDir);
+  const localeNestedToolDirs = nestedStaticRouteDirs(localeToolsDir);
 
   const paths = [
     ...ENTRY_PATHS,
     ...PATH_LOCALES.map((locale) => `/${locale}`),
     ...catalogSlugs.map((slug) => `/tools/${slug}`),
+    ...zhNestedToolDirs.map((dir) => `/tools/${dir}`),
     ...PATH_LOCALES.flatMap((locale) => localeToolDirs.map((dir) => `/${locale}/tools/${dir}`)),
+    ...PATH_LOCALES.flatMap((locale) => localeNestedToolDirs.map((dir) => `/${locale}/tools/${dir}`)),
   ];
   return [...new Set(paths)];
 }

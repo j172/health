@@ -64,6 +64,16 @@ const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
 // This ticket's own batch of 11 slugs (verified against lib/server/tools/catalog.ts,
 // not guessed from the issue's Chinese names — "clinics" not "medical-facilities",
 // "public-toilets" not "restrooms", etc.)
+//
+// "earthquakes" was one of these 11 originally, but issue #590 (parent #583)
+// retired that standalone tool/page in favor of a global-watch item
+// sub-route ("/tools/global-watch/earthquakes") — removed from TOOL_CATALOG,
+// TRANSLATED_TOOL_SLUGS, and app/[locale]/tools/earthquakes/ entirely, so
+// every assertion below (which all iterate this list) would otherwise fail
+// against a slug this repo no longer has. Dropped here rather than kept as
+// a "still batch-486, but retired" exception, since nothing downstream
+// treats batch membership and current-existence as separable; #590's own
+// test file covers the replacement path's redirect/structure instead.
 const BATCH_486_SLUGS = [
   "clinics",
   "pharmacies",
@@ -72,7 +82,6 @@ const BATCH_486_SLUGS = [
   "metro-alerts",
   "accessible-transit",
   "weather-alerts",
-  "earthquakes",
   "aqi",
   "uv",
   "disaster-map",
