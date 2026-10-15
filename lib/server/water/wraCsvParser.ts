@@ -11,6 +11,24 @@
  * parsing behavior (BOM stripping, quoted-cell handling, CRLF newlines).
  */
 export function parseWraCsv(text: string): Record<string, string>[] {
+  const nonEmptyRows = tokenizeWraCsv(text).filter((r) => r.length > 1 || (r[0] ?? "").trim() !== "");
+  if (nonEmptyRows.length === 0) return [];
+  const headers = nonEmptyRows[0].map((h) => h.trim());
+  return nonEmptyRows.slice(1).map((cells) => {
+    const record: Record<string, string> = {};
+    headers.forEach((h, i) => (record[h] = (cells[i] ?? "").trim()));
+    return record;
+  });
+}
+
+/**
+ * The raw tokenizer behind `parseWraCsv`: BOM stripped, quoted cells and CRLF
+ * handled, every row returned as an array of untrimmed cells (blank lines
+ * included). For files that are not a plain header-then-records table — e.g.
+ * the 淨水場 quality export (data.gov.tw 6308), which has several header rows
+ * and footer notes — so callers can locate their own header rows.
+ */
+export function tokenizeWraCsv(text: string): string[][] {
   const cleaned = text.replace(/^﻿/, "");
   const rows: string[][] = [];
   let row: string[] = [];
@@ -45,12 +63,5 @@ export function parseWraCsv(text: string): Record<string, string>[] {
     row.push(cell);
     rows.push(row);
   }
-  const nonEmptyRows = rows.filter((r) => r.length > 1 || (r[0] ?? "").trim() !== "");
-  if (nonEmptyRows.length === 0) return [];
-  const headers = nonEmptyRows[0].map((h) => h.trim());
-  return nonEmptyRows.slice(1).map((cells) => {
-    const record: Record<string, string> = {};
-    headers.forEach((h, i) => (record[h] = (cells[i] ?? "").trim()));
-    return record;
-  });
+  return rows;
 }
