@@ -80,6 +80,11 @@ const targets = {
   "www.tgos.tw 5958 ZIP (B-9)":
     "https://www.tgos.tw/tgos/VirtualDir/Product/9927eb8a-efed-40c0-8bc4-83121ad6834a/1150930.zip",
 
+  // B-16: 臺北 路線 136515 (558 KB CSV) — the one B-16 source never probed; the first
+  // production sync hung for 12+ minutes with zero Taipei rows written.
+  "data.taipei 136515 routes (B-16)":
+    "https://data.taipei/api/dataset/6bb3304b-4f46-4bb0-8cd1-60c66dcd1cae/resource/a6e90031-7ec4-4089-afb5-361a4efe7202/download",
+
   // B-16 / B-17: 新北 路線 125664 (3.6 MB CSV, daily import) + 即時位置 122972.
   "data.ntpc.gov.tw 125664 routes (B-16)": {
     url: "https://data.ntpc.gov.tw/api/datasets/edc3ad26-8ae7-4916-a00b-bc6048d19bf8/csv/file",
