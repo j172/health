@@ -133,7 +133,8 @@
     "emergency-hotlines": "대만 응급 비상연락처 다이얼 목록",
     "anti-fraud": "사기 사이트 조회 (차단된 사기 도메인 검색)",
     "emergency-supplies": "재난 대비 물품 계산기 (비상 배낭·가정 비축)",
-    "senior-friendly": "경로교통카드 및 시니어 여행 지도 (전국 22개 현시)"
+    "senior-friendly": "경로교통카드 및 시니어 여행 지도 (전국 22개 현시)",
+    "social-welfare-centers": "사회복지센터 찾기 및 사회복지사 상담 안내"
   },
   "categories": {
     "gov": "정부 및 공공기관",

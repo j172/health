@@ -133,7 +133,8 @@
     "emergency-hotlines": "全台湾緊急連絡先ダイヤル一覧",
     "anti-fraud": "詐欺サイト検索（停止解析済み詐欺ドメイン照会）",
     "emergency-supplies": "防災備蓄計算機（避難セット・家庭備蓄）",
-    "senior-friendly": "敬老優待交通カード・シニア旅行マップ（全22県市）"
+    "senior-friendly": "敬老優待交通カード・シニア旅行マップ（全22県市）",
+    "social-welfare-centers": "社会福祉センター検索・ケースワーカー相談ガイド"
   },
   "categories": {
     "gov": "政府機関・公的機関",
