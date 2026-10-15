@@ -6,6 +6,17 @@
  * `data/government-hotlines.json` → `EmergencyHotlinesContent` already uses.
  */
 
+import type { SourcedFact, WelfareStatus as SharedWelfareStatus } from "@/lib/server/subsidies/types";
+
+/**
+ * Re-exported from the shared `lib/server/subsidies/types` module (issue
+ * #615 factored this out once a second domain — LTC benefits — needed the
+ * exact same "general/midLowIncome/lowIncome" concept). Kept under this
+ * name/path so every existing import of `./types`' `WelfareStatus` keeps
+ * working unchanged.
+ */
+export type WelfareStatus = SharedWelfareStatus;
+
 /**
  * How a child is currently being cared for / educated. Drives which
  * `ChildSubsidyRule`s a given situation can match (via `careTypes`).
@@ -53,10 +64,6 @@ export const ALL_CARE_TYPES: CareType[] = [
  * a 3rd-or-later child, so this is a required input, not an add-on. */
 export type Parity = "first" | "second" | "thirdPlus";
 
-/** Household welfare/means-tested status. "general" gets no bonus/offset;
- * "midLowIncome"/"lowIncome" map to `welfareStatusBonus`. */
-export type WelfareStatus = "general" | "midLowIncome" | "lowIncome";
-
 export type ChildSubsidyStatus = "in-effect" | "announced";
 
 export interface ChildSubsidyAgeRange {
@@ -90,7 +97,16 @@ export interface ChildSubsidyWelfareBonus {
   lowIncome: number | null;
 }
 
-export interface ChildSubsidyRule {
+/**
+ * `officialUrl`/`legalBasis`/`lastVerified`/`notes` come from the shared
+ * `SourcedFact` (issue #615 factored this out of what used to be 4 fields
+ * retyped here). "ISO 8601 date (`YYYY-MM-DD`) this entry's amounts/
+ * eligibility were last confirmed against an official source. Must be
+ * within 180 days of 'now'" — see childSubsidiesData.test.mjs's freshness
+ * tripwire (now backed by lib/server/subsidies/testSupport.mjs's
+ * `assertFreshness`).
+ */
+export interface ChildSubsidyRule extends SourcedFact {
   id: string;
   name: string;
   agency: string;
@@ -112,13 +128,6 @@ export interface ChildSubsidyRule {
    * `matchChildSubsidies` never surfaces a stray "announced" row if one
    * ever ends up in the input array by mistake. */
   announcedDate?: string;
-  officialUrl: string;
-  legalBasis?: string;
-  /** ISO 8601 date (`YYYY-MM-DD`) this entry's amounts/eligibility were
-   * last confirmed against an official source. Must be within 180 days of
-   * "now" — see childSubsidiesData.test.mjs's freshness tripwire. */
-  lastVerified: string;
-  notes?: string;
 }
 
 /**

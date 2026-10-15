@@ -1,0 +1,77 @@
+{
+  "careService": {
+    "monthlyAmountByLevel": {
+      "2": 10020,
+      "3": 15460,
+      "4": 18580,
+      "5": 24100,
+      "6": 28070,
+      "7": 32090,
+      "8": 36180
+    },
+    "legalBasis": "《長期照顧服務申請及給付辦法》第7條、第10條、附表二（照顧及專業服務，適用B、C碼）",
+    "officialUrl": "https://laws.gov.taipei/law/File/0000398330",
+    "lastVerified": "2026-10-15",
+    "notes": "附表二修正規定：第二級10,020元／第三級15,460元／第四級18,580元／第五級24,100元／第六級28,070元／第七級32,090元／第八級36,180元（每月）。評估結果第一級為身體或心智未失能者，不納入給付範圍。"
+  },
+  "transport": {
+    "monthlyAmountByRegion": {
+      "region1": 1680,
+      "region2": 1840,
+      "region3": 2000,
+      "region4": 2400
+    },
+    "regionExamples": {
+      "region1": "第一區（如臺北市、基隆市、新竹市、嘉義市）",
+      "region2": "第二區（如新北市、桃園市、臺中市、臺南市）",
+      "region3": "第三區（如高雄市、屏東縣、南投縣）",
+      "region4": "第四區／偏遠地區（如臺東縣、花蓮縣、澎湖縣、金門縣、連江縣，及本島48個偏遠鄉鎮市區）"
+    },
+    "legalBasis": "《長期照顧服務申請及給付辦法》第7條、附表二（交通接送服務，適用D碼）、附表三（交通接送服務給付分區表）",
+    "officialUrl": "https://laws.gov.taipei/law/File/0000398334",
+    "lastVerified": "2026-10-15",
+    "notes": "各長照需要等級（第2–8級）的交通接送月額度相同，差異只來自分區：第一區1,680元／第二區1,840元／第三區2,000元／第四區2,400元（每月）。分區依附表三以縣市幅員（未達500平方公里／500–2,500平方公里／2,500平方公里以上）及偏遠縣市、48個偏遠鄉鎮市區認定，本欄僅列代表性縣市，完整名冊請查閱附表三。"
+  },
+  "assistiveDevice": {
+    "triennialAmount": {
+      "groupOne": 40000,
+      "groupTwo": 60000
+    },
+    "homeModificationCapWithinGroupTwo": 20000,
+    "groupTwoEffectiveDate": "2026-07-01",
+    "legalBasis": "《長期照顧服務申請及給付辦法》第7條、第9條、第10條、附表二備註二、三（輔具及居家無障礙環境改善服務，適用E、F碼）",
+    "officialUrl": "https://laws.gov.taipei/law/File/0000398330",
+    "lastVerified": "2026-10-15",
+    "notes": "各長照需要等級（第2–8級）的三年額度相同：第一組（傳統輔具及居家無障礙環境改善服務項目）4萬元；第二組（含智慧科技輔具租賃，自115年7月1日施行）6萬元，兩組擇一申請，115年6月30日前已獲第一組給付者須滿三年後才能改申請第二組。第二組中，居家無障礙環境改善服務於三年期間另以2萬元為限。"
+  },
+  "respite": {
+    "annualAmountByLevel": {
+      "2": 32340,
+      "3": 32340,
+      "4": 32340,
+      "5": 32340,
+      "6": 32340,
+      "7": 48510,
+      "8": 48510
+    },
+    "legalBasis": "《長期照顧服務申請及給付辦法》第7條、附表二（家庭照顧者支持服務之喘息服務，適用G碼）",
+    "officialUrl": "https://laws.gov.taipei/law/File/0000398330",
+    "lastVerified": "2026-10-15",
+    "notes": "第二至六級每年32,340元；第七、八級每年48,510元。"
+  },
+  "copayRates": {
+    "careService": { "lowIncome": 0, "midLowIncome": 0, "general": 16 },
+    "transportByRegion": {
+      "region1": { "lowIncome": 0, "midLowIncome": 0, "general": 30 },
+      "region2": { "lowIncome": 0, "midLowIncome": 0, "general": 27 },
+      "region3": { "lowIncome": 0, "midLowIncome": 0, "general": 25 },
+      "region4": { "lowIncome": 0, "midLowIncome": 0, "general": 21 }
+    },
+    "assistiveDevice": { "lowIncome": 0, "midLowIncome": 0, "general": 30 },
+    "respite": { "lowIncome": 0, "midLowIncome": 0, "general": 16 },
+    "legalBasis": "《長期照顧服務申請及給付辦法》第14條、附表五（部分負擔比率）",
+    "officialUrl": "https://laws.gov.taipei/law/LawSearch/LawArticleContent/FL098057",
+    "lastVerified": "2026-10-15",
+    "notes": "辦法第14條將部分負擔分三類：「長照第一類」為列冊之低收入戶、中低收入戶，或符合中低收入老人生活津貼發給辦法第5條第1項第1款資格者，比率0%；「長照第二類」為不屬第一類但符合同辦法第5條第1項第2款，或身心障礙者生活補助資格者，交通接送9–10%、其餘5%；「長照第三類」為其餘對象（一般戶），交通接送21–30%、其餘16%。本頁為配合「一般戶／中低收入戶／低收入戶」三種常見福利身分呈現，將「低收入戶」與「中低收入戶」皆對應到比率較低的「長照第一類」（兩者在本辦法下部分負擔比率相同，皆為0%）；比率5–10%的「長照第二類」是本頁未單獨呈現的第四種情形，不屬於這裡的三個選項，如不確定自己實際屬於哪一類，請洽1966長照專線或當地長期照顧管理中心確認。部分負擔費用以小數點後無條件捨去計算。"
+  }
+}
