@@ -23,6 +23,15 @@
 #   Import it by hand from a residential/office network with
 #   scripts/import-nhplatform-nursing-institutions.mjs, every ~6 months. It ships
 #   its own WGS84 coordinates, so it needs no geocoding backfill.
+# - The NPA police-station list (data.gov.tw 5958, issue #677; facility_type
+#   police_station, shown in /nearby's 「更多類型」). Its ZIP is on www.tgos.tw,
+#   which answers HTTP 403 to BOTH the production host and GitHub Actions
+#   runners (IP-range block — every header variant is 200 from a home
+#   network), so it is one more manual import: run
+#   scripts/import-police-stations-5958.mjs by hand from a residential/office
+#   network every ~6 months (`--dry-run` to preview, `--zip <file>` if the
+#   download must be done in a browser). The rows ship their own coordinates
+#   (TWD97 -> WGS84), so no geocoding backfill is involved.
 # - The TFDA food nutrition/operator databases — those are large enough
 #   (226k+ / 825k+ rows) that fetch/unzip/parse runs directly as separate
 #   steps in the six-monthly-sync.yml workflow (scripts/import-tfda-food-

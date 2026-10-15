@@ -33,19 +33,38 @@ export function isWithinTaiwanBounds(lat: number, lng: number): boolean {
   );
 }
 
+export interface Twd97Options {
+  /**
+   * Central meridian of the TM2 grid, in degrees east. Defaults to 121 (the
+   * mainland zone, and what every existing caller relies on). 119 is the
+   * 澎湖／金門／馬祖 zone (false easting is still 250000 m).
+   *
+   * Issue #677 (dataset 5958 派出所): the 5958 release 1150930 publishes its
+   * 44 offshore-island rows (澎湖 28 / 金門 9 / 連江 7) in the *121°E* grid
+   * with the easting extended past the west coast (澎湖 X≈1e5, 金門 X is even
+   * negative), not in the 119°E zone — verified by converting every row both
+   * ways against its own address. The 119°E option exists because a publisher
+   * may legitimately switch those rows to the island zone one day; see
+   * policeStations5958.ts for the county-validated zone selection.
+   */
+  centralMeridianDeg?: number;
+}
+
 /**
- * Converts one TWD97 TM2 (121°E zone) point to WGS84. Returns `null` (rather
- * than throwing) when either input isn't a finite number or the result
- * falls outside Taiwan's bounds — callers should skip the row and leave its
- * coordinates for the usual address-geocode backfill rather than storing a
- * clearly-wrong point.
+ * Converts one TWD97 TM2 point (121°E zone unless `options.centralMeridianDeg`
+ * says otherwise) to WGS84. Returns `null` (rather than throwing) when either
+ * input isn't a finite number or the result falls outside Taiwan's bounds —
+ * callers should skip the row and leave its coordinates for the usual
+ * address-geocode backfill rather than storing a clearly-wrong point.
  */
-export function twd97ToWgs84(x: number, y: number): Wgs84Point | null {
+export function twd97ToWgs84(x: number, y: number, options: Twd97Options = {}): Wgs84Point | null {
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  const centralMeridianDeg = options.centralMeridianDeg ?? 121;
+  if (!Number.isFinite(centralMeridianDeg)) return null;
 
   const a = 6378137.0;
   const b = 6356752.314245;
-  const lng0 = (121 * Math.PI) / 180;
+  const lng0 = (centralMeridianDeg * Math.PI) / 180;
   const k0 = 0.9999;
   const dx = 250000;
   const dy = 0;

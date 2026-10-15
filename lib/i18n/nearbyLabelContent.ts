@@ -140,6 +140,12 @@ const NEARBY_LABEL_I18N: Record<string, Record<PathLocale, string>> = {
     ja: "婦女・児童安全警戒地点検索",
     ko: "여성·아동 안전 경보 지점 조회",
   },
+  // Issue #677: nearby-only type (no /tools page of its own) — see registry.ts NEARBY_POLICE_STATION_TYPE.
+  "police-stations": {
+    en: "Police Stations & Precincts",
+    ja: "警察署・交番・駐在所",
+    ko: "경찰서·파출소",
+  },
   bookstores: {
     en: "Independent Bookstores",
     ja: "実店舗書店検索",

@@ -304,6 +304,14 @@ const SOURCES: FacilitySourceEntry[] = [
 // SSH loopback (scripts/gha-egress-probe-host.mjs) timed out after 20s —
 // both legs unreachable, not a code bug or a transient blip. Run these
 // three scripts by hand instead, from a residential/office network.
+//
+// police_station_5958 (issue #677, data.gov.tw 5958 派出所) is likewise NOT
+// registered here: its ZIP is on www.tgos.tw, which returns HTTP 403 to both
+// this host and GitHub runners (egress-probe run 38764893673, 2026-10-15) —
+// an IP-range block (every header variant is 200 from a home network), so no
+// runner relay either. Run scripts/import-police-stations-5958.mjs by hand
+// from a residential/office network; the parser is
+// sources/policeStations5958.ts.
 
 export const FACILITY_SOURCE_KEYS: readonly string[] = SOURCES.map((s) => s.key);
 

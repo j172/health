@@ -918,6 +918,8 @@
     "defaultSectionHeading": "8種類の緊急ポイント（最寄り3件）",
     "queryingLoading": "検索中…",
     "moreTypesToggle": "その他の種類",
+    "dataAsOfTemplate": "データ日付：{date}",
+    "dataSourceTemplate": "{source}の公開データに基づく（当サイトによる判定ではありません）",
     "footerPrefix": "各種類は最寄り3件のみ表示します。完全なリストと地図は各",
     "footerLinkText": "施設検索ツール",
     "footerSuffix": "ページでご確認ください。"

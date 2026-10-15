@@ -263,3 +263,8 @@ jobs:
       # decision D7: no relay). Run scripts/import-nhplatform-nursing-institutions.mjs
       # by hand from a residential/office network every ~6 months; the full
       # manual-import list lives in docs/domains/10-scheduling-sync-ci.md §1.3.
+      #
+      # Also NOT run here (issue #677): scripts/import-police-stations-5958.mjs
+      # (data.gov.tw 5958 派出所). Its ZIP is on www.tgos.tw, which returns 403 to
+      # this runner and to the production host alike (egress-probe run
+      # 38764893673) — a manual, residential-network import every ~6 months.

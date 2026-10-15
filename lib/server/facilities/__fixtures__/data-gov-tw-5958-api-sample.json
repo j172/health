@@ -1,0 +1,35 @@
+{
+  "help": "",
+  "success": true,
+  "result": {
+    "categoryService": "E00",
+    "categoryDataset": "A",
+    "datasetId": 5958,
+    "title": "各縣(市)警察(分)局暨所屬分駐(派出)所地址資料",
+    "description": "全國各警察局、警察分局、分駐所及派出所之所在地址及聯絡電話等資訊",
+    "type": "api",
+    "license": "1",
+    "cost": "free",
+    "updateFrequency": { "regularupdate": "2" },
+    "publishedDate": "2014-03-13",
+    "modifiedDate": "2026-10-01 23:32:05",
+    "distribution": [
+      {
+        "resourceDescription": "各縣(市)警察(分)局暨所屬分駐(派出)所地址資料",
+        "resourceField": [
+          { "name": "中文單位名稱", "description": "" },
+          { "name": "英文單位名稱", "description": "" },
+          { "name": "郵遞區號", "description": "" },
+          { "name": "地址", "description": "" },
+          { "name": "電話", "description": "" },
+          { "name": "POINT_X", "description": "" },
+          { "name": "POINT_Y", "description": "" }
+        ],
+        "resourceFormat": "CSV",
+        "resourceCharacterEncoding": "UTF-8",
+        "resourceDownloadUrl": "https:\/\/www.tgos.tw\/tgos\/VirtualDir\/Product\/9927eb8a-efed-40c0-8bc4-83121ad6834a\/1150930.zip",
+        "resourceAmount": 0
+      }
+    ]
+  }
+}

@@ -43,6 +43,7 @@
 | `scripts/import-mohw-elder-welfare.mjs` | opendata.mohw.gov.tw | `elder_welfare` |
 | `scripts/import-mohw-social-welfare-centers.mjs`（160903） | opendata.mohw.gov.tw | `social_welfare_center` |
 | `scripts/import-nhplatform-nursing-institutions.mjs`（115950，#678） | nhplatform.mohw.gov.tw 全國開業護理機構清冊 | `postpartum_care`（`nhplatform_115950_postpartum`）＋ `long_term_care`（`nhplatform_115950_ltc`，一般護理之家／居家護理所） |
+| `scripts/import-police-stations-5958.mjs`（5958，#677） | www.tgos.tw 警政署派出所 ZIP（正式主機與 runner 皆 403；不是 mohw 家族，處置相同） | `police_station`（`police_station_5958`；`/nearby`「更多類型」→ 派出所／警察局） |
 
 115950 的操作步驟（在 repo 根目錄、住宅／辦公室網路）：
 
@@ -51,6 +52,13 @@
 3. 若住宅網路也下載不到，可用瀏覽器從 <https://data.gov.tw/dataset/115950> 另存 CSV，再加 `--file <路徑>`。
 4. 匯入只做 upsert，**不會刪除**已從名冊消失（歇業）的機構；舊列會留著直到另行清理。
 5. `/tools/postpartum-care` 與 `/tools/long-term-care` 的「一般護理之家／居家護理所」分類會顯示「資料日期」（該來源在本站最近一次匯入的日期）；表內沒有任何一列時顯示「資料暫缺」，不會假裝附近沒有機構（`lib/format/facilityDataStatus.ts`）。
+
+5958 派出所的操作步驟（#677；`www.tgos.tw` 對主機與 runner 都回 403，從住宅網路各種 User-Agent／Referer 都是 200，所以是 IP 範圍封鎖而非標頭問題）：
+
+1. 先試跑：`node scripts/import-police-stations-5958.mjs --dry-run`（先打 `data.gov.tw` 解析 API 取最新 ZIP 網址——檔名帶發布日，每次都會變——再下載、解析並印出筆數、資料日期與澎湖／金門／連江各 3 筆座標；不需密鑰、不送出任何東西）。預期 1,687 筆、座標 1,687 筆；筆數低於 1,000 或缺座標超過 2% 會拒絕繼續。
+2. 正式匯入：`ADMIN_SECRET=<密鑰> node scripts/import-police-stations-5958.mjs`（密鑰只從環境變數讀、不印出、不落地）。預設一次 POST 到 `/api/admin/facilities-import`（2,000 筆一批，連續 502／504 由 `scripts/lib/facilities-import-batches.mjs` 指數退避重試），且**在第一批先刪掉既有的 `police_station` 列**，避免改名或裁撤的單位殘留（檔案沒有穩定 ID，身分是「單位名稱＋地址」）；只想 upsert 不刪舊列時加 `--no-clean`。匯入後會自動讀公開 API（`/api/facilities?type=police_station`，附時間戳避開邊緣快取）核對 production 的筆數，低於剛匯入的筆數會印 `WARNING` 並以結束碼 2 結束（`--no-verify` 可略過）。
+3. 若住宅網路也被擋，可用瀏覽器從 <https://data.gov.tw/dataset/5958> 另存 ZIP，再加 `--zip <路徑>`。
+4. 每列的 `extra_json.dataAsOf` 是檔名裡的發布日（如 `1150930` → 2026-09-30），`/nearby` 的派出所卡片會顯示「資料日期」與資料來源。
 
 ---
 

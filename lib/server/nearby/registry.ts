@@ -26,7 +26,10 @@ export interface NearbyTypeDef {
   emoji: string;
   /** One-line description of the data source, reused verbatim by the llms.txt/markdown generator. */
   description: string;
-  /** For "more types" entries: the existing /tools/<slug> page with the full list + map + keyword search. */
+  /**
+   * For "more types" entries: the existing /tools/<slug> page with the full list + map + keyword search
+   * (for "police-stations", which has no tool page of its own: the related child-safety-spots page).
+   */
   toolSlug?: string;
 }
 
@@ -74,22 +77,46 @@ export const NEARBY_SHELTER_TYPE: NearbyTypeDef = {
 export const NEARBY_DEFAULT_TYPES: NearbyTypeDef[] = [...defaultFacilityTypes, NEARBY_ER_TYPE, NEARBY_SHELTER_TYPE];
 
 /**
- * "更多類型" (issue #466 acceptance criterion 3) expansion candidates: every
- * other /tools facility-search page not already one of the 8 defaults above.
- * Each is lazy-loaded one at a time when the user actually expands to see it
- * — see components/Nearby/NearbyContent.tsx — never prefetched in bulk.
+ * 派出所／警察局 (issue #677, track B B-9; data.gov.tw 5958, imported by hand from a
+ * residential network — see scripts/import-police-stations-5958.mjs). A "更多類型"
+ * type only: it has no /tools page of its own (the issue adds a nearby type, not a
+ * tool), so, like "er"/"shelter", it is declared here instead of derived from
+ * `facilitySearchConfigs`. `toolSlug` points at the closest existing tool page —
+ * 婦幼安全警示地點, whose rows each name a 管轄 police branch — and that page links
+ * back to "/nearby" (app/(zh)/tools/child-safety-spots/page.tsx).
  */
-export const NEARBY_MORE_TYPES: NearbyTypeDef[] = Object.entries(facilitySearchConfigs)
-  .filter(([slug]) => !(DEFAULT_FACILITY_SLUGS as readonly string[]).includes(slug))
-  .map(([slug, cfg]) => ({
-    key: slug,
-    kind: "facility" as const,
-    facilityType: cfg.facilityType,
-    label: cfg.title,
-    emoji: cfg.emoji,
-    description: cfg.description,
-    toolSlug: slug,
-  }));
+export const NEARBY_POLICE_STATION_TYPE: NearbyTypeDef = {
+  key: "police-stations",
+  kind: "facility",
+  facilityType: "police_station",
+  label: "派出所／警察局",
+  emoji: "🚓",
+  description:
+    "查詢離您最近的警察局、分局、分駐所與派出所的地址與電話。依內政部警政署公開資料（data.gov.tw 5958）整理，僅供參考；緊急時請直接撥打 110。",
+  toolSlug: "child-safety-spots",
+};
+
+/**
+ * "更多類型" (issue #466 acceptance criterion 3) expansion candidates: every
+ * other /tools facility-search page not already one of the 8 defaults above,
+ * plus the police-station type (issue #677). Each is lazy-loaded one at a time
+ * when the user actually expands to see it — see components/Nearby/
+ * NearbyContent.tsx — never prefetched in bulk.
+ */
+export const NEARBY_MORE_TYPES: NearbyTypeDef[] = [
+  ...Object.entries(facilitySearchConfigs)
+    .filter(([slug]) => !(DEFAULT_FACILITY_SLUGS as readonly string[]).includes(slug))
+    .map(([slug, cfg]) => ({
+      key: slug,
+      kind: "facility" as const,
+      facilityType: cfg.facilityType,
+      label: cfg.title,
+      emoji: cfg.emoji,
+      description: cfg.description,
+      toolSlug: slug,
+    })),
+  NEARBY_POLICE_STATION_TYPE,
+];
 
 const ALL_TYPES_BY_KEY: Map<string, NearbyTypeDef> = new Map(
   [...NEARBY_DEFAULT_TYPES, ...NEARBY_MORE_TYPES].map((def) => [def.key, def]),

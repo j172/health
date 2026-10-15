@@ -79,6 +79,12 @@ function TypeResultCard({
   // Chinese fallback on a translated locale.
   const displayLabel = isPathLocale(locale) ? getLocalizedNearbyLabel(result.key, locale, result.label) : result.label;
 
+  // Issue #677: a facility type imported by hand (派出所) carries its release date in
+  // extra.dataAsOf; show it, and whose open data it is, under the list.
+  const withDataDate = result.status === "ok" ? result.items.find((item) => typeof item.extra?.dataAsOf === "string") : undefined;
+  const dataAsOf = withDataDate ? String(withDataDate.extra?.dataAsOf) : null;
+  const dataOrg = typeof withDataDate?.extra?.dataOrg === "string" ? withDataDate.extra.dataOrg : null;
+
   return (
     <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs dark:border-slate-700 dark:bg-slate-900">
       <h3 className="mb-2 flex items-center gap-1.5 text-base font-bold text-neutral-800 dark:text-slate-100">
@@ -113,6 +119,15 @@ function TypeResultCard({
           ))}
         </ul>
       )}
+
+      {dataAsOf ? (
+        <p className="mt-3 text-xs text-neutral-500 dark:text-slate-400">
+          {t("nearbyPage.dataAsOfTemplate", "資料日期：{date}").replace("{date}", dataAsOf)}
+          {dataOrg
+            ? ` · ${t("nearbyPage.dataSourceTemplate", "依{source}公開資料，非本站判定").replace("{source}", dataOrg)}`
+            : ""}
+        </p>
+      ) : null}
     </div>
   );
 }

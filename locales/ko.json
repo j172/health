@@ -918,6 +918,8 @@
     "defaultSectionHeading": "8가지 기본 긴급 지점 유형(가장 가까운 3곳)",
     "queryingLoading": "조회 중…",
     "moreTypesToggle": "더 많은 유형",
+    "dataAsOfTemplate": "데이터 기준일: {date}",
+    "dataSourceTemplate": "{source} 공개 데이터 기준이며 본 사이트의 판단이 아닙니다",
     "footerPrefix": "각 유형은 가장 가까운 3곳만 표시합니다. 전체 목록과 지도는 각",
     "footerLinkText": "시설 조회 도구",
     "footerSuffix": "페이지에서 확인하세요."
