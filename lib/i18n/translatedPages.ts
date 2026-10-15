@@ -52,6 +52,17 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   { kind: "tool", slug: "tourism-factories" },
   { kind: "path", path: "/nearby", label: "我附近" },
   { kind: "path", path: "/guides/typhoon-earthquake", label: "颱風地震來了" },
+  // Issue #588 (parent #583): first global-watch item sub-route.
+  { kind: "path", path: "/tools/global-watch/earthquakes", label: "全球動態地球：地震" },
+  // Issue #589 (parent #583): 國際疫情 is a nested `/tools/global-watch/
+  // epidemics` sub-route, not a flat `/tools/<slug>` page, so it can't be a
+  // `{kind: "tool"}` entry (that shape always resolves to `/tools/${slug}`
+  // with no slug — see `scopeEntryPath` below). It's a `{kind: "path"}`
+  // entry instead, same mechanism TRANSLATED_STANDALONE_PATHS already uses
+  // for "/nearby" etc. — everything downstream (isTranslatedPath,
+  // buildHreflangAlternates, buildLocalizedPath, resolveLocaleSwitchTarget)
+  // works generically off the path string, nested or not.
+  { kind: "path", path: "/tools/global-watch/epidemics", label: "國際疫情" },
 ];
 
 /** Canonical (zh, unprefixed) path for a scope entry. */
@@ -110,6 +121,23 @@ export const TRANSLATED_STANDALONE_PATHS: ScopePageEntry[] = [
   { kind: "path", path: "/", label: "首頁" },
   { kind: "path", path: "/nearby", label: "我附近" },
   { kind: "path", path: "/guides/typhoon-earthquake", label: "颱風地震來了" },
+  // Issue #588 (parent #583): the first of global-watch's 5 planned item
+  // sub-routes (`/tools/global-watch/<item>`) — modeled as its own `path`
+  // entry rather than growing TRANSLATED_TOOL_SLUGS with "global-watch",
+  // since that would require app/[locale]/tools/global-watch/page.tsx (the
+  // BASE page) to exist per tests/i18n-routing-485.test.mjs's guardrail,
+  // and the base page staying zh-only is correct for now — only the item
+  // sub-routes are in scope for translation (see that test's own comment on
+  // why "global-watch" is allowed as a directory without being a
+  // TRANSLATED_TOOL_SLUGS entry).
+  { kind: "path", path: "/tools/global-watch/earthquakes", label: "全球動態地球：地震" },
+  // Issue #589 (parent #583): see I18N_SCOPE_PAGES' matching entry above for
+  // why this is a `path` entry rather than a `tool` one. The matching
+  // `app/[locale]/tools/global-watch/epidemics/page.tsx` route file is what
+  // actually serves /en//ja//ko — tests/i18n-routing-485.test.mjs's
+  // directory guardrail allowlists the new "global-watch" top-level
+  // directory under app/[locale]/tools/ for exactly this reason.
+  { kind: "path", path: "/tools/global-watch/epidemics", label: "國際疫情" },
 ];
 
 export const TRANSLATED_PAGES: ScopePageEntry[] = [

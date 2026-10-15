@@ -59,6 +59,20 @@ export interface FacilityExtraJson {
    */
   dataVerifiedAt?: string | null;
   /**
+   * methadone_cross_district facility type (#571) — data.gov.tw 133345's
+   * dosing-time windows and per-service fees, which (like #566's fields
+   * above) have no generic facilities column of their own. See
+   * methadoneCrossDistrict.ts.
+   */
+  methadoneWeekdayDosingTime?: string | null;
+  methadoneHolidayDosingTime?: string | null;
+  methadoneOtherDosingTime?: string | null;
+  methadoneTransferInFee?: string | null;
+  methadoneCrossDistrictFee?: string | null;
+  methadoneTransferOutFee?: string | null;
+  methadoneEvaluationFee?: string | null;
+  methadoneNotes?: string | null;
+  /**
    * `category` and `monthlyFee` are shared across two independent facility
    * families that both landed around the same time and happened to pick the
    * same field names — kept as one declaration rather than two to avoid a
@@ -88,6 +102,24 @@ export interface FacilityExtraJson {
   hasPenalty?: boolean;
   /** `YYYY-MM-DD` this site's own sync captured that county's snapshot — see childcareCenterShared.ts's `todayDataAsOf`. */
   dataAsOf?: string | null;
+  /**
+   * issue #606 (childcare_center, 桃園/臺南 only — don't invent these for a
+   * county whose dataset doesn't have them): 臺南 6178 ships both 每學期註冊/
+   * 教材費 (`registrationFee`) and 每月副食品費 (`mealFee`) as columns separate
+   * from `monthlyFee`; 桃園's two sources have no registration/meal fee of
+   * their own.
+   */
+  registrationFee?: string | number | null;
+  mealFee?: string | number | null;
+  /**
+   * issue #606 (childcare_center, 高雄 only): 128099/128100 together are only
+   * 53+17 rows, last refreshed 2025-06 per data.gov.tw's own dataset
+   * metadata — a free-text caveat surfaced per-row (via extraFields in
+   * facilityConfigs.ts and a dedicated warning line in
+   * FacilitySearchContent.tsx) so it reads as "possibly incomplete,
+   * dated" data rather than a complete up-to-date county list.
+   */
+  dataNote?: string | null;
   [key: string]: unknown;
 }
 

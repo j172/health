@@ -27,3 +27,14 @@ export const TAIWAN_DEFAULT_VIEW: GlobeCameraView = {
 
 /** Default "回到台灣" flyTo duration (ms) when motion is not reduced; see lib/tools/globeWatch/motion.ts. */
 export const RESET_VIEW_FLY_DURATION_MS = 1600;
+
+/**
+ * Issue #588 (parent #583): "點擊清單項目時地球飛到該地震的位置" — flyTo duration
+ * (ms) and target zoom for jumping the camera to a single earthquake, kept
+ * as their own constants (rather than reusing RESET_VIEW_FLY_DURATION_MS)
+ * since flying to one point is a shorter, tighter transition than resetting
+ * to the whole-Pacific default view. Also run through
+ * lib/tools/globeWatch/motion.ts's resolveFlyDurationMs for reduced-motion.
+ */
+export const EARTHQUAKE_FLY_DURATION_MS = 1400;
+export const EARTHQUAKE_FLY_ZOOM = 5;
