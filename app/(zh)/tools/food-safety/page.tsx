@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
-import FoodSafetyContent from "@/components/Tools/FoodSafetyContent";
+import FoodSafetyTabs from "@/components/Tools/FoodSafetyTabs";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
@@ -23,6 +23,8 @@ export const metadata: Metadata = {
     "高麗菜農藥",
     "連續採收作物",
     "農藥超標黑名單",
+    "邊境查驗不合格食品",
+    "進口食品不合格",
   ],
   alternates: { canonical },
   openGraph: {
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
 export default function FoodSafetyPage() {
   return (
     <ToolPageShell slug="food-safety" title={catalogEntry.title} maxWidthClassName="max-w-5xl">
-      <FoodSafetyContent />
+      <FoodSafetyTabs />
     </ToolPageShell>
   );
 }

@@ -133,6 +133,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.emergencyRoomLogs);
   await p.query(TABLE_DDL.foodPesticideStandards);
   await p.query(TABLE_DDL.foodPesticideRecords);
+  // Border-rejected imported food (issue #671) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.borderFoodRejections);
   await p.query(TABLE_DDL.outdoorSafetyIndices);
   await p.query(TABLE_DDL.accessibleTransitRoutes);
   await p.query(TABLE_DDL.accessibleTransitFacilities);

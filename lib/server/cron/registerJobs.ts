@@ -28,6 +28,7 @@ import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
+import { runBorderFoodRejectionsSync } from "@/lib/server/borderFood/runSync";
 import { runYouBikeSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
@@ -384,6 +385,19 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "58 4 * * *",
     runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
+  );
+  // 邊境查驗不合格食品 (issue #671 / data.gov.tw 6133) — 上游每 7 天更新，所以
+  // 每週一 02:39 同步一次。39 分不在本檔案任何「每小時」job 的分鐘格線上
+  // （rss 5/35、aqi 20/50、cwa 15/45、earthquakes 3/13/23/33/43/53、
+  // 0/10/20/30/40/50、water-outages 25、wra-water-outages 18/48、aqx 10/40、
+  // wra-sync 8/38、wra-iot 12/27/42/57、metro-alerts 0/30、emergency-rooms
+  // 7/22/37/52、transit-accessibility-alerts 16/46、senior-tourism-alerts
+  // 17/47、gdacs-sync 14/44），也不是 youbike 每 5 分鐘格線上的分鐘；2 點區段
+  // 只有 cdc 的 15 分（每日 2/14 點），所以週一 02:39 不會撞到任何既有 job。
+  // 這個 job 自己再用 withAdvisoryLock 防重疊，見 lib/server/borderFood/runSync.ts。
+  cron.schedule(
+    "39 2 * * 1",
+    runGuarded("border-food-rejections-sync-cron.log", () => runBorderFoodRejectionsSync()),
   );
   // YouBike 2.0 every 5 minutes — batch upserts real-time station availability across Taipei, NTPC, Hsinchu
   cron.schedule(

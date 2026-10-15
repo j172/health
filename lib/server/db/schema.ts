@@ -1606,6 +1606,49 @@ export const TABLE_DDL = {
       KEY idx_pesticide_date (inspection_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 邊境查驗不合格食品 (issue #671 / docs/2.0/track-b-opendata-phase2-3-spec.md
+  // §2.1 A-3) — 衛福部食藥署「不符合食品資訊」(data.gov.tw 6133)，滾動快照：每週
+  // 同步後，上游已不再列出的列會被清掉（見 lib/server/borderFood/runSync.ts 與
+  // reconcile.ts 的防呆）。
+  //
+  // 上游沒有主鍵，所以 UNIQUE KEY 只用 row_hash（對「頁面會顯示的欄位」依固定
+  // 順序做 SHA-256；完全相同的列在 parser 合併成一列並累加 duplicate_count）。
+  // 絕對不能把 published_on／inspection_accepted_on 或任何時間欄位放進 key：
+  // 這個 repo 已在 cwa_station_weather／cwa_rainfall／aqi_readings／fraud_domains
+  // 上真實發生過「UNIQUE KEY 含時間欄位 → 表無限膨脹」(見
+  // migrations/20260921_cwa_station_weather_narrow_unique_key.sql 等)。兩個日期
+  // 都是一般欄位。
+  //
+  // 刻意沒有任何進口商地址或附圖欄位：issue #671 明定頁面不得出現這兩者，
+  // parser 在入口就丟掉，不入庫，之後任何查詢路徑都不可能外洩。
+  borderFoodRejections: `
+    CREATE TABLE IF NOT EXISTS border_food_rejections (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      row_hash CHAR(64) NOT NULL,
+      origin_country VARCHAR(64) NOT NULL,
+      subject VARCHAR(255) NOT NULL,
+      reason VARCHAR(255) NOT NULL,
+      importer_name VARCHAR(500) NULL,
+      hs_code VARCHAR(64) NULL,
+      inspection_method TEXT NULL,
+      detail TEXT NULL,
+      legal_limit TEXT NULL,
+      manufacturer_name VARCHAR(500) NULL,
+      brand_name VARCHAR(255) NULL,
+      weight VARCHAR(120) NULL,
+      disposition VARCHAR(255) NULL,
+      published_on DATE NULL,
+      inspection_accepted_on DATE NULL,
+      duplicate_count SMALLINT UNSIGNED NOT NULL DEFAULT 1,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_border_food_rejection_row (row_hash),
+      KEY idx_border_food_published (published_on),
+      KEY idx_border_food_origin (origin_country)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   outdoorSafetyIndices: `
     CREATE TABLE IF NOT EXISTS outdoor_safety_indices (
       city_code VARCHAR(16) NOT NULL,
