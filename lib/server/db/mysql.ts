@@ -141,6 +141,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.accessibleTransitTransfers);
   await p.query(TABLE_DDL.wraInundationSensors);
   await p.query(TABLE_DDL.wraWaterOutages);
+  // 水質分頁：台水鄉鎮總硬度 (issue #673) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.waterHardnessTownship);
   await p.query(TABLE_DDL.moaDebrisFlowAlerts);
   await p.query(TABLE_DDL.governmentHotlines);
   // TDX Senior/Tourism + SeniorCard (issue #436) — new tables, no ALTER needed.

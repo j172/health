@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { useLocationWithManualFallback } from "@/lib/hooks/useLocationWithManualFallback";
 import MapLocationBanner from "@/components/Common/MapLocationBanner";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import WaterQualityTab from "./WaterQualityTab";
 import type {
   WaterOutageItem,
   EmergencyWaterStation,
@@ -46,6 +47,15 @@ const FALLBACK_DATA: WaterOutagesOverview = {
   ],
 };
 
+// Module-level so useSyncExternalStore gets stable functions. The server snapshot is "" so
+// SSR and the first client render agree; the real hash is applied right after hydration.
+const subscribeToHash = (onChange: () => void) => {
+  window.addEventListener("hashchange", onChange);
+  return () => window.removeEventListener("hashchange", onChange);
+};
+const getUrlHash = () => window.location.hash;
+const getServerUrlHash = () => "";
+
 export default function WaterOutagesContent() {
   const { locale } = useLanguage();
   const {
@@ -61,6 +71,50 @@ export default function WaterOutagesContent() {
   const [selectedCounty, setSelectedCounty] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"active" | "scheduled" | "stations">("active");
   const [loading, setLoading] = useState(true);
+  // 停水與供水站 (the page's original content) vs the 水質 tab (issue #673).
+  // `/tools/water-outages#quality` opens the 水質 tab directly; a click overrides the hash.
+  const urlHash = useSyncExternalStore(subscribeToHash, getUrlHash, getServerUrlHash);
+  const [chosenView, setChosenView] = useState<"outages" | "quality" | null>(null);
+  const view: "outages" | "quality" = chosenView ?? (urlHash === "#quality" ? "quality" : "outages");
+
+  const switchView = (next: "outages" | "quality") => {
+    setChosenView(next);
+    try {
+      window.history.replaceState(
+        null,
+        "",
+        next === "quality" ? "#quality" : `${window.location.pathname}${window.location.search}`,
+      );
+    } catch {
+      // History API unavailable (sandboxed frame) — the tab still switches.
+    }
+  };
+
+  const viewSwitcher = (
+    <div role="tablist" aria-label="停水與水質" className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800">
+      {(
+        [
+          { id: "outages", label: "🚰 停水與供水站" },
+          { id: "quality", label: "💧 水質" },
+        ] as const
+      ).map((tab) => (
+        <button
+          key={tab.id}
+          type="button"
+          role="tab"
+          aria-selected={view === tab.id}
+          onClick={() => switchView(tab.id)}
+          className={`border-b-2 px-4 py-2 text-sm font-bold transition-colors ${
+            view === tab.id
+              ? "border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400"
+              : "border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300"
+          }`}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -94,8 +148,19 @@ export default function WaterOutagesContent() {
   const displayedOutages =
     activeTab === "active" ? data.activeOutages : data.scheduledOutages;
 
+  if (view === "quality") {
+    return (
+      <div className="space-y-6">
+        {viewSwitcher}
+        <WaterQualityTab initialCounty={manualCounty} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {viewSwitcher}
+
       {/* Location banner */}
       <MapLocationBanner
         geolocation={geolocation}

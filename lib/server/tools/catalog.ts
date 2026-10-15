@@ -3851,11 +3851,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "water-outages",
     group: "disaster-alerts",
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-15",
 
     navLabel: "全臺即時停水查詢",
     title: "全臺即時停水與供水站地圖：自來水管線修復／計畫停水／取水點查詢",
-    keywords: ["停水查詢", "停水公告", "供水站", "計畫停水"],
+    keywords: ["停水查詢", "停水公告", "供水站", "計畫停水", "自來水水質", "自來水硬度"],
     description:
       "即時查詢臺灣自來水公司與臺北自來水事業處突發管線破裂搶修、定期計畫性施工停水與水壓降低區域，並提供鄰近緊急臨時供水站與取水車地圖定位導航。",
     directAnswer:
@@ -3875,6 +3875,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         title: "天然災害自來水應變調度與臨時供水站開設規範",
         authority: "經濟部水利署 (WRA)",
         url: "https://www.wra.gov.tw",
+      },
+      {
+        title: "台灣自來水公司用戶水質資訊公開（各縣市鄉鎮總硬度，「水質」分頁資料來源，僅涵蓋台水供水轄區）",
+        authority: "台灣自來水股份有限公司 (TWC)",
+        url: "https://data.gov.tw/dataset/36605",
       },
     ],
     referenceTable: {
@@ -3918,6 +3923,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "剛恢復供水時自來水變白或變黃可以馬上喝嗎？",
         answer:
           "剛復水時水質混濁常因管線內空氣溶解產生微小氣泡（呈乳白色，靜置片刻即透明消散）或管壁初期鐵鏽剝落（呈黃褐色）。建議先開啟一般水龍頭流放 1 至 2 分鐘沖洗水管，待出水清澈並煮沸後再安心飲用。",
+      },
+      {
+        question: "「水質」分頁查不到我家的自來水硬度（例如臺北市），是水質有問題嗎？",
+        answer:
+          "不是。水質分頁的鄉鎮總硬度來自台灣自來水公司（台水）公開資料，只涵蓋台水供水轄區的 19 個縣市；臺北市由臺北自來水事業處供水，金門縣、連江縣由各縣自來水廠供水，不在台水轄區，所以資料裡沒有，並不代表水質好壞。請向當地供水單位查詢。",
       },
     ],
   },
