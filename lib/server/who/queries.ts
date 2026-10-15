@@ -1,6 +1,8 @@
 import { withConnection } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
+import type { RowDataPacket } from "mysql2/promise";
 import type { IncomingWhoOutbreakNews } from "@/lib/server/who/types";
+import type { WhoDonRow } from "@/lib/tools/globeWatch/whoDonTransform";
 
 /**
  * Upserts a batch of WHO DON articles keyed by article_id — matches
@@ -64,4 +66,33 @@ export const cleanupOldWhoOutbreakNews = async (retentionDays = 180): Promise<nu
       [retentionDays],
     );
     return (result as { affectedRows: number }).affectedRows;
+  });
+
+/**
+ * Issue #597 (parent #583) — the first read path for who_outbreak_news.
+ * #596 shipped the sync/cleanup pipeline only ("Backend-only... no UI in
+ * this ticket" per that PR's own description); this feeds the epidemics
+ * item's WHO-pin overlay via /api/who/outbreak-news. Ordered newest-first
+ * and capped at `limit` (default comfortably above what a 180-day retention
+ * window + "a few DONs a week" cadence ever holds) — the globe only ever
+ * needs "every currently-retained row," not a paginated feed.
+ */
+export const getRecentWhoOutbreakNews = async (limit = 500): Promise<WhoDonRow[]> =>
+  withConnection(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      `SELECT article_id, title, publish_date, disease_raw, disease_mapped, country_iso, url
+       FROM who_outbreak_news
+       ORDER BY publish_date DESC
+       LIMIT ?`,
+      [limit],
+    );
+    return rows.map((r) => ({
+      articleId: r.article_id,
+      title: r.title,
+      publishDate: r.publish_date ? new Date(r.publish_date).toISOString() : "",
+      diseaseRaw: r.disease_raw,
+      diseaseMapped: r.disease_mapped ?? null,
+      countryIso: r.country_iso ?? null,
+      url: r.url,
+    }));
   });

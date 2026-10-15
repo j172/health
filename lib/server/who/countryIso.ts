@@ -50,6 +50,18 @@ for (const [name, iso] of Object.entries(ALIASES)) {
 }
 
 /**
+ * Every distinct ISO code `resolveCountryIsoFromName` can ever return — the
+ * closed set of EPIDEMIC_COUNTRY_NAMES' own keys plus whatever extra codes
+ * ALIASES introduces (e.g. "RU"/"US"/etc. overlap with EPIDEMIC_COUNTRY_NAMES
+ * already; the genuinely new ones are KP/TZ/SY/MD/CZ/IR). Issue #597 (parent
+ * #583) uses this to assert its country-center-point data module
+ * (lib/tools/globeWatch/epidemicsCountryCenters.ts) has coordinate coverage
+ * for every ISO a WHO DON row can actually carry, not just the ones
+ * EPIDEMIC_COUNTRY_NAMES happens to need for its own (CDC-sourced) job.
+ */
+export const RESOLVABLE_COUNTRY_ISO_CODES: ReadonlySet<string> = new Set(NAME_TO_ISO.values());
+
+/**
  * Resolves a raw country/location string (as split out of a WHO DON title
  * by parseWhoDonTitle) to an ISO 3166-1 alpha-2 code — or null when it
  * isn't a single resolvable country. That covers two deliberately distinct
