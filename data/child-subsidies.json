@@ -1,0 +1,187 @@
+[
+  {
+    "id": "parenting-allowance-under-2",
+    "name": "育兒津貼（未滿2歲，自行照顧／未送托）",
+    "agency": "衛生福利部社會及家庭署",
+    "ageRange": { "minMonths": 0, "maxMonths": 23 },
+    "amountsByParity": { "first": 5000, "second": 6000, "thirdPlus": 7000 },
+    "careTypes": ["home-care", "private-nursery"],
+    "welfareStatusBonus": { "midLowIncome": null, "lowIncome": null },
+    "notCombinableWith": ["childcare-subsidy-public", "childcare-subsidy-quasi-public"],
+    "status": "in-effect",
+    "officialUrl": "https://www.sfaa.gov.tw/sfaa/list/detail/5e0/5KZ",
+    "legalBasis": "育兒津貼及托育準公共化實施計畫",
+    "lastVerified": "2026-10-14",
+    "notes": "自112年1月起取消排富限制，不論家戶所得一律可申請。未接受公共化／準公共托育服務（即未送公共化托嬰機構或準公共保母／托嬰中心）才能請領；與托育補助互斥、擇一領取。官方頁面未列出中低收入戶／低收入戶額外加碼金額，故本項 welfareStatusBonus 為 null；如家庭同時具低收/中低收身分，建議洽1957或戶籍地公所確認是否有其他弱勢生活補助可疊加。"
+  },
+  {
+    "id": "childcare-subsidy-public",
+    "name": "0–2歲托育補助（送公共化托育機構）",
+    "agency": "衛生福利部社會及家庭署",
+    "ageRange": { "minMonths": 0, "maxMonths": 23 },
+    "amountsByParity": { "first": 7000, "second": 8000, "thirdPlus": 9000 },
+    "careTypes": ["public-nursery"],
+    "welfareStatusBonus": { "midLowIncome": 2000, "lowIncome": 4000 },
+    "notCombinableWith": ["parenting-allowance-under-2"],
+    "status": "in-effect",
+    "officialUrl": "https://www.mohw.gov.tw/cp-5130-58003-1.html",
+    "legalBasis": "直轄市、縣（市）政府辦理未滿二歲兒童托育公共化及準公共化服務與費用申報及支付作業要點",
+    "lastVerified": "2026-10-14",
+    "notes": "113年1月起公共化托育補助由每月5,500元起調高為7,000元起；中低收入戶加發2,000元、低收入戶及弱勢家庭加發4,000元，第2名子女加發1,000元、第3名以上子女加發2,000元（已併入上方 amountsByParity）。本項與育兒津貼互斥。滿2歲兒童續留同一準公共保母/機構者可延長補助至未滿3歲，此延長規則本工具未另建模，請以官方頁面為準。"
+  },
+  {
+    "id": "childcare-subsidy-quasi-public",
+    "name": "0–2歲托育補助（送準公共保母／托嬰中心）",
+    "agency": "衛生福利部社會及家庭署",
+    "ageRange": { "minMonths": 0, "maxMonths": 23 },
+    "amountsByParity": { "first": 13000, "second": 14000, "thirdPlus": 15000 },
+    "careTypes": ["quasi-public-nursery"],
+    "welfareStatusBonus": { "midLowIncome": 2000, "lowIncome": 4000 },
+    "notCombinableWith": ["parenting-allowance-under-2"],
+    "status": "in-effect",
+    "officialUrl": "https://www.mohw.gov.tw/cp-5130-58003-1.html",
+    "legalBasis": "直轄市、縣（市）政府辦理未滿二歲兒童托育公共化及準公共化服務與費用申報及支付作業要點",
+    "lastVerified": "2026-10-14",
+    "notes": "113年1月起準公共托育補助由每月8,500元起調高為13,000元起；中低收入戶加發2,000元、低收入戶及弱勢家庭加發4,000元，第2名子女加發1,000元、第3名以上子女加發2,000元（已併入上方 amountsByParity）。本項與育兒津貼互斥。滿2歲兒童續留同一準公共保母/機構者可延長補助至未滿3歲，此延長規則本工具未另建模，請以官方頁面為準。"
+  },
+  {
+    "id": "school-fee-cap-public-kindergarten",
+    "name": "2–6歲就學補助（公立幼兒園自付費用上限）",
+    "agency": "教育部",
+    "ageRange": { "minMonths": 24, "maxMonths": 83 },
+    "amountsByParity": { "first": 1000, "second": 0, "thirdPlus": 0 },
+    "careTypes": ["public-kindergarten"],
+    "welfareStatusBonus": { "midLowIncome": -1000, "lowIncome": -1000 },
+    "notCombinableWith": [
+      "parenting-allowance-2to5",
+      "school-age-5-subsidy"
+    ],
+    "status": "in-effect",
+    "officialUrl": "https://www.ece.moe.edu.tw/ch/subsidy/public-non-profit/",
+    "legalBasis": "教育部辦理公共化及非營利幼兒園收退費及其他費用繳交基準",
+    "lastVerified": "2026-10-14",
+    "notes": "此欄 amountsByParity 代表「家長每月自付費用上限」（非現金補助，差額由政府直接支付給幼兒園），金額越低代表負擔越輕；就讀公立幼兒園者不得同時請領2-5歲育兒津貼或5歲就學補助。111年8月起費用為第1胎每月上限1,000元，第2胎(含)以上免費。低收入戶、中低收入戶子女一律免費——welfareStatusBonus 為負值偏移量，matchChildSubsidies 會將結果下限為0，故顯示金額會正確歸零，而非出現負數。"
+  },
+  {
+    "id": "school-fee-cap-nonprofit-kindergarten",
+    "name": "2–6歲就學補助（非營利幼兒園自付費用上限）",
+    "agency": "教育部",
+    "ageRange": { "minMonths": 24, "maxMonths": 83 },
+    "amountsByParity": { "first": 2000, "second": 1000, "thirdPlus": 0 },
+    "careTypes": ["nonprofit-kindergarten"],
+    "welfareStatusBonus": { "midLowIncome": -2000, "lowIncome": -2000 },
+    "notCombinableWith": [
+      "parenting-allowance-2to5",
+      "school-age-5-subsidy"
+    ],
+    "status": "in-effect",
+    "officialUrl": "https://www.ece.moe.edu.tw/ch/subsidy/public-non-profit/",
+    "legalBasis": "教育部辦理公共化及非營利幼兒園收退費及其他費用繳交基準",
+    "lastVerified": "2026-10-14",
+    "notes": "此欄 amountsByParity 代表「家長每月自付費用上限」（非現金補助），金額越低代表負擔越輕；就讀非營利幼兒園者不得同時請領2-5歲育兒津貼或5歲就學補助。111年8月起費用為第1胎每月上限2,000元、第2胎上限1,000元、第3胎(含)以上免費。低收入戶、中低收入戶子女一律免費——welfareStatusBonus 為負值偏移量，matchChildSubsidies 會將結果下限為0。"
+  },
+  {
+    "id": "school-fee-cap-quasi-public-kindergarten",
+    "name": "2–6歲就學補助（準公共幼兒園自付費用上限）",
+    "agency": "教育部",
+    "ageRange": { "minMonths": 24, "maxMonths": 83 },
+    "amountsByParity": { "first": 3000, "second": 2000, "thirdPlus": 1000 },
+    "careTypes": ["quasi-public-kindergarten"],
+    "welfareStatusBonus": { "midLowIncome": -3000, "lowIncome": -3000 },
+    "notCombinableWith": [
+      "parenting-allowance-2to5",
+      "school-age-5-subsidy"
+    ],
+    "status": "in-effect",
+    "officialUrl": "https://www.ece.moe.edu.tw/ch/subsidy/zgg-1/",
+    "legalBasis": "直轄市、縣（市）政府辦理2歲以上未滿5歲兒童托育準公共化服務與費用申報及支付作業要點",
+    "lastVerified": "2026-10-14",
+    "notes": "此欄 amountsByParity 代表「家長每月自付費用上限」（非現金補助），金額越低代表負擔越輕；就讀準公共幼兒園者不得同時請領2-5歲育兒津貼或5歲就學補助。111年8月起費用為第1胎每月上限3,000元、第2胎上限2,000元、第3胎(含)以上上限1,000元。低收入戶、中低收入戶子女一律免費——welfareStatusBonus 為負值偏移量，matchChildSubsidies 會將結果下限為0。"
+  },
+  {
+    "id": "parenting-allowance-2to5",
+    "name": "2–6歲育兒津貼（2歲以上未滿5歲，未就讀公立/非營利/準公共幼兒園）",
+    "agency": "教育部",
+    "ageRange": { "minMonths": 24, "maxMonths": 59 },
+    "amountsByParity": { "first": 5000, "second": 6000, "thirdPlus": 7000 },
+    "careTypes": ["home-care", "private-nursery", "private-kindergarten"],
+    "welfareStatusBonus": { "midLowIncome": null, "lowIncome": null },
+    "notCombinableWith": [
+      "school-fee-cap-public-kindergarten",
+      "school-fee-cap-nonprofit-kindergarten",
+      "school-fee-cap-quasi-public-kindergarten"
+    ],
+    "status": "in-effect",
+    "officialUrl": "https://www.ece.moe.edu.tw/ch/subsidy/allowance-1/",
+    "legalBasis": "教育部補助地方政府發放2歲以上未滿5歲幼兒育兒津貼及5歲至入國民小學前幼兒就學補助作業要點",
+    "lastVerified": "2026-10-14",
+    "notes": "111年8月1日起金額為第1名子女5,000元、第2名子女6,000元、第3名子女7,000元（官方頁面用語為「第3名子女」，本工具對應為thirdPlus）。自112年1月起取消家戶所得排富限制。就讀公立/非營利/準公共幼兒園者改領就學費用減免，不得同時領本項。官方頁面未列出中低收/低收入戶加碼金額。"
+  },
+  {
+    "id": "school-age-5-subsidy",
+    "name": "5歲就學補助（5歲至入國民小學前，未就讀公立/非營利/準公共幼兒園）",
+    "agency": "教育部",
+    "ageRange": { "minMonths": 60, "maxMonths": 83 },
+    "amountsByParity": { "first": 5000, "second": 6000, "thirdPlus": 7000 },
+    "careTypes": ["home-care", "private-nursery", "private-kindergarten"],
+    "welfareStatusBonus": { "midLowIncome": null, "lowIncome": null },
+    "notCombinableWith": [
+      "school-fee-cap-public-kindergarten",
+      "school-fee-cap-nonprofit-kindergarten",
+      "school-fee-cap-quasi-public-kindergarten"
+    ],
+    "status": "in-effect",
+    "officialUrl": "https://www.ece.moe.edu.tw/ch/subsidy/ece-for-5y-1/",
+    "legalBasis": "教育部補助地方政府發放2歲以上未滿5歲幼兒育兒津貼及5歲至入國民小學前幼兒就學補助作業要點",
+    "lastVerified": "2026-10-14",
+    "notes": "111年8月1日起金額為第1胎每月5,000元、第2胎6,000元、第3胎(含)以上7,000元。僅限就讀私立教保服務機構或社會福利機構（或在家自行照顧）者；就讀公立/非營利/準公共幼兒園者改領就學費用減免，不得同時領本項。上限年齡以「入國民小學前」為準，本工具以83月齡（概估未滿7歲）作為上限，實際截止日依戶籍規定學年度起算日而定。官方頁面未列出中低收/低收入戶加碼金額。"
+  },
+  {
+    "id": "birth-grant",
+    "name": "生育補助（每胎合計10萬元）",
+    "agency": "勞動部勞工保險局",
+    "ageRange": { "minMonths": 0, "maxMonths": 0 },
+    "amountsByParity": { "first": 100000, "second": 100000, "thirdPlus": 100000 },
+    "careTypes": [
+      "home-care",
+      "private-nursery",
+      "public-nursery",
+      "quasi-public-nursery",
+      "public-kindergarten",
+      "nonprofit-kindergarten",
+      "quasi-public-kindergarten",
+      "private-kindergarten"
+    ],
+    "welfareStatusBonus": { "midLowIncome": null, "lowIncome": null },
+    "notCombinableWith": [],
+    "status": "in-effect",
+    "officialUrl": "https://www.mol.gov.tw/1607/1632/1640/84736/",
+    "legalBasis": "勞工保險生育給付加發生育補助作業要點（115年1月1日起實施）",
+    "lastVerified": "2026-10-14",
+    "notes": "115年（2026年）1月1日起，由政府另編公務預算加發差額，使請領勞保生育給付之本國籍女性勞工（含與本國籍結婚之外籍配偶）每胎合計可領滿10萬元；多胞胎按比例增加（雙胞胎20萬、三胞胎30萬）。金額不受胎次（子女排序）影響，故amountsByParity三格數字相同；本工具以「0月齡」代表新生兒，僅在查詢條件選擇0月齡時顯示本項與試管嬰兒補助。國保、農保或未加保者的對應補助規則與金額可能不同，官方頁面僅確認勞保對象，請洽勞保局或戶政事務所確認個人實際適用方案。勞工無須另外申請，由勞保局併入生育給付自動發給。"
+  },
+  {
+    "id": "ivf-subsidy-3.0",
+    "name": "試管嬰兒補助3.0（人工生殖補助方案）",
+    "agency": "衛生福利部國民健康署",
+    "ageRange": { "minMonths": 0, "maxMonths": 0 },
+    "amountsByParity": { "first": 150000, "second": 100000, "thirdPlus": 60000 },
+    "careTypes": [
+      "home-care",
+      "private-nursery",
+      "public-nursery",
+      "quasi-public-nursery",
+      "public-kindergarten",
+      "nonprofit-kindergarten",
+      "quasi-public-kindergarten",
+      "private-kindergarten"
+    ],
+    "welfareStatusBonus": { "midLowIncome": null, "lowIncome": null },
+    "notCombinableWith": [],
+    "status": "in-effect",
+    "officialUrl": "https://mohw.gov.tw/cp-16-85394-1.html",
+    "legalBasis": "擴大不孕症（試管嬰兒）治療補助方案3.0（114年11月1日起實施）",
+    "lastVerified": "2026-10-14",
+    "notes": "本項不是依「子女胎次」計算，而是依「受術妻年齡」與「同一胎的療程次序」分級，此處借用 amountsByParity 的三個欄位對應受術妻未滿39歲者的療程次序：first=第1次療程最高15萬元、second=第2、3次療程最高10萬元、thirdPlus=第4至6次療程維持6萬元（未滿39歲每胎最多6次）。受術妻39歲以上未滿45歲者金額較低（第1次最高13萬元、第2、3次最高8萬元，每胎最多3次），本工具未另建模，請見官方頁面。低收入戶／中低收入戶每次療程上限統一為15萬元、不受年齡與次數分級限制（此為2.0方案即有之規則，3.0官方頁面未重複列出低收數字，故本項welfareStatusBonus暫設為null，顯示金額僅反映一般戶，請洽國健署02-2558-0900或特約機構確認低收/中低收實際金額）。本工具以「0月齡」代表尚未出生／新生兒情境來呈現本項，與實際是否已有子女無關。"
+  }
+]
