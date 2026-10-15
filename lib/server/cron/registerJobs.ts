@@ -36,6 +36,7 @@ import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runForestFireSync } from "@/lib/server/forestFire/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runDrugShortagesSync } from "@/lib/server/drugs/runShortagesSync";
+import { runDrugRecallsSync } from "@/lib/server/drugs/runRecallsSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
 import {
@@ -457,6 +458,14 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "32 2 * * 1",
     runGuarded("drug-shortages-sync-cron.log", () => runDrugShortagesSync()),
+  );
+  // 食藥署回收藥品 6947 (issue #675) — 回收登錄表整份重抓 (約 700 KB)，weekly 即可；
+  // 週一 03:28。分鐘 28 不在任何 job 的格線上 (cronCollisions lint 的 unused
+  // minutes 清單)，刻意與 drug-shortages (02:32) 錯開一小時，兩個 FDA 週更不同
+  // tick。自己再用 withAdvisoryLock 防重疊，見 lib/server/drugs/runRecallsSync.ts。
+  cron.schedule(
+    "28 3 * * 1",
+    runGuarded("drug-recalls-sync-cron.log", () => runDrugRecallsSync()),
   );
   // 全台電力概況儀表板 (issue #177) — 台電 d006001 各機組即時發電量 + d525001
   // 核電廠周邊輻射偵測站都約每 10 分鐘更新一次，比照 wra-sync 的 30 分鐘級距

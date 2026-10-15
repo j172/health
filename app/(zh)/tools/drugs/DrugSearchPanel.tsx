@@ -21,7 +21,12 @@ interface DrugItem {
   image_url: string | null;
   /** Set when the license is on a TFDA shortage list (issue #670); null otherwise. */
   shortage?: "with_alternative" | "no_alternative" | null;
+  /** Set when the license was ever named in a TFDA recall (issue #675); null otherwise. */
+  recall?: { count: number; latest_recalled_on: string | null; worst_level: RecallLevel } | null;
 }
+
+/** Normalized server-side from the agency's 14 spellings; '1' is the most severe. */
+type RecallLevel = "1" | "2" | "3" | "未載明";
 
 interface DrugIngredient {
   prescription_label: string | null;
@@ -38,6 +43,18 @@ interface DrugShortageNotice {
   supply_status: string | null;
 }
 
+interface DrugRecallNotice {
+  product_name: string;
+  recalled_on: string | null;
+  recall_level: RecallLevel;
+  recall_level_raw: string | null;
+  holder_name: string | null;
+  batch_no: string | null;
+  reason: string | null;
+}
+
+const recallLevelText = (level: RecallLevel): string => (level === "未載明" ? "分級未載明" : `第${level}級`);
+
 export default function DrugSearchPanel({ initialKeyword = "" }: { initialKeyword?: string }) {
   const [searchInput, setSearchInput] = useState(initialKeyword);
   const [drugs, setDrugs] = useState<DrugItem[] | null>(null);
@@ -49,6 +66,7 @@ export default function DrugSearchPanel({ initialKeyword = "" }: { initialKeywor
   const [expandedLicense, setExpandedLicense] = useState<string | null>(null);
   const [ingredients, setIngredients] = useState<DrugIngredient[] | null>(null);
   const [shortageNotices, setShortageNotices] = useState<DrugShortageNotice[]>([]);
+  const [recallNotices, setRecallNotices] = useState<DrugRecallNotice[]>([]);
   const [ingredientsLoading, setIngredientsLoading] = useState(false);
 
   // Pilot for issue #133's shared pagination hook: 藥品查詢 defaults to the 30 most
@@ -93,12 +111,14 @@ export default function DrugSearchPanel({ initialKeyword = "" }: { initialKeywor
       setExpandedLicense(null);
       setIngredients(null);
       setShortageNotices([]);
+      setRecallNotices([]);
       return;
     }
 
     setExpandedLicense(licenseNo);
     setIngredients(null);
     setShortageNotices([]);
+    setRecallNotices([]);
     setIngredientsLoading(true);
     try {
       const res = await fetch(`/api/drugs?licenseNo=${encodeURIComponent(licenseNo)}`);
@@ -106,6 +126,7 @@ export default function DrugSearchPanel({ initialKeyword = "" }: { initialKeywor
       const data = await res.json();
       setIngredients(data.ingredients);
       setShortageNotices(Array.isArray(data.shortages) ? data.shortages : []);
+      setRecallNotices(Array.isArray(data.recalls) ? data.recalls : []);
     } catch {
       setIngredients([]);
     } finally {
@@ -197,6 +218,17 @@ export default function DrugSearchPanel({ initialKeyword = "" }: { initialKeywor
                           目前短缺{d.shortage === "no_alternative" ? "（無替代藥品）" : "（有替代藥品）"}
                         </span>
                       )}
+                      {d.recall && (
+                        <span
+                          className={`mt-1 ml-1 inline-block rounded px-1.5 py-0.5 text-xs font-semibold ${
+                            d.recall.worst_level === "1"
+                              ? "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300"
+                              : "bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300"
+                          }`}
+                        >
+                          曾被回收（{d.recall.count} 筆{d.recall.latest_recalled_on ? `，最近 ${d.recall.latest_recalled_on}` : ""}）
+                        </span>
+                      )}
                       {d.name_en && <p className="text-xs text-neutral-500 dark:text-slate-400">{d.name_en}</p>}
                       <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">許可證：{d.license_no}</p>
                       <div className="mt-2 flex flex-wrap gap-1 text-xs text-neutral-600 dark:text-slate-300">
@@ -231,6 +263,28 @@ export default function DrugSearchPanel({ initialKeyword = "" }: { initialKeywor
                                 {n.announced_on ? `．公告更新 ${n.announced_on}` : ""}
                               </summary>
                               {n.supply_status && <p className="mt-1 whitespace-pre-line">{n.supply_status}</p>}
+                            </details>
+                          ))}
+                        </div>
+                      )}
+                      {!ingredientsLoading && recallNotices.length > 0 && (
+                        <div className="mb-2 space-y-2 rounded-lg bg-orange-50 p-2 text-xs text-orange-900 dark:bg-orange-950/30 dark:text-orange-200">
+                          <p className="font-semibold">
+                            此許可證曾列於食藥署回收公告
+                            <span className="font-normal">（依食藥署公開資料，非本站判定；回收通常只針對特定批號，請核對藥品批號並洽藥師）</span>
+                          </p>
+                          {recallNotices.map((n, i) => (
+                            <details key={i}>
+                              <summary className="cursor-pointer">
+                                {recallLevelText(n.recall_level)}
+                                {n.recalled_on ? `．回收日期 ${n.recalled_on}` : ""}
+                                {n.product_name ? `．${n.product_name}` : ""}
+                              </summary>
+                              <div className="mt-1 space-y-1">
+                                {n.batch_no && <p className="whitespace-pre-line break-words">批號：{n.batch_no}</p>}
+                                {n.reason && <p className="whitespace-pre-line break-words">原因：{n.reason}</p>}
+                                {n.recall_level_raw && /疑似/.test(n.recall_level_raw) && <p>分級原文：{n.recall_level_raw}</p>}
+                              </div>
                             </details>
                           ))}
                         </div>

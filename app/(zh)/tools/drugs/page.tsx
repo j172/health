@@ -15,10 +15,10 @@ const catalogEntry = getToolCatalogEntry("drugs");
 export const metadata: Metadata = {
   title: catalogEntry.title,
   description: catalogEntry.description,
-  keywords: ["藥品查詢", "藥品外觀", "許可證字號", "食藥署", "藥品短缺", "缺藥"],
+  keywords: ["藥品查詢", "藥品外觀", "許可證字號", "食藥署", "藥品短缺", "缺藥", "藥品回收", "回收藥品"],
   alternates: { canonical },
   robots: { index: false },
-  openGraph: { title: "藥品查詢", description: "查詢藥品許可證字號、品名、外觀特徵與食藥署藥品短缺名單。", url: canonical },
+  openGraph: { title: "藥品查詢", description: "查詢藥品許可證字號、品名、外觀特徵與食藥署藥品短缺、回收名單。", url: canonical },
 };
 
 export default function DrugsPage() {
