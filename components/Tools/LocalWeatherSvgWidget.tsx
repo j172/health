@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import SidebarWidgetShell from "./SidebarWidgetShell";
 import { useSidebarWidgetData } from "./useSidebarWidgetData";
 import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
-import { getSavedLocation } from "@/components/Facilities/useGeolocation";
+import { getSavedLocation } from "@/lib/client/savedLocation";
 
 export const TAIWAN_COUNTIES = [
   { name: "基隆市", lat: 25.1276, lng: 121.7392 },
