@@ -1261,7 +1261,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.gov.tw/dataset/115950",
       },
     ],
-    relatedSlugs: ["postpartum-care", "disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities"],
+    relatedSlugs: ["postpartum-care", "disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities", "ltc-benefits"],
     faqs: [
       {
         question: "長照照顧圈地圖整合哪些類型的長照資源？",
@@ -1980,46 +1980,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "travel-epidemic-alerts",
-    group: "disaster-alerts",
-    lastUpdated: "2026-10-13",
-
-    title: "國際旅遊疫情與即時情報地圖",
-    // "登革熱" added for issue #462's news↔tool cross-linking acceptance
-    // criterion (登革熱 news should surface this tool): 疾管署同時監控境外
-    // 移入與本土登革熱疫情，屬於這個國際疫情地圖涵蓋的疾病範圍之一。
-    keywords: ["出國疫情", "旅遊警示", "境外感染", "登革熱"],
-    description:
-      "即時連線疾管署國際旅遊疫情建議等級與全球重要疫情快訊，提供各國警戒等級（注意/警示/警告）地圖視覺化、疾病快搜與最新流行病學情報。資料來源：衛生福利部疾病管制署。",
-    directAnswer:
-      "即時查詢疾管署全球旅遊疫情建議等級與各國爆發疾病通報，掌握最新出國防疫衛教與警示範圍。",
-    scientificBasis: [
-      {
-        title: "國際間旅遊疫情建議等級資料集 (TCDCTravelAlert)",
-        authority: "衛生福利部疾病管制署 (Taiwan CDC)",
-        url: "https://www.cdc.gov.tw",
-      },
-      {
-        title: "國際重要疫情資訊 (TCDCIntlEpidAll)",
-        authority: "衛生福利部疾病管制署 (Taiwan CDC)",
-        url: "https://www.cdc.gov.tw",
-      },
-    ],
-    relatedSlugs: ["aqi", "uv", "weather-alerts", "global-watch"],
-    faqs: [
-      {
-        question: "國際旅遊疫情建議等級如何劃分？",
-        answer:
-          "疾管署分為三級：第一級「注意 (Watch)」提醒遵守當地一般預防措施；第二級「警示 (Alert)」對當地採取加強防護；第三級「警告 (Warning)」避免至當地所有非必要旅遊。",
-      },
-      {
-        question: "出國前該如何做好健康防護？",
-        answer:
-          "建議出國前 2 至 4 週至旅遊醫學門診諮詢疫苗接種或預防用藥，並於旅途中落實手部衛生、防蚊措施與飲食衛生。",
-      },
-    ],
-  },
-  {
     slug: "weather-alerts",
     group: "disaster-alerts",
     lastUpdated: "2026-10-12",
@@ -2052,7 +2012,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ["超大豪雨 (Extremely Torrential Rain)", "≥ 500 mm", "—", "紫色 🟣", "重大致災降雨，配合預警性撤離與避難"],
       ],
     },
-    relatedSlugs: ["aqi", "uv", "global-watch", "water", "travel-epidemic-alerts"],
+    relatedSlugs: ["aqi", "uv", "global-watch", "water"],
     faqs: [
       {
         question: "氣象警報多久更新一次？",
@@ -2390,14 +2350,14 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // (see that set's own doc comment on thin-shell pages), no FAQs beyond
     // the shell's own real, shipped behavior.
     //
-    // Issue #590 (parent #583) retired the standalone `earthquakes` catalog
-    // entry in favor of this tool's earthquakes item sub-route
-    // (`/tools/global-watch/earthquakes`, shipped by #588) — its keywords
-    // (地震 etc.) are folded into this entry's own `keywords` below so News ↔
-    // Tools cross-linking (lib/server/content/crossLinks.ts) and sitewide
-    // search still surface this tool for earthquake-related queries.
-    // `travel-epidemic-alerts` is NOT retired by this ticket (see #591) —
-    // don't remove its relatedSlugs reference below ahead of that ticket.
+    // Both #590 and #591 have now retired their standalone catalog entries
+    // in favor of this tool's item sub-routes: `earthquakes` (#590, folded
+    // into `/tools/global-watch/earthquakes`, shipped by #588) and
+    // `travel-epidemic-alerts` (#591, folded into `/tools/global-watch/
+    // epidemics`, shipped by #589). Both entries' keywords (地震/地震速報/
+    // 震度/海嘯 and 登革熱) are folded into this entry's own `keywords` below
+    // so News ↔ Tools cross-linking (lib/server/content/crossLinks.ts) and
+    // sitewide search still surface this tool for those queries.
     slug: "global-watch",
     group: "disaster-alerts",
     lastUpdated: "2026-10-15",
@@ -2415,6 +2375,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       "地震速報",
       "震度",
       "海嘯",
+      "登革熱",
     ],
     description:
       "可拖曳旋轉、縮放的 3D 地球，拉近至城市層級自然轉為平面街道地圖；支援向量地圖與衛星影像切換，並可一鍵回到台灣預設視角。",
@@ -2432,7 +2393,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.earthdata.nasa.gov/data/tools/gibs",
       },
     ],
-    relatedSlugs: ["travel-epidemic-alerts", "disaster-map", "weather-alerts"],
+    relatedSlugs: ["disaster-map", "weather-alerts"],
     faqs: [
       {
         question: "全球動態地球目前提供哪些功能？",
@@ -2797,7 +2758,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     title: "農作物病蟲害即時預警",
     // "登革熱"/"病媒蚊" added for issue #462's news↔tool cross-linking
     // acceptance criterion (登革熱 news should surface this tool alongside
-    // travel-epidemic-alerts): 地方病媒蚊孳生源清除與通報作業在許多縣市由
+    // global-watch — formerly travel-epidemic-alerts, retired by #591):
+    // 地方病媒蚊孳生源清除與通報作業在許多縣市由
     // 農業/環保稽查單位與病蟲害防治體系共同執行，是登革熱新聞讀者可能需要
     // 的鄰近示警資訊。
     keywords: ["病蟲害預警", "農作物病害", "登革熱", "病媒蚊"],
@@ -3971,7 +3933,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw/",
       },
     ],
-    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "travel-epidemic-alerts", "anti-fraud", "social-welfare-centers"],
+    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "global-watch", "anti-fraud", "social-welfare-centers"],
     faqs: [
       {
         question: "手機在沒有 SIM 卡或沒有所屬電信訊號時該如何求救？",
@@ -4315,7 +4277,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://257085.sfaa.gov.tw/",
       },
     ],
-    relatedSlugs: ["emergency-hotlines", "long-term-care", "disability-welfare"],
+    relatedSlugs: ["emergency-hotlines", "long-term-care", "disability-welfare", "ltc-benefits"],
     faqs: [
       {
         question: "我不確定自己的狀況算不算「需要找社工」，可以先打電話問問看嗎？",
@@ -4336,6 +4298,76 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "社工會不會因為我打電話求助就直接把我的孩子帶走，或強制安置長輩？",
         answer:
           "不會。社工到府的第一步是評估家庭目前的狀況與需求，大多數情況的目標是協助申請補助、轉介資源或安排後續追蹤，不是立即安置。只有在評估後確認有立即且重大的安全風險時，才會依法採取保護性安置等強制措施，且這類決定需要依法定程序處理，不是社工個人隨意決定。",
+      },
+    ],
+  },
+  {
+    slug: "ltc-benefits",
+    group: "elder-care-welfare",
+    lastUpdated: "2026-10-15",
+
+    title: "長照給付與申請",
+    keywords: [
+      "長照給付",
+      "長照額度",
+      "長照3.0",
+      "長照需要等級",
+      "部分負擔",
+      "喘息服務",
+      "交通接送",
+      "輔具租賃",
+      "照顧及專業服務",
+      "1966",
+      "照專評估",
+      "個案管理",
+    ],
+    description:
+      "說明長照服務的申請流程（1966 → 照專到府評估 → 個管擬訂照顧計畫），整理長照3.0新制「已上路」與「規劃中」項目，並提供給付額度試算：選擇長照需要等級（第2–8級或「還沒評估」）與福利身分（一般戶／中低收入戶／低收入戶），估算照顧及專業服務、交通接送、輔具及居家無障礙環境改善、喘息服務的月／年／三年額度與自付比例。",
+    directAnswer:
+      "長照給付與申請整理 1966 專線申請流程、長照3.0新制已上路與規劃中項目，並提供依長照需要等級（第2–8級）與福利身分試算的給付額度：照顧及專業服務每月10,020–36,180元、交通接送每月1,680–2,400元（依分區）、輔具及居家無障礙環境改善每3年4萬或6萬元、喘息服務每年32,340或48,510元，一般戶自付16–30%，低收入戶與列冊中低收入戶自付0%；實際以照專評估與照顧計畫為準。",
+    scientificBasis: [
+      {
+        title: "長期照顧服務申請及給付辦法（附表二：長照需要等級及長照服務給付項目之額度；附表三：交通接送服務給付分區表；附表五：部分負擔比率）",
+        authority: "衛生福利部長期照顧司",
+        url: "https://laws.gov.taipei/law/LawSearch/LawArticleContent/FL098057",
+      },
+      {
+        title: "長期照顧服務申請及給付辦法部分條文修正（114年6月19日發布，分114年9月1日／115年1月1日／115年7月1日施行）",
+        authority: "衛生福利部",
+        url: "https://mohw.gov.tw/cp-18-82814-1.html",
+      },
+      {
+        title: "長照3.0十年計畫核定公告",
+        authority: "行政院",
+        url: "https://www.ey.gov.tw/Page/448DE008087A1971/75589810-5aa3-418f-9c33-1d10e5950fb7",
+      },
+      {
+        title: "1966長照服務專線",
+        authority: "衛生福利部",
+        url: "https://1966.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["long-term-care", "social-welfare-centers", "disability-welfare", "senior-friendly"],
+    faqs: [
+      {
+        question: "額度試算需要提供哪些個人資料？會不會被記錄下來？",
+        answer:
+          "不需要。試算只需要選擇長照需要等級與福利身分兩個項目，全部在您的瀏覽器內計算完成，不會送出任何網路請求，也不會寫入手機或電腦的本機儲存空間，離開頁面或重新整理後選擇會自動清空。",
+      },
+      {
+        question: "「低收入戶」與「中低收入戶」試算出來的自付比例怎麼都一樣？",
+        answer:
+          "這不是計算錯誤。依《長期照顧服務申請及給付辦法》第14條，列冊之低收入戶與中低收入戶同屬「長照第一類」，部分負擔比率相同（皆為0%）。另外還有部分負擔5–10%的「長照第二類」（中低收入老人生活津貼第2款或身心障礙者生活補助資格者），本頁為簡化呈現未單獨列出，如不確定自己實際屬於哪一類，請洽1966長照專線或當地長期照顧管理中心確認。",
+      },
+      {
+        question: "選「還沒評估」也能看到額度嗎？",
+        answer:
+          "不行。長照需要等級須由照顧管理專員到府評估後核定，第1級為未失能、不納入給付範圍，因此選擇「還沒評估」時頁面只會顯示申請流程與3.0新制說明，不會顯示額度試算結果，請先完成評估取得核定等級後再回來試算。",
+      },
+      {
+        question: "長照3.0是什麼時候上路？跟長照2.0差在哪？",
+        answer:
+          "長照3.0是行政院核定的十年計畫，部分措施已依《長期照顧服務申請及給付辦法》修正條文分階段施行：114年9月1日起聘僱外籍看護工家庭可於原額度內使用社區式服務；115年1月1日起放寬未滿50歲失智且失能者資格並納入急性後期照護(PAC)對象；115年7月1日起新增智慧科技輔具租賃（3年6萬元額度）。其餘尚未有正式施行日期的項目列為「規劃中」，實際內容與時程以衛生福利部正式公告為準。",
       },
     ],
   },

@@ -95,7 +95,6 @@ const TOOL_ICONS: Record<string, string> = {
   "child-safety-spots": "🛟",
   "npo-organizations": "🤝",
   "tax-organizations": "🤝",
-  "travel-epidemic-alerts": "🌍",
   "cool-spots": "🧊",
   "iaq-premises": "💨",
   "cleaning-squads": "🧹",

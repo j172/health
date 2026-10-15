@@ -19,6 +19,12 @@ export interface EpidemicCountryNameEntry {
  * data (Taiwan doesn't issue a travel alert about itself) but needs a label
  * since the Natural Earth boundary file plots it as its own feature.
  *
+ * Issue #597 (parent #583) added 6 more entries (CZ/IR/KP/MD/SY/TZ) that
+ * never appear in CDC's data either, but ARE values
+ * lib/server/who/countryIso.ts's ALIASES can resolve a WHO DON title to —
+ * reusing this table (per #597's own instruction) rather than building a
+ * second country-name dictionary just for WHO DON pins.
+ *
  * AC: "查不到時顯示原文，不猜測翻譯" — this is deliberately a closed,
  * hand-checked table, never a machine-translated catch-all. `resolveCountryName`
  * below falls back to the caller's own original text (DB's `country`/
@@ -44,6 +50,12 @@ export const EPIDEMIC_COUNTRY_NAMES: Record<string, EpidemicCountryNameEntry> = 
   CO: { zh: "哥倫比亞", en: "Colombia", ja: "コロンビア", ko: "콜롬비아" },
   CR: { zh: "哥斯大黎加", en: "Costa Rica", ja: "コスタリカ", ko: "코스타리카" },
   CU: { zh: "古巴", en: "Cuba", ja: "キューバ", ko: "쿠바" },
+  // CZ/IR/KP/MD/SY/TZ: never appear in CDC's cdc_travel_alerts (hence absent
+  // from this table's original #589 coverage), but are real values
+  // lib/server/who/countryIso.ts's ALIASES can resolve a WHO DON title to
+  // (issue #597, parent #583) — added here rather than in a second
+  // dictionary, per #597's own instruction to reuse this table.
+  CZ: { zh: "捷克", en: "Czech Republic", ja: "チェコ", ko: "체코" },
   DO: { zh: "多明尼加", en: "Dominican Republic", ja: "ドミニカ共和国", ko: "도미니카 공화국" },
   DZ: { zh: "阿爾及利亞", en: "Algeria", ja: "アルジェリア", ko: "알제리" },
   EC: { zh: "厄瓜多", en: "Ecuador", ja: "エクアドル", ko: "에콰도르" },
@@ -62,18 +74,21 @@ export const EPIDEMIC_COUNTRY_NAMES: Record<string, EpidemicCountryNameEntry> = 
   ID: { zh: "印尼", en: "Indonesia", ja: "インドネシア", ko: "인도네시아" },
   IL: { zh: "以色列", en: "Israel", ja: "イスラエル", ko: "이스라엘" },
   IN: { zh: "印度", en: "India", ja: "インド", ko: "인도" },
+  IR: { zh: "伊朗", en: "Iran", ja: "イラン", ko: "이란" },
   IT: { zh: "義大利", en: "Italy", ja: "イタリア", ko: "이탈리아" },
   JO: { zh: "約旦", en: "Jordan", ja: "ヨルダン", ko: "요르단" },
   JP: { zh: "日本", en: "Japan", ja: "日本", ko: "일본" },
   KE: { zh: "肯亞", en: "Kenya", ja: "ケニア", ko: "케냐" },
   KH: { zh: "柬埔寨", en: "Cambodia", ja: "カンボジア", ko: "캄보디아" },
   KI: { zh: "吉里巴斯", en: "Kiribati", ja: "キリバス", ko: "키리바시" },
+  KP: { zh: "北韓", en: "North Korea", ja: "北朝鮮", ko: "조선민주주의인민공화국" },
   KR: { zh: "韓國", en: "South Korea", ja: "韓国", ko: "대한민국" },
   KZ: { zh: "哈薩克", en: "Kazakhstan", ja: "カザフスタン", ko: "카자흐스탄" },
   LA: { zh: "寮國", en: "Laos", ja: "ラオス", ko: "라오스" },
   LK: { zh: "斯里蘭卡", en: "Sri Lanka", ja: "スリランカ", ko: "스리랑카" },
   LR: { zh: "賴比瑞亞", en: "Liberia", ja: "リベリア", ko: "라이베리아" },
   LT: { zh: "立陶宛", en: "Lithuania", ja: "リトアニア", ko: "리투아니아" },
+  MD: { zh: "摩爾多瓦", en: "Moldova", ja: "モルドバ", ko: "몰도바" },
   MG: { zh: "馬達加斯加", en: "Madagascar", ja: "マダガスカル", ko: "마다가스카르" },
   ML: { zh: "馬利", en: "Mali", ja: "マリ", ko: "말리" },
   MM: { zh: "緬甸", en: "Myanmar", ja: "ミャンマー", ko: "미얀마" },
@@ -102,10 +117,12 @@ export const EPIDEMIC_COUNTRY_NAMES: Record<string, EpidemicCountryNameEntry> = 
   SN: { zh: "塞內加爾", en: "Senegal", ja: "セネガル", ko: "세네갈" },
   SO: { zh: "索馬利亞", en: "Somalia", ja: "ソマリア", ko: "소말리아" },
   SS: { zh: "南蘇丹共和國", en: "South Sudan", ja: "南スーダン", ko: "남수단" },
+  SY: { zh: "敘利亞", en: "Syria", ja: "シリア", ko: "시리아" },
   TD: { zh: "查德", en: "Chad", ja: "チャド", ko: "차드" },
   TH: { zh: "泰國", en: "Thailand", ja: "タイ", ko: "태국" },
   TR: { zh: "土耳其", en: "Türkiye", ja: "トルコ", ko: "튀르키예" },
   TW: { zh: "台灣", en: "Taiwan", ja: "台湾", ko: "대만" },
+  TZ: { zh: "坦尚尼亞", en: "Tanzania", ja: "タンザニア", ko: "탄자니아" },
   UA: { zh: "烏克蘭", en: "Ukraine", ja: "ウクライナ", ko: "우크라이나" },
   UG: { zh: "烏干達", en: "Uganda", ja: "ウガンダ", ko: "우간다" },
   US: { zh: "美國", en: "United States", ja: "アメリカ合衆国", ko: "미국" },

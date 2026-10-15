@@ -55,7 +55,7 @@ export default function CdcAlertSidebarWidget() {
       hasError={hasError}
       emptyMessage="暫無疾管署最新警示資料"
       errorMessage="載入失敗，無法取得疾管署警示"
-      footerHref="/tools/travel-epidemic-alerts"
+      footerHref="/tools/global-watch/epidemics"
       footerLabel="前往疾管署國際旅遊疫情地圖 →"
     >
       <div className="mb-3 flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold dark:bg-slate-800">

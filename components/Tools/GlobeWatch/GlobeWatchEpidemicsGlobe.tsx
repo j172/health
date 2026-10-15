@@ -31,6 +31,7 @@ import {
   EPIDEMIC_NEUTRAL_FILL_COLOR,
 } from "@/lib/tools/globeWatch/epidemicsBoundaries";
 import type { EpidemicPointFeature, EpidemicsGlobeData } from "@/lib/tools/globeWatch/epidemicsTransform";
+import type { WhoDonPinFeature } from "@/lib/tools/globeWatch/whoDonTransform";
 
 type BasemapMode = "vector" | "satellite";
 
@@ -39,6 +40,14 @@ const COUNTRY_FILL_LAYER_ID = "global-watch-epidemics-countries-fill";
 const COUNTRY_LINE_LAYER_ID = "global-watch-epidemics-countries-line";
 const POINT_SOURCE_ID = "global-watch-epidemics-points";
 const POINT_LAYER_ID = "global-watch-epidemics-points-layer";
+// Issue #597 (parent #583): WHO DON pin overlay — its own source/layer, kept
+// entirely separate from COUNTRY_SOURCE_ID/COUNTRY_FILL_LAYER_ID above so
+// toggling it on/off (via the `whoPins` prop, already filtered to `[]` when
+// hidden by the caller — see GlobeWatchEpidemicsClient.tsx) can never affect
+// the choropleth (AC: 關閉切換後圖釘從地球上消失，國家上色不受影響).
+const WHO_PIN_SOURCE_ID = "global-watch-epidemics-who-pins";
+const WHO_PIN_LAYER_ID = "global-watch-epidemics-who-pins-layer";
+const WHO_PIN_COLOR = "#7c3aed"; // violet-600 — visually distinct from the level 1/2/3 choropleth/point colors
 
 /**
  * Issue #589 (parent #583) — the 國際疫情 (epidemics) item's own MapLibre
@@ -65,22 +74,33 @@ export default function GlobeWatchEpidemicsGlobe({
   data,
   selectedIso,
   onSelectCountry,
+  whoPins,
+  onSelectWhoPin,
 }: {
   locale: Locale;
   reducedMotion: boolean;
   data: EpidemicsGlobeData;
   selectedIso: string | null;
   onSelectCountry: (iso: string | null) => void;
+  /** Issue #597 (parent #583): already filtered by the caller to `[]` when
+   * the "顯示 WHO 通報" toggle is off — see filterVisibleWhoDonPins in
+   * lib/tools/globeWatch/whoDonTransform.ts. This component just mirrors
+   * whatever list it's given into the WHO-pin source; it owns no
+   * show/hide state of its own. */
+  whoPins: WhoDonPinFeature[];
+  onSelectWhoPin: (id: string | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const boundariesLoadedRef = useRef(false);
   const dataRef = useRef(data);
   const onSelectCountryRef = useRef(onSelectCountry);
+  const whoPinsRef = useRef(whoPins);
+  const onSelectWhoPinRef = useRef(onSelectWhoPin);
 
-  // "Latest ref" pattern: these two mirror the current `data`/
-  // `onSelectCountry` props for the mount-once effect below (which reads
-  // them from event callbacks, not from render) to read without being
+  // "Latest ref" pattern: these mirror the current `data`/`onSelectCountry`/
+  // `whoPins`/`onSelectWhoPin` props for the mount-once effect below (which
+  // reads them from event callbacks, not from render) to read without being
   // retriggered by every data/callback-identity change. Assigning `.current`
   // must happen in an effect, not during render itself (react-hooks/refs).
   useEffect(() => {
@@ -89,6 +109,12 @@ export default function GlobeWatchEpidemicsGlobe({
   useEffect(() => {
     onSelectCountryRef.current = onSelectCountry;
   }, [onSelectCountry]);
+  useEffect(() => {
+    whoPinsRef.current = whoPins;
+  }, [whoPins]);
+  useEffect(() => {
+    onSelectWhoPinRef.current = onSelectWhoPin;
+  }, [onSelectWhoPin]);
 
   const [basemapMode, setBasemapMode] = useState<BasemapMode>("vector");
   const [attributionHtml, setAttributionHtml] = useState(OPENFREEMAP_ATTRIBUTION_HTML);
@@ -119,7 +145,8 @@ export default function GlobeWatchEpidemicsGlobe({
       applyLocaleLabels(map, locale);
       loadCountryBoundaries(map, dataRef.current, () => setBoundariesReady(true));
       addPointLayer(map, dataRef.current.points);
-      wireClickHandlers(map, onSelectCountryRef);
+      addWhoPinLayer(map, whoPinsRef.current);
+      wireClickHandlers(map, onSelectCountryRef, onSelectWhoPinRef);
     });
 
     return () => {
@@ -151,6 +178,17 @@ export default function GlobeWatchEpidemicsGlobe({
     );
     updatePointSource(map, data.points);
   }, [data, boundariesReady]);
+
+  // Keep the WHO-pin source in sync with `whoPins` — including the toggle's
+  // hide case, where the caller already passed `[]` (AC: 關閉切換後圖釘從地
+  // 球上消失，國家上色不受影響 — this effect never touches COUNTRY_* ids).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const apply = () => updateWhoPinSource(map, whoPins);
+    if (map.isStyleLoaded() && map.getSource(WHO_PIN_SOURCE_ID)) apply();
+    else map.once("load", apply);
+  }, [whoPins]);
 
   // Highlight the selected country with a thicker border.
   useEffect(() => {
@@ -327,9 +365,50 @@ function pointsToGeoJson(points: EpidemicPointFeature[]) {
   };
 }
 
+/** Issue #597 (parent #583) — adds the WHO DON pin source/layer once, at
+ * map load, seeded with whatever `pins` the caller already filtered by the
+ * "顯示 WHO 通報" toggle. A small circle marker (distinct violet color, AC
+ * doesn't call for a custom icon asset) rather than reusing POINT_LAYER_ID's
+ * styling — these are two independently-toggleable, independently-sourced
+ * overlays that happen to both render as circles. */
+function addWhoPinLayer(map: MapLibreMap, pins: WhoDonPinFeature[]): void {
+  if (map.getSource(WHO_PIN_SOURCE_ID)) return;
+  map.addSource(WHO_PIN_SOURCE_ID, { type: "geojson", data: whoPinsToGeoJson(pins) });
+  map.addLayer({
+    id: WHO_PIN_LAYER_ID,
+    type: "circle",
+    source: WHO_PIN_SOURCE_ID,
+    paint: {
+      "circle-radius": 5,
+      "circle-color": WHO_PIN_COLOR,
+      "circle-stroke-width": 1.5,
+      "circle-stroke-color": "#ffffff",
+    },
+  });
+}
+
+function updateWhoPinSource(map: MapLibreMap, pins: WhoDonPinFeature[]): void {
+  const source = map.getSource(WHO_PIN_SOURCE_ID);
+  if (source && "setData" in source) {
+    (source as unknown as { setData: (data: unknown) => void }).setData(whoPinsToGeoJson(pins));
+  }
+}
+
+function whoPinsToGeoJson(pins: WhoDonPinFeature[]) {
+  return {
+    type: "FeatureCollection" as const,
+    features: pins.map((p) => ({
+      type: "Feature" as const,
+      geometry: { type: "Point" as const, coordinates: [p.lng, p.lat] },
+      properties: { id: p.id },
+    })),
+  };
+}
+
 function wireClickHandlers(
   map: MapLibreMap,
   onSelectCountryRef: { current: (iso: string | null) => void },
+  onSelectWhoPinRef: { current: (id: string | null) => void },
 ): void {
   map.on("click", COUNTRY_FILL_LAYER_ID, (e: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
     const feature = e.features?.[0];
@@ -340,6 +419,18 @@ function wireClickHandlers(
     map.getCanvas().style.cursor = "pointer";
   });
   map.on("mouseleave", COUNTRY_FILL_LAYER_ID, () => {
+    map.getCanvas().style.cursor = "";
+  });
+
+  map.on("click", WHO_PIN_LAYER_ID, (e: MapMouseEvent & { features?: MapGeoJSONFeature[] }) => {
+    const feature = e.features?.[0];
+    const id = feature?.properties?.id;
+    if (typeof id === "string" && id) onSelectWhoPinRef.current(id);
+  });
+  map.on("mouseenter", WHO_PIN_LAYER_ID, () => {
+    map.getCanvas().style.cursor = "pointer";
+  });
+  map.on("mouseleave", WHO_PIN_LAYER_ID, () => {
     map.getCanvas().style.cursor = "";
   });
 }

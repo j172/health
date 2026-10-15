@@ -147,9 +147,9 @@ test("GlobeWatchGlobe creates a GeoJSON source + two circle layers for earthquak
   assert.match(globeSrc, /filter:\s*\["==",\s*\["get",\s*"isTsunami"\],\s*true\]/);
 });
 
-test("GlobeWatchGlobe's circle layer paints radius/color straight from the feature properties the pure transform module computed (AC: 標記大小/顏色依規模分級)", () => {
+test("GlobeWatchGlobe's circle layer paints radius/color straight from the feature properties the pure transform module computed (AC: 標記大小/顏色依規模分級), falling back from issue #595's GDACS color to the original markerColor when unmatched", () => {
   assert.match(globeSrc, /"circle-radius":\s*\["get",\s*"markerRadiusPx"\]/);
-  assert.match(globeSrc, /"circle-color":\s*\["get",\s*"markerColor"\]/);
+  assert.match(globeSrc, /"circle-color":\s*\["coalesce",\s*\["get",\s*"gdacsColor"\],\s*\["get",\s*"markerColor"\]\]/);
 });
 
 test("GlobeWatchGlobe binds a click handler on the earthquake circle layer that opens a MapLibre Popup built from EarthquakeGlobeFeatureProperties", () => {
@@ -165,20 +165,36 @@ test("GlobeWatchGlobe's flyTo effect reuses resolveCameraTransition/resolveFlyDu
 });
 
 test("ensureSatelliteLayer stacks the satellite raster BELOW the earthquake layers when they already exist, so satellite never occludes markers", () => {
-  assert.match(globeSrc, /EARTHQUAKE_TSUNAMI_LAYER_ID\)\s*\?\s*EARTHQUAKE_TSUNAMI_LAYER_ID\s*:\s*firstSymbolLayerId/);
+  // Issue #594 grew this ternary with a disasters-layer branch between the
+  // earthquake check and the final `firstSymbolLayerId` fallback (see the
+  // next test) — relaxed from an exact `: firstSymbolLayerId` suffix to
+  // "falls through to something, eventually", so a later item's own branch
+  // doesn't need to keep editing this specific assertion (same
+  // containment-over-exact-snapshot convention #589 used for
+  // GLOBE_WATCH_ITEMS.length).
+  assert.match(globeSrc, /EARTHQUAKE_TSUNAMI_LAYER_ID\)\s*\?\s*EARTHQUAKE_TSUNAMI_LAYER_ID\s*:/);
+});
+
+test("ensureSatelliteLayer also stacks the satellite raster BELOW the disasters layer when it exists (issue #594), before falling back to firstSymbolLayerId", () => {
+  assert.match(globeSrc, /DISASTER_CIRCLE_LAYER_ID\)\s*\?\s*DISASTER_CIRCLE_LAYER_ID\s*:\s*firstSymbolLayerId/);
 });
 
 test("GlobeWatchClient forwards an optional earthquakes prop straight to GlobeWatchGlobe", () => {
   assert.match(clientSrc, /earthquakes\?:\s*EarthquakeGlobeLayerProps/);
-  assert.match(clientSrc, /<GlobeWatchGlobe locale=\{locale\} reducedMotion=\{reducedMotion\} earthquakes=\{earthquakes\}\s*\/>/);
+  // Issue #594 added a sibling `disasters` prop forwarded on the same
+  // element — relaxed from one single-line exact-JSX match to two
+  // substring checks so a later item's own added prop doesn't need to keep
+  // editing this specific assertion.
+  assert.match(clientSrc, /<GlobeWatchGlobe locale=\{locale\} reducedMotion=\{reducedMotion\} earthquakes=\{earthquakes\}/);
+  assert.match(clientSrc, /disasters=\{disasters\}/);
 });
 
 // ---------------------------------------------------------------------------
 // AC: shared M4/M6/M7 filter + list-click-flies-globe + item tabs
 // ---------------------------------------------------------------------------
 
-test("GlobeWatchEarthquakesItem lifts one filterMinMag state value and passes it to both the globe feature collection and EarthquakeContent", () => {
-  assert.match(itemSrc, /buildEarthquakeGlobeFeatureCollection\(globeRows, \{ minMagnitude: filterMinMag \}\)/);
+test("GlobeWatchEarthquakesItem lifts one filterMinMag state value and passes it to both the globe feature collection and EarthquakeContent (issue #595 adds gdacsEvents alongside it, never replacing it)", () => {
+  assert.match(itemSrc, /buildEarthquakeGlobeFeatureCollection\(globeRows, \{ minMagnitude: filterMinMag, gdacsEvents \}\)/);
   assert.match(itemSrc, /filterMinMag=\{filterMinMag\}/);
   assert.match(itemSrc, /onFilterChange=\{setFilterMinMag\}/);
 });

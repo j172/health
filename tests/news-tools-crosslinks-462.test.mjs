@@ -94,7 +94,11 @@ test("earthquake news surfaces a plausible subset of global-watch/emergency-supp
   }
 });
 
-test("dengue fever (登革熱) news surfaces pest-alerts and travel-epidemic-alerts", () => {
+test("dengue fever (登革熱) news surfaces pest-alerts and global-watch", () => {
+  // issue #591 (parent #583): travel-epidemic-alerts was retired in favor of
+  // global-watch's 國際疫情 item, which reuses its TravelEpidemicAlertsContent
+  // component as-is. The "登革熱" cross-linking keyword was carried over to
+  // global-watch's own TOOL_CATALOG entry so this crosslink survives the merge.
   const news = {
     title: "全國登革熱病例創新高 疾管署籲加強防蚊",
     keywords: "登革熱,疾管署,防疫",
@@ -108,8 +112,8 @@ test("dengue fever (登革熱) news surfaces pest-alerts and travel-epidemic-ale
   assert.ok(related.length >= 1 && related.length <= 3, "expected 1-3 related tools");
   assert.ok(slugs.includes("pest-alerts"), "dengue news must surface pest-alerts");
   assert.ok(
-    slugs.includes("travel-epidemic-alerts"),
-    "dengue news must surface travel-epidemic-alerts",
+    slugs.includes("global-watch"),
+    "dengue news must surface global-watch (successor to the retired travel-epidemic-alerts)",
   );
 });
 

@@ -86,7 +86,6 @@
     "green-certifications": "Green Certifications Finder (Shops, Hotels, Products & Restaurants)",
     "cultural-events": "National Cultural, Exhibition & Family Events Finder",
     "public-art": "National Public Art Map & Directory",
-    "travel-epidemic-alerts": "International Travel Epidemic & Outbreak Alerts",
     "cool-spots": "Cool Spot (Heat Relief) Finder",
     "iaq-premises": "Indoor Air Quality Act Premises Finder",
     "cleaning-squads": "Municipal Cleaning Squad Directory",
@@ -134,7 +133,8 @@
     "anti-fraud": "Anti-Fraud URL Checker (Blocked Scam Domain Lookup)",
     "emergency-supplies": "Disaster Preparedness Supply Calculator (Emergency Kit & Home Stockpile)",
     "senior-friendly": "Senior Transit Card & Age-Friendly Travel Map (All 22 Counties)",
-    "social-welfare-centers": "Social Welfare Center Finder & Caseworker Support Guide"
+    "social-welfare-centers": "Social Welfare Center Finder & Caseworker Support Guide",
+    "ltc-benefits": "Long-Term Care Benefits & Application Guide (Care Level Benefit Estimator)"
   },
   "categories": {
     "gov": "Government Agencies",
@@ -671,12 +671,20 @@
     "tsunamiWarning": "🌊 Tsunami Warning",
     "depthLabel": "Depth:",
     "officialReportLink": "Official report ↗",
+    "gdacsAlertLevel": "GDACS Alert Level:",
     "dataSource": "Source: Central Weather Administration (CWA, Taiwan M4.0+) · U.S. Geological Survey (USGS, global M6.0+)"
   },
   "globalWatchTool": {
     "earthquakes": {
       "legendHeading": "Globe marker legend:",
       "legendTsunami": "Tsunami warning"
+    },
+    "disasters": {
+      "legendHeading": "Alert level legend:",
+      "typeFilterHeading": "Show disaster types:",
+      "readOriginal": "Read original ↗",
+      "unknownCountry": "Unknown location",
+      "emptyStateTemplate": "No {type} events right now"
     }
   },
   "aqiTool": {

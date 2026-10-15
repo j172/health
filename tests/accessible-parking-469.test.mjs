@@ -143,19 +143,23 @@ test('"accessible-parking" has at least one inbound relatedSlugs reference (no l
   assert.ok(inbound, "some other tool must list accessible-parking in its relatedSlugs");
 });
 
-test('the "pregnancy-to-parenting" guide has a new step for accessible-parking (孕婦及親子車位)', () => {
+// Issue #616 ("情境頁改寫：懷孕到育兒、家有長輩", parent spec #611) replaced
+// pregnancy-to-parenting's entire step list with a new, longer chronological
+// order (母嬰親善 -> 哺集乳室 -> 產後護理之家 -> 育兒補助 -> 托嬰中心 ->
+// 幼兒園 -> 親子館/兒少福利機構 -> 早療 -> 兒少安全) that does not include
+// accessible-parking — superseding this ticket (#469)'s original addition of
+// an accessible-parking step to that guide. disability-living still keeps
+// its own accessible-parking step untouched.
+test('the "pregnancy-to-parenting" guide no longer has an accessible-parking step (superseded by issue #616\'s step-order rewrite)', () => {
   const guide = GUIDES.find((g) => g.slug === "pregnancy-to-parenting");
   assert.ok(guide, 'GUIDES must still contain "pregnancy-to-parenting"');
 
   const step = guide.steps.find((s) => s.toolSlug === "accessible-parking");
-  assert.ok(step, 'pregnancy-to-parenting must have a step with toolSlug "accessible-parking"');
-  assert.ok(step.caption.trim().length > 0);
-  assert.ok(step.why.trim().length > 0);
-  assert.ok(step.caption.includes("孕婦") || step.why.includes("孕婦"), "the step must be about the parent/child parking type");
-
-  // Standing content rule: no persona labels, plain "使用者" instead.
-  assert.ok(!step.caption.includes("觀光客") && !step.caption.includes("病患"));
-  assert.ok(!step.why.includes("觀光客") && !step.why.includes("病患"));
+  assert.equal(
+    step,
+    undefined,
+    'pregnancy-to-parenting must not have an accessible-parking step after issue #616\'s rewrite',
+  );
 });
 
 test('the "disability-living" guide has a new step for accessible-parking (身障/復康巴士車位), and still has #468\'s audible-signals step', () => {
@@ -175,12 +179,10 @@ test('the "disability-living" guide has a new step for accessible-parking (身�
   assert.ok(signalsStep.why.includes("App"));
 });
 
-test("buildGuide resolves both new accessible-parking steps to the same real tool + href", () => {
+test("buildGuide resolves disability-living's accessible-parking step to the real tool + href (pregnancy-to-parenting no longer has one, per issue #616)", () => {
   const pregnancyPage = buildGuide("pregnancy-to-parenting");
   const pregnancyStep = pregnancyPage.steps.find((s) => s.toolSlug === "accessible-parking");
-  assert.ok(pregnancyStep);
-  assert.equal(pregnancyStep.href, "/tools/accessible-parking");
-  assert.equal(pregnancyStep.tool.slug, "accessible-parking");
+  assert.equal(pregnancyStep, undefined);
 
   const disabilityPage = buildGuide("disability-living");
   const disabilityStep = disabilityPage.steps.find((s) => s.toolSlug === "accessible-parking");
@@ -188,11 +190,11 @@ test("buildGuide resolves both new accessible-parking steps to the same real too
   assert.equal(disabilityStep.href, "/tools/accessible-parking");
 });
 
-test('getGuidesForTool("accessible-parking") reverse-resolves to both guides', () => {
+test('getGuidesForTool("accessible-parking") reverse-resolves to only disability-living (pregnancy-to-parenting\'s step was removed by issue #616)', () => {
   const guides = getGuidesForTool("accessible-parking");
   assert.deepEqual(
     guides.map((g) => g.slug).sort(),
-    ["disability-living", "pregnancy-to-parenting"].sort(),
+    ["disability-living"],
   );
 });
 

@@ -16,8 +16,10 @@ function getCatalogSlugs() {
 test("TOOL_CATALOG has exactly 87 tools registered", () => {
   // 82 baseline + #601 childcare-centers + #587 global-watch + #604
   // child-subsidies + #612 postpartum-care + #613 early-intervention + #603
-  // social-welfare-centers, all merged independently on 2026-10-14/15,
-  // minus #590's retirement of the standalone "earthquakes" entry.
+  // social-welfare-centers + #615 ltc-benefits, all merged independently on
+  // 2026-10-14/15, minus #590's retirement of "earthquakes" and #591's
+  // retirement of "travel-epidemic-alerts" (both 301'd to global-watch's
+  // own item sub-routes).
   const slugs = getCatalogSlugs();
   assert.equal(slugs.length, 87, `Expected 87 tools in catalog, got ${slugs.length}`);
 });

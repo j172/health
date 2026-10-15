@@ -1,6 +1,8 @@
-import { withConnection } from "@/lib/server/db/mysql";
+import type { RowDataPacket } from "mysql2/promise";
+import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
-import type { IncomingGdacsEvent } from "@/lib/server/gdacs/types";
+import { memoizeQuery } from "@/lib/server/cache/memo";
+import type { GdacsAlertLevel, IncomingGdacsEvent } from "@/lib/server/gdacs/types";
 
 /**
  * Upserts a batch of GDACS events keyed by (event_type, event_id) — matches
@@ -80,3 +82,192 @@ export const cleanupEndedGdacsEvents = async (retentionDays = 30): Promise<numbe
     );
     return (result as { affectedRows: number }).affectedRows;
   });
+
+/** A GDACS EQ-type event row, shaped for
+ * lib/tools/globeWatch/earthquakeGlobeFeatures.ts's `GdacsEqEventRow` (this
+ * file's output is this app's own naming/casing, matching that pure
+ * module's input contract field-for-field so callers never need an
+ * intermediate mapping step). */
+export interface RecentGdacsEqEvent {
+  eventId: string;
+  alertLevel: GdacsAlertLevel;
+  lat: number;
+  lng: number;
+  startTime: Date | null;
+  reportUrl: string | null;
+}
+
+interface GdacsEqEventRowPacket extends RowDataPacket {
+  event_id: string;
+  alert_level: GdacsAlertLevel;
+  lat: number;
+  lng: number;
+  start_time: Date | null;
+  report_url: string | null;
+}
+
+/**
+ * Fetches GDACS events of type EQ from the last `lookbackDays` days, for
+ * the earthquake item's globe-marker severity overlay (issue #595) — the
+ * first read query this file has needed (upsertGdacsEvents and
+ * cleanupEndedGdacsEvents are both writes). The actual earthquake↔GDACS
+ * matching (time/distance tolerance) happens entirely in
+ * lib/tools/globeWatch/earthquakeGlobeFeatures.ts's matchGdacsEqEvent, a
+ * pure function with no DB access — this function's only job is fetching
+ * candidates for it to match against.
+ *
+ * `lookbackDays` defaults wider (10 days) than both the globe's own 7-day
+ * earthquake lookback (GLOBE_EARTHQUAKE_LOOKBACK_HOURS) and the matcher's
+ * own time tolerance (GDACS_EQ_MATCH_TIME_WINDOW_HOURS, 6h) combined, so a
+ * GDACS event whose `start_time` lands just outside the earthquake
+ * lookback window is never excluded from the candidate set — the matcher
+ * itself still enforces the real 6-hour tolerance per earthquake.
+ *
+ * Uses `withConnectionFallback([], ...)` (not `withConnection`), the same
+ * degrade-to-empty convention `getTieredEarthquakes`/
+ * `getGlobeWatchEarthquakeCandidates` already use — a GDACS read failure
+ * must never take down the earthquake item's page, since the severity
+ * overlay this feeds is purely additive (AC: an unmatched earthquake simply
+ * keeps its magnitude-based color).
+ */
+export const getRecentEqGdacsEvents = async (lookbackDays = 10): Promise<RecentGdacsEqEvent[]> =>
+  memoizeQuery(`gdacs_recent_eq_${lookbackDays}`, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<GdacsEqEventRowPacket[]>(
+        `SELECT event_id, alert_level, lat, lng, start_time, report_url
+         FROM gdacs_events
+         WHERE event_type = 'EQ'
+           AND (start_time IS NULL OR start_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY))`,
+        [lookbackDays],
+      );
+      return rows.map((row) => ({
+        eventId: row.event_id,
+        alertLevel: row.alert_level,
+        lat: Number(row.lat),
+        lng: Number(row.lng),
+        startTime: row.start_time,
+        reportUrl: row.report_url,
+      }));
+    }),
+  );
+
+/** GDACS event-type codes the "全球災害" (disasters) item shows — see
+ * lib/tools/globeWatch/disastersTransform.ts for why EQ/TC are excluded. */
+const DISASTER_EVENT_TYPES = ["FL", "VO", "DR", "WF"] as const;
+
+/** Row shape returned by getCurrentGdacsDisasterEvents() — mirrors the
+ * gdacs_events columns the disasters item's pure transform module
+ * (lib/tools/globeWatch/disastersTransform.ts) actually needs, mapped from
+ * snake_case DB columns to camelCase. */
+export interface GdacsDisasterEventRow {
+  eventType: string;
+  eventId: string;
+  alertLevel: string;
+  countryIso: string | null;
+  lat: number;
+  lng: number;
+  startTime: string | null;
+  endTime: string | null;
+  title: string;
+  reportUrl: string | null;
+}
+
+const mapDisasterEventRow = (row: RowDataPacket): GdacsDisasterEventRow => ({
+  eventType: row.event_type,
+  eventId: row.event_id,
+  alertLevel: row.alert_level,
+  countryIso: row.country_iso ?? null,
+  lat: Number(row.lat),
+  lng: Number(row.lng),
+  startTime: row.start_time ? new Date(row.start_time).toISOString() : null,
+  endTime: row.end_time ? new Date(row.end_time).toISOString() : null,
+  title: row.title,
+  reportUrl: row.report_url ?? null,
+});
+
+/**
+ * Issue #594 (parent #583) — fetches every currently-active FL/VO/DR/WF
+ * event (the "全球災害" item's data source): "currently active" means
+ * `end_time IS NULL` (still ongoing, per GDACS) or `end_time` hasn't passed
+ * yet, same "ongoing" semantics cleanupEndedGdacsEvents() already uses for
+ * retention. EQ/TC are excluded at the SQL level (defense in depth — the
+ * pure transform module filters them again too). Memoized for 60s (same
+ * convention as lib/server/earthquakes/queries.ts) since this is read on
+ * every /tools/global-watch/disasters page render.
+ */
+export const getCurrentGdacsDisasterEvents = async (): Promise<GdacsDisasterEventRow[]> =>
+  memoizeQuery("gdacs_disaster_events_current", async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `SELECT event_type, event_id, alert_level, country_iso, lat, lng, start_time, end_time, title, report_url
+         FROM gdacs_events
+         WHERE event_type IN (?, ?, ?, ?)
+           AND (end_time IS NULL OR end_time >= UTC_TIMESTAMP())
+         ORDER BY start_time DESC`,
+        [...DISASTER_EVENT_TYPES],
+      );
+      return rows.map(mapDisasterEventRow);
+    }),
+  );
+
+/** One active TC (tropical cyclone) event row, as read back from
+ * gdacs_events for the global-watch 颱風 item. */
+export interface GdacsTcEventRow {
+  event_id: string;
+  episode_id: string;
+  alert_level: GdacsAlertLevel;
+  alert_score: number | null;
+  country_iso: string | null;
+  lat: number;
+  lng: number;
+  start_time: Date | null;
+  end_time: Date | null;
+  title: string;
+  report_url: string | null;
+  basin: string | null;
+  /** mysql2 auto-parses JSON-typed columns into a plain object (same
+   * convention `sources_json` on `global_earthquakes` already relies on —
+   * see lib/server/earthquakes/queries.ts), so this arrives already parsed. */
+  track_geojson: Record<string, unknown> | null;
+}
+
+/**
+ * Issue #593 (parent #583): active TC events for the global-watch 颱風
+ * item's non-West-Pacific data (lib/tools/globeWatch/typhoonsTransform.ts
+ * drops any row here whose own `basin` is "WP", since CWA alone covers that
+ * basin — see that module's doc comment). "Active" means GDACS still
+ * considers the event ongoing (`end_time IS NULL`) or its stated end time
+ * hasn't passed yet; an event with no `end_time` is never excluded by age,
+ * matching cleanupEndedGdacsEvents' own "only end_time IS NOT NULL rows are
+ * cleanup candidates" rule.
+ */
+export const listActiveTcEvents = async (): Promise<GdacsTcEventRow[]> =>
+  memoizeQuery("gdacs_active_tc_events", async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT event_id, episode_id, alert_level, alert_score, country_iso, lat, lng,
+               start_time, end_time, title, report_url, basin, track_geojson
+        FROM gdacs_events
+        WHERE event_type = 'TC'
+          AND (end_time IS NULL OR end_time > UTC_TIMESTAMP())
+        ORDER BY start_time DESC
+        `,
+      );
+      return rows.map((r) => ({
+        event_id: String(r.event_id),
+        episode_id: String(r.episode_id),
+        alert_level: r.alert_level as GdacsAlertLevel,
+        alert_score: r.alert_score != null ? Number(r.alert_score) : null,
+        country_iso: r.country_iso ?? null,
+        lat: Number(r.lat),
+        lng: Number(r.lng),
+        start_time: r.start_time ?? null,
+        end_time: r.end_time ?? null,
+        title: String(r.title),
+        report_url: r.report_url ?? null,
+        basin: r.basin ?? null,
+        track_geojson: (r.track_geojson as Record<string, unknown> | null) ?? null,
+      })) as GdacsTcEventRow[];
+    }),
+  );

@@ -7,6 +7,7 @@ import {
   EARTHQUAKE_GLOBE_LEGEND,
   type EarthquakeGlobeFeatureProperties,
   type EarthquakeGlobeRow,
+  type GdacsEqEventRow,
 } from "@/lib/tools/globeWatch/earthquakeGlobeFeatures";
 import { useLanguage } from "@/app/context/LanguageContext";
 import GlobeWatchClient from "./GlobeWatchClient";
@@ -25,13 +26,20 @@ import EarthquakeContent from "./EarthquakeContent";
  * down from — see lib/server/earthquakes/queries.ts's
  * getGlobeWatchEarthquakeCandidates) are two independent fetches on
  * purpose; this component never re-derives one from the other.
+ *
+ * `gdacsEvents` (issue #595, parent #583) is an optional third fetch (see
+ * lib/server/gdacs/queries.ts's getRecentEqGdacsEvents) — purely additive,
+ * so an empty/omitted array degrades to exactly #588's original behavior
+ * (every marker colored by magnitude only, no popup GDACS line).
  */
 export default function GlobeWatchEarthquakesItem({
   earthquakes,
   globeRows,
+  gdacsEvents = [],
 }: {
   earthquakes: SignificantEarthquake[];
   globeRows: EarthquakeGlobeRow[];
+  gdacsEvents?: GdacsEqEventRow[];
 }) {
   const { t } = useLanguage();
   const [filterMinMag, setFilterMinMag] = useState<number>(4.0);
@@ -40,8 +48,8 @@ export default function GlobeWatchEarthquakesItem({
   const flyTokenRef = useRef(0);
 
   const featureCollection = useMemo(
-    () => buildEarthquakeGlobeFeatureCollection(globeRows, { minMagnitude: filterMinMag }),
-    [globeRows, filterMinMag],
+    () => buildEarthquakeGlobeFeatureCollection(globeRows, { minMagnitude: filterMinMag, gdacsEvents }),
+    [globeRows, filterMinMag, gdacsEvents],
   );
 
   // AC: "點擊清單項目時地球飛到該地震的位置" — the list's own rows
@@ -69,6 +77,10 @@ export default function GlobeWatchEarthquakesItem({
     tsunamiLabel: t("earthquakesTool.tsunamiWarning", "🌊 海嘯警報"),
     sourceLinkLabel: t("earthquakesTool.officialReportLink", "官方測報 ↗"),
     unnamedPlaceholder: t("earthquakesTool.unnamedEpicenter", "未具名震央區域"),
+    // Issue #595 (AC: "點擊有警戒色的地震標記，彈出內容包含 GDACS 警戒等級") — only
+    // rendered by GlobeWatchGlobe.tsx's popup when the clicked feature
+    // actually has a `gdacsAlertLevel` (i.e. a GDACS EQ event matched it).
+    gdacsAlertLabel: t("earthquakesTool.gdacsAlertLevel", "GDACS 警戒等級:"),
   };
 
   return (

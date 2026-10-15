@@ -200,7 +200,11 @@ test("GlobeWatchClient loads the globe component via next/dynamic with ssr:false
 });
 
 test("GlobeWatchClient never renders the globe (and therefore never triggers its dynamic import) before the WebGL probe resolves or when it resolves false", () => {
-  assert.match(clientSrc, /webglSupported\s*===\s*true\s*&&\s*<GlobeWatchGlobe/);
+  // Issue #594 wrapped the `<GlobeWatchGlobe .../>` element in a parenthesized
+  // JSX group (to fit its new `disasters={disasters}` prop on its own line) —
+  // relaxed to allow an optional `(` and whitespace/newline between `&&` and
+  // the element, rather than requiring them adjacent on one line.
+  assert.match(clientSrc, /webglSupported\s*===\s*true\s*&&\s*\(?\s*<GlobeWatchGlobe/);
   assert.match(clientSrc, /webglSupported\s*===\s*false\s*&&/);
   assert.match(clientSrc, /useState<boolean \| null>\(null\)/);
 });

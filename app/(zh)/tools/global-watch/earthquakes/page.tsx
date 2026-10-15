@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getGlobeWatchEarthquakeCandidates, getTieredEarthquakes } from "@/lib/server/earthquakes/queries";
+import { getRecentEqGdacsEvents } from "@/lib/server/gdacs/queries";
 import { buildBreadcrumbJsonLd, getBaseUrl } from "@/lib/server/news/seo";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
@@ -55,9 +56,10 @@ export default async function GlobalWatchEarthquakesPage() {
   // the list keeps the existing "顯著地震" rule; the globe's own, wider
   // threshold is computed by the pure transform module from the broader
   // candidate rows below.
-  const [earthquakes, globeCandidates] = await Promise.all([
+  const [earthquakes, globeCandidates, gdacsEqEvents] = await Promise.all([
     getTieredEarthquakes(168, 100),
     getGlobeWatchEarthquakeCandidates(),
+    getRecentEqGdacsEvents(),
   ]);
 
   const globeRows: EarthquakeGlobeRow[] = globeCandidates.map((row) => ({
@@ -115,7 +117,7 @@ export default async function GlobalWatchEarthquakesPage() {
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{DESCRIPTION}</p>
 
             <div className="mt-6">
-              <GlobeWatchEarthquakesItem earthquakes={earthquakes} globeRows={globeRows} />
+              <GlobeWatchEarthquakesItem earthquakes={earthquakes} globeRows={globeRows} gdacsEvents={gdacsEqEvents} />
             </div>
           </div>
         </main>

@@ -37,8 +37,11 @@ const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfig
 test("Site-wide tools health: every tool in TOOL_CATALOG has valid metadata and no blocking loading", () => {
   // 82 baseline + #601 childcare-centers + #587 global-watch + #604
   // child-subsidies + #612 postpartum-care + #613 early-intervention + #603
-  // social-welfare-centers, all merged independently on 2026-10-14/15,
-  // minus #590's retirement of the standalone "earthquakes" entry.
+  // social-welfare-centers + #615 ltc-benefits, all merged independently on
+  // 2026-10-14/15, minus #590's retirement of "earthquakes" and #591's
+  // retirement of "travel-epidemic-alerts" (both 301'd to global-watch's
+  // own item sub-routes) — verified directly against the resolved
+  // catalog.ts.
   assert.equal(TOOL_CATALOG.length, 87, `Expected exactly 87 tools, got ${TOOL_CATALOG.length}`);
 
   for (const tool of TOOL_CATALOG) {

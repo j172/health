@@ -165,8 +165,15 @@ test("global-watch's own relatedSlugs dropped the self-reference to earthquakes 
   assert.ok(match, "should find the global-watch entry's relatedSlugs array");
   assert.ok(!match[1].includes("global-watch"), "global-watch must not list itself in its own relatedSlugs");
   assert.ok(
-    match[1].includes("travel-epidemic-alerts"),
-    "global-watch's relatedSlugs should still include travel-epidemic-alerts (not this ticket's concern — see #591)",
+    !match[1].includes("earthquakes"),
+    "global-watch's relatedSlugs should not reference the retired earthquakes slug",
+  );
+  // #591 (parent #583), merged alongside this ticket, also retired
+  // "travel-epidemic-alerts" the same way — so global-watch's relatedSlugs
+  // should no longer carry that reference either, not just earthquakes.
+  assert.ok(
+    !match[1].includes("travel-epidemic-alerts"),
+    "global-watch's relatedSlugs should not reference the retired travel-epidemic-alerts slug (issue #591, merged alongside this one)",
   );
 });
 
