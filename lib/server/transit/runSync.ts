@@ -1,6 +1,7 @@
 import "server-only";
 import type { Pool } from "mysql2/promise";
 import { getPool } from "@/lib/server/db/mysql";
+import { getTdxToken } from "@/lib/server/tdx/auth";
 import { parseTdxCoordinate } from "@/lib/server/tdx/seniors";
 import {
   RAIL_SYSTEMS,
@@ -183,21 +184,25 @@ export async function runTransitAccessibilitySync(): Promise<TransitAccessibilit
   const allMaps: Array<{ system: RailSystem; map: SeniorStationMap }> = [];
   const allTransfers: Array<{ system: RailSystem; transfer: SeniorStationTransfer }> = [];
 
-  // Batch 3 RailSystems at a time, mirroring youbike/tdxClient.ts's
-  // batchSize=3 throttle against TDX's per-minute rate limit.
-  const batchSize = 3;
-  for (let i = 0; i < RAIL_SYSTEMS.length; i += batchSize) {
-    const batch = RAIL_SYSTEMS.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map((system) => syncRailSystem(system, summary.errors)),
-    );
-    for (let j = 0; j < batch.length; j++) {
-      const system = batch[j];
-      const result = results[j];
-      allStations.set(system, result.stations);
-      for (const map of result.maps) allMaps.push({ system, map });
-      for (const transfer of result.transfers) allTransfers.push({ system, transfer });
-    }
+  // Fail loudly (once) when there is no TDX token at all, instead of letting
+  // ~50 per-endpoint calls each fail and report 0 rows.
+  if (!(await getTdxToken())) {
+    summary.ok = false;
+    summary.errors.push("TDX credentials missing or token request failed — nothing was fetched");
+    return summary;
+  }
+
+  // Strictly sequential: TDX's basic tier allows 5 requests/minute for the
+  // whole credential, and every call below queues through the shared limiter
+  // in lib/server/tdx/rateLimiter.ts (13s spacing + 429 back-off). The original
+  // 3-system parallel batches fired 40+ requests at once and got HTTP 429 for
+  // everything but TRA/THSR on the first live run. A full run is ~50 requests,
+  // i.e. roughly 11 minutes — acceptable for a 3:15am cron job.
+  for (const system of RAIL_SYSTEMS) {
+    const result = await syncRailSystem(system, summary.errors);
+    allStations.set(system, result.stations);
+    for (const map of result.maps) allMaps.push({ system, map });
+    for (const transfer of result.transfers) allTransfers.push({ system, transfer });
   }
 
   const pool = getPool();
@@ -357,24 +362,21 @@ export async function runTransitFacilityAlertsSync(): Promise<TransitAlertsSyncS
 
   const allAlerts: Array<{ system: RailSystem; alert: SeniorStationFacilityAlert }> = [];
 
-  const batchSize = 3;
-  for (let i = 0; i < RAIL_SYSTEMS.length; i += batchSize) {
-    const batch = RAIL_SYSTEMS.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map(async (system) => {
-        try {
-          return await fetchSeniorFacilityAlert(system);
-        } catch (err) {
-          summary.errors.push(
-            `${system} Facility/Alert fetch failed: ${err instanceof Error ? err.message : String(err)}`,
-          );
-          return [];
-        }
-      }),
-    );
-    for (let j = 0; j < batch.length; j++) {
-      const system = batch[j];
-      for (const alert of results[j]) allAlerts.push({ system, alert });
+  if (!(await getTdxToken())) {
+    summary.ok = false;
+    summary.errors.push("TDX credentials missing or token request failed — nothing was fetched");
+    return summary;
+  }
+
+  // Sequential through the shared 5 req/min limiter (see
+  // runTransitAccessibilitySync) — 10 requests per run, roughly 2 minutes.
+  for (const system of RAIL_SYSTEMS) {
+    try {
+      for (const alert of await fetchSeniorFacilityAlert(system)) allAlerts.push({ system, alert });
+    } catch (err) {
+      summary.errors.push(
+        `${system} Facility/Alert fetch failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
   }
 

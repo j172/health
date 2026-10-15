@@ -1,6 +1,6 @@
 import "server-only";
-import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { TDX_SENIORS_API_BASE } from "@/lib/server/tdx/seniors";
 import type { RailSystem } from "./railStationCounty";
 
@@ -131,15 +131,23 @@ export const flattenFacilityCategories = (
   return out;
 };
 
+/**
+ * Every call goes through tdxGetJsonWithRetry(), i.e. the process-wide
+ * 5-requests-per-minute limiter shared by every TDX basic-tier caller (see
+ * lib/server/tdx/rateLimiter.ts) plus 429 back-off. The first live run
+ * (2026-10-13, issue #434) fired 40+ requests in 3-system parallel batches and
+ * every system after TRA/THSR got HTTP 429.
+ *
+ * A missing token throws rather than returning [] — a silent empty array was
+ * indistinguishable from "TDX has no data" and hid the production host having
+ * no TDX credentials at all (`{"ok":true, Upserted:0, errors:[]}` every run).
+ */
 const fetchSeniorRail = async <T>(path: string, system: RailSystem): Promise<T[]> => {
   const token = await getTdxToken();
-  if (!token) return [];
+  if (!token) throw new Error("TDX credentials missing or token request failed");
 
   const url = `${SENIOR_RAIL_BASE}${path}/${system}?%24format=JSON`;
-  const res = await httpGetJson<T[]>(url, {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<T[]>(url, token, { timeoutMs: 12000 });
   if (res.status !== 200 || !Array.isArray(res.data)) {
     throw new Error(`TDX Senior/Rail ${path}/${system} returned status ${res.status}`);
   }
