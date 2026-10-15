@@ -496,16 +496,31 @@ export const facilitySearchConfigs = {
   "smoking-cessation": {
     facilityType: "smoking_cessation",
     emoji: "🚭",
-    title: "戒菸治療與衛教特約院所查詢",
+    title: "全國戒菸治療與衛教特約院所查詢",
     description:
-      "查詢部分提供二代戒菸補助之特約醫院、基層診所與社區藥局示例。享戒菸藥品免部分負擔及衛教諮詢。資料來源：衛生福利部國民健康署。",
-    noteLine:
-      "目前僅收錄部分戒菸特約院所示例，完整的全國合約院所名單請至國民健康署戒菸服務查詢（ttc.hpa.gov.tw）。",
+      "查詢全國提供二代戒菸補助之特約醫院、基層診所與社區藥局。享戒菸藥品免部分負擔及衛教諮詢。資料來源：衛生福利部國民健康署「各縣市合約戒菸醫療院所」（2,838 家）。",
+    // issue #569（parent #562）：國健署 6954 全國表已上線同步，取代原本只有 6
+    // 筆手寫資料時的「部分示例」警示文字。noteLine 改為顯示資料本身的日期
+    // （各筆 extra_json.dataAsOf，本站同步當天的日期）而非再次提醒資料不完整。
     searchPlaceholder: "輸入院所、藥局名稱或地址關鍵字",
     errorText: "查詢戒菸特約院所失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的戒菸特約院所，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的戒菸院所。",
-    serviceItem: { label: "特約服務：" },
+    serviceItem: { label: "機構類別：" },
+    categories: [
+      { value: "醫學中心", label: "醫學中心" },
+      { value: "區域醫院", label: "區域醫院" },
+      { value: "地區醫院", label: "地區醫院" },
+      { value: "診所", label: "診所" },
+      { value: "牙科診所", label: "牙科診所" },
+      { value: "藥局", label: "藥局" },
+      { value: "衛生所", label: "衛生所" },
+    ],
+    extraFields: [
+      { key: "smokingMedication", label: "戒菸給藥：" },
+      { key: "smokingEducation", label: "戒菸衛教：" },
+      { key: "dataAsOf", label: "本站資料同步日期：" },
+    ],
   },
   "adult-preventive-care": {
     facilityType: "adult_preventive_care",
