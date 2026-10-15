@@ -113,6 +113,19 @@ interface FacilityItem {
     category?: string | null;
     monthlyFee?: number | null;
     hasPenalty?: boolean;
+    /**
+     * childcare_center facility type (#606, six-city expansion of #601):
+     * `registrationFee`/`mealFee` only present for 臺南 (6178, the only
+     * county dataset with 註冊費／副食品費 columns of its own — never
+     * invented for a county whose dataset doesn't have them). `dataNote` is
+     * a free-text caveat only set on 高雄 (128099/128100) rows, rendered as
+     * a dedicated warning line below rather than folded into the generic
+     * grey extraFields styling — see the "資料可能不完整" block near this
+     * file's card markup.
+     */
+    registrationFee?: string | number | null;
+    mealFee?: string | number | null;
+    dataNote?: string | null;
     [key: string]: unknown;
   } | null;
   /**
@@ -858,6 +871,17 @@ export default function FacilitySearchContent({
                   )}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
+                  {/*
+                    Issue #606: childcare_center rows from 高雄
+                    (128099/128100, only 53+17 rows, last refreshed 2025-06)
+                    carry a free-text `dataNote` caveat — rendered as its own
+                    amber warning line (not folded into the generic grey
+                    extraFields styling below) so "資料可能不完整" reads as a
+                    deliberate warning rather than just another detail line.
+                  */}
+                  {f.extra_json?.dataNote && (
+                    <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-400">⚠️ {f.extra_json.dataNote}</p>
+                  )}
                   {showGeocodeNote && f.lat === null && (
                     <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">
                       {t("facilitySearch.notGeocodedNote", "（尚未完成地理定位，暫不顯示於地圖）")}

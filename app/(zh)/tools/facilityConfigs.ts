@@ -696,9 +696,9 @@ export const facilitySearchConfigs = {
   "childcare-centers": {
     facilityType: "childcare_center",
     emoji: "🍼",
-    title: "全國托嬰中心查詢（臺北／新北）",
+    title: "全國托嬰中心查詢（六都）",
     description:
-      "查詢臺北市、新北市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數與評鑑結果。資料來源：臺北市政府社會局、新北市政府社會局開放資料。目前僅涵蓋臺北、新北，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。",
+      "查詢臺北市、新北市、桃園市、臺中市、臺南市、高雄市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與月費等資訊。資料來源：各市政府社會局開放資料。目前僅涵蓋六都，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。高雄市資料筆數偏少且停留在2025年6月，可能未反映最新全量名冊，詳見各筆資料下方標示。",
     searchPlaceholder: "輸入托嬰中心名稱、行政區或地址關鍵字",
     errorText: "查詢托嬰中心資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的托嬰中心，可改用關鍵字搜尋。",
@@ -711,20 +711,21 @@ export const facilitySearchConfigs = {
       { value: "準公共", label: "🤝 準公共" },
       { value: "私立", label: "🏢 私立" },
     ],
-    // approvedCapacity/actualCapacity/evaluationResult/monthlyFee are only
-    // ever present on rows whose source actually has that column (121981 準
-    // 公共 has all three except monthlyFee; 121337/125380 有 approvedCapacity
-    // only; 126984/126986/126222 have none) — FacilitySearchContent's
-    // extraFields already only renders a field when the row's extra_json
-    // actually has it, so no "N/A" placeholders show up for the rows that
-    // don't have a given field. monthlyFee has no populated source yet in
-    // this ticket, kept here so a later county with 月費 data needs no
-    // further change here or to FacilitySearchContent.
+    // approvedCapacity/actualCapacity/evaluationResult/monthlyFee/
+    // registrationFee/mealFee/dataNote are only ever present on rows whose
+    // source actually has that column — e.g. 121981/168385 有評鑑結果,
+    // 83669/168379/168385 有月費, 6178 有月費/註冊費/副食品費但沒有評鑑結果,
+    // 126984/126986/126222 全都沒有 — FacilitySearchContent 的 extraFields
+    // 只在 extra_json 真的有該欄位時才顯示，所以沒有資料的縣市不會出現 "N/A"
+    // 之類的空白佔位。dataNote 目前只有高雄（128099/128100）會設定，用來標示
+    // 「資料可能不完整」，見 kaohsiungChildcare.ts。
     extraFields: [
       { key: "approvedCapacity", label: "核定收托人數：" },
       { key: "actualCapacity", label: "實際收托人數：" },
       { key: "evaluationResult", label: "評鑑結果：" },
       { key: "monthlyFee", label: "月費：" },
+      { key: "registrationFee", label: "註冊／教材費：" },
+      { key: "mealFee", label: "副食品費：" },
       { key: "dataAsOf", label: "本站資料同步日期：" },
     ],
   },
