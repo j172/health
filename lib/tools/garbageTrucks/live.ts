@@ -7,19 +7,20 @@ import type { TaiwanCounty } from "@/lib/constants/taiwanDistricts";
  * route) and the page, so "which cities have live data" and "how old a position
  * may be" are each defined in exactly one place. No server-only imports here.
  *
- * Adding a city (e.g. #680's 臺中市): add its code to LIVE_TRUCK_CITIES and
+ * Adding a city (the way #680 added 臺中市): add its code to LIVE_TRUCK_CITIES and
  * LIVE_CITY_COUNTY below, write an adapter under
  * lib/server/garbageLive/adapters/ and register it in lib/server/garbageLive/registry.ts.
  * The coverage table (coverage.ts) and the page pick the new city up from here.
  */
 
 /** City codes with a live-position adapter. */
-export const LIVE_TRUCK_CITIES = ["new_taipei"] as const;
+export const LIVE_TRUCK_CITIES = ["new_taipei", "taichung"] as const;
 
 export type LiveTruckCity = (typeof LIVE_TRUCK_CITIES)[number];
 
 const LIVE_CITY_COUNTY: Readonly<Record<LiveTruckCity, TaiwanCounty>> = {
   new_taipei: "新北市",
+  taichung: "臺中市",
 };
 
 export function isLiveTruckCity(value: unknown): value is LiveTruckCity {
@@ -41,7 +42,7 @@ export const LIVE_UNREACHABLE_COUNTIES: readonly TaiwanCounty[] = ["臺南市", 
 
 // --- freshness -------------------------------------------------------------
 
-/** Position reports up to this old are shown as current (the dataset refreshes about every 2 minutes). */
+/** Position reports up to this old are shown as current (新北市's dataset refreshes about every 2 minutes, 臺中市's about every 10). */
 export const LIVE_FRESH_MAX_AGE_SECONDS = 10 * 60;
 /** Older than FRESH but not older than this: still drawn, flagged 「資料較舊」. Beyond it: never drawn. */
 export const LIVE_EXPIRED_AGE_SECONDS = 30 * 60;

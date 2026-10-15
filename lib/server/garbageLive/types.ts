@@ -8,8 +8,8 @@ import type { LiveTruckCity, TruckPosition } from "@/lib/tools/garbageTrucks/liv
  * endpoint's raw text into `TruckPosition[]`. Everything else — the request,
  * in-flight de-duplication, the 60-120 s cache, freshness judgement, per-county
  * degradation, the route and the map — is generic and lives in getLiveTrucks.ts
- * and the page. Ticket #680 adds 臺中市 by writing one more adapter file and
- * registering it in registry.ts; no other server code changes.
+ * and the page. Ticket #680 added 臺中市 by writing one more adapter file and
+ * registering it in registry.ts; no other server code changed.
  *
  * Contract for `parse`:
  *  - input is the response body as text (CSV, or JSON text — the adapter decides);

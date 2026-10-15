@@ -129,7 +129,7 @@ export default function GarbageLiveTab({ onFindSquad }: { onFindSquad: (county: 
         其他縣市：{unreachableCounties.join("、")}的即時位置資料集目前無法取得（標示為「暫無即時資料」），其餘縣市尚未提供，詳見上方「各縣市資料覆蓋範圍」。
       </p>
 
-      <SourceNote />
+      <SourceNote sources={data ? data.cities.map((city) => city.source) : []} />
     </div>
   );
 }
@@ -204,19 +204,34 @@ function CityLive({
   );
 }
 
-function SourceNote() {
+/**
+ * Credits every dataset whose positions are on screen: the list comes from the
+ * API's per-city `source`, so a city added to the registry is attributed
+ * without editing this page. Before the first response arrives it names the
+ * data's origin generically.
+ */
+function SourceNote({ sources }: { sources: LiveTrucksCityResult["source"][] }) {
   return (
     <p className="text-xs leading-relaxed text-neutral-500 dark:text-slate-400">
-      資料來源：新北市政府資料開放平臺「新北市垃圾車即時位置」（
-      <a
-        href={appendOutboundUtm("https://data.gov.tw/dataset/122972", { medium: "data_source", campaign: "cleaning_squads_tool" })}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="underline"
-      >
-        data.gov.tw 122972
-      </a>
-      ），依政府資料開放授權條款－第1版提供（data.gov.tw 目錄標示）。本頁依市府公開資料呈現車輛最後回報的位置，非本站判定；位置可能延遲或中斷，實際到站時間請以各區清潔隊公告為準。
+      資料來源：
+      {sources.length === 0
+        ? "各市政府資料開放平臺（data.gov.tw）"
+        : sources.map((source, index) => (
+            <span key={source.datasetUrl}>
+              {index > 0 ? "、" : ""}
+              {source.label}（
+              <a
+                href={appendOutboundUtm(source.datasetUrl, { medium: "data_source", campaign: "cleaning_squads_tool" })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                data.gov.tw {source.datasetUrl.split("/").pop()}
+              </a>
+              ）
+            </span>
+          ))}
+      ，依政府資料開放授權條款－第1版提供（data.gov.tw 目錄標示）。本頁依市府公開資料呈現車輛最後回報的位置，非本站判定；位置可能延遲或中斷，實際到站時間請以各區清潔隊公告為準。
     </p>
   );
 }

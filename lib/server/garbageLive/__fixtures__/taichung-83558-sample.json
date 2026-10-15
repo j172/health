@@ -1,0 +1,19 @@
+[
+{"lineid":"24908","car":"KED-1385","time":"20261016T001948","location":"龍井區清潔隊回收廠","X":"120.540645","Y":"24.192398","SpeedValue":"0","OverSpeed":"N"},
+{"lineid":"10868","car":"850-UE","time":"20261016T001945","location":"南投縣信義鄉 台21 玉山路","X":"120.853785","Y":"23.701848","SpeedValue":"0","OverSpeed":"N"},
+{"lineid":"10869","car":"602-VP","time":"20250929T090437","location":"臺中市和平區 平等里","X":"121.293997","Y":"24.321982","SpeedValue":"3","OverSpeed":"N"},
+{"lineid":"30001","car":"TST-1001","time":"20261016T002400","location":"臺中市南屯區大墩路100號","X":"120.640000","Y":"24.140000","SpeedValue":"18","OverSpeed":"N"},
+{"lineid":"30002","car":"TST-1002","time":"20261016T001000","location":"臺中市西屯區文心路三段1號","X":"120.630000","Y":"24.180000","SpeedValue":"22","OverSpeed":"N"},
+{"lineid":"30003","car":"TST-1003","time":"20261015T230000","location":"臺中市北屯區北屯路1號","X":"120.700000","Y":"24.190000","SpeedValue":"0","OverSpeed":"N"},
+{"lineid":"30004","car":"TST-1004","time":"20260914T140437","location":"臺中市大里區中興路一段1號","X":"120.680000","Y":"24.100000","SpeedValue":"0","OverSpeed":"N"},
+{"lineid":"30005","car":"TST-1005","time":"20261016T011000","location":"臺中市太平區中山路1號","X":"120.730000","Y":"24.130000","SpeedValue":"9","OverSpeed":"N"},
+{"lineid":"30006","car":"TST-1006","time":"20261016T003000","location":"臺中市東區建國路1號","X":"120.690000","Y":"24.140000","SpeedValue":"12","OverSpeed":"N"},
+{"lineid":"30007","car":"TST-1007","time":"20261016T002200","location":"臺中市南區復興路三段1號","X":"120.660000","Y":"24.110000","SpeedValue":"15","OverSpeed":"N"},
+{"lineid":"30007","car":"TST-1007","time":"20261016T000500","location":"臺中市南區復興路一段1號","X":"120.650000","Y":"24.120000","SpeedValue":"15","OverSpeed":"N"},
+{"lineid":"30008","car":"TST-1008","time":"20261016T002400","location":"臺中市西區某路1號","X":"","Y":"","SpeedValue":"0","OverSpeed":"N"},
+{"lineid":"30009","car":"TST-1009","time":"20261016T002400","location":"臺北市大安區某路1號","X":"121.565400","Y":"25.033000","SpeedValue":"10","OverSpeed":"N"},
+{"lineid":"30010","car":"TST-1010","time":"20261016T002400","location":"臺中市北區某路1號","X":"24.160000","Y":"120.680000","SpeedValue":"10","OverSpeed":"N"},
+{"lineid":"30011","car":"TST-1011","time":"not-a-time","location":"臺中市中區某路1號","X":"120.680000","Y":"24.140000","SpeedValue":"10","OverSpeed":"N"},
+{"lineid":"30012","car":"","time":"20261016T002400","location":"臺中市烏日區某路1號","X":"120.620000","Y":"24.100000","SpeedValue":"10","OverSpeed":"N"},
+null
+]

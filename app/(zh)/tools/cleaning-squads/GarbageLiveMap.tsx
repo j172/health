@@ -8,7 +8,7 @@ import { formatTaipeiDateTime, formatTruckAge, type LiveTruck } from "@/lib/tool
 
 const BaseMap = dynamic(() => import("@/components/Map/BaseMap"), { ssr: false });
 
-/** Wide view of 新北市 (板橋) for the moment before any truck is known; only used as a fallback. */
+/** Wide view of 新北市 (板橋) if the map is ever mounted with no trucks; the live tab only mounts it for a city that has some, and then centres on them. */
 const FALLBACK_CENTER: [number, number] = [25.012, 121.465];
 const INITIAL_ZOOM = 11;
 

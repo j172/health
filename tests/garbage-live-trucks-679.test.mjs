@@ -47,6 +47,7 @@ const SERVER_FILES = [
   "lib/server/garbageLive/registry.ts",
   "lib/server/garbageLive/types.ts",
   "lib/server/garbageLive/adapters/ntpc122972.ts",
+  "lib/server/garbageLive/adapters/taichung83558.ts",
   "lib/server/garbageLive/adapters/shared.ts",
   "app/api/garbage-trucks/live/route.ts",
 ];
@@ -122,18 +123,22 @@ test("each upstream request writes one greppable log line (what the post-deploy 
 });
 
 test("D6: no 「全國」 in any live-truck source file or user-visible string", () => {
-  for (const file of [...SERVER_FILES, ...UI_FILES, "lib/server/garbageLive/__fixtures__/ntpc-122972-sample.csv"]) {
+  const fixtures = [
+    "lib/server/garbageLive/__fixtures__/ntpc-122972-sample.csv",
+    "lib/server/garbageLive/__fixtures__/taichung-83558-sample.json",
+  ];
+  for (const file of [...SERVER_FILES, ...UI_FILES, ...fixtures]) {
     assert.ok(!read(file).includes("全國"), `${file} contains 全國`);
   }
 });
 
-test("the coverage table is wired to the live tab's truth: 新北市 has live data, 臺南市／高雄市 read 「暫無即時資料」", async () => {
+test("the coverage table is wired to the live tab's truth: 新北市 and 臺中市 have live data (#680), 臺南市／高雄市 read 「暫無即時資料」", async () => {
   const { GARBAGE_COVERAGE, LIVE_STATUS_LABELS } = await import("../lib/tools/garbageTrucks/coverage.ts");
   const row = (county) => GARBAGE_COVERAGE.find((r) => r.county === county);
   assert.equal(row("新北市").live, "available");
+  assert.equal(row("臺中市").live, "available");
   assert.equal(row("臺南市").live, "unavailable");
   assert.equal(row("高雄市").live, "unavailable");
-  assert.equal(row("臺中市").live, "none", "臺中市 flips to available in #680, not here");
   assert.equal(LIVE_STATUS_LABELS.unavailable, "暫無即時資料");
 
   const table = read("app/(zh)/tools/cleaning-squads/GarbageCoverageTable.tsx");
@@ -153,6 +158,19 @@ test("the live coverage counties are exactly the counties that have a registered
   for (const row of GARBAGE_COVERAGE.filter((r) => r.live === "unavailable")) {
     assert.ok(!withAdapter.includes(row.county), `${row.county} is unreachable and must not have an adapter`);
   }
+});
+
+test("every live city code has an adapter registered under its own key, with a matching county and no 臺南市／高雄市 stub", async () => {
+  const { LIVE_TRUCK_ADAPTERS } = await import("../lib/server/garbageLive/registry.ts");
+  const { LIVE_TRUCK_CITIES, countyForLiveCity } = await import("../lib/tools/garbageTrucks/live.ts");
+  assert.deepEqual(Object.keys(LIVE_TRUCK_ADAPTERS), [...LIVE_TRUCK_CITIES]);
+  for (const city of LIVE_TRUCK_CITIES) {
+    assert.equal(LIVE_TRUCK_ADAPTERS[city].city, city);
+    assert.equal(LIVE_TRUCK_ADAPTERS[city].county, countyForLiveCity(city));
+    assert.match(LIVE_TRUCK_ADAPTERS[city].endpoint, /^https:\/\//);
+  }
+  const counties = Object.values(LIVE_TRUCK_ADAPTERS).map((adapter) => adapter.county);
+  assert.deepEqual(counties, ["新北市", "臺中市"]);
 });
 
 test("page structure: the live tab sits beside the route and squad tabs and reuses the existing page (extended, not rebuilt)", () => {
@@ -182,11 +200,22 @@ test("live tab: reads only /api/garbage-trucks/live, never asks for the visitor'
   assert.match(tab, /clearInterval/);
 });
 
-test("live tab states its source, licence and that positions are not this site's determination", () => {
+test("live tab states every live city's source (from the API's per-city source), the licence, and that positions are not this site's determination", () => {
   const tab = read("app/(zh)/tools/cleaning-squads/GarbageLiveTab.tsx");
-  assert.match(tab, /122972/);
+  // The attribution lists the sources of the cities actually shown, so a new city's dataset is credited without a page edit.
+  assert.match(tab, /source\.label/);
+  assert.match(tab, /source\.datasetUrl/);
   assert.match(tab, /政府資料開放授權條款/);
   assert.match(tab, /非本站判定/);
+  // The 83558 and 122972 dataset pages are what those per-city sources resolve to.
+  assert.match(read("lib/server/garbageLive/adapters/ntpc122972.ts"), /https:\/\/data\.gov\.tw\/dataset\/122972/);
+  assert.match(read("lib/server/garbageLive/adapters/taichung83558.ts"), /https:\/\/data\.gov\.tw\/dataset\/83558/);
+});
+
+test("the page header names the live counties from the coverage data, so it cannot drift from the adapters", () => {
+  const content = read("app/(zh)/tools/cleaning-squads/CleaningSquadsContent.tsx");
+  assert.match(content, /GARBAGE_COVERAGE/);
+  assert.match(content, /live === "available"/);
 });
 
 test("map layer uses the shared BaseMap and draws stale reports differently from fresh ones", () => {
@@ -206,7 +235,15 @@ test("catalog: the cleaning-squads entry mentions live positions, cites dataset 
   assert.match(entry.directAnswer, /即時位置/);
   assert.ok(entry.keywords.includes("垃圾車即時位置"));
   assert.ok(entry.scientificBasis.some((basis) => basis.url === "https://data.gov.tw/dataset/122972"));
+  assert.ok(entry.scientificBasis.some((basis) => basis.url === "https://data.gov.tw/dataset/83558"), "臺中市 live dataset (#680) is cited");
   assert.ok(entry.faqs.some((faq) => /即時位置/.test(faq.question)));
+  // #680: the live-position wording names exactly the counties that have live data, and 臺南市／高雄市 as 暫無即時資料.
+  const liveFaq = entry.faqs.find((faq) => /即時位置/.test(faq.question));
+  assert.match(liveFaq.answer, /新北市/);
+  assert.match(liveFaq.answer, /臺中市/);
+  assert.match(liveFaq.answer, /暫無即時資料/);
+  assert.match(entry.description, /臺中市/);
+  assert.match(entry.directAnswer, /臺中市/);
   assert.ok(!JSON.stringify(entry).includes("全國"));
   assert.match(entry.lastUpdated, /^\d{4}-\d{2}-\d{2}$/);
 });
