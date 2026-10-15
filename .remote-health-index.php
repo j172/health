@@ -2267,7 +2267,12 @@ while ($attempt < $maxAttempts) {
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HEADER => true,
-        CURLOPT_FOLLOWLOCATION => true,
+        // Must stay false: with follow on, curl returns every hop's header block
+        // concatenated, so the loop below re-emitted the 3xx's Location (plus a
+        // second status line) under a 200 — LiteSpeed rejects that as a 500 for
+        // EVERY Next redirect (config, middleware, trailing-slash). Pass the 3xx
+        // through untouched instead; /emergency's PHP 307 proves that path works.
+        CURLOPT_FOLLOWLOCATION => false,
         CURLOPT_CUSTOMREQUEST => $method,
         CURLOPT_HTTPHEADER => $headers,
         CURLOPT_POSTFIELDS => in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']) ? $body : null,
