@@ -6,9 +6,16 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { usePrefersReducedMotion } from "@/lib/hooks/usePrefersReducedMotion";
 import { detectWebglSupport, defaultWebglProbe } from "@/lib/tools/globeWatch/webgl";
 import { buildEpidemicsGlobeData, findCountryGroup, type EpidemicAlertRow } from "@/lib/tools/globeWatch/epidemicsTransform";
+import {
+  buildWhoDonPinFeatures,
+  filterVisibleWhoDonPins,
+  findWhoDonPin,
+  type WhoDonRow,
+} from "@/lib/tools/globeWatch/whoDonTransform";
 import GlobeWatchStatusPanel from "./GlobeWatchStatusPanel";
 import GlobeWatchEpidemicsLegend from "./GlobeWatchEpidemicsLegend";
 import GlobeWatchEpidemicsCountryPanel from "./GlobeWatchEpidemicsCountryPanel";
+import GlobeWatchWhoDonPinPanel from "./GlobeWatchWhoDonPinPanel";
 
 // Same dynamic-import gating convention as GlobeWatchClient.tsx (issue
 // #587): MapLibre (and the country-boundary GeoJSON it fetches) is only
@@ -36,6 +43,11 @@ interface CdcAlertsApiResponse {
   }>;
 }
 
+interface WhoOutbreakNewsApiResponse {
+  ok: boolean;
+  articles?: WhoDonRow[];
+}
+
 /**
  * Issue #589 (parent #583) — orchestrates the 國際疫情 (epidemics) item:
  * fetches `cdc_travel_alerts` (the same `/api/cdc/travel-alerts` endpoint
@@ -46,6 +58,15 @@ interface CdcAlertsApiResponse {
  * on the page (see app/(zh)/tools/global-watch/epidemics/page.tsx), not
  * nested inside it — the list stays fully independent and usable even if
  * this component's globe never loads (AC: 不支援 WebGL 時清單維持完整可用).
+ *
+ * Issue #597 (parent #583) added the WHO Disease Outbreak News (DON) pin
+ * overlay: fetches `who_outbreak_news` (the new `/api/who/outbreak-news`
+ * route), runs the pure `buildWhoDonPinFeatures` transform, and renders a
+ * "顯示 WHO 通報" toggle that drives `filterVisibleWhoDonPins` — the globe
+ * component only ever sees the already-filtered list, so toggling off is
+ * just "the WHO-pin source becomes empty," never touching the country
+ * choropleth's own source/layer (AC: 關閉切換後圖釘從地球上消失，國家上色
+ * 不受影響).
  */
 export default function GlobeWatchEpidemicsClient() {
   const { locale } = useLanguage();
@@ -54,6 +75,9 @@ export default function GlobeWatchEpidemicsClient() {
   const [rows, setRows] = useState<EpidemicAlertRow[]>([]);
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [whoRows, setWhoRows] = useState<WhoDonRow[]>([]);
+  const [showWhoPins, setShowWhoPins] = useState(true);
+  const [selectedWhoPinId, setSelectedWhoPinId] = useState<string | null>(null);
 
   useEffect(() => {
     queueMicrotask(() => setWebglSupported(detectWebglSupport(defaultWebglProbe)));
@@ -94,8 +118,40 @@ export default function GlobeWatchEpidemicsClient() {
     };
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+    fetch("/api/who/outbreak-news")
+      .then((res) => res.json())
+      .then((json: WhoOutbreakNewsApiResponse) => {
+        if (ignore) return;
+        if (!json.ok || !Array.isArray(json.articles)) return;
+        setWhoRows(json.articles);
+      })
+      .catch(() => {
+        // WHO DON fetch failing is non-fatal: the choropleth and the
+        // carried-over list below are both unaffected, same resilience
+        // posture as the cdc_travel_alerts fetch above.
+      });
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
   const globeData = useMemo(() => buildEpidemicsGlobeData(rows), [rows]);
   const selectedGroup = selectedIso ? findCountryGroup(globeData, selectedIso) : null;
+
+  const whoPins = useMemo(() => buildWhoDonPinFeatures(whoRows), [whoRows]);
+  const visibleWhoPins = useMemo(() => filterVisibleWhoDonPins(whoPins, showWhoPins), [whoPins, showWhoPins]);
+  const selectedWhoPin = findWhoDonPin(visibleWhoPins, selectedWhoPinId);
+
+  const handleSelectCountry = (iso: string | null) => {
+    setSelectedIso(iso);
+    if (iso) setSelectedWhoPinId(null);
+  };
+  const handleSelectWhoPin = (id: string | null) => {
+    setSelectedWhoPinId(id);
+    if (id) setSelectedIso(null);
+  };
 
   return (
     <div>
@@ -109,7 +165,9 @@ export default function GlobeWatchEpidemicsClient() {
             reducedMotion={reducedMotion}
             data={globeData}
             selectedIso={selectedIso}
-            onSelectCountry={setSelectedIso}
+            onSelectCountry={handleSelectCountry}
+            whoPins={visibleWhoPins}
+            onSelectWhoPin={handleSelectWhoPin}
           />
         )}
         {webglSupported === false && (
@@ -121,7 +179,18 @@ export default function GlobeWatchEpidemicsClient() {
         {webglSupported === null && <GlobeWatchStatusPanel variant="loading" message="準備互動式地球…" />}
       </div>
 
-      <GlobeWatchEpidemicsLegend legend={globeData.legend} />
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <GlobeWatchEpidemicsLegend legend={globeData.legend} />
+        <button
+          type="button"
+          onClick={() => setShowWhoPins((v) => !v)}
+          aria-pressed={showWhoPins}
+          data-testid="who-don-pin-toggle"
+          className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition-all hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+          🌐 {showWhoPins ? "顯示 WHO 通報：開" : "顯示 WHO 通報：關"}
+        </button>
+      </div>
 
       {fetchError && (
         <p className="mt-2 text-xs font-medium text-rose-600 dark:text-rose-400">{fetchError}</p>
@@ -132,6 +201,14 @@ export default function GlobeWatchEpidemicsClient() {
           group={selectedGroup}
           locale={locale}
           onClose={() => setSelectedIso(null)}
+        />
+      )}
+
+      {selectedWhoPin && (
+        <GlobeWatchWhoDonPinPanel
+          pin={selectedWhoPin}
+          locale={locale}
+          onClose={() => setSelectedWhoPinId(null)}
         />
       )}
     </div>
