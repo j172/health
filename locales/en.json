@@ -223,6 +223,9 @@
     },
     "travel-health": {
       "title": "Travel & Epidemic Prevention"
+    },
+    "fraud-and-addiction": {
+      "title": "Avoiding Fraud & Addiction"
     }
   },
   "toolShell": {

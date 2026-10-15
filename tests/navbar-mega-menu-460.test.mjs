@@ -264,6 +264,8 @@ const GUIDE_SLUGS = [
   "typhoon-earthquake",
   "disability-living",
   "travel-health",
+  // issue #574: the 6th life-situation guide.
+  "fraud-and-addiction",
 ];
 
 test("every locale file defines the new nav.guides/nav.nearby/nav.toolsFilter* keys", () => {
@@ -288,7 +290,7 @@ test("every locale file defines the new nav.guides/nav.nearby/nav.toolsFilter* k
   }
 });
 
-test("every locale file defines a guides.<slug>.title for all 5 GUIDES", () => {
+test("every locale file defines a guides.<slug>.title for all 6 GUIDES", () => {
   for (const locale of LOCALES) {
     const dict = JSON.parse(read("locales", `${locale}.json`));
     for (const slug of GUIDE_SLUGS) {
