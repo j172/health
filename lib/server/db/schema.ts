@@ -327,6 +327,56 @@ export const TABLE_DDL = {
       KEY idx_drug_shortage_source (source_key)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // TFDA 回收藥品 (data.gov.tw 6947; issue #675, spec A-2 / B-5) — the upstream
+  // export is the full recall register since 2008 (1,713 rows), and the weekly
+  // sync mirrors it with a guarded snapshot reconcile (lib/server/drugs/
+  // shortageSnapshot.ts) so a corrected or withdrawn entry does not linger as a
+  // duplicate.
+  //
+  // No clean natural key, so row_key is a SHA-256 of the spec's
+  // (文號, 許可證字號, 批號) triple plus an occurrence counter for fully
+  // identical rows. The UNIQUE KEY is row_key ONLY: recalled_on (日期) and every
+  // other time column are plain columns, never part of any key (the
+  // cwa_station_weather row-bloat bug class). recall_level holds the
+  // normalized value only — one of '1', '2', '3', '未載明' — with the upstream
+  // spelling kept in recall_level_raw.
+  drugRecalls: `
+    CREATE TABLE IF NOT EXISTS drug_recalls (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      row_key CHAR(64) NOT NULL,
+      doc_no VARCHAR(255) NULL,
+      recalled_on DATE NULL,
+      product_name VARCHAR(500) NOT NULL,
+      license_text VARCHAR(500) NULL,
+      holder_name VARCHAR(255) NULL,
+      batch_no TEXT NULL,
+      reason TEXT NULL,
+      recall_level VARCHAR(8) NOT NULL,
+      recall_level_raw VARCHAR(50) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_drug_recall_row (row_key),
+      KEY idx_drug_recall_date (recalled_on),
+      KEY idx_drug_recall_level (recall_level)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // One row per canonical license number a recall row names (29 of the 1,713
+  // rows list several), so the 「曾被回收」 badge finds a drug whichever license
+  // of a multi-license recall it carries. Derived from drug_recalls.row_key
+  // (which hashes the license text, so the set never changes for a given key);
+  // orphans are removed when the parent row is reconciled away.
+  drugRecallLicenses: `
+    CREATE TABLE IF NOT EXISTS drug_recall_licenses (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      recall_row_key CHAR(64) NOT NULL,
+      license_no VARCHAR(50) NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_drug_recall_license (recall_row_key, license_no),
+      KEY idx_drug_recall_license_no (license_no)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   ingestErrors: `
     CREATE TABLE IF NOT EXISTS ingest_errors (
       id BIGINT NOT NULL AUTO_INCREMENT,

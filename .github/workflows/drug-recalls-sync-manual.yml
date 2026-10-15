@@ -1,0 +1,73 @@
+name: Drug Recalls Sync (Manual)
+
+# Manual trigger for issue #675's /api/admin/drug-recalls-sync (TFDA 回收藥品
+# 6947). The tables are filled by a weekly in-app cron (Mondays 03:28), so
+# without this a fresh deploy would show an empty 「回收藥品」 tab and no
+# 「曾被回收」 badges until the next Monday. Same SSH-loopback pattern as
+# drug-shortages-sync-manual.yml (this host has no AllowTcpForwarding, so a
+# classic `ssh -L` tunnel silently breaks; the app is called over a remote
+# `curl` to 127.0.0.1 instead).
+#
+# The route answers synchronously with the counts, so this runs the sync TWICE
+# and checks the live-verification criteria from the ticket:
+#   - run 1 prints the first-sync counts (expected: fetched 1713-ish, inserted
+#     equal to fetched on an empty table);
+#   - run 2 must insert nothing (idempotent second sync).
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ftps
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run the drug-recalls sync twice via SSH loopback
+        env:
+          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
+            echo "Missing RSS_SYNC_ADMIN_SECRET"
+            exit 1
+          fi
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_HOST/SSH_PRIVATE_KEY"
+            exit 1
+          fi
+
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+
+          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+
+          run_sync() {
+            local label="$1"
+            echo "== $label =="
+            local headers='header = "x-rss-sync-admin-secret: '"$RSS_SYNC_ADMIN_SECRET"'"'
+            local response
+            response="$(printf '%s\n' "$headers" | ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" "curl -K - -sS --max-time 90 -X POST 'http://127.0.0.1:3000/api/admin/drug-recalls-sync'")"
+            echo "$response" | jq .
+            LAST_RESPONSE="$response"
+          }
+
+          run_sync "Run 1 (first sync: expect fetched ~1713 and the same number inserted on an empty table)"
+          echo "$LAST_RESPONSE" | jq -e '.ok == true' > /dev/null || { echo "Run 1 reported an error"; exit 1; }
+
+          sleep 10
+
+          run_sync "Run 2 (idempotency: must insert nothing)"
+          echo "$LAST_RESPONSE" | jq -e '.ok == true and .result.inserted == 0' > /dev/null || { echo "Run 2 inserted rows or reported an error"; exit 1; }
+
+          echo "Both runs OK. Now live-verify: GET https://health.j172.tw/api/drugs?view=recalls (total should be ~1713 and meta.levelCounts keys exactly 1/2/3/未載明, with a cache-busting query param)."

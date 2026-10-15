@@ -6,13 +6,15 @@ import ToolTypeTabs from "@/components/Tools/ToolTypeTabs";
 import { usePagination } from "@/lib/hooks/usePagination";
 import DrugSearchPanel from "./DrugSearchPanel";
 import DrugShortagesPanel from "./DrugShortagesPanel";
+import DrugRecallsPanel from "./DrugRecallsPanel";
 
 /**
  * issue #670 (Track B B-4): the 藥品短缺 list joins the drug lookup as a
  * second tab. The drug search stays the default tab and keeps working exactly
  * as before; `?tab=shortages` deep-links straight to the shortage list.
+ * issue #675 (B-5) adds the 回收藥品 list as a third tab (`?tab=recalls`).
  */
-export const DRUGS_TAB_KEYS = ["search", "shortages"] as const;
+export const DRUGS_TAB_KEYS = ["search", "shortages", "recalls"] as const;
 
 export type DrugsTabKey = (typeof DRUGS_TAB_KEYS)[number];
 
@@ -43,7 +45,7 @@ export default function DrugsContent() {
       <div>
         <h1 className="mb-2 text-3xl font-bold text-neutral-800 dark:text-slate-100 md:text-4xl">💊 藥品查詢</h1>
         <p className="text-neutral-600 dark:text-slate-300">
-          查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵（形狀、顏色、刻痕、標註），並可查看食藥署公告的藥品短缺名單。
+          查詢衛福部食藥署核准藥品的許可證字號、中英文品名與外觀特徵（形狀、顏色、刻痕、標註），並可查看食藥署公告的藥品短缺與回收名單。
         </p>
       </div>
 
@@ -63,6 +65,12 @@ export default function DrugsContent() {
             label: "藥品短缺",
             icon: "⚠️",
             content: <DrugShortagesPanel onViewDrug={handleViewDrug} />,
+          },
+          {
+            key: "recalls",
+            label: "回收藥品",
+            icon: "🔄",
+            content: <DrugRecallsPanel onViewDrug={handleViewDrug} />,
           },
         ]}
       />
