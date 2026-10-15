@@ -181,7 +181,12 @@ test("TOOL_CATALOG: mental-health declares newsTopic anti-drug, smoking-cessatio
   }
 
   // Every other entry must be untouched (newsTopic is opt-in, not a default).
-  const others = TOOL_CATALOG.filter((t) => t.slug !== "mental-health" && t.slug !== "smoking-cessation");
+  // anti-fraud is excluded here too — issue #570 is the ticket that actually
+  // sets its newsTopic to "anti-fraud" (see the `antiFraud` check above,
+  // which already allows exactly that value).
+  const others = TOOL_CATALOG.filter(
+    (t) => t.slug !== "mental-health" && t.slug !== "smoking-cessation" && t.slug !== "anti-fraud",
+  );
   const unexpectedlyTagged = others.filter((t) => t.newsTopic !== undefined);
   assert.deepEqual(
     unexpectedlyTagged.map((t) => t.slug),

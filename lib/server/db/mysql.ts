@@ -156,6 +156,9 @@ const runSchemaMigrations = async (): Promise<void> => {
     ALTER TABLE fraud_domains
       ADD COLUMN IF NOT EXISTS fraud_description VARCHAR(255) NULL AFTER report_year_month
   `);
+  // Anti-fraud trend stats (issue #570) — two new tables, no ALTER needed.
+  await p.query(TABLE_DDL.policeFraudInterdictionStats);
+  await p.query(TABLE_DDL.fscFraudAdStats);
   // GDACS global disaster events (issue #592) — new table, no ALTER needed.
   await p.query(TABLE_DDL.gdacsEvents);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
