@@ -578,6 +578,16 @@ export interface GuideStep {
   caption: string;
   /** Why this tool matters at this specific point in the guide's journey. */
   why: string;
+  /**
+   * Issue #590 (parent #583): overrides the step's default
+   * `/tools/${toolSlug}` href with a more specific canonical path — needed
+   * when the step's real content now lives at a nested sub-route (e.g.
+   * "/tools/global-watch/earthquakes") rather than a flat `/tools/<slug>`
+   * page, so `toolSlug` can still resolve the right TOOL_CATALOG entry
+   * (for its icon/label) while the link itself lands on the more specific
+   * page. Omit for every ordinary step, where toolSlug alone is the href.
+   */
+  hrefOverride?: string;
 }
 
 export interface Guide {
@@ -732,7 +742,14 @@ export const GUIDES: Guide[] = [
         why: "颱風、豪雨等天災多半有事前預警，持續關注即時氣象警報與降雨資訊，是應變準備最早能掌握的第一手資訊。",
       },
       {
-        toolSlug: "earthquakes",
+        // Issue #590 (parent #583): "earthquakes" (the standalone tool) was
+        // retired in favor of global-watch's earthquakes item sub-route —
+        // toolSlug now resolves to the "global-watch" TOOL_CATALOG entry
+        // (for its icon/label), while hrefOverride keeps this step's link
+        // pointed at the more specific, real-content item page rather than
+        // global-watch's own base page.
+        toolSlug: "global-watch",
+        hrefOverride: "/tools/global-watch/earthquakes",
         caption: "查詢最新地震資訊",
         why: "地震無法提前預警，但地震發生後能立即查詢震央、規模、深度與海嘯警報，協助判斷後續是否需要進一步避難或防範餘震。",
       },
@@ -976,7 +993,7 @@ export function buildGuide(slug: string): GuidePageModel | null {
     steps: guide.steps.map((step) => ({
       ...step,
       tool: getToolCatalogEntry(step.toolSlug),
-      href: `/tools/${step.toolSlug}`,
+      href: step.hrefOverride ?? `/tools/${step.toolSlug}`,
     })),
   };
 }

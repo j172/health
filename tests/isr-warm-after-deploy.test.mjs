@@ -24,11 +24,31 @@ test("listWarmPaths covers every catalog tool slug", () => {
 
 test("listWarmPaths covers static locale tool pages and the main entry pages, without dynamic segments or duplicates", () => {
   const paths = listWarmPaths(REPO_ROOT);
-  for (const p of ["/", "/tools", "/nearby", "/en", "/en/tools/uv", "/ja/tools/earthquakes", "/ko/tools/aqi"]) {
+  for (const p of ["/", "/tools", "/nearby", "/en", "/en/tools/uv", "/ja/tools/aed", "/ko/tools/aqi"]) {
     assert.ok(paths.includes(p), `missing ${p}`);
   }
   assert.ok(!paths.some((p) => p.includes("[")), "dynamic route segments must not be warmed literally");
   assert.equal(new Set(paths).size, paths.length, "no duplicate paths");
+});
+
+// Issue #590 (parent #583): "/tools/earthquakes" (a flat, static-route-dir
+// page the test above used to cite as its locale-tool-page example) was
+// retired — its real content moved to a NESTED item sub-route under
+// "global-watch", one level deeper than staticRouteDirs alone looks. This
+// guards the dedicated nestedStaticRouteDirs fix that warms it, so the
+// exact "empty build-time prerender" bug this whole suite exists to catch
+// doesn't quietly recur on the page that replaced it.
+test("listWarmPaths covers global-watch's nested item sub-routes (zh and every locale), not just its own base page", () => {
+  const paths = listWarmPaths(REPO_ROOT);
+  for (const p of [
+    "/tools/global-watch",
+    "/tools/global-watch/earthquakes",
+    "/en/tools/global-watch/earthquakes",
+    "/ja/tools/global-watch/earthquakes",
+    "/ko/tools/global-watch/earthquakes",
+  ]) {
+    assert.ok(paths.includes(p), `missing ${p}`);
+  }
 });
 
 test("the revalidate-paths admin route authenticates before invalidating, and validates paths", () => {

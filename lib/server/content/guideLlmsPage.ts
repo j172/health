@@ -3,7 +3,7 @@ import type { LlmsPageContent, LlmsPageLink, LlmsPageSection } from "./llmsPage"
 import type { PathLocale } from "@/lib/i18n/dictionary";
 import { getLocalizedGuideMeta, type TranslatedGuideSlug } from "@/lib/i18n/guideContent";
 import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
-import { buildLocalizedPath, isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
+import { buildLocalizedPath, isTranslatedPath, isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
 
 /**
  * Builds the shared `LlmsPageContent` shape for a `/guides/<slug>` hub page
@@ -67,7 +67,9 @@ const GUIDE_STEPS_HEADING: Record<PathLocale, string> = {
  * never an abbreviated summary. Each step's resolved tool link follows the
  * same "linked content that isn't itself translated yet stays on the real
  * zh page with its zh label" rule that page's own `resolveStepHref`/
- * `resolveStepToolLabel` helpers already apply.
+ * `resolveStepToolLabel` helpers already apply — including issue #590's
+ * `hrefOverride` + `isTranslatedPath` precedence (see that page's doc
+ * comment) for steps whose real content moved to a nested sub-route.
  */
 export function buildLocaleGuideLlmsPageContent(
   guide: GuidePageModel,
@@ -78,8 +80,10 @@ export function buildLocaleGuideLlmsPageContent(
   const meta = getLocalizedGuideMeta(slug, locale);
   const url = `${baseUrl}${buildLocalizedPath(`/guides/${guide.slug}`, locale)}`;
 
-  const stepHref = (toolSlug: string): string =>
-    isTranslatedToolSlug(toolSlug) ? buildLocalizedPath(`/tools/${toolSlug}`, locale) : `/tools/${toolSlug}`;
+  const stepHref = (step: GuidePageModel["steps"][number]): string => {
+    const canonicalPath = step.hrefOverride ?? `/tools/${step.toolSlug}`;
+    return isTranslatedPath(canonicalPath) ? buildLocalizedPath(canonicalPath, locale) : canonicalPath;
+  };
   const stepToolTitle = (step: GuidePageModel["steps"][number]): string =>
     isTranslatedToolSlug(step.toolSlug)
       ? getLocalizedToolMeta(step.toolSlug, locale).title
@@ -89,7 +93,7 @@ export function buildLocaleGuideLlmsPageContent(
     const localizedStep = meta.steps[step.toolSlug];
     return {
       title: stepToolTitle(step),
-      url: `${baseUrl}${stepHref(step.toolSlug)}`,
+      url: `${baseUrl}${stepHref(step)}`,
       note: localizedStep?.caption ?? step.caption,
     };
   });
@@ -101,7 +105,7 @@ export function buildLocaleGuideLlmsPageContent(
         const localizedStep = meta.steps[step.toolSlug];
         const caption = localizedStep?.caption ?? step.caption;
         const why = localizedStep?.why ?? step.why;
-        return `${index + 1}. **${caption}** (${baseUrl}${stepHref(step.toolSlug)})\n   ${why}`;
+        return `${index + 1}. **${caption}** (${baseUrl}${stepHref(step)})\n   ${why}`;
       }),
     },
   ];

@@ -65,7 +65,6 @@ export const metadata: Metadata = {
 
 const TOOL_ICONS: Record<string, string> = {
   uv: "☀️",
-  earthquakes: "🌋",
   bmi: "⚖️",
   calories: "🔥",
   nutrition: "🥗",

@@ -11,7 +11,7 @@ import {
 import { useLanguage } from "@/app/context/LanguageContext";
 import GlobeWatchClient from "./GlobeWatchClient";
 import GlobeWatchItemTabs from "./GlobeWatchItemTabs";
-import EarthquakeContent from "@/app/(zh)/tools/earthquakes/EarthquakeContent";
+import EarthquakeContent from "./EarthquakeContent";
 
 /**
  * Issue #588 (parent #583): composes this item's three pieces — the tab

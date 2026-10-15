@@ -210,7 +210,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ],
       ],
     },
-    relatedSlugs: ["aqi", "water", "earthquakes"],
+    relatedSlugs: ["aqi", "water", "global-watch"],
     faqs: [
       {
         question: "紫外線指數分級標準為何？",
@@ -226,54 +226,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "資料來源與更新頻率？",
         answer:
           "本站紫外線資料同步自交通部中央氣象署全臺各地面氣象觀測站即時監測數據，每小時自動連線校對最新數值。",
-      },
-    ],
-  },
-  {
-    slug: "earthquakes",
-    group: "disaster-alerts",
-    lastUpdated: "2026-10-12",
-
-    schemaType: "WebPage",
-    title: "臺灣與全球顯著地震查詢",
-    keywords: ["地震", "地震速報", "震度", "海嘯"],
-    description:
-      "即時查詢近 7 天全臺 M4.0+ 與全球 M6.0+ 顯著地震動態資訊，包含震央地點、規模大小、震源深度與海嘯警報提示，整合中央氣象署 (CWA) 與美國地質調查局 (USGS) 測報數據。",
-    directAnswer:
-      "本站即時整合中央氣象署 (CWA) 與美國地質調查局 (USGS) 測報，提供近 7 天全臺 M4.0+ 與全球 M6.0+ 顯著強震、震源深度與海嘯警報 (Tsunami Warning) 即時資訊。",
-    scientificBasis: [
-      {
-        title: "地震觀測與海嘯警報發布標準",
-        authority: "交通部中央氣象署地震測報中心",
-        url: "https://www.cwa.gov.tw",
-      },
-      {
-        title: "Real-time Earthquake Feeds & Global Seismology",
-        authority: "美國地質調查局 (USGS)",
-        url: "https://earthquake.usgs.gov",
-      },
-      {
-        title: "防震避難指引與防災整備須知",
-        authority: "內政部消防署",
-        url: "https://www.nfa.gov.tw",
-      },
-    ],
-    relatedSlugs: ["uv", "aqi", "emergency-supplies", "global-watch"],
-    faqs: [
-      {
-        question: "地震資料多久更新一次？",
-        answer:
-          "本站地震資料每 10 分鐘自動同步一次中央氣象署 (CWA) 與美國地質調查局 (USGS) 的最新測報，EMSC、HKO 則作為輔助校對來源。",
-      },
-      {
-        question: "為什麼有的地震規模不到 M6.0 也會顯示？",
-        answer:
-          "臺灣地區 M4.0 以上、經中央氣象署發布地震報告的事件會個別顯示；非臺灣地區則以全球 M6.0（芮氏規模 6.0）以上的顯著地震為主，能量巨大且影響範圍廣，優先提供即時防災參考。",
-      },
-      {
-        question: "海嘯警報標籤代表什麼？",
-        answer:
-          "當測報單位發布海嘯警報或海嘯觀察提示時，系統會自動在卡片上標示紅色的海嘯警戒警示，提示沿海地區居民注意防範。",
       },
     ],
   },
@@ -1042,7 +994,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ],
       ],
     },
-    relatedSlugs: ["uv", "earthquakes", "water", "iaq-premises", "aqx-monitoring"],
+    relatedSlugs: ["uv", "global-watch", "water", "iaq-premises", "aqx-monitoring"],
     faqs: [
       {
         question: "AQI 數值如何解讀？",
@@ -2100,7 +2052,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ["超大豪雨 (Extremely Torrential Rain)", "≥ 500 mm", "—", "紫色 🟣", "重大致災降雨，配合預警性撤離與避難"],
       ],
     },
-    relatedSlugs: ["aqi", "uv", "earthquakes", "water", "travel-epidemic-alerts"],
+    relatedSlugs: ["aqi", "uv", "global-watch", "water", "travel-epidemic-alerts"],
     faqs: [
       {
         question: "氣象警報多久更新一次？",
@@ -2356,7 +2308,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://opendata.wra.gov.tw",
       },
     ],
-    relatedSlugs: ["weather-alerts", "earthquakes", "aqi"],
+    relatedSlugs: ["weather-alerts", "global-watch", "aqi"],
     faqs: [
       {
         question: "這份水位資料涵蓋哪些測站？",
@@ -2410,7 +2362,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw",
       },
     ],
-    relatedSlugs: ["earthquakes", "weather-alerts", "emergency-supplies"],
+    relatedSlugs: ["global-watch", "weather-alerts", "emergency-supplies"],
     faqs: [
       {
         question: "防災地圖的資料多久更新一次？",
@@ -2436,17 +2388,34 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // layers yet (地震/颱風/全球災害/國際疫情/全球空品 are #588-#592+),
     // so this entry stays deliberately thin — not in INDEXABLE_SLUGS yet
     // (see that set's own doc comment on thin-shell pages), no FAQs beyond
-    // the shell's own real, shipped behavior. Will absorb `earthquakes` and
-    // `travel-epidemic-alerts` (see those entries' relatedSlugs) once their
-    // own item tickets land — do not pre-emptively remove those two entries
-    // here; #583's own ticket for that 301/catalog cleanup is separate.
+    // the shell's own real, shipped behavior.
+    //
+    // Issue #590 (parent #583) retired the standalone `earthquakes` catalog
+    // entry in favor of this tool's earthquakes item sub-route
+    // (`/tools/global-watch/earthquakes`, shipped by #588) — its keywords
+    // (地震 etc.) are folded into this entry's own `keywords` below so News ↔
+    // Tools cross-linking (lib/server/content/crossLinks.ts) and sitewide
+    // search still surface this tool for earthquake-related queries.
+    // `travel-epidemic-alerts` is NOT retired by this ticket (see #591) —
+    // don't remove its relatedSlugs reference below ahead of that ticket.
     slug: "global-watch",
     group: "disaster-alerts",
-    lastUpdated: "2026-10-14",
+    lastUpdated: "2026-10-15",
 
     schemaType: "WebPage",
     title: "全球動態地球",
-    keywords: ["全球動態地球", "3D地球", "地球儀", "MapLibre", "全球地圖", "衛星影像"],
+    keywords: [
+      "全球動態地球",
+      "3D地球",
+      "地球儀",
+      "MapLibre",
+      "全球地圖",
+      "衛星影像",
+      "地震",
+      "地震速報",
+      "震度",
+      "海嘯",
+    ],
     description:
       "可拖曳旋轉、縮放的 3D 地球，拉近至城市層級自然轉為平面街道地圖；支援向量地圖與衛星影像切換，並可一鍵回到台灣預設視角。",
     directAnswer:
@@ -2463,7 +2432,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.earthdata.nasa.gov/data/tools/gibs",
       },
     ],
-    relatedSlugs: ["earthquakes", "travel-epidemic-alerts", "disaster-map", "weather-alerts"],
+    relatedSlugs: ["travel-epidemic-alerts", "disaster-map", "weather-alerts"],
     faqs: [
       {
         question: "全球動態地球目前提供哪些功能？",
@@ -4168,7 +4137,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ],
       ],
     },
-    relatedSlugs: ["emergency-hotlines", "disaster-map", "earthquakes", "water-outages"],
+    relatedSlugs: ["emergency-hotlines", "disaster-map", "global-watch", "water-outages"],
     faqs: [
       {
         question: "緊急避難包應該放在哪裡？多重才合適？",
@@ -4432,8 +4401,11 @@ const INDEXABLE_SLUGS = new Set([
   "lbm",
   "vo2max",
   // Formerly the "weather" group's substantive, frequently-updated content.
+  // ("earthquakes" was retired by issue #590 — its real content now lives at
+  // /tools/global-watch/earthquakes, which app/sitemap.ts lists directly
+  // off TRANSLATED_CANONICAL_PATHS rather than through this slug allowlist,
+  // since it isn't a flat /tools/<slug> TOOL_CATALOG entry.)
   "uv",
-  "earthquakes",
   "aqi",
   "weather-alerts",
   "aqx-monitoring",

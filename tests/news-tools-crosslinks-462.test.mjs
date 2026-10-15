@@ -62,7 +62,12 @@ const findTool = (slug) => TOOL_CATALOG.find((t) => t.slug === slug);
 // News → Tools: findRelatedToolsForNews
 // ---------------------------------------------------------------------------
 
-test("earthquake news surfaces a plausible subset of earthquakes/emergency-supplies/disaster-map", () => {
+// Issue #590 (parent #583) retired the standalone "earthquakes" TOOL_CATALOG
+// entry — its keywords (地震/地震速報/震度/海嘯) were folded into the
+// "global-watch" entry instead (the earthquakes item now lives at
+// /tools/global-watch/earthquakes), so earthquake news now surfaces
+// "global-watch" here rather than the old "earthquakes" slug.
+test("earthquake news surfaces a plausible subset of global-watch/emergency-supplies/disaster-map", () => {
   // Realistic sample shape: a CWA-style bulletin that also mentions shelters
   // opening and reminds residents to pack emergency supplies, as real
   // post-quake news coverage often does.
@@ -78,13 +83,13 @@ test("earthquake news surfaces a plausible subset of earthquakes/emergency-suppl
   const slugs = related.map((t) => t.slug);
 
   assert.ok(related.length >= 1 && related.length <= 3, "expected 1-3 related tools");
-  assert.ok(slugs.includes("earthquakes"), "earthquake news must surface the earthquakes tool");
+  assert.ok(slugs.includes("global-watch"), "earthquake news must surface the global-watch tool");
 
-  const expectedPool = new Set(["earthquakes", "emergency-supplies", "disaster-map"]);
+  const expectedPool = new Set(["global-watch", "emergency-supplies", "disaster-map"]);
   for (const slug of slugs) {
     assert.ok(
       expectedPool.has(slug),
-      `unexpected tool "${slug}" — expected only earthquakes/emergency-supplies/disaster-map`,
+      `unexpected tool "${slug}" — expected only global-watch/emergency-supplies/disaster-map`,
     );
   }
 });
@@ -130,10 +135,10 @@ test("findRelatedToolsForNews returns [] when the article has no usable text at 
 });
 
 test("findRelatedToolsForNews caps results at `limit` and never exceeds the catalog", () => {
-  const news = { title: "地震 地震速報 震度 海嘯" }; // matches earthquakes on all 4 keywords
+  const news = { title: "地震 地震速報 震度 海嘯" }; // matches global-watch on all 4 earthquake keywords
   const related = findRelatedToolsForNews(news, 1);
   assert.equal(related.length, 1);
-  assert.equal(related[0].slug, "earthquakes");
+  assert.equal(related[0].slug, "global-watch");
 });
 
 // ---------------------------------------------------------------------------
@@ -141,7 +146,10 @@ test("findRelatedToolsForNews caps results at `limit` and never exceeds the cata
 // ---------------------------------------------------------------------------
 
 test("rankNewsForTool matches recent news whose title contains the tool's keywords", () => {
-  const earthquakes = findTool("earthquakes");
+  // issue #590: "global-watch" absorbed the retired "earthquakes" entry's
+  // 地震/海嘯 keywords, so it's now the tool this earthquake-keyword test
+  // exercises.
+  const globalWatch = findTool("global-watch");
   const pool = [
     { id: 1, title: "今日台股收盤小漲" },
     { id: 2, title: "花蓮近海發生地震 氣象署持續監測" },
@@ -149,7 +157,7 @@ test("rankNewsForTool matches recent news whose title contains the tool's keywor
     { id: 4, title: "日本強震後發布海嘯警戒" },
   ];
 
-  const ranked = rankNewsForTool(earthquakes, pool, 3);
+  const ranked = rankNewsForTool(globalWatch, pool, 3);
   const ids = ranked.map((item) => item.id);
 
   assert.ok(ids.includes(2), "article mentioning 地震 should match");
@@ -168,13 +176,13 @@ test("rankNewsForTool's empty state: no matching news renders nothing, not an em
 });
 
 test("rankNewsForTool respects `limit` and ranks higher keyword-hit-count first", () => {
-  const earthquakes = findTool("earthquakes");
+  const globalWatch = findTool("global-watch");
   const pool = [
     { id: 1, title: "地震速報：今日地震列表" }, // 2 keyword hits (地震, 地震速報)
     { id: 2, title: "地震" }, // 1 keyword hit
     { id: 3, title: "震度" }, // 1 keyword hit
   ];
-  const ranked = rankNewsForTool(earthquakes, pool, 2);
+  const ranked = rankNewsForTool(globalWatch, pool, 2);
   assert.equal(ranked.length, 2);
   assert.equal(ranked[0].id, 1, "the double-keyword-hit article should rank first");
 });

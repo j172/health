@@ -7,9 +7,10 @@ import { getActiveMetroAlertsCount } from "@/lib/server/metroAlerts/queries";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import { isPathLocale, ogAlternateLocales, OG_LOCALE, getDictionary, type PathLocale } from "@/lib/i18n/dictionary";
 import { getLocalizedGuideMeta } from "@/lib/i18n/guideContent";
-import { isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
+import { isTranslatedToolSlug, isTranslatedPath } from "@/lib/i18n/translatedPages";
 import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
 import { buildHreflangAlternates, buildLocalizedPath, PATH_LOCALES } from "@/lib/i18n/translatedPages";
+import type { GuideStepModel } from "@/lib/server/tools/navModel";
 
 /**
  * Issue #487 — locale-aware twin of app/(zh)/guides/[slug]/page.tsx, scoped
@@ -25,13 +26,16 @@ import { buildHreflangAlternates, buildLocalizedPath, PATH_LOCALES } from "@/lib
  * be exactly as complete as the Chinese one, not an abbreviated summary —
  * so every one of the 8 steps' caption/why and all 3 FAQs are rendered from
  * lib/i18n/guideContent.ts's full translation, not a trimmed subset. Each
- * step still links to its real `/tools/<toolSlug>` tool page: when that
- * tool is itself translated (today: "emergency-hotlines"), the link and its
- * footer label go to the localized `/{locale}/tools/<slug>` page; when it
- * isn't (e.g. "weather-alerts", "earthquakes" — not yet translated by any
- * ticket), the link stays on the real zh page with its zh label, the same
- * "linked content that isn't itself translated yet stays Chinese" rule
- * ToolPageShell's own "下一步"/"所屬生活情境指南" sections already follow.
+ * step links to its real tool page — `resolveStepHref` resolves
+ * `step.hrefOverride ?? /tools/<toolSlug>` (same precedence as
+ * navModel.ts's `buildGuide`) via `isTranslatedPath` rather than
+ * `isTranslatedToolSlug` alone, since issue #590 gave the "earthquakes" step
+ * a `hrefOverride` pointing at a nested, itself-translated sub-route
+ * ("/tools/global-watch/earthquakes") rather than a flat `/tools/<slug>`
+ * page. When the resolved canonical path isn't translated (today:
+ * "weather-alerts"), the link stays on the real zh page with its zh label,
+ * the same "linked content that isn't itself translated yet stays Chinese"
+ * rule ToolPageShell's own "下一步"/"所屬生活情境指南" sections already follow.
  */
 
 export const revalidate = 300;
@@ -75,8 +79,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-function resolveStepHref(toolSlug: string, locale: PathLocale): string {
-  return isTranslatedToolSlug(toolSlug) ? buildLocalizedPath(`/tools/${toolSlug}`, locale) : `/tools/${toolSlug}`;
+function resolveStepHref(step: Pick<GuideStepModel, "toolSlug" | "hrefOverride">, locale: PathLocale): string {
+  const canonicalPath = step.hrefOverride ?? `/tools/${step.toolSlug}`;
+  return isTranslatedPath(canonicalPath) ? buildLocalizedPath(canonicalPath, locale) : canonicalPath;
 }
 
 function resolveStepToolLabel(toolSlug: string, locale: PathLocale, fallbackLabel: string): string {
@@ -177,7 +182,7 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
           <ol className="space-y-4">
             {guide.steps.map((step, index) => {
               const localizedStep = meta.steps[step.toolSlug];
-              const href = resolveStepHref(step.toolSlug, locale);
+              const href = resolveStepHref(step, locale);
               const toolLabel = resolveStepToolLabel(step.toolSlug, locale, step.tool.navLabel ?? step.tool.title);
               return (
                 <li key={step.toolSlug}>

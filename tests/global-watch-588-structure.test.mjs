@@ -223,22 +223,28 @@ test("GLOBE_WATCH_ITEMS keeps hosting the earthquake item (now with a locale-awa
 });
 
 // ---------------------------------------------------------------------------
-// AC: EarthquakeContent stays backward-compatible (existing /tools/earthquakes
-// page passes no controlled-filter props at all)
+// AC: EarthquakeContent's controlled-filter/onSelect props stay optional,
+// defaulting to its original uncontrolled behavior.
+//
+// Issue #590 (parent #583) retired the standalone "/tools/earthquakes" page
+// this component used to also be rendered by unchanged (zero-blast-radius
+// backward compatibility) — that page and its own copy of this component
+// are gone now (301s to the global-watch item below instead; see
+// tests/tools-global-watch-earthquakes-redirect-590.test.mjs), and the
+// component itself moved to components/Tools/GlobeWatch/EarthquakeContent.tsx
+// as this item's one remaining caller. The optional-props contract itself is
+// still real and still worth guarding (a future caller could still rely on
+// the uncontrolled default), so that assertion survives; the
+// now-impossible "old page still renders it unchanged" assertion does not.
 // ---------------------------------------------------------------------------
 
-const earthquakeContentSrc = readSrc("app", "(zh)", "tools", "earthquakes", "EarthquakeContent.tsx");
-const existingEarthquakesPageSrc = readSrc("app", "(zh)", "tools", "earthquakes", "page.tsx");
+const earthquakeContentSrc = readSrc("components", "Tools", "GlobeWatch", "EarthquakeContent.tsx");
 
 test("EarthquakeContent's controlled-filter/onSelect props are all optional, defaulting to its original uncontrolled behavior", () => {
   assert.match(earthquakeContentSrc, /filterMinMag\?:\s*number/);
   assert.match(earthquakeContentSrc, /onFilterChange\?:\s*\(value: number\) => void/);
   assert.match(earthquakeContentSrc, /onSelect\?:\s*\(item: SignificantEarthquake\) => void/);
   assert.match(earthquakeContentSrc, /filterMinMag\s*=\s*controlledFilterMinMag\s*\?\?\s*internalFilterMinMag/);
-});
-
-test("the existing /tools/earthquakes page still renders <EarthquakeContent earthquakes={earthquakes} /> with no new props (zero blast radius)", () => {
-  assert.match(existingEarthquakesPageSrc, /<EarthquakeContent earthquakes=\{earthquakes\}\s*\/>/);
 });
 
 // ---------------------------------------------------------------------------
