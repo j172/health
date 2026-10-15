@@ -36,8 +36,9 @@ const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfig
 
 test("Site-wide tools health: every tool in TOOL_CATALOG has valid metadata and no blocking loading", () => {
   // 82 baseline + #601 childcare-centers + #587 global-watch + #604
-  // child-subsidies, all merged independently on 2026-10-14.
-  assert.equal(TOOL_CATALOG.length, 85, `Expected exactly 85 tools, got ${TOOL_CATALOG.length}`);
+  // child-subsidies + #612 postpartum-care, all merged independently on
+  // 2026-10-14.
+  assert.equal(TOOL_CATALOG.length, 86, `Expected exactly 86 tools, got ${TOOL_CATALOG.length}`);
 
   for (const tool of TOOL_CATALOG) {
     const pagePath = path.join(ROOT_DIR, "app", "(zh)", "tools", tool.slug, "page.tsx");

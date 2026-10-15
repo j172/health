@@ -1255,7 +1255,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
   {
     slug: "long-term-care",
     group: "elder-care-welfare",
-    lastUpdated: "2026-10-13",
+    lastUpdated: "2026-10-14",
 
     navLabel: "長照照顧圈地圖",
     title: "長照照顧圈地圖",
@@ -1271,6 +1271,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
       "伯公照護站",
       "10分鐘照顧圈",
       "照顧圈",
+      "一般護理之家",
+      "居家護理所",
     ],
     description:
       "查詢全臺長照資源的「照顧圈地圖」：整合長照2.0特約機構、居家醫療特約機構、老人福利機構與客家委員會伯公照護站四種類型，可切換 1／3／5 公里直線半徑圈，即時顯示圈內資源數量，協助掌握住家附近的長照選擇。",
@@ -1302,13 +1304,23 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         authority: "客家委員會 (HAC)",
         url: "https://cloud.hakka.gov.tw/Pub/Opendata/DTST20230600002.json",
       },
+      {
+        title: "全國開業護理機構清冊（一般護理之家、居家護理所）",
+        authority: "衛生福利部護理及健康照護司",
+        url: "https://data.gov.tw/dataset/115950",
+      },
     ],
-    relatedSlugs: ["disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities"],
+    relatedSlugs: ["postpartum-care", "disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities"],
     faqs: [
       {
         question: "長照照顧圈地圖整合哪些類型的長照資源？",
         answer:
-          "整合四種類型：長照2.0特約機構（居家服務、日間照顧、喘息服務、住宿式機構、小規模多機能、失智據點、社區照顧關懷據點等）、全民健保居家醫療照護整合計畫特約機構、衛福部社會及家庭署老人福利機構（安養、養護、長期照護），以及客家委員會伯公照護站。可用上方的類型篩選切換查詢其中任一種。",
+          "整合四種類型：長照2.0特約機構（居家服務、日間照顧、喘息服務、住宿式機構、小規模多機能、失智據點、社區照顧關懷據點、一般護理之家、居家護理所等）、全民健保居家醫療照護整合計畫特約機構、衛福部社會及家庭署老人福利機構（安養、養護、長期照護），以及客家委員會伯公照護站。可用上方的類型篩選切換查詢其中任一種，再用「長照2.0特約機構」類型下方的分類篩選縮小到特定機構類別。",
+      },
+      {
+        question: "一般護理之家與居家護理所是什麼時候加入的？跟產後護理之家有什麼關係？",
+        answer:
+          "衛福部護理及健康照護司「全國開業護理機構清冊」同時收錄一般護理之家、居家護理所與產後護理之家三種機構。產後護理之家（月子中心）已獨立為 /tools/postpartum-care 工具，另兩類則併入本頁「長照2.0特約機構」類型下的分類篩選，可依評鑑結果與合格效期判斷機構是否仍在有效期內。",
       },
       {
         question: "可切換的 1／3／5 公里「照顧圈」半徑是怎麼算的？",
@@ -1659,6 +1671,47 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "如何確認補習班是否合法立案？",
         answer:
           "本站收錄教育部補習班資訊管理系統公開之合法立案名冊，可查驗立案日期與主管教育局處單位代碼。",
+      },
+    ],
+  },
+  {
+    // issue #612: data.gov.tw 115950「全國開業護理機構清冊」拆出的產後護理之家
+    // （月子中心）獨立工具；同一份資料集的一般護理之家、居家護理所併入既有
+    // "long-term-care" 工具的 categories 篩選，不重複建一個工具條目。
+    slug: "postpartum-care",
+    group: "family",
+    lastUpdated: "2026-10-14",
+
+    title: "產後護理之家地圖",
+    keywords: ["月子中心", "坐月子中心", "產後護理機構", "產後護理之家查詢"],
+    description:
+      "查詢全臺產後護理之家（月子中心）名冊，提供產後護理床與嬰兒床開放床數、評鑑結果與合格效期，協助確認機構資格是否仍在有效期內。資料來源：衛生福利部護理及健康照護司全國開業護理機構清冊。",
+    directAnswer:
+      "查詢全臺依《護理機構分類設置標準》開業之產後護理之家（俗稱月子中心），顯示產後護理床與嬰兒床開放床數、最近一次評鑑結果，以及評鑑合格效期是否仍在有效期內，方便入住前確認機構資格。",
+    scientificBasis: [
+      {
+        title: "全國開業護理機構清冊（含一般護理之家、居家護理所及產後護理之家）",
+        authority: "衛生福利部護理及健康照護司",
+        url: "https://data.gov.tw/dataset/115950",
+      },
+    ],
+    relatedSlugs: ["baby-friendly-hospitals", "breastfeeding-rooms", "long-term-care", "child-welfare-institutions"],
+    schemaType: "MedicalWebPage",
+    faqs: [
+      {
+        question: "產後護理之家（月子中心）跟一般護理之家、居家護理所是同一份名冊嗎？",
+        answer:
+          "是。衛福部護理及健康照護司「全國開業護理機構清冊」同時收錄這三種機構，本站依機構類別拆開呈現：產後護理之家獨立為本頁，一般護理之家與居家護理所併入「長照照顧圈地圖」工具的分類篩選。",
+      },
+      {
+        question: "頁面上的「評鑑結果」與「合格效期」代表什麼？",
+        answer:
+          "評鑑結果是機構最近一次接受衛生主管機關評鑑的結果（合格／不合格／尚未評鑑），合格效期是評鑑合格後的有效期限；本站會依合格效期自動標示「效期內」或「已過期」，但入住前仍建議以機構現場公告或當地衛生局查詢結果為準。",
+      },
+      {
+        question: "資料包含哪些欄位？多久更新？",
+        answer:
+          "包含機構名稱、縣市、電話、地址、產後護理床與護理類嬰兒床開放床數、評鑑結果、合格效期與 WGS84 經緯度（資料本身已內附座標，不需另行定位）。資料來源標示為每年更新一次，本站排程同步跟進。",
       },
     ],
   },
@@ -3390,7 +3443,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.hpa.gov.tw/",
       },
     ],
-    relatedSlugs: ["breastfeeding-rooms", "contraception-map", "child-welfare-institutions", "accessible-parking", "child-subsidies"],
+    relatedSlugs: ["breastfeeding-rooms", "postpartum-care", "contraception-map", "child-welfare-institutions", "accessible-parking", "child-subsidies"],
     group: "family",
     lastUpdated: "2026-10-14",
 

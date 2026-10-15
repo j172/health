@@ -57,10 +57,11 @@ const { getRelatedTools } = await import("../lib/server/tools/navModel.ts");
 // 都 ≥ 4").
 // ---------------------------------------------------------------------------
 
-test("every one of the 85 TOOL_CATALOG tools gets >= 4 related tools from getRelatedTools", () => {
+test("every one of the 86 TOOL_CATALOG tools gets >= 4 related tools from getRelatedTools", () => {
   // 82 baseline + #601 childcare-centers + #587 global-watch + #604
-  // child-subsidies, all merged independently on 2026-10-14.
-  assert.equal(TOOL_CATALOG.length, 85, "expected the catalog to have 85 tools");
+  // child-subsidies + #612 postpartum-care, all merged independently on
+  // 2026-10-14.
+  assert.equal(TOOL_CATALOG.length, 86, "expected the catalog to have 86 tools");
   for (const tool of TOOL_CATALOG) {
     const related = getRelatedTools(tool.slug);
     assert.ok(

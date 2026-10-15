@@ -111,6 +111,28 @@ export const facilitySearchConfigs = {
       { value: "家庭照顧者", label: "🤝 家庭照顧者支持據點" },
       { value: "社區照顧關懷據點", label: "🏡 社區照顧關懷據點" },
       { value: "預防及延緩失能", label: "🌱 預防及延緩失能" },
+      // issue #612: data.gov.tw 115950「全國開業護理機構清冊」裡除了產後護理之家
+      // （併為獨立工具 /tools/postpartum-care）之外的另兩類機構，併入本工具。
+      { value: "一般護理之家", label: "🏥 一般護理之家" },
+      { value: "居家護理所", label: "🏠 居家護理所" },
+    ],
+  },
+  "postpartum-care": {
+    // issue #612: data.gov.tw 115950「全國開業護理機構清冊」裡的產後護理之家
+    // （241 家）——同一份資料集裡的一般護理之家／居家護理所併入 long-term-care
+    // 的 categories（見上），不做成獨立工具。
+    facilityType: "postpartum_care",
+    emoji: "🤱",
+    title: "產後護理之家地圖",
+    description:
+      "查詢全台產後護理之家（月子中心），顯示產後護理床與嬰兒床開放床數、評鑑結果與合格效期，協助確認機構是否仍在有效期內。資料來源：衛福部護理及健康照護司全國開業護理機構清冊。",
+    searchPlaceholder: "輸入機構名稱、地址或縣市關鍵字",
+    errorText: "查詢產後護理之家資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的產後護理之家，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的產後護理之家。",
+    extraFields: [
+      { key: "postpartumBeds", label: "🛏️ 產後護理床：" },
+      { key: "infantBeds", label: "👶 嬰兒床：" },
     ],
   },
   "vet-clinics": {

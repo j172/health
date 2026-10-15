@@ -752,15 +752,37 @@ export default function FacilitySearchContent({
                           </span>
                         </span>
                       )}
-                      {f.extra_json?.evaluations && f.extra_json.evaluations.length > 0 && (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300"
-                          title={f.extra_json.evaluations[0].validUntil ? `有效期限：${f.extra_json.evaluations[0].validUntil}` : undefined}
-                        >
-                          <span>🏅</span>
-                          <span>評鑑 {f.extra_json.evaluations[0].year ? `${f.extra_json.evaluations[0].year}年 ` : ""}{f.extra_json.evaluations[0].result}</span>
-                        </span>
-                      )}
+                      {f.extra_json?.evaluations && f.extra_json.evaluations.length > 0 && (() => {
+                        const ev = f.extra_json?.evaluations?.[0];
+                        if (!ev) return null;
+                        // issue #612: 合格效期 is now stored as an ISO date
+                        // (YYYY-MM-DD) for the newer nhplatform-sourced
+                        // facility types (postpartum_care, and long_term_care's
+                        // 一般護理之家/居家護理所 categories). Older sources
+                        // (e.g. the ltc-gis import) still store a raw
+                        // Minguo-format string there, which this regex never
+                        // matches — so those rows keep their original amber
+                        // badge with no validity suffix, unchanged.
+                        const isIsoDate = /^\d{4}-\d{2}-\d{2}$/.test(ev.validUntil || "");
+                        const isExpired = isIsoDate && ev.validUntil < new Date().toISOString().slice(0, 10);
+                        const badgeClass = !isIsoDate
+                          ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300"
+                          : isExpired
+                            ? "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300"
+                            : "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300";
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${badgeClass}`}
+                            title={ev.validUntil ? `有效期限：${ev.validUntil}` : undefined}
+                          >
+                            <span>🏅</span>
+                            <span>
+                              評鑑 {ev.year ? `${ev.year}年 ` : ""}{ev.result}
+                              {isIsoDate ? (isExpired ? "・已過期" : "・效期內") : ""}
+                            </span>
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                   {f.address && (
