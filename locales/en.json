@@ -134,7 +134,8 @@
     "anti-fraud": "Anti-Fraud URL Checker (Blocked Scam Domain Lookup)",
     "emergency-supplies": "Disaster Preparedness Supply Calculator (Emergency Kit & Home Stockpile)",
     "senior-friendly": "Senior Transit Card & Age-Friendly Travel Map (All 22 Counties)",
-    "social-welfare-centers": "Social Welfare Center Finder & Caseworker Support Guide"
+    "social-welfare-centers": "Social Welfare Center Finder & Caseworker Support Guide",
+    "ltc-benefits": "Long-Term Care Benefits & Application Guide (Care Level Benefit Estimator)"
   },
   "categories": {
     "gov": "Government Agencies",
@@ -678,6 +679,13 @@
     "earthquakes": {
       "legendHeading": "Globe marker legend:",
       "legendTsunami": "Tsunami warning"
+    },
+    "disasters": {
+      "legendHeading": "Alert level legend:",
+      "typeFilterHeading": "Show disaster types:",
+      "readOriginal": "Read original ↗",
+      "unknownCountry": "Unknown location",
+      "emptyStateTemplate": "No {type} events right now"
     }
   },
   "aqiTool": {

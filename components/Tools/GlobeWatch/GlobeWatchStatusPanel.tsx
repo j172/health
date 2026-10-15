@@ -11,12 +11,18 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
  * so the globe's outer frame never visibly changes shape between states,
  * which is what actually prevents CLS — see GlobeWatchClient.tsx's fixed
  * `aspect-[16/10]` wrapper, which this panel fills regardless of variant.
+ *
+ * Issue #598 added "unconfigured": the 全球空品 item's own failure mode when
+ * `WAQI_TOKEN` isn't set server-side (see lib/server/config/env.ts's
+ * `waqiToken` field) — distinct from "unsupported" (a device/browser
+ * limitation) but visually treated the same (dimmed placeholder, no spinner)
+ * since both are "nothing will load here" states rather than transient ones.
  */
 export default function GlobeWatchStatusPanel({
   variant,
   message,
 }: {
-  variant: "loading" | "unsupported";
+  variant: "loading" | "unsupported" | "unconfigured";
   message: string;
 }) {
   return (
@@ -26,7 +32,7 @@ export default function GlobeWatchStatusPanel({
         alt=""
         width={640}
         height={400}
-        className={`h-auto w-40 max-w-[55%] ${variant === "unsupported" ? "opacity-50 grayscale" : "opacity-90"}`}
+        className={`h-auto w-40 max-w-[55%] ${variant !== "loading" ? "opacity-50 grayscale" : "opacity-90"}`}
         priority={false}
       />
       <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">{message}</p>

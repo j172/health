@@ -134,7 +134,8 @@
     "anti-fraud": "사기 사이트 조회 (차단된 사기 도메인 검색)",
     "emergency-supplies": "재난 대비 물품 계산기 (비상 배낭·가정 비축)",
     "senior-friendly": "경로교통카드 및 시니어 여행 지도 (전국 22개 현시)",
-    "social-welfare-centers": "사회복지센터 찾기 및 사회복지사 상담 안내"
+    "social-welfare-centers": "사회복지센터 찾기 및 사회복지사 상담 안내",
+    "ltc-benefits": "장기요양 급여 및 신청 안내 (등급별 급여액 계산)"
   },
   "categories": {
     "gov": "정부 및 공공기관",
@@ -681,6 +682,13 @@
     "earthquakes": {
       "legendHeading": "지구본 마커 범례:",
       "legendTsunami": "해일 경보"
+    },
+    "disasters": {
+      "legendHeading": "경보 등급 범례:",
+      "typeFilterHeading": "표시할 재해 종류:",
+      "readOriginal": "원문 보기 ↗",
+      "unknownCountry": "알 수 없는 위치",
+      "emptyStateTemplate": "현재 {type} 사건이 없습니다"
     }
   },
   "aqiTool": {

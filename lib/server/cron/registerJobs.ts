@@ -50,6 +50,7 @@ import {
   runFscFraudAdStatsSync,
 } from "@/lib/server/antiFraud/runTrendSync";
 import { runGdacsSync, runGdacsCleanup } from "@/lib/server/gdacs/runSync";
+import { runWhoDonSync, runWhoDonCleanup } from "@/lib/server/who/runSync";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -527,5 +528,31 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "40 4 * * *",
     runGuarded("gdacs-cleanup-cron.log", () => runGdacsCleanup()),
+  );
+  // WHO Disease Outbreak News (issue #596 / #583) — 每 6 小時一次，供「國際疫
+  // 情」項目後續的 WHO 圖釘疊加使用。沿用 culture-shows (10 0,6,12,18) /
+  // pest-alerts (12 0,6,12,18) 的每 6 小時慣例，但取未被佔用的 19 分：不是
+  // youbike 每 5 分鐘格線 (0/5/10/.../55) 上的分鐘，也不在本檔案任何其他
+  // 「每小時」job 的分鐘上 (rss 5/35、aqi 20/50、cwa 15/45、earthquakes
+  // 3/13/23/33/43/53、news-card-images+power-realtime 0/10/20/30/40/50、
+  // water-outages 25、wra-water-outages 18/48、aqx 10/40、wra-sync 8/38、
+  // wra-iot 12/27/42/57、metro-alerts 0/30、emergency-rooms 7/22/37/52、
+  // transit-accessibility-alerts 16/46、senior-tourism-alerts 17/47、gdacs-sync
+  // 14/44)，也不是 culture-shows 的 10 分或 pest-alerts 的 12 分，所以在
+  // 0/6/12/18 這四個整點都不會撞到任何既有 job。這個 job 自己再用
+  // withAdvisoryLock 防重疊，見 lib/server/who/runSync.ts。
+  cron.schedule(
+    "19 0,6,12,18 * * *",
+    runGuarded("who-don-sync-cron.log", () => runWhoDonSync()),
+  );
+  // WHO DON 保留期清除 (issue #596) — 超過 180 天的資料每日清除一次。4 點區
+  // 段裡 24 分未被 earthquakes-retention-cleanup 的 36、green-products/
+  // wra-catalog 的 30、carbon-footprint-products 的 45、carbon-footprint-
+  // coefficients 的 50、cool-spots 的 33、iaq-premises 的 38、cleaning-squads
+  // 的 53、green-restaurants 的 58、gdacs-cleanup 的 40 佔用，也不在任何
+  // 「每小時」job 的分鐘格線上（見上面 who-don-sync 註解列出的清單）。
+  cron.schedule(
+    "24 4 * * *",
+    runGuarded("who-don-cleanup-cron.log", () => runWhoDonCleanup()),
   );
 };
