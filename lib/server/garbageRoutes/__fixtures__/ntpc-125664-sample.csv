@@ -1,0 +1,17 @@
+﻿city,lineid,linename,rank,name,village,longitude,latitude,time,memo,garbagesunday,garbagemonday,garbagetuesday,garbagewednesday,garbagethursday,garbagefriday,garbagesaturday,recyclingsunday,recyclingmonday,recyclingtuesday,recyclingwednesday,recyclingthursday,recyclingfriday,recyclingsaturday,foodscrapssunday,foodscrapsmonday,foodscrapstuesday,foodscrapswednesday,foodscrapsthursday,foodscrapsfriday,foodscrapssaturday
+萬里區,207001,A路線下午,1,獅頭路15-1號(海巡),萬里里,121.6945286,25.17950406,12:40,,,Y,Y,,Y,Y,Y,,Y,,,Y,,,,Y,Y,,Y,Y,Y
+萬里區,207001,A路線下午,2,瑪鋉下街60-2號(海水浴場),萬里里,121.691376,25.179964,12:45,,,Y,Y,,Y,Y,Y,,Y,,,Y,,,,Y,Y,,Y,Y,Y
+萬里區,207001,A路線下午,3,瑪鋉路216號(托兒所),萬里里,121.689041,25.180643,12:48,,,Y,Y,,Y,Y,Y,,Y,,,Y,,,,Y,Y,,Y,Y,Y
+萬里區,207001,A路線下午,4,瑪鋉路123號(區公所),萬里里,121.689713,25.17794,13:13,,,Y,Y,,Y,Y,Y,,Y,,,Y,,,,Y,Y,,Y,Y,Y
+金山區,208001,"金山1路線 晚上1",1,社寮2號,磺港里,121.639732,25.228693,17:55,2025通報,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y
+金山區,208001,"金山1路線 晚上1",2,社寮17號,磺港里,121.63871,25.227715,17:57,,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y
+金山區,208001,"金山1路線 晚上1",3,磺港路164號(金山青年活動中心對面),磺港里,121.64357,25.224972,17:59,,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y
+土城區,236017,延吉街下午二四六,64,和城路2段255巷31號,延吉里,121.474204,24.987639,15:46,"
+",,,Y,,Y,,Y,,,Y,,Y,,Y,,,Y,,Y,,Y
+土城區,236024,土城街下午,52,"中央路2段61巷34弄口、
+61巷44弄口",員林里,121.443581,24.978493,15:16,,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y
+土城區,236026,土城街晚上,17,"和平路57號
+(路牌下收運後迴轉)",埤塘里,121.44403,24.97184,18:41,,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y,,Y,Y,,Y,Y,Y
+三芝區,252005,山線下午1.2.4.6,4,1鄰八連溪頭8號(昭月園農莊),圓山里,121.52853840521675,25.220696403253864,13:39,,,,,,Y,,,,,,,Y,,,,,,,Y,,
+三芝區,252005,山線下午1.2.4.6,6,"4鄰木屐寮32號
+(木屐寮農庄)",圓山里,121.53182630255742,25.223922422811103,13:43,,,,,,Y,,,,,,,Y,,,,,,,Y,,

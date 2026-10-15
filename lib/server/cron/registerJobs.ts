@@ -28,6 +28,7 @@ import { runWraSync, runWraCatalogSync, runWraIotSync } from "@/lib/server/wra/r
 import { runCoolSpotsSync } from "@/lib/server/coolSpots/ingestCoolSpots";
 import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
+import { runGarbageRoutesSync } from "@/lib/server/garbageRoutes/runSync";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
 import { runYouBikeSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
@@ -389,6 +390,15 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "53 4 * * *",
     runGuarded("cleaning-squads-cron.log", () => runCleaningSquadsSync()),
+  );
+  // 垃圾車路線與清運點 (issue #674 / B-16) — 臺北市 136515＋新北市 125664，來源
+  // 每日整批更新，daily 即可；03:41 的分鐘 41 不在本檔案任何其他 job 的分鐘格線上
+  // （3 點區段已用 0、15、20、25、30，另有每小時型 job 的 3/13/23/33/43/53 等，
+  // 皆不含 41；spec §4.3 的提議分鐘）。兩城市各自失敗隔離、先 upsert 再依 50% 防呆
+  // 對帳，自己再用 withAdvisoryLock 防重疊，見 lib/server/garbageRoutes/runSync.ts。
+  cron.schedule(
+    "41 3 * * *",
+    runGuarded("garbage-routes-sync-cron.log", () => runGarbageRoutesSync()),
   );
   // Green restaurants (gis_p_11) — issue #163, the one dataset left over
   // from #130/#156 pending confirmation it shares the same MOENV_GP_API_KEY

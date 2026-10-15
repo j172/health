@@ -2019,6 +2019,50 @@ export const TABLE_DDL = {
       UNIQUE KEY uq_fsc_fraud_ad_report_date (report_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 垃圾車路線與清運點 (issue #674 / B-16，臺北市 136515＋新北市 125664) — 垃圾車
+  // 與清潔隊工具「路線與收運時間」分頁的資料。見 lib/server/garbageRoutes/。
+  //
+  // UNIQUE KEY 刻意只用 (city, line_id, stop_rank) —— 絕對不能把 arrive_time、
+  // synced_at 或任何時間欄位放進去。這個 repo 已經在 cwa_station_weather／
+  // cwa_rainfall／aqi_readings／fraud_domains 等表上真實發生過「UNIQUE KEY 含時間
+  // 欄位 → 每次同步的新時間值都被當成新 row → 表無限膨脹」的事故（見
+  // migrations/20260921_cwa_station_weather_narrow_unique_key.sql 等修復）。抵達
+  // 時間是各清運點的表定時刻，市府改了時刻表就該覆蓋那一列，而不是多插一列，所以
+  // arrive_time／depart_time 都是一般欄位。每個城市每日整批同步：先 upsert，再刪除
+  // 「本次沒看到」的列（synced_at 早於本次同步開始），且只有抓到的列數 ≥ 上次 50%
+  // 才會刪（見 reconcile.ts），避免上游異常把整張表清空。
+  //
+  // line_id：臺北沒有路線代碼，用「局編:路線:車次」組成；新北直接用 lineid。
+  // *_days：星期位元遮罩（bit 0＝週日…bit 6＝週六）；臺北來源不提供星期所以為
+  // NULL，與「來源明確標示不收（0）」不同。vehicle plate（車號）刻意不存。
+  garbageRouteStops: `
+    CREATE TABLE IF NOT EXISTS garbage_route_stops (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      city VARCHAR(20) NOT NULL,
+      line_id VARCHAR(64) NOT NULL,
+      stop_rank INT NOT NULL,
+      line_name VARCHAR(100) NOT NULL,
+      trip_label VARCHAR(20) NULL,
+      team VARCHAR(50) NULL,
+      district VARCHAR(30) NOT NULL,
+      village VARCHAR(50) NULL,
+      stop_name VARCHAR(255) NOT NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      arrive_time VARCHAR(5) NULL,
+      depart_time VARCHAR(5) NULL,
+      garbage_days TINYINT UNSIGNED NULL,
+      recycling_days TINYINT UNSIGNED NULL,
+      foodscraps_days TINYINT UNSIGNED NULL,
+      memo VARCHAR(255) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_garbage_route_stop (city, line_id, stop_rank),
+      KEY idx_garbage_route_district (city, district)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   // GDACS（全球災害預警協調系統）事件 (issue #592 / #583) — 供颱風／全球災害／
   // 地震警戒色疊加共用。見 lib/server/gdacs/。
   //

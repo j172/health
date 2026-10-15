@@ -165,6 +165,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   // Anti-fraud trend stats (issue #570) — two new tables, no ALTER needed.
   await p.query(TABLE_DDL.policeFraudInterdictionStats);
   await p.query(TABLE_DDL.fscFraudAdStats);
+  // Garbage-truck route stops (issue #674) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.garbageRouteStops);
   // GDACS global disaster events (issue #592) — new table, no ALTER needed.
   await p.query(TABLE_DDL.gdacsEvents);
   // WHO Disease Outbreak News (issue #596) — new table, no ALTER needed.

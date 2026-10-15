@@ -389,7 +389,7 @@ export const facilitySearchConfigs = {
     emoji: "🧹",
     title: "地方清潔隊聯絡資訊查詢",
     description:
-      "查詢全國各縣市地方清潔隊聯絡地址與電話。資料來源：環境部開放資料（wr_s_04）。",
+      "查詢各縣市地方清潔隊聯絡地址與電話，洽詢垃圾清運、資源回收等業務。資料來源：環境部開放資料（wr_s_04）。",
     searchPlaceholder: "輸入清潔隊名稱或縣市關鍵字",
     errorText: "查詢清潔隊資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的清潔隊，可改用關鍵字搜尋。",

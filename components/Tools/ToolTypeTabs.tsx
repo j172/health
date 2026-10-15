@@ -20,12 +20,27 @@ export default function ToolTypeTabs({
   tabs,
   initialKey,
   ariaLabel,
+  activeKey,
+  onActiveKeyChange,
 }: {
   tabs: ToolTypeTab[];
   initialKey?: string;
   ariaLabel: string;
+  /**
+   * Issue #674: optional controlled mode — when set, this key is the active tab
+   * and the parent decides what a tab click does via `onActiveKeyChange`. Lets a
+   * sibling element (a coverage table's "查詢清潔隊電話" button) switch tabs.
+   * Omitted by every other caller, which keeps the self-managed behavior.
+   */
+  activeKey?: string;
+  onActiveKeyChange?: (key: string) => void;
 }) {
-  const [active, setActive] = useState(initialKey ?? tabs[0]?.key);
+  const [internalActive, setInternalActive] = useState(initialKey ?? tabs[0]?.key);
+  const active = activeKey ?? internalActive;
+  const setActive = (key: string) => {
+    setInternalActive(key);
+    onActiveKeyChange?.(key);
+  };
 
   return (
     <div className="space-y-6">

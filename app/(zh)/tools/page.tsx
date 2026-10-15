@@ -97,7 +97,7 @@ const TOOL_ICONS: Record<string, string> = {
   "tax-organizations": "🤝",
   "cool-spots": "🧊",
   "iaq-premises": "💨",
-  "cleaning-squads": "🧹",
+  "cleaning-squads": "🚛",
   "carbon-footprint": "🌍",
   "aqx-monitoring": "🧪",
   "water-conditions": "💧",
