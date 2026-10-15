@@ -10,16 +10,19 @@ import path from "node:path";
 // bulletin. Both are kept, merged behind a "本週油價"/"附近加油站" tab switch on
 // cpc-prices, with the old station-map URL 301ing straight to the matching tab.
 
-test("next.config.js redirects /tools/cpc-stations permanently to the stations tab on /tools/cpc-prices (issue #483)", () => {
-  const content = fs.readFileSync(path.join(process.cwd(), "next.config.js"), "utf-8");
-
-  assert.match(content, /async redirects\(\)/, "next.config.js should define the shared redirects() function");
+test("the permanent-redirect rules file redirects /tools/cpc-stations to the stations tab on /tools/cpc-prices (issue #483)", () => {
+  // Moved out of next.config.js's redirects() into middleware.ts / this
+  // data file 2026-10-15 — every permanent (308) redirect on the site was
+  // 500ing because next.config.js's redirects() always adds a non-standard
+  // Refresh header that this host's Cloudflare/LiteSpeed path can't handle.
+  // See tests/middleware-permanent-redirects.test.mjs for the full story and
+  // the general-coverage tests; this one keeps issue #483's specific
+  // assertion alive at its new location.
+  const content = fs.readFileSync(path.join(process.cwd(), "lib", "redirects", "permanentRedirectRules.ts"), "utf-8");
 
   assert.ok(
-    /source:\s*"\/tools\/cpc-stations",\s*destination:\s*"\/tools\/cpc-prices\?tab=stations",\s*permanent:\s*true,?/.test(
-      content,
-    ),
-    "redirects() should contain a permanent (301) entry from /tools/cpc-stations to /tools/cpc-prices?tab=stations",
+    /source:\s*"\/tools\/cpc-stations",\s*destination:\s*"\/tools\/cpc-prices\?tab=stations",?/.test(content),
+    "permanentRedirectRules.ts should contain a permanent (301) entry from /tools/cpc-stations to /tools/cpc-prices?tab=stations",
   );
 });
 

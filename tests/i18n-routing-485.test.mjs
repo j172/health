@@ -304,31 +304,30 @@ test("resolveLocaleSwitchTarget navigates for a translated page, returns null fo
 });
 
 // ---------------------------------------------------------------------------
-// next.config.js's legacy ?lang= redirects (source-text inspection — this
-// repo's established convention for verifying next.config.js, see
-// tests/tools-long-term-care-merge-484.test.mjs)
+// Legacy ?lang= redirects — moved out of next.config.js's redirects() into
+// middleware.ts / lib/redirects/permanentRedirectRules.ts 2026-10-15: every
+// permanent (308) redirect on the site was 500ing because next.config.js's
+// redirects() always adds a non-standard Refresh header that this host's
+// Cloudflare/LiteSpeed path can't handle. See
+// tests/middleware-permanent-redirects.test.mjs for the full story.
 // ---------------------------------------------------------------------------
 
-test("next.config.js redirects ?lang={locale} to the real /{locale}/ URL for each translated tool", () => {
-  const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
-  assert.match(content, /async redirects\(\)/);
-  assert.match(content, /\["en", "ja", "ko"\]\.flatMap/, "must generate one rule per locale×translated-slug combination");
+const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
+
+test("the redirect rules send ?lang={locale} to the real /{locale}/ URL for each translated tool", () => {
   // Containment check (not an exact-array snapshot) so later tickets that
   // grow this slug list don't break this test — every TRANSLATED_TOOL_SLUGS
-  // entry must appear as a quoted string literal somewhere in the redirect
-  // slug array.
+  // entry must have a matching rule for every locale.
   for (const slug of TRANSLATED_TOOL_SLUGS) {
-    assert.match(
-      content,
-      new RegExp(`"${slug}"`),
-      `next.config.js's ?lang= redirect slug list must include "${slug}"`,
-    );
+    for (const locale of ["en", "ja", "ko"]) {
+      const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === `/tools/${slug}` && r.has?.value === locale);
+      assert.ok(rule, `missing ?lang=${locale} redirect rule for /tools/${slug}`);
+      assert.equal(rule.destination, `/${locale}/tools/${slug}`);
+    }
   }
-  assert.match(content, /destination:\s*`\/\$\{locale\}\/tools\/\$\{slug\}`/);
 });
 
-test("next.config.js does NOT have a generic ?lang= catch-all redirect for untranslated pages (regression guard: that rule was a same-path self-redirect loop)", () => {
-  const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
+test("there is NO generic ?lang= catch-all redirect for untranslated pages (regression guard: that rule was a same-path self-redirect loop)", () => {
   // A rule shaped `source: "/:path*"` -> `destination: "/:path*"` redirects a
   // request back to itself, since Next.js always forwards the incoming query
   // string onto the destination with no way to strip it — confirmed live:
@@ -336,8 +335,10 @@ test("next.config.js does NOT have a generic ?lang= catch-all redirect for untra
   // an infinite loop for every untranslated page. Untranslated pages don't
   // need a redirect at all: LanguageContext.tsx no longer reads `lang`, so
   // the stray query param is simply ignored and the page renders in Chinese.
-  assert.ok(
-    !/source:\s*"\/:path\*"[\s\S]{0,200}has:\s*\[\{\s*type:\s*"query",\s*key:\s*"lang"\s*\}\]/.test(content),
+  const catchAll = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/:path*" || r.destination === "/:path*");
+  assert.equal(
+    catchAll,
+    undefined,
     "must not redirect every ?lang= URL to the same path — that is a self-redirect loop for every untranslated page",
   );
 });

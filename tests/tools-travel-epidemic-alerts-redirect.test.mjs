@@ -11,17 +11,17 @@ import path from "node:path";
 // route (no app/[locale]/tools/travel-epidemic-alerts sibling existed), so a
 // single redirect entry is enough — no per-locale `?lang=` variants to carry.
 
-test("next.config.js redirects /tools/travel-epidemic-alerts permanently to /tools/global-watch/epidemics (issue #591)", () => {
-  const content = fs.readFileSync(path.join(process.cwd(), "next.config.js"), "utf-8");
-
-  assert.match(content, /async redirects\(\)/, "next.config.js should define the shared redirects() function");
-
-  assert.ok(
-    /source:\s*"\/tools\/travel-epidemic-alerts",\s*destination:\s*"\/tools\/global-watch\/epidemics",\s*permanent:\s*true,?/.test(
-      content,
-    ),
-    "redirects() should contain a permanent (301) entry from /tools/travel-epidemic-alerts to /tools/global-watch/epidemics",
-  );
+test("the redirect rules permanently send /tools/travel-epidemic-alerts to /tools/global-watch/epidemics (issue #591)", async () => {
+  // Moved out of next.config.js's redirects() into middleware.ts / a shared
+  // data file 2026-10-15 — every permanent (308) redirect on the site was
+  // 500ing because next.config.js's redirects() always adds a non-standard
+  // Refresh header that this host's Cloudflare/LiteSpeed path can't handle.
+  // See tests/middleware-permanent-redirects.test.mjs for the full story.
+  const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
+  const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/tools/travel-epidemic-alerts");
+  assert.ok(rule, "expected a redirect rule for /tools/travel-epidemic-alerts");
+  assert.equal(rule.destination, "/tools/global-watch/epidemics");
+  assert.equal(rule.permanent, true);
 });
 
 test("the /tools/travel-epidemic-alerts page directory no longer exists (issue #591)", () => {

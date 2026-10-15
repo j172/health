@@ -200,25 +200,26 @@ test("every issue #486 batch slug is a translated path with reciprocal hreflang 
 });
 
 // ---------------------------------------------------------------------------
-// next.config.js's legacy ?lang= redirects — source-text inspection, same
-// convention tests/i18n-routing-485.test.mjs uses.
+// Legacy ?lang= redirects — moved out of next.config.js's redirects() into
+// middleware.ts / lib/redirects/permanentRedirectRules.ts 2026-10-15, same
+// reasoning as tests/i18n-routing-485.test.mjs and
+// tests/middleware-permanent-redirects.test.mjs.
 // ---------------------------------------------------------------------------
 
-test("next.config.js's ?lang= redirect slug list covers every issue #486 batch slug", () => {
-  const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
+test("the redirect rules' ?lang= slug list covers every issue #486 batch slug", async () => {
+  const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
   for (const slug of BATCH_486_SLUGS) {
-    assert.match(
-      content,
-      new RegExp(`"${slug}"`),
-      `next.config.js's ?lang= redirect slug list must include "${slug}"`,
-    );
+    const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === `/tools/${slug}` && r.has);
+    assert.ok(rule, `the ?lang= redirect rules must include a rule for "${slug}"`);
   }
 });
 
-test("next.config.js does NOT have a generic ?lang= catch-all redirect (regression guard, shared with issue #485)", () => {
-  const content = fs.readFileSync(path.join(ROOT_DIR, "next.config.js"), "utf8");
-  assert.ok(
-    !/source:\s*"\/:path\*"[\s\S]{0,200}has:\s*\[\{\s*type:\s*"query",\s*key:\s*"lang"\s*\}\]/.test(content),
+test("there is NO generic ?lang= catch-all redirect (regression guard, shared with issue #485)", async () => {
+  const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
+  const catchAll = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/:path*" || r.destination === "/:path*");
+  assert.equal(
+    catchAll,
+    undefined,
     "must not redirect every ?lang= URL to the same path — that is a self-redirect loop for every untranslated page",
   );
 });
