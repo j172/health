@@ -9,10 +9,19 @@ import { normalizeAddress } from "@/lib/server/facilities/csv";
  * them without re-deriving the same logic per county.
  */
 
-/** 戶政司行政區域代碼 for the two counties this ticket covers. */
+/**
+ * 戶政司行政區域代碼 — Taipei/New Taipei from issue #601; 新竹市/新竹縣/彰化/
+ * 嘉義市 added by #607 (codes cross-checked against
+ * addictionTreatmentFacilities.ts's `ADDICTION_TREATMENT_COUNTY_NAME_BY_CODE`,
+ * which already tabulates all 22 counties' codes).
+ */
 export const CHILDCARE_COUNTY_CODE = {
   taipei: "63000",
   newTaipei: "65000",
+  hsinchuCity: "10018",
+  hsinchuCounty: "10004",
+  changhua: "10007",
+  chiayiCity: "10020",
 } as const;
 
 /** The 4-value `extra_json.category` enum for `childcare_center` rows (issue #601 AC). */
