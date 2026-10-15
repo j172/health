@@ -55,6 +55,18 @@ export interface FacilitySearchConfig {
   emptyStateCounty?: string;
   /** When set, shows a category filter + sort dropdown next to the search bar, matching against the facilities.service_item column. */
   categories?: { value: string; label: string }[];
+  /**
+   * When set, shows a SECOND, independent filter dropdown next to
+   * `categories`, matching against `extra_json.serviceMethod` (substring —
+   * see searchFacilities()'s `serviceMethod` param). Added for #613's
+   * early-intervention units, which need two simultaneous filter
+   * dimensions (單位別 via `categories`/service_item, 服務方式 via this)
+   * rather than one — a single `service_item` column can only express one.
+   * `allLabel` is the "show everything" option's own label (parallel to
+   * `categories`' hardcoded "全部分類", but `serviceMethodFilter`'s noun
+   * differs per tool so it isn't hardcoded the same way).
+   */
+  serviceMethodFilter?: { ariaLabel: string; allLabel: string; options: { value: string; label: string }[] };
   /** When set, shows a checkbox next to the search bar that filters to rows with extra_json.charityUrl set. */
   charityFilter?: { label: string };
   /**
@@ -113,6 +125,19 @@ interface FacilityItem {
     category?: string | null;
     monthlyFee?: number | null;
     hasPenalty?: boolean;
+    /**
+     * childcare_center facility type (#606, six-city expansion of #601):
+     * `registrationFee`/`mealFee` only present for 臺南 (6178, the only
+     * county dataset with 註冊費／副食品費 columns of its own — never
+     * invented for a county whose dataset doesn't have them). `dataNote` is
+     * a free-text caveat only set on 高雄 (128099/128100) rows, rendered as
+     * a dedicated warning line below rather than folded into the generic
+     * grey extraFields styling — see the "資料可能不完整" block near this
+     * file's card markup.
+     */
+    registrationFee?: string | number | null;
+    mealFee?: string | number | null;
+    dataNote?: string | null;
     [key: string]: unknown;
   } | null;
   /**
@@ -214,6 +239,7 @@ export default function FacilitySearchContent({
     showGeocodeNote = false,
     locationDefaultWarning,
     categories,
+    serviceMethodFilter,
     charityFilter,
     extraFields,
     emptyStateCounty,
@@ -264,6 +290,12 @@ export default function FacilitySearchContent({
     ...c,
     label: tc(`categoryLabel${idx}`, c.label),
   }));
+  const displayServiceMethodOptions = serviceMethodFilter?.options.map((o, idx) => ({
+    ...o,
+    label: tc(`serviceMethodLabel${idx}`, o.label),
+  }));
+  const displayServiceMethodAriaLabel = serviceMethodFilter ? tc("serviceMethodAriaLabel", serviceMethodFilter.ariaLabel) : undefined;
+  const displayServiceMethodAllLabel = serviceMethodFilter ? tc("serviceMethodAllLabel", serviceMethodFilter.allLabel) : undefined;
   const displayCharityFilterLabel = charityFilter ? tc("charityFilterLabel", charityFilter.label) : undefined;
   const displayExtraFields = extraFields?.map((f, idx) => ({
     ...f,
@@ -294,6 +326,7 @@ export default function FacilitySearchContent({
   const [county, setCounty] = useState("");
   const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("");
+  const [serviceMethod, setServiceMethod] = useState("");
   const [onlyCharity, setOnlyCharity] = useState(false);
   const [sort, setSort] = useState<"distance" | "newest" | "name" | "category">("distance");
   const [facilities, setFacilities] = useState<FacilityItem[] | null>(null);
@@ -337,6 +370,7 @@ export default function FacilitySearchContent({
       if (county) params.set("county", county);
       if (district) params.set("district", district);
       if (category) params.set("category", category);
+      if (serviceMethod) params.set("serviceMethod", serviceMethod);
       if (onlyCharity) params.set("charity", "1");
       if (effectiveSort) params.set("sort", effectiveSort);
 
@@ -403,6 +437,7 @@ export default function FacilitySearchContent({
     facilityType,
     radiusMeters,
     category,
+    serviceMethod,
     onlyCharity,
     effectiveSort,
     pageSize,
@@ -434,6 +469,7 @@ export default function FacilitySearchContent({
     setCounty("");
     setDistrict("");
     setCategory("");
+    setServiceMethod("");
     setOnlyCharity(false);
     setSort("distance");
     setPage(1);
@@ -595,6 +631,25 @@ export default function FacilitySearchContent({
             </select>
           )}
 
+          {displayServiceMethodOptions && displayServiceMethodOptions.length > 0 && (
+            <select
+              value={serviceMethod}
+              onChange={(e) => {
+                setServiceMethod(e.target.value);
+                setPage(1);
+              }}
+              aria-label={displayServiceMethodAriaLabel}
+              className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="">{displayServiceMethodAllLabel}</option>
+              {displayServiceMethodOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          )}
+
           <select
             value={sort}
             onChange={(e) => {
@@ -632,7 +687,7 @@ export default function FacilitySearchContent({
             {t("facilitySearch.searchButton", "搜尋")}
           </button>
 
-          {(keyword || county || district || category || onlyCharity || searchInput) && (
+          {(keyword || county || district || category || serviceMethod || onlyCharity || searchInput) && (
             <button
               type="button"
               onClick={handleResetAll}
@@ -858,6 +913,17 @@ export default function FacilitySearchContent({
                   )}
                   {showWeeklyHours && <WeeklyHoursLine weeklyHours={f.extra_json?.weeklyHours} note={f.extra_json?.weeklyHoursNote} />}
                   {f.extra_json?.penalty && <FacilityPenaltyAccordion penalty={f.extra_json.penalty} />}
+                  {/*
+                    Issue #606: childcare_center rows from 高雄
+                    (128099/128100, only 53+17 rows, last refreshed 2025-06)
+                    carry a free-text `dataNote` caveat — rendered as its own
+                    amber warning line (not folded into the generic grey
+                    extraFields styling below) so "資料可能不完整" reads as a
+                    deliberate warning rather than just another detail line.
+                  */}
+                  {f.extra_json?.dataNote && (
+                    <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-400">⚠️ {f.extra_json.dataNote}</p>
+                  )}
                   {showGeocodeNote && f.lat === null && (
                     <p className="mt-1 text-xs text-neutral-400 dark:text-slate-500">
                       {t("facilitySearch.notGeocodedNote", "（尚未完成地理定位，暫不顯示於地圖）")}

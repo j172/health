@@ -111,8 +111,15 @@ test("TRANSLATED_STANDALONE_PATHS covers home, nearby, and the typhoon-earthquak
   // (matching how TRANSLATED_TOOL_SLUGS's own "always contains the 3 pilot
   // pages" test is written) rather than the original point-in-time exact
   // set, so a later ticket adding its own standalone path doesn't need to
-  // keep editing this specific assertion.
-  for (const expected of ["/", "/guides/typhoon-earthquake", "/nearby"]) {
+  // keep editing this specific assertion. Issue #589 added
+  // "/tools/global-watch/epidemics" the same way.
+  for (const expected of [
+    "/",
+    "/guides/typhoon-earthquake",
+    "/nearby",
+    "/tools/global-watch/earthquakes",
+    "/tools/global-watch/epidemics",
+  ]) {
     assert.ok(paths.includes(expected), `${expected} must remain in TRANSLATED_STANDALONE_PATHS`);
   }
   for (const p of paths) {

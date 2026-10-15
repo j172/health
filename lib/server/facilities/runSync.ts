@@ -11,6 +11,13 @@ import { fetchNhiPenalties } from "@/lib/server/facilities/sources/nhiPenalties"
 import { fetchTdxAudibleSignals } from "@/lib/server/facilities/sources/tdxAudibleSignals";
 import { fetchTdxAccessibleParking } from "@/lib/server/facilities/sources/tdxParking";
 import { fetchAddictionTreatmentFacilities } from "@/lib/server/facilities/sources/addictionTreatmentFacilities";
+import { fetchEarlyInterventionUnits } from "@/lib/server/facilities/sources/earlyInterventionUnits";
+import {
+  fetchTaipeiJointAssessmentCenters,
+  fetchNtpcHealthJointAssessmentCenters,
+  fetchNtpcDevDelayJointAssessmentCenters,
+  fetchKhhJointAssessmentCenters,
+} from "@/lib/server/facilities/sources/jointAssessmentCenters";
 import { fetchNhplatformNursingInstitutions } from "@/lib/server/facilities/sources/nhplatformNursingInstitutions";
 import { fetchBabyFriendlyHospitalTaipei } from "@/lib/server/facilities/sources/babyFriendlyHospitalTaipei";
 import { fetchBabyFriendlyHospitalNewTaipei } from "@/lib/server/facilities/sources/babyFriendlyHospitalNewTaipei";
@@ -32,6 +39,13 @@ import {
   fetchNtpcChildcarePublic,
   fetchNtpcChildcareHomeCenter,
 } from "@/lib/server/facilities/sources/ntpcChildcare";
+import { fetchTycgChildcarePublicPrivate, fetchTycgChildcareQuasi } from "@/lib/server/facilities/sources/tycgChildcare";
+import { fetchTaichungChildcare } from "@/lib/server/facilities/sources/taichungChildcare";
+import { fetchTainanChildcare } from "@/lib/server/facilities/sources/tainanChildcare";
+import {
+  fetchKaohsiungChildcarePrivate,
+  fetchKaohsiungChildcarePublicPrivate,
+} from "@/lib/server/facilities/sources/kaohsiungChildcare";
 import { fetchHsinchuCityChildcare } from "@/lib/server/facilities/sources/hsinchuCityChildcare";
 import { fetchHsinchuCountyChildcare } from "@/lib/server/facilities/sources/hsinchuCountyChildcare";
 import { fetchChanghuaChildcare } from "@/lib/server/facilities/sources/changhuaChildcare";
@@ -78,6 +92,19 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // host yet — see the comment above fetchAddictionTreatmentFacilities() — confirm that
   // before relying on this source's scheduled runs.
   { key: "addiction_treatment_133353", fetch: fetchAddictionTreatmentFacilities },
+  // #613: 早期療育資源地圖 — national 130229 ODS source (衛福部社家署
+  // 「各縣市早期療育單位一覽表」, ~1,339 rows) plus 4 independent county
+  // 聯合評估中心 supplementary sources, each its own rerunnable key so any
+  // one can be backfilled/re-synced without re-fetching the national
+  // dataset. No coordinates of their own except khh_joint_assessment_128165
+  // (which already carries real lat/lng) — the other 4 feed the usual
+  // facilities-geocode batch pipeline (see geocodeBatch.ts's
+  // SOURCES_IN_PRIORITY).
+  { key: "mohw_early_intervention_130229", fetch: fetchEarlyInterventionUnits },
+  { key: "taipei_joint_assessment_135454", fetch: fetchTaipeiJointAssessmentCenters },
+  { key: "ntpc_joint_assessment_125231", fetch: fetchNtpcHealthJointAssessmentCenters },
+  { key: "ntpc_joint_assessment_123786", fetch: fetchNtpcDevDelayJointAssessmentCenters },
+  { key: "khh_joint_assessment_128165", fetch: fetchKhhJointAssessmentCenters },
   // issue #612: 全國開業護理機構清冊 (data.gov.tw 115950) — one CSV fetch that
   // produces records for TWO destinations: facilityType "postpartum_care"
   // (241 rows, the new /tools/postpartum-care) and additional
@@ -132,6 +159,15 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "ntpc_childcare_125380", fetch: fetchNtpcChildcarePrivate },
   { key: "ntpc_childcare_126222", fetch: fetchNtpcChildcarePublic },
   { key: "ntpc_childcare_125505", fetch: fetchNtpcChildcareHomeCenter },
+  // #606 (parent #599): 六都剩餘四縣市——桃園／臺中／臺南／高雄。桃園
+  // tycg_childcare_168379 同樣內部重抓 168385 做私立/準公共去重（見
+  // tycgChildcare.ts 模組註解），其餘 3 個來源互相獨立。
+  { key: "tycg_childcare_168379", fetch: fetchTycgChildcarePublicPrivate },
+  { key: "tycg_childcare_168385", fetch: fetchTycgChildcareQuasi },
+  { key: "taichung_childcare_83669", fetch: fetchTaichungChildcare },
+  { key: "tainan_childcare_6178", fetch: fetchTainanChildcare },
+  { key: "kcg_childcare_128099", fetch: fetchKaohsiungChildcarePrivate },
+  { key: "kcg_childcare_128100", fetch: fetchKaohsiungChildcarePublicPrivate },
   // #607 (parent #599): 新竹市/新竹縣/彰化/嘉義市托嬰中心來源，補完 #601 骨架的
   // 後續縣市票之一（跟 #606 的六都剩餘四縣市平行進行，互不依賴）。新竹市/彰化兩
   // 縣市的名冊都沒有公辦民營/準公共/私立的分類欄位，category/serviceItem 留

@@ -688,17 +688,52 @@ export const facilitySearchConfigs = {
       { value: "復康巴士", label: "🚐 復康巴士" },
     ],
   },
+  "early-intervention": {
+    facilityType: "early_intervention_unit",
+    emoji: "🧒",
+    title: "早期療育資源地圖",
+    description:
+      "查詢全國早期療育單位（衛生／社福／教育）與縣市兒童發展聯合評估中心，支援依單位別、服務方式篩選。資料來源：衛生福利部社會及家庭署（data.gov.tw 130229）及臺北市、新北市、高雄市政府開放資料。",
+    noteLine: "聯合評估中心用於正式發展評估與鑑定；早療單位則提供實際療育服務——懷疑孩子發展遲緩，可先至聯合評估中心評估，再依評估結果就近安排早療單位。",
+    searchPlaceholder: "輸入單位名稱或縣市關鍵字",
+    errorText: "查詢早期療育資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的早療單位，可改用關鍵字或擴大搜尋範圍。",
+    emptyStateWithKeyword: "查無符合的早療單位。",
+    serviceItem: { label: "單位別：" },
+    categories: [
+      { value: "衛生單位", label: "🏥 衛生單位" },
+      { value: "社福單位", label: "🤝 社福單位" },
+      { value: "教育單位", label: "🏫 教育單位" },
+      { value: "聯合評估中心", label: "🩺 聯合評估中心" },
+    ],
+    serviceMethodFilter: {
+      ariaLabel: "服務方式篩選",
+      allLabel: "全部服務方式",
+      options: [
+        { value: "時段", label: "⏰ 時段療育" },
+        { value: "日間", label: "☀️ 日間療育" },
+        { value: "到宅", label: "🏠 到宅服務" },
+      ],
+    },
+    extraFields: [
+      { key: "serviceMethod", label: "服務方式：" },
+      { key: "serviceContent", label: "療育服務內容：" },
+      { key: "centerType", label: "機構類型：" },
+      { key: "note", label: "備註：" },
+    ],
+  },
   // issue #601 (parent #599): 托嬰中心與居家托育地圖，先用臺北／新北兩個縣市把
   // 骨架建好。childcare_center 與 home_childcare_center 是兩個不同的 facilityType
   // （托嬰機構本身 vs. 協助家長找保母的居家托育服務中心媒合窗口），各自一個
   // config entry，由頁面用類型分頁切換——跟 long-term-care 合併 4 種類型的既有
-  // 模式一樣。issue #607 加入新竹市/新竹縣/彰化/嘉義市四個縣市。
+  // 模式一樣。issue #606 加入六都剩餘四縣市（桃園／臺中／臺南／高雄），issue
+  // #607 平行加入新竹市/新竹縣/彰化/嘉義市四個縣市。
   "childcare-centers": {
     facilityType: "childcare_center",
     emoji: "🍼",
-    title: "全國托嬰中心查詢（臺北／新北／新竹市／新竹縣／彰化／嘉義市）",
+    title: "全國托嬰中心查詢（六都＋新竹市／新竹縣／彰化／嘉義市）",
     description:
-      "查詢臺北市、新北市、新竹市、新竹縣、彰化縣、嘉義市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與收費資訊。資料來源：各縣市政府社會局（處）開放資料。目前僅涵蓋上述六縣市，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。",
+      "查詢臺北市、新北市、桃園市、臺中市、臺南市、高雄市、新竹市、新竹縣、彰化縣、嘉義市托嬰中心名冊，依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與收費資訊。資料來源：各縣市政府社會局（處）開放資料。目前僅涵蓋上述十縣市，其餘縣市查詢請改用衛福部社家署全國系統性查詢（ncwisweb.sfaa.gov.tw）。高雄市資料筆數偏少且停留在2025年6月，可能未反映最新全量名冊，詳見各筆資料下方標示。",
     searchPlaceholder: "輸入托嬰中心名稱、行政區或地址關鍵字",
     errorText: "查詢托嬰中心資料失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的托嬰中心，可改用關鍵字搜尋。",
@@ -711,20 +746,22 @@ export const facilitySearchConfigs = {
       { value: "準公共", label: "🤝 準公共" },
       { value: "私立", label: "🏢 私立" },
     ],
-    // approvedCapacity/actualCapacity/evaluationResult/monthlyFee are only
-    // ever present on rows whose source actually has that column (121981 準
-    // 公共 has all three except monthlyFee; 121337/125380/109321(#607 新竹縣)/
-    // 63093(#607 嘉義市) have approvedCapacity only — 109321 also has
-    // monthlyFee, the first source in this family to populate it; 126984/
-    // 126986/126222/67734(#607 新竹市)/95198(#607 彰化) have none) —
-    // FacilitySearchContent's extraFields already only renders a field when
-    // the row's extra_json actually has it, so no "N/A" placeholders show up
-    // for the rows that don't have a given field.
+    // approvedCapacity/actualCapacity/evaluationResult/monthlyFee/
+    // registrationFee/mealFee/dataNote are only ever present on rows whose
+    // source actually has that column — e.g. 121981/168385 有評鑑結果,
+    // 83669/168379/168385 有月費, 6178 有月費/註冊費/副食品費但沒有評鑑結果,
+    // 109321(#607 新竹縣) 有月費, 126984/126986/126222/67734(#607 新竹市)/
+    // 95198(#607 彰化) 全都沒有 — FacilitySearchContent 的 extraFields 只在
+    // extra_json 真的有該欄位時才顯示，所以沒有資料的縣市不會出現 "N/A" 之類
+    // 的空白佔位。dataNote 目前只有高雄（128099/128100）會設定，用來標示
+    // 「資料可能不完整」，見 kaohsiungChildcare.ts。
     extraFields: [
       { key: "approvedCapacity", label: "核定收托人數：" },
       { key: "actualCapacity", label: "實際收托人數：" },
       { key: "evaluationResult", label: "評鑑結果：" },
       { key: "monthlyFee", label: "月費：" },
+      { key: "registrationFee", label: "註冊／教材費：" },
+      { key: "mealFee", label: "副食品費：" },
       { key: "dataAsOf", label: "本站資料同步日期：" },
     ],
   },
