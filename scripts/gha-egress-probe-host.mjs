@@ -34,6 +34,13 @@ const targets = {
   "data.gov.tw (control)": "https://data.gov.tw/dataset/24161",
   "opendata.mohw.gov.tw (160903)":
     "https://www.opendata.mohw.gov.tw/dataset/opendata/sfaa/160903/%E5%85%A8%E5%9C%8B%E7%A4%BE%E7%A6%8F%E4%B8%AD%E5%BF%83%E9%80%9A%E8%A8%8A%E9%8C%84.csv",
+  // issue #612: nhplatform.mohw.gov.tw (全國開業護理機構清冊, data.gov.tw
+  // 115950) — reachable from this development environment (2026-10-14,
+  // HTTP 200, no redirect) but never confirmed from the production host.
+  // Run this before relying on the "nhplatform_115950" facilities-sync
+  // source's scheduled runs.
+  "nhplatform.mohw.gov.tw (115950 CSV)":
+    "https://nhplatform.mohw.gov.tw/dl-3820-74883655f255416abc752bef29cbd7aa.html",
 };
 
 const main = () => {

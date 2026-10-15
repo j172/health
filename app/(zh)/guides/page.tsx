@@ -14,7 +14,7 @@ const baseUrl = getBaseUrl();
 const canonical = `${baseUrl}/guides`;
 const PAGE_TITLE = "生活情境指南";
 const PAGE_DESCRIPTION =
-  "家有長輩、懷孕到育兒、颱風地震來了、身心障礙者生活、出國與防疫：5 種生活情境的有序步驟指南，一步步帶你找到對應的公開資料工具。";
+  "家有長輩、懷孕到育兒、颱風地震來了、身心障礙者生活、出國與防疫、遠離詐騙與成癮：6 種生活情境的有序步驟指南，一步步帶你找到對應的公開資料工具。";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

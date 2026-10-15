@@ -76,6 +76,7 @@
     "public-toilets": "공중화장실 검색",
     "child-welfare-institutions": "육아지원센터 및 아동복지시설 검색",
     "kindergartens": "전국 유치원 및 어린이집 검색",
+    "childcare-centers": "영아 보육시설 및 가정형 보육지원센터 검색",
     "cram-schools": "학원 및 보습학원 검색",
     "child-safety-spots": "아동·여성 안심 지킴이집",
     "child-native-languages": "대만어·객가어 모어 학습 사전",
@@ -92,6 +93,7 @@
     "aqx-monitoring": "대기오염 상시 모니터링 상세 데이터",
     "water-conditions": "하천 수위 및 댐 저수율 실시간 현황",
     "disaster-map": "대만 재난 대피소 및 긴급구조 거점 지도",
+    "global-watch": "글로벌 워치 (3D 지구본)",
     "heritage-map": "대만 문화유산·고적·고고유적 지도",
     "bookstores": "대만 독립서점 및 오프라인 서점 검색",
     "tourism-factories": "대만 공인 관광공장 및 문화관 검색",
@@ -119,6 +121,8 @@
     "smoking-cessation": "금연 클리닉 검색 (금연 치료 지원 제도)",
     "adult-preventive-care": "성인 건강검진 및 무료 암검진 기관 검색",
     "baby-friendly-hospitals": "모자친화병원 지도 (모자동실·모유수유 인증)",
+    "postpartum-care": "산후조리원 지도 (평가 결과·유효기간 확인)",
+    "child-subsidies": "육아 보조금 총정리 (육아수당·보육/학비 보조·출산지원금·시험관아기 지원)",
     "rare-disease-care": "희귀질환 돌봄 상담센터 및 진단병원 검색",
     "organ-donation-hospitals": "장기기증 지정 책임병원 검색",
     "home-emergency-care": "건강보험 재택 급성기 진료 협약기관 검색",
@@ -225,6 +229,9 @@
     },
     "travel-health": {
       "title": "해외 여행과 방역"
+    },
+    "fraud-and-addiction": {
+      "title": "사기와 중독으로부터 보호하기"
     }
   },
   "toolShell": {
@@ -420,7 +427,8 @@
     "resetSearchButton": "검색 조건 재설정",
     "altNumberLabel": "대체 번호: ",
     "dialButton": "📞 원터치 발신",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "의심스러운 URL 확인"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "갑작스러운 중증, 심한 가슴 통증 또는 생명이 위급한 상황인가요? 즉시 ",

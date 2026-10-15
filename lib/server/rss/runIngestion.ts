@@ -47,6 +47,8 @@ import { fetchSungfulKnowledge } from "@/lib/server/rss/fetchSungfulKnowledge";
 import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
 import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
 import { fetchTaseNews } from "@/lib/server/rss/fetchTaseNews";
+import { fetchAntidrugNews } from "@/lib/server/rss/fetchAntidrugNews";
+import { fetchPolice7505News } from "@/lib/server/rss/fetchPolice7505News";
 import {
   fetchAmnestyNews,
   fetchNpoHotMsg,
@@ -801,6 +803,41 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += taseResult.skippedUnchanged;
       staleRejected += taseResult.staleRejected;
+
+      // -----------------------------------------------------------------------
+      // Phase 16: 反毒大本營「毒家新聞」(antidrug) / 警政署「各警察機關新聞
+      // 發布」data.gov.tw 7505 (police_7505) — issue #568 / spec #562.
+      // Neither has an RSS feed; same special-source treatment as the blocks
+      // above. fetchAntidrugNews paginates its own HTML list internally and
+      // fetchPolice7505News downloads+parses one CSV dump — both return
+      // EnrichedRssItem[] already filtered down to real rows (see each
+      // module's own comments for the upstream quirks that drove that).
+      // -----------------------------------------------------------------------
+      const antidrugResult = await processSpecialSource(
+        {
+          code: "antidrug_news",
+          name: "反毒大本營－毒家新聞",
+          url: "https://antidrug.moj.gov.tw/lp-3-1.html",
+          sourceName: "antidrug",
+        },
+        fetchAntidrugNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += antidrugResult.skippedUnchanged;
+      staleRejected += antidrugResult.staleRejected;
+
+      const police7505Result = await processSpecialSource(
+        {
+          code: "police_7505_news",
+          name: "警政署－各警察機關新聞發布",
+          url: "https://data.gov.tw/dataset/7505",
+          sourceName: "police_7505",
+        },
+        fetchPolice7505News,
+        specialSourceCtx,
+      );
+      skippedUnchanged += police7505Result.skippedUnchanged;
+      staleRejected += police7505Result.staleRejected;
 
       // -----------------------------------------------------------------------
       // NPO / NGO Sources: Amnesty, NPO Center, Down Syndrome, World Vision,

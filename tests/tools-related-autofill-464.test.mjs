@@ -59,9 +59,11 @@ const { getRelatedTools } = await import("../lib/server/tools/navModel.ts");
 
 test("every TOOL_CATALOG tool gets >= 4 related tools from getRelatedTools", () => {
   // Not pinned to an exact count here (unlike catalog.test.mjs's dedicated
-  // count assertion) — this test's job is the >= 4 structural guarantee for
-  // every entry, whatever the current total is; issue #603 added the 83rd
-  // ("social-welfare-centers") on 2026-10-14.
+  // count assertion, which is where the real total — 82 baseline + #601
+  // childcare-centers + #587 global-watch + #604 child-subsidies + #612
+  // postpartum-care + #603 social-welfare-centers = 87 as of 2026-10-14 — is
+  // tracked) — this test's job is just the >= 4 structural guarantee for
+  // every entry, whatever the current total is.
   assert.ok(TOOL_CATALOG.length > 0, "TOOL_CATALOG should not be empty");
   for (const tool of TOOL_CATALOG) {
     const related = getRelatedTools(tool.slug);

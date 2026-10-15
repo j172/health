@@ -5,9 +5,11 @@ import {
   writeIngestionError,
 } from "@/lib/server/logging/ingestionLogger";
 import { fetchPolice176455FraudDomains, POLICE_176455_SOURCE_KEY } from "@/lib/server/antiFraud/sources/police176455";
+import { fetchModa165027FraudDomains, MODA_165027_SOURCE_KEY } from "@/lib/server/antiFraud/sources/moda165027";
 import { upsertFraudDomains } from "@/lib/server/antiFraud/queries";
 
 const LOCK_NAME = "fraud_domains_sync_lock";
+const MODA_LOCK_NAME = "moda_165027_sync_lock";
 
 export interface FraudDomainsSyncResult {
   fetched: number;
@@ -95,6 +97,89 @@ export async function runFraudDomainsSync(): Promise<FraudDomainsSyncResult> {
       failedFeedsCount: 0,
       summaryJson: JSON.stringify({ source: POLICE_176455_SOURCE_KEY, skipped: "lock_held" }),
       errorMessage: "Another fraud-domains sync is currently running.",
+    });
+    return { fetched: 0, inserted: 0, updated: 0, error: null };
+  }
+
+  return lockResult.result;
+}
+
+/**
+ * Daily sync for the 165027 fraud-domain source (issue #567) — 數產署's
+ * list updates almost daily (vs. 176455's monthly batch), filling the gap
+ * between 176455's publishing cycles. Deliberately its own runner with its
+ * own advisory lock (`moda_165027_sync_lock`, distinct from 176455's
+ * `fraud_domains_sync_lock` above) rather than sharing one — the two run on
+ * different cadences against the same table, and a lock is scoped to "one
+ * sync job running at a time", not "one writer to this table at a time"
+ * (chunkedUpsert's (domain, source) keying already makes concurrent writes
+ * from different sources safe).
+ *
+ * NOT YET VERIFIED reachable from the production host (only confirmed live
+ * from this development sandbox, 2026-10-14/15) — see this PR's
+ * description. Several other MODA/MOI hosts block datacenter IPs outright
+ * (see docs/domains memory on nhi.gov.tw); confirm this one specifically
+ * before merging.
+ */
+export async function runModa165027Sync(): Promise<FraudDomainsSyncResult> {
+  const startedAt = new Date();
+  const runId = await createIngestionRun("moda-165027-sync-cron");
+
+  const lockResult = await withAdvisoryLock(MODA_LOCK_NAME, 1, async () => {
+    try {
+      const records = await fetchModa165027FraudDomains();
+      const { inserted, updated } = await upsertFraudDomains(records);
+
+      await finishIngestionRun({
+        runId,
+        status: "success",
+        startedAt,
+        fetchedCount: records.length,
+        insertedCount: inserted,
+        updatedCount: updated,
+        unchangedCount: Math.max(0, records.length - inserted - updated),
+        failedFeedsCount: 0,
+        summaryJson: JSON.stringify({ source: MODA_165027_SOURCE_KEY, fetched: records.length, inserted, updated }),
+      });
+
+      const result: FraudDomainsSyncResult = { fetched: records.length, inserted, updated, error: null };
+      return result;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown moda-165027 sync error";
+      await writeIngestionError({
+        runId,
+        feedCode: MODA_165027_SOURCE_KEY,
+        message,
+      });
+      await finishIngestionRun({
+        runId,
+        status: "failed",
+        startedAt,
+        fetchedCount: 0,
+        insertedCount: 0,
+        updatedCount: 0,
+        unchangedCount: 0,
+        failedFeedsCount: 1,
+        summaryJson: JSON.stringify({ source: MODA_165027_SOURCE_KEY }),
+        errorMessage: message,
+      });
+      const result: FraudDomainsSyncResult = { fetched: 0, inserted: 0, updated: 0, error: message };
+      return result;
+    }
+  });
+
+  if (!lockResult.acquired) {
+    await finishIngestionRun({
+      runId,
+      status: "failed",
+      startedAt,
+      fetchedCount: 0,
+      insertedCount: 0,
+      updatedCount: 0,
+      unchangedCount: 0,
+      failedFeedsCount: 0,
+      summaryJson: JSON.stringify({ source: MODA_165027_SOURCE_KEY, skipped: "lock_held" }),
+      errorMessage: "Another moda-165027 sync is currently running.",
     });
     return { fetched: 0, inserted: 0, updated: 0, error: null };
   }

@@ -14,6 +14,7 @@ import CdcAlertSidebarWidget from "@/components/Tools/CdcAlertSidebarWidget";
 import ErStatusSidebarWidget from "@/components/Tools/ErStatusSidebarWidget";
 import PestAlertSidebarWidget from "@/components/Tools/PestAlertSidebarWidget";
 import CpcPriceSidebarWidget from "@/components/Tools/CpcPriceSidebarWidget";
+import AntiFraudSidebarWidget from "@/components/Tools/AntiFraudSidebarWidget";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { toTaipei, displayDate } from "@/lib/format/news";
 import { getArticleDestination } from "@/lib/format/outboundLink";
@@ -48,6 +49,12 @@ export default function NewsSidebar({
    * review of issue #472): keep all 10 original widgets' *content*
    * reachable from the homepage, only consolidating the 5 that are now
    * genuinely redundant.
+   *
+   * Item 11 `AntiFraudSidebarWidget` (added by issue #575) is new, not one
+   * of the original 10 — same reasoning as items 3/7/8/9/10 applies to it
+   * too: "本月新增涉詐網域數" isn't one of the home status bar's 5 scoped
+   * sections (weather/AQI/UV/earthquake/alerts), so it always renders
+   * regardless of this flag.
    *
    * Defaults to `false` so `/news` archive pages are completely unaffected.
    */
@@ -96,7 +103,11 @@ export default function NewsSidebar({
       {/* 10. 農業動植物疫情警報 — not covered by the home status bar, always renders. */}
       <PestAlertSidebarWidget />
 
-      {/* 11. 熱門焦點新聞 (依瀏覽量排序) */}
+      {/* 11. 本月新增涉詐網域數 (issue #575) — not covered by the home status
+          bar, always renders. Links through to /tools/anti-fraud. */}
+      <AntiFraudSidebarWidget />
+
+      {/* 12. 熱門焦點新聞 (依瀏覽量排序) */}
       {trendingNews.length > 0 && (
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h3 className="mb-4 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
@@ -129,7 +140,7 @@ export default function NewsSidebar({
         </div>
       )}
 
-      {/* 12. 資訊免疫力與認知防衛專欄 */}
+      {/* 13. 資訊免疫力與認知防衛專欄 */}
       <ContextualPartnerCard
         partnerId="anti-cw"
         compact={true}
@@ -137,7 +148,7 @@ export default function NewsSidebar({
         contextDescription="閱讀公衛與即時新聞之餘，可前往反認知作戰教育網學習闢謠與假訊息辨識技巧。"
       />
 
-      {/* 13. 公衛與新聞來源標籤雲 */}
+      {/* 14. 公衛與新聞來源標籤雲 */}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <h3 className="mb-3.5 text-sm font-bold tracking-tight text-slate-900 dark:text-slate-100">
           {t("categories.sourcesHeading", "公衛與新聞來源")}

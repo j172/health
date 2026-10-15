@@ -51,10 +51,19 @@ export const upsertEarthquake = async (event: IncomingEarthquake): Promise<"inse
     const magnitudeClause = event.magnitude != null ? "AND ABS(magnitude - ?) <= ?" : "";
     const magnitudeParams = event.magnitude != null ? [event.magnitude, MATCH_MAGNITUDE_TOLERANCE] : [];
 
+    // Issue #582: the time condition used to be
+    // `ABS(TIMESTAMPDIFF(SECOND, event_time, ?)) <= ?`, which wraps
+    // event_time in a function and can't use idx_global_eq_time — every
+    // write scanned the entire table (the same pattern that caused the
+    // 2026-09-21 /api/* outage on cwa_station_weather). `event_time BETWEEN
+    // ? - INTERVAL ? SECOND AND ? + INTERVAL ? SECOND` applies the function
+    // to the bound parameter instead, leaving event_time itself a plain
+    // range comparison the optimizer can seek on. Same ~120s tolerance as
+    // before; distance/magnitude logic is unchanged.
     const [matches] = await conn.query<ExistingMatch[]>(
       `SELECT id, sources_json, place_zh, tsunami_warning, magnitude, primary_source
        FROM global_earthquakes
-       WHERE ABS(TIMESTAMPDIFF(SECOND, event_time, ?)) <= ?
+       WHERE event_time BETWEEN ? - INTERVAL ? SECOND AND ? + INTERVAL ? SECOND
          ${magnitudeClause}
          AND (6371 * acos(
               LEAST(1, GREATEST(-1,
@@ -64,7 +73,18 @@ export const upsertEarthquake = async (event: IncomingEarthquake): Promise<"inse
             )) <= ?
        ORDER BY ABS(TIMESTAMPDIFF(SECOND, event_time, ?)) ASC
        LIMIT 1`,
-      [event.eventTime, MATCH_TIME_WINDOW_SECONDS, ...magnitudeParams, event.lat, event.lng, event.lat, MATCH_DISTANCE_KM, event.eventTime],
+      [
+        event.eventTime,
+        MATCH_TIME_WINDOW_SECONDS,
+        event.eventTime,
+        MATCH_TIME_WINDOW_SECONDS,
+        ...magnitudeParams,
+        event.lat,
+        event.lng,
+        event.lat,
+        MATCH_DISTANCE_KM,
+        event.eventTime,
+      ],
     );
 
     const now = utcNowSql();

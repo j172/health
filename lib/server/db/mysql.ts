@@ -149,6 +149,15 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.seniorCardSubsidies);
   // Fraud-domain list (issue #564) — new table, no ALTER needed.
   await p.query(TABLE_DDL.fraudDomains);
+  // issue #567 adds the moda_165027/police_160055 sources alongside #564's
+  // police_176455 — fraud_description is a column CREATE TABLE IF NOT EXISTS
+  // above won't add to a table #564 already created in production.
+  await p.query(`
+    ALTER TABLE fraud_domains
+      ADD COLUMN IF NOT EXISTS fraud_description VARCHAR(255) NULL AFTER report_year_month
+  `);
+  // GDACS global disaster events (issue #592) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.gdacsEvents);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`
