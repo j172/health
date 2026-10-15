@@ -1593,6 +1593,30 @@ export const TABLE_DDL = {
       KEY idx_outdoor_score (overall_score)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 林火風險 (農業部 ForestFireAlertWCF, B-12 / issue #672) — latest-state table, one
+  // row per 測站/國家森林遊樂區 (61 sites), shown on /tools/outdoor-safety. See
+  // lib/server/forestFire/.
+  //
+  // UNIQUE KEY 刻意只用 site_code — 絕對不能把 created_date（upstream 的 CreateDate，
+  // 每天都在變）或任何時間欄位放進去，否則每天每站都會多插一列（見 cwa_station_weather
+  // 等「時間欄位進 UNIQUE KEY」列數膨脹事故家族）。created_date 與等級只是一般欄位，
+  // 同步時對同一 site_code 做 UPDATE 覆蓋成最新狀態；這張表永遠只會有 ~61 列。
+  forestFireAlerts: `
+    CREATE TABLE IF NOT EXISTS forest_fire_alerts (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      site_code VARCHAR(16) NOT NULL,
+      site_name VARCHAR(100) NOT NULL,
+      warn_level TINYINT UNSIGNED NOT NULL,
+      warn_level_chinese VARCHAR(16) NOT NULL,
+      created_date DATE NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_forest_fire_alerts_site (site_code),
+      KEY idx_forest_fire_alerts_created_date (created_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   accessibleTransitRoutes: `
     CREATE TABLE IF NOT EXISTS accessible_transit_routes (
       id INT AUTO_INCREMENT PRIMARY KEY,

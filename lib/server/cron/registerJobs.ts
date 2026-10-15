@@ -31,6 +31,7 @@ import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGre
 import { runYouBikeSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
+import { runForestFireSync } from "@/lib/server/forestFire/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
@@ -395,6 +396,19 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "0,30 * * * *",
     runGuarded("metro-alerts-sync-cron.log", () => runMetroAlertsSync()),
+  );
+  // 林火風險 (農業部 ForestFireAlertWCF, B-12 / issue #672) — 來源每日一批（每個
+  // 測站/森林遊樂區一列、帶 CreateDate），一天兩次（06:09、12:09）足以在早上與中午
+  // 各補一次當日資料。分鐘 9 不在任何既有 job 的格線上：不是 youbike 每 5 分鐘格線
+  // (0/5/10/.../55)，也不是 rss 5/35、aqi 20/50、cwa 15/45、earthquakes
+  // 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、wra-iot 12/27/42/57、metro 0/30、
+  // emergency-rooms 7/22/37/52 等每小時 job 的分鐘，也不是 culture-shows 的 10、
+  // pest-alerts 的 12、who-don 的 19，所以 6 點與 12 點都不會跟任何 job 同 tick
+  // （lib/server/forestFire/dbConventions.test.mjs 會檢查這點）。這個 job 自己再用
+  // withAdvisoryLock 防重疊，見 lib/server/forestFire/runSync.ts。
+  cron.schedule(
+    "9 6,12 * * *",
+    runGuarded("forest-fire-sync-cron.log", () => runForestFireSync()),
   );
   // MOA Crop Pest warnings every 6 hours — near-realtime survey bulletins and critical alerts
   cron.schedule(
