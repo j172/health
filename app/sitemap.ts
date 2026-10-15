@@ -2,7 +2,8 @@ import type { MetadataRoute } from "next";
 import { listNewsForSitemap } from "@/lib/server/news/queries";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
-import { TOOL_CATALOG, isToolIndexable } from "@/lib/server/tools/catalog";
+import { TOOL_CATALOG, TOOL_GROUP_META, isToolIndexable } from "@/lib/server/tools/catalog";
+import { GUIDES, getToolCategoryLink } from "@/lib/server/tools/navModel";
 import {
   buildHreflangAlternates,
   buildLocalizedPath,
@@ -93,12 +94,63 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     alternates: { languages: buildHreflangAlternates(canonicalPath, baseUrl) ?? undefined },
   }));
 
+  // issue #438 §R ("new page types must be in the sitemap"): the hub pages
+  // the 2.0 information architecture added around the tools. Every list is
+  // derived from the same single source the page itself renders from
+  // (TOOL_GROUP_META for `/tools/category/<group>`, GUIDES for
+  // `/guides/<slug>`) — never a second hand-maintained copy — so a new
+  // category or guide can't silently miss the sitemap. A hub that also has
+  // real /en/ /ja/ /ko/ versions (today "/nearby" and
+  // "/guides/typhoon-earthquake") gets reciprocal hreflang alternates on its
+  // zh entry, exactly like `toolEntries` above; its locale siblings are
+  // already listed by `translatedLocaleEntries`.
+  const hubPages: {
+    path: string;
+    changeFrequency: "monthly" | "yearly";
+    priority: number;
+  }[] = [
+    { path: "/guides", changeFrequency: "monthly", priority: 0.8 },
+    ...GUIDES.map((guide) => ({
+      path: `/guides/${guide.slug}`,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    ...TOOL_GROUP_META.map((meta) => ({
+      path: getToolCategoryLink(meta.group).href,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
+    { path: "/nearby", changeFrequency: "monthly", priority: 0.7 },
+    { path: "/accessibility", changeFrequency: "yearly", priority: 0.3 },
+  ];
+  const hubEntries: MetadataRoute.Sitemap = hubPages.map(({ path, changeFrequency, priority }) => {
+    const languages = buildHreflangAlternates(path, baseUrl);
+    return {
+      url: `${baseUrl}${path}`,
+      changeFrequency,
+      priority,
+      ...(languages ? { alternates: { languages } } : {}),
+    };
+  });
+
+  // The zh home page is the canonical of the translated "/en", "/ja", "/ko"
+  // homes (each already listed, with alternates, by `translatedLocaleEntries`),
+  // so it carries the same reciprocal alternates instead of being the one
+  // member of its hreflang cluster that declares none.
+  const homeLanguages = buildHreflangAlternates("/", baseUrl);
+
   return [
-    { url: baseUrl, changeFrequency: "daily", priority: 1 },
+    {
+      url: baseUrl,
+      changeFrequency: "daily",
+      priority: 1,
+      ...(homeLanguages ? { alternates: { languages: homeLanguages } } : {}),
+    },
     { url: `${baseUrl}/news`, changeFrequency: "hourly", priority: 0.9 },
     { url: `${baseUrl}/tools`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/llm-info`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
+    ...hubEntries,
     ...toolEntries,
     ...globalWatchItemEntries,
     ...translatedLocaleEntries,

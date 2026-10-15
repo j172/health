@@ -131,9 +131,16 @@ test("SEO, alternates, and sitemap include ja and ko via the real /en//ja//ko/ m
   assert.ok(!sitemapSrc.includes("lang=ko"), "the retired ?lang=ko sitemap alternate must not come back");
   assert.ok(sitemapSrc.includes("buildHreflangAlternates"), "sitemap must build real ja/ko alternates for translated pages");
 
+  // The language lines moved out of app/llms.txt/route.ts into the shared
+  // sitewideLlmsIndex.ts builder (issue #438 §R) so /llms.txt and
+  // /llms-full.txt can't drift; the route must call it, and the labels
+  // (plus the real /en /ja /ko URLs) are asserted against the actual route
+  // output in tests/sitemap-llms-hub-pages-438.test.mjs.
   const llmsSrc = fs.readFileSync("app/llms.txt/route.ts", "utf8");
-  assert.ok(llmsSrc.includes("日本語 (ja)"));
-  assert.ok(llmsSrc.includes("한국어 (ko)"));
+  assert.ok(llmsSrc.includes("buildLanguageLines"), "llms.txt must build its language section from the shared builder");
+  const llmsIndexSrc = fs.readFileSync("lib/server/content/sitewideLlmsIndex.ts", "utf8");
+  assert.ok(llmsIndexSrc.includes("日本語 (ja)"));
+  assert.ok(llmsIndexSrc.includes("한국어 (ko)"));
 });
 
 test("ISR performance optimizations are properly configured", () => {

@@ -11,7 +11,7 @@
 |---|---|
 | Lighthouse 基準（2026-09-14） | Mobile：Performance 83／A11y 85／Best Practices 92／SEO 100；Desktop 94／94／92／100。Field LCP 1.8s、CLS 0；Lab mobile LCP 4.6s |
 | 結構化資料 | 工具頁 `MedicalWebPage` 或 `WebPage`（非醫療資料集用後者）＋`WebApplication`＋`FAQPage`；新聞 `NewsArticle`；首頁 graph |
-| 索引 | `sitemap.ts`、`news-sitemap.xml`、IndexNow 主動推送（Bing 等） |
+| 索引 | `sitemap.ts`、`news-sitemap.xml`、IndexNow 主動推送（Bing 等）。新頁面類型一律要同時進 sitemap、`/llms.txt`、`/llms-full.txt`（#438 §R 末句）：目前涵蓋 `/tools/category/*` 分類頁、`/guides` 與 `/guides/*` 情境頁、`/nearby`（含 en/ja/ko 版 hreflang）、`/accessibility`；`/llms*.txt` 的語言與外語頁連結用真實 `/en/`、`/ja/`、`/ko/` 路徑（舊 `?lang=` 已 301），工具數量取自 `TOOL_CATALOG.length`，共用建構器在 `lib/server/content/sitewideLlmsIndex.ts`，測試在 `tests/sitemap-llms-hub-pages-438.test.mjs` |
 | 分析 | Google Analytics（gtag）＋Microsoft Clarity |
 | 多語系 | zh-TW（預設）、en、ja、ko；不改 URL，以 `?lang=` 參數＋`hreflang`；**簡體中文已完全移除**（含 OpenCC）。⚠️ 2026-10-12 實測：`?lang=` 只在瀏覽器端生效，伺服器對爬蟲永遠輸出中文，外語 `hreflang` 實際無效 → 2.0 P6 改為 `/en/`、`/ja/`、`/ko/` 前綴並由伺服器輸出（#438 §Q） |
 | AI 友善 | `/llms.txt`（符合 llmstxt.org 格式）、`/llms-full.txt`、`/llm-info`（Hey AI 官方簡介頁）。⚠️ 2026-10-12 實測：Cloudflare AI 機器人防護對 GPTBot、ClaudeBot 回 403（`robots.txt` 卻寫允許），PerplexityBot 回 200 → 2.0 P0 三類全部放行，並新增每頁 `llms.txt`＋`.md`（#438 §S、§T） |
