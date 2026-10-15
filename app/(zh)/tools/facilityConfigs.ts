@@ -493,6 +493,43 @@ export const facilitySearchConfigs = {
       { key: "addictionTreatmentService", label: "戒治服務內容：" },
     ],
   },
+  "methadone-cross-district": {
+    facilityType: "methadone_cross_district",
+    emoji: "🧭",
+    title: "美沙冬跨區給藥院所查詢",
+    description:
+      "查詢可提供跨區給藥服務的美沙冬院所，顯示平日／假日／其他給藥時段與各項費用，方便接受治療者出差或旅行時不中斷用藥。資料來源：衛生福利部（data.gov.tw 133345，臺北市立聯合醫院上架）。",
+    searchPlaceholder: "輸入機構名稱或縣市關鍵字",
+    errorText: "查詢美沙冬跨區給藥院所失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的美沙冬跨區給藥院所，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的美沙冬跨區給藥院所。",
+    showGeocodeNote: true,
+    // #571: 沿用 #566 建立的通用 extraFields 顯示機制——給藥時段（平日／假日／
+    // 其他）與各項跨區給藥費用在 facilities 表都沒有通用對應欄位，放在 extra_json
+    // 裡顯示。
+    extraFields: [
+      { key: "methadoneWeekdayDosingTime", label: "平日給藥時間：" },
+      { key: "methadoneHolidayDosingTime", label: "假日給藥時間：" },
+      { key: "methadoneOtherDosingTime", label: "其他給藥時間：" },
+      { key: "methadoneCrossDistrictFee", label: "跨區給藥服務費：" },
+      { key: "methadoneTransferInFee", label: "轉入掛號費：" },
+      { key: "methadoneTransferOutFee", label: "轉出掛號費：" },
+      { key: "methadoneEvaluationFee", label: "跨區給藥評估費：" },
+      { key: "methadoneNotes", label: "注意事項：" },
+    ],
+  },
+  "anti-drug-center": {
+    facilityType: "anti_drug_center",
+    emoji: "🏢",
+    title: "各縣市毒品危害防制中心查詢",
+    description:
+      "查詢全台 22 縣市的毒品危害防制中心地址，提供電話諮詢、心理支持、法律諮詢、就業轉介等協助。資料來源：法務部反毒大本營「各地方毒防中心」。",
+    searchPlaceholder: "輸入縣市關鍵字",
+    errorText: "查詢毒品危害防制中心失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的毒品危害防制中心，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的毒品危害防制中心。",
+    showGeocodeNote: true,
+  },
   "smoking-cessation": {
     facilityType: "smoking_cessation",
     emoji: "🚭",

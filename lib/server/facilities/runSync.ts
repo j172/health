@@ -18,6 +18,8 @@ import { fetchBabyFriendlyHospitalTaichung } from "@/lib/server/facilities/sourc
 import { fetchBabyFriendlyHospitalTainan } from "@/lib/server/facilities/sources/babyFriendlyHospitalTainan";
 import { fetchBabyFriendlyHospitalChanghua } from "@/lib/server/facilities/sources/babyFriendlyHospitalChanghua";
 import { fetchHpaSmokingCessationFacilities } from "@/lib/server/facilities/sources/hpaSmokingCessation";
+import { fetchMethadoneCrossDistrict } from "@/lib/server/facilities/sources/methadoneCrossDistrict";
+import { fetchAntiDrugCenters } from "@/lib/server/facilities/sources/antiDrugCenters";
 import {
   fetchTaipeiChildcarePrivate,
   fetchTaipeiChildcarePublicPrivate,
@@ -105,6 +107,13 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   // fetchHpaSmokingCessationFacilities() — confirm that before relying on
   // this source's scheduled runs.
   { key: "hpa_smoking_cessation_6954", fetch: fetchHpaSmokingCessationFacilities },
+  // #571 (parent #562): 成癮防治分頁的另外兩類資料——美沙冬跨區給藥院所
+  // （data.gov.tw 133345）和 22 縣市毒品危害防制中心（反毒大本營靜態列表頁）。兩者
+  // 都沒有座標，一樣交給既有 geocode 批次處理。這兩個來源的下載網址都是從一般住宅
+  // 網路實測成功的——和上面 addiction_treatment_133353 一樣，還沒有從正式主機驗證
+  // 過，部署前請先確認其中一個能連到。
+  { key: "methadone_cross_district_133345", fetch: fetchMethadoneCrossDistrict },
+  { key: "anti_drug_center_moj", fetch: fetchAntiDrugCenters },
   // #601 (parent #599): 托嬰中心與居家托育地圖，臺北＋新北骨架。5 個臺北來源
   // registered individually — taipei_childcare_121278 (私立) internally
   // re-fetches taipei_childcare_121981 (準公共) to dedupe the two tables'
