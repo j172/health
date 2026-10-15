@@ -144,18 +144,3 @@ jobs:
             "http://127.0.0.1:3000/api/admin/news-topics-backfill?execute=$NEWS_EXEC&days=$NEWS_BACKFILL_DAYS"
 
           echo "All triggers attempted (fire-and-forget 202s where successful) -- check production logs for final counts, then live-verify via the public query APIs."
-
-      - name: TEMP debug - synchronous facilities-sync for methadone_cross_district/anti_drug_center
-        env:
-          RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          source scripts/lib/ssh-key-stage.sh
-          stage_ssh_key
-          SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
-          printf 'header = "x-rss-sync-admin-secret: %s"\nheader = "Content-Type: application/json"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/facilities-sync?sync=1' --data '{\"sources\":[\"methadone_cross_district_133345\",\"anti_drug_center_moj\"]}'" | jq .

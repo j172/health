@@ -30,18 +30,6 @@ export async function POST(request: Request): Promise<NextResponse> {
     sources = requested;
   }
 
-  // 2026-10-15 debug: `?sync=1` awaits and returns the real per-source
-  // results/errors instead of firing-and-forgetting — only safe for a
-  // small, explicit `sources` list (never `all`, which would exceed
-  // Cloudflare's connection cap just like the comment above describes).
-  // TEMP: remove once methadone_cross_district_133345/anti_drug_center_moj
-  // are confirmed writing rows.
-  const url = new URL(request.url);
-  if (url.searchParams.get("sync") === "1" && sources && sources.length <= 5) {
-    const results = await runFacilitySync(sources);
-    return NextResponse.json({ ok: true, status: "done", results });
-  }
-
   runFacilitySync(sources)
     .then((results) => console.log("facilities-sync results:", JSON.stringify(results)))
     .catch((error) => console.error("facilities-sync failed:", error));
