@@ -1,19 +1,28 @@
 name: Anti-fraud / Addiction / News-topics Sync (Manual)
 
-# Manual trigger for the three admin-sync routes added by spec #562's first
-# batch (#564 fraud domains, #566 addiction-treatment facilities, #565 news
-# topics). Each already has its own recurring cadence once seeded
-# (fraud-domains: monthly cron; addiction-treatment: the regular facilities
-# sync cadence; news-topics: classified automatically going forward by
-# persistItems.ts) — this workflow exists only to run all three once, right
-# after they first ship, instead of waiting up to a month for the first
-# scheduled tick. Modeled directly on rss-sync-manual.yml's SSH-loopback
-# pattern (this host has no AllowTcpForwarding, so a classic `ssh -L` tunnel
-# silently breaks — see docs/domains memory — the Node-level loopback bridge
-# used by deploy-ftps.yml is this repo's one proven way through that).
+# Manual trigger for spec #562's admin-sync routes that each only run on a
+# recurring cron/schedule once seeded, so a first run after deploy would
+# otherwise have to wait for the next tick instead of being verified right
+# away. Modeled directly on rss-sync-manual.yml's SSH-loopback pattern (this
+# host has no AllowTcpForwarding, so a classic `ssh -L` tunnel silently
+# breaks — see docs/domains memory — the Node-level loopback bridge used by
+# deploy-ftps.yml is this repo's one proven way through that).
 #
-# `execute_news_backfill` defaults to false (dry-run) so a first run can
-# sanity-check the topic-classification counts before anything is written.
+# Grew across the batch:
+#   - #564/#567: fraud-domains-sync (176455), moda-165027-sync (165027,
+#     added here since it never got its own admin route until #639),
+#     police-160055-import (160055, one-time; added here for the same
+#     reason — #567 shipped the script but not a route).
+#   - #566/#569/#571/#572: one facilities-sync call listing every
+#     addiction/smoking-cessation source added across this spec, so a
+#     fresh deploy can seed all of them in one request instead of one
+#     curl per source.
+#   - #565: news-topics-backfill.
+#   - #570: police-172159-stats-sync, fsc-11198-stats-sync.
+#
+# `execute_news_backfill` and `execute_160055_import` both default to
+# false (dry-run) so a first run can sanity-check counts before anything
+# is written — 160055 in particular is meant to run exactly once ever.
 
 on:
   workflow_dispatch:
@@ -26,6 +35,10 @@ on:
         description: "Days of news_items to backfill topics for"
         type: string
         default: "90"
+      execute_160055_import:
+        description: "Actually write the 160055 one-time import (unchecked = dry-run; this source is meant to run exactly once ever)"
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-ftps
@@ -39,7 +52,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Trigger fraud-domains, addiction-treatment, and news-topics syncs via SSH loopback
+      - name: Trigger fraud-domains, addiction/smoking-cessation facilities, trend-stats, and news-topics syncs via SSH loopback
         env:
           RSS_SYNC_ADMIN_SECRET: ${{ secrets.RSS_SYNC_ADMIN_SECRET }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -48,6 +61,7 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           EXECUTE_NEWS_BACKFILL: ${{ inputs.execute_news_backfill }}
           NEWS_BACKFILL_DAYS: ${{ inputs.news_backfill_days }}
+          EXECUTE_160055_IMPORT: ${{ inputs.execute_160055_import }}
         run: |
           set -euo pipefail
           if [ -z "$RSS_SYNC_ADMIN_SECRET" ]; then
@@ -64,9 +78,13 @@ jobs:
 
           SSH_OPTS=(-i "$KEY_FILE" -p "$SSH_PORT" -o BatchMode=yes -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
 
-          EXEC_PARAM="0"
+          NEWS_EXEC="0"
           if [ "$EXECUTE_NEWS_BACKFILL" = "true" ]; then
-            EXEC_PARAM="1"
+            NEWS_EXEC="1"
+          fi
+          IMPORT_160055_EXEC="0"
+          if [ "$EXECUTE_160055_IMPORT" = "true" ]; then
+            IMPORT_160055_EXEC="1"
           fi
 
           echo "== Triggering /api/admin/fraud-domains-sync (#564, 176455) =="
@@ -74,14 +92,34 @@ jobs:
             ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
               "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/fraud-domains-sync'" | jq .
 
-          echo "== Triggering /api/admin/facilities-sync for addiction_treatment_133353 (#566) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\nheader = "Content-Type: application/json"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/facilities-sync' --data '{\"sources\":[\"addiction_treatment_133353\"]}'" | jq .
-
-          echo "== Triggering /api/admin/news-topics-backfill (#565, execute=$EXEC_PARAM, days=$NEWS_BACKFILL_DAYS) =="
+          echo "== Triggering /api/admin/moda-165027-sync (#567, 165027) =="
           printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
             ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/news-topics-backfill?execute=$EXEC_PARAM&days=$NEWS_BACKFILL_DAYS'" | jq .
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/moda-165027-sync'" | jq .
 
-          echo "All three triggers sent (fire-and-forget 202s) -- check production logs for final counts."
+          echo "== Triggering /api/admin/police-160055-import (#567, 160055, execute=$IMPORT_160055_EXEC) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/police-160055-import?execute=$IMPORT_160055_EXEC'" | jq .
+
+          echo "== Triggering /api/admin/facilities-sync for addiction/smoking-cessation sources (#566/#569/#571/#572) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\nheader = "Content-Type: application/json"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/facilities-sync' --data '{\"sources\":[\"addiction_treatment_133353\",\"methadone_cross_district_133345\",\"anti_drug_center_moj\",\"hpa_smoking_cessation_6954\",\"smoking_cessation_taipei_121898\",\"smoking_cessation_ntpc_124244\",\"smoking_cessation_ntpc_dental_125915\",\"smoking_cessation_taoyuan_33872\",\"smoking_cessation_taichung_81720\",\"smoking_cessation_tainan_140122\",\"smoking_cessation_kaohsiung_87259\"]}'" | jq .
+
+          echo "== Triggering /api/admin/police-172159-stats-sync (#570) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/police-172159-stats-sync'" | jq .
+
+          echo "== Triggering /api/admin/fsc-11198-stats-sync (#570) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/fsc-11198-stats-sync'" | jq .
+
+          echo "== Triggering /api/admin/news-topics-backfill (#565, execute=$NEWS_EXEC, days=$NEWS_BACKFILL_DAYS) =="
+          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
+            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
+              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/news-topics-backfill?execute=$NEWS_EXEC&days=$NEWS_BACKFILL_DAYS'" | jq .
+
+          echo "All triggers sent (fire-and-forget 202s) -- check production logs for final counts, then live-verify via the public query APIs."
