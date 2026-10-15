@@ -23,6 +23,18 @@ name: Anti-fraud / Addiction / News-topics Sync (Manual)
 # `execute_news_backfill` and `execute_160055_import` both default to
 # false (dry-run) so a first run can sanity-check counts before anything
 # is written — 160055 in particular is meant to run exactly once ever.
+#
+# 2026-10-15: firing all ~7 triggers back-to-back within 15s caused the
+# facilities-sync call to fail with "curl: (56) Recv failure: Connection
+# reset by peer" — this host has a documented 20-Entry-Process ceiling and
+# a history of tipping over under concurrent load (see docs/domains memory)
+# that 3 already-running heavy fetches (176455's ~94k rows, 165027, 160055's
+# ~45k-row one-time import) plus an 11-source facilities-sync landing on top
+# of them plausibly exceeded. Every trigger below now (a) has a short sleep
+# before it so the previous one's fetch has started draining, (b) tolerates
+# its own curl failing (`|| echo ...`) instead of `set -e` aborting every
+# remaining trigger over one transient reset, and (c) the facilities-sync
+# call is split into 3 smaller batches instead of one 11-source request.
 
 on:
   workflow_dispatch:
@@ -87,39 +99,48 @@ jobs:
             IMPORT_160055_EXEC="1"
           fi
 
-          echo "== Triggering /api/admin/fraud-domains-sync (#564, 176455) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/fraud-domains-sync'" | jq .
+          trigger() {
+            local label="$1" url="$2" data="${3:-}"
+            echo "== Triggering $label =="
+            local headers='header = "x-rss-sync-admin-secret: '"$RSS_SYNC_ADMIN_SECRET"'"'
+            local curl_cmd="curl -K - -sS --max-time 60 -X POST '$url'"
+            if [ -n "$data" ]; then
+              headers="$headers"$'\n''header = "Content-Type: application/json"'
+              curl_cmd="$curl_cmd --data '$data'"
+            fi
+            if ! printf '%s\n' "$headers" | ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" "$curl_cmd" 2>&1 | jq . ; then
+              echo "⚠️  $label failed (see output above) — continuing with the remaining triggers."
+            fi
+            sleep 15
+          }
 
-          echo "== Triggering /api/admin/moda-165027-sync (#567, 165027) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/moda-165027-sync'" | jq .
+          trigger "/api/admin/fraud-domains-sync (#564, 176455)" "http://127.0.0.1:3000/api/admin/fraud-domains-sync"
 
-          echo "== Triggering /api/admin/police-160055-import (#567, 160055, execute=$IMPORT_160055_EXEC) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/police-160055-import?execute=$IMPORT_160055_EXEC'" | jq .
+          trigger "/api/admin/moda-165027-sync (#567, 165027)" "http://127.0.0.1:3000/api/admin/moda-165027-sync"
 
-          echo "== Triggering /api/admin/facilities-sync for addiction/smoking-cessation sources (#566/#569/#571/#572) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\nheader = "Content-Type: application/json"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/facilities-sync' --data '{\"sources\":[\"addiction_treatment_133353\",\"methadone_cross_district_133345\",\"anti_drug_center_moj\",\"hpa_smoking_cessation_6954\",\"smoking_cessation_taipei_121898\",\"smoking_cessation_ntpc_124244\",\"smoking_cessation_ntpc_dental_125915\",\"smoking_cessation_taoyuan_33872\",\"smoking_cessation_taichung_81720\",\"smoking_cessation_tainan_140122\",\"smoking_cessation_kaohsiung_87259\"]}'" | jq .
+          trigger "/api/admin/police-160055-import (#567, 160055, execute=$IMPORT_160055_EXEC)" \
+            "http://127.0.0.1:3000/api/admin/police-160055-import?execute=$IMPORT_160055_EXEC"
 
-          echo "== Triggering /api/admin/police-172159-stats-sync (#570) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/police-172159-stats-sync'" | jq .
+          # Split into 3 smaller batches (2026-10-15: one 11-source request
+          # failed under concurrent load from the 3 triggers above) rather
+          # than one big facilities-sync call.
+          trigger "/api/admin/facilities-sync batch 1/3 (#566/#571)" \
+            "http://127.0.0.1:3000/api/admin/facilities-sync" \
+            '{"sources":["addiction_treatment_133353","methadone_cross_district_133345","anti_drug_center_moj"]}'
 
-          echo "== Triggering /api/admin/fsc-11198-stats-sync (#570) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/fsc-11198-stats-sync'" | jq .
+          trigger "/api/admin/facilities-sync batch 2/3 (#569, #572 national+taipei+ntpc)" \
+            "http://127.0.0.1:3000/api/admin/facilities-sync" \
+            '{"sources":["hpa_smoking_cessation_6954","smoking_cessation_taipei_121898","smoking_cessation_ntpc_124244","smoking_cessation_ntpc_dental_125915"]}'
 
-          echo "== Triggering /api/admin/news-topics-backfill (#565, execute=$NEWS_EXEC, days=$NEWS_BACKFILL_DAYS) =="
-          printf 'header = "x-rss-sync-admin-secret: %s"\n' "$RSS_SYNC_ADMIN_SECRET" | \
-            ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "curl -K - -sS --max-time 60 -X POST 'http://127.0.0.1:3000/api/admin/news-topics-backfill?execute=$NEWS_EXEC&days=$NEWS_BACKFILL_DAYS'" | jq .
+          trigger "/api/admin/facilities-sync batch 3/3 (#572 taoyuan+taichung+tainan+kaohsiung)" \
+            "http://127.0.0.1:3000/api/admin/facilities-sync" \
+            '{"sources":["smoking_cessation_taoyuan_33872","smoking_cessation_taichung_81720","smoking_cessation_tainan_140122","smoking_cessation_kaohsiung_87259"]}'
 
-          echo "All triggers sent (fire-and-forget 202s) -- check production logs for final counts, then live-verify via the public query APIs."
+          trigger "/api/admin/police-172159-stats-sync (#570)" "http://127.0.0.1:3000/api/admin/police-172159-stats-sync"
+
+          trigger "/api/admin/fsc-11198-stats-sync (#570)" "http://127.0.0.1:3000/api/admin/fsc-11198-stats-sync"
+
+          trigger "/api/admin/news-topics-backfill (#565, execute=$NEWS_EXEC, days=$NEWS_BACKFILL_DAYS)" \
+            "http://127.0.0.1:3000/api/admin/news-topics-backfill?execute=$NEWS_EXEC&days=$NEWS_BACKFILL_DAYS"
+
+          echo "All triggers attempted (fire-and-forget 202s where successful) -- check production logs for final counts, then live-verify via the public query APIs."
