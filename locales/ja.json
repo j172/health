@@ -425,7 +425,8 @@
     "resetSearchButton": "検索条件をリセット",
     "altNumberLabel": "代替番号：",
     "dialButton": "📞 ワンタップ発信",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "不審なURLを確認"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "突然の重症、激しい胸痛、または生命に危険が及ぶ状況ですか？直ちに ",

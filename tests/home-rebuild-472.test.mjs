@@ -273,6 +273,13 @@ test("components/News/NewsSidebar.tsx: hideStatusBarDuplicateWidgets hides only 
     const i = src.indexOf(tag);
     assert.ok(i > idx7 && i < idx11, `${tag} must render after the second gated block, before item 11`);
   }
+
+  // Item 11 (anti-fraud summary, issue #575): new, not one of the original
+  // 10 — also not covered by the status bar's 5 scoped sections, so it must
+  // likewise always render, never inside either gated block.
+  const idx12 = src.indexOf("{/* 12.");
+  const antiFraudIdx = src.indexOf("<AntiFraudSidebarWidget");
+  assert.ok(antiFraudIdx > idx11 && antiFraudIdx < idx12, "AntiFraudSidebarWidget must render after item 11's comment, before item 12, and always (not gated)");
 });
 
 test("components/News/StabloNewsLayout.tsx renders homeTopSections at the top of the home variant's <main>, and passes hideStatusBarDuplicateWidgets to NewsSidebar on home", () => {
