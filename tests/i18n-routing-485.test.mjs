@@ -103,12 +103,25 @@ test("app/[locale]/tools/ contains a page.tsx for exactly TRANSLATED_TOOL_SLUGS,
   // pair of files, rather than a page.tsx of its own — so it's allowed here
   // alongside the real per-slug page directories without weakening the
   // "nothing more than TRANSLATED_TOOL_SLUGS" guardrail below.
+  //
+  // Issue #588 (parent #583) added `app/[locale]/tools/global-watch/` —
+  // NOT a TRANSLATED_TOOL_SLUGS entry (the base `/tools/global-watch` page
+  // stays zh-only; only its item sub-routes are translated, registered
+  // instead as `path` entries in TRANSLATED_STANDALONE_PATHS — see that
+  // array's comment). It's allowed here as a second, explicit exception
+  // for the same reason "[slug]" is: it hosts nested item sub-routes
+  // (`earthquakes` today, more as #583's other items ship) rather than a
+  // flat `/tools/<slug>/page.tsx` itself, so this guardrail's intent —
+  // never let an untranslated tool slug grow a foreign-language URL by
+  // accident — still holds, enforced below instead by asserting the base
+  // page.tsx does NOT exist while the item sub-route's does.
   assert.deepEqual(
     entries,
-    [...TRANSLATED_TOOL_SLUGS, "[slug]"].sort(),
+    [...TRANSLATED_TOOL_SLUGS, "[slug]", "global-watch"].sort(),
     "app/[locale]/tools/ subdirectories must exactly match TRANSLATED_TOOL_SLUGS (plus the issue #488 " +
-      "[slug] llms.txt/markdown route) — this is the guardrail that keeps every other (not-yet-translated) " +
-      "page from ever growing a half-finished foreign-language URL",
+      "[slug] llms.txt/markdown route and the issue #588 global-watch item-sub-route directory) — this is " +
+      "the guardrail that keeps every other (not-yet-translated) page from ever growing a half-finished " +
+      "foreign-language URL",
   );
 
   for (const slug of TRANSLATED_TOOL_SLUGS) {
@@ -120,6 +133,16 @@ test("app/[locale]/tools/ contains a page.tsx for exactly TRANSLATED_TOOL_SLUGS,
     !fs.existsSync(path.join(localeToolsDir, "[slug]", "page.tsx")),
     "app/[locale]/tools/[slug]/ must stay route-only (llms.txt/markdown) — a page.tsx there would serve " +
       "every untranslated tool slug as a locale page, defeating the TRANSLATED_TOOL_SLUGS guardrail",
+  );
+
+  assert.ok(
+    !fs.existsSync(path.join(localeToolsDir, "global-watch", "page.tsx")),
+    "app/[locale]/tools/global-watch/page.tsx must NOT exist — the base /tools/global-watch page stays " +
+      "zh-only; only its item sub-routes (e.g. earthquakes) are translated (issue #588)",
+  );
+  assert.ok(
+    fs.existsSync(path.join(localeToolsDir, "global-watch", "earthquakes", "page.tsx")),
+    "app/[locale]/tools/global-watch/earthquakes/page.tsx must exist (issue #588)",
   );
   for (const routeType of ["llms.txt", "markdown"]) {
     const routePath = path.join(localeToolsDir, "[slug]", routeType, "route.ts");
