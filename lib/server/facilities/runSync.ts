@@ -17,6 +17,9 @@ import { fetchBabyFriendlyHospitalNewTaipei } from "@/lib/server/facilities/sour
 import { fetchBabyFriendlyHospitalTaichung } from "@/lib/server/facilities/sources/babyFriendlyHospitalTaichung";
 import { fetchBabyFriendlyHospitalTainan } from "@/lib/server/facilities/sources/babyFriendlyHospitalTainan";
 import { fetchBabyFriendlyHospitalChanghua } from "@/lib/server/facilities/sources/babyFriendlyHospitalChanghua";
+import { fetchHpaSmokingCessationFacilities } from "@/lib/server/facilities/sources/hpaSmokingCessation";
+import { fetchMethadoneCrossDistrict } from "@/lib/server/facilities/sources/methadoneCrossDistrict";
+import { fetchAntiDrugCenters } from "@/lib/server/facilities/sources/antiDrugCenters";
 import {
   fetchTaipeiChildcarePrivate,
   fetchTaipeiChildcarePublicPrivate,
@@ -91,6 +94,26 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "baby_friendly_hospital_taichung_83649", fetch: fetchBabyFriendlyHospitalTaichung },
   { key: "baby_friendly_hospital_tainan_150985", fetch: fetchBabyFriendlyHospitalTainan },
   { key: "baby_friendly_hospital_changhua_30882", fetch: fetchBabyFriendlyHospitalChanghua },
+  // #569 (parent #562): 戒菸院所查詢的全國基底資料——國健署「各縣市合約戒菸醫療
+  // 院所」（data.gov.tw 6954），取代 scripts/build-expansion-seeds.mjs 裡原本 6
+  // 筆手寫資料。No coordinates of its own, geocoded via the usual facilities-
+  // geocode backfill like every other address-only source here. #572 (六都覆蓋,
+  // not started yet) will add per-county sources that batch-replace this
+  // national source's rows for their own county — this entry's sourceKey
+  // ("hpa_smoking_cessation_6954") is scoped to the national dataset only so
+  // that replacement can target it without touching a future county source's
+  // own rows. The download URL hasn't been verified reachable from the
+  // production host yet — see the comment above
+  // fetchHpaSmokingCessationFacilities() — confirm that before relying on
+  // this source's scheduled runs.
+  { key: "hpa_smoking_cessation_6954", fetch: fetchHpaSmokingCessationFacilities },
+  // #571 (parent #562): 成癮防治分頁的另外兩類資料——美沙冬跨區給藥院所
+  // （data.gov.tw 133345）和 22 縣市毒品危害防制中心（反毒大本營靜態列表頁）。兩者
+  // 都沒有座標，一樣交給既有 geocode 批次處理。這兩個來源的下載網址都是從一般住宅
+  // 網路實測成功的——和上面 addiction_treatment_133353 一樣，還沒有從正式主機驗證
+  // 過，部署前請先確認其中一個能連到。
+  { key: "methadone_cross_district_133345", fetch: fetchMethadoneCrossDistrict },
+  { key: "anti_drug_center_moj", fetch: fetchAntiDrugCenters },
   // #601 (parent #599): 托嬰中心與居家托育地圖，臺北＋新北骨架。5 個臺北來源
   // registered individually — taipei_childcare_121278 (私立) internally
   // re-fetches taipei_childcare_121981 (準公共) to dedupe the two tables'

@@ -423,7 +423,8 @@
     "resetSearchButton": "Reset search",
     "altNumberLabel": "Alternative: ",
     "dialButton": "📞 Call now",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "Check a suspicious URL"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "Sudden severe illness, intense chest pain, or a life-threatening situation? Call ",
@@ -669,6 +670,12 @@
     "depthLabel": "Depth:",
     "officialReportLink": "Official report ↗",
     "dataSource": "Source: Central Weather Administration (CWA, Taiwan M4.0+) · U.S. Geological Survey (USGS, global M6.0+)"
+  },
+  "globalWatchTool": {
+    "earthquakes": {
+      "legendHeading": "Globe marker legend:",
+      "legendTsunami": "Tsunami warning"
+    }
   },
   "aqiTool": {
     "outdoorSafetyPromoPrefix": "Planning to run, cycle, or take the kids to the park today? Instantly check the",

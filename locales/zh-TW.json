@@ -320,6 +320,7 @@
     "resetSearchButton": "重設搜尋條件",
     "altNumberLabel": "備用／替代：",
     "dialButton": "📞 一鍵直撥",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "查可疑網址"
   }
 }

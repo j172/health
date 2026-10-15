@@ -46,6 +46,20 @@ export interface FacilityExtraJson {
    */
   dataVerifiedAt?: string | null;
   /**
+   * methadone_cross_district facility type (#571) — data.gov.tw 133345's
+   * dosing-time windows and per-service fees, which (like #566's fields
+   * above) have no generic facilities column of their own. See
+   * methadoneCrossDistrict.ts.
+   */
+  methadoneWeekdayDosingTime?: string | null;
+  methadoneHolidayDosingTime?: string | null;
+  methadoneOtherDosingTime?: string | null;
+  methadoneTransferInFee?: string | null;
+  methadoneCrossDistrictFee?: string | null;
+  methadoneTransferOutFee?: string | null;
+  methadoneEvaluationFee?: string | null;
+  methadoneNotes?: string | null;
+  /**
    * `category` and `monthlyFee` are shared across two independent facility
    * families that both landed around the same time and happened to pick the
    * same field names — kept as one declaration rather than two to avoid a

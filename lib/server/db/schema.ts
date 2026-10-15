@@ -1866,6 +1866,15 @@ export const TABLE_DDL = {
   // report_year_month／site_nature 因此都是一般欄位：同步時對同一
   // (domain, source) 做 UPDATE 覆蓋成最新值，first_seen 只在初次插入時寫入，
   // last_seen 每次同步都更新。
+  //
+  // issue #567 加入 moda_165027（數產署，近乎每日）、police_160055（警政署
+  // 假投資網站，一次性歷史匯入）兩個來源，沿用同一張表、同一個 (domain,
+  // source) UNIQUE KEY 設計——同一網域出現在多個來源時各存一列，查詢時分別
+  // 列出，不合併。這兩個來源都沒有 176455 的「網站性質」分類欄位，只有自由
+  // 文字描述（165027 的「一頁式數位經濟詐騙網站」、160055 的「網站名稱」），
+  // 新增 fraud_description 欄位承接，不塞進 site_nature 冒充分類。
+  // report_year_month 同時承接 165027/160055 的 8 位數 YYYYMMDD 日期字串
+  // （與 176455 的 5 位數民國年月字串共用欄位，UI 依位數區分格式）。
   fraudDomains: `
     CREATE TABLE IF NOT EXISTS fraud_domains (
       id BIGINT NOT NULL AUTO_INCREMENT,
@@ -1875,6 +1884,7 @@ export const TABLE_DDL = {
       legal_basis VARCHAR(255) NULL,
       applicant_org VARCHAR(255) NULL,
       report_year_month VARCHAR(10) NULL,
+      fraud_description VARCHAR(255) NULL,
       first_seen DATETIME NOT NULL,
       last_seen DATETIME NOT NULL,
       created_at DATETIME NOT NULL,
@@ -1882,6 +1892,50 @@ export const TABLE_DDL = {
       PRIMARY KEY (id),
       UNIQUE KEY uq_fraud_domain_source (domain, source),
       KEY idx_fraud_domain_last_seen (last_seen)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 警政署「打詐儀錶板打擊詐欺成效」172159 — 每月一列的全國彙總統計 (issue
+  // #570 / #562)。這張表跟上面的 fraud_domains 剛好是相反的情境：fraud_domains
+  // 每次同步都是「同一批網域的最新狀態」，所以時間欄位絕對不能進 key；這張表
+  // 的每一列本身就是「某個民國年月的歷史統計快照」，176455 每月發佈的是新的一
+  // 列，不是覆蓋舊的一列的新值——如果把 (roc_year, roc_month) 拿掉，重跑同步只
+  // 會不斷插入同一批月份的重複列，而不會覆蓋，一樣會造成膨脹，只是方向相反。
+  // 真正的時間序表（如同一個月只應該有一列）必須把時間欄位放進 UNIQUE KEY 才
+  // 能讓同步正確地 upsert 成「每個月一列」——這跟 aqx_hourly_wide／
+  // aqx_hourly_narrow（monitordate 進 key，見上方）是同一種合法模式，不是
+  // cwa_station_weather／fraud_domains 那種「最新狀態表」反模式。
+  policeFraudInterdictionStats: `
+    CREATE TABLE IF NOT EXISTS police_fraud_interdiction_stats (
+      id INT NOT NULL AUTO_INCREMENT,
+      roc_year SMALLINT NOT NULL,
+      roc_month TINYINT NOT NULL,
+      gang_count INT NULL,
+      member_count INT NULL,
+      seized_amount_ntd BIGINT NULL,
+      blocked_amount_ntd BIGINT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_police_fraud_interdiction_period (roc_year, roc_month)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
+  // 金管會「打詐儀表板」11198 — 每週一列的違規投資廣告彙總統計 (issue #570 /
+  // #562)。同樣理由：每一列是某一週的歷史快照，UNIQUE KEY 必須含 report_date
+  // 才能讓同一週重跑同步時正確覆蓋，而不是插入重複列或是漏掉歷史——見上面
+  // policeFraudInterdictionStats 的說明。
+  fscFraudAdStats: `
+    CREATE TABLE IF NOT EXISTS fsc_fraud_ad_stats (
+      id INT NOT NULL AUTO_INCREMENT,
+      report_date DATE NOT NULL,
+      weekly_new_count INT NULL,
+      change_pct DECIMAL(8,2) NULL,
+      cumulative_count INT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_fsc_fraud_ad_report_date (report_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
   // GDACS（全球災害預警協調系統）事件 (issue #592 / #583) — 供颱風／全球災害／

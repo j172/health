@@ -147,6 +147,13 @@ const FETCH_LIMIT = 300;
 const ADDICTION_HOTLINE = "0800-770-885";
 
 /**
+ * #571: the 成癮防治分頁 now has three sub-tabs (戒治機構／跨區給藥／毒防中心) —
+ * the hotline banner should show on all three, not just the original
+ * addiction_treatment tab it shipped on in #566.
+ */
+const ADDICTION_HOTLINE_FACILITY_TYPES = ["addiction_treatment", "methadone_cross_district", "anti_drug_center"];
+
+/**
  * Pulls the tool's own noun out of copy it already carries, so the nearby-fallback
  * notice can name what it is listing ("附近查無收錄的伯公照護站，可改用關鍵字搜尋。"
  * → "伯公照護站"). Every config phrases `emptyStateNoKeyword` the same way, and the
@@ -526,7 +533,7 @@ export default function FacilitySearchContent({
         </div>
       )}
 
-      {facilityType === "addiction_treatment" && (
+      {ADDICTION_HOTLINE_FACILITY_TYPES.includes(facilityType) && (
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-teal-200 bg-teal-50/70 p-3.5 text-xs text-teal-900 dark:border-teal-900/60 dark:bg-teal-950/30 dark:text-teal-300">
           <div className="flex items-center gap-2 font-medium">
             <span className="text-base">☎️</span>
