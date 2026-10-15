@@ -213,7 +213,7 @@ flowchart TD
 | **全臺地面紫外線指數 (UVI)** | [`/tools/uv`](https://health.j172.tw/tools/uv) | 交通部中央氣象署 | 5 級防護提醒、防曬建議與最高暴曬時段預警 |
 | **全球顯著地震與海嘯觀測** | [`/tools/earthquakes`](https://health.j172.tw/tools/earthquakes) | CWA / USGS / EMSC / HKO | 全球 M6.0+ 與臺灣顯著有感地震即時推送 |
 | **兒童安全愛心熱點地圖** | [`/tools/child-safety-spots`](https://health.j172.tw/tools/child-safety-spots) | 內政部警政署 | 超商、學校警衛室兒少緊急庇護通報熱點 |
-| **國際旅遊公衛與疫情警示** | [`/tools/travel-epidemic-alerts`](https://health.j172.tw/tools/travel-epidemic-alerts) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級） |
+| **國際旅遊公衛與疫情警示** | [`/tools/global-watch/epidemics`](https://health.j172.tw/tools/global-watch/epidemics) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級），併入「全球動態地球」國際疫情項目 |
 | **中央氣象署即時天氣示警** | [`/tools/weather-alerts`](https://health.j172.tw/tools/weather-alerts) | 交通部中央氣象署 | 大雨、豪雨、陸上強風、低溫與濃霧特報 |
 | **全臺主要水庫水情水情表** | [`/tools/water-conditions`](https://health.j172.tw/tools/water-conditions) | 經濟部水利署防災資訊網 | 各主要水庫即時蓄水量、蓄水率與入流量 |
 | **綜合災害動態地圖** | [`/tools/disaster-map`](https://health.j172.tw/tools/disaster-map) | 國家災害防救科技中心 (NCDR) | 避難收容所、前進指揮所、物資儲放點圖層 |

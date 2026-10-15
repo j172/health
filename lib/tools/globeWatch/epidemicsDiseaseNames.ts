@@ -44,7 +44,8 @@ export const EPIDEMIC_DISEASE_NAMES: Record<string, EpidemicDiseaseNameEntry> = 
   病毒性腸胃炎: { en: "Viral gastroenteritis", ja: "ウイルス性胃腸炎", ko: "바이러스성 위장염" },
   瘧疾: { en: "Malaria", ja: "マラリア", ko: "말라리아" },
   // Issue #462's news↔tool cross-linking keyword ("登革熱") — see catalog.ts's
-  // travel-epidemic-alerts entry comment for why 登革熱 matters for this item.
+  // global-watch entry comment for why 登革熱 matters for this item (carried
+  // over from the retired travel-epidemic-alerts entry by issue #591).
   登革熱: { en: "Dengue fever", ja: "デング熱", ko: "뎅기열" },
   白喉: { en: "Diphtheria", ja: "ジフテリア", ko: "디프테리아" },
   立百病毒感染症: { en: "Nipah virus infection", ja: "ニパウイルス感染症", ko: "니파바이러스 감염증" },

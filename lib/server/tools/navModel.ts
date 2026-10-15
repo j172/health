@@ -897,7 +897,7 @@ export const GUIDES: Guide[] = [
       "出國前後最容易忽略的是疫情資訊與返國後的健康檢查，這份指南依「出國前查疫情 → 回國後顧健康 → 就醫用藥」的順序，整理使用者出國前後該查的工具。",
     steps: [
       {
-        toolSlug: "travel-epidemic-alerts",
+        toolSlug: "global-watch",
         caption: "出國前查旅遊疫情",
         why: "規劃出國行程前，先查詢目的地國家或地區的國際旅遊疫情與即時情報，了解是否有感染風險升高的地區，提早決定是否調整行程或加強防護。",
       },

@@ -2028,46 +2028,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "travel-epidemic-alerts",
-    group: "disaster-alerts",
-    lastUpdated: "2026-10-13",
-
-    title: "國際旅遊疫情與即時情報地圖",
-    // "登革熱" added for issue #462's news↔tool cross-linking acceptance
-    // criterion (登革熱 news should surface this tool): 疾管署同時監控境外
-    // 移入與本土登革熱疫情，屬於這個國際疫情地圖涵蓋的疾病範圍之一。
-    keywords: ["出國疫情", "旅遊警示", "境外感染", "登革熱"],
-    description:
-      "即時連線疾管署國際旅遊疫情建議等級與全球重要疫情快訊，提供各國警戒等級（注意/警示/警告）地圖視覺化、疾病快搜與最新流行病學情報。資料來源：衛生福利部疾病管制署。",
-    directAnswer:
-      "即時查詢疾管署全球旅遊疫情建議等級與各國爆發疾病通報，掌握最新出國防疫衛教與警示範圍。",
-    scientificBasis: [
-      {
-        title: "國際間旅遊疫情建議等級資料集 (TCDCTravelAlert)",
-        authority: "衛生福利部疾病管制署 (Taiwan CDC)",
-        url: "https://www.cdc.gov.tw",
-      },
-      {
-        title: "國際重要疫情資訊 (TCDCIntlEpidAll)",
-        authority: "衛生福利部疾病管制署 (Taiwan CDC)",
-        url: "https://www.cdc.gov.tw",
-      },
-    ],
-    relatedSlugs: ["aqi", "uv", "weather-alerts", "global-watch"],
-    faqs: [
-      {
-        question: "國際旅遊疫情建議等級如何劃分？",
-        answer:
-          "疾管署分為三級：第一級「注意 (Watch)」提醒遵守當地一般預防措施；第二級「警示 (Alert)」對當地採取加強防護；第三級「警告 (Warning)」避免至當地所有非必要旅遊。",
-      },
-      {
-        question: "出國前該如何做好健康防護？",
-        answer:
-          "建議出國前 2 至 4 週至旅遊醫學門診諮詢疫苗接種或預防用藥，並於旅途中落實手部衛生、防蚊措施與飲食衛生。",
-      },
-    ],
-  },
-  {
     slug: "weather-alerts",
     group: "disaster-alerts",
     lastUpdated: "2026-10-12",
@@ -2100,7 +2060,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ["超大豪雨 (Extremely Torrential Rain)", "≥ 500 mm", "—", "紫色 🟣", "重大致災降雨，配合預警性撤離與避難"],
       ],
     },
-    relatedSlugs: ["aqi", "uv", "earthquakes", "water", "travel-epidemic-alerts"],
+    relatedSlugs: ["aqi", "uv", "earthquakes", "water", "global-watch"],
     faqs: [
       {
         question: "氣象警報多久更新一次？",
@@ -2436,17 +2396,18 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // layers yet (地震/颱風/全球災害/國際疫情/全球空品 are #588-#592+),
     // so this entry stays deliberately thin — not in INDEXABLE_SLUGS yet
     // (see that set's own doc comment on thin-shell pages), no FAQs beyond
-    // the shell's own real, shipped behavior. Will absorb `earthquakes` and
-    // `travel-epidemic-alerts` (see those entries' relatedSlugs) once their
-    // own item tickets land — do not pre-emptively remove those two entries
-    // here; #583's own ticket for that 301/catalog cleanup is separate.
+    // the shell's own real, shipped behavior. Will absorb `earthquakes` (see
+    // that entry's relatedSlugs) once its own retirement ticket (#590) lands
+    // — do not pre-emptively remove that entry here. `travel-epidemic-alerts`
+    // was retired by #591, which is why "登革熱" (its #462 cross-linking
+    // keyword) was carried over into this entry's own keywords below.
     slug: "global-watch",
     group: "disaster-alerts",
     lastUpdated: "2026-10-14",
 
     schemaType: "WebPage",
     title: "全球動態地球",
-    keywords: ["全球動態地球", "3D地球", "地球儀", "MapLibre", "全球地圖", "衛星影像"],
+    keywords: ["全球動態地球", "3D地球", "地球儀", "MapLibre", "全球地圖", "衛星影像", "登革熱"],
     description:
       "可拖曳旋轉、縮放的 3D 地球，拉近至城市層級自然轉為平面街道地圖；支援向量地圖與衛星影像切換，並可一鍵回到台灣預設視角。",
     directAnswer:
@@ -2463,7 +2424,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.earthdata.nasa.gov/data/tools/gibs",
       },
     ],
-    relatedSlugs: ["earthquakes", "travel-epidemic-alerts", "disaster-map", "weather-alerts"],
+    relatedSlugs: ["earthquakes", "disaster-map", "weather-alerts"],
     faqs: [
       {
         question: "全球動態地球目前提供哪些功能？",
@@ -2828,7 +2789,8 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     title: "農作物病蟲害即時預警",
     // "登革熱"/"病媒蚊" added for issue #462's news↔tool cross-linking
     // acceptance criterion (登革熱 news should surface this tool alongside
-    // travel-epidemic-alerts): 地方病媒蚊孳生源清除與通報作業在許多縣市由
+    // global-watch — formerly travel-epidemic-alerts, retired by #591):
+    // 地方病媒蚊孳生源清除與通報作業在許多縣市由
     // 農業/環保稽查單位與病蟲害防治體系共同執行，是登革熱新聞讀者可能需要
     // 的鄰近示警資訊。
     keywords: ["病蟲害預警", "農作物病害", "登革熱", "病媒蚊"],
@@ -4002,7 +3964,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.nfa.gov.tw/",
       },
     ],
-    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "travel-epidemic-alerts", "anti-fraud", "social-welfare-centers"],
+    relatedSlugs: ["er-status", "aed", "disaster-map", "weather-alerts", "global-watch", "anti-fraud", "social-welfare-centers"],
     faqs: [
       {
         question: "手機在沒有 SIM 卡或沒有所屬電信訊號時該如何求救？",
