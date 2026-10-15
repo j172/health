@@ -1,6 +1,6 @@
 import "server-only";
-import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import {
   buildRoutesFromTdxBusData,
   type BusScheduleTripInput,
@@ -87,10 +87,7 @@ async function fetchCityBusVehicles(
   tdxCity: string,
   token: string,
 ): Promise<TdxBusVehicleItem[]> {
-  const res = await httpGetJson<TdxBusVehicleItem[]>(busVehicleUrl(tdxCity), {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<TdxBusVehicleItem[]>(busVehicleUrl(tdxCity), token, { timeoutMs: 12000 });
   if (res.status !== 200 || !Array.isArray(res.data)) {
     throw new Error(`TDX Bus/Vehicle/City/${tdxCity} returned status ${res.status}`);
   }
@@ -101,10 +98,7 @@ async function fetchCityBusSchedule(
   tdxCity: string,
   token: string,
 ): Promise<TdxBusScheduleItem[]> {
-  const res = await httpGetJson<TdxBusScheduleItem[]>(busScheduleUrl(tdxCity), {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<TdxBusScheduleItem[]>(busScheduleUrl(tdxCity), token, { timeoutMs: 12000 });
   if (res.status !== 200 || !Array.isArray(res.data)) {
     throw new Error(`TDX Bus/Schedule/City/${tdxCity} returned status ${res.status}`);
   }

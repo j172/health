@@ -1,6 +1,6 @@
 import "server-only";
-import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { TDX_SENIORS_API_BASE } from "@/lib/server/tdx/seniors";
 
 /**
@@ -171,10 +171,7 @@ const fetchSeniorTourism = async <T>(path: string): Promise<T[]> => {
   if (!token) return [];
 
   const url = `${SENIOR_TOURISM_BASE}${path}?%24format=JSON`;
-  const res = await httpGetJson<T[]>(url, {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<T[]>(url, token, { timeoutMs: 12000 });
   if (res.status !== 200 || !Array.isArray(res.data)) {
     throw new Error(`TDX Senior/Tourism ${path} returned status ${res.status}`);
   }
@@ -194,10 +191,7 @@ export const fetchSeniorCard = async (city: SeniorCardCity): Promise<SeniorCardE
   if (!token) return [];
 
   const url = `${SENIOR_CARD_BASE}/City/${city}?%24format=JSON`;
-  const res = await httpGetJson<SeniorCardEntry[]>(url, {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<SeniorCardEntry[]>(url, token, { timeoutMs: 12000 });
   if (res.status !== 200 || !Array.isArray(res.data)) {
     throw new Error(`TDX Senior/SeniorCard City/${city} returned status ${res.status}`);
   }

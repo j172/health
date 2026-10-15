@@ -1,6 +1,6 @@
 import "server-only";
-import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import type { YouBikeStation } from "./types";
 
 interface TdxStationPosition {
@@ -86,22 +86,21 @@ export async function fetchTdxCityStations(cityCode: string): Promise<YouBikeSta
   const token = await getTdxToken();
   if (!token) return [];
 
-  const headers = {
-    authorization: `Bearer ${token}`,
-    accept: "application/json",
-  };
-
   const tdxCity = cityConfig.tdxName;
 
-  // 平行請求站點基本資料與即時車位狀態
+  // 平行請求站點基本資料與即時車位狀態。兩個請求都走共用的 TDX 限流器
+  // (lib/server/tdx/rateLimiter.ts：基本方案整組憑證每分鐘僅 5 次)，所以實際上
+  // 會依序排隊送出，而不是同時打出去搶配額、互相吃 429。
   const [stationRes, availRes] = await Promise.all([
-    httpGetJson<TdxStationItem[]>(
+    tdxGetJsonWithRetry<TdxStationItem[]>(
       `https://tdx.transportdata.tw/api/basic/v2/Bike/Station/City/${tdxCity}?%24format=JSON`,
-      { headers, timeoutMs: 12000 }
+      token,
+      { timeoutMs: 12000 }
     ),
-    httpGetJson<TdxAvailabilityItem[]>(
+    tdxGetJsonWithRetry<TdxAvailabilityItem[]>(
       `https://tdx.transportdata.tw/api/basic/v2/Bike/Availability/City/${tdxCity}?%24format=JSON`,
-      { headers, timeoutMs: 12000 }
+      token,
+      { timeoutMs: 12000 }
     ),
   ]);
 
