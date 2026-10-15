@@ -1,8 +1,15 @@
 "use client";
 
-import { GARBAGE_COVERAGE, type CoverageStatus } from "@/lib/tools/garbageTrucks/coverage";
+import {
+  GARBAGE_COVERAGE,
+  LIVE_STATUS_LABELS,
+  type CoverageStatus,
+  type LiveCoverageStatus,
+} from "@/lib/tools/garbageTrucks/coverage";
 
 const routeCounties = GARBAGE_COVERAGE.filter((row) => row.routes === "available").map((row) => row.county);
+const liveCounties = GARBAGE_COVERAGE.filter((row) => row.live === "available").map((row) => row.county);
+const unreachableLiveCounties = GARBAGE_COVERAGE.filter((row) => row.live === "unavailable").map((row) => row.county);
 
 const statusCell = (status: CoverageStatus, availableLabel: string, noneLabel: string) =>
   status === "available" ? (
@@ -11,6 +18,15 @@ const statusCell = (status: CoverageStatus, availableLabel: string, noneLabel: s
     </span>
   ) : (
     <span className="text-xs text-neutral-500 dark:text-slate-400">{noneLabel}</span>
+  );
+
+// 即時位置 has a third state: the city publishes a feed that our servers cannot reach
+// (issue #679) — an amber 「暫無即時資料」, not the same grey blank as "no dataset known".
+const liveCell = (status: LiveCoverageStatus) =>
+  status === "unavailable" ? (
+    <span className="text-xs font-medium text-amber-700 dark:text-amber-300">{LIVE_STATUS_LABELS.unavailable}</span>
+  ) : (
+    statusCell(status, LIVE_STATUS_LABELS.available, LIVE_STATUS_LABELS.none)
   );
 
 /**
@@ -31,7 +47,7 @@ export default function GarbageCoverageTable({ onFindSquad }: { onFindSquad: (co
         各縣市資料覆蓋範圍
       </h2>
       <p className="mt-1 text-sm text-neutral-700 dark:text-slate-300">
-        垃圾車路線與收運時間目前只有{routeCounties.join("、")}提供資料。其他縣市尚無路線資料，請洽當地清潔隊；下表可直接查詢各縣市清潔隊的電話與地址。
+        垃圾車路線與收運時間目前只有{routeCounties.join("、")}提供資料；即時位置目前只有{liveCounties.join("、")}提供，{unreachableLiveCounties.join("、")}的資料集目前無法取得，標示為「{LIVE_STATUS_LABELS.unavailable}」。其他縣市尚無路線資料，請洽當地清潔隊；下表可直接查詢各縣市清潔隊的電話與地址。
       </p>
 
       <details open className="mt-3">
@@ -64,7 +80,7 @@ export default function GarbageCoverageTable({ onFindSquad }: { onFindSquad: (co
                     {row.county}
                   </th>
                   <td className="py-1.5 pr-3">{statusCell(row.routes, "有資料", "尚無路線資料")}</td>
-                  <td className="py-1.5 pr-3">{statusCell(row.live, "有資料", "尚未提供")}</td>
+                  <td className="py-1.5 pr-3">{liveCell(row.live)}</td>
                   <td className="py-1.5">
                     <button
                       type="button"

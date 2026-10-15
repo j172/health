@@ -1,4 +1,5 @@
 import { TAIWAN_COUNTIES, type TaiwanCounty } from "@/lib/constants/taiwanDistricts";
+import { LIVE_TRUCK_CITIES, LIVE_UNREACHABLE_COUNTIES, countyForLiveCity } from "@/lib/tools/garbageTrucks/live";
 
 /**
  * Per-county coverage of the 垃圾車與清潔隊 page (issue #674 / B-16, owner
@@ -8,8 +9,10 @@ import { TAIWAN_COUNTIES, type TaiwanCounty } from "@/lib/constants/taiwanDistri
  * contact data (the page's other tab), which does cover all 22.
  *
  * This is plain data on purpose. Later tickets extend it without touching the
- * page structure: #679 flips `live` to "available" city by city once a
- * live-location adapter for that city ships.
+ * page structure. The `live` column is derived from live.ts (#679): a county is
+ * "available" once its city has a live-location adapter there, and
+ * "unavailable" (shown as 「暫無即時資料」) when the city publishes a feed that
+ * our servers cannot reach.
  */
 
 /** Code stored in garbage_route_stops.city (and accepted by /api/garbage-routes?city=). */
@@ -17,12 +20,26 @@ export type GarbageRouteCity = "taipei" | "new_taipei";
 
 export type CoverageStatus = "available" | "none";
 
+/**
+ * Live-position status of a county. "unavailable" is a county whose city does
+ * publish live positions but whose server our hosting cannot reach — distinct
+ * from "none" (no live dataset known), and shown to visitors as 「暫無即時資料」.
+ */
+export type LiveCoverageStatus = CoverageStatus | "unavailable";
+
+/** What the coverage table prints for each live status. */
+export const LIVE_STATUS_LABELS: Readonly<Record<LiveCoverageStatus, string>> = {
+  available: "有資料",
+  unavailable: "暫無即時資料",
+  none: "尚未提供",
+};
+
 export interface CountyCoverage {
   county: TaiwanCounty;
   /** 路線與收運時間 — rows in garbage_route_stops for this county. */
   routes: CoverageStatus;
   /** 即時位置 — opened-page-only live truck positions (not stored). */
-  live: CoverageStatus;
+  live: LiveCoverageStatus;
 }
 
 export const ROUTE_CITY_BY_COUNTY: Readonly<Record<string, GarbageRouteCity>> = {
@@ -46,10 +63,18 @@ export function getRouteCityForCounty(county: string | null | undefined): Garbag
   return ROUTE_CITY_BY_COUNTY[county] ?? null;
 }
 
+const LIVE_COUNTIES: ReadonlySet<string> = new Set(LIVE_TRUCK_CITIES.map(countyForLiveCity));
+
+const liveStatusForCounty = (county: TaiwanCounty): LiveCoverageStatus => {
+  if (LIVE_COUNTIES.has(county)) return "available";
+  if (LIVE_UNREACHABLE_COUNTIES.includes(county)) return "unavailable";
+  return "none";
+};
+
 export const GARBAGE_COVERAGE: readonly CountyCoverage[] = TAIWAN_COUNTIES.map((county) => ({
   county,
   routes: getRouteCityForCounty(county) ? "available" : "none",
-  live: "none",
+  live: liveStatusForCounty(county),
 }));
 
 export function getCoverageForCounty(county: string | null | undefined): CountyCoverage | null {
