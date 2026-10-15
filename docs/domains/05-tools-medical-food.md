@@ -67,6 +67,7 @@
 #### 食安農藥殘留看板＋戶外安全指數 ✅
 - 原檔：[food-safety-and-outdoor-safety-mashup.md](../archive/specs/food-safety-and-outdoor-safety-mashup.md)（#292）
 - 表：`food_pesticide_standards`、`food_pesticide_records`、`outdoor_safety_indices`；評分公式：AQI 最多扣 40、熱指數最多扣 30、UV、疫情。
+- 林火風險區塊（Track B B-12，#672；[spec](../2.0/track-b-opendata-phase2-3-spec.md) §2.4 D-2）：農業部 `ForestFireAlertWCF?CreateDate=今日`（Asia/Taipei 當日，只取當日列）→ `forest_fire_alerts`（最新狀態表，UNIQUE KEY 只有 `site_code`，約 61 列）→ `/api/outdoor-safety/forest-fire`（明確 `Cache-Control`）→ 戶外安全指數頁「林火風險」區塊（`components/Tools/ForestFireSection.tsx`）。cron `9 6,12 * * *`（`lib/server/forestFire/runSync.ts`）。等級 0–4 = 安全／注意／警告／危險／最危險；未知或自相矛盾的等級**不顯示**（不當作安全），`error_msg` 字串 `"NULL"` 視為無錯誤。來源無座標，61 筆座標 seed（`lib/server/forestFire/data/forestFireSites.ts`）取自林業及自然保育署「林火風險評估系統」公開 GeoJSON，逐筆標註比對依據（59 筆代碼相符、2 筆——冬山、滿月圓——代碼不同、以名稱相符）；完整性測試在 `lib/server/forestFire/forestFire.test.mjs`。
 
 #### 衛福部醫事人員性平專區 ✅
 - 原檔：[SPEC-20261007-MOHW-VIO-MEDICAL-SAFETY.md](../archive/specs/SPEC-20261007-MOHW-VIO-MEDICAL-SAFETY.md)、工單 [TICKET-20261007-MOHW-VIO-MEDICAL-SAFETY.md](../archive/tickets/TICKET-20261007-MOHW-VIO-MEDICAL-SAFETY.md)（#432）

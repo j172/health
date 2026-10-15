@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import LoadingOrb from "@/components/ui/LoadingOrb";
+import ForestFireSection from "@/components/Tools/ForestFireSection";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import type {
   CityOutdoorSafetyItem,
@@ -45,7 +46,8 @@ export default function OutdoorSafetyContent() {
 
   useEffect(() => {
     let ignore = false;
-    setLoading(true);
+    // `loading` already starts as true and this effect runs once on mount, so
+    // no setLoading(true) is needed here (react-hooks/set-state-in-effect).
     fetchWithTimeout("/api/outdoor-safety", { timeoutMs: 5000 })
       .then((res) => (res.ok ? res.json() : null))
       .then((res) => {
@@ -312,6 +314,12 @@ export default function OutdoorSafetyContent() {
           </div>
         </div>
       )}
+
+      {/* 林火風險（農業部 ForestFireAlertWCF，B-12 / issue #672）— 自行載入資料，失敗不影響上方看板 */}
+      <ForestFireSection
+        selectedCityCode={selectedCityCode}
+        selectedCityName={currentCity?.cityName}
+      />
     </div>
   );
 }

@@ -134,6 +134,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.foodPesticideStandards);
   await p.query(TABLE_DDL.foodPesticideRecords);
   await p.query(TABLE_DDL.outdoorSafetyIndices);
+  // Forest fire alerts (B-12 / issue #672) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.forestFireAlerts);
   await p.query(TABLE_DDL.accessibleTransitRoutes);
   await p.query(TABLE_DDL.accessibleTransitFacilities);
   await p.query(TABLE_DDL.accessibleTransitFacilityAlerts);
