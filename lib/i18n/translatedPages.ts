@@ -52,6 +52,8 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   { kind: "tool", slug: "tourism-factories" },
   { kind: "path", path: "/nearby", label: "我附近" },
   { kind: "path", path: "/guides/typhoon-earthquake", label: "颱風地震來了" },
+  // Issue #588 (parent #583): first global-watch item sub-route.
+  { kind: "path", path: "/tools/global-watch/earthquakes", label: "全球動態地球：地震" },
 ];
 
 /** Canonical (zh, unprefixed) path for a scope entry. */
@@ -110,6 +112,16 @@ export const TRANSLATED_STANDALONE_PATHS: ScopePageEntry[] = [
   { kind: "path", path: "/", label: "首頁" },
   { kind: "path", path: "/nearby", label: "我附近" },
   { kind: "path", path: "/guides/typhoon-earthquake", label: "颱風地震來了" },
+  // Issue #588 (parent #583): the first of global-watch's 5 planned item
+  // sub-routes (`/tools/global-watch/<item>`) — modeled as its own `path`
+  // entry rather than growing TRANSLATED_TOOL_SLUGS with "global-watch",
+  // since that would require app/[locale]/tools/global-watch/page.tsx (the
+  // BASE page) to exist per tests/i18n-routing-485.test.mjs's guardrail,
+  // and the base page staying zh-only is correct for now — only the item
+  // sub-routes are in scope for translation (see that test's own comment on
+  // why "global-watch" is allowed as a directory without being a
+  // TRANSLATED_TOOL_SLUGS entry).
+  { kind: "path", path: "/tools/global-watch/earthquakes", label: "全球動態地球：地震" },
 ];
 
 export const TRANSLATED_PAGES: ScopePageEntry[] = [

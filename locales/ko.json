@@ -674,6 +674,12 @@
     "officialReportLink": "공식 속보 ↗",
     "dataSource": "자료 제공: 중앙기상청(CWA, 대만 M4.0+) · 미국지질조사국(USGS, 전 세계 M6.0+)"
   },
+  "globalWatchTool": {
+    "earthquakes": {
+      "legendHeading": "지구본 마커 범례:",
+      "legendTsunami": "해일 경보"
+    }
+  },
   "aqiTool": {
     "outdoorSafetyPromoPrefix": "오늘 조깅, 자전거, 공원 나들이를 계획 중이신가요? 대기질, 체감온도, 자외선을 통합한",
     "outdoorSafetyPromoStrong": "전국 야외 안전 지수",
