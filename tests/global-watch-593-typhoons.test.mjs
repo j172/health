@@ -311,9 +311,12 @@ test("GlobeWatchTyphoonsGlobe uses MapLibre's globe projection and paints marker
   assert.match(globeSrc, /"circle-color":\s*\["get",\s*"markerColor"\]/);
 });
 
-test("GlobeWatchStatusPanel's variant type now includes 'empty' alongside 'loading'/'unsupported'", () => {
+test("GlobeWatchStatusPanel's variant type now includes 'empty' alongside 'loading'/'unsupported' (and any sibling-item variant, e.g. #598's 'unconfigured')", () => {
   const statusPanelSrc = readSrc("components", "Tools", "GlobeWatch", "GlobeWatchStatusPanel.tsx");
-  assert.match(statusPanelSrc, /variant:\s*"loading"\s*\|\s*"unsupported"\s*\|\s*"empty"/);
+  const variantLine = statusPanelSrc.match(/variant:\s*((?:"[a-z]+"\s*\|?\s*)+);/)?.[1] ?? "";
+  for (const expected of ["loading", "unsupported", "empty"]) {
+    assert.match(variantLine, new RegExp(`"${expected}"`), `expected variant union to include "${expected}"`);
+  }
 });
 
 // ---------------------------------------------------------------------------

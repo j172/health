@@ -37,6 +37,18 @@ import type { Locale } from "@/lib/i18n/dictionary";
  * `catalog.aqi`'s existing translated string already uses ("Air Quality
  * (AQI)" / "空気質指数" / "공기질 지수(AQI)" in locales/{en,ja,ko}.json),
  * shortened to tab length the same way as the other two items above.
+ *
+ * Issue #593 (parent #583) added the "typhoons" (颱風) item. Its en/ja/ko
+ * tab labels are the plain, widely-used translations of 颱風/熱帶氣旋 — en
+ * "Typhoons" / ja "台風" / ko "태풍" — same "short tab label, not full page
+ * title" convention as every entry above. Added LAST, after rebasing onto
+ * origin/main, specifically because #594 (disasters) and #598 (air-quality)
+ * were landing concurrently with this ticket and both also grow this exact
+ * array — the same kind of collision #589's own doc comment above already
+ * documents happening once for real between #588 and #589. Both of those
+ * items' entries were already reconciled into this one array by the time
+ * this entry was appended, so this is a plain append, not a second
+ * registry.
  */
 export interface GlobeWatchItemDef {
   key: string;
@@ -87,5 +99,12 @@ export const GLOBE_WATCH_ITEMS: GlobeWatchItemDef[] = [
     emoji: "🌫️",
     labelDefault: "全球空品",
     label: { "zh-TW": "全球空品", en: "Air Quality", ja: "空気質", ko: "공기질" },
+  },
+  {
+    key: "typhoons",
+    path: "/tools/global-watch/typhoons",
+    emoji: "🌀",
+    labelDefault: "颱風",
+    label: { "zh-TW": "颱風", en: "Typhoons", ja: "台風", ko: "태풍" },
   },
 ];
