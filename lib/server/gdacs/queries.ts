@@ -2,7 +2,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import { memoizeQuery } from "@/lib/server/cache/memo";
-import type { IncomingGdacsEvent } from "@/lib/server/gdacs/types";
+import type { GdacsAlertLevel, IncomingGdacsEvent } from "@/lib/server/gdacs/types";
 
 /**
  * Upserts a batch of GDACS events keyed by (event_type, event_id) — matches
@@ -139,5 +139,67 @@ export const getCurrentGdacsDisasterEvents = async (): Promise<GdacsDisasterEven
         [...DISASTER_EVENT_TYPES],
       );
       return rows.map(mapDisasterEventRow);
+    }),
+  );
+
+/** One active TC (tropical cyclone) event row, as read back from
+ * gdacs_events for the global-watch 颱風 item. */
+export interface GdacsTcEventRow {
+  event_id: string;
+  episode_id: string;
+  alert_level: GdacsAlertLevel;
+  alert_score: number | null;
+  country_iso: string | null;
+  lat: number;
+  lng: number;
+  start_time: Date | null;
+  end_time: Date | null;
+  title: string;
+  report_url: string | null;
+  basin: string | null;
+  /** mysql2 auto-parses JSON-typed columns into a plain object (same
+   * convention `sources_json` on `global_earthquakes` already relies on —
+   * see lib/server/earthquakes/queries.ts), so this arrives already parsed. */
+  track_geojson: Record<string, unknown> | null;
+}
+
+/**
+ * Issue #593 (parent #583): active TC events for the global-watch 颱風
+ * item's non-West-Pacific data (lib/tools/globeWatch/typhoonsTransform.ts
+ * drops any row here whose own `basin` is "WP", since CWA alone covers that
+ * basin — see that module's doc comment). "Active" means GDACS still
+ * considers the event ongoing (`end_time IS NULL`) or its stated end time
+ * hasn't passed yet; an event with no `end_time` is never excluded by age,
+ * matching cleanupEndedGdacsEvents' own "only end_time IS NOT NULL rows are
+ * cleanup candidates" rule.
+ */
+export const listActiveTcEvents = async (): Promise<GdacsTcEventRow[]> =>
+  memoizeQuery("gdacs_active_tc_events", async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `
+        SELECT event_id, episode_id, alert_level, alert_score, country_iso, lat, lng,
+               start_time, end_time, title, report_url, basin, track_geojson
+        FROM gdacs_events
+        WHERE event_type = 'TC'
+          AND (end_time IS NULL OR end_time > UTC_TIMESTAMP())
+        ORDER BY start_time DESC
+        `,
+      );
+      return rows.map((r) => ({
+        event_id: String(r.event_id),
+        episode_id: String(r.episode_id),
+        alert_level: r.alert_level as GdacsAlertLevel,
+        alert_score: r.alert_score != null ? Number(r.alert_score) : null,
+        country_iso: r.country_iso ?? null,
+        lat: Number(r.lat),
+        lng: Number(r.lng),
+        start_time: r.start_time ?? null,
+        end_time: r.end_time ?? null,
+        title: String(r.title),
+        report_url: r.report_url ?? null,
+        basin: r.basin ?? null,
+        track_geojson: (r.track_geojson as Record<string, unknown> | null) ?? null,
+      })) as GdacsTcEventRow[];
     }),
   );

@@ -692,6 +692,60 @@ export const listActiveCwaAlerts = async (
 };
 
 // ---------------------------------------------------------------------------
+// Active CWA typhoon-track rows (cwa_alerts, dataset_id = 'W-C0034-005')
+// ---------------------------------------------------------------------------
+
+export interface CwaTyphoonItem {
+  alert_key: string;
+  event: string;
+  headline: string | null;
+  description: string | null;
+  area_desc: string | null;
+  effective: Date | null;
+  expires: Date | null;
+  web: string | null;
+}
+
+/**
+ * Issue #593 (parent #583): active CWA typhoon-track rows for the
+ * global-watch 颱風 item's West-Pacific data — reads the existing
+ * W-C0034-005 rows lib/server/cwa/sources/typhoon.ts already syncs into
+ * cwa_alerts ("沿用既有的 CWA 颱風同步，不新增管線"), rather than a new table or
+ * sync job. "Active" uses the exact same expiry rule listActiveCwaAlerts'
+ * own `active_general` CTE applies to every other dataset in this table:
+ * prefer the row's own `expires`; fall back to a 7-day window from
+ * effective/synced_at only when CWA omitted one (a dissipated cyclone has
+ * no "cancelled" bulletin — see typhoon.ts's own doc comment on why
+ * `expires` is anchored to the forecast horizon for exactly this reason).
+ */
+export const listActiveCwaTyphoons = async (): Promise<CwaTyphoonItem[]> => {
+  try {
+    return await memoizeQuery("cwa_active_typhoons", async () =>
+      withConnectionFallback([], async (conn) => {
+        const [rows] = await conn.query<RowDataPacket[]>(
+          `
+          SELECT alert_key, event, headline, description, area_desc, effective, expires, web
+          FROM cwa_alerts
+          WHERE dataset_id = 'W-C0034-005'
+            AND (
+              CASE
+                WHEN expires IS NOT NULL THEN expires > UTC_TIMESTAMP()
+                ELSE COALESCE(effective, synced_at) >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
+              END
+            )
+          ORDER BY effective DESC
+          `,
+        );
+        return rows as unknown as CwaTyphoonItem[];
+      }),
+    );
+  } catch (err) {
+    console.warn("listActiveCwaTyphoons error:", err);
+    return [];
+  }
+};
+
+// ---------------------------------------------------------------------------
 // Nearest rainfall station (cwa_rainfall)
 // ---------------------------------------------------------------------------
 
