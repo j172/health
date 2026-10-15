@@ -259,6 +259,17 @@ const nextConfig = {
         destination: "/tools/long-term-care?type=hakka-bogong",
         permanent: true,
       },
+      // issue #591 (parent #583, global-watch merge) — "/tools/travel-epidemic-alerts"
+      // (國際旅遊疫情與即時情報地圖) is retired in favor of the 國際疫情 item that
+      // #589 already shipped inside global-watch (which reuses this same page's
+      // TravelEpidemicAlertsContent component as-is). This page only ever had a
+      // zh route (no app/[locale]/tools/travel-epidemic-alerts sibling existed),
+      // so a single entry is enough — no per-locale `?lang=` variants to carry.
+      {
+        source: "/tools/travel-epidemic-alerts",
+        destination: "/tools/global-watch/epidemics",
+        permanent: true,
+      },
     ];
   },
 };
