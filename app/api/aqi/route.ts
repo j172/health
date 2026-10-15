@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getLatestAqiReadings } from "@/lib/server/aqi/queries";
 import { getAqiStatusAndColor } from "@/lib/server/aqi/status";
 import type { AqiSite } from "@/lib/server/aqi/types";
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     });
     const updatedAt = latestRecordedAt ? (latestRecordedAt as Date).toISOString() : null;
 
-    return NextResponse.json({ stations, updatedAt });
+    return NextResponse.json({ stations, updatedAt }, cacheInit("live"));
   } catch (error) {
     console.error("GET /api/aqi failed:", error);
     return NextResponse.json({ error: "查詢 AQI 資料失敗" }, { status: 502 });

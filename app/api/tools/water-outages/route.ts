@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getWaterOutagesOverview } from "@/lib/server/waterOutages/queries";
 
 export const runtime = "nodejs";
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
       ok: true,
       ...data,
       updatedAt: new Date().toISOString(),
-    });
+    }, cacheInit("medium"));
   } catch (error) {
     console.error("Error in /api/tools/water-outages:", error);
     return NextResponse.json(

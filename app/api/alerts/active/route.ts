@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { getActiveNcdrAlerts } from "@/lib/server/ncdr/ncdrAlerts";
 
 export const runtime = "nodejs";
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
       count: alerts.length,
       alerts,
       updatedAt: new Date().toISOString(),
-    });
+    }, cacheInit("live"));
   } catch (error) {
     console.error("Error in /api/alerts/active:", error);
     return NextResponse.json(

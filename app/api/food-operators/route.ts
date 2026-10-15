@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { searchFoodOperators } from "@/lib/server/food/operators";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const operators = await searchFoodOperators(keyword);
-    return NextResponse.json({ operators });
+    return NextResponse.json({ operators }, cacheInit("none"));
   } catch (error) {
     console.error("GET /api/food-operators failed:", error);
     return NextResponse.json({ error: "查詢食品業者資料失敗" }, { status: 502 });

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import { searchHealthSupplements } from "@/lib/server/food/healthSupplements";
 
 export const runtime = "nodejs";
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const results = await searchHealthSupplements({ keyword, activeOnly, limit });
-    return NextResponse.json({ results });
+    return NextResponse.json({ results }, cacheInit("none"));
   } catch (error) {
     console.error("GET /api/health-supplements failed:", error);
     return NextResponse.json({ error: "查詢健康食品資料失敗" }, { status: 502 });

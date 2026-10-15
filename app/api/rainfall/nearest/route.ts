@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import {
   getNearestRainfallReading,
   getNearestRainfallAccumulation,
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
       getNearestRainfallReading(lat, lng),
       getNearestRainfallAccumulation(lat, lng),
     ]);
-    if (!reading) return NextResponse.json({ station: null, totals: null });
+    if (!reading) return NextResponse.json({ station: null, totals: null }, cacheInit("none"));
 
     const station: NearestRainfallStation = {
       stationName: reading.station_name,
@@ -98,7 +99,7 @@ export async function GET(request: NextRequest) {
         }
       : null;
 
-    return NextResponse.json({ station, totals });
+    return NextResponse.json({ station, totals }, cacheInit("none"));
   } catch (error) {
     console.error("GET /api/rainfall/nearest failed:", error);
     return NextResponse.json(

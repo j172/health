@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cacheInit } from "@/lib/server/http/cacheControl";
 import {
   searchFoodSamples,
   countSearchFoodSamples,
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
   if (mode === "nutrients") {
     try {
       const nutrients = await listDistinctNutrientItems();
-      return NextResponse.json({ nutrients });
+      return NextResponse.json({ nutrients }, cacheInit("reference"));
     } catch (error) {
       console.error("GET /api/food-nutrition?mode=nutrients failed:", error);
       return NextResponse.json({ error: "查詢營養素清單失敗" }, { status: 502 });
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     try {
       const rows = await rankFoodsByNutrient(nutrient, { limit, category });
-      return NextResponse.json({ rows });
+      return NextResponse.json({ rows }, cacheInit("reference"));
     } catch (error) {
       console.error("GET /api/food-nutrition?mode=rank failed:", error);
       return NextResponse.json({ error: "查詢營養素排行失敗" }, { status: 502 });
@@ -58,7 +59,7 @@ export async function GET(request: NextRequest) {
   if (sampleId) {
     try {
       const items = await getNutritionBySampleId(sampleId);
-      return NextResponse.json({ items });
+      return NextResponse.json({ items }, cacheInit("reference"));
     } catch (error) {
       console.error("GET /api/food-nutrition?sampleId failed:", error);
       return NextResponse.json({ error: "查詢食品營養成分失敗" }, { status: 502 });
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const [samples, total] = await Promise.all([searchFoodSamples(keyword, limit, offset), countSearchFoodSamples(keyword)]);
-    return NextResponse.json({ samples, total });
+    return NextResponse.json({ samples, total }, cacheInit("none"));
   } catch (error) {
     console.error("GET /api/food-nutrition failed:", error);
     return NextResponse.json({ error: "查詢食品營養成分失敗" }, { status: 502 });
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await analyzeMealNutrition(items);
-    return NextResponse.json(result);
+    return NextResponse.json(result, cacheInit("none"));
   } catch (error) {
     console.error("POST /api/food-nutrition failed:", error);
     return NextResponse.json({ error: "分析餐點營養成分失敗" }, { status: 502 });
