@@ -23,6 +23,13 @@ import {
   fetchNtpcChildcarePublic,
   fetchNtpcChildcareHomeCenter,
 } from "@/lib/server/facilities/sources/ntpcChildcare";
+import { fetchTycgChildcarePublicPrivate, fetchTycgChildcareQuasi } from "@/lib/server/facilities/sources/tycgChildcare";
+import { fetchTaichungChildcare } from "@/lib/server/facilities/sources/taichungChildcare";
+import { fetchTainanChildcare } from "@/lib/server/facilities/sources/tainanChildcare";
+import {
+  fetchKaohsiungChildcarePrivate,
+  fetchKaohsiungChildcarePublicPrivate,
+} from "@/lib/server/facilities/sources/kaohsiungChildcare";
 import { runSource } from "@/lib/server/sync/runSource";
 
 export interface FacilitySyncResult {
@@ -79,6 +86,15 @@ const SOURCES: { key: string; fetch: () => Promise<FacilityRecord[]> }[] = [
   { key: "ntpc_childcare_125380", fetch: fetchNtpcChildcarePrivate },
   { key: "ntpc_childcare_126222", fetch: fetchNtpcChildcarePublic },
   { key: "ntpc_childcare_125505", fetch: fetchNtpcChildcareHomeCenter },
+  // #606 (parent #599): 六都剩餘四縣市——桃園／臺中／臺南／高雄。桃園
+  // tycg_childcare_168379 同樣內部重抓 168385 做私立/準公共去重（見
+  // tycgChildcare.ts 模組註解），其餘 3 個來源互相獨立。
+  { key: "tycg_childcare_168379", fetch: fetchTycgChildcarePublicPrivate },
+  { key: "tycg_childcare_168385", fetch: fetchTycgChildcareQuasi },
+  { key: "taichung_childcare_83669", fetch: fetchTaichungChildcare },
+  { key: "tainan_childcare_6178", fetch: fetchTainanChildcare },
+  { key: "kcg_childcare_128099", fetch: fetchKaohsiungChildcarePrivate },
+  { key: "kcg_childcare_128100", fetch: fetchKaohsiungChildcarePublicPrivate },
 ];
 
 // mohw_disability_welfare and mohw_elder_welfare are NOT registered here —
