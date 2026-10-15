@@ -30,6 +30,19 @@ export interface FacilityExtraJson {
   /** addiction_treatment facility type (#566) — data.gov.tw 133353's 戒治機構模式/戒治服務內容, which have no generic facilities column of their own. */
   addictionTreatmentMode?: string | null;
   addictionTreatmentService?: string | null;
+  /**
+   * early_intervention_unit facility type (#613) — 130229's 服務方式 (時段/
+   * 到宅/日間, combined like "時段、到宅") and 療育服務內容. serviceMethod is
+   * the second filter dimension the tool page offers alongside 單位別
+   * (stored in the generic `service_item` column, like every other facility
+   * type's category filter) — see searchFacilities()'s `serviceMethod` param.
+   */
+  serviceMethod?: string | null;
+  serviceContent?: string | null;
+  /** The 4 county joint-assessment-center supplementary sources (#613) — centerType is 臺北's own 機構類型 distinction; note/department are each a single source's own supplementary text field. */
+  centerType?: string | null;
+  note?: string | null;
+  department?: string | null;
   [key: string]: unknown;
 }
 
@@ -247,6 +260,16 @@ export interface FacilitySearchParams {
   offset?: number;
   /** Substring match against the facilities.service_item column (e.g. a hospital tier, pharmacy contract type, or one badge within a combined multi-badge value). */
   serviceItem?: string;
+  /**
+   * Substring match against `extra_json.serviceMethod` — a second,
+   * independent filter dimension alongside `serviceItem` (issue #613's
+   * early_intervention_unit needs both 單位別 AND 服務方式 filterable at
+   * once, which a single `service_item` column/`categories` dropdown can't
+   * express). Generic by key name rather than hardcoded to this one
+   * facility type, so a future facility type needing the same
+   * two-dimension shape can reuse it without another query change.
+   */
+  serviceMethod?: string;
   /** When true, only rows whose extra_json carries a charityUrl (see scripts/enrich-disability-charity-sales.mjs). */
   onlyCharity?: boolean;
   sort?: "distance" | "name" | "category" | "newest";
@@ -276,6 +299,7 @@ export const searchFacilities = async ({
   limit = 30,
   offset = 0,
   serviceItem,
+  serviceMethod,
   onlyCharity,
   sort,
 }: FacilitySearchParams): Promise<FacilityListItem[]> =>
@@ -311,6 +335,11 @@ export const searchFacilities = async ({
       // category values are substrings of one another.
       conditions.push("service_item LIKE ?");
       params.push(`%${serviceItem}%`);
+    }
+
+    if (serviceMethod) {
+      conditions.push("JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.serviceMethod')) LIKE ?");
+      params.push(`%${serviceMethod}%`);
     }
 
     if (onlyCharity) {
@@ -392,6 +421,8 @@ export interface FacilityCountFilters {
   county?: string;
   district?: string;
   serviceItem?: string;
+  /** See FacilitySearchParams.serviceMethod. */
+  serviceMethod?: string;
   onlyCharity?: boolean;
 }
 
@@ -429,6 +460,11 @@ export const countFilteredFacilities = async (
     } else if (filters.serviceItem) {
       conditions.push("service_item LIKE ?");
       params.push(`%${filters.serviceItem}%`);
+    }
+
+    if (filters.serviceMethod) {
+      conditions.push("JSON_UNQUOTE(JSON_EXTRACT(extra_json, '$.serviceMethod')) LIKE ?");
+      params.push(`%${filters.serviceMethod}%`);
     }
 
     if (filters.onlyCharity) {

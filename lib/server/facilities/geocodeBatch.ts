@@ -98,6 +98,13 @@ export const SOURCES_IN_PRIORITY: FacilitySourceSpec[] = [
   { facilityType: "home_healthcare", sourceKey: "nhi_home_healthcare", label: "居家醫療機構" },
   { facilityType: "clinic", sourceKey: "nhi_hospital", label: "醫療院所與診所" },
   { facilityType: "green_shop", sourceKey: "moenv_green_shop", label: "綠色商店" },
+  // #613: early_intervention_unit's 4 geocodable sources — khh_joint_assessment_128165
+  // is deliberately excluded here (it already carries real lat/lng of its own, confirmed
+  // live on every row; see jointAssessmentCenters.ts's header comment).
+  { facilityType: "early_intervention_unit", sourceKey: "mohw_early_intervention_130229", label: "各縣市早期療育單位" },
+  { facilityType: "early_intervention_unit", sourceKey: "taipei_joint_assessment_135454", label: "臺北市早療聯合評估中心" },
+  { facilityType: "early_intervention_unit", sourceKey: "ntpc_joint_assessment_125231", label: "新北市衛生局合作早療評估醫院" },
+  { facilityType: "early_intervention_unit", sourceKey: "ntpc_joint_assessment_123786", label: "新北市發展遲緩兒童評估醫院" },
 ];
 
 export interface GeocodeBatchSourceSummary {

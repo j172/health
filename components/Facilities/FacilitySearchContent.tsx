@@ -43,6 +43,18 @@ export interface FacilitySearchConfig {
   locationDefaultWarning?: string;
   /** When set, shows a category filter + sort dropdown next to the search bar, matching against the facilities.service_item column. */
   categories?: { value: string; label: string }[];
+  /**
+   * When set, shows a SECOND, independent filter dropdown next to
+   * `categories`, matching against `extra_json.serviceMethod` (substring —
+   * see searchFacilities()'s `serviceMethod` param). Added for #613's
+   * early-intervention units, which need two simultaneous filter
+   * dimensions (單位別 via `categories`/service_item, 服務方式 via this)
+   * rather than one — a single `service_item` column can only express one.
+   * `allLabel` is the "show everything" option's own label (parallel to
+   * `categories`' hardcoded "全部分類", but `serviceMethodFilter`'s noun
+   * differs per tool so it isn't hardcoded the same way).
+   */
+  serviceMethodFilter?: { ariaLabel: string; allLabel: string; options: { value: string; label: string }[] };
   /** When set, shows a checkbox next to the search bar that filters to rows with extra_json.charityUrl set. */
   charityFilter?: { label: string };
   /**
@@ -183,6 +195,7 @@ export default function FacilitySearchContent({
     showGeocodeNote = false,
     locationDefaultWarning,
     categories,
+    serviceMethodFilter,
     charityFilter,
     extraFields,
   } = config;
@@ -231,6 +244,12 @@ export default function FacilitySearchContent({
     ...c,
     label: tc(`categoryLabel${idx}`, c.label),
   }));
+  const displayServiceMethodOptions = serviceMethodFilter?.options.map((o, idx) => ({
+    ...o,
+    label: tc(`serviceMethodLabel${idx}`, o.label),
+  }));
+  const displayServiceMethodAriaLabel = serviceMethodFilter ? tc("serviceMethodAriaLabel", serviceMethodFilter.ariaLabel) : undefined;
+  const displayServiceMethodAllLabel = serviceMethodFilter ? tc("serviceMethodAllLabel", serviceMethodFilter.allLabel) : undefined;
   const displayCharityFilterLabel = charityFilter ? tc("charityFilterLabel", charityFilter.label) : undefined;
   const displayExtraFields = extraFields?.map((f, idx) => ({
     ...f,
@@ -261,6 +280,7 @@ export default function FacilitySearchContent({
   const [county, setCounty] = useState("");
   const [district, setDistrict] = useState("");
   const [category, setCategory] = useState("");
+  const [serviceMethod, setServiceMethod] = useState("");
   const [onlyCharity, setOnlyCharity] = useState(false);
   const [sort, setSort] = useState<"distance" | "newest" | "name" | "category">("distance");
   const [facilities, setFacilities] = useState<FacilityItem[] | null>(null);
@@ -304,6 +324,7 @@ export default function FacilitySearchContent({
       if (county) params.set("county", county);
       if (district) params.set("district", district);
       if (category) params.set("category", category);
+      if (serviceMethod) params.set("serviceMethod", serviceMethod);
       if (onlyCharity) params.set("charity", "1");
       if (effectiveSort) params.set("sort", effectiveSort);
 
@@ -370,6 +391,7 @@ export default function FacilitySearchContent({
     facilityType,
     radiusMeters,
     category,
+    serviceMethod,
     onlyCharity,
     effectiveSort,
     pageSize,
@@ -401,6 +423,7 @@ export default function FacilitySearchContent({
     setCounty("");
     setDistrict("");
     setCategory("");
+    setServiceMethod("");
     setOnlyCharity(false);
     setSort("distance");
     setPage(1);
@@ -562,6 +585,25 @@ export default function FacilitySearchContent({
             </select>
           )}
 
+          {displayServiceMethodOptions && displayServiceMethodOptions.length > 0 && (
+            <select
+              value={serviceMethod}
+              onChange={(e) => {
+                setServiceMethod(e.target.value);
+                setPage(1);
+              }}
+              aria-label={displayServiceMethodAriaLabel}
+              className="rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-800 shadow-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="">{displayServiceMethodAllLabel}</option>
+              {displayServiceMethodOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          )}
+
           <select
             value={sort}
             onChange={(e) => {
@@ -599,7 +641,7 @@ export default function FacilitySearchContent({
             {t("facilitySearch.searchButton", "搜尋")}
           </button>
 
-          {(keyword || county || district || category || onlyCharity || searchInput) && (
+          {(keyword || county || district || category || serviceMethod || onlyCharity || searchInput) && (
             <button
               type="button"
               onClick={handleResetAll}
