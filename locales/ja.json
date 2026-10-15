@@ -121,6 +121,8 @@
     "smoking-cessation": "禁煙外来提携医療機関検索（禁煙補助制度）",
     "adult-preventive-care": "成人健康診断・公費がん検診機関検索",
     "baby-friendly-hospitals": "赤ちゃんにやさしい病院マップ（母子同室・母乳育児認証）",
+    "postpartum-care": "産後ケアセンターマップ（評鑑結果・有効期限確認）",
+    "child-subsidies": "育児補助金まとめ（育児手当・保育／就学補助・出産補助・体外受精助成）",
     "rare-disease-care": "難病ケア相談センター・確定診断病院検索",
     "organ-donation-hospitals": "臓器提供指定責任病院検索",
     "home-emergency-care": "健保在宅急性期ケア提携機関検索",
@@ -226,6 +228,9 @@
     },
     "travel-health": {
       "title": "海外渡航と防疫"
+    },
+    "fraud-and-addiction": {
+      "title": "詐欺と依存症から身を守る"
     }
   },
   "toolShell": {

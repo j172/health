@@ -23,6 +23,7 @@ const GUIDE_EMOJI: Record<string, string> = {
   "typhoon-earthquake": "🌀",
   "disability-living": "♿",
   "travel-health": "✈️",
+  "fraud-and-addiction": "🛡️",
 };
 
 /**
