@@ -1,7 +1,7 @@
 # B 軌開放資料擴充（第 2、3 期）：範圍、測試縫與切片規格
 
 - **日期**：2026-10-15
-- **狀態**：**擁有者已於 2026-10-15 裁決 D1–D7（見 §7.1，勿重談）**；票已開（見 §7.1 末），實作由 worktree agent 處理。**已取消的 ticket：B-1、B-2、B-3、B-10、B-11、B-15**（下方 §6 表格仍保留原文供查，開票時一律略過）。
+- **狀態**：**擁有者已於 2026-10-15 裁決 D1–D7（見 §7.1，勿重談）**；票已開（見 §7.1 末），實作由 worktree agent 處理。**已取消的 ticket：B-1、B-2、B-3、B-6、B-10、B-11、B-15**（下方 §6 表格仍保留原文供查，開票時一律略過）。B-6（邊境查驗不合格食品）是實作完成後、於 2026-10-15 由擁有者追加取消（不公開點名進口商／公司）：#671 以 not planned 關閉、PR #684 關閉未合併，程式碼保留在分支 `feat/border-food-rejections-671`。
 - **上游決策（勿重談）**：[anti-fraud-addiction-opendata-plan.md](anti-fraud-addiction-opendata-plan.md) §1 決策 #12（B 軌 4 組全收）、#13（垃圾車即時位置只在使用者開頁時取、不入庫）、#14（一期上線後才開下一期）；§2 第 2、3 期清單；§3 開放問題 Q1。
 - **資料來源研究**：[opendata-expansion-research.md](opendata-expansion-research.md)（2026-10-14）。
 - **本文新增的查證**：作者在 2026-10-15 重新下載了下列每一個資料集（從開發者住宅網路，**不是正式主機**），筆數與日期取自檔案內容；與研究文件不同之處明確標註。標記說明：**實測** = 本文自行下載；**研究文件** = 沿用 2026-10-14 結論未重測；**未驗證** = 沒有證據，不得當成事實使用。
@@ -205,12 +205,13 @@
 | `opdadm.moi.gov.tw` | C-1、C-3 | 已被上線的 176455／7505／避難所使用，視為可達（具體 resource 路徑**未個別驗證**） |
 | `data.gov.tw`（API） | C-2 解析最新下載網址 | 2026-10-15 probe 對照組從正式主機回 200 |
 | `www.water.gov.tw` | D-3 | 已被上線的停水公告使用，視為可達 |
-| `data.moa.gov.tw` | D-2、D-4 | 已被上線的病蟲害／土石流使用；`/api/v1/` 路徑**未個別驗證** |
+| `data.moa.gov.tw` | D-2 | **主機與 runner 皆 200**（run `38764893673`，`ForestFireAlertWCF` 7,765 bytes，2026-10-15）；B-12 可由主機直接抓 |
 | `data.taipei` | D-1 臺北路線 | 2026-10-15 probe：正式主機對 133345 資源回 200 |
-| `data.ntpc.gov.tw` | D-1 新北 | 已有上線來源引用；**無正式主機 probe 紀錄** |
-| `www.tgos.tw` | C-2 | **未驗證**，伺服器端程式只連過 `addr.tgos.tw`（另一主機） |
-| `newdatacenter.taichung.gov.tw`、`soa.tainan.gov.tw`、`openapi.kcg.gov.tw` | D-1 即時位置 | **未驗證**，同一類縣市站台中，新竹市、新竹縣兩邊逾時、嘉義市只有主機逾時，所以不能假設可達 |
-| `nhplatform.mohw.gov.tw` | §2.2 | **主機與 runner 兩邊逾時**（2026-10-15），非 relay 能解 |
+| `data.ntpc.gov.tw` | D-1 新北 | **主機與 runner 皆 200**（run `38764893673`）：125664 路線 3.6 MB（主機約 8 秒）、122972 即時位置 196 bytes（約 0.4 秒）；B-16／B-17 可由主機直接抓 |
+| `www.tgos.tw` | C-2 | **主機與 runner 皆 403**（run `38764893673`，5958 ZIP）；`data.gov.tw` 解析 API 兩邊皆 200。runner 抓取＋SSH loopback 也行不通 → B-9 改走**住宅網路手動匯入**（#677） |
+| `newdatacenter.taichung.gov.tw` | D-1 即時位置 | **主機與 runner 皆 200**（run `38764893673`，83558，約 1.3 秒）→ B-18 只做臺中（#680） |
+| `soa.tainan.gov.tw`、`openapi.kcg.gov.tw` | D-1 即時位置 | **主機與 runner 皆逾時 20 秒**（run `38764893673`）→ 臺南、高雄在覆蓋表標「暫無即時資料」，不做 |
+| `nhplatform.mohw.gov.tw` | §2.2 | **主機與 runner 兩邊逾時**（2026-10-15，run `38764893673` 再次確認），非 relay 能解；走住宅網路手動匯入（#678，D7） |
 | 已知封鎖（不得使用）：`od.cdc.gov.tw`、`nhi.gov.tw`、`opendata.mohw.gov.tw`、`ltcpap.mohw.gov.tw` | — | 見 [11-hosting-ops-incidents.md](../domains/11-hosting-ops-incidents.md)、[07](../domains/07-tools-disaster-environment-energy.md) |
 
 處置規則（沿用既有慣例）：被資料中心 IP 擋、但 GitHub runner 通的，由 runner 抓取後經 **SSH loopback**（`scripts/lib/ssh-loopback.mjs`）POST 回主機，**不打公開網址**（Cloudflare 會對 runner 發 JS 挑戰）；HawkHost 已關 `AllowTcpForwarding`，不可用 `-L` 轉發。
