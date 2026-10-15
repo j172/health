@@ -1810,6 +1810,37 @@ export const TABLE_DDL = {
       UNIQUE KEY uq_water_hardness_township (county, district)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 台水「水質資訊」(data.gov.tw 6308) 各淨水場檢驗結果 (issue #676 / Track B B-14)
+  // — 同一個「水質」分頁的第二個資料集。見 lib/server/waterQuality/plantQuality.ts。
+  //
+  // 這也是「最新狀態表」：UNIQUE KEY 只用 (office_code, plant_code)，絕不含
+  // 時間欄位（source_updated_on 是檔案頁尾的「更新日期」，synced_at 是本站同步
+  // 時間，兩者都只是一般欄位）。鍵不能只用 plant_code：真實檔案的 154 列裡有
+  // 4 個 7 碼淨水場代碼被兩座不同的淨水場共用（例如六龜 {0709} 與新威 {0710}
+  // 都是 [0747044]），加上區處代碼才全檔唯一。
+  //
+  // results_json 放該淨水場全部檢驗項目的 [名稱, 標準, 單位, 檢驗值]，值一律是
+  // 檔案裡的原字串（ND、<1、－－、0.30），所以沒有任何數值欄位。每列約 3 KB。
+  waterPlantQuality: `
+    CREATE TABLE IF NOT EXISTS water_plant_quality (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      office_code VARCHAR(8) NOT NULL,
+      plant_code VARCHAR(24) NOT NULL,
+      office_name VARCHAR(16) NOT NULL DEFAULT '',
+      plant_name VARCHAR(64) NOT NULL,
+      plant_name_en VARCHAR(96) NOT NULL DEFAULT '',
+      address VARCHAR(255) NOT NULL DEFAULT '',
+      service_area VARCHAR(32) NOT NULL DEFAULT '',
+      quality_pass CHAR(1) NULL,
+      results_json MEDIUMTEXT NOT NULL,
+      source_updated_on DATE NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_water_plant_quality (office_code, plant_code)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   moaDebrisFlowAlerts: `
     CREATE TABLE IF NOT EXISTS moa_debris_flow_alerts (
       id BIGINT NOT NULL AUTO_INCREMENT,

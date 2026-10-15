@@ -4,10 +4,10 @@
  * so a monthly tick is cheap headroom (cron `29 5 2 * *`, see registerJobs.ts).
  *
  * Structured as a list of independent steps (WATER_QUALITY_SYNC_STEPS) behind
- * one advisory lock and one ingest_runs row, so the second dataset planned for
- * this tab (B-14: 6308 淨水場檢驗結果 → water_plant_quality) is one new entry,
- * not a new job. A failing step is recorded in ingest_errors and does not stop
- * the others.
+ * one advisory lock and one ingest_runs row: 36605 鄉鎮總硬度 (hardness) and,
+ * since B-14 (#676), 6308 淨水場檢驗結果 (plantQuality) — a new dataset is one
+ * new entry, not a new job. A failing step is recorded in ingest_errors and
+ * does not stop the others.
  *
  * Egress: www.water.gov.tw already serves the live 停水公告 pipeline from this
  * same host, so the direct fetch is expected to work in production; the first
@@ -25,6 +25,12 @@ import {
   deleteStaleWaterHardness,
   upsertWaterHardness,
 } from "@/lib/server/waterQuality/queries";
+import { fetchWaterPlantQuality, WATER_PLANT_QUALITY_FEED_CODE } from "@/lib/server/waterQuality/plantQuality";
+import {
+  countWaterPlantQuality,
+  deleteStaleWaterPlantQuality,
+  upsertWaterPlantQuality,
+} from "@/lib/server/waterQuality/plantQualityQueries";
 import { planSnapshotReconcile } from "@/lib/server/waterQuality/reconcile";
 
 const SYNC_LOCK_NAME = "water_quality_sync_lock";
@@ -87,12 +93,43 @@ const syncWaterHardness = async ({ runId }: { runId: number }): Promise<WaterQua
 };
 
 /**
- * Add further datasets for the 水質 tab here (e.g. B-14's 6308 淨水場檢驗結果).
- * Each step must be independently safe to fail: throw on a bad fetch, never
- * write a partial snapshot, and leave its own table alone when it throws.
+ * 6308 淨水場檢驗結果 → water_plant_quality (issue #676, B-14). Same shape as
+ * the hardness step: fetch first (throws when the file has no parseable plant
+ * rows, leaving the table untouched), upsert, then drop plants the file no
+ * longer lists — but only when planSnapshotReconcile() accepts the snapshot.
+ * The file's own 「更新日期」 is stored on every row, so the page can show the
+ * data date instead of this site's sync time.
+ */
+const syncWaterPlantQuality = async ({ runId }: { runId: number }): Promise<WaterQualityStepCounts> => {
+  const { plants, sourceUpdatedOn } = await fetchWaterPlantQuality();
+  const existingCount = await countWaterPlantQuality();
+
+  const syncStartedAtSql = utcNowSql();
+  const { inserted, updated } = await upsertWaterPlantQuality(plants, sourceUpdatedOn);
+
+  const plan = planSnapshotReconcile({ fetchedCount: plants.length, existingCount });
+  let deleted = 0;
+  if (plan.shouldDelete) {
+    deleted = await deleteStaleWaterPlantQuality(syncStartedAtSql);
+  } else {
+    await writeIngestionError({
+      runId,
+      feedCode: WATER_PLANT_QUALITY_FEED_CODE,
+      message: `Water plant quality snapshot has ${plants.length} plants vs ${existingCount} stored (${plan.reason}); stale-row delete skipped.`,
+    });
+  }
+
+  return { fetched: plants.length, inserted, updated, deleted };
+};
+
+/**
+ * Add further datasets for the 水質 tab here. Each step must be independently
+ * safe to fail: throw on a bad fetch, never write a partial snapshot, and leave
+ * its own table alone when it throws.
  */
 export const WATER_QUALITY_SYNC_STEPS: readonly WaterQualitySyncStep[] = [
   { key: "hardness", feedCode: WATER_HARDNESS_FEED_CODE, run: syncWaterHardness },
+  { key: "plantQuality", feedCode: WATER_PLANT_QUALITY_FEED_CODE, run: syncWaterPlantQuality },
 ];
 
 const sumCounts = (steps: WaterQualityStepResult[]) =>
