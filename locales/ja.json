@@ -675,6 +675,7 @@
     "tsunamiWarning": "🌊 津波警報",
     "depthLabel": "深さ:",
     "officialReportLink": "公式速報 ↗",
+    "gdacsAlertLevel": "GDACS 警戒レベル:",
     "dataSource": "資料提供：中央気象署（CWA、台湾M4.0+）・米国地質調査所（USGS、世界M6.0+）"
   },
   "globalWatchTool": {

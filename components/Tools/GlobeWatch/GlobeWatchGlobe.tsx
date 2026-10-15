@@ -81,6 +81,11 @@ export interface EarthquakeGlobeLayerProps {
     tsunamiLabel: string;
     sourceLinkLabel: string;
     unnamedPlaceholder: string;
+    /** Issue #595 — optional so a caller that never fetches GDACS data
+     * (none currently exist, but nothing here requires it) doesn't have to
+     * pass a label it'll never use. `buildEarthquakePopupHtml` falls back
+     * to a plain "GDACS:" when omitted. */
+    gdacsAlertLabel?: string;
   };
 }
 
@@ -146,6 +151,13 @@ const buildEarthquakePopupHtml = (
   const tsunamiHtml = properties.isTsunami
     ? `<div style="color:#dc2626;font-weight:700;margin-top:4px;">🌊 ${escapeHtml(labels.tsunamiLabel)}</div>`
     : "";
+  // Issue #595 (AC: "點擊有警戒色的地震標記，彈出內容包含 GDACS 警戒等級") — only present
+  // when earthquakeGlobeFeatures.ts's matchGdacsEqEvent found a GDACS EQ
+  // event for this earthquake; an unmatched earthquake's popup is byte-for-
+  // byte what #588 already rendered.
+  const gdacsHtml = properties.gdacsAlertLevel
+    ? `<div style="margin-top:4px;font-weight:600;color:${escapeHtml(properties.gdacsColor ?? "#374151")};">${escapeHtml(labels.gdacsAlertLabel ?? "GDACS:")} ${escapeHtml(properties.gdacsAlertLevel)}</div>`
+    : "";
   const linkHtml = properties.url
     ? `<div style="margin-top:4px;"><a href="${escapeHtml(properties.url)}" target="_blank" rel="noopener noreferrer" style="color:#4f46e5;font-weight:600;">${escapeHtml(labels.sourceLinkLabel)}</a></div>`
     : "";
@@ -155,6 +167,7 @@ const buildEarthquakePopupHtml = (
     <div>${timeText}</div>
     ${depthHtml}
     ${tsunamiHtml}
+    ${gdacsHtml}
     ${linkHtml}
   </div>`;
 };
@@ -571,7 +584,13 @@ function ensureEarthquakeLayers(map: MapLibreMap): void {
       source: EARTHQUAKE_SOURCE_ID,
       paint: {
         "circle-radius": ["get", "markerRadiusPx"],
-        "circle-color": ["get", "markerColor"],
+        // Issue #595: `coalesce` picks the first non-null value, so a
+        // feature with a GDACS match (`gdacsColor` set by
+        // earthquakeGlobeFeatures.ts's toEarthquakeGlobeFeature) renders in
+        // its GDACS red/orange/green, and every other feature falls
+        // through to the original magnitude-based `markerColor` exactly as
+        // #588 painted it (AC: "沒有對應事件的地震維持原本規模配色").
+        "circle-color": ["coalesce", ["get", "gdacsColor"], ["get", "markerColor"]],
         "circle-opacity": 0.85,
         "circle-stroke-color": "#ffffff",
         "circle-stroke-width": 1,

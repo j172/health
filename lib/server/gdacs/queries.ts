@@ -2,7 +2,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
 import { memoizeQuery } from "@/lib/server/cache/memo";
-import type { IncomingGdacsEvent } from "@/lib/server/gdacs/types";
+import type { GdacsAlertLevel, IncomingGdacsEvent } from "@/lib/server/gdacs/types";
 
 /**
  * Upserts a batch of GDACS events keyed by (event_type, event_id) — matches
@@ -82,6 +82,74 @@ export const cleanupEndedGdacsEvents = async (retentionDays = 30): Promise<numbe
     );
     return (result as { affectedRows: number }).affectedRows;
   });
+
+/** A GDACS EQ-type event row, shaped for
+ * lib/tools/globeWatch/earthquakeGlobeFeatures.ts's `GdacsEqEventRow` (this
+ * file's output is this app's own naming/casing, matching that pure
+ * module's input contract field-for-field so callers never need an
+ * intermediate mapping step). */
+export interface RecentGdacsEqEvent {
+  eventId: string;
+  alertLevel: GdacsAlertLevel;
+  lat: number;
+  lng: number;
+  startTime: Date | null;
+  reportUrl: string | null;
+}
+
+interface GdacsEqEventRowPacket extends RowDataPacket {
+  event_id: string;
+  alert_level: GdacsAlertLevel;
+  lat: number;
+  lng: number;
+  start_time: Date | null;
+  report_url: string | null;
+}
+
+/**
+ * Fetches GDACS events of type EQ from the last `lookbackDays` days, for
+ * the earthquake item's globe-marker severity overlay (issue #595) — the
+ * first read query this file has needed (upsertGdacsEvents and
+ * cleanupEndedGdacsEvents are both writes). The actual earthquake↔GDACS
+ * matching (time/distance tolerance) happens entirely in
+ * lib/tools/globeWatch/earthquakeGlobeFeatures.ts's matchGdacsEqEvent, a
+ * pure function with no DB access — this function's only job is fetching
+ * candidates for it to match against.
+ *
+ * `lookbackDays` defaults wider (10 days) than both the globe's own 7-day
+ * earthquake lookback (GLOBE_EARTHQUAKE_LOOKBACK_HOURS) and the matcher's
+ * own time tolerance (GDACS_EQ_MATCH_TIME_WINDOW_HOURS, 6h) combined, so a
+ * GDACS event whose `start_time` lands just outside the earthquake
+ * lookback window is never excluded from the candidate set — the matcher
+ * itself still enforces the real 6-hour tolerance per earthquake.
+ *
+ * Uses `withConnectionFallback([], ...)` (not `withConnection`), the same
+ * degrade-to-empty convention `getTieredEarthquakes`/
+ * `getGlobeWatchEarthquakeCandidates` already use — a GDACS read failure
+ * must never take down the earthquake item's page, since the severity
+ * overlay this feeds is purely additive (AC: an unmatched earthquake simply
+ * keeps its magnitude-based color).
+ */
+export const getRecentEqGdacsEvents = async (lookbackDays = 10): Promise<RecentGdacsEqEvent[]> =>
+  memoizeQuery(`gdacs_recent_eq_${lookbackDays}`, async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<GdacsEqEventRowPacket[]>(
+        `SELECT event_id, alert_level, lat, lng, start_time, report_url
+         FROM gdacs_events
+         WHERE event_type = 'EQ'
+           AND (start_time IS NULL OR start_time >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY))`,
+        [lookbackDays],
+      );
+      return rows.map((row) => ({
+        eventId: row.event_id,
+        alertLevel: row.alert_level,
+        lat: Number(row.lat),
+        lng: Number(row.lng),
+        startTime: row.start_time,
+        reportUrl: row.report_url,
+      }));
+    }),
+  );
 
 /** GDACS event-type codes the "全球災害" (disasters) item shows — see
  * lib/tools/globeWatch/disastersTransform.ts for why EQ/TC are excluded. */
