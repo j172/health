@@ -32,6 +32,7 @@
 - 所有工具「資料先入 DB、讀 DB、不直連 API」，且必須有種子備援（零空白）。
 - 公民友站外連帶 `utm_source=health.j172.tw`；情境卡（`ContextualPartnerCard`）常駐、不可關閉。
 - 「進頁面即定位」為全站規則，不為 Lighthouse Best Practices 分數妥協。
+- **工具 catalog 的數量檢查是結構性的，不寫死計數**（#669）：`lib/server/tools/catalog.test.mjs` 驗每組 8–15 個工具、每個工具恰屬一組、slug 不重複、每個工具有 `keywords`／`directAnswer`／`lastUpdated`。新增或下架工具**不需要**改任何計數器——過去兩個 PR 各把同一行 `TOOL_CATALOG.length` 改成相同的新數字，git 不報衝突，合併後才在 CI 失敗。某組超過 15 個時請把工具移到有餘裕的組，不要調高上限。
 
 ---
 

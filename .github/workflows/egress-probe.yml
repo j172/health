@@ -18,7 +18,9 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    # 10, not 5: the Track B probe step (issue #669) added 10 more curls, each
+    # capped at 20s, on top of the existing ones.
+    timeout-minutes: 10
     steps:
       - name: Probe upstreams from the runner
         run: |
@@ -70,6 +72,58 @@ jobs:
           echo "moving that fetch to the runner will fix it. 403 in both places means"
           echo "it will not, and something else is required."
 
+      # issue #669 (B-0, parent: docs/2.0/track-b-opendata-phase2-3-spec.md):
+      # every Track B upstream host that spec §3 marks 未驗證, each probed with
+      # the exact resource the ticket that depends on it will fetch. This is
+      # the runner half; probe-from-host below runs the same list from the
+      # production host (scripts/gha-egress-probe-host.mjs), and
+      # tests/egress-probe-track-b-669.test.mjs keeps the two in sync. Read the
+      # pair together: reachable from the runner but not the host means "fetch
+      # on the runner, POST back over the SSH loopback"; blocked from both
+      # means neither relay helps (the nhplatform.mohw.gov.tw situation).
+      # Run once after this merges, then back-fill the spec's §3 table.
+      - name: "Probe Track B upstreams from the runner (issue #669)"
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+
+          # Large files get a Range request: only the status line matters, and
+          # a server that ignores Range is still cut off by --max-time.
+          probe_track_b() {
+            local label="$1"
+            local url="$2"
+            local range="${3:-}"
+            local args=( -sS -o /dev/null --max-time 20 -A "$UA" -w 'http_code=%{http_code} time=%{time_total}s size=%{size_download}' )
+            if [ -n "$range" ]; then args+=( -r "$range" ); fi
+            local out rc=0
+            out="$(curl "${args[@]}" "$url" 2>&1)" || rc=$?
+            printf '%-46s exit=%s %s\n' "$label" "$rc" "$out"
+          }
+
+          echo "=== Track B upstreams from a GitHub Actions runner ==="
+          # B-9: 派出所 5958 — the ZIP's file name carries a publish date, so
+          # the sync resolves the current URL from the data.gov.tw API first.
+          probe_track_b "data.gov.tw api 5958 (URL resolver)"     "https://data.gov.tw/api/v2/rest/dataset/5958"
+          probe_track_b "www.tgos.tw 5958 ZIP (B-9)"              "https://www.tgos.tw/tgos/VirtualDir/Product/9927eb8a-efed-40c0-8bc4-83121ad6834a/1150930.zip"
+          # B-16 / B-17: 新北 路線 125664 (3.6 MB CSV) + 即時位置 122972.
+          probe_track_b "data.ntpc.gov.tw 125664 routes (B-16)"   "https://data.ntpc.gov.tw/api/datasets/edc3ad26-8ae7-4916-a00b-bc6048d19bf8/csv/file" "0-1023"
+          probe_track_b "data.ntpc.gov.tw 122972 live (B-17)"     "https://data.ntpc.gov.tw/api/datasets/28ab4122-60e1-4065-98e5-abccb69aaca6/csv/file"
+          # B-18: 臺中 83558, 臺南 136310, 高雄 138256 即時位置.
+          probe_track_b "newdatacenter.taichung.gov.tw 83558 (B-18)" "https://newdatacenter.taichung.gov.tw/api/v1/no-auth/resource.download?rid=c923ad20-2ec6-43b9-b3ab-54527e99f7bc"
+          probe_track_b "soa.tainan.gov.tw 136310 (B-18)"         "https://soa.tainan.gov.tw/Api/Service/Get/2c8a70d5-06f2-4353-9e92-c40d33bcd969"
+          probe_track_b "openapi.kcg.gov.tw 138256 (B-18)"        "https://openapi.kcg.gov.tw/Api/Service/Get/aaf4ce4b-4ca8-43de-bfaf-6dc97e89cac0"
+          # opdadm.moi.gov.tw: a resource already used in production (176455)
+          # as the control, then 7317 失物招領's own path (spec §8 item 1;
+          # 28.9 MB, hence the range; D3 has since cancelled the 失物招領 tool,
+          # so that row is informational only). A1/A2 事故 resources are not
+          # probed: their URLs aren't recorded in the repo and D2 cancelled
+          # the feature.
+          probe_track_b "opdadm.moi.gov.tw 176455 (live control)" "https://opdadm.moi.gov.tw/api/v1/no-auth/resource/api/dataset/29E8E643-88ED-4952-B21E-BD42A3B7108C/resource/81B3145B-8134-4B01-9FAE-1D62638B4E78/download"
+          probe_track_b "opdadm.moi.gov.tw 7317 (spec §8)"        "https://opdadm.moi.gov.tw/api/v1/no-auth/resource/api/dataset/E1060AE4-ACCE-4960-9EDC-EF52681B9570/resource/82770E4D-D01D-441F-9FD4-FBE1E7B086F6/download" "0-1023"
+          # data.moa.gov.tw: used in production through the older
+          # Service/OpenData/TransService.aspx path; the /api/v1/ path that
+          # B-12 林火 will use was never probed individually.
+          probe_track_b "data.moa.gov.tw ForestFireAlertWCF (B-12)"      "https://data.moa.gov.tw/api/v1/ForestFireAlertWCF/?CreateDate=2026-10-15"
+
       - name: WRA resource shapes (runner egress)
         run: |
           node -e '
@@ -120,7 +174,11 @@ jobs:
     # every run this way — see scripts/gha-egress-probe-host.mjs).
     runs-on: ubuntu-latest
     environment: FTP_SERVER
-    timeout-minutes: 3
+    # 3 -> 10: the host probe now lists 18 targets, each capped at 20s by
+    # curl, so a day where several hosts time out must not cancel the run
+    # before it prints its report (issue #669;
+    # tests/egress-probe-track-b-669.test.mjs checks this arithmetic).
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
 

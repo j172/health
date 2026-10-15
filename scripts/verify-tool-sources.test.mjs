@@ -13,15 +13,17 @@ function getCatalogSlugs() {
   return matches;
 }
 
-test("TOOL_CATALOG has exactly 87 tools registered", () => {
-  // 82 baseline + #601 childcare-centers + #587 global-watch + #604
-  // child-subsidies + #612 postpartum-care + #613 early-intervention + #603
-  // social-welfare-centers + #615 ltc-benefits, all merged independently on
-  // 2026-10-14/15, minus #590's retirement of "earthquakes" and #591's
-  // retirement of "travel-epidemic-alerts" (both 301'd to global-watch's
-  // own item sub-routes).
+test("TOOL_CATALOG registers each tool slug exactly once", () => {
+  // issue #669 (B-0): this used to pin an exact tool count (`87`). A literal
+  // count that every tool-adding PR bumps is a silent merge-conflict hazard —
+  // two PRs that each add one tool change the same line to the same number,
+  // git reports no conflict, and the merged result is off by one. Structural
+  // checks hold for any catalog size; per-group size limits live in
+  // lib/server/tools/catalog.test.mjs.
   const slugs = getCatalogSlugs();
-  assert.equal(slugs.length, 87, `Expected 87 tools in catalog, got ${slugs.length}`);
+  assert.ok(slugs.length > 0, "expected to find tool slugs in catalog.ts");
+  const duplicates = slugs.filter((slug, index) => slugs.indexOf(slug) !== index);
+  assert.deepEqual(duplicates, [], "every tool slug must be registered exactly once");
 });
 
 test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () => {
