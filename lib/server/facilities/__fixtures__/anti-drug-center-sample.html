@@ -1,0 +1,73 @@
+<!--
+  Excerpt of https://antidrug.moj.gov.tw/lp-33-1-1-60.html ("各地方毒防中心",
+  反毒大本營/法務部) saved 2026-10-14 for issue #571.
+
+  The site paginates this list at 20 rows/page by default (lp-33-1.html),
+  with a footer reading "共22筆資料，第1/2頁" — but its own "每頁顯示" page-size
+  selector offers a 60-per-page option (<option value="lp-33-1-1-60.html">),
+  which returns all 22 rows on one page. Confirmed live 2026-10-14. This
+  fixture is that single-page response, trimmed to 4 of its 22 <tr> rows
+  (臺北市, 臺南市, 金門縣, 連江縣) inside the real #HelpCenter div/table — the
+  surrounding nav/menu/footer chrome and the other 18 rows were cut; every
+  element kept here is copied verbatim.
+
+  What matters about it:
+    - 臺北市: the plain case — one name, one address, no anomalies.
+    - 臺南市: the one real anomaly found across all 22 rows — its 地址 cell
+      is actually TWO full addresses for two offices glued together with a
+      full-width "、" and parenthetical office-name annotations
+      ("臺南市東區林森路一段418號(林森辦公室)、臺南市新營區東興路163號(東興辦公室)").
+      This breaks `normalizeAddress()`'s own "、" handling (which assumes it
+      only separates multiple house numbers on the *same* street, see
+      lib/server/facilities/csv.ts) — stripSecondaryAddress() in
+      antiDrugCenters.ts exists specifically to drop the second office's
+      address before normalizeAddress() ever sees the string.
+    - 金門縣: a hyphenated house number ("復興路1-12號") and an `&` in its
+      own href's query string (none here, kept for structural completeness
+      — this row's href is plain) plus being the second-to-last row,
+      confirming the parser doesn't special-case "near the end".
+    - 連江縣: the very last row in document order, confirming the parser
+      doesn't drop or mishandle the final <tr>.
+-->
+<html lang="zh-TW">
+  <body>
+    <div class="drug_table" id="HelpCenter">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">單位名稱</th>
+            <th scope="col">地址</th>
+            <th scope="col">網站</th>
+            <th scope="col">地圖</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td aria-label="單位名稱"><a rel="noopener noreferrer" target="_blank" href="https://nodrug.gov.taipei/" title="(另開新視窗)">臺北市政府毒品危害防制中心</a></td>
+            <td aria-label="地址">臺北市萬華區昆明街100號4樓</td>
+            <td aria-label="網站"><a title="網站(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://nodrug.gov.taipei/"><img src="xslGip/Chinese2016/images/icon_link.png" alt="網站"></a></td>
+            <td aria-label="地圖"><a title="展開地圖(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://goo.gl/maps/q6NZQooS7WK2"><img src="xslGip/Chinese2016/images/icon_loaction.png" alt="展開地圖"></a></td>
+          </tr>
+          <tr>
+            <td aria-label="單位名稱"><a rel="noopener noreferrer" target="_blank" href="https://health.tainan.gov.tw/list.asp?orcaid=5191EECF-34E5-4FDE-9ED2-D794D9759064" title="(另開新視窗)">臺南市政府毒品危害防制中心</a></td>
+            <td aria-label="地址">臺南市東區林森路一段418號(林森辦公室)、臺南市新營區東興路163號(東興辦公室)</td>
+            <td aria-label="網站"><a title="網站(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://health.tainan.gov.tw/list.asp?orcaid=5191EECF-34E5-4FDE-9ED2-D794D9759064"><img src="xslGip/Chinese2016/images/icon_link.png" alt="網站"></a></td>
+            <td aria-label="地圖"><a title="展開地圖(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://goo.gl/maps/aZaZsPM9fXw"><img src="xslGip/Chinese2016/images/icon_loaction.png" alt="展開地圖"></a></td>
+          </tr>
+          <tr>
+            <td aria-label="單位名稱"><a rel="noopener noreferrer" target="_blank" href="http://phb.kinmen.gov.tw/Default.aspx" title="(另開新視窗)">金門縣政府毒品危害防制中心</a></td>
+            <td aria-label="地址">金門縣金湖鎮新市里復興路1-12號</td>
+            <td aria-label="網站"><a title="網站(另開視窗)" target="_blank" rel="noopener noreferrer" href="http://phb.kinmen.gov.tw/Default.aspx"><img src="xslGip/Chinese2016/images/icon_link.png" alt="網站"></a></td>
+            <td aria-label="地圖"><a title="展開地圖(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://goo.gl/maps/JTQJ5rueUPN2"><img src="xslGip/Chinese2016/images/icon_loaction.png" alt="展開地圖"></a></td>
+          </tr>
+          <tr>
+            <td aria-label="單位名稱"><a rel="noopener noreferrer" target="_blank" href="https://www.matsuhb.gov.tw/" title="(另開新視窗)">連江縣政府毒品危害防制中心</a></td>
+            <td aria-label="地址">連江縣南竿鄉復興村216號</td>
+            <td aria-label="網站"><a title="網站(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://www.matsuhb.gov.tw/"><img src="xslGip/Chinese2016/images/icon_link.png" alt="網站"></a></td>
+            <td aria-label="地圖"><a title="展開地圖(另開視窗)" target="_blank" rel="noopener noreferrer" href="https://goo.gl/maps/pRbPmsygXEN2"><img src="xslGip/Chinese2016/images/icon_loaction.png" alt="展開地圖"></a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
