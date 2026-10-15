@@ -232,7 +232,7 @@ flowchart TD
 | **TFDA 食品營養成分資料庫** | [`/tools/food-nutrition`](https://health.j172.tw/tools/food-nutrition) | 衛生福利部食品藥物管理署 | 臺灣本土各類食材熱量、微量元素與維生素分析 |
 | **全國合法食品業者登錄查詢** | [`/tools/food-operators`](https://health.j172.tw/tools/food-operators) | 衛生福利部食品藥物管理署 | 非登不可（FDA）合法食品製造加工餐飲登記 |
 | **室內空氣品質認證場所** | [`/tools/iaq-premises`](https://health.j172.tw/tools/iaq-premises) | 環境部室內空品法列管名單 | 醫療院所、捷運站、大專院校優良室內空品場所 |
-| **各鄉鎮公所清潔隊收運** | [`/tools/cleaning-squads`](https://health.j172.tw/tools/cleaning-squads) | 環境部資源循環署 | 大型廢棄物清運、定點定時垃圾車與資源回收 |
+| **垃圾車與清潔隊** | [`/tools/cleaning-squads`](https://health.j172.tw/tools/cleaning-squads) | 臺北市／新北市政府（路線）、環境部資源循環署（清潔隊） | 臺北市、新北市垃圾車路線與收運時間，及各縣市清潔隊電話與地址（逐縣市標示覆蓋範圍） |
 | **生活碳足跡盤查與係數** | [`/tools/carbon-footprint`](https://health.j172.tw/tools/carbon-footprint) | 環境部氣候變遷署 | 日常通勤、電力瓦斯、差旅排碳量評估計算 |
 | **AQX 空品歷程即時監測** | [`/tools/aqx-monitoring`](https://health.j172.tw/tools/aqx-monitoring) | 環境部空氣品質監測網 | O3、SO2、CO、NO2 多重氣體污染物曲線圖 |
 | **綠色環保認證旅宿指南** | [`/tools/green-certifications`](https://health.j172.tw/tools/green-certifications) | 環境部國家綠色生活平臺 | 減塑、不主動提供備品之銅金銀級環保標章旅館（含綠色商店／環保餐廳／環保產品分頁） |

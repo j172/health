@@ -2102,18 +2102,33 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    // issue #674 (B-16) / owner decision D6: upgraded in place to 「垃圾車與清潔隊」 —
+    // same slug (no redirect, no sitemap/nav slug churn), new display name, and a
+    // 路線與收運時間 tab for the two cities that publish route data. No field below
+    // may say 「全國」: route data covers 臺北市 and 新北市 only.
     slug: "cleaning-squads",
     group: "environment-food",
-    lastUpdated: "2026-10-12",
+    lastUpdated: "2026-10-15",
 
     schemaType: "WebPage",
-    title: "地方清潔隊聯絡資訊查詢",
-    keywords: ["清潔隊", "垃圾車", "清潔隊電話"],
+    navLabel: "垃圾車與清潔隊",
+    title: "垃圾車與清潔隊：收運路線、時間與清潔隊電話",
+    keywords: ["垃圾車", "垃圾車路線", "垃圾車時間", "收運時間", "清潔隊", "清潔隊電話", "資源回收", "廚餘回收"],
     description:
-      "查詢全國各縣市地方清潔隊聯絡地址與電話，供民眾洽詢垃圾清運、資源回收等相關業務。資料來源：環境部開放資料。",
+      "查詢臺北市、新北市垃圾車的收運路線、停靠點與到站時間（新北市另含一般垃圾、資源回收、廚餘的收運星期），並提供各縣市地方清潔隊聯絡地址與電話。路線資料目前只涵蓋臺北市與新北市，其他縣市請洽當地清潔隊。資料來源：臺北市、新北市政府開放資料，環境部開放資料。",
     directAnswer:
-      "查詢全國各縣市地方環保局所屬清潔隊之聯絡地址與電話，供垃圾清運、資源回收、大型廢棄物申報等業務洽詢。",
+      "垃圾車與清潔隊工具提供臺北市、新北市垃圾車的路線與各站收運時間；其他縣市尚無路線資料，請改查地方清潔隊的聯絡電話與地址洽詢。",
     scientificBasis: [
+      {
+        title: "臺北市垃圾車點位路線資訊（data.gov.tw 136515）",
+        authority: "臺北市政府",
+        url: "https://data.gov.tw/dataset/136515",
+      },
+      {
+        title: "新北市垃圾車路線（data.gov.tw 125664）",
+        authority: "新北市政府",
+        url: "https://data.gov.tw/dataset/125664",
+      },
       {
         title: "地方清潔隊聯絡資訊開放資料",
         authority: "環境部 (MOENV)",
@@ -2122,6 +2137,11 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
     relatedSlugs: ["green-certifications", "public-toilets"],
     faqs: [
+      {
+        question: "哪些縣市查得到垃圾車路線與收運時間？",
+        answer:
+          "目前只有臺北市與新北市有路線與收運時間資料；其他縣市尚無路線資料，請洽當地清潔隊（本頁「清潔隊聯絡資訊」分頁可查各縣市清潔隊的地址與電話）。表定時間以各清潔隊公告為準，實際到站時間可能因交通或天候調整。",
+      },
       {
         question: "清潔隊可以協助處理哪些業務？",
         answer:
