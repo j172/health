@@ -3,6 +3,13 @@ import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import { displayDate } from "@/lib/format/news";
+import {
+  buildCategoryIndexLines,
+  buildGuideIndexLines,
+  buildLanguageLines,
+  buildNearbyIndexLines,
+  buildTranslatedPageLines,
+} from "@/lib/server/content/sitewideLlmsIndex";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,16 +44,29 @@ export async function GET(): Promise<Response> {
     `- [RSS 2.0 Feed](${baseUrl}/feed.xml)`,
     `- [XML Sitemap](${baseUrl}/sitemap.xml)`,
     `- [Google News Sitemap](${baseUrl}/news-sitemap.xml)`,
+    `- [生活情境指南 (Guides)](${baseUrl}/guides)`,
+    `- [我附近 (Nearby)](${baseUrl}/nearby)`,
     `- [AI Assistant Official Profile (Hey AI)](${baseUrl}/llm-info)`,
+    `- [無障礙宣告 (Accessibility)](${baseUrl}/accessibility)`,
+    `- [隱私權政策 (Privacy)](${baseUrl}/privacy)`,
     `- [LLM Full Knowledge Base](${baseUrl}/llms-full.txt)`,
     "",
     "## 多語言支援 (Multi-language Support)",
-    `- [正體中文 (zh-TW, zh-Hant)](${baseUrl}): 官方權威標準`,
-    `- [English (en)](${baseUrl}?lang=en): 全球公衛介面支援`,
-    `- [日本語 (ja)](${baseUrl}?lang=ja): 外国人旅行者・在住者向け台湾医療・公衆衛生情報`,
-    `- [한국어 (ko)](${baseUrl}?lang=ko): 대만 여행객 및 체류자를 위한 공공의료/보건 서비스`,
+    ...buildLanguageLines(baseUrl),
     "",
-    "## 30+ 款健康計算器與公衛資料庫 (Tools & Registries)",
+    "## 外語版頁面 (Translated Pages: en / ja / ko)",
+    ...buildTranslatedPageLines(baseUrl),
+    "",
+    "## 工具分類 (Tool Categories)",
+    ...buildCategoryIndexLines(baseUrl),
+    "",
+    "## 生活情境指南 (Life-Situation Guides)",
+    ...buildGuideIndexLines(baseUrl),
+    "",
+    "## 我附近 (Nearby)",
+    ...buildNearbyIndexLines(baseUrl),
+    "",
+    `## ${TOOL_CATALOG.length} 款健康計算器與公衛資料庫 (Tools & Registries)`,
     "",
   ];
 

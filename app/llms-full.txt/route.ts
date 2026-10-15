@@ -3,6 +3,13 @@ import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
 import { getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 import { displayDate } from "@/lib/format/news";
+import {
+  buildCategoryFullLines,
+  buildGuideFullLines,
+  buildLanguageLines,
+  buildNearbyFullLines,
+  buildTranslatedPageLines,
+} from "@/lib/server/content/sitewideLlmsIndex";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,6 +39,11 @@ export async function GET(): Promise<Response> {
     `- Canonical Base URL: ${baseUrl}`,
     `- Short AI Index: ${baseUrl}/llms.txt`,
     `- AI Assistant Official Profile (Hey AI): ${baseUrl}/llm-info`,
+    `- Tools Index: ${baseUrl}/tools`,
+    `- Life-Situation Guides: ${baseUrl}/guides`,
+    `- Nearby: ${baseUrl}/nearby`,
+    `- Accessibility: ${baseUrl}/accessibility`,
+    `- Privacy: ${baseUrl}/privacy`,
     `- RSS 2.0 Feed: ${baseUrl}/feed.xml`,
     `- XML Sitemap: ${baseUrl}/sitemap.xml`,
     `- Google News Sitemap: ${baseUrl}/news-sitemap.xml`,
@@ -39,7 +51,22 @@ export async function GET(): Promise<Response> {
     "## 授權與 AI 取用條款 (License & Open Access)",
     `- [SPDX: MIT AND CC0-1.0](${baseUrl}/LICENSE): 專案程式碼採 MIT License；本全量知識庫、結構化中繼資料與計算公式採 CC0-1.0 Universal 公眾領域宣告，供 AI 與研究人員自由取用。`,
     "",
-    "## 30+ 款健康計算工具、評估量表與公衛資料庫完整規格",
+    "## 多語言支援 (Multi-language Support)",
+    ...buildLanguageLines(baseUrl),
+    "",
+    "## 外語版頁面 (Translated Pages: en / ja / ko)",
+    ...buildTranslatedPageLines(baseUrl),
+    "",
+    "## 工具分類頁 (Tool Category Hubs)",
+    "",
+    ...buildCategoryFullLines(baseUrl),
+    "## 生活情境指南 (Life-Situation Guides)",
+    "",
+    ...buildGuideFullLines(baseUrl),
+    "## 我附近 (Nearby)",
+    "",
+    ...buildNearbyFullLines(baseUrl),
+    `## ${TOOL_CATALOG.length} 款健康計算工具、評估量表與公衛資料庫完整規格`,
     "",
   ];
 
