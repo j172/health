@@ -11,6 +11,7 @@ import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -577,7 +578,10 @@ export default function PublicArtContent() {
 
                     {item.sourceUrl && (
                       <a
-                        href={item.sourceUrl}
+                        href={appendOutboundUtm(item.sourceUrl, {
+                          medium: "tool_outbound",
+                          campaign: "public_art",
+                        })}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 rounded-xl bg-indigo-600 px-3 py-2 text-center text-xs font-semibold text-white shadow-xs transition-colors hover:bg-indigo-500"

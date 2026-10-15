@@ -5,6 +5,7 @@ import Image from "next/image";
 import LoadingOrb from "@/components/ui/LoadingOrb";
 import Pagination from "@/components/Tools/Pagination";
 import { usePagination } from "@/lib/hooks/usePagination";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import type { BookItem, BookCategoryConfig, BookPlatform } from "@/lib/server/books/types";
 
 export default function LatestBooksContent() {
@@ -405,7 +406,10 @@ export default function LatestBooksContent() {
                   </div>
 
                   <a
-                    href={book.productUrl}
+                    href={appendOutboundUtm(book.productUrl, {
+                      medium: "tool_outbound",
+                      campaign: "latest_books",
+                    })}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-zinc-100 py-2 text-xs font-semibold text-zinc-800 transition hover:bg-indigo-50 hover:text-indigo-600 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-indigo-950/60 dark:hover:text-indigo-300"

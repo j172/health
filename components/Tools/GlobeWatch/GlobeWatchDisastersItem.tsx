@@ -10,6 +10,7 @@ import {
 import { GDACS_DISASTER_TYPES, DISASTER_TYPE_NAMES, resolveDisasterTypeName, type GdacsDisasterType } from "@/lib/tools/globeWatch/disasterTypeNames";
 import { GDACS_ALERT_LEVELS, GDACS_ALERT_LEVEL_NAMES, resolveAlertLevelName } from "@/lib/tools/globeWatch/disasterAlertLevelNames";
 import { resolveCountryName } from "@/lib/tools/globeWatch/disasterCountryNames";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import GlobeWatchClient from "./GlobeWatchClient";
 import GlobeWatchItemTabs from "./GlobeWatchItemTabs";
 
@@ -178,7 +179,10 @@ export default function GlobeWatchDisastersItem({ rows }: { rows: DisasterEventR
                         <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">{item.title}</p>
                         {item.reportUrl && (
                           <a
-                            href={item.reportUrl}
+                            href={appendOutboundUtm(item.reportUrl, {
+                              medium: "tool_outbound",
+                              campaign: "global_watch_disasters",
+                            })}
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={(e) => e.stopPropagation()}
