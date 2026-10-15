@@ -31,6 +31,27 @@
 | `deploy-ftps.yml` | **僅手動觸發**（`workflow_dispatch`） | merge 到 main 不會自動部署 |
 | `egress-probe.yml`、`php-lint.yml`、`cloudflare-config.yml`、`purge-cloudflare-cache.yml` | 手動／觸發式 | — |
 
+### 1.3 半年人工匯入清單（住宅網路手動執行）
+
+這些來源屬於 `*.mohw.gov.tw` 家族：2026-10-15 的 egress probe 證實**正式主機與 GitHub runner 兩邊都逾時**（IP 範圍封鎖，不是程式問題），所以放不進 `six-monthly-sync.yml`，也**不蓋 runner relay**（runner 同樣被擋；擁有者決議 Track B spec §7.1 D7）。做法是每約 6 個月（1 月、7 月 `six-monthly-sync.yml` 跑完之後）由人從住宅／辦公室網路手動執行下列腳本。腳本都從環境變數 `ADMIN_SECRET`（= production 的 `x-rss-sync-admin-secret`）取得密鑰，只出現在那一次指令的環境裡，不寫進任何檔案、不貼進對話或 log。
+
+| 腳本 | 上游 | 寫入 |
+|---|---|---|
+| `scripts/import-mohw-ltc-gis.mjs` | ltcpgis.mohw.gov.tw（10 份長照 CSV） | `long_term_care`（`mohw_ltc_full` 及失智／家庭照顧者／社區關懷據點等子來源） |
+| `scripts/import-mohw-facilities.mjs` | ltcpap.mohw.gov.tw `hpa.csv` | `health_check` |
+| `scripts/import-mohw-disability-welfare.mjs` | opendata.mohw.gov.tw | `disability_welfare` |
+| `scripts/import-mohw-elder-welfare.mjs` | opendata.mohw.gov.tw | `elder_welfare` |
+| `scripts/import-mohw-social-welfare-centers.mjs`（160903） | opendata.mohw.gov.tw | `social_welfare_center` |
+| `scripts/import-nhplatform-nursing-institutions.mjs`（115950，#678） | nhplatform.mohw.gov.tw 全國開業護理機構清冊 | `postpartum_care`（`nhplatform_115950_postpartum`）＋ `long_term_care`（`nhplatform_115950_ltc`，一般護理之家／居家護理所） |
+
+115950 的操作步驟（在 repo 根目錄、住宅／辦公室網路）：
+
+1. 先試跑：`node scripts/import-nhplatform-nursing-institutions.mjs --dry-run`（只下載＋解析並印出筆數，不需密鑰、不送出任何東西）。預期約 1,494 列：產後護理之家 241、其餘約 1,253 筆併入 `long_term_care`。
+2. 正式匯入：`ADMIN_SECRET=<密鑰> node scripts/import-nhplatform-nursing-institutions.mjs`。每 500 筆一批 POST 到 `/api/admin/facilities-import`，遇到暫時性 502／逾時會指數退避重試；最後會自動讀公開 API 核對 production 的筆數，低於剛匯入的筆數會印 `WARNING` 並以結束碼 2 結束。
+3. 若住宅網路也下載不到，可用瀏覽器從 <https://data.gov.tw/dataset/115950> 另存 CSV，再加 `--file <路徑>`。
+4. 匯入只做 upsert，**不會刪除**已從名冊消失（歇業）的機構；舊列會留著直到另行清理。
+5. `/tools/postpartum-care` 與 `/tools/long-term-care` 的「一般護理之家／居家護理所」分類會顯示「資料日期」（該來源在本站最近一次匯入的日期）；表內沒有任何一列時顯示「資料暫缺」，不會假裝附近沒有機構（`lib/format/facilityDataStatus.ts`）。
+
 ---
 
 ## 2. 長期有效的決策

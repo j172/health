@@ -20,6 +20,13 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 import CopyAddressButton from "@/components/Tools/CopyAddressButton";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import FacilityDataStatusNotice from "@/components/Facilities/FacilityDataStatusNotice";
+import {
+  isDataStatusActive,
+  isFacilityDataMissing,
+  type FacilityDataStatus,
+  type FacilityDataStatusConfig,
+} from "@/lib/format/facilityDataStatus";
 
 const FacilityMap = dynamic(() => import("@/components/Facilities/FacilityMap"), { ssr: false });
 
@@ -80,6 +87,15 @@ export interface FacilitySearchConfig {
    * without another change to this component.
    */
   extraFields?: { key: string; label: string }[];
+  /**
+   * Opt-in (issue #678, Track B B-8) for tools backed by a source that can
+   * only be refreshed by a manual residential-network import
+   * (data.gov.tw 115950 — /tools/postpartum-care and the 護理之家 categories of
+   * /tools/long-term-care). Shows the 資料日期 of that source, or an honest
+   * 「資料暫缺」 notice instead of the generic "附近查無收錄…" empty state when
+   * the source has zero rows. See lib/format/facilityDataStatus.ts.
+   */
+  dataStatus?: FacilityDataStatusConfig;
 }
 
 interface FacilityItem {
@@ -243,6 +259,7 @@ export default function FacilitySearchContent({
     charityFilter,
     extraFields,
     emptyStateCounty,
+    dataStatus,
   } = config;
 
   const { t, locale } = useLanguage();
@@ -334,6 +351,8 @@ export default function FacilitySearchContent({
   const [total, setTotal] = useState<number | null>(null);
   /** Size of the whole dataset for this facility type. */
   const [allTotal, setAllTotal] = useState<number | null>(null);
+  /** Row count + import date of `config.dataStatus`'s source; null until the API reports it (unknown, never "missing"). */
+  const [sourceStatus, setSourceStatus] = useState<FacilityDataStatus | null>(null);
   /** True when the rendered list came from the widened fallback radius rather than the configured one. */
   const [widenedRadius, setWidenedRadius] = useState(false);
   /** Number of results found in the initial radius before widening. */
@@ -358,7 +377,9 @@ export default function FacilitySearchContent({
   useEffect(() => {
     let cancelled = false;
 
-    const load = async (radius: number): Promise<{ facilities: FacilityItem[]; total?: number; allTotal?: number }> => {
+    const load = async (
+      radius: number,
+    ): Promise<{ facilities: FacilityItem[]; total?: number; allTotal?: number; dataStatus?: FacilityDataStatus }> => {
       const params = new URLSearchParams({
         type: facilityType,
         limit: String(pageSize),
@@ -372,6 +393,7 @@ export default function FacilitySearchContent({
       if (category) params.set("category", category);
       if (serviceMethod) params.set("serviceMethod", serviceMethod);
       if (onlyCharity) params.set("charity", "1");
+      if (dataStatus && isDataStatusActive(dataStatus, category)) params.set("dataStatusSource", dataStatus.sourceKey);
       if (effectiveSort) params.set("sort", effectiveSort);
 
       // Coordinates for distance calculations: county centroid takes priority
@@ -413,6 +435,7 @@ export default function FacilitySearchContent({
           setFacilities(data.facilities);
           setTotal(typeof data.total === "number" ? data.total : null);
           setAllTotal(typeof data.allTotal === "number" ? data.allTotal : null);
+          setSourceStatus(data.dataStatus ?? null);
           setWidenedRadius(widened);
           setInitialNearbyCount(widened ? originalCount : null);
           setError(false);
@@ -443,6 +466,7 @@ export default function FacilitySearchContent({
     pageSize,
     offset,
     page,
+    dataStatus,
   ]);
 
   const handleCountyChange = (c: string) => {
@@ -531,6 +555,12 @@ export default function FacilitySearchContent({
     : null;
 
   const totalCount = total !== null ? total : pagedFacilities.length;
+  // Issue #678: while the manually imported source is known to hold zero rows,
+  // the notice above explains it — the generic "附近查無收錄…" line would read
+  // like "none exist near you", so it is hidden unless the user is also
+  // filtering (then "no match for that search" is still true and useful).
+  const dataMissing = isFacilityDataMissing(dataStatus, sourceStatus, category);
+  const hideGenericEmptyState = dataMissing && !keyword && !county && !district;
 
   return (
     <div className="space-y-6">
@@ -711,6 +741,10 @@ export default function FacilitySearchContent({
         facilityTypeName={displayTitle || t("facilitySearch.defaultFacilityTypeName", "機構據點")}
       />
 
+      {dataStatus && isDataStatusActive(dataStatus, category) && !error && (
+        <FacilityDataStatusNotice config={dataStatus} status={sourceStatus} />
+      )}
+
       {loading && (
         <div className="flex justify-center py-8">
           <LoadingOrb size={32} />
@@ -737,13 +771,15 @@ export default function FacilitySearchContent({
           )}
 
           {totalCount === 0 ? (
-            <p className="py-8 text-center text-neutral-500 dark:text-slate-400">
-              {county && displayEmptyStateCounty
-                ? displayEmptyStateCounty
-                : keyword || county
-                  ? displayEmptyStateWithKeyword
-                  : displayEmptyStateNoKeyword}
-            </p>
+            hideGenericEmptyState ? null : (
+              <p className="py-8 text-center text-neutral-500 dark:text-slate-400">
+                {county && displayEmptyStateCounty
+                  ? displayEmptyStateCounty
+                  : keyword || county
+                    ? displayEmptyStateWithKeyword
+                    : displayEmptyStateNoKeyword}
+              </p>
+            )
           ) : (
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500 dark:text-slate-400">

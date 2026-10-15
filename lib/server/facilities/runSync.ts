@@ -135,10 +135,13 @@ const SOURCES: FacilitySourceEntry[] = [
   // (241 rows, the new /tools/postpartum-care) and additional
   // facilityType "long_term_care" rows for 一般護理之家/居家護理所 (merged into
   // the existing /tools/long-term-care as two new category filter values).
-  // Self-contained WGS84 coordinates — no geocode backfill needed. Host
-  // reachability from the production host is unconfirmed; see the comment
-  // above fetchNhplatformNursingInstitutions() and
-  // .github/workflows/egress-probe.yml.
+  // Self-contained WGS84 coordinates — no geocode backfill needed. Issue #678:
+  // the 2026-10-15 egress probes show nhplatform.mohw.gov.tw times out from
+  // BOTH the production host and GitHub runners, so this entry is expected to
+  // fail here (harmlessly — fetch-before-delete) until that block is lifted;
+  // the working refresh path is the manual residential-network import
+  // scripts/import-nhplatform-nursing-institutions.mjs (same source keys),
+  // listed in docs/domains/10-scheduling-sync-ci.md §1.3.
   { key: "nhplatform_115950", fetch: fetchNhplatformNursingInstitutions },
   // #614: 母嬰親善醫療院所地圖改用縣市真實資料，取代 build-expansion-seeds.mjs
   // 的 4 筆手寫假資料。5 個縣市各自獨立來源鍵，可分別重跑——高雄（86397）刻意
