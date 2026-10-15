@@ -423,7 +423,8 @@
     "resetSearchButton": "Reset search",
     "altNumberLabel": "Alternative: ",
     "dialButton": "📞 Call now",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "Check a suspicious URL"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "Sudden severe illness, intense chest pain, or a life-threatening situation? Call ",

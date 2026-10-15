@@ -161,6 +161,12 @@ export const CIVIC_PARTNER_LINKS: FooterLinkModel[] = [
     label: "衛福部醫事性平專區",
   },
   { href: "https://council2026.taiwangogo.tw/", label: "2026 政治人物前科" },
+  // issue #575: 從防詐騙查詢與緊急電話頁導流到這兩個官方防詐／反毒資源站。
+  // `buildFooterModel` below already wraps every entry in this array with
+  // `appendOutboundUtm`, so adding a plain {href, label} pair here is
+  // sufficient to get the UTM tagging — no extra wrapping needed.
+  { href: "https://165.npa.gov.tw/", label: "165 全民防騙網" },
+  { href: "https://antidrug.moj.gov.tw/", label: "反毒大本營" },
 ];
 
 export interface BuildFooterModelOptions {
@@ -179,7 +185,8 @@ export interface BuildFooterModelOptions {
  * links), "工具分類" (the same 7 categories as the Nav, linking to the
  * future `/tools/category/[slug]` landing pages), "生活情境" (the 5
  * `GUIDES` hubs, linking to `/guides/[slug]`), and "公民倡議與友站" (the
- * existing 7 civic-partner links above). Deliberately has no "熱門工具"
+ * 9 civic-partner links above, including the 2 anti-fraud/anti-drug
+ * resources added by issue #575). Deliberately has no "熱門工具"
  * column (explicitly ruled out in §B) and no individual `/tools/<slug>`
  * tool links anywhere in the output — the category column links to
  * category pages, not tools.

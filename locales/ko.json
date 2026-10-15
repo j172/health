@@ -426,7 +426,8 @@
     "resetSearchButton": "검색 조건 재설정",
     "altNumberLabel": "대체 번호: ",
     "dialButton": "📞 원터치 발신",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "의심스러운 URL 확인"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "갑작스러운 중증, 심한 가슴 통증 또는 생명이 위급한 상황인가요? 즉시 ",
