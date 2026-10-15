@@ -1976,6 +1976,39 @@ export const TABLE_DDL = {
       KEY idx_gdacs_end_time (end_time)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // WHO Disease Outbreak News (DON) 同步 (issue #596 / #583) — 供「國際疫情」
+  // 項目的 WHO 圖釘疊加使用（UI 在後續 ticket 實作，本表先就位）。見
+  // lib/server/who/。
+  //
+  // UNIQUE KEY 刻意只用 article_id（WHO 的 DonId，例如 "2026-DON620"）——
+  // 絕對不能把 publish_date 或任何時間欄位放進去。這個 repo 已經在
+  // cwa_station_weather／cwa_rainfall／aqi_readings／fraud_domains／
+  // gdacs_events 等表上真實發生過「UNIQUE KEY 含時間欄位 → 每次同步的新時間值
+  // 都被當成新 row → 表無限膨脹」的事故（見
+  // migrations/20260921_cwa_station_weather_narrow_unique_key.sql 等修復）。
+  // WHO 偶爾會修訂已發佈的 DON（同一 article_id，內容或發布時間更新），若把
+  // publish_date 放進 key，每一次修訂都會多插一列，而不是覆蓋舊的一列 ——
+  // publish_date 因此是一般欄位：同步時對同一 article_id 做 UPDATE 覆蓋成最新
+  // 狀態。
+  whoOutbreakNews: `
+    CREATE TABLE IF NOT EXISTS who_outbreak_news (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      article_id VARCHAR(32) NOT NULL,
+      title VARCHAR(500) NOT NULL,
+      publish_date DATETIME NOT NULL,
+      disease_raw VARCHAR(500) NOT NULL,
+      disease_mapped VARCHAR(200) NULL,
+      country_iso VARCHAR(2) NULL,
+      url VARCHAR(500) NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_who_outbreak_news_article (article_id),
+      KEY idx_who_outbreak_news_publish_date (publish_date),
+      KEY idx_who_outbreak_news_country_iso (country_iso)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

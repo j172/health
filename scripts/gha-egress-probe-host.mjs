@@ -41,6 +41,15 @@ const targets = {
   // source's scheduled runs.
   "nhplatform.mohw.gov.tw (115950 CSV)":
     "https://nhplatform.mohw.gov.tw/dl-3820-74883655f255416abc752bef29cbd7aa.html",
+  // issue #596 (parent #583): WHO Disease Outbreak News sync. Reachable
+  // directly from the sandbox that built lib/server/who/ on 2026-10-15
+  // (HTTP 200, real live data) — never confirmed from the production host.
+  // Run this before relying on the who-don-cron job's scheduled runs; if
+  // it comes back blocked here, lib/server/who/sources/who.ts needs to
+  // switch to the runner-fetch + SSH-loopback-POST pattern instead (see
+  // this script's own module doc comment).
+  "www.who.int api/news DON list":
+    "https://www.who.int/api/news/diseaseoutbreaknews?sf_provider=dynamicProvider372&sf_culture=en&$top=1",
 };
 
 const main = () => {
