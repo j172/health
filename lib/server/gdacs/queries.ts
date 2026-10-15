@@ -1,5 +1,7 @@
-import { withConnection } from "@/lib/server/db/mysql";
+import type { RowDataPacket } from "mysql2/promise";
+import { withConnection, withConnectionFallback } from "@/lib/server/db/mysql";
 import { chunkedUpsert } from "@/lib/server/db/chunkedUpsert";
+import { memoizeQuery } from "@/lib/server/cache/memo";
 import type { IncomingGdacsEvent } from "@/lib/server/gdacs/types";
 
 /**
@@ -80,3 +82,62 @@ export const cleanupEndedGdacsEvents = async (retentionDays = 30): Promise<numbe
     );
     return (result as { affectedRows: number }).affectedRows;
   });
+
+/** GDACS event-type codes the "全球災害" (disasters) item shows — see
+ * lib/tools/globeWatch/disastersTransform.ts for why EQ/TC are excluded. */
+const DISASTER_EVENT_TYPES = ["FL", "VO", "DR", "WF"] as const;
+
+/** Row shape returned by getCurrentGdacsDisasterEvents() — mirrors the
+ * gdacs_events columns the disasters item's pure transform module
+ * (lib/tools/globeWatch/disastersTransform.ts) actually needs, mapped from
+ * snake_case DB columns to camelCase. */
+export interface GdacsDisasterEventRow {
+  eventType: string;
+  eventId: string;
+  alertLevel: string;
+  countryIso: string | null;
+  lat: number;
+  lng: number;
+  startTime: string | null;
+  endTime: string | null;
+  title: string;
+  reportUrl: string | null;
+}
+
+const mapDisasterEventRow = (row: RowDataPacket): GdacsDisasterEventRow => ({
+  eventType: row.event_type,
+  eventId: row.event_id,
+  alertLevel: row.alert_level,
+  countryIso: row.country_iso ?? null,
+  lat: Number(row.lat),
+  lng: Number(row.lng),
+  startTime: row.start_time ? new Date(row.start_time).toISOString() : null,
+  endTime: row.end_time ? new Date(row.end_time).toISOString() : null,
+  title: row.title,
+  reportUrl: row.report_url ?? null,
+});
+
+/**
+ * Issue #594 (parent #583) — fetches every currently-active FL/VO/DR/WF
+ * event (the "全球災害" item's data source): "currently active" means
+ * `end_time IS NULL` (still ongoing, per GDACS) or `end_time` hasn't passed
+ * yet, same "ongoing" semantics cleanupEndedGdacsEvents() already uses for
+ * retention. EQ/TC are excluded at the SQL level (defense in depth — the
+ * pure transform module filters them again too). Memoized for 60s (same
+ * convention as lib/server/earthquakes/queries.ts) since this is read on
+ * every /tools/global-watch/disasters page render.
+ */
+export const getCurrentGdacsDisasterEvents = async (): Promise<GdacsDisasterEventRow[]> =>
+  memoizeQuery("gdacs_disaster_events_current", async () =>
+    withConnectionFallback([], async (conn) => {
+      const [rows] = await conn.query<RowDataPacket[]>(
+        `SELECT event_type, event_id, alert_level, country_iso, lat, lng, start_time, end_time, title, report_url
+         FROM gdacs_events
+         WHERE event_type IN (?, ?, ?, ?)
+           AND (end_time IS NULL OR end_time >= UTC_TIMESTAMP())
+         ORDER BY start_time DESC`,
+        [...DISASTER_EVENT_TYPES],
+      );
+      return rows.map(mapDisasterEventRow);
+    }),
+  );

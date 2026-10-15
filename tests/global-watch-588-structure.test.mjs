@@ -165,12 +165,28 @@ test("GlobeWatchGlobe's flyTo effect reuses resolveCameraTransition/resolveFlyDu
 });
 
 test("ensureSatelliteLayer stacks the satellite raster BELOW the earthquake layers when they already exist, so satellite never occludes markers", () => {
-  assert.match(globeSrc, /EARTHQUAKE_TSUNAMI_LAYER_ID\)\s*\?\s*EARTHQUAKE_TSUNAMI_LAYER_ID\s*:\s*firstSymbolLayerId/);
+  // Issue #594 grew this ternary with a disasters-layer branch between the
+  // earthquake check and the final `firstSymbolLayerId` fallback (see the
+  // next test) — relaxed from an exact `: firstSymbolLayerId` suffix to
+  // "falls through to something, eventually", so a later item's own branch
+  // doesn't need to keep editing this specific assertion (same
+  // containment-over-exact-snapshot convention #589 used for
+  // GLOBE_WATCH_ITEMS.length).
+  assert.match(globeSrc, /EARTHQUAKE_TSUNAMI_LAYER_ID\)\s*\?\s*EARTHQUAKE_TSUNAMI_LAYER_ID\s*:/);
+});
+
+test("ensureSatelliteLayer also stacks the satellite raster BELOW the disasters layer when it exists (issue #594), before falling back to firstSymbolLayerId", () => {
+  assert.match(globeSrc, /DISASTER_CIRCLE_LAYER_ID\)\s*\?\s*DISASTER_CIRCLE_LAYER_ID\s*:\s*firstSymbolLayerId/);
 });
 
 test("GlobeWatchClient forwards an optional earthquakes prop straight to GlobeWatchGlobe", () => {
   assert.match(clientSrc, /earthquakes\?:\s*EarthquakeGlobeLayerProps/);
-  assert.match(clientSrc, /<GlobeWatchGlobe locale=\{locale\} reducedMotion=\{reducedMotion\} earthquakes=\{earthquakes\}\s*\/>/);
+  // Issue #594 added a sibling `disasters` prop forwarded on the same
+  // element — relaxed from one single-line exact-JSX match to two
+  // substring checks so a later item's own added prop doesn't need to keep
+  // editing this specific assertion.
+  assert.match(clientSrc, /<GlobeWatchGlobe locale=\{locale\} reducedMotion=\{reducedMotion\} earthquakes=\{earthquakes\}/);
+  assert.match(clientSrc, /disasters=\{disasters\}/);
 });
 
 // ---------------------------------------------------------------------------

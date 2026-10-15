@@ -678,6 +678,13 @@
     "earthquakes": {
       "legendHeading": "Globe marker legend:",
       "legendTsunami": "Tsunami warning"
+    },
+    "disasters": {
+      "legendHeading": "Alert level legend:",
+      "typeFilterHeading": "Show disaster types:",
+      "readOriginal": "Read original ↗",
+      "unknownCountry": "Unknown location",
+      "emptyStateTemplate": "No {type} events right now"
     }
   },
   "aqiTool": {

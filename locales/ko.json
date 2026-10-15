@@ -681,6 +681,13 @@
     "earthquakes": {
       "legendHeading": "지구본 마커 범례:",
       "legendTsunami": "해일 경보"
+    },
+    "disasters": {
+      "legendHeading": "경보 등급 범례:",
+      "typeFilterHeading": "표시할 재해 종류:",
+      "readOriginal": "원문 보기 ↗",
+      "unknownCountry": "알 수 없는 위치",
+      "emptyStateTemplate": "현재 {type} 사건이 없습니다"
     }
   },
   "aqiTool": {
