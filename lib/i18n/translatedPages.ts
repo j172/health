@@ -65,6 +65,9 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   { kind: "path", path: "/tools/global-watch/epidemics", label: "國際疫情" },
   // Issue #594 (parent #583): the third global-watch item sub-route.
   { kind: "path", path: "/tools/global-watch/disasters", label: "全球災害" },
+  // Issue #598 (parent #583, phase 4): 全球空品, same nested-sub-route
+  // reasoning as the epidemics entry just above.
+  { kind: "path", path: "/tools/global-watch/air-quality", label: "全球空品" },
 ];
 
 /** Canonical (zh, unprefixed) path for a scope entry. */
@@ -144,6 +147,11 @@ export const TRANSLATED_STANDALONE_PATHS: ScopePageEntry[] = [
   // The matching app/[locale]/tools/global-watch/disasters/page.tsx route
   // file is what actually serves /en//ja//ko for this item.
   { kind: "path", path: "/tools/global-watch/disasters", label: "全球災害" },
+  // Issue #598 (parent #583, phase 4): see I18N_SCOPE_PAGES' matching entry
+  // above for why this is a `path` entry rather than a `tool` one. The
+  // matching `app/[locale]/tools/global-watch/air-quality/page.tsx` route
+  // file is what actually serves /en//ja//ko.
+  { kind: "path", path: "/tools/global-watch/air-quality", label: "全球空品" },
 ];
 
 export const TRANSLATED_PAGES: ScopePageEntry[] = [

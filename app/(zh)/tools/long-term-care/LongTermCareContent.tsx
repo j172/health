@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import FacilitySearchContent from "@/components/Facilities/FacilitySearchContent";
 import CareCircleMap from "@/components/Facilities/CareCircleMap";
@@ -67,6 +68,19 @@ export default function LongTermCareContent() {
 
   return (
     <div className="space-y-6">
+      {/* issue #615: outbound link to the new "長照給付與申請" tool, which
+          covers the申請流程、長照3.0新制 and benefit-amount estimator that
+          don't belong on this facility-search map page. */}
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-indigo-200 bg-indigo-50/60 px-4 py-3 text-xs dark:border-indigo-900/50 dark:bg-indigo-950/20">
+        <span className="text-slate-700 dark:text-slate-300">想了解長照給付額度與申請流程？</span>
+        <Link
+          href="/tools/ltc-benefits"
+          className="inline-flex shrink-0 items-center gap-1 font-bold text-indigo-700 hover:underline dark:text-indigo-300"
+        >
+          長照給付與申請 →
+        </Link>
+      </div>
+
       <div role="tablist" aria-label="長照資源類型" className="flex flex-wrap gap-2">
         {LONG_TERM_CARE_TYPE_KEYS.map((key) => {
           const meta = LONG_TERM_CARE_TYPE_META[key];

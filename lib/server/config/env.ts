@@ -70,4 +70,17 @@ export const env = {
   // Analytics > Manage Site) and sets it here, same optional-credential
   // convention as the other fields above.
   cloudflareWebAnalyticsToken: process.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN?.trim() || null,
+  // WAQI (World Air Quality Index Project) real-time AQI tile API token —
+  // issue #598 (parent #583, phase 4, 全球空品). Unlike every other field in
+  // this file, this one is read by a Server Component page
+  // (app/(zh)/tools/global-watch/air-quality/page.tsx and its [locale]
+  // twin) specifically so it can be handed to the browser as a plain prop —
+  // the whole point of this feature is a client-side MapLibre raster tile
+  // source that requests `https://tiles.waqi.info/tiles/usepa-aqi/{z}/{x}/{y}
+  // .png?token=...` directly, with no server round-trip and nothing stored
+  // in the DB (see lib/tools/globeWatch/airQualityTiles.ts). Same
+  // optional-credential convention as the other fields above (`?.trim() ||
+  // null`) so a missing token renders a "not configured" status panel
+  // instead of ever committing a real value into source (AC: 不寫死在原始碼).
+  waqiToken: process.env.WAQI_TOKEN?.trim() || null,
 };

@@ -511,26 +511,63 @@ async function buildEcosystemRecords() {
   return allRecords;
 }
 
-async function submitBatch(records, cleanFacilityType = null) {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// The production host occasionally serves a transient HTML error page
+// (502/504, or a brief resource-contention blip — see
+// docs/domains/11-hosting-ops-incidents.md's noisy-neighbor host contention
+// entry) instead of the expected JSON response. Without a retry, a single
+// blip on any one batch aborted the whole run and left the remaining
+// batches unsubmitted (confirmed live 2026-10-15: batch 5/8 failed this way
+// twice in a row). Retries with back-off; only a genuine application-level
+// failure (res.ok but json.ok === false) is not retried.
+async function submitBatch(records, cleanFacilityType = null, maxRetries = 4) {
   const payload = { records };
   if (cleanFacilityType) {
     payload.cleanFacilityType = cleanFacilityType;
   }
 
-  const res = await fetch(`${BASE_URL}/api/admin/facilities-import`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-rss-sync-admin-secret": ADMIN_SECRET,
-    },
-    body: JSON.stringify(payload),
-  });
+  for (let attempt = 0; ; attempt++) {
+    let res;
+    let text;
+    try {
+      res = await fetch(`${BASE_URL}/api/admin/facilities-import`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-rss-sync-admin-secret": ADMIN_SECRET,
+        },
+        body: JSON.stringify(payload),
+      });
+      text = await res.text();
+    } catch (networkError) {
+      if (attempt >= maxRetries) throw networkError;
+      const delayMs = 2000 * 2 ** attempt;
+      console.warn(`  Batch request failed (${networkError.message}), retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
+      await sleep(delayMs);
+      continue;
+    }
 
-  const json = await res.json();
-  if (!res.ok || !json.ok) {
-    throw new Error(`Import batch failed: HTTP ${res.status} ${JSON.stringify(json)}`);
+    let json;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      // Non-JSON body: a transient HTML error page, not a real application
+      // response. Retryable.
+      if (attempt >= maxRetries) {
+        throw new Error(`Import batch failed: HTTP ${res.status}, non-JSON body: ${text.slice(0, 200)}`);
+      }
+      const delayMs = 2000 * 2 ** attempt;
+      console.warn(`  Batch got non-JSON HTTP ${res.status} response, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
+      await sleep(delayMs);
+      continue;
+    }
+
+    if (!res.ok || !json.ok) {
+      throw new Error(`Import batch failed: HTTP ${res.status} ${JSON.stringify(json)}`);
+    }
+    return json;
   }
-  return json;
 }
 
 async function main() {

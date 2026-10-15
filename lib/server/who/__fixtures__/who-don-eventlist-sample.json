@@ -1,0 +1,96 @@
+{
+  "@odata.context": "http://www.who.int/api/news/$metadata#diseaseoutbreaknews(Id,DonId,Title,PublicationDateAndTime,ItemDefaultUrl,LastModified)",
+  "_capturedFrom": "https://www.who.int/api/news/diseaseoutbreaknews?sf_provider=dynamicProvider372&sf_culture=en&$orderby=PublicationDateAndTime desc&$select=Id,DonId,Title,PublicationDateAndTime,ItemDefaultUrl,LastModified",
+  "_capturedOn": "2026-10-15",
+  "_note": "Live capture from WHO's own Disease Outbreak News OData API (issue #596, parent #583). Reachable directly from the sandbox this was built in (HTTP 200) — see runSync.ts's top-of-file comment for why that does NOT establish the production host can reach it. Entries below are real DON items picked to cover the title-format variety seen across WHO's feed: plain ' - ' separator, a no-space '- ' separator, an en-dash '–' separator, a comma-separated multi-country title, a comma-separated 'Multi-locations' title, and a region/'Global'-style title with no single resolvable country. Malformed/missing-field inputs are NOT represented here — those are hand-written inline in who.test.mjs, same convention as lib/server/gdacs/sources/gdacs.test.mjs.",
+  "value": [
+    {
+      "Id": "9cca163d-6ef3-4d3e-b149-2cd7acf408f6",
+      "LastModified": "2026-10-13T09:22:55Z",
+      "ItemDefaultUrl": "/2026-DON620",
+      "PublicationDateAndTime": "2026-10-10T15:00:00Z",
+      "Title": "Pneumonia of undetermined etiology - the Russian Federation",
+      "DonId": "2026-DON620"
+    },
+    {
+      "Id": "8fbb14a7-4f4d-4e4a-b113-68b944028ebf",
+      "LastModified": "2026-10-08T16:16:01Z",
+      "ItemDefaultUrl": "/2026-DON619",
+      "PublicationDateAndTime": "2026-10-08T15:16:26Z",
+      "Title": "Ebola disease caused by Bundibugyo virus - Democratic Republic of the Congo",
+      "DonId": "2026-DON619"
+    },
+    {
+      "Id": "555e13f3-7aa5-445b-83eb-36e2f050a55c",
+      "LastModified": "2026-01-26T17:03:04Z",
+      "ItemDefaultUrl": "/2026-DON592",
+      "PublicationDateAndTime": "2026-01-26T19:00:00Z",
+      "Title": "Marburg virus disease- Ethiopia",
+      "DonId": "2026-DON592"
+    },
+    {
+      "Id": "a4502f7e-b680-4414-ab38-bce40aa09246",
+      "LastModified": "2026-04-10T14:03:22Z",
+      "ItemDefaultUrl": "/2026-DON597",
+      "PublicationDateAndTime": "2026-04-10T13:51:44Z",
+      "Title": "Avian Influenza A(H9N2) - Italy",
+      "DonId": "2026-DON597"
+    },
+    {
+      "Id": "bac6e717-f63e-496f-ae44-65f072fa75e6",
+      "LastModified": "2025-12-02T08:59:30Z",
+      "ItemDefaultUrl": "/2025-DON589",
+      "PublicationDateAndTime": "2025-12-01T19:00:00Z",
+      "Title": "Ebola virus disease – Democratic Republic of the Congo",
+      "DonId": "2025-DON589"
+    },
+    {
+      "Id": "a06665c4-2ff2-411b-8767-25e299dac63f",
+      "LastModified": "2026-07-17T17:17:38Z",
+      "ItemDefaultUrl": "/2026-DON613",
+      "PublicationDateAndTime": "2026-07-17T16:13:00Z",
+      "Title": "Ebola disease caused by Bundibugyo virus, Democratic Republic of the Congo & Uganda",
+      "DonId": "2026-DON613"
+    },
+    {
+      "Id": "b4022b8d-0ad5-4022-b1ac-1d6661578e74",
+      "LastModified": "2026-07-09T15:10:49Z",
+      "ItemDefaultUrl": "/2026-DON611",
+      "PublicationDateAndTime": "2026-07-02T18:00:00Z",
+      "Title": "Hantavirus outbreak linked to cruise ship travel, Multi-locations",
+      "DonId": "2026-DON611"
+    },
+    {
+      "Id": "10a3727f-44e6-48dd-9655-1ecd02e8e6fd",
+      "LastModified": "2026-06-24T16:28:45Z",
+      "ItemDefaultUrl": "/2026-DON610",
+      "PublicationDateAndTime": "2026-06-24T18:00:00Z",
+      "Title": "Yellow fever - Global",
+      "DonId": "2026-DON610"
+    },
+    {
+      "Id": "1369e947-2f40-4dc9-a7da-f8f21f873ae1",
+      "LastModified": "2025-11-22T09:03:37Z",
+      "ItemDefaultUrl": "/DON588",
+      "PublicationDateAndTime": "2025-11-21T19:00:00Z",
+      "Title": "Diphtheria - African Region (AFRO)",
+      "DonId": "DON588"
+    },
+    {
+      "Id": "f76a3c74-7987-43d9-9072-cc1d9230a4cf",
+      "LastModified": "2026-03-13T16:05:23Z",
+      "ItemDefaultUrl": "/2026-DON596",
+      "PublicationDateAndTime": "2026-03-13T19:00:00Z",
+      "Title": "International food safety event: Infant formula and products containing arachidonic acid oil contaminated with cereulide toxin - Multi-country",
+      "DonId": "2026-DON596"
+    },
+    {
+      "Id": "ff0edd89-ede9-4566-8196-6fd2e302637c",
+      "LastModified": "2026-06-25T16:23:05Z",
+      "ItemDefaultUrl": "/2026-DON609",
+      "PublicationDateAndTime": "2026-06-25T18:00:00Z",
+      "Title": "Nipah virus disease - India",
+      "DonId": "2026-DON609"
+    }
+  ]
+}

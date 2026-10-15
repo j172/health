@@ -1309,7 +1309,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.gov.tw/dataset/115950",
       },
     ],
-    relatedSlugs: ["postpartum-care", "disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities"],
+    relatedSlugs: ["postpartum-care", "disability-welfare", "senior-friendly", "hearing-aid-subsidies", "organ-donation-hospitals", "home-emergency-care", "funeral-facilities", "ltc-benefits"],
     faqs: [
       {
         question: "長照照顧圈地圖整合哪些類型的長照資源？",
@@ -1651,17 +1651,20 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // home_childcare_center）、匯入與驗證流程、臺北私立/準公共去重邏輯，供後續
     // 六都＋新竹縣市/彰化/嘉義市的縣市票套用同一套模式（見
     // lib/server/facilities/sources/taipeiChildcare.ts、ntpcChildcare.ts）。
+    // issue #606 加入六都剩餘四縣市（桃園／臺中／臺南／高雄），issue #607 平行
+    // 加入新竹市/新竹縣/彰化/嘉義市四個縣市（兩票互不依賴）；新竹市/彰化兩縣市
+    // 的名冊沒有分類欄位，查無分類的機構一樣會顯示，只是不會落入任何分類篩選。
     slug: "childcare-centers",
     group: "family",
-    lastUpdated: "2026-10-14",
+    lastUpdated: "2026-10-15",
 
     schemaType: "WebPage",
-    title: "托嬰中心與居家托育地圖（臺北／新北）",
+    title: "托嬰中心與居家托育地圖（六都＋新竹市／新竹縣／彰化／嘉義市）",
     keywords: ["托嬰中心", "居家托育", "保母", "準公共托嬰中心", "公辦民營托嬰中心", "社區公共托育家園", "托育費用"],
     description:
-      "查詢臺北市、新北市托嬰中心與居家托育服務中心（找保母的窗口），依公辦民營、社區公共托育家園、準公共、私立分類，顯示核定／實際收托人數與評鑑結果。資料來源：臺北市政府社會局、新北市政府社會局開放資料；其餘縣市請改用衛福部社家署全國系統性查詢。",
+      "查詢臺北市、新北市、桃園市、臺中市、臺南市、高雄市、新竹市、新竹縣、彰化縣、嘉義市托嬰中心與居家托育服務中心（找保母的窗口），依公辦民營、社區公共托育家園、準公共、私立分類，有資料的縣市顯示核定／實際收托人數、評鑑結果與收費資訊。資料來源：各縣市政府社會局（處）開放資料；其餘縣市請改用衛福部社家署全國系統性查詢。",
     directAnswer:
-      "整合臺北、新北托嬰中心與居家托育服務中心名冊，依公辦民營、準公共、私立等分類查詢收托人數與評鑑結果。",
+      "整合臺北、新北、桃園、臺中、臺南、高雄、新竹市、新竹縣、彰化、嘉義市托嬰中心與居家托育服務中心名冊，依公辦民營、準公共、私立等分類查詢收托人數與評鑑結果。",
     scientificBasis: [
       {
         title: "臺北市托嬰中心（私立／公辦民營／準公共／社區公共托育家園）開放資料",
@@ -1672,6 +1675,26 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         title: "新北市托嬰中心（私立／公共托育中心）與居家托育服務中心開放資料",
         authority: "新北市政府社會局",
         url: "https://data.ntpc.gov.tw",
+      },
+      {
+        title: "新竹市公私立托嬰中心名冊開放資料",
+        authority: "新竹市政府社會處",
+        url: "https://data.gov.tw/dataset/67734",
+      },
+      {
+        title: "新竹縣立案托嬰中心暨加入準公共化名冊開放資料",
+        authority: "新竹縣政府社會處",
+        url: "https://data.gov.tw/dataset/109321",
+      },
+      {
+        title: "彰化縣公私協力及私立托嬰中心開放資料",
+        authority: "彰化縣政府社會處",
+        url: "https://data.gov.tw/dataset/95198",
+      },
+      {
+        title: "嘉義市公私協力及私立托嬰中心開放資料",
+        authority: "嘉義市政府社會處",
+        url: "https://data.gov.tw/dataset/63093",
       },
       {
         title: "托育管理資訊系統全國系統性查詢",
@@ -1692,9 +1715,9 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
           "不是。居家托育服務中心是協助家長找保母的媒合與管理窗口，負責保母登記、媒合、訪視輔導與托育諮詢，本身不收托幼兒；托嬰中心才是實際收托幼兒的機構。",
       },
       {
-        question: "我家不在臺北或新北，可以查到資料嗎？",
+        question: "我家不在上述十個縣市，可以查到資料嗎？",
         answer:
-          "目前僅收錄臺北市、新北市，其餘縣市尚未建置。可改用頁面上連結的衛福部社家署「托育管理資訊系統全國系統性查詢」查詢其他縣市。",
+          "目前僅收錄臺北市、新北市、桃園市、臺中市、臺南市、高雄市、新竹市、新竹縣、彰化縣、嘉義市，其餘縣市尚未建置。可改用頁面上連結的衛福部社家署「托育管理資訊系統全國系統性查詢」查詢其他縣市。",
       },
       {
         question: "為什麼有些托嬰中心只出現在準公共分類，沒有重複列在私立分類？",
@@ -4323,7 +4346,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://257085.sfaa.gov.tw/",
       },
     ],
-    relatedSlugs: ["emergency-hotlines", "long-term-care", "disability-welfare"],
+    relatedSlugs: ["emergency-hotlines", "long-term-care", "disability-welfare", "ltc-benefits"],
     faqs: [
       {
         question: "我不確定自己的狀況算不算「需要找社工」，可以先打電話問問看嗎？",
@@ -4344,6 +4367,76 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "社工會不會因為我打電話求助就直接把我的孩子帶走，或強制安置長輩？",
         answer:
           "不會。社工到府的第一步是評估家庭目前的狀況與需求，大多數情況的目標是協助申請補助、轉介資源或安排後續追蹤，不是立即安置。只有在評估後確認有立即且重大的安全風險時，才會依法採取保護性安置等強制措施，且這類決定需要依法定程序處理，不是社工個人隨意決定。",
+      },
+    ],
+  },
+  {
+    slug: "ltc-benefits",
+    group: "elder-care-welfare",
+    lastUpdated: "2026-10-15",
+
+    title: "長照給付與申請",
+    keywords: [
+      "長照給付",
+      "長照額度",
+      "長照3.0",
+      "長照需要等級",
+      "部分負擔",
+      "喘息服務",
+      "交通接送",
+      "輔具租賃",
+      "照顧及專業服務",
+      "1966",
+      "照專評估",
+      "個案管理",
+    ],
+    description:
+      "說明長照服務的申請流程（1966 → 照專到府評估 → 個管擬訂照顧計畫），整理長照3.0新制「已上路」與「規劃中」項目，並提供給付額度試算：選擇長照需要等級（第2–8級或「還沒評估」）與福利身分（一般戶／中低收入戶／低收入戶），估算照顧及專業服務、交通接送、輔具及居家無障礙環境改善、喘息服務的月／年／三年額度與自付比例。",
+    directAnswer:
+      "長照給付與申請整理 1966 專線申請流程、長照3.0新制已上路與規劃中項目，並提供依長照需要等級（第2–8級）與福利身分試算的給付額度：照顧及專業服務每月10,020–36,180元、交通接送每月1,680–2,400元（依分區）、輔具及居家無障礙環境改善每3年4萬或6萬元、喘息服務每年32,340或48,510元，一般戶自付16–30%，低收入戶與列冊中低收入戶自付0%；實際以照專評估與照顧計畫為準。",
+    scientificBasis: [
+      {
+        title: "長期照顧服務申請及給付辦法（附表二：長照需要等級及長照服務給付項目之額度；附表三：交通接送服務給付分區表；附表五：部分負擔比率）",
+        authority: "衛生福利部長期照顧司",
+        url: "https://laws.gov.taipei/law/LawSearch/LawArticleContent/FL098057",
+      },
+      {
+        title: "長期照顧服務申請及給付辦法部分條文修正（114年6月19日發布，分114年9月1日／115年1月1日／115年7月1日施行）",
+        authority: "衛生福利部",
+        url: "https://mohw.gov.tw/cp-18-82814-1.html",
+      },
+      {
+        title: "長照3.0十年計畫核定公告",
+        authority: "行政院",
+        url: "https://www.ey.gov.tw/Page/448DE008087A1971/75589810-5aa3-418f-9c33-1d10e5950fb7",
+      },
+      {
+        title: "1966長照服務專線",
+        authority: "衛生福利部",
+        url: "https://1966.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["long-term-care", "social-welfare-centers", "disability-welfare", "senior-friendly"],
+    faqs: [
+      {
+        question: "額度試算需要提供哪些個人資料？會不會被記錄下來？",
+        answer:
+          "不需要。試算只需要選擇長照需要等級與福利身分兩個項目，全部在您的瀏覽器內計算完成，不會送出任何網路請求，也不會寫入手機或電腦的本機儲存空間，離開頁面或重新整理後選擇會自動清空。",
+      },
+      {
+        question: "「低收入戶」與「中低收入戶」試算出來的自付比例怎麼都一樣？",
+        answer:
+          "這不是計算錯誤。依《長期照顧服務申請及給付辦法》第14條，列冊之低收入戶與中低收入戶同屬「長照第一類」，部分負擔比率相同（皆為0%）。另外還有部分負擔5–10%的「長照第二類」（中低收入老人生活津貼第2款或身心障礙者生活補助資格者），本頁為簡化呈現未單獨列出，如不確定自己實際屬於哪一類，請洽1966長照專線或當地長期照顧管理中心確認。",
+      },
+      {
+        question: "選「還沒評估」也能看到額度嗎？",
+        answer:
+          "不行。長照需要等級須由照顧管理專員到府評估後核定，第1級為未失能、不納入給付範圍，因此選擇「還沒評估」時頁面只會顯示申請流程與3.0新制說明，不會顯示額度試算結果，請先完成評估取得核定等級後再回來試算。",
+      },
+      {
+        question: "長照3.0是什麼時候上路？跟長照2.0差在哪？",
+        answer:
+          "長照3.0是行政院核定的十年計畫，部分措施已依《長期照顧服務申請及給付辦法》修正條文分階段施行：114年9月1日起聘僱外籍看護工家庭可於原額度內使用社區式服務；115年1月1日起放寬未滿50歲失智且失能者資格並納入急性後期照護(PAC)對象；115年7月1日起新增智慧科技輔具租賃（3年6萬元額度）。其餘尚未有正式施行日期的項目列為「規劃中」，實際內容與時程以衛生福利部正式公告為準。",
       },
     ],
   },
