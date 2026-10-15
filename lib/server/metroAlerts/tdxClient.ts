@@ -1,7 +1,7 @@
 import "server-only";
 import crypto from "node:crypto";
-import { httpGetJson } from "@/lib/server/net/httpClient";
 import { getTdxToken } from "@/lib/server/tdx/auth";
+import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import type { MetroAlertItem, RailAlertSystemCode } from "./types";
 
 /**
@@ -189,10 +189,7 @@ async function fetchRailAlertSystem(
   code: RailAlertSystemCode,
   token: string,
 ): Promise<TdxRailAlertItem[]> {
-  const res = await httpGetJson<TdxRailAlertItem[]>(sourceUrl(code), {
-    headers: { authorization: `Bearer ${token}`, accept: "application/json" },
-    timeoutMs: 12000,
-  });
+  const res = await tdxGetJsonWithRetry<TdxRailAlertItem[]>(sourceUrl(code), token, { timeoutMs: 12000 });
   if (res.status !== 200 || !Array.isArray(res.data)) {
     throw new Error(`TDX rail alert endpoint for ${code} returned status ${res.status}`);
   }
