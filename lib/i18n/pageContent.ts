@@ -19,7 +19,10 @@ export interface LocalizedPageMeta {
   shortTitle?: string;
 }
 
-const PAGE_I18N_CONTENT: Record<"home" | "nearby" | "globalWatchEarthquakes", Record<PathLocale, LocalizedPageMeta>> = {
+const PAGE_I18N_CONTENT: Record<
+  "home" | "nearby" | "globalWatchEarthquakes" | "globalWatchTyphoons",
+  Record<PathLocale, LocalizedPageMeta>
+> = {
   home: {
     en: {
       title: "j172tw Healthz",
@@ -82,10 +85,34 @@ const PAGE_I18N_CONTENT: Record<"home" | "nearby" | "globalWatchEarthquakes", Re
         "최근 7일간의 주요 지진(대만 M4.0 이상, 전 세계 M6.0 이상)을 인터랙티브 3D 지구본에 표시합니다（지구본에는 전 세계 M4.5 이상・대만 M4.0 이상을 표시). 진앙, 규모, 깊이, 해일 경보 정보를 제공합니다.",
     },
   },
+  // Issue #593 (parent #583): the 颱風 global-watch item sub-route
+  // (`/tools/global-watch/typhoons`) — same reasoning as
+  // "globalWatchEarthquakes" above: not a TranslatedToolSlug, not a
+  // TOOL_CATALOG entry, so it needs its own per-locale title/description.
+  globalWatchTyphoons: {
+    en: {
+      title: "Global Watch: Typhoons — West Pacific (CWA) & Worldwide Tropical Cyclones (GDACS)",
+      shortTitle: "Typhoons",
+      description:
+        "Active tropical cyclones on an interactive 3D globe: West Pacific typhoons from Taiwan's Central Weather Administration (name, current position, forecast track) and every other basin's storms from GDACS — each cyclone shown from exactly one source, never duplicated.",
+    },
+    ja: {
+      title: "グローバルウォッチ：台風 — 西太平洋（気象署）と世界の熱帯低気圧（GDACS）",
+      shortTitle: "台風",
+      description:
+        "インタラクティブな3D地球儀上で活動中の熱帯低気圧を表示。西太平洋の台風は台湾中央気象署のデータ（名称・現在位置・予報経路）、他の海域はGDACSのデータを使用し、同じ台風が二重に表示されないようにしています。",
+    },
+    ko: {
+      title: "글로벌 워치: 태풍 — 서태평양(기상청)과 전 세계 열대성 저기압(GDACS)",
+      shortTitle: "태풍",
+      description:
+        "인터랙티브 3D 지구본에 활동 중인 열대성 저기압을 표시합니다. 서태평양 태풍은 대만 중앙기상청 데이터(명칭·현재 위치·예상 경로)를, 그 외 해역은 GDACS 데이터를 사용하여 같은 태풍이 중복 표시되지 않도록 합니다.",
+    },
+  },
 };
 
 export function getLocalizedPageMeta(
-  page: "home" | "nearby" | "globalWatchEarthquakes",
+  page: "home" | "nearby" | "globalWatchEarthquakes" | "globalWatchTyphoons",
   locale: PathLocale,
 ): LocalizedPageMeta {
   return PAGE_I18N_CONTENT[page][locale];

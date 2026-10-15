@@ -17,12 +17,20 @@ import LoadingOrb from "@/components/ui/LoadingOrb";
  * `waqiToken` field) — distinct from "unsupported" (a device/browser
  * limitation) but visually treated the same (dimmed placeholder, no spinner)
  * since both are "nothing will load here" states rather than transient ones.
+ *
+ * Issue #593 (parent #583) added "empty" — the 颱風 item's "目前無活動中的
+ * 熱帶氣旋" state (AC: 沒有任何活動颱風時顯示空狀態說明，不是空白地圖). Reusing this
+ * same panel rather than inventing a separate empty-state element keeps the
+ * "never change the frame's shape" CLS guarantee intact for this new case
+ * too, and keeps the decision of *whether* to show it outside this
+ * component — same as "unsupported"/"loading" are decided by the caller
+ * (GlobeWatchClient.tsx / GlobeWatchTyphoonsClient.tsx), not here.
  */
 export default function GlobeWatchStatusPanel({
   variant,
   message,
 }: {
-  variant: "loading" | "unsupported" | "unconfigured";
+  variant: "loading" | "unsupported" | "unconfigured" | "empty";
   message: string;
 }) {
   return (
