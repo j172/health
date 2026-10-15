@@ -1,0 +1,44 @@
+name: Host status (read-only)
+
+# Read-only snapshot of the production host: PM2 apps (configured vs. actually
+# running Node), memory, uptime, restart count, total process count, load.
+# Used for the daily observation notes on #481 (Node 24) and #455 (AI-crawler
+# allow + load mitigation). workflow_dispatch only; runs no mutating command.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: host-status
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    runs-on: ubuntu-latest
+    environment: FTP_SERVER
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Snapshot production host status
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          source scripts/lib/ssh-key-stage.sh
+          stage_ssh_key
+          SSH_KEY_FILE="$KEY_FILE" \
+            SSH_HOST="$SSH_HOST" \
+            SSH_PORT="$SSH_PORT" \
+            SSH_USER="$SSH_USER" \
+            node scripts/gha-host-status.mjs
