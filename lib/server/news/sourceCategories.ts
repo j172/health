@@ -49,6 +49,8 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "moi", label: "內政部" },
       { sourceName: "moe", label: "教育部" },
       { sourceName: "moda", label: "數位發展部" },
+      { sourceName: "antidrug", label: "反毒大本營" },
+      { sourceName: "police_7505", label: "警政署" },
     ],
   },
   {

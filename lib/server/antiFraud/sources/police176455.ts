@@ -34,15 +34,41 @@ export const police176455RawSchema = z.object({
   網域: z.string().nullable(),
 });
 
+/**
+ * Shared record shape for every `fraud_domains` ingestion source (176455,
+ * and — issue #567 — 165027/160055 too). Not 176455-specific despite living
+ * in this file; kept here rather than split into its own module to avoid
+ * churning every existing import of it (queries.ts, runSync.ts) for a pure
+ * rename.
+ */
 export interface FraudDomainRecord {
   /** Already run through `normalizeHost` — lower-cased, punycode, no port/trailing dot. */
   domain: string;
   source: string;
+  /** 網站性質 (176455 only). 165027/160055 have no such classification — null, not a borrowed/forced value. */
   siteNature: string | null;
+  /** 法律依據 (176455 only). */
   legalBasis: string | null;
+  /** 聲請單位 (176455 only). */
   applicantOrg: string | null;
-  /** Raw 民國年月 string from the source, e.g. "11509". Not part of any key — see schema.ts's fraudDomains comment. */
+  /**
+   * A single display string for "when", in one of two shapes depending on
+   * source: 176455's raw 民國年月 (e.g. "11509"), or an 8-digit Gregorian
+   * YYYYMMDD date (165027's 停止解析日期, 160055's 統計結束日期 normalized
+   * from "YYYY/MM/DD"). Not part of any key — see schema.ts's fraudDomains
+   * comment. The UI (AntiFraudChecker.tsx's formatReportedYearMonth)
+   * distinguishes the two shapes by digit count.
+   */
   reportedYearMonth: string | null;
+  /**
+   * Free-text description of what the domain impersonates/is, for a source
+   * that has no 網站性質-style classification: 165027's 一頁式數位經濟詐騙
+   * 網站 column, or 160055's 網站名稱 column. Deliberately a separate field
+   * from `siteNature` rather than stuffed into it — see issue #567: "不要
+   * 硬塞進 siteNature 欄位冒充分類". Null for 176455, which has real
+   * site-nature classification instead.
+   */
+  fraudDescription: string | null;
 }
 
 /**
@@ -70,6 +96,7 @@ export function parsePolice176455Csv(csvText: string): FraudDomainRecord[] {
       legalBasis: row.法律依據?.trim() || null,
       applicantOrg: row.聲請單位?.trim() || null,
       reportedYearMonth: row.民國年月?.trim() || null,
+      fraudDescription: null,
     });
   }
   return records;

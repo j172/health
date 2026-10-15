@@ -121,6 +121,8 @@
     "smoking-cessation": "禁煙外来提携医療機関検索（禁煙補助制度）",
     "adult-preventive-care": "成人健康診断・公費がん検診機関検索",
     "baby-friendly-hospitals": "赤ちゃんにやさしい病院マップ（母子同室・母乳育児認証）",
+    "postpartum-care": "産後ケアセンターマップ（評鑑結果・有効期限確認）",
+    "child-subsidies": "育児補助金まとめ（育児手当・保育／就学補助・出産補助・体外受精助成）",
     "rare-disease-care": "難病ケア相談センター・確定診断病院検索",
     "organ-donation-hospitals": "臓器提供指定責任病院検索",
     "home-emergency-care": "健保在宅急性期ケア提携機関検索",
@@ -226,6 +228,9 @@
     },
     "travel-health": {
       "title": "海外渡航と防疫"
+    },
+    "fraud-and-addiction": {
+      "title": "詐欺と依存症から身を守る"
     }
   },
   "toolShell": {
@@ -421,7 +426,8 @@
     "resetSearchButton": "検索条件をリセット",
     "altNumberLabel": "代替番号：",
     "dialButton": "📞 ワンタップ発信",
-    "categoryBadge": "Hotline"
+    "categoryBadge": "Hotline",
+    "antiFraudCheckLink": "不審なURLを確認"
   },
   "facilitySearch": {
     "emergencyBannerPrefix": "突然の重症、激しい胸痛、または生命に危険が及ぶ状況ですか？直ちに ",
@@ -667,6 +673,12 @@
     "depthLabel": "深さ:",
     "officialReportLink": "公式速報 ↗",
     "dataSource": "資料提供：中央気象署（CWA、台湾M4.0+）・米国地質調査所（USGS、世界M6.0+）"
+  },
+  "globalWatchTool": {
+    "earthquakes": {
+      "legendHeading": "地球儀マーカー凡例：",
+      "legendTsunami": "津波警報"
+    }
   },
   "aqiTool": {
     "outdoorSafetyPromoPrefix": "今日はランニングやサイクリング、公園でのお出かけを予定していますか？大気質・暑さ指数・UVを統合した",

@@ -111,6 +111,28 @@ export const facilitySearchConfigs = {
       { value: "家庭照顧者", label: "🤝 家庭照顧者支持據點" },
       { value: "社區照顧關懷據點", label: "🏡 社區照顧關懷據點" },
       { value: "預防及延緩失能", label: "🌱 預防及延緩失能" },
+      // issue #612: data.gov.tw 115950「全國開業護理機構清冊」裡除了產後護理之家
+      // （併為獨立工具 /tools/postpartum-care）之外的另兩類機構，併入本工具。
+      { value: "一般護理之家", label: "🏥 一般護理之家" },
+      { value: "居家護理所", label: "🏠 居家護理所" },
+    ],
+  },
+  "postpartum-care": {
+    // issue #612: data.gov.tw 115950「全國開業護理機構清冊」裡的產後護理之家
+    // （241 家）——同一份資料集裡的一般護理之家／居家護理所併入 long-term-care
+    // 的 categories（見上），不做成獨立工具。
+    facilityType: "postpartum_care",
+    emoji: "🤱",
+    title: "產後護理之家地圖",
+    description:
+      "查詢全台產後護理之家（月子中心），顯示產後護理床與嬰兒床開放床數、評鑑結果與合格效期，協助確認機構是否仍在有效期內。資料來源：衛福部護理及健康照護司全國開業護理機構清冊。",
+    searchPlaceholder: "輸入機構名稱、地址或縣市關鍵字",
+    errorText: "查詢產後護理之家資料失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的產後護理之家，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的產後護理之家。",
+    extraFields: [
+      { key: "postpartumBeds", label: "🛏️ 產後護理床：" },
+      { key: "infantBeds", label: "👶 嬰兒床：" },
     ],
   },
   "vet-clinics": {
@@ -471,19 +493,71 @@ export const facilitySearchConfigs = {
       { key: "addictionTreatmentService", label: "戒治服務內容：" },
     ],
   },
+  "methadone-cross-district": {
+    facilityType: "methadone_cross_district",
+    emoji: "🧭",
+    title: "美沙冬跨區給藥院所查詢",
+    description:
+      "查詢可提供跨區給藥服務的美沙冬院所，顯示平日／假日／其他給藥時段與各項費用，方便接受治療者出差或旅行時不中斷用藥。資料來源：衛生福利部（data.gov.tw 133345，臺北市立聯合醫院上架）。",
+    searchPlaceholder: "輸入機構名稱或縣市關鍵字",
+    errorText: "查詢美沙冬跨區給藥院所失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的美沙冬跨區給藥院所，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的美沙冬跨區給藥院所。",
+    showGeocodeNote: true,
+    // #571: 沿用 #566 建立的通用 extraFields 顯示機制——給藥時段（平日／假日／
+    // 其他）與各項跨區給藥費用在 facilities 表都沒有通用對應欄位，放在 extra_json
+    // 裡顯示。
+    extraFields: [
+      { key: "methadoneWeekdayDosingTime", label: "平日給藥時間：" },
+      { key: "methadoneHolidayDosingTime", label: "假日給藥時間：" },
+      { key: "methadoneOtherDosingTime", label: "其他給藥時間：" },
+      { key: "methadoneCrossDistrictFee", label: "跨區給藥服務費：" },
+      { key: "methadoneTransferInFee", label: "轉入掛號費：" },
+      { key: "methadoneTransferOutFee", label: "轉出掛號費：" },
+      { key: "methadoneEvaluationFee", label: "跨區給藥評估費：" },
+      { key: "methadoneNotes", label: "注意事項：" },
+    ],
+  },
+  "anti-drug-center": {
+    facilityType: "anti_drug_center",
+    emoji: "🏢",
+    title: "各縣市毒品危害防制中心查詢",
+    description:
+      "查詢全台 22 縣市的毒品危害防制中心地址，提供電話諮詢、心理支持、法律諮詢、就業轉介等協助。資料來源：法務部反毒大本營「各地方毒防中心」。",
+    searchPlaceholder: "輸入縣市關鍵字",
+    errorText: "查詢毒品危害防制中心失敗，請稍後再試。",
+    emptyStateNoKeyword: "附近查無收錄的毒品危害防制中心，可改用關鍵字搜尋。",
+    emptyStateWithKeyword: "查無符合的毒品危害防制中心。",
+    showGeocodeNote: true,
+  },
   "smoking-cessation": {
     facilityType: "smoking_cessation",
     emoji: "🚭",
-    title: "戒菸治療與衛教特約院所查詢",
+    title: "全國戒菸治療與衛教特約院所查詢",
     description:
-      "查詢部分提供二代戒菸補助之特約醫院、基層診所與社區藥局示例。享戒菸藥品免部分負擔及衛教諮詢。資料來源：衛生福利部國民健康署。",
-    noteLine:
-      "目前僅收錄部分戒菸特約院所示例，完整的全國合約院所名單請至國民健康署戒菸服務查詢（ttc.hpa.gov.tw）。",
+      "查詢全國提供二代戒菸補助之特約醫院、基層診所與社區藥局。享戒菸藥品免部分負擔及衛教諮詢。資料來源：衛生福利部國民健康署「各縣市合約戒菸醫療院所」（2,838 家）。",
+    // issue #569（parent #562）：國健署 6954 全國表已上線同步，取代原本只有 6
+    // 筆手寫資料時的「部分示例」警示文字。noteLine 改為顯示資料本身的日期
+    // （各筆 extra_json.dataAsOf，本站同步當天的日期）而非再次提醒資料不完整。
     searchPlaceholder: "輸入院所、藥局名稱或地址關鍵字",
     errorText: "查詢戒菸特約院所失敗，請稍後再試。",
     emptyStateNoKeyword: "附近查無收錄的戒菸特約院所，可改用關鍵字搜尋。",
     emptyStateWithKeyword: "查無符合的戒菸院所。",
-    serviceItem: { label: "特約服務：" },
+    serviceItem: { label: "機構類別：" },
+    categories: [
+      { value: "醫學中心", label: "醫學中心" },
+      { value: "區域醫院", label: "區域醫院" },
+      { value: "地區醫院", label: "地區醫院" },
+      { value: "診所", label: "診所" },
+      { value: "牙科診所", label: "牙科診所" },
+      { value: "藥局", label: "藥局" },
+      { value: "衛生所", label: "衛生所" },
+    ],
+    extraFields: [
+      { key: "smokingMedication", label: "戒菸給藥：" },
+      { key: "smokingEducation", label: "戒菸衛教：" },
+      { key: "dataAsOf", label: "本站資料同步日期：" },
+    ],
   },
   "adult-preventive-care": {
     facilityType: "adult_preventive_care",
@@ -500,13 +574,16 @@ export const facilitySearchConfigs = {
   "baby-friendly-hospitals": {
     facilityType: "baby_friendly_hospital",
     emoji: "🤱",
-    title: "全國母嬰親善認證醫療院所地圖",
+    title: "母嬰親善醫療院所地圖",
     description:
-      "查詢國民健康署評鑑認證通過之母嬰親善醫療院所，提供 24 小時母嬰同室、母乳哺育指導與婦幼照護環境。資料來源：衛生福利部國民健康署。",
+      "查詢臺北市、新北市、臺中市、臺南市、彰化縣五縣市衛生局公告之母嬰親善醫療院所名單，並自動排除已過有效期的紀錄。目前僅收錄這五個縣市——其餘縣市（例如高雄市，現有公告效期已全數落在 2016～2019 年、不堪作為現行名單使用）尚未收錄；若所在縣市未列出或查無有效名單，請直接洽當地衛生局確認最新名冊。",
+    noteLine:
+      "各縣市資料查證於 2026-10-14：臺北市（19 家原始筆數，依效期逐筆過濾）、新北市（20 家，名冊標示 2026-02 更新）、臺中市（18 家）、臺南市（11 家，含座標）、彰化縣（5 家，效期至民國 116 年底／2027 年底）。",
     searchPlaceholder: "輸入婦產科、醫院名稱或地址關鍵字",
     errorText: "查詢母嬰親善醫療院所失敗，請稍後再試。",
-    emptyStateNoKeyword: "附近查無認證的母嬰親善院所，可改用關鍵字搜尋。",
+    emptyStateNoKeyword: "附近查無收錄的母嬰親善院所，可改用關鍵字或地區快篩搜尋。",
     emptyStateWithKeyword: "查無符合的母嬰親善院所。",
+    emptyStateCounty: "本縣市暫無有效名單，請洽當地衛生局。",
     serviceItem: { label: "親善特色：" },
   },
   "rare-disease-care": {

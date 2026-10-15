@@ -66,10 +66,33 @@ const getMagBadge = (t: Translator, magInput: unknown) => {
 
 export default function EarthquakeContent({
   earthquakes,
+  filterMinMag: controlledFilterMinMag,
+  onFilterChange,
+  onSelect,
+  selectedId,
 }: {
   earthquakes: SignificantEarthquake[];
+  /**
+   * Issue #588 (parent #583): optional controlled-filter props, additive and
+   * fully backward-compatible — when omitted (every existing caller, e.g.
+   * app/(zh)/tools/earthquakes/page.tsx), this component manages its own
+   * `filterMinMag` state exactly as before. The global-watch earthquake
+   * item (GlobeWatchEarthquakesItem.tsx) passes these to lift the M4/M6/M7
+   * filter up so it drives the globe markers and this list together (AC:
+   * "M4/M6/M7 篩選同時套用在地球標記與清單").
+   */
+  filterMinMag?: number;
+  onFilterChange?: (value: number) => void;
+  /** When provided, each card becomes clickable/focusable (AC: "點擊清單項目時
+   * 地球飛到該地震的位置" — this component itself has no globe access, it
+   * just reports the click upward). */
+  onSelect?: (item: SignificantEarthquake) => void;
+  /** Visually highlights the currently-selected card (optional). */
+  selectedId?: number | string | null;
 }) {
-  const [filterMinMag, setFilterMinMag] = useState<number>(4.0);
+  const [internalFilterMinMag, setInternalFilterMinMag] = useState<number>(4.0);
+  const filterMinMag = controlledFilterMinMag ?? internalFilterMinMag;
+  const setFilterMinMag = onFilterChange ?? setInternalFilterMinMag;
   const { locale, t, tDynamic } = useLanguage();
 
   const filtered = earthquakes.filter((e) => {
@@ -141,10 +164,30 @@ export default function EarthquakeContent({
             // The English branch above already prefers USGS's native item.place.
             const location = tDynamic(rawLoc) || t("earthquakesTool.unnamedEpicenter", "未具名震央區域");
 
+            const isSelected = onSelect != null && selectedId != null && selectedId === item.id;
+
             return (
               <div
                 key={item.id}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                onClick={onSelect ? () => onSelect(item) : undefined}
+                onKeyDown={
+                  onSelect
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelect(item);
+                        }
+                      }
+                    : undefined
+                }
+                role={onSelect ? "button" : undefined}
+                tabIndex={onSelect ? 0 : undefined}
+                aria-pressed={onSelect ? isSelected : undefined}
+                className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 shadow-xs transition-all hover:border-indigo-300 hover:shadow-md dark:bg-slate-900 dark:hover:border-slate-700 ${
+                  isSelected
+                    ? "border-indigo-400 ring-2 ring-indigo-300 dark:border-indigo-600 dark:ring-indigo-700"
+                    : "border-slate-200 dark:border-slate-800"
+                } ${onSelect ? "cursor-pointer" : ""}`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2">

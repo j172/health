@@ -161,6 +161,12 @@ export const CIVIC_PARTNER_LINKS: FooterLinkModel[] = [
     label: "衛福部醫事性平專區",
   },
   { href: "https://council2026.taiwangogo.tw/", label: "2026 政治人物前科" },
+  // issue #575: 從防詐騙查詢與緊急電話頁導流到這兩個官方防詐／反毒資源站。
+  // `buildFooterModel` below already wraps every entry in this array with
+  // `appendOutboundUtm`, so adding a plain {href, label} pair here is
+  // sufficient to get the UTM tagging — no extra wrapping needed.
+  { href: "https://165.npa.gov.tw/", label: "165 全民防騙網" },
+  { href: "https://antidrug.moj.gov.tw/", label: "反毒大本營" },
 ];
 
 export interface BuildFooterModelOptions {
@@ -179,7 +185,8 @@ export interface BuildFooterModelOptions {
  * links), "工具分類" (the same 7 categories as the Nav, linking to the
  * future `/tools/category/[slug]` landing pages), "生活情境" (the 5
  * `GUIDES` hubs, linking to `/guides/[slug]`), and "公民倡議與友站" (the
- * existing 7 civic-partner links above). Deliberately has no "熱門工具"
+ * 9 civic-partner links above, including the 2 anti-fraud/anti-drug
+ * resources added by issue #575). Deliberately has no "熱門工具"
  * column (explicitly ruled out in §B) and no individual `/tools/<slug>`
  * tool links anywhere in the output — the category column links to
  * category pages, not tools.
@@ -582,7 +589,7 @@ export interface Guide {
 }
 
 /**
- * The 5 life-situation guides (issue #438 §3.3, GOV.UK step-by-step
+ * The 6 life-situation guides (issue #438 §3.3, GOV.UK step-by-step
  * pattern) — each strings together several tools from different catalog
  * groups into one ordered journey through a real life situation, instead of
  * making the user figure out which of the 7 categories to check next.
@@ -591,6 +598,11 @@ export interface Guide {
  * #443, not placeholders. Per this project's standing content rule, copy
  * here uses plain "使用者" throughout — never persona labels like "觀光客"
  * or "病患".
+ *
+ * The 6th guide, `fraud-and-addiction` (issue #574, parent spec #562), was
+ * added after the original 5 — it strings together the anti-fraud URL
+ * checker, emergency hotlines, the mental-health map's addiction-treatment
+ * tab, smoking cessation, and clinics.
  */
 export const GUIDES: Guide[] = [
   {
@@ -608,6 +620,11 @@ export const GUIDES: Guide[] = [
         toolSlug: "senior-friendly",
         caption: "申請敬老卡、規劃樂齡旅遊",
         why: "長照之外，長輩的日常生活品質同樣重要——敬老卡能降低長輩外出的交通負擔，樂齡套票則是專為長輩體力與無障礙需求設計的行程，讓長輩不只是被照顧，也能安心出門。",
+      },
+      {
+        toolSlug: "anti-fraud",
+        caption: "查詢可疑電話與網址是否涉詐",
+        why: "長輩常是電話詐騙、假投資、假冒公務員等詐術的主要目標，一旦長輩接到可疑簡訊連結或看到貼有可疑網址的廣告，可以先用防詐騙查詢比對是否已被警政署列為涉詐網域並停止解析；清單上沒有也不代表安全，仍建議撥打165反詐騙諮詢專線求證，在長輩匯款或提供個資前多一層把關。",
       },
       {
         toolSlug: "accessible-transit",
@@ -640,6 +657,11 @@ export const GUIDES: Guide[] = [
         question: "如果長輩住在偏鄉，這些資源查得到嗎？",
         answer:
           "長照照顧圈地圖與無障礙交通地圖皆以全臺資料建置，偏鄉資源確實可能較市區稀疏；地圖會依圈內資源數量提示是否需要擴大搜尋半徑，協助使用者評估實際可及的資源範圍。",
+      },
+      {
+        question: "長輩接到自稱是公務機關或銀行的電話，要求匯款或提供帳戶密碼，該怎麼辦？",
+        answer:
+          "政府機關與銀行不會透過電話要求提供密碼、提款卡號或指示到ATM操作「圈存」，這類來電多為詐騙。可先把對方提供的網址貼進防詐騙查詢工具比對是否已被列為涉詐網域，如仍有疑慮請直接撥165反詐騙諮詢專線查證，切勿依對方指示匯款或操作。",
       },
     ],
   },
@@ -865,6 +887,56 @@ export const GUIDES: Guide[] = [
         question: "連續處方箋可以在任何藥局領藥嗎？",
         answer:
           "需確認該藥局是否為健保特約藥局且提供連續處方箋調劑服務，本工具的藥局查詢結果會標示健保特約資格，建議先篩選再前往，避免白跑一趟。",
+      },
+    ],
+  },
+  {
+    slug: "fraud-and-addiction",
+    title: "遠離詐騙與成癮",
+    description:
+      "詐騙與成癮（藥癮、菸害）看似不相關，卻都是容易被忽略、殺傷力卻很深遠的生活風險。這份指南依「先擋住眼前的詐騙 → 遇到緊急狀況找對電話 → 需要戒治時查到對的機構 → 想戒菸就近求助 → 身體不適就醫」的順序，把分散在不同單位的查詢工具串成一條路徑。",
+    steps: [
+      {
+        toolSlug: "anti-fraud",
+        caption: "先查可疑網址是否涉詐",
+        why: "收到可疑簡訊、廣告或陌生人傳來的連結時，先別急著點擊或提供個資——把網址貼進防詐騙查詢，就能比對是否已被警政署列為涉詐網域並停止解析，並看到網站性質與停止解析月份；清單上沒有不代表安全，如仍有疑慮請撥165查證。",
+      },
+      {
+        toolSlug: "emergency-hotlines",
+        caption: "記下165、110等求助電話",
+        why: "一旦確定或懷疑已經受騙，能不能在黃金時間內聯繫到對的單位，往往決定損失能不能止住；這裡整理了165反詐騙諮詢專線、110報案電話等全臺急用緊急專線，建議事先存進手機，真正遇到狀況才不會手忙腳亂。",
+      },
+      {
+        toolSlug: "mental-health",
+        caption: "查詢藥癮戒治與替代治療機構",
+        why: "詐騙之外，成癮（尤其藥癮）也是許多家庭不知道該去哪裡求助的問題；切到心理諮商所與成癮防治地圖的「成癮防治」分頁，就能查到全國藥癮戒治與替代治療機構、美沙冬跨區給藥院所，以及所在縣市的毒品危害防制中心，頁面也會顯示法務部戒毒成功專線0800-770-885。",
+      },
+      {
+        toolSlug: "smoking-cessation",
+        caption: "找戒菸門診補助院所",
+        why: "菸、電子煙與加熱菸同樣是成癮風險的一環；這裡能查到提供二代戒菸治療與衛教補助的特約院所示例，並附上國健署免付費戒菸專線0800-636-363與菸害檢舉專線0800-531-531，完整全國合約院所名單可再連到國健署戒菸服務查詢。",
+      },
+      {
+        toolSlug: "clinics",
+        caption: "身體不適時找醫療院所",
+        why: "詐騙帶來的心理壓力或戒治過程中的身體不適，都可能需要進一步就醫；醫療院所查詢能依症狀、科別或定位快速找到附近的健保特約診所或醫院，不需要從頭搜尋。",
+      },
+    ],
+    faqs: [
+      {
+        question: "查到的網址不在涉詐清單上，就代表這個網站安全嗎？",
+        answer:
+          "不代表安全。涉詐網域清單由警政署每月公告，新出現的詐騙網站可能還沒被列入，查無結果只代表「目前還沒被公告」，如仍有疑慮請撥165反詐騙諮詢專線查證，不要因為查無結果就放心提供個資或匯款。",
+      },
+      {
+        question: "家人有藥癮問題，除了撥打專線還能怎麼找資源？",
+        answer:
+          "可以在心理諮商所與成癮防治地圖切到「成癮防治」分頁，依定位或關鍵字查詢全國藥癮戒治機構、替代治療機構，以及所在縣市的毒品危害防制中心，取得社會資源轉介；也可直接撥打法務部戒毒成功專線0800-770-885。",
+      },
+      {
+        question: "戒菸院所查詢頁說「目前僅收錄部分示例」，要去哪裡查完整名單？",
+        answer:
+          "可以直接連到頁內提供的國民健康署戒菸服務查詢，裡面收錄全國合約戒菸院所的完整名單；本站的戒菸院所資料正在擴充為全國版本，擴充完成後頁面會恢復標示「全國」。",
       },
     ],
   },

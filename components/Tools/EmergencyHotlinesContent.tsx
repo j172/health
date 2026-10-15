@@ -584,6 +584,17 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
                       {copiedNumber === item.number ? t("hotlinesTool.copiedLabel", "✓ 已複製") : t("hotlinesTool.copyNumberButton", "複製號碼")}
                     </button>
                   </div>
+
+                  {/* issue #575: 165 的卡片加一個導向防詐騙查詢工具的連結，
+                      讓收到可疑網址的使用者不用先撥打電話就能查詢。 */}
+                  {item.number === "165" && (
+                    <Link
+                      href="/tools/anti-fraud"
+                      className="mt-2 flex items-center justify-center gap-1 rounded-xl border border-rose-200 bg-rose-50 py-2 text-center text-xs font-bold text-rose-600 transition hover:bg-rose-100 active:scale-95 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-950/70"
+                    >
+                      🔍 {t("hotlinesTool.antiFraudCheckLink", "查可疑網址")}
+                    </Link>
+                  )}
                 </div>
               );
             })}

@@ -101,12 +101,19 @@ const TOPIC_RULES: TopicRule[] = [
  * adds. Checked before any keyword rule; a hit here returns immediately
  * without running TOPIC_RULES at all.
  *
- * Intentionally empty for now — #565 only builds the mechanism. #568 adds
- * the first real entry once it wires up that source's `sourceName`. Kept as
- * a mutable exported const (rather than, say, a function) so a later ticket
- * can just add a key without touching this file's logic.
+ * #565 only built the mechanism, leaving this empty. #568 adds the first
+ * real entry: 反毒大本營（antidrug.moj.gov.tw, sourceName "antidrug"）is a
+ * MOJ anti-drug news aggregator by nature — every article it curates is
+ * already anti-drug coverage of some outlet's reporting, so running
+ * TOPIC_RULES against its (often body-less, see fetchAntidrugNews.ts)
+ * title text would both be redundant and risk a false "no topic" on a
+ * headline that doesn't happen to contain one of this file's compound
+ * keywords. Kept as a mutable exported const (rather than, say, a function)
+ * so a later ticket can just add a key without touching this file's logic.
  */
-export const SOURCE_TOPIC_OVERRIDES: Partial<Record<string, Topic[]>> = {};
+export const SOURCE_TOPIC_OVERRIDES: Partial<Record<string, Topic[]>> = {
+  antidrug: ["anti-drug"],
+};
 
 export interface ClassifyNewsTopicsInput {
   title: string;

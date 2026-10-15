@@ -12,7 +12,7 @@
 |---|---|
 | `RSS_FEEDS` 設定筆數 | 52（`lib/server/config/rss-feeds.ts`） |
 | 其中 Google News `site:` 搜尋代理 | 11 筆（2026-08-31 時為 18 筆，已依新鮮度閘門陸續淘汰） |
-| 來源分類（`sourceCategories.ts`） | `gov` 官方 24、`media` 媒體 49、`npo` 公益社福 29，共 102 個 `sourceName` |
+| 來源分類（`sourceCategories.ts`） | `gov` 官方 26、`media` 媒體 49、`npo` 公益社福 29，共 104 個 `sourceName` |
 | 擷取路徑 | **A. 標準 RSS**（`runIngestion.ts` → `enrichItem()`）＋ **B. 特殊來源爬蟲**（`processSpecialSource()`，約 50 個 feed code） |
 | 寫入者 | 只剩 `persistItems.ts` 一個寫入 `news_items`（WRA 與 gov-opendata 第二寫入者皆已移除） |
 | 新鮮度閘門 | `FRESHNESS_WINDOW_DAYS = 90`，超過 90 天的項目不入庫 |
@@ -94,6 +94,13 @@
 #### Phase 15 — 性健康與親子媒體 ✅（原文件為空檔）
 - 原檔：[phase15-expanded-sexology-and-family-media-sources.md](../archive/specs/phase15-expanded-sexology-and-family-media-sources.md)（0 bytes）
 - 實際內容見 commit `00da3ed`：UDN 女子漾、iLady、臉紅紅、嵩馥、媽咪拜、台灣性諮商學會、台灣性教育學會等 8 個來源。
+
+#### Phase 16 — 反毒大本營毒家新聞＋警政署 7505 🟡（PR 待合併，上線前待實測）
+- 對應 issue #568 / spec #562。
+- **反毒大本營「毒家新聞」**（`antidrug`）：靜態列表頁 `lp-3-1-{page}-20.html`（20 筆/頁），依新鮮度閘門分頁抓取。實測確認每條列表項的連結**直接指向原始媒體（自由時報／聯合新聞／Yahoo／中央社等）的文章**，antidrug.moj.gov.tw 本身並不產出或代管任何一篇文章全文——純粹是反毒大本營自己彙整的索引。因此沒有「反毒大本營自己的全文」可存：`detail_html`/`detail_text` 留空，只存一行「（轉載自：媒體名）」摘要；`canonical_url` 指向真正的原始媒體文章。topic 分類直接套用 `classifyTopics.ts` 的 `SOURCE_TOPIC_OVERRIDES.antidrug = ["anti-drug"]`，不跑關鍵字規則。
+- **警政署「各警察機關新聞發布」7505**（`police_7505`）：CSV 下載，欄位 `serialNo,stitle,deptName,postDate,content`；`content` 為完整全文，確實全文入庫。CSV 本身有兩個上游怪癖（已處理）：第二列是欄位中文標籤、`content` 欄內含換行需要支援多行 quoted 欄位的 CSV parser（沿用 `lib/server/facilities/csv.ts` 的 `parseCsv`，而非另寫一套）。`serialNo` 是依新舊排序的位置計數器，不是穩定 ID（新增一篇全部後面的序號都會 +1），因此改用 `deptName+postDate+stitle` 的雜湊做識別鍵；資料集本身沒有逐篇的永久連結，`canonical_url` 合成自 `https://data.gov.tw/dataset/7505?article={hash}`（每篇不同，滿足 `uq_news_url` 唯一鍵）。topic 分類交給既有關鍵字規則判斷（它什麼主題都有，包含刑事局打詐新聞稿）。
+- 兩者都掛進既有 `runIngestion.ts` 的 special-source 清單（`processSpecialSource`），沿用既有 `5,35 * * * *` 排程與 `rss_ingestion_lock`，不另開新 cron——這是跟 MOENV／moda 一樣的既有模式，失敗一樣寫入 `ingest_errors`。
+- **⚠️ 尚未從正式主機實測過 `antidrug.moj.gov.tw` 與 `opdadm.moi.gov.tw` 能否連線**（本機／開發環境可連，正式主機未知，疾管署等部分來源已知會擋資料中心 IP）；合併前請先用正式主機實測一次。
 
 #### Phase 3 — 19 大新聞與公益來源 ✅（部分後續移除）
 - 原檔：[news-sources-expansion-phase3.md](../archive/specs/news-sources-expansion-phase3.md)

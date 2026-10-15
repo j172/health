@@ -31,6 +31,35 @@ export interface FacilityExtraJson {
   addictionTreatmentMode?: string | null;
   addictionTreatmentService?: string | null;
   /**
+   * baby_friendly_hospital facility type (#614) — per-row validity date
+   * (ISO YYYY-MM-DD), for the counties whose source actually has one
+   * (Taipei 121200, Changhua 30882). Rows past this date are already
+   * filtered out before insertion (see babyFriendlyHospitalShared.ts), so
+   * by the time a row reaches the DB this is purely informational.
+   */
+  validUntil?: string | null;
+  /**
+   * baby_friendly_hospital facility type (#614) — New Taipei's 123291 has
+   * no per-row expiry, only a single county-wide "list last
+   * updated/confirmed on this date" stamp shared by every row. Display-only,
+   * never used to filter.
+   */
+  dataVerifiedAt?: string | null;
+  /**
+   * methadone_cross_district facility type (#571) — data.gov.tw 133345's
+   * dosing-time windows and per-service fees, which (like #566's fields
+   * above) have no generic facilities column of their own. See
+   * methadoneCrossDistrict.ts.
+   */
+  methadoneWeekdayDosingTime?: string | null;
+  methadoneHolidayDosingTime?: string | null;
+  methadoneOtherDosingTime?: string | null;
+  methadoneTransferInFee?: string | null;
+  methadoneCrossDistrictFee?: string | null;
+  methadoneTransferOutFee?: string | null;
+  methadoneEvaluationFee?: string | null;
+  methadoneNotes?: string | null;
+  /**
    * `category` and `monthlyFee` are shared across two independent facility
    * families that both landed around the same time and happened to pick the
    * same field names — kept as one declaration rather than two to avoid a
