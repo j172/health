@@ -1,5 +1,5 @@
 import { parseCoordinates, textOrNull } from "@/lib/server/garbageRoutes/sources/shared";
-import type { TruckPosition } from "@/lib/tools/garbageTrucks/live";
+import type { TruckFreshnessWindow, TruckPosition } from "@/lib/tools/garbageTrucks/live";
 import type { LiveTruckAdapter } from "@/lib/server/garbageLive/types";
 import { isInBounds, parseTaipeiLocalTime, type LatLngBounds } from "@/lib/server/garbageLive/adapters/shared";
 
@@ -16,9 +16,9 @@ import { isInBounds, parseTaipeiLocalTime, type LatLngBounds } from "@/lib/serve
 // not, each with its LAST known report: at 00:28 that morning 113 rows were under
 // 10 minutes old and 22 were over six hours old, the oldest from 2025-09-29.
 // This parser deliberately keeps all of them. Freshness is judged per request by
-// getLiveTrucks (reports older than 30 minutes are hidden and counted), so a
-// year-old position can never be drawn on the map. Speed is not a filter either:
-// a truck stands still at every collection point.
+// getLiveTrucks against TAICHUNG_FRESHNESS below (reports older than 40 minutes
+// are hidden and counted), so a year-old position can never be drawn on the map.
+// Speed is not a filter either: a truck stands still at every collection point.
 //
 // Host: newdatacenter.taichung.gov.tw answered 200 from both the production host
 // and a GitHub runner in the 2026-10-15 egress probe (spec §3, run
@@ -38,7 +38,23 @@ const REQUIRED_KEYS = ["lineid", "car", "time", "location", "X", "Y"] as const;
  */
 const TAICHUNG_BOUNDS: LatLngBounds = { minLat: 23.6, maxLat: 24.5, minLng: 120.4, maxLng: 121.5 };
 
-const COMPACT_TIME = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
+/**
+ * 臺中's own freshness window. The dataset refreshes about every 10 minutes
+ * (data.gov.tw metadata: updateFrequency 10 分), so a truck that is reporting
+ * normally is routinely 10+ minutes old by the time we read it: at 00:28 on
+ * 2026-10-16 only 113 of 663 rows were under 10 minutes old and 285 more were
+ * 10-30 minutes old. The shared 10-minute window would flag about two thirds of
+ * the drawn trucks 「資料較舊」 for no reason.
+ *  - fresh up to 20 minutes = twice the update interval: one missed refresh
+ *    still reads as current;
+ *  - hidden after 40 minutes = four times the interval: three missed refreshes
+ *    in a row mean the truck has stopped reporting. The cap is deliberate: the
+ *    feed keeps rows for months (the oldest was from 2025-09-29), so the window
+ *    must never grow open-ended.
+ */
+const TAICHUNG_FRESHNESS: TruckFreshnessWindow = { freshMaxAgeSeconds: 20 * 60, expiredAfterSeconds: 40 * 60 };
+
+const COMPACT_TIME =/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/;
 
 /**
  * Reads the feed's `20261016T001948` (Asia/Taipei wall-clock) as a UTC ISO
@@ -132,5 +148,6 @@ export const taichungLiveAdapter: LiveTruckAdapter = {
   sourceLabel: "臺中市政府資料開放平臺「臺中市垃圾清運及資源回收車動態資訊」",
   datasetUrl: "https://data.gov.tw/dataset/83558",
   endpoint: ENDPOINT,
+  freshness: TAICHUNG_FRESHNESS,
   parse: adaptTaichung,
 };

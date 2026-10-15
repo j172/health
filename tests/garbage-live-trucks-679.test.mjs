@@ -200,6 +200,14 @@ test("live tab: reads only /api/garbage-trucks/live, never asks for the visitor'
   assert.match(tab, /clearInterval/);
 });
 
+test("live tab words the freshness thresholds from each city's own `freshness` (#680), not from the shared defaults", () => {
+  const tab = read("app/(zh)/tools/cleaning-squads/GarbageLiveTab.tsx");
+  assert.match(tab, /result\.freshness/);
+  assert.match(tab, /freshMaxAgeSeconds/);
+  assert.match(tab, /expiredAfterSeconds/);
+  assert.ok(!/LIVE_FRESH_MAX_AGE_SECONDS|LIVE_EXPIRED_AGE_SECONDS/.test(tab), "a hard-coded 10/30 minutes would be wrong for 臺中市");
+});
+
 test("live tab states every live city's source (from the API's per-city source), the licence, and that positions are not this site's determination", () => {
   const tab = read("app/(zh)/tools/cleaning-squads/GarbageLiveTab.tsx");
   // The attribution lists the sources of the cities actually shown, so a new city's dataset is credited without a page edit.

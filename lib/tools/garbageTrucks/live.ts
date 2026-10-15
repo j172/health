@@ -42,25 +42,48 @@ export const LIVE_UNREACHABLE_COUNTIES: readonly TaiwanCounty[] = ["臺南市", 
 
 // --- freshness -------------------------------------------------------------
 
-/** Position reports up to this old are shown as current (新北市's dataset refreshes about every 2 minutes, 臺中市's about every 10). */
+// The shared default window below is sized for a feed that refreshes about every
+// 2 minutes (新北市). A city whose feed refreshes more slowly declares its own
+// window on its adapter (see TruckFreshnessWindow); 臺中市 does (#680).
+
+/** Position reports up to this old are shown as current. */
 export const LIVE_FRESH_MAX_AGE_SECONDS = 10 * 60;
 /** Older than FRESH but not older than this: still drawn, flagged 「資料較舊」. Beyond it: never drawn. */
 export const LIVE_EXPIRED_AGE_SECONDS = 30 * 60;
-/** A report this far ahead of our clock is treated as clock skew; further ahead is a bad record. */
+/** A report this far ahead of our clock is treated as clock skew; further ahead is a bad record. Shared by every city. */
 export const LIVE_FUTURE_SKEW_SECONDS = 5 * 60;
+
+/**
+ * How old a report may be before it is flagged and before it is hidden, in
+ * seconds. A city's adapter may declare its own (a feed that refreshes every N
+ * minutes needs a fresh window of at least 2N, or most of its trucks read as
+ * 「資料較舊」 for no reason); an adapter that declares none gets DEFAULT_FRESHNESS.
+ */
+export interface TruckFreshnessWindow {
+  /** Reports up to this old are fresh (shown normally). */
+  freshMaxAgeSeconds: number;
+  /** Reports older than freshMaxAgeSeconds but not older than this are stale (drawn, flagged); older ones are hidden. Must stay bounded. */
+  expiredAfterSeconds: number;
+}
+
+export const DEFAULT_FRESHNESS: TruckFreshnessWindow = {
+  freshMaxAgeSeconds: LIVE_FRESH_MAX_AGE_SECONDS,
+  expiredAfterSeconds: LIVE_EXPIRED_AGE_SECONDS,
+};
 
 export type TruckFreshness = "fresh" | "stale" | "expired" | "invalid";
 
 /**
- * Classifies a position by its age in seconds (now minus the report time).
+ * Classifies a position by its age in seconds (now minus the report time)
+ * against `window` (the shared default unless the city declares its own).
  * fresh: shown normally; stale: shown but flagged; expired: hidden (and
  * counted); invalid: not a number or implausibly in the future — hidden.
  */
-export function classifyTruckAge(ageSeconds: number): TruckFreshness {
+export function classifyTruckAge(ageSeconds: number, window: TruckFreshnessWindow = DEFAULT_FRESHNESS): TruckFreshness {
   if (!Number.isFinite(ageSeconds)) return "invalid";
   if (ageSeconds < -LIVE_FUTURE_SKEW_SECONDS) return "invalid";
-  if (ageSeconds <= LIVE_FRESH_MAX_AGE_SECONDS) return "fresh";
-  if (ageSeconds <= LIVE_EXPIRED_AGE_SECONDS) return "stale";
+  if (ageSeconds <= window.freshMaxAgeSeconds) return "fresh";
+  if (ageSeconds <= window.expiredAfterSeconds) return "stale";
   return "expired";
 }
 
@@ -111,7 +134,7 @@ export interface TruckPosition {
 export interface LiveTruck extends TruckPosition {
   /** Seconds between the report and this response; never negative. */
   ageSeconds: number;
-  /** True for reports older than LIVE_FRESH_MAX_AGE_SECONDS (still drawn, flagged). */
+  /** True for reports older than the city's freshMaxAgeSeconds (still drawn, flagged). */
   stale: boolean;
 }
 
@@ -125,8 +148,10 @@ export interface LiveTrucksCityResult {
   reason: LiveUnavailableReason | null;
   /** Fresh and stale-flagged positions, freshest first. Empty when unavailable. */
   trucks: LiveTruck[];
-  /** Positions left out: older than LIVE_EXPIRED_AGE_SECONDS, or with an impossible report time. */
+  /** Positions left out: older than the city's expiredAfterSeconds, or with an impossible report time. */
   hiddenCount: number;
+  /** The window this city's positions were judged by, so the page words its thresholds from the same numbers. */
+  freshness: TruckFreshnessWindow;
   /** Newest report time among the positions the feed returned (never later than the response time); null when none or unavailable. */
   dataAsOf: string | null;
   /** When our server last asked the upstream for this data; null when unavailable. */

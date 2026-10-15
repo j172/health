@@ -26,9 +26,10 @@ const STALE_ICON = makeIcon(true);
 
 /**
  * Map layer of the live truck positions (issue #679 / B-17). Fresh reports are
- * green; reports older than 10 minutes are drawn grey and translucent and say
- * so in their popup — the server has already dropped anything older than 30
- * minutes. Built on the shared BaseMap (底圖、備援底圖、清單／地圖切換).
+ * green; reports past the city's fresh window (`truck.stale`) are drawn grey and
+ * translucent and say so in their popup — the server has already dropped
+ * anything past the city's hide threshold. Built on the shared BaseMap
+ * (底圖、備援底圖、清單／地圖切換).
  */
 export default function GarbageLiveMap({ trucks }: { trucks: LiveTruck[] }) {
   const markers: BaseMapMarker[] = useMemo(

@@ -7,8 +7,6 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { GARBAGE_COVERAGE } from "@/lib/tools/garbageTrucks/coverage";
 import {
-  LIVE_EXPIRED_AGE_SECONDS,
-  LIVE_FRESH_MAX_AGE_SECONDS,
   formatTaipeiDateTime,
   formatTruckAge,
   type LiveTrucksCityResult,
@@ -26,9 +24,6 @@ const GarbageLiveMap = dynamic(() => import("./GarbageLiveMap"), {
 
 /** While the tab stays open and visible the page asks again this often (the server caches ~90 s, so this is cheap). */
 const AUTO_REFRESH_MS = 60_000;
-
-const FRESH_MINUTES = LIVE_FRESH_MAX_AGE_SECONDS / 60;
-const EXPIRED_MINUTES = LIVE_EXPIRED_AGE_SECONDS / 60;
 
 const liveCounties = GARBAGE_COVERAGE.filter((row) => row.live === "available").map((row) => row.county);
 const unreachableCounties = GARBAGE_COVERAGE.filter((row) => row.live === "unavailable").map((row) => row.county);
@@ -167,6 +162,9 @@ function CityLive({
 
   const dataAge =
     result.dataAsOf === null ? null : Math.round((Date.parse(generatedAt) - Date.parse(result.dataAsOf)) / 1000);
+  // Each city's thresholds come with its response (臺中市 refreshes every ~10 minutes, 新北市 every ~2).
+  const freshMinutes = Math.round(result.freshness.freshMaxAgeSeconds / 60);
+  const expiredMinutes = Math.round(result.freshness.expiredAfterSeconds / 60);
 
   return (
     <section aria-label={`${result.county}垃圾車即時位置`} className="space-y-3">
@@ -186,8 +184,8 @@ function CityLive({
       {result.trucks.length > 0 ? (
         <>
           <p className="text-xs text-neutral-500 dark:text-slate-400">
-            目前顯示 {result.trucks.length} 輛。綠色為 {FRESH_MINUTES} 分鐘內回報；灰色半透明表示超過 {FRESH_MINUTES} 分鐘未更新（資料較舊，車輛可能已移動或停止回報）。
-            {result.hiddenCount > 0 ? `另有 ${result.hiddenCount} 輛超過 ${EXPIRED_MINUTES} 分鐘未更新或時間異常，已隱藏。` : ""}
+            目前顯示 {result.trucks.length} 輛。綠色為 {freshMinutes} 分鐘內回報；灰色半透明表示超過 {freshMinutes} 分鐘未更新（資料較舊，車輛可能已移動或停止回報）。
+            {result.hiddenCount > 0 ? `另有 ${result.hiddenCount} 輛超過 ${expiredMinutes} 分鐘未更新或時間異常，已隱藏。` : ""}
           </p>
           <GarbageLiveMap trucks={result.trucks} />
         </>
@@ -197,7 +195,7 @@ function CityLive({
           className="rounded-xl bg-neutral-100 p-4 text-sm text-neutral-700 dark:bg-slate-800 dark:text-slate-300"
         >
           目前沒有最近回報位置的垃圾車。垃圾車只在收運時段回報位置，非收運時段看不到車輛是正常的；表定時間請看「路線與收運時間」分頁。
-          {result.hiddenCount > 0 ? `（另有 ${result.hiddenCount} 輛的最後回報已超過 ${EXPIRED_MINUTES} 分鐘，不予顯示。）` : ""}
+          {result.hiddenCount > 0 ? `（另有 ${result.hiddenCount} 輛的最後回報已超過 ${expiredMinutes} 分鐘，不予顯示。）` : ""}
         </p>
       )}
     </section>

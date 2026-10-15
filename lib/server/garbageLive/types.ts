@@ -1,5 +1,5 @@
 import type { TaiwanCounty } from "@/lib/constants/taiwanDistricts";
-import type { LiveTruckCity, TruckPosition } from "@/lib/tools/garbageTrucks/live";
+import type { LiveTruckCity, TruckFreshnessWindow, TruckPosition } from "@/lib/tools/garbageTrucks/live";
 
 /**
  * The county-pluggable skeleton of the live garbage-truck layer (issue #679).
@@ -32,6 +32,13 @@ export interface LiveTruckAdapter {
   datasetUrl: string;
   /** The upstream URL fetched when a visitor opens the page. Never sent to the browser. */
   endpoint: string;
+  /**
+   * How old a position may be before it is flagged 「資料較舊」 and before it is
+   * hidden. Optional: omit it and the shared default (10 / 30 minutes, sized for
+   * a feed that refreshes every ~2 minutes) applies. Declare it when the feed
+   * refreshes more slowly, with the dataset's update interval as the basis.
+   */
+  freshness?: TruckFreshnessWindow;
   parse(rawText: string): TruckPosition[];
 }
 
