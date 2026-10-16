@@ -20,6 +20,7 @@ import { runCdcAlertsSync } from "@/lib/server/cdc/ingestCdcAlerts";
 import { runWaterOutagesSync } from "@/lib/server/water/ingestWaterOutages";
 import { runWraWaterOutagesSync } from "@/lib/server/waterOutages/ingestWraWaterOutages";
 import { runWaterQualitySync } from "@/lib/server/waterQuality/runSync";
+import { runOfficeCalendarSync } from "@/lib/server/officeCalendar/runSync";
 import { runGreenProductsSync } from "@/lib/server/greenProducts/ingestGreenProducts";
 import { runCarbonFootprintProductsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintProducts";
 import { runCarbonFootprintCoefficientsSync } from "@/lib/server/carbonFootprint/ingestCarbonFootprintCoefficients";
@@ -318,6 +319,17 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "29 5 2 * *",
     runGuarded("water-quality-sync-cron.log", () => runWaterQualitySync()),
+  );
+  // 辦公日曆同步 (issue #691) — 「今天要上班上課嗎？」用的政府行政機關辦公日曆表
+  // (data.gov.tw 14718)。一年才公布一次，但人事行政總處會中途修正（114 年就在
+  // 2025-10-20 改了三天），所以不是每年一次而是每週三 06:34 抓一次：成本是兩個
+  // 7 KB 的檔案，修正最慢一週內就會反映。34 分不在任何 job 使用的分鐘裡（見
+  // cronCollisions.mjs 的 unusedMinutes），也不是 youbike 每 5 分鐘格線的倍數，
+  // 所以與所有既有 job 都不會同 tick（由 officeCalendar 的 dbConventions.test.mjs
+  // 逐一解析所有 cron 運算式驗證）。這個 job 自己再用 withAdvisoryLock 防重疊。
+  cron.schedule(
+    "34 6 * * 3",
+    runGuarded("office-calendar-sync-cron.log", () => runOfficeCalendarSync()),
   );
   // Green products sync daily at 4:30am
   cron.schedule(

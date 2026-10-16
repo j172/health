@@ -18,6 +18,7 @@
 | 中油油價／站點 | [/tools/cpc-prices](https://health.j172.tw/tools/cpc-prices)、[/tools/cpc-stations](https://health.j172.tw/tools/cpc-stations) | 中油 9 類牌價、20 類服務據點、`getStationInfo` | 首頁側欄油價小卡；2.0 M3 將合併兩頁 |
 | 緊急電話 | [/tools/emergency-hotlines](https://health.j172.tw/tools/emergency-hotlines)（`/emergency` 捷徑） | 47 組簡碼＋22 縣市 1999 | SSR 預載、離線可用、一鍵直撥 |
 | 防災物資計算 | [/tools/emergency-supplies](https://health.j172.tw/tools/emergency-supplies) | 國防部《臺灣全民安全指引》 | 避難包／居家儲備雙模式、勾選進度本機保存、可列印 |
+| 今天要上班上課嗎？（#691） | [/tools/work-school-status](https://health.j172.tw/tools/work-school-status)（en／ja／ko 有真實路徑版） | 人事行政總處《政府行政機關辦公日曆表》（data.gov.tw 14718）；天然災害停班停課**只做連結導流（link-only）** | 日曆：`office_calendar_days`（`lib/server/officeCalendar/`；UNIQUE KEY 只用 `calendar_date`，同步一律 UPDATE、不刪列），每週三 06:34 同步當年與次年檔（人事行政總處會中途修正，114 年就在 2025-10-20 改了 3 天，且該修正檔是 Big5、列在清單最後），無資料時退回內建 `data/office-calendar-seed.json`（2026–2027，頁面標示取得日期），再無則顯示「查無資料」、絕不以星期推測。「今天／明天」以 Asia/Taipei 計算，與主機時區無關。停班停課不顯示各縣市狀態，見 §2。首頁狀態列「今日上班」晶片（颱風警報發布時轉紅，只提示去看官方公告）、`/guides/typhoon-earthquake` 第 2 步。API：`/api/tools/work-school-status`；首次部署後 `POST /api/admin/office-calendar-sync` |
 | NCDR 示警 | （無獨立頁） | NCDR CAP | `lib/server/ncdr/ncdrAlerts.ts` 已供 `/api/alerts/active` 與淹水模組使用 |
 
 ---
@@ -28,6 +29,8 @@
 - 疾管署 `od.cdc.gov.tw` 只允許台灣 ISP 來源 IP，正式主機、GitHub runner、Cloudflare WARP 全部逾時 → **登革熱病媒蚊地圖已整個移除**（不依賴開發者個人電腦中繼）。
 - 伺服器端一律使用 `httpGetText`，禁止全域 `fetch()`（undici WASM 會 OOM，見 [11](11-hosting-ops-incidents.md)）。
 - 緊急電話頁必須在斷網後仍可運作（資料於 SSR 時內嵌）。
+- **各縣市停班停課不做即時狀態，只連結導流（2026-10-16 查證，#691）**：這是影響出門安全的資訊，只有「官方＋穩定＋機器可讀」的來源才顯示。查證結果——(1) `www.dgpa.gov.tw/typh/daily/nds.html` 目前是伺服器端直出的 HTML（頁面唯一的 script 是 Google Tag Manager；`nds.json`／`ndsdata.json`／`nds.xml`／`ndsdata.xml`／`nds.js` 全部 404），表格版面在 2024–2026 間至少有兩種樣板來回切換（逐縣市平面表 vs. 分區 rowspan 表，後者並出現「已達停止上班及上課標準」「尚未列入警戒區」等新措辭），平日無災情時又是單列「無停班停課訊息。」——正是「因改版悄悄壞掉」的 HTML；(2) data.gov.tw 20457 指向的 CAP（`alerts.ncdr.nat.gov.tw/RssAtomFeed.ashx?AlertType=33`）回「請先登入會員」，需 NCDR 會員；(3) NCDR 公開 feed 沒有停班停課項目。因此不抓、不快取、不顯示任何縣市狀態；頁面放官方公告連結與誠實說明（`lib/tools/workSchoolStatus/closureGuidance.ts`），並由測試禁止任何程式碼抓取該頁。若日後出現穩定公開的機器可讀來源，才在該模組加入，且必須有「抓取失敗就明說、請看官網」的降級、極短快取與資料時間。首頁晶片的紅色只代表「中央氣象署發布颱風警報（`cwa_alerts` W-C0034-001）」，文字是「查停班停課」，不是停班停課本身。
+- 日曆資料的修正會覆蓋舊值：同步選每年「最新的檔」（清單中 `(YYYMMDD更新)` 最大者，同分取排在後面者），解碼自動辨識 UTF-8／Big5，整年檔必須恰好 365／366 列才寫入，否則該年原樣保留並寫入 `ingest_errors`。
 
 ---
 

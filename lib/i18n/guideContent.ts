@@ -45,6 +45,10 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "Watch weather alerts",
           why: "Typhoons, heavy rain, and similar disasters usually come with advance warning — continuously watching live weather alerts and rainfall information is the earliest first-hand information available for disaster preparation.",
         },
+        "work-school-status": {
+          caption: "Check whether work and classes are suspended",
+          why: "Once a typhoon warning is out, the most practical question is whether you work or study tomorrow. Each county or city government decides, and the DGPA publishes the result; this step gives you the way to the official announcement and the government office calendar. This site does not determine suspensions — rely on the official announcement before you head out.",
+        },
         "global-watch": {
           caption: "Check the latest earthquake information",
           why: "Earthquakes can't be warned about in advance, but right after one strikes you can immediately check the epicenter, magnitude, depth, and any tsunami warning, helping you decide whether further evacuation or aftershock precautions are needed.",
@@ -101,6 +105,10 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "気象警報を確認する",
           why: "台風や大雨などの災害には多くの場合事前の警告があります。リアルタイムの気象警報と降雨情報を継続的に確認することが、災害対応の準備で最初に得られる一次情報です。",
         },
+        "work-school-status": {
+          caption: "休業・休校の有無を確認する",
+          why: "台風警報が出たあと、最も現実的な疑問は明日出勤・登校するかどうかです。休業・休校は各県市政府が決定し、人事行政総処が公表します。このステップでは公式発表への入口と政府機関の執務カレンダーを案内します。本サイトは休業・休校を判定しませんので、外出前に必ず公式発表をご確認ください。",
+        },
         "global-watch": {
           caption: "最新の地震情報を確認する",
           why: "地震は事前に警告できませんが、発生後すぐに震源地、規模、深さ、津波警報を確認することで、さらなる避難や余震への備えが必要かどうかを判断できます。",
@@ -156,6 +164,10 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
         "weather-alerts": {
           caption: "기상 경보 확인하기",
           why: "태풍, 폭우 등의 재해는 대부분 사전 경고가 있습니다. 실시간 기상 경보와 강우 정보를 지속적으로 확인하는 것이 재해 대응 준비에서 가장 먼저 얻을 수 있는 1차 정보입니다.",
+        },
+        "work-school-status": {
+          caption: "휴무·휴교 여부 확인하기",
+          why: "태풍 경보가 발령되면 가장 현실적인 질문은 내일 출근·등교하느냐입니다. 휴무·휴교는 각 현·시 정부가 결정하고 인사행정총처가 공표합니다. 이 단계에서는 공식 공고로 가는 입구와 정부기관 근무일 달력을 안내합니다. 이 사이트는 휴무·휴교를 판정하지 않으므로 외출 전에 반드시 공식 공고를 확인하세요.",
         },
         "global-watch": {
           caption: "최신 지진 정보 조회하기",

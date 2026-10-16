@@ -2032,7 +2032,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ["超大豪雨 (Extremely Torrential Rain)", "≥ 500 mm", "—", "紫色 🟣", "重大致災降雨，配合預警性撤離與避難"],
       ],
     },
-    relatedSlugs: ["aqi", "uv", "global-watch", "water"],
+    relatedSlugs: ["aqi", "uv", "global-watch", "water", "work-school-status"],
     faqs: [
       {
         question: "氣象警報多久更新一次？",
@@ -4110,6 +4110,86 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "work-school-status",
+    group: "disaster-alerts",
+    lastUpdated: "2026-10-16",
+
+    schemaType: "WebPage",
+    title: "今天要上班上課嗎？政府辦公日曆（含補班日）與天然災害停班停課官方公告入口",
+    keywords: [
+      "今天上班嗎",
+      "上班日",
+      "補班日",
+      "放假",
+      "國定假日",
+      "辦公日曆",
+      "停班停課",
+      "颱風假",
+      "天然災害停止上班上課",
+      "人事行政總處",
+    ],
+    navLabel: "今天要上班上課嗎？",
+    description:
+      "查詢今天、明天是否為政府機關上班日（依行政院人事行政總處《政府行政機關辦公日曆表》，含國定假日、補假與補班日），並列出未來 60 天的假日與補班日。颱風、地震等天然災害是否停止上班上課，由各縣市政府決定並通報；本站不判定、不轉載各縣市狀態，僅提供人事行政總處官方公告連結與查詢說明。",
+    directAnswer:
+      "今天是否上班依人事行政總處辦公日曆表（含補班日）查詢，適用政府機關；颱風等天災是否停班停課由各縣市政府公告，請以人事行政總處官網為準，本站非判定單位。",
+    scientificBasis: [
+      {
+        title: "中華民國政府行政機關辦公日曆表（政府資料開放平臺 14718）",
+        authority: "行政院人事行政總處",
+        url: "https://data.gov.tw/dataset/14718",
+      },
+      {
+        title: "天然災害停止上班及上課情形（即時公告）",
+        authority: "行政院人事行政總處",
+        url: "https://www.dgpa.gov.tw/typh/daily/nds.html",
+      },
+      {
+        title: "天然災害停止上班及上課作業辦法",
+        authority: "全國法規資料庫（行政院人事行政總處主管）",
+        url: "https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=S0110022",
+      },
+      {
+        title: "天然災害發生事業單位勞工出勤管理及工資給付要點",
+        authority: "勞動部",
+        url: "https://laws.mol.gov.tw/FLAW/FLAWDAT01.aspx?id=FL049533",
+      },
+    ],
+    relatedSlugs: ["weather-alerts", "disaster-map", "metro-alerts", "emergency-supplies", "emergency-hotlines"],
+    faqs: [
+      {
+        question: "這個日曆適用誰？學校和一般公司也一樣嗎？",
+        answer:
+          "本工具的日曆是行政院人事行政總處公布的《政府行政機關辦公日曆表》，適用政府行政機關。學校另有各校的學年行事曆，寒暑假等不在本表內；民間事業單位依勞動基準法、勞動契約與公司規定，國定假日與補班日是否出勤、工資如何計算，請向公司或勞動主管機關確認，不一定與本表相同。",
+      },
+      {
+        question: "什麼是補班日？",
+        answer:
+          "補班日是為了連續假期而調整的上班日：原本是週六或週日、但政府機關要上班的日子，在辦公日曆表上「是否放假」為 0 並標示「補行上班」。它通常對應前後某個平日調整放假。",
+      },
+      {
+        question: "為什麼不直接顯示各縣市是否停班停課？",
+        answer:
+          "各縣市是否停止上班上課，由縣市政府依《天然災害停止上班及上課作業辦法》決定並通報，行政院人事行政總處彙整後公布在「天然災害停止上班及上課情形」頁面。該頁沒有提供程式可穩定讀取的公開資料介接，頁面排版也曾多次調整；這是影響出門安全的訊息，本站寧可不顯示，也不轉載可能過時或解析錯誤的結果，所以只提供官方公告連結。颱風警報發布時，請直接開啟人事行政總處公告頁，或洽各縣市政府。",
+      },
+      {
+        question: "停班停課通常什麼時候公布？",
+        answer:
+          "依人事行政總處公告頁所載：全日或上午半日停止上班及上課，應於前一日晚間 7 時至 10 時前發布，並通知傳播媒體於晚間 11 時前播報；若前一日未發布、當日 0 時後風雨增強達到基準，應於當日上午 4 時 30 分前發布；下午半日或晚間停止上班及上課，應於當日上午 10 時 30 分前發布；其餘時間各通報權責機關得視實際情形隨時發布。實際時間以官方公告為準。",
+      },
+      {
+        question: "私人公司遇到颱風要不要上班？",
+        answer:
+          "政府宣布的停班停課，適用範圍是各級政府機關及公、私立學校；民間事業單位及勞工，依勞動部《天然災害發生事業單位勞工出勤管理及工資給付要點》處理，如有疑義，可查詢勞動部網頁或電洽勞動部免付費專線 0800-085-151（依人事行政總處公告頁所載）。交通運輸、警察、消防、海岸巡防、醫療、關務等業務性質特殊的機關（構）全年無休服務，遇天然災害尚無停止上班之適用。",
+      },
+      {
+        question: "辦公日曆多久更新？資料有誤怎麼辦？",
+        answer:
+          "本站每週同步一次人事行政總處在政府資料開放平臺公布的日曆；人事行政總處也會中途修正，例如 114 年曾在 2025 年 10 月調整三個日期，所以重要行程請以人事行政總處公布為準。若本站暫時無法取得資料，頁面會改用內建備援副本並標示取得日期，或直接顯示「查無資料」，絕不用星期推測是否上班。",
+      },
+    ],
+  },
+  {
     slug: "emergency-supplies",
     group: "disaster-alerts",
     lastUpdated: "2026-10-12",
@@ -4534,6 +4614,9 @@ const INDEXABLE_SLUGS = new Set([
   "emergency-hotlines",
   "emergency-supplies",
   "medical-violators",
+  // Issue #691: a daily-answer page (today/tomorrow working-day status, 60-day
+  // holiday list) plus the official-announcement guide — substantive content.
+  "work-school-status",
 ]);
 
 export const isToolIndexable = (tool: ToolCatalogEntry): boolean =>

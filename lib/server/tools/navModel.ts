@@ -787,6 +787,13 @@ export const GUIDES: Guide[] = [
         why: "颱風、豪雨等天災多半有事前預警，持續關注即時氣象警報與降雨資訊，是應變準備最早能掌握的第一手資訊。",
       },
       {
+        // Issue #691: 颱風警報發布後最實際的問題是「明天要不要上班上課」。這一步只
+        // 提供政府機關辦公日曆與人事行政總處官方公告的入口，不判定各縣市停班停課。
+        toolSlug: "work-school-status",
+        caption: "確認是否停班停課",
+        why: "颱風警報發布後，最實際的問題是明天要不要上班上課。各縣市是否停班停課由縣市政府決定、人事行政總處公布；這一步提供官方公告的入口與政府機關辦公日曆，本站不判定停班停課，出門前請以官方公告為準。",
+      },
+      {
         // Issue #590 (parent #583): "earthquakes" (the standalone tool) was
         // retired in favor of global-watch's earthquakes item sub-route —
         // toolSlug now resolves to the "global-watch" TOOL_CATALOG entry

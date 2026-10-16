@@ -60,6 +60,8 @@
 3. 若住宅網路也被擋，可用瀏覽器從 <https://data.gov.tw/dataset/5958> 另存 ZIP，再加 `--zip <路徑>`。
 4. 每列的 `extra_json.dataAsOf` 是檔名裡的發布日（如 `1150930` → 2026-09-30），`/nearby` 的派出所卡片會顯示「資料日期」與資料來源。
 
+另有一個 in-app job（#691）：`office-calendar-sync`，`34 6 * * 3`（每週三 06:34），同步政府行政機關辦公日曆表（data.gov.tw 14718，當年＋次年）到 `office_calendar_days`；不是「每年一次」是因為人事行政總處會中途修正日曆（114 年於 2025-10-20 改了 3 天）。分鐘 34 沒有任何 job 使用。檔案來自 `www.dgpa.gov.tw/FileConversion`，正式主機與 runner 是否連得到待 `egress-probe.yml` 結果確認；連不到時頁面退回內建 seed，且失敗會寫入 `ingest_errors`。
+
 ---
 
 ## 2. 長期有效的決策

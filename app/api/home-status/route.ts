@@ -10,6 +10,7 @@ import {
   type HomeStatusUv,
   type HomeStatusWeather,
 } from "@/lib/server/home/queries";
+import { fetchHomeStatusWorkday, type HomeStatusWorkday } from "@/lib/server/officeCalendar/homeWorkday";
 import type { CwaAlertItem } from "@/lib/server/cwa/queries";
 import type { SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 
@@ -30,6 +31,8 @@ export interface HomeStatusResponse {
     uv: HomeStatusSection<HomeStatusUv | null>;
     earthquake: HomeStatusSection<SignificantEarthquake[]>;
     alerts: HomeStatusSection<CwaAlertItem[]>;
+    /** Issue #691: 今日上班 — nationwide, so it never needs a location. */
+    workday: HomeStatusSection<HomeStatusWorkday>;
   };
 }
 
@@ -76,9 +79,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     aggregateHomeStatusSections<{
       earthquake: SignificantEarthquake[];
       alerts: CwaAlertItem[];
+      workday: HomeStatusWorkday;
     }>({
       earthquake: () => fetchHomeStatusEarthquakes(3),
       alerts: () => fetchHomeStatusAlerts(5),
+      workday: () => fetchHomeStatusWorkday(),
     }),
     hasCoords
       ? aggregateHomeStatusSections<{
@@ -101,6 +106,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     uv: locationDependent ? locationDependent.uv : unavailable,
     earthquake: alwaysOn.earthquake,
     alerts: alwaysOn.alerts,
+    workday: alwaysOn.workday,
   };
 
   return NextResponse.json(
