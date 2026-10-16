@@ -176,6 +176,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.gdacsEvents);
   // WHO Disease Outbreak News (issue #596) — new table, no ALTER needed.
   await p.query(TABLE_DDL.whoOutbreakNews);
+  // 政府行政機關辦公日曆表 (issue #691) — new table, no ALTER needed.
+  await p.query(TABLE_DDL.officeCalendarDays);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

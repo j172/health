@@ -7,7 +7,10 @@ import { useSidebarWidgetData } from "@/components/Tools/useSidebarWidgetData";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 import type { HomeStatusResponse, HomeStatusSection } from "@/app/api/home-status/route";
+import type { HomeStatusWorkday } from "@/lib/server/officeCalendar/homeWorkday";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { buildHomeWorkdayChip } from "@/lib/tools/workSchoolStatus/calendar";
+import { useMinuteClock } from "@/lib/hooks/useMinuteClock";
 
 /**
  * Homepage top status bar (issue #472, parent #438 §G acceptance criterion
@@ -56,26 +59,46 @@ function magnitudeColor(mag: number): string {
   return "#4f46e5";
 }
 
+// Issue #691: "alert" is the highlighted look for the 今日上班 pill while a CWA
+// typhoon warning is in force — a prompt to read the official 停班停課 page.
+type PillTone = "default" | "alert";
+
+const PILL_TONE_CLASSES: Record<PillTone, { box: string; label: string; value: string }> = {
+  default: {
+    box: "border-slate-200 bg-white hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700",
+    label: "text-slate-500 dark:text-slate-400",
+    value: "text-slate-800 dark:text-slate-100",
+  },
+  alert: {
+    box: "border-red-300 bg-red-50 hover:border-red-400 dark:border-red-900/70 dark:bg-red-950/40 dark:hover:border-red-700",
+    label: "text-red-700 dark:text-red-300",
+    value: "text-red-800 dark:text-red-200",
+  },
+};
+
 function StatusPill({
   emoji,
   label,
   children,
   href,
+  tone = "default",
 }: {
   emoji: string;
   label: string;
   children: React.ReactNode;
   href: string;
+  tone?: PillTone;
 }) {
+  const classes = PILL_TONE_CLASSES[tone];
   return (
     <Link
       href={href}
-      className="flex min-w-[9.5rem] flex-1 items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-xs transition-colors hover:border-indigo-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700"
+      className={`flex min-w-[9.5rem] flex-1 items-center gap-2.5 rounded-2xl border px-3.5 py-2.5 shadow-xs transition-colors ${classes.box}`}
     >
       <span aria-hidden="true" className="text-xl leading-none">{emoji}</span>
       <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</p>
-        <div className="truncate text-xs font-bold text-slate-800 dark:text-slate-100">{children}</div>
+        <p className={`text-[10px] font-semibold uppercase tracking-wide ${classes.label}`}>{label}</p>
+        <div className={`truncate text-xs font-bold ${classes.value}`}>{children}</div>
       </div>
     </Link>
   );
@@ -115,6 +138,14 @@ export default function HomeStatusBar() {
   const [manualDistrict, setManualDistrict] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
+  // Issue #691: the 今日上班 pill resolves "today" with the visitor's own clock
+  // (Asia/Taipei date, see lib/tools/workSchoolStatus/calendar.ts) from the
+  // rows /api/home-status returns, because that response is edge-cached for
+  // minutes and a cached answer served after midnight would be yesterday's.
+  // The clock comes from useMinuteClock (null until mounted, refreshed each
+  // minute) so it is never read during render.
+  const nowMs = useMinuteClock();
+
   const manualCoords = useMemo(() => {
     if (!manualCounty) return null;
     const centroid = TAIWAN_COUNTY_CENTROIDS[manualCounty];
@@ -150,6 +181,7 @@ export default function HomeStatusBar() {
     label: string,
     href: string,
     renderOk: (data: T) => React.ReactNode,
+    getTone?: (data: T) => PillTone,
   ) {
     if (showInitialSkeleton || !section) {
       return <SkeletonPill key={label} emoji={emoji} label={label} />;
@@ -178,15 +210,47 @@ export default function HomeStatusBar() {
       );
     }
     return (
-      <StatusPill key={label} emoji={emoji} label={label} href={href}>
+      <StatusPill key={label} emoji={emoji} label={label} href={href} tone={getTone?.(section.data) ?? "default"}>
         {renderOk(section.data)}
       </StatusPill>
     );
   }
 
+  // Issue #691: 今日上班. A typhoon warning turns the pill red and swaps its
+  // text for "go and check the official 停班停課 page" — it never says work or
+  // school is cancelled, because this site does not know that.
+  const workdayChip = (workday: HomeStatusWorkday) =>
+    nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs, workday.typhoonWarning);
+
   return (
     <section aria-label={t("homePage.statusBar.sectionAriaLabel", "即時狀態總覽")} className="mb-8">
       <div className="flex flex-wrap gap-3">
+        {renderSection(
+          nowMs === null ? undefined : sections?.workday,
+          "🏢",
+          t("homePage.statusBar.workdayLabel", "今日上班"),
+          "/tools/work-school-status",
+          (workday) => {
+            const chip = workdayChip(workday);
+            if (!chip) return null;
+            if (chip.typhoonWarning) return t("homePage.statusBar.workdayTyphoon", "颱風警報中・查停班停課");
+            switch (chip.state) {
+              case "workday":
+                return t("homePage.statusBar.workdayWorkday", "上班日");
+              case "makeup-workday":
+                return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
+              case "off":
+                if (chip.offReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
+                return chip.name
+                  ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.name)
+                  : t("homePage.statusBar.workdayOff", "放假");
+              default:
+                return t("homePage.statusBar.workdayUnknown", "查無日曆資料");
+            }
+          },
+          (workday) => (workdayChip(workday)?.typhoonWarning ? "alert" : "default"),
+        )}
+
         {renderSection(sections?.weather, "🌤️", t("homePage.statusBar.weatherLabel", "天氣"), "/tools/weather-alerts", (weather) =>
           weather ? (
             <>

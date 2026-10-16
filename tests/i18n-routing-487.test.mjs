@@ -247,6 +247,9 @@ test("app/[locale]/page.tsx, app/[locale]/nearby/page.tsx, and the typhoon-earth
 test("the redirect rules' ?lang= list covers all 7 translated tool slugs", async () => {
   const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
   for (const slug of [...TRANSLATED_TOOL_SLUGS]) {
+    // Issue #691: a tool created after path locales shipped has no legacy ?lang= URL to redirect
+    // (see the matching note in tests/i18n-routing-485.test.mjs).
+    if (slug === "work-school-status") continue;
     const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === `/tools/${slug}` && r.has);
     assert.ok(rule, `the redirect rules must include a ?lang= rule for "${slug}"`);
   }

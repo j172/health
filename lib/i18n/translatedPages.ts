@@ -49,6 +49,8 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   { kind: "tool", slug: "cultural-events" },
   { kind: "tool", slug: "heritage-map" },
   { kind: "tool", slug: "tourism-factories" },
+  // Issue #691: 今天要上班上課嗎？ (office calendar + official closure links).
+  { kind: "tool", slug: "work-school-status" },
   { kind: "path", path: "/nearby", label: "我附近" },
   { kind: "path", path: "/guides/typhoon-earthquake", label: "颱風地震來了" },
   // Issue #588 (parent #583): first global-watch item sub-route.
@@ -109,6 +111,8 @@ export const TRANSLATED_TOOL_SLUGS = [
   "cultural-events",
   "heritage-map",
   "tourism-factories",
+  // Issue #691: 今天要上班上課嗎？
+  "work-school-status",
 ] as const;
 export type TranslatedToolSlug = (typeof TRANSLATED_TOOL_SLUGS)[number];
 

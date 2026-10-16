@@ -119,6 +119,18 @@ const targets = {
   // that B-12 林火 will use was never probed individually.
   "data.moa.gov.tw ForestFireAlertWCF (B-12)":
     "https://data.moa.gov.tw/api/v1/ForestFireAlertWCF/?CreateDate=2026-10-15",
+
+  // issue #691 (今天要上班上課嗎？): www.dgpa.gov.tw has never been probed from
+  // either vantage point, and both halves of that tool depend on it — the
+  // office-calendar CSVs that data.gov.tw 14718 points at are served from
+  // www.dgpa.gov.tw/FileConversion (the weekly sync fetches them from this
+  // host; if it is blocked the page keeps running from the committed seed),
+  // and nds.html is the closure-announcement page the tool links to. The CSV
+  // is the 116 (2027) file; the metadata API is the resolver the sync uses.
+  "data.gov.tw api 14718 (URL resolver)": "https://data.gov.tw/api/v2/rest/dataset/14718",
+  "www.dgpa.gov.tw 14718 calendar CSV (#691)":
+    "https://www.dgpa.gov.tw/FileConversion?filename=dgpa/files/202607/f538b1ff-ba60-4c63-9477-10db8e6612d1.csv&nfix=&name=116%e5%b9%b4%e4%b8%ad%e8%8f%af%e6%b0%91%e5%9c%8b%e6%94%bf%e5%ba%9c%e8%a1%8c%e6%94%bf%e6%a9%9f%e9%97%9c%e8%be%a6%e5%85%ac%e6%97%a5%e6%9b%86%e8%a1%a8_utf8bom.csv",
+  "www.dgpa.gov.tw nds.html (closure page)": "https://www.dgpa.gov.tw/typh/daily/nds.html",
 };
 
 const main = () => {

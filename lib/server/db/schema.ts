@@ -2216,6 +2216,31 @@ export const TABLE_DDL = {
       KEY idx_who_outbreak_news_country_iso (country_iso)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 政府行政機關辦公日曆表 (data.gov.tw 14718，issue #691)——「今天要上班上課嗎？」
+  // 的日曆來源。見 lib/server/officeCalendar/。
+  //
+  // 一個日曆日一列：UNIQUE KEY 只用 calendar_date（DATE，這張表的「實體」就是
+  // 「某一天」，不是某次觀測時間），絕對不能把 synced_at／updated_at 或任何
+  // DATETIME 放進 key。這個 repo 已在 cwa_station_weather／cwa_rainfall／
+  // aqi_readings 等表上真實發生過「UNIQUE KEY 含時間欄位 → 每次同步多插一列 →
+  // 表無限膨脹」的事故。這裡每年同步與每次修訂都是對同一天做 UPDATE：人事行政總處
+  // 曾在 2025-10-20 修正 114 年（改了 9/29、10/24、12/25 三天），覆蓋舊列即可，
+  // 不會多出新列。synced_at 與 is_holiday／note 都是一般欄位；整張表一年 365 列，
+  // 同步程式不刪任何列（日期不會消失，殘缺檔案在寫入前就被拒絕）。
+  officeCalendarDays: `
+    CREATE TABLE IF NOT EXISTS office_calendar_days (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      calendar_date DATE NOT NULL,
+      is_holiday TINYINT(1) NOT NULL,
+      note VARCHAR(100) NOT NULL DEFAULT '',
+      source_year SMALLINT NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_office_calendar_date (calendar_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

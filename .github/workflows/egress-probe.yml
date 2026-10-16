@@ -125,6 +125,18 @@ jobs:
           # Service/OpenData/TransService.aspx path; the /api/v1/ path that
           # B-12 林火 will use was never probed individually.
           probe_track_b "data.moa.gov.tw ForestFireAlertWCF (B-12)"      "https://data.moa.gov.tw/api/v1/ForestFireAlertWCF/?CreateDate=2026-10-15"
+          # issue #691 (今天要上班上課嗎？): www.dgpa.gov.tw has never been
+          # probed from either vantage point, and BOTH halves of that tool
+          # depend on it — the office-calendar CSVs that data.gov.tw 14718
+          # points at are served from www.dgpa.gov.tw/FileConversion, and the
+          # closure-announcement page is the link the page sends people to
+          # (this site does not fetch it, but a blocked host/runner would tell
+          # us whether any future automated read could work). The CSV probed is
+          # the 116 (2027) file, the newest one; the data.gov.tw metadata API
+          # is the resolver the sync uses to find current file URLs.
+          probe_track_b "data.gov.tw api 14718 (URL resolver)"    "https://data.gov.tw/api/v2/rest/dataset/14718"
+          probe_track_b "www.dgpa.gov.tw 14718 calendar CSV (#691)" "https://www.dgpa.gov.tw/FileConversion?filename=dgpa/files/202607/f538b1ff-ba60-4c63-9477-10db8e6612d1.csv&nfix=&name=116%e5%b9%b4%e4%b8%ad%e8%8f%af%e6%b0%91%e5%9c%8b%e6%94%bf%e5%ba%9c%e8%a1%8c%e6%94%bf%e6%a9%9f%e9%97%9c%e8%be%a6%e5%85%ac%e6%97%a5%e6%9b%86%e8%a1%a8_utf8bom.csv"
+          probe_track_b "www.dgpa.gov.tw nds.html (closure page)"  "https://www.dgpa.gov.tw/typh/daily/nds.html"
 
       - name: WRA resource shapes (runner egress)
         run: |

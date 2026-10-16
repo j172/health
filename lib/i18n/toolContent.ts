@@ -1159,6 +1159,132 @@ const TOOL_I18N_CONTENT: Record<TranslatedToolSlug, Record<PathLocale, Localized
       ],
     },
   },
+  // Issue #691: 今天要上班上課嗎？ — the office calendar plus link-only guidance
+  // to the official natural-disaster work/class suspension announcement. These
+  // follow the zh catalog entry FAQ-for-FAQ; the "this site does not determine
+  // or republish closures" wording is deliberate in every language.
+  "work-school-status": {
+    en: {
+      title:
+        "Work or School Today? Taiwan Government Office Calendar (with Make-up Workdays) and Official Disaster Day-Off Announcements",
+      description:
+        "Check whether today and tomorrow are working days for Taiwan government offices (based on the Directorate-General of Personnel Administration's Government Office Calendar, including national holidays, substitute days off and make-up workdays), plus the holidays and make-up workdays in the next 60 days. Whether work and classes are suspended for a typhoon, earthquake or other natural disaster is decided by each county or city government; this site does not determine or republish it, and only links to the official DGPA announcement with guidance on how to check.",
+      directAnswer:
+        "Whether today is a working day comes from the DGPA's government office calendar (make-up workdays included) and applies to government agencies; whether work and school are suspended in a disaster is announced by each county or city government — check the DGPA website, as this site does not decide it.",
+      faqs: [
+        {
+          question: "Who does this calendar apply to? Is it the same for schools and private companies?",
+          answer:
+            "The calendar is the Government Office Calendar published by the Directorate-General of Personnel Administration (DGPA), Executive Yuan, and applies to government agencies. Schools follow their own academic calendars (winter and summer breaks are not in this table); private employers follow the Labor Standards Act, employment contracts and company rules, so whether staff work on a national holiday or make-up workday, and how pay is calculated, may differ — check with your employer or the labor authority.",
+        },
+        {
+          question: "What is a make-up workday?",
+          answer:
+            "A make-up workday is a working day moved in order to create a long holiday: a Saturday or Sunday on which government offices work, shown in the calendar with the day-off flag 0 and the note 補行上班. It usually pairs with a weekday that was turned into a day off.",
+        },
+        {
+          question: "Why doesn't this page show which counties have suspended work and school?",
+          answer:
+            "Each county or city government decides under the Regulations for Work and Class Suspension in Natural Disasters, and the DGPA compiles the results on its work-and-school-suspension page. That page offers no public data interface (API) that a program can read reliably, and its layout has changed several times. This is information people act on for their safety, so this site would rather show nothing than republish a result that may be out of date or misread; it only links to the official announcement. When a typhoon warning is out, open the DGPA announcement page directly or contact your county or city government.",
+        },
+        {
+          question: "When are suspensions usually announced?",
+          answer:
+            "As stated on the DGPA announcement page: a full-day or morning suspension must be announced by 7–10 p.m. the evening before, with the media asked to broadcast it by 11 p.m.; if nothing was announced the night before and wind and rain intensify after midnight to the threshold, it must be announced by 4:30 a.m. that day; an afternoon or evening suspension must be announced by 10:30 a.m. that day; otherwise the responsible authority may announce at any time as circumstances require. The official announcement prevails.",
+        },
+        {
+          question: "Do private companies have to work during a typhoon?",
+          answer:
+            "The government's suspension applies to government agencies at all levels and to public and private schools. Private employers and workers follow the Ministry of Labor's Guidelines on Attendance and Wage Payment for Employers and Workers during Natural Disasters; with questions, check the Ministry of Labor website or call its toll-free line 0800-085-151 (as listed on the DGPA announcement page). Agencies with special operational duties — transport, police, fire, coast guard, medical care and customs — serve all year round and are not covered by the suspension.",
+        },
+        {
+          question: "How often is the calendar updated? What if it is wrong?",
+          answer:
+            "This site syncs the calendar the DGPA publishes on the Government Open Data Platform once a week. The DGPA also revises it mid-year — in October 2025 it changed three dates in the 2025 calendar — so confirm important plans with the DGPA. If the site cannot obtain the data, the page falls back to a built-in backup copy and shows its date, or shows \"no data\"; it never guesses from the day of the week.",
+        },
+      ],
+    },
+    ja: {
+      title:
+        "今日は出勤・登校？台湾政府機関の執務カレンダー（振替出勤日を含む）と自然災害時の休業・休校の公式発表案内",
+      description:
+        "台湾の政府機関について、今日・明日が出勤日かどうかを行政院人事行政総処の「政府行政機関執務カレンダー」（国定休日、振替休日、振替出勤日を含む）で確認でき、今後60日間の休日と振替出勤日も一覧できます。台風や地震などの自然災害による休業・休校は各県市政府が決定するもので、本サイトは判定も転載も行わず、人事行政総処の公式発表へのリンクと確認方法のみを案内します。",
+      directAnswer:
+        "今日が出勤日かどうかは人事行政総処の執務カレンダー（振替出勤日を含む）に基づき、政府機関に適用されます。台風などによる休業・休校は各県市政府が発表しますので、人事行政総処の公式サイトでご確認ください。本サイトは判定を行いません。",
+      faqs: [
+        {
+          question: "このカレンダーは誰に適用されますか？学校や一般企業も同じですか？",
+          answer:
+            "行政院人事行政総処が公表する「政府行政機関執務カレンダー」で、政府行政機関に適用されます。学校は各校の学年暦に従い（冬休み・夏休みはこの表に含まれません）、民間企業は労働基準法・雇用契約・社内規定に従うため、国定休日や振替出勤日に出勤するか、賃金がどう計算されるかは異なる場合があります。勤務先または労働主管機関にご確認ください。",
+        },
+        {
+          question: "振替出勤日とは何ですか？",
+          answer:
+            "連休をつくるために移動された出勤日です。本来は土曜日または日曜日ですが政府機関が勤務する日で、カレンダー上は休日フラグが0、備考に「補行上班」と表示されます。通常は前後の平日が休みに振り替えられます。",
+        },
+        {
+          question: "このページが各県市の休業・休校状況を直接表示しないのはなぜですか？",
+          answer:
+            "各県市の休業・休校は、県市政府が「天然災害停止上班及上課作業辦法」に基づいて決定し、人事行政総処が取りまとめて公表しています。そのページにはプログラムが安定して読み取れる公開データ連携（API）がなく、レイアウトも何度か変更されています。外出の安全に関わる情報のため、古い、または誤って解析された結果を転載するより表示しないことを選び、公式発表へのリンクのみを提供しています。台風警報が出ているときは、人事行政総処の発表ページを直接開くか、各県市政府にお問い合わせください。",
+        },
+        {
+          question: "休業・休校はいつ発表されますか？",
+          answer:
+            "人事行政総処の発表ページによると、終日または午前の休業・休校は前日の午後7時〜10時までに発表し、報道機関に午後11時までの報道を依頼します。前日に発表がなく、0時以降に風雨が強まり基準に達した場合は当日午前4時30分までに発表します。午後または夜間の休業・休校は当日午前10時30分までに発表し、それ以外の時間は所管機関が状況に応じて随時発表できます。実際の時刻は公式発表が優先されます。",
+        },
+        {
+          question: "民間企業は台風のとき出勤しなければなりませんか？",
+          answer:
+            "政府の休業・休校の対象は、各級政府機関および公私立学校です。民間事業者と労働者は、労働部の「天然災害発生事業単位労工出勤管理及工資給付要点」に従います。ご不明点は労働部のウェブサイトで確認するか、フリーダイヤル0800-085-151（人事行政総処の発表ページ記載）へお問い合わせください。交通運輸、警察、消防、海巡、医療、税関など業務の性質上特殊な機関は年中無休で市民にサービスを提供しており、休業の対象外です。",
+        },
+        {
+          question: "カレンダーの更新頻度は？誤りがあった場合は？",
+          answer:
+            "本サイトは、人事行政総処が政府データオープンプラットフォームで公開するカレンダーを週1回同期します。人事行政総処は年の途中で修正することもあり、2025年10月には2025年版の3日分が変更されました。重要な予定は人事行政総処の公表でご確認ください。本サイトがデータを取得できない場合は、内蔵のバックアップコピー（取得日を表示）を使うか「データなし」と表示し、曜日からの推測は一切行いません。",
+        },
+      ],
+    },
+    ko: {
+      title:
+        "오늘은 출근·등교하나요? 대만 정부기관 근무일 달력(대체근무일 포함)과 자연재해 휴무·휴교 공식 공고 안내",
+      description:
+        "대만 정부기관의 오늘·내일 근무 여부를 행정원 인사행정총처의 '정부행정기관 근무일 달력'(국경일, 대체휴일, 대체근무일 포함)으로 확인하고, 앞으로 60일간의 휴일과 대체근무일 목록을 볼 수 있습니다. 태풍·지진 등 자연재해로 인한 휴무·휴교는 각 현·시 정부가 결정하며, 이 사이트는 이를 판정하거나 전재하지 않고 인사행정총처 공식 공고 링크와 확인 방법만 안내합니다.",
+      directAnswer:
+        "오늘 근무 여부는 인사행정총처의 근무일 달력(대체근무일 포함)을 기준으로 하며 정부기관에 적용됩니다. 태풍 등 재해로 인한 휴무·휴교는 각 현·시 정부가 공고하므로 인사행정총처 웹사이트에서 확인하세요. 이 사이트는 판정 기관이 아닙니다.",
+      faqs: [
+        {
+          question: "이 달력은 누구에게 적용되나요? 학교나 일반 기업도 같은가요?",
+          answer:
+            "행정원 인사행정총처가 공표하는 '정부행정기관 근무일 달력'으로, 정부행정기관에 적용됩니다. 학교는 각 학교의 학사 일정을 따르고(방학은 이 표에 없음), 민간 기업은 근로기준법·근로계약·사내 규정을 따르므로 국경일이나 대체근무일에 출근하는지, 임금이 어떻게 계산되는지는 다를 수 있습니다. 소속 회사나 노동 주관기관에 확인하세요.",
+        },
+        {
+          question: "대체근무일이란 무엇인가요?",
+          answer:
+            "연휴를 만들기 위해 옮겨진 근무일입니다. 원래는 토요일 또는 일요일이지만 정부기관이 근무하는 날로, 달력에는 휴일 표시가 0, 비고에 '補行上班'으로 표시됩니다. 보통 앞뒤 평일이 휴무로 조정됩니다.",
+        },
+        {
+          question: "이 페이지가 각 현·시의 휴무·휴교 상황을 직접 보여주지 않는 이유는 무엇인가요?",
+          answer:
+            "각 현·시의 휴무·휴교는 현·시 정부가 '자연재해 시 근무 및 수업 중지 작업 방법'에 따라 결정하고, 인사행정총처가 취합하여 공표합니다. 해당 페이지에는 프로그램이 안정적으로 읽을 수 있는 공개 데이터 연동(API)이 없고 페이지 구성도 여러 번 바뀌었습니다. 외출 안전과 직결되는 정보이므로, 오래되었거나 잘못 해석된 결과를 전재하기보다 표시하지 않는 쪽을 택하고 공식 공고 링크만 제공합니다. 태풍 경보가 발령되면 인사행정총처 공고 페이지를 직접 열거나 해당 현·시 정부에 문의하세요.",
+        },
+        {
+          question: "휴무·휴교는 보통 언제 공고되나요?",
+          answer:
+            "인사행정총처 공고 페이지에 따르면, 종일 또는 오전 휴무·휴교는 전날 오후 7시~10시까지 공고하고 언론에 오후 11시까지 보도를 요청합니다. 전날 공고가 없었고 자정 이후 비바람이 강해져 기준에 이르면 당일 오전 4시 30분까지 공고합니다. 오후 또는 야간 휴무·휴교는 당일 오전 10시 30분까지 공고하며, 그 밖의 시간에는 담당 기관이 상황에 따라 수시로 공고할 수 있습니다. 실제 시각은 공식 공고가 우선합니다.",
+        },
+        {
+          question: "민간 기업도 태풍 때 출근해야 하나요?",
+          answer:
+            "정부의 휴무·휴교는 각급 정부기관과 공·사립학교에 적용됩니다. 민간 사업장과 근로자는 노동부의 '자연재해 발생 시 사업장 근로자 출근 관리 및 임금 지급 요점'에 따릅니다. 문의 사항은 노동부 웹사이트에서 확인하거나 수신자 부담 전화 0800-085-151(인사행정총처 공고 페이지 기재)로 문의하세요. 교통운수, 경찰, 소방, 해양경비, 의료, 세관 등 업무 성질이 특수한 기관은 연중무휴로 운영되어 휴무 대상이 아닙니다.",
+        },
+        {
+          question: "달력은 얼마나 자주 업데이트되나요? 오류가 있다면 어떻게 하나요?",
+          answer:
+            "이 사이트는 인사행정총처가 정부 공공데이터 포털에 공개하는 달력을 주 1회 동기화합니다. 인사행정총처는 연중에 수정하기도 하며, 2025년 10월에는 2025년 달력의 3개 날짜가 변경되었습니다. 중요한 일정은 인사행정총처 공표로 확인하세요. 사이트가 데이터를 가져오지 못하면 내장 백업 사본(취득일 표시)을 사용하거나 '데이터 없음'으로 표시하며, 요일로 추측하지 않습니다.",
+        },
+      ],
+    },
+  },
 };
 
 /** Resolves the zh-TW baseline straight from TOOL_CATALOG — never stored

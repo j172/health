@@ -314,11 +314,22 @@ test("resolveLocaleSwitchTarget navigates for a translated page, returns null fo
 
 const { PERMANENT_REDIRECT_RULES } = await import("../lib/redirects/permanentRedirectRules.ts");
 
+// Issue #691: translated tools born with their /en//ja//ko/ pages. The `?lang=`
+// → real-path redirect rules exist for URLs that were indexed BEFORE path
+// locales shipped (#485-#487); a tool created afterwards never had a
+// `/tools/<slug>?lang=en` link anywhere, so there is nothing to redirect and the
+// redirect rules (lib/redirects/permanentRedirectRules.ts) are left untouched.
+const TOOLS_WITHOUT_LEGACY_LANG_URL = new Set(["work-school-status"]);
+
 test("the redirect rules send ?lang={locale} to the real /{locale}/ URL for each translated tool", () => {
   // Containment check (not an exact-array snapshot) so later tickets that
   // grow this slug list don't break this test — every TRANSLATED_TOOL_SLUGS
   // entry must have a matching rule for every locale.
   for (const slug of TRANSLATED_TOOL_SLUGS) {
+    // Tools whose page never existed before the path locales have no legacy
+    // `?lang=` URL anywhere (nothing to redirect) — see
+    // tests/work-school-status-691.test.mjs for why this one is exempt.
+    if (TOOLS_WITHOUT_LEGACY_LANG_URL.has(slug)) continue;
     for (const locale of ["en", "ja", "ko"]) {
       const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === `/tools/${slug}` && r.has?.value === locale);
       assert.ok(rule, `missing ?lang=${locale} redirect rule for /tools/${slug}`);
