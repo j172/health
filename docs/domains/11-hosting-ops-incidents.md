@@ -10,7 +10,7 @@
 | 項目 | 值 |
 |---|---|
 | 主機 | HawkHost 共享主機（新加坡），CloudLinux 8＋LiteSpeed＋MariaDB 10.11＋cPanel；與 `bid.j172.tw` 共用同一帳號 |
-| 行程 | PM2 v7（`health-web`），Node **v24.19.0**（nvm；2026-10-13 正式切換,見 #481——之前的 PR #543/文件版本誤把另一台機器（`bid.j172.tw`,帳號 `xiangshu`）的狀態當成這台,這台（103.21.221.12,帳號 `tw123457`）在切換前其實一直是 v20.20.2),`--max-old-space-size=768`、`max_memory_restart: 1024M` |
+| 行程 | PM2 v7（`health-web`），Node **v20.20.2**（nvm；**2026-10-16 從 Node 24 回滾**,見 #481：本帳號對行程的位址空間上限（RLIMIT_AS）是 **2 GiB**,Node 24.19 閒置虛擬記憶體 1.29 GB、Node 20.20.2 只有 0.74 GB,Node 24 實際生效（#634 之後,2026-10-15）起 `health-web` 每小時被 SIGABRT 中止 10–25 次（「Committing semi space failed」,堆積才約 300 MB）。要再升 Node 24 前必須先在主機量測閒置 `ps -o vsz` 與執行中行程的 `VmPeak`）,`--max-old-space-size=768`、`max_memory_restart: 1024M`；`ecosystem.config.cjs` 釘住的 interpreter 就是每次部署會套用的版本 |
 | CloudLinux 限制 | **NPROC 100**、**Entry Processes 20**（兩者不同；耗盡的通常是 NPROC） |
 | 前端 CDN | Cloudflare Free（Full Strict、Smart Tiered Cache、Bot Fight Mode） |
 | 部署 | GitHub Actions 建置 → FTPS 上傳 prebuilt；`next.config.js` 也必須上傳（`next start` 從工作目錄讀取） |

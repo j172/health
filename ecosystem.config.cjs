@@ -15,7 +15,18 @@ module.exports = {
       // `pm2 jlist` showed health-web running v20.20.2 again. v20.20.2 stays
       // installed on the host for the documented rollback path
       // (docs/domains/11-hosting-ops-incidents.md §1.2).
-      interpreter: '/home/tw123457/.nvm/versions/node/v24.19.0/bin/node',
+      //
+      // ROLLED BACK to v20.20.2 on 2026-10-16 (issue #481): once #634 made the
+      // v24.19.0 pin stick (2026-10-15) the web process began aborting
+      // 10-25 times per HOUR (SIGABRT, "Committing semi space failed ... heap
+      // out of memory" at only ~300 MB of heap). Cause, measured on the host:
+      // this account's RLIMIT_AS (address space) is 2 GiB, and Node 24.19 idles
+      // at 1.29 GB of virtual size versus 0.74 GB for Node 20.20.2 — ~550 MB
+      // less headroom, so the process hits the 2 GiB cap long before V8's own
+      // 768 MB heap limit. Do NOT move this back to Node 24 until its virtual
+      // size fits comfortably under the cap (check `ps -o vsz` of an idle
+      // node on the host, and VmPeak of the running process).
+      interpreter: '/home/tw123457/.nvm/versions/node/v20.20.2/bin/node',
       instances: 1,
       exec_mode: 'fork',
       // V8 sizes its default heap ceiling (~4.3GB observed) off the host's full
