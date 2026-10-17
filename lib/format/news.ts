@@ -2,13 +2,38 @@
 // NewsSidebar, SearchModal). No server-only imports here — these run in
 // client components.
 
+/**
+ * Decodes numeric character references (`&#x9752;`, `&#38738;`) that stand for
+ * a non-ASCII character. 台灣事實查核中心's WordPress feed (issue #701) writes
+ * every CJK character of its <description> excerpt this way inside CDATA, where
+ * nothing decodes it, so the raw text reached the cards as "&#x9752;&#x5E74;…".
+ * References to ASCII/control characters are deliberately left untouched, so
+ * this can never turn `&#60;script&#62;` into live markup.
+ */
+export const decodeNonAsciiCharRefs = (text: string): string =>
+  text.replace(/&#(x[0-9a-f]+|\d+);/gi, (match, ref: string) => {
+    const code = /^x/i.test(ref) ? parseInt(ref.slice(1), 16) : parseInt(ref, 10);
+    if (!Number.isFinite(code) || code < 0xa0 || code > 0x10ffff) return match;
+    if (code >= 0xd800 && code <= 0xdfff) return match; // lone surrogate
+    return String.fromCodePoint(code);
+  });
+
 /** Strips HTML tags and collapses whitespace down to a single line of plain text. */
 export const stripHtml = (html: string | null | undefined): string =>
-  (html ?? "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  decodeNonAsciiCharRefs((html ?? "").replace(/<[^>]+>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+
+/**
+ * The "〈標題〉這篇文章最早發佈於《站名》。" line a WordPress feed-footer plugin
+ * appends to every excerpt (台灣事實查核中心 does). It repeats the title and
+ * would otherwise eat the card's whole character budget.
+ */
+const FEED_FOOTER_RE = /〈[^〉]*〉\s*這篇文章最早發佈於《[^》]*》。?/g;
 
 /** Plain-text excerpt of an HTML string, truncated to `max` characters with an ellipsis. */
 export const excerpt = (html: string | null | undefined, max: number): string => {
-  const plain = stripHtml(html);
+  const plain = stripHtml(html).replace(FEED_FOOTER_RE, "").replace(/\s+/g, " ").trim();
   if (!plain) return "";
   return plain.length > max ? `${plain.slice(0, max)}...` : plain;
 };
