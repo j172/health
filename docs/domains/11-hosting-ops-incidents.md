@@ -50,7 +50,7 @@
 |---|---|---|
 | O-1 | ~~httpClient 每次 HTTPS 連線都重建 TLS SecureContext~~（#401；#699 修正，待上線驗證） | 先前加的共用 keep-alive `https.Agent` **沒有**解決它：`ca` 選項只被轉交給 `tls.connect()`，仍是每條連線一個 context。#699 改成模組載入時 `tls.createSecureContext({ ca })` 建一次、以 `secureContext` 傳給 Agent，並讓閒置 socket 10 秒後關閉。上線後觀察 `std::bad_alloc`（`AddCACert`）是否消失，再關 #401 |
 | O-2 | Issue #391（雙 God Daemon）、#394（`_next/image` OOM）仍為 OPEN | 修正已上線，issue 待驗證後關閉 |
-| O-3 | ~~Node 20 已 EOL~~ | 2026-10-13 正式切換到 v24.19.0（先在非正式連接埠 3099 實測、觀察後才切換，過程中也修正了主機 `.env` 裡過期的 `MYSQL_PASSWORD`）；v20.20.2 保留作回滾，CI 已改為 24；進入 #481 要求的一週觀察期，每日記錄在 issue 留言 |
+| O-3 | Node 20 已 EOL，但正式主機**暫時留在 v20.20.2** | 2026-10-13 曾嘗試切到 v24.19.0（#481），但 2026-10-15 `ecosystem.config.cjs` 把 24 釘住後，`health-web` 每小時 SIGABRT 10–25 次：本帳號對行程的位址空間上限（RLIMIT_AS）是 **2 GiB**，Node 24 閒置虛擬記憶體 1.29 GB、Node 20 只有 0.74 GB，少了約 550 MB 餘裕，V8 在堆積約 300 MB 時就撞上限。**2026-10-16 已回滾到 v20.20.2（PR #700）**；回滾後 SIGABRT 為 0。再升級前必須先在主機量測：閒置 `ps -o vsz` 與執行中行程的 `VmPeak` 要有明確餘裕（建議 `VmPeak` < 1.6 GB；Node 20 目前就已 1.7–1.9 GB）。CI 仍用 Node 24 建置，與主機執行環境不同。#481 維持開啟 |
 | O-4 | 共享主機鄰居搶 CPU | 主機層級問題，非程式可解；load average 長期 10–12 |
 
 ---
