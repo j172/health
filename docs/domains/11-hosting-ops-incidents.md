@@ -52,6 +52,7 @@
 | O-2 | Issue #391（雙 God Daemon）、#394（`_next/image` OOM）仍為 OPEN | 修正已上線，issue 待驗證後關閉 |
 | O-3 | Node 20 已 EOL，但正式主機**暫時留在 v20.20.2** | 2026-10-13 曾嘗試切到 v24.19.0（#481），但 2026-10-15 `ecosystem.config.cjs` 把 24 釘住後，`health-web` 每小時 SIGABRT 10–25 次：本帳號對行程的位址空間上限（RLIMIT_AS）是 **2 GiB**，Node 24 閒置虛擬記憶體 1.29 GB、Node 20 只有 0.74 GB，少了約 550 MB 餘裕，V8 在堆積約 300 MB 時就撞上限。**2026-10-16 已回滾到 v20.20.2（PR #700）**；回滾後 SIGABRT 為 0。再升級前必須先在主機量測：閒置 `ps -o vsz` 與執行中行程的 `VmPeak` 要有明確餘裕（建議 `VmPeak` < 1.6 GB；Node 20 目前就已 1.7–1.9 GB）。CI 仍用 Node 24 建置，與主機執行環境不同。#481 維持開啟 |
 | O-4 | 共享主機鄰居搶 CPU | 主機層級問題，非程式可解；load average 長期 10–12 |
+| O-5 | `health-web` 約每 15–35 分鐘被外部 SIGKILL，原因不明（#709） | 一開始以為只砍 `health-web`，但 2026-10-17 10:13–10:14 UTC 同帳號 mall 也同時被砍 5 次（50 秒內 `health-web` 被砍 7 次）→ 帳號層級（CloudLinux LVE `/lve2004`）管控；`health-web` RSS 約 430–630 MB、`VmPeak` 1.7–1.9 GB（`RLIMIT_AS` 2 GiB）。#707 只縮短中斷時間，沒有減少被砍次數。第一步是 `proc_resources` 日誌（見 4.2「health-web 每 5 分鐘一行資源日誌」），上線累積幾次被砍之後，依「死前 5 分鐘」趨勢判斷是位址空間、實體記憶體還是行程／fd 數；#709 保持開啟 |
 
 ---
 
@@ -126,6 +127,17 @@
 - 修法與護欄：`lib/server/rss/runMonitor.ts`（單位工作之間：鎖心跳＋堆積預算＋一行階段日誌＋讓出事件迴圈）、`lib/server/sync/heapGovernor.ts`、`lib/server/sync/stageLog.ts`；階段日誌事件名 `rss_ingestion_stage`（每個 feed／來源一行，含 `heapUsedMB`／`rssMB`／`externalMB`），被殺前最後一行就是當時在跑的來源。
 - 鎖：`internal-cron` 與 `admin-manual` 都走 `runRssIngestion` 的同一把 MySQL advisory lock（`rss_ingestion_lock`）。先取鎖、才建立 `ingest_runs` 列；取不到鎖的嘗試寫成 `status='skipped'`（不是 `failed`、不丟例外、不寫 `ingest_errors`）。匯入期間每個單位工作間用 `IS_USED_LOCK` 確認鎖還在（連線被資料庫關掉鎖會無聲消失），並順便更新 `ingest_runs.updated_at`；孤兒判定改看「沉默 20 分鐘」而非「開始 20 分鐘」，窗口沒有放寬。
 - `GET /api/admin/ingestion-runs` 新增 `limit`／`offset`／`status`／`trigger` 參數。
+
+#### health-web 每 5 分鐘一行資源日誌（`proc_resources`）🟡（#709，待上線驗證）
+- 背景：#703 之後 `health-web` 仍約每 15–35 分鐘被外部 SIGKILL（pm2 日誌 `exited with code [0] via signal [SIGKILL]`，沒有 V8 錯誤，被殺的行程也來不及留下任何東西），所以只能靠它**事先**印下的線索。這是 O-5 的第一步，只做觀測，不改變任何行為。
+- 實作：`lib/server/logging/procResourceLogger.ts`，由 `instrumentation.ts` 在 Node.js runtime 啟動（啟動時一行，之後每 5 分鐘一行，`console.log` 直接進 pm2 的 out 日誌，風格同 `lib/server/sync/stageLog.ts`）。沒有新增任何路由，對外不暴露任何東西。
+- 欄位（一行一個 JSON，`"event":"proc_resources"` 開頭是穩定的 grep 識別字）：`ts`（ISO 時間；pm2 預設不幫 out 日誌加時間戳，所以自己帶）、`pid`（被殺重啟後會換）、`uptimeS`、`rssMB`／`heapUsedMB`／`heapTotalMB`／`externalMB`／`arrayBuffersMB`（`process.memoryUsage()`）、`vmSizeMB`／`vmPeakMB`／`vmRssMB`／`vmDataMB`／`threads`（`/proc/self/status` 的 VmSize／VmPeak／VmRSS／VmData／Threads）、`fdCount`（`/proc/self/fd` 的檔案數，含列舉動作本身開的那一個）、**帳號層級**欄位 `acctRssMB`（同一 uid 所有行程的 `VmRSS` 總和）／`acctProcs`（同 uid 行程數）／`acctThreads`（同 uid 執行緒總數）／`loadAvg1`（`/proc/loadavg` 第一個值），每 5 分鐘走訪 `/proc/<數字>/status` 讀 `Uid`／`VmRSS`／`Threads`（約 10–30 個小檔案，每個行程各自 try/catch，行程中途結束不影響其他）。背景：2026-10-17 10:13–10:14 UTC `health-web` 在 50 秒內被 SIGKILL 7 次，**同帳號的 mall 同時被 SIGKILL 5 次**，所以是帳號層級（CloudLinux LVE，cgroup `/lve2004`）的管控事件，而不是 `health-web` 單獨的問題；這幾個欄位用來跟 LVE 上限對帳。`acctRssMB` 是各行程 RSS 直接相加，共用頁面會重複計算，是 LVE 實際計費值的**上限估計**，看趨勢與跳變，不要當成精確值；非 Linux 一律 `null`。`eventLoopDelayP99Ms`／`eventLoopDelayMaxMs`（`perf_hooks.monitorEventLoopDelay`，每個區間讀完歸零，已扣掉取樣週期 20 ms 的基線；啟動那一行沒有樣本所以是 `null`）、`activeJobs`（當下正在跑的行程內 cron 工作名稱，同 `logs/memory-monitor.log` 用的那份集合）。讀不到的欄位一律是 `null`（非 Linux 開發機沒有 `/proc`）。
+- 護欄：每個欄位各自 try/catch，任何讀取失敗只會讓該欄位變 `null`，不會丟例外；interval 有 `unref()`，不會讓行程停不下來；`globalThis` 上用 `Symbol.for("health.procResourceLogger")` 守衛，熱重載或模組被載入兩次也只有一個 timer；只在 `NODE_ENV=production` 執行（本機要試用設 `PROC_RESOURCE_LOG=1`；`PROC_RESOURCE_LOG=0` 可在正式環境關掉而不必改程式）。成本：每 5 分鐘讀一次 `/proc` 小檔案與列一次 fd 目錄，加上一個 libuv 內建取樣 timer，不新增行程或執行緒。
+- 被砍之後怎麼看（正式主機，帳號 `tw123457`）：
+  1. 在 `~/.pm2/pm2.log` 找到 `exited with code [0] via signal [SIGKILL]` 的時間。
+  2. `grep proc_resources ~/.pm2/logs/health-web-out*.log | tail`（輪替後的舊檔也一起 grep；每行內有 `ts` 可對時間）。被砍行程的最後一行，就是死前 0–5 分鐘內的狀態；它的 `pid` 與 `uptimeS` 可對應到該次行程，`uptimeS` 小的下一行就是重啟後的第一行。
+  3. 判讀：`vmPeakMB` 在死前逼近 2048 → 位址空間（`RLIMIT_AS`）而非實體記憶體；`rssMB` 逼近同帳號實體上限而 `vmSizeMB` 平穩 → 實體記憶體；`fdCount`／`threads` 持續上升 → 洩漏或行程數；死前最後一行的 `eventLoopDelayMaxMs` 很大 → 行程已先卡死；`activeJobs` 非空 → 對照是哪個 cron 工作在跑；`acctProcs`／`acctThreads` 逼近 CloudLinux 的 NPROC／Entry Processes 上限或 `acctRssMB` 逼近 LVE 實體記憶體上限 → 帳號層級資源耗盡，多個 app 一起被砍（拿 `lveinfo` 的 LVE 上限與被砍時刻比對）；`loadAvg1` 持續偏高（本機長期 10–12）只代表鄰居搶 CPU，單獨不足以解釋被砍。
+- 上線後驗證：①部署重啟後 `health-web-out*.log` 在約 10 秒內出現第一行 `proc_resources`（`vmSizeMB`／`vmPeakMB`／`fdCount`／`threads`／`acctProcs`／`loadAvg1` 是數字、不是 `null`，證明 `/proc` 在 LVE 內可讀；`acctProcs` 應與 `ps -u tw123457` 的行程數同量級，約 5–10，若遠小於代表 CageFS 隱藏了其他行程，這時 `acct*` 只代表可見範圍）；②之後每 5 分鐘一行（`ts` 間隔約 300 秒）；③下一次 SIGKILL 後，死前最後一行落在被殺時間前 5 分鐘內；④確認沒有新增行程（`ps` 計數不變）、`/api/*` 回應不受影響。若 LVE 內 `/proc/self/status` 讀不到，欄位會是 `null`，那時改以 `rssMB`／`externalMB` 趨勢推斷。
 
 ### 4.3 CDN
 
