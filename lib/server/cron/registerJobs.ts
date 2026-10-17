@@ -81,6 +81,9 @@ const appendLog = async (fileName: string, line: unknown): Promise<void> => {
  */
 const activeJobNames = new Set<string>();
 
+/** Names of the in-process cron jobs mid-run right now (read by the proc_resources line, issue #709). */
+export const getActiveCronJobNames = (): string[] => [...activeJobNames];
+
 const jobNameFromLogFile = (logFile: string): string =>
   logFile.replace(/-cron\.log$/, "");
 
