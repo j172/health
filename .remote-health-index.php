@@ -1489,6 +1489,87 @@ if (str_starts_with($path, '/__ops/')) {
             exit;
         }
 
+        // GRACE RE-PROBE (#707). When the host SIGKILLs health-web, PM2 puts it
+        // back within ~1s, but Next needs another ~5-10s before it listens on
+        // :3000. The opportunistic watchdog (see $triggerPm2Watchdog) fires ~4s
+        // after the kill, so its single-shot probe above lands exactly in that
+        // gap, read "offline", and escalated to apply-prebuilt — which restarted
+        // the already-recovering process a second time and stretched a ~10s blip
+        // into a 1-2 minute outage (2026-10-17 04:51 UTC: START-FORCE at :29, a
+        // second SIGINT at 04:52:35, healthy again only at 04:52:50), on every
+        // kill, i.e. roughly every 35 minutes.
+        //
+        // So before escalating, keep re-probing for a bounded window. Any
+        // success means PM2 already did the job; do not touch anything.
+        //
+        // Placement is deliberate. This sits AFTER the shared-lock acquisition,
+        // the nproc gate, the "restart already running" check and the retry
+        // backoff, so it never adds a wait to a tick that could not have
+        // escalated anyway, and none of those guards is weakened. A tick that
+        // is still down when the window ends proceeds exactly as before:
+        // $triggerPrebuiltRun() re-checks the gate and the single-run lock at
+        // the moment of spawning.
+        //
+        // Worker cost: this blocks one PHP worker for the window. Only one
+        // watchdog tick can be here at a time (the recovery lock above is
+        // non-blocking, so a concurrent tick answers 202 instantly), ticks are
+        // throttled to one cron + one opportunistic run per five minutes, and
+        // the proxy path already holds a worker for up to 30s per slow page
+        // request (CURLOPT_TIMEOUT), so a window of this size does not enlarge
+        // the Entry Process envelope. usleep() forks nothing, so NPROC is
+        // untouched. Worst case: 25s of waiting + the last probe (2s connect +
+        // 5s read, normally an instant ECONNREFUSED) = ~32s. The only other
+        // cost is that the PM2 step of an apply-prebuilt run, which takes
+        // `flock -x` on this same lock, waits at most that long.
+        //
+        // This branch is only reached when health-web is down; a mall-only
+        // outage has $healthOnline === true and skips it.
+        if (!$healthOnline) {
+            $healthGraceSeconds = 25.0;
+            $healthGraceIntervalSeconds = 2.5;
+
+            // The opportunistic caller is a fire-and-forget curl that may hang
+            // up before the window ends. The escalate/no-escalate decision must
+            // still be made, so a disconnect must not abort this worker.
+            @ignore_user_abort(true);
+
+            $graceStartedAt = microtime(true);
+            $graceDeadline = $graceStartedAt + $healthGraceSeconds;
+            $graceProbes = 0;
+            while (!$healthOnline) {
+                $graceRemaining = $graceDeadline - microtime(true);
+                if ($graceRemaining <= 0) {
+                    break;
+                }
+                usleep((int) (min($healthGraceIntervalSeconds, $graceRemaining) * 1000000));
+                $graceProbes++;
+                $healthOnline = $probeLocalHttp(3000, 'health.j172.tw');
+            }
+            $graceElapsed = number_format(microtime(true) - $graceStartedAt, 1, '.', '');
+
+            if ($healthOnline) {
+                @file_put_contents(
+                    $watchdogLog,
+                    "[{$now}] health-web grace re-probe succeeded after {$graceElapsed}s ({$graceProbes} re-probe(s)) — it was restarting on its own (PM2 auto-restart); NOT escalating to apply-prebuilt.\n",
+                    FILE_APPEND
+                );
+                $mallOnline = $probeLocalHttp(3300, 'mall.j172.tw');
+                if ($mallOnline) {
+                    $clearFailureStateIfIdle();
+                    echo "[{$now}] health-web answered during the {$graceElapsed}s grace re-probe window (PM2 had already restarted it) and mall (:3300) is online. No process spawned.\n";
+                    exit;
+                }
+                // mall is still offline: fall through to the mall branch below,
+                // which now sees a healthy health-web and restarts only mall.
+            } else {
+                @file_put_contents(
+                    $watchdogLog,
+                    "[{$now}] health-web grace re-probe failed: still not answering after {$graceElapsed}s ({$graceProbes} re-probes) — escalating.\n",
+                    FILE_APPEND
+                );
+            }
+        }
+
         if (!Pm2RecoveryGuard::writeTimestamp($pm2RecoveryLastAttemptFile, time())) {
             http_response_code(503);
             echo "[{$now}] Could not persist recovery-attempt state; refusing to spawn PM2.\n";
@@ -2246,8 +2327,14 @@ $triggerPm2Watchdog = static function () use ($opsKey, $processGate): void {
 
         // Fire-and-forget: ask the existing watchdog endpoint to revive PM2/app
         // if needed, then let the current request retry once.
+        //
+        // --max-time 60, not 8: the endpoint now spends up to ~32s re-probing a
+        // down health-web before it escalates (the #707 grace window), and an
+        // 8s client would hang up in the middle of it. It is a background curl
+        // behind the 5-minute throttle above, so a longer ceiling holds at most
+        // one extra short-lived process, and only while an outage is in progress.
         $url = 'https://health.j172.tw/__ops/pm2-ensure-running?key=' . rawurlencode($opsKey) . '&cb=' . time();
-        $cmd = 'nohup curl -k -fsS --max-time 8 --resolve health.j172.tw:443:103.21.221.12 '
+        $cmd = 'nohup curl -k -fsS --max-time 60 --resolve health.j172.tw:443:103.21.221.12 '
             . escapeshellarg($url)
             . ' >/dev/null 2>&1 &';
         @exec($cmd);
