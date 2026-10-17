@@ -14,7 +14,7 @@
 | CloudLinux 限制 | **NPROC 100**、**Entry Processes 20**（兩者不同；耗盡的通常是 NPROC） |
 | 前端 CDN | Cloudflare Free（Full Strict、Smart Tiered Cache、Bot Fight Mode） |
 | 部署 | GitHub Actions 建置 → FTPS 上傳 prebuilt；`next.config.js` 也必須上傳（`next start` 從工作目錄讀取） |
-| 自我修復 | `.remote-health-index.php`：每 5 分鐘 `pm2-ensure-running`（以 `fsockopen` 探測 port 3000，不 fork），失敗才升級；`/__ops/*` 維運端點 |
+| 自我修復 | `.remote-health-index.php`：每 5 分鐘 `pm2-ensure-running`（以 `fsockopen` 探測 port 3000，不 fork），探測失敗後先做約 25 秒的**寬限重探測**（見 4.1「Watchdog 在 PM2 自動拉起的空窗誤判離線」），仍不通才升級；`/__ops/*` 維運端點 |
 
 ### 1.1 這台主機絕對不能做的事
 1. **伺服器端用全域 `fetch()`**：undici 會即時編譯 WASM llhttp，在虛擬記憶體限制下 `WebAssembly.instantiate()` OOM → 502。一律用 `lib/server/net/httpClient.ts`（測試強制）。
@@ -86,6 +86,16 @@
 #### reapStragglers 必須保護活著 app 的祖先 ✅
 - 原檔：[watchdog-reap-must-protect-live-app-ancestors.md](../archive/specs/watchdog-reap-must-protect-live-app-ancestors.md)（#370）
 - #368 修好後第一次 `apply=1` 就殺掉真正管理 health-web 的 daemon，造成當天第三次停機；改以活著的 next-server 祖先鏈為保護依據。
+
+#### Watchdog 在 PM2 自動拉起的空窗誤判離線，每次被砍多重啟一次 🟡（#707，待上線驗證）
+- 現象（2026-10-17 04:51 UTC，主機 `~/.pm2/pm2.log` 與 `~/health_app/.apply-prebuilt.log`）：`health-web` 被外部 SIGKILL，PM2 當場（約 1 秒內）自動拉起，但 Next 還要約 5–10 秒才開始監聽 3000 埠；看門狗在 04:51:29 啟動 `apply-prebuilt-force`，04:52:35 對這個其實已在正常啟動的行程又送一次 SIGINT 重啟，04:52:50 才恢復。被砍目前平均約每 35 分鐘一次，所以**每次意外被砍，服務中斷從約 10 秒被放大成 1–2 分鐘**。
+- 根因：看門狗（`/__ops/pm2-ensure-running`）只用單次 `fsockopen`／HEAD 探測；訪客請求代理失敗後會機會式觸發它（`$triggerPm2Watchdog`，約在被砍後 4 秒），剛好落在「PM2 已拉起、Next 還沒監聽」的空窗，判成「health-web was not online」，直接升級到 apply-prebuilt。
+- 修法（`.remote-health-index.php` 單檔，沒有動 `.pm2-recovery-guard.php`，避免兩個檔案分次上傳的版本落差）：在**所有既有護欄之後、升級之前**加入寬限重探測——`$healthGraceSeconds = 25`、每 `2.5` 秒用同一支 `$probeLocalHttp(3000, …)` 再探一次，任何一次成功就視為在線：`.pm2-watchdog.log` 寫 `health-web grace re-probe succeeded after N.Ns (K re-probe(s))`，重新探測 mall，兩者都在線就清除復原狀態並結束，**不升級、不記錄恢復嘗試**；25 秒後仍不通則寫 `grace re-probe failed … escalating`，之後完全照舊走 apply-prebuilt（升級訊息 `health-web was not online … restarting via apply-prebuilt` 不變）。
+- 不變的護欄：共用 PM2 恢復鎖（`recovery.lock`，非阻塞取得）、NPROC task gate（寬限期後 `$triggerPrebuiltRun` 在真正 spawn 的當下會再檢查一次）、`Pm2RecoveryGuard` 退避（5 分鐘起、上限 1 小時）、單一執行鎖。寬限放在鎖、gate、「已有 apply-prebuilt 在跑」與退避判斷**之後**，所以任何本來就不能升級的 tick（gate 關閉、退避中）不會多等這 25 秒；只有「本來就要升級」的 tick 會先等，真當機時只是升級晚約 25 秒。只有 mall 掛掉時不經過寬限。
+- PHP worker 佔用：阻塞式，但有上界。同一時間只有一個 tick 能進寬限（鎖是非阻塞的，其他 tick 立刻回 202）；cron 與機會式觸發各自每 5 分鐘最多一次；`usleep()` 不 fork，不吃 NPROC。最壞情況約 **32 秒**（25 秒等待＋最後一次探測的 2 秒連線＋5 秒讀取，一般連線被拒是瞬間回），與代理路徑本來就允許單一慢請求佔 worker 30 秒（`CURLOPT_TIMEOUT`）同量級，不擴大 Entry Process（上限 20）的風險面。代價：同一把鎖上 apply-prebuilt 的 `flock -x` PM2 步驟最多多等這麼久。因為這個風險可接受，沒有採用「把首次判定離線的時間戳存進狀態檔、下一輪再升級」的非阻塞做法（它會讓真當機的復原最多再延後一個 5 分鐘 tick）。
+- 配合調整：機會式觸發的 fire-and-forget `curl` 的 `--max-time` 從 8 改成 60（cron 版本本來就是 90），並在寬限段落呼叫 `ignore_user_abort(true)`，避免呼叫端中途掛斷、導致「升級或不升級」的決策被打斷。
+- 測試：`tests/pm2-watchdog-contract.test.php`（CI 的 `php-lint.yml` 執行）鎖定寬限只出現在鎖／gate／退避之後、升級之前，窗口 20–30 秒、間隔 2–3 秒、以牆鐘 deadline 為界、不 fork、不啟動 PM2，且升級訊息與機會式 curl 逾時沒被改回去。
+- 上線後驗證：被砍之後 `~/health_app/.pm2-watchdog.log` 應出現 `grace re-probe succeeded after`，且 `~/health_app/.apply-prebuilt.log` 不再於同一分鐘出現 `[START-FORCE-V4]`／第二次 SIGINT；真當機時應看到 `grace re-probe failed` 後照舊升級。
 
 #### HawkHost 主機最佳化與治理 ✅
 - 原檔：[hawkhost-server-optimization.md](../archive/specs/hawkhost-server-optimization.md)
