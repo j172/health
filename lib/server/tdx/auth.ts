@@ -1,10 +1,21 @@
 import "server-only";
-import { httpPostForm } from "@/lib/server/net/httpClient";
+import { httpRequest } from "@/lib/server/net/httpClient";
+import { describeTokenFailure, nextTokenFailureLogAt } from "@/lib/server/tdx/tokenDiagnostics";
 
 interface TdxTokenResponse {
   access_token: string;
   expires_in: number;
   token_type: string;
+}
+
+let lastTokenFailureLoggedAtMs = 0;
+
+/** One throttled line per 10 minutes: HTTP status + OAuth error fields only (never the request form, never secrets). */
+function logTokenFailure(detail: string): void {
+  const next = nextTokenFailureLogAt(lastTokenFailureLoggedAtMs, Date.now());
+  if (next === null) return;
+  lastTokenFailureLoggedAtMs = next;
+  console.warn(`TDX token request rejected: ${detail}`);
 }
 
 // Shared OAuth2 client-credentials token cache for every TDX API consumer in
@@ -34,22 +45,41 @@ export async function getTdxToken(): Promise<string | null> {
   }
 
   try {
-    const res = await httpPostForm<TdxTokenResponse>(
+    // Raw httpRequest instead of httpPostForm: httpPostForm JSON.parses the body
+    // and throws on a non-JSON error page, which hid the HTTP status entirely.
+    const form = new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: clientId,
+      client_secret: clientSecret,
+    }).toString();
+    const res = await httpRequest(
       "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token",
       {
-        grant_type: "client_credentials",
-        client_id: clientId,
-        client_secret: clientSecret,
-      },
-      { timeoutMs: 8000 }
+        method: "POST",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          "content-length": String(Buffer.byteLength(form)),
+        },
+        body: form,
+        timeoutMs: 8000,
+      }
     );
+    const bodyText = res.buffer.toString("utf-8");
 
-    if (res.status === 200 && res.data?.access_token) {
-      cachedToken = res.data.access_token;
+    let data: Partial<TdxTokenResponse> | null = null;
+    try {
+      data = JSON.parse(bodyText) as Partial<TdxTokenResponse>;
+    } catch {
+      data = null;
+    }
+
+    if (res.status === 200 && data?.access_token) {
+      cachedToken = data.access_token;
       // 提早 60 秒到期，確保安全邊界
-      tokenExpiresAt = now + Math.max(0, (res.data.expires_in - 60) * 1000);
+      tokenExpiresAt = now + Math.max(0, ((data.expires_in ?? 0) - 60) * 1000);
       return cachedToken;
     }
+    logTokenFailure(describeTokenFailure(res.status, bodyText));
     return null;
   } catch (err) {
     console.warn("TDX token fetch failed:", err instanceof Error ? err.message : String(err));
