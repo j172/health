@@ -10,6 +10,9 @@ export interface SourceCategory {
   sources: SourceLink[];
 }
 
+/** `SourceCategory.key` of the fact-checking organisations group (issue #701). */
+export const FACT_CHECK_CATEGORY_KEY = "factcheck";
+
 /**
  * Groups source_name values for the nav dropdowns and the /news?group= archive
  * filter; labels match lib/server/news/sourceLabels.ts.
@@ -136,12 +139,45 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "children", label: "兒童福利聯盟" },
       { sourceName: "apatw", label: "社團法人中華民國保護動物協會" },
       { sourceName: "seinsights", label: "社企流" },
-      { sourceName: "mygopen", label: "MyGoPen 查核中心" },
       { sourceName: "kuma", label: "黑熊學院" },
       { sourceName: "twreporter", label: "報導者" },
     ],
   },
+  {
+    // Issue #701. Fact-checking organisations: their headlines are verdicts
+    // about someone else's claim ("【錯誤】…"), so every card from this group
+    // carries the 「查核機構，非本站判定」 marker (getFactCheckNotice below).
+    // `mygopen` used to sit in "npo" (issue #225); it moved here, which also
+    // moves its already-stored articles out of /news?group=npo.
+    key: FACT_CHECK_CATEGORY_KEY,
+    label: "事實查核／謠言",
+    sources: [
+      { sourceName: "tfc", label: "台灣事實查核中心" },
+      { sourceName: "mygopen", label: "MyGoPen 查核中心" },
+    ],
+  },
 ];
+
+/** Appended after 「來源：<name>」 so a verdict headline never reads as the site's own claim. */
+export const FACT_CHECK_NOTICE_SUFFIX = "（查核機構，非本站判定）";
+
+/** Whether `sourceName` belongs to the 「事實查核／謠言」 category (tfc, mygopen). */
+export const isFactCheckSource = (sourceName: string | null | undefined): boolean => {
+  if (!sourceName) return false;
+  const category = SOURCE_CATEGORIES.find((c) => c.key === FACT_CHECK_CATEGORY_KEY);
+  return Boolean(category?.sources.some((s) => s.sourceName === sourceName));
+};
+
+/**
+ * The marker shown on every card from a fact-checking organisation, e.g.
+ * 「來源：台灣事實查核中心（查核機構，非本站判定）」; `null` for any other source.
+ * `sourceLabel` is the card's resolved publisher label (resolveAuthorLabel).
+ */
+export const getFactCheckNotice = (
+  sourceName: string | null | undefined,
+  sourceLabel: string,
+): string | null =>
+  isFactCheckSource(sourceName) ? `來源：${sourceLabel}${FACT_CHECK_NOTICE_SUFFIX}` : null;
 
 export const isGovSource = (sourceName: string): boolean => {
   if (sourceName === "cwa") return true;

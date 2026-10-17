@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { getSourceBadgeStyle } from "@/lib/server/news/sourceCategories";
+import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
+import FactCheckNotice from "@/components/News/FactCheckNotice";
 import { toTaipei, stripHtml, displayDate } from "@/lib/format/news";
 import { useModalA11y } from "@/components/ui/useModalA11y";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -380,6 +382,11 @@ export default function SearchModal({
                           <h4 className="mt-1 line-clamp-1 text-sm font-semibold text-slate-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                             {tDynamic(item.title)}
                           </h4>
+                          <FactCheckNotice
+                            sourceName={item.source_name}
+                            sourceLabel={resolveAuthorLabel(item)}
+                            className="mt-0.5"
+                          />
                           <p className="mt-0.5 line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
                             {stripHtml(item.description_html)}
                           </p>

@@ -6,6 +6,7 @@ import { getSourceBadgeStyle, isGovSource } from "@/lib/server/news/sourceCatego
 import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
 import { getArticleDestination } from "@/lib/format/outboundLink";
 import CardThumb from "@/components/News/CardThumb";
+import FactCheckNotice from "@/components/News/FactCheckNotice";
 
 export default function NewsCard({
   item,
@@ -46,6 +47,7 @@ export default function NewsCard({
               <LocalizedText>{item.title}</LocalizedText>
             </Link>
           </h3>
+          <FactCheckNotice sourceName={item.source_name} sourceLabel={authorLabel} className="mt-1" />
           <p className="mt-1 text-[11px] text-slate-600" suppressHydrationWarning>
             {toTaipei(displayDate(item))}
           </p>
@@ -110,6 +112,8 @@ export default function NewsCard({
             <LocalizedText>{item.title}</LocalizedText>
           </Link>
         </h2>
+
+        <FactCheckNotice sourceName={item.source_name} sourceLabel={authorLabel} className="mt-2 self-start" />
 
         {!compact && (
           <p className="mt-2 line-clamp-2 flex-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">

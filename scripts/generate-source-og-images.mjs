@@ -116,6 +116,7 @@ const SOURCE_LABELS = {
   seinsights: "社企流",
   mygopen: "MyGoPen 查核中心",
   twreporter: "報導者",
+  tfc: "台灣事實查核中心",
 };
 
 const GOV_SOURCE_NAMES = new Set([

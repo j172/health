@@ -10,6 +10,7 @@ import { getSourceBadgeStyle, isGovSource } from "@/lib/server/news/sourceCatego
 import { toTaipei, excerpt, calcReadingTime, displayDate } from "@/lib/format/news";
 import { getArticleDestination } from "@/lib/format/outboundLink";
 import CardThumb from "@/components/News/CardThumb";
+import FactCheckNotice from "@/components/News/FactCheckNotice";
 import ThematicCover from "@/components/News/ThematicCover";
 
 const isStockPhoto = (source: string | null | undefined): boolean =>
@@ -98,6 +99,8 @@ export default function HeroPost({
               </Link>
             </h1>
 
+            <FactCheckNotice sourceName={hero.source_name} sourceLabel={authorLabel} onDark className="mt-3" />
+
             {desc && (
               <p className="mt-2.5 line-clamp-2 max-w-2xl text-xs text-slate-300 sm:text-sm">
                 {desc}
@@ -162,6 +165,7 @@ export default function HeroPost({
                       <LocalizedText>{item.title}</LocalizedText>
                     </Link>
                   </h2>
+                  <FactCheckNotice sourceName={item.source_name} sourceLabel={itemAuthor} className="mt-1.5" />
                   <p className="mt-1.5 line-clamp-2 text-xs text-slate-600 dark:text-slate-400">
                     {excerpt(item.description_html, 70)}
                   </p>

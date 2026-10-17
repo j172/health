@@ -56,6 +56,32 @@ import type { FeedConfig } from "@/types/rss";
  *     是一般新聞 feed，而是 1,871 筆、6.7MB、橫跨 2020-2026 年的全量歷史傾印；
  *     `$top`/`pageSize`/`top` 等常見分頁參數測試皆無效，跟上面 hpa.gov.tw 那筆
  *     同一種反模式，2026-09-22 先不採用，需要客製截斷邏輯才值得考慮，另開票。
+ *
+ * Candidate verification 2026-10-16 (issue #701): 5 user-supplied fact-check
+ * sources were checked; 2 end up in the new 「事實查核／謠言」 source category
+ * (sourceCategories.ts, key `factcheck`) and 3 were excluded:
+ *   - `tfc-taiwan.org.tw/feed/`（台灣事實查核中心 TFC）is a standard WordPress
+ *     RSS (10 items, newest 2026-10-15, ~14 KB) — added below as `tfc_news`.
+ *     Its <description> is already a short excerpt (no <content:encoded>, no
+ *     enclosure), so nothing long is stored and the card thumbnail comes from
+ *     the article's og:image through the existing fallback in runIngestion.
+ *   - `mygopen.com/feeds/posts/default?alt=rss`（MyGoPen）is a real Blogger
+ *     RSS (25 items, newest 2026-10-15, ~320 KB) but is NOT added here: it has
+ *     been ingested since #225 as the special source `mygopen_news`
+ *     (fetchMygopenNews in fetchNpoSources.ts), because every <description>
+ *     carries the full article HTML (6-9 KB each) and that fetcher keeps only
+ *     the 「你可以先知道」 summary. A second RSS_FEEDS entry would ingest every
+ *     article twice and, via normalizeItem, store the full text. #701 only
+ *     moves its `mygopen` sourceName from 公益社福 into the new category.
+ *   - `factchecklab.org/rss/`（台灣 FactCheckLab）is a valid RSS (15 items,
+ *     421 KB) but the newest item was 2026-08-27 — roughly one post a month, so
+ *     a fetch every 30 minutes would almost never find anything new. Excluded.
+ *   - `rumtoast.com/feed`（蘭姆酒吐司）is a valid RSS but its newest item is
+ *     2021-10-06; the site stopped updating, so it can only ever contribute
+ *     rows the 90-day freshness gate would reject. Excluded.
+ *   - `tstm.tw/Article?type=1028/1041/1026`（全民查假會社）has no RSS/Atom at
+ *     all, only HTML list pages. A dedicated scraper was deliberately not built
+ *     (same rule as the 2026-09-14 block above); excluded.
  */
 export const RSS_FEEDS: FeedConfig[] = [
   {
@@ -429,6 +455,17 @@ export const RSS_FEEDS: FeedConfig[] = [
     name: "報導者",
     url: "https://www.twreporter.org/a/rss2.xml",
     sourceName: "twreporter",
+    skipDetailFetch: true,
+  },
+  {
+    code: "tfc_news",
+    name: "台灣事實查核中心",
+    // Fact-checking organisation, not a publisher of the site's own claims:
+    // its cards must carry the 「查核機構，非本站判定」 marker (see the
+    // `factcheck` category in sourceCategories.ts). The feed only has short
+    // <description> excerpts, so there is no full text to keep out of the DB.
+    url: "https://tfc-taiwan.org.tw/feed/",
+    sourceName: "tfc",
     skipDetailFetch: true,
   },
 ];

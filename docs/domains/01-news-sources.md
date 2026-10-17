@@ -10,9 +10,9 @@
 
 | 項目 | 數值／狀態 |
 |---|---|
-| `RSS_FEEDS` 設定筆數 | 52（`lib/server/config/rss-feeds.ts`） |
+| `RSS_FEEDS` 設定筆數 | 53（`lib/server/config/rss-feeds.ts`；2026-10-16 起含 `tfc_news`） |
 | 其中 Google News `site:` 搜尋代理 | 11 筆（2026-08-31 時為 18 筆，已依新鮮度閘門陸續淘汰） |
-| 來源分類（`sourceCategories.ts`） | `gov` 官方 26、`media` 媒體 49、`npo` 公益社福 29，共 104 個 `sourceName` |
+| 來源分類（`sourceCategories.ts`） | `gov` 官方 26、`media` 媒體 49、`npo` 公益社福 26、`factcheck` 事實查核／謠言 2（`tfc`、`mygopen`），共 103 個 `sourceName`（2026-10-16 實數） |
 | 擷取路徑 | **A. 標準 RSS**（`runIngestion.ts` → `enrichItem()`）＋ **B. 特殊來源爬蟲**（`processSpecialSource()`，約 50 個 feed code） |
 | 寫入者 | 只剩 `persistItems.ts` 一個寫入 `news_items`（WRA 與 gov-opendata 第二寫入者皆已移除） |
 | 新鮮度閘門 | `FRESHNESS_WINDOW_DAYS = 90`，超過 90 天的項目不入庫 |
@@ -38,6 +38,7 @@
 - 運動部 OpenDataRSS 回傳 2020–2026 全量 1,871 筆，不是「最近 N 篇」feed，暫不收錄。
 - WRA 枯旱通報是 2012 起的歷史紀錄，不適合放進新聞表（已移除）。
 - `udn_woman` 改收女子漾全站 feed（不再只收情慾愛情分類）。
+- 事實查核機構（`factcheck` 分類：`tfc`、`mygopen`）的卡片一律附「來源：XXX（查核機構，非本站判定）」標記，且本站不重新詮釋真假結論（#701 擁有者決議）。候選來源 FactCheckLab（約每月一篇）、蘭姆酒吐司（2021-10 停更）、全民查假會社 tstm.tw（無 RSS，不寫專用爬蟲）已評估並不採用，理由記在 `rss-feeds.ts` 頂端註解。
 
 ---
 
@@ -115,6 +116,15 @@
 #### MyGoPen 查核中心 ✅
 - 原檔：[mygopen-news-source.md](../archive/specs/mygopen-news-source.md)
 - Blogger RSS；抽「你可以先知道」作摘要；保留原生標籤到 `category_tags`。
+- 2026-10-16（#701）：分類由 `npo` 移到新的 `factcheck`（事實查核／謠言），卡片加查核標記。仍走特殊來源 `fetchMygopenNews`，**不**再加進 `RSS_FEEDS`——其 `<description>` 是整篇文章 HTML（每篇 6–9 KB，預設 25 筆約 320 KB），重複登錄會雙重入庫並把全文存進 DB。注意該 fetcher 目前請求 `max-results=50`，單次回應比預設 25 筆更大，評估 #699 的匯入記憶體尖峰時要把它算進去。
+
+#### 台灣事實查核中心 TFC 與「事實查核／謠言」分類 ✅（#701，部署等 #699）
+- `tfc_news`（`tfc-taiwan.org.tw/feed/`，標準 WordPress RSS，10 筆、約 14 KB）走一般 `RSS_FEEDS`；`<description>` 本來就只是短摘要（沒有 `content:encoded`、沒有 enclosure），縮圖走既有 og:image 備援。
+- 新分類 `factcheck`（標籤「事實查核／謠言」）：`/news?group=factcheck` 與首頁／側欄的來源篩選自動出現；文章主題仍交給 `classifyTopics.ts` 的關鍵字規則（防詐、反毒等），不設固定主題。
+- 卡片標記由 `getFactCheckNotice()`（`sourceCategories.ts`）產生，`FactCheckNotice` 元件顯示於 `NewsCard`、`HeroPost`、側欄熱門新聞與搜尋結果；與摘要是否被截斷無關。
+- 順手修正：TFC 的 `<description>` 把每個中文字寫成 `&#x9752;` 數字實體（CDATA 內不會被解碼），卡片摘要原本會顯示亂碼；`lib/format/news.ts` 的 `stripHtml` 現在只解碼非 ASCII 的數字實體（ASCII 不解碼，避免變回標記），`excerpt` 並移除 WordPress 的「〈標題〉這篇文章最早發佈於《站名》。」頁尾。
+- 未採用：FactCheckLab、蘭姆酒吐司、tstm.tw（見上方長期決策）。
+- 上線後待驗證：正式主機能否連到 `tfc-taiwan.org.tw`（Cloudflare 前置，未實測）、`/news?group=factcheck` 與 `/news?source=tfc` 有資料、卡片可見標記、og:image 縮圖取得。
 
 #### 社企流（新聞＋活動） ✅
 - 原檔：[seinsights-news-and-events.md](../archive/specs/seinsights-news-and-events.md)

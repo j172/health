@@ -4,6 +4,8 @@ import Link from "next/link";
 import { type NewsListItem } from "@/lib/server/news/queries";
 import { type SignificantEarthquake } from "@/lib/server/earthquakes/queries";
 import { SOURCE_CATEGORIES } from "@/lib/server/news/sourceCategories";
+import { resolveAuthorLabel } from "@/lib/server/news/sourceLabels";
+import FactCheckNotice from "@/components/News/FactCheckNotice";
 import AqiSidebarWidget from "@/components/Tools/AqiSidebarWidget";
 import UvSidebarWidget from "@/components/Tools/UvSidebarWidget";
 import WeatherAlertSidebarWidget from "@/components/Tools/WeatherAlertSidebarWidget";
@@ -128,6 +130,11 @@ export default function NewsSidebar({
                         {tDynamic(item.title)}
                       </Link>
                     </h4>
+                    <FactCheckNotice
+                      sourceName={item.source_name}
+                      sourceLabel={resolveAuthorLabel(item)}
+                      className="mt-1"
+                    />
                     <p className="mt-1 text-[11px] text-slate-600" suppressHydrationWarning>
                       {item.feed_name} ·{" "}
                       {toTaipei(displayDate(item), "short")}
