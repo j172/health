@@ -31,7 +31,7 @@ import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGarbageRoutesSync } from "@/lib/server/garbageRoutes/runSync";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
-import { runYouBikeSync } from "@/lib/server/youbike/runSync";
+import { runYouBikeDirectSync, runYouBikeTdxSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runForestFireSync } from "@/lib/server/forestFire/runSync";
@@ -425,10 +425,25 @@ export const registerCronJobs = (): void => {
     "58 4 * * *",
     runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
   );
-  // YouBike 2.0 every 5 minutes — batch upserts real-time station availability across Taipei, NTPC, Hsinchu
+  // YouBike 2.0 Taipei + New Taipei every 5 minutes — straight from each city's free open-data feed,
+  // never through TDX (no quota, no wait in the shared 5 req/min limiter). This is the only job that
+  // keeps the original every-5-minute grid; summary.source is "direct" in logs/youbike-sync-cron.log.
   cron.schedule(
     "*/5 * * * *",
-    runGuarded("youbike-sync-cron.log", () => runYouBikeSync()),
+    runGuarded("youbike-sync-cron.log", () => runYouBikeDirectSync()),
+  );
+  // YouBike 2.0 for the other 13 cities, from TDX, about every 15 minutes (logs/youbike-tdx-sync-cron.log).
+  // A round is one Bike/Availability request per city (13) — the static half comes from youbike_stations
+  // and Bike/Station is only re-fetched about once a day per city, see lib/server/youbike/tdxSyncCore.ts.
+  // That is ~1,250 TDX requests a day against the ~4,300 the old every-5-minute, 15-city, two-endpoint
+  // round cost. A round takes ~3 minutes in the shared limiter (13 x 13 s).
+  // 11/26/39/54: every minute of a clean quarter-hour grid (m, m+15, m+30, m+45) is already taken by
+  // some other job, so these four unused minutes (gaps of 13-17 minutes) are the closest fit. None is a
+  // multiple of 5 (the youbike-sync grid above), none is used by any other job at any hour, and the
+  // round (~3 min) ends before the next TDX-heavy job: metro-alerts :00/:30, transit-accessibility-alerts :16.
+  cron.schedule(
+    "11,26,39,54 * * * *",
+    runGuarded("youbike-tdx-sync-cron.log", () => runYouBikeTdxSync()),
   );
   // Rail alerts every 30 minutes (issue #470) — fans out across all 6 TDX metro/light-rail
   // systems + TRA + THSR (Promise.allSettled-isolated per system), falling back to Taipei

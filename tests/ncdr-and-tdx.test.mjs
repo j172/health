@@ -11,7 +11,27 @@ test("TDX Client: TDX_CITIES maps valid Taiwan cities and cleanName strips prefi
   assert.ok(content.includes("Taipei"), "Should include Taipei config");
   assert.ok(content.includes("NewTaipei"), "Should include NewTaipei config");
   assert.ok(content.includes("Kaohsiung"), "Should include Kaohsiung config");
-  assert.ok(content.includes("cleanName"), "cleanName function should exist");
+
+  // The name cleaning moved out with the pure mapping (format.ts / tdxStations.ts) when the sync was
+  // split into an Availability-only TDX round plus free open-data jobs for Taipei and New Taipei.
+  const format = fs.readFileSync(path.join(process.cwd(), "lib", "server", "youbike", "format.ts"), "utf-8");
+  assert.ok(format.includes("export function cleanName"), "cleanName function should exist");
+  assert.ok(format.includes("YouBike2\\.0_"), "cleanName should strip the YouBike2.0_ prefix");
+  const stations = fs.readFileSync(path.join(process.cwd(), "lib", "server", "youbike", "tdxStations.ts"), "utf-8");
+  assert.ok(stations.includes("cleanName("), "the TDX mapper should clean station names with it");
+});
+
+test("YouBike TDX sync: Taipei and New Taipei never go through TDX, TDX owns exactly the other 13 cities", () => {
+  const tdxFile = path.join(process.cwd(), "lib", "server", "youbike", "tdxClient.ts");
+  const content = fs.readFileSync(tdxFile, "utf-8");
+  assert.match(content, /DIRECT_OPENDATA_CITY_CODES: readonly string\[\] = \["TPE", "NTPC"\]/);
+  assert.match(content, /TDX_SYNCED_CITY_CODES/);
+
+  const runSync = fs.readFileSync(path.join(process.cwd(), "lib", "server", "youbike", "runSync.ts"), "utf-8");
+  assert.ok(runSync.includes("export async function runYouBikeDirectSync"), "Taipei + New Taipei job");
+  assert.ok(runSync.includes("export async function runYouBikeTdxSync"), "the other 13 cities via TDX");
+  const direct = runSync.slice(runSync.indexOf("export async function runYouBikeDirectSync"), runSync.indexOf("/** Hsinchu's open-data host"));
+  assert.ok(!/getTdxToken|fetchTdx|tdxGetJsonWithRetry/.test(direct), "the direct job must not touch TDX");
 });
 
 test("YouBike TDX_CITIES: covers all 15 TDX-enumerated counties/cities (issue #453)", () => {
@@ -54,19 +74,27 @@ test("YouBike TDX sync: per-city failures are isolated via Promise.allSettled an
   const content = fs.readFileSync(tdxFile, "utf-8");
 
   assert.ok(
-    content.includes("Promise.allSettled"),
-    "fetchAllTdxStations should isolate per-city failures with Promise.allSettled instead of Promise.all"
+    content.includes("requireList") && content.includes("throw new Error"),
+    "the TDX client should throw on a non-200 so one city's failure is a rejected promise the round isolates"
+  );
+
+  // The per-city isolation lives in the round itself now (tdxSyncCore.ts), not in the HTTP client.
+  const coreFile = path.join(process.cwd(), "lib", "server", "youbike", "tdxSyncCore.ts");
+  const coreContent = fs.readFileSync(coreFile, "utf-8");
+  assert.ok(
+    coreContent.includes("Promise.allSettled"),
+    "the TDX round should isolate per-city failures with Promise.allSettled instead of Promise.all"
   );
   assert.ok(
-    content.includes("errors[c]") || content.includes("errors: Record<string, string>"),
-    "fetchAllTdxStations should surface per-city errors instead of silently swallowing or rethrowing them"
+    coreContent.includes("`TDX fetch failed for ${code}: ${errorMessage(result.reason)}`"),
+    "the TDX round should record per-city TDX errors into summary.errors in the 'TDX fetch failed for <city>: <msg>' format"
   );
 
   const syncFile = path.join(process.cwd(), "lib", "server", "youbike", "runSync.ts");
   const syncContent = fs.readFileSync(syncFile, "utf-8");
   assert.ok(
-    syncContent.includes("tdxResult.errors"),
-    "runYouBikeSync should record per-city TDX errors into summary.errors"
+    syncContent.includes("runTdxCitiesSync"),
+    "runYouBikeTdxSync should run the per-city-isolated round"
   );
 });
 
@@ -110,18 +138,20 @@ test("TDX shared auth: lib/server/tdx/auth.ts exports getTdxToken and youbike cl
   assert.ok(authContent.includes("TDX_CLIENT_ID"), "auth.ts should read TDX_CLIENT_ID");
   assert.ok(authContent.includes("TDX_CLIENT_SECRET"), "auth.ts should read TDX_CLIENT_SECRET");
 
-  const tdxClientContent = fs.readFileSync(
-    path.join(process.cwd(), "lib", "server", "youbike", "tdxClient.ts"),
-    "utf-8"
-  );
+  // The token is obtained once per round by runSync.ts (from the shared helper) and handed to the
+  // client functions; neither file may carry a second token implementation.
+  const runSyncContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "youbike", "runSync.ts"), "utf-8");
   assert.ok(
-    tdxClientContent.includes('from "@/lib/server/tdx/auth"'),
-    "tdxClient.ts should import the shared getTdxToken helper instead of defining its own"
+    runSyncContent.includes('import { getTdxToken } from "@/lib/server/tdx/auth"'),
+    "runSync.ts should import the shared getTdxToken helper instead of defining its own"
   );
-  assert.ok(
-    !tdxClientContent.includes("async function getTdxToken"),
-    "tdxClient.ts should no longer define its own getTdxToken (now shared via lib/server/tdx/auth.ts)"
-  );
+  for (const file of ["runSync.ts", "tdxClient.ts"]) {
+    const src = fs.readFileSync(path.join(process.cwd(), "lib", "server", "youbike", file), "utf-8");
+    assert.ok(
+      !src.includes("async function getTdxToken"),
+      `${file} should not define its own getTdxToken (now shared via lib/server/tdx/auth.ts)`
+    );
+  }
 });
 
 test("TDX Senior/Rail client: covers all 5 endpoints across the 10 RailSystem codes and degrades gracefully (issue #434)", () => {

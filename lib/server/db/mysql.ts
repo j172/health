@@ -120,6 +120,8 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.latestBooks);
   await p.query(TABLE_DDL.metroAlerts);
   await p.query(TABLE_DDL.youbikeStations);
+  // YouBike TDX sync: per-city "static data last loaded" time (a new table, no ALTER needed).
+  await p.query(TABLE_DDL.youbikeSyncState);
   await p.query(TABLE_DDL.pestAlerts);
   await p.query(TABLE_DDL.powerGenerationUnits);
   await p.query(TABLE_DDL.powerGenerationMix);

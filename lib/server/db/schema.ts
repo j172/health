@@ -1277,6 +1277,18 @@ export const TABLE_DDL = {
       KEY idx_youbike_city_district (city_code, district_tw)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // YouBike TDX 同步的「每縣市靜態資料最後載入時間」— TDX 回合平常只打 Bike/Availability（即時
+  // 車位），站名／地址／座標／車柱數從 youbike_stations 讀；只有資料庫沒有該縣市站點、距上次載入
+  // 超過 24 小時、或 Availability 出現未知 StationID 時才補打 Bike/Station。這張表記住「上次載入
+  // 是什麼時候」，行程被主機殺掉重啟後不會又把 13 個縣市全部重載一遍。主鍵只有 city_code（一個縣
+  // 市一列），時間欄位是普通欄位、不在任何 key 裡，所以每次是 UPDATE 而不是無限累積新列。
+  youbikeSyncState: `
+    CREATE TABLE IF NOT EXISTS youbike_sync_state (
+      city_code VARCHAR(10) NOT NULL PRIMARY KEY,
+      static_refreshed_at DATETIME NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   // 便民服務：作物病蟲害即時預警 (農業部動植物防疫檢疫署)
   pestAlerts: `
     CREATE TABLE IF NOT EXISTS pest_alerts (
