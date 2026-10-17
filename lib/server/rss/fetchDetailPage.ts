@@ -190,6 +190,42 @@ export const resolveDetailTextScoping = (
   return null;
 };
 
+/**
+ * Largest detail page we will read. A cheerio document costs ~50x the page's size
+ * while it is alive (26 MB for a 500 KB page, measured for #699), so the old
+ * 24 MB ceiling was a way to need more memory than the host has. A government
+ * announcement is tens of KB; a page past this is not one, and enrichItem()
+ * already treats a failed detail fetch as "use the feed's own description".
+ */
+export const DETAIL_PAGE_MAX_BYTES = 2.5 * 1024 * 1024;
+
+/**
+ * ...and the same limit on the markup that is left once <script>/<style> are
+ * dropped, because a 300 KB gzip response can inflate past a megabyte and the DOM
+ * is built from what inflated, not from what crossed the wire.
+ */
+export const DETAIL_PAGE_MAX_CHARS = 900_000;
+
+// A comment is matched FIRST and handed back untouched: the heho fixture opens with a comment that mentions
+// "<style>/<script> blocks", and a pattern that did not know about comments paired that "<style>" with a "</style>"
+// further down and swallowed the article between them.
+const INERT_BLOCKS = /<!--[\s\S]*?-->|<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi;
+
+/**
+ * Drops <script> and <style> elements from raw HTML before it becomes a DOM.
+ *
+ * extractDetailContent() removes both from the document as its very first step,
+ * so nothing it returns can depend on them — but until then every inline script
+ * (Next.js __NEXT_DATA__, analytics, JSON-LD) was parsed into a node and kept
+ * alive for the whole call, and on a modern page that is most of the bytes.
+ * Splitting on the first closing tag matches how an HTML parser ends these
+ * elements; an unterminated one is left alone for the parser to deal with, and
+ * comments are skipped whole (see INERT_BLOCKS). <meta> and <link> in <head> are
+ * untouched, so og:image is still found.
+ */
+export const stripInertMarkup = (html: string): string =>
+  html.replace(INERT_BLOCKS, (block, element?: string) => (element ? "" : block));
+
 const uniqueAssets = (assets: NewsAsset[]): NewsAsset[] => {
   const seen = new Set<string>();
   const result: NewsAsset[] = [];
@@ -331,6 +367,7 @@ export const fetchDetailPage = async (
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     },
     timeoutMs: 15_000,
+    maxResponseBytes: DETAIL_PAGE_MAX_BYTES,
   });
 
   if (response.status < 200 || response.status >= 300) {
@@ -339,8 +376,13 @@ export const fetchDetailPage = async (
     );
   }
 
-  const html = response.text;
-  const $ = load(html);
+  const markup = stripInertMarkup(response.text);
+  if (markup.length > DETAIL_PAGE_MAX_CHARS) {
+    throw new Error(
+      `Detail page too large to parse safely (${markup.length} chars of markup) for ${item.canonicalUrl}`,
+    );
+  }
+  const $ = load(markup);
 
   // Capture social card image before stripping <head>/<meta> (ltn etc. often
   // lack a clean article image container but always ship a reliable og:image).

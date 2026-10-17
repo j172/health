@@ -68,6 +68,8 @@
 
 - GitHub Actions 的排程會延遲 5–15 分鐘，原本錯開的排程可能擠在一起，推高主機 NPROC；新增排程必須參考現有分鐘數錯開。
 - **in-app cron 有自動 lint**（#669）：`lib/server/cron/cronCollisions.test.mjs` 解析 `registerJobs.ts` 內所有 `cron.schedule` 運算式，凍結一份「既有同 tick 配對」清單（含已知的 `30 4 * * *` green-products／wra-catalog 雙排程），**任何新 job 與既有 job 同 tick 都會讓測試失敗**，訊息會列出目前沒有任何 job 使用的分鐘。不要把新配對加進清單，換一個沒人用的分鐘。此 lint 只涵蓋 `registerJobs.ts`，GitHub Actions 的 `schedule:` 仍要人工對照本節的表。
+- **RSS 匯入的重疊觸發靠同一把 MySQL advisory lock 擋住**（#699）：in-app cron（`:05/:35`）與 GitHub 心跳（admin 路由，`:20/:50`）都呼叫 `runRssIngestion`，鎖名 `rss_ingestion_lock`。一輪匯入約 11 分鐘，兩個觸發點本來就會重疊；沒搶到鎖的嘗試寫成 `ingest_runs.status='skipped'`（安靜的跳過，不是 `failed`）。先取鎖、才建立 `running` 的列。鎖綁在一條閒置一輪的 MySQL 連線上，連線被關掉鎖就無聲消失，所以匯入每個單位工作之間都用 `IS_USED_LOCK` 心跳確認，鎖丟了就停（`AdvisoryLockLostError`）。
+- 長時間的行程內工作要像 `runMonitor.ts` 那樣在單位工作之間：確認鎖／更新 `updated_at` → 超過預算才強制 GC（`heapGovernor.ts`；PM2 的 `node_args` 我們不能改，所以執行期用 `v8.setFlagsFromString('--expose-gc')` 取得 `gc`）→ 寫一行 JSON 階段日誌（沿用 #697 的 `stageLog` 形狀）→ `yieldToEventLoop()`。
 - 共用 concurrency group 時，`cancel-in-progress: true` 會**跨 workflow** 取消別人；長時間任務不可與之同組同時段。
 - 打主機 API 一律用 SSH loopback（`scripts/lib/ssh-loopback.mjs`），不打公開網址（Cloudflare 會對 runner 發 JS 挑戰）。
 - Cloudflare 快取清除失敗不得中斷部署（`continue-on-error`）。

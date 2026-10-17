@@ -40,11 +40,65 @@ const reapOrphanedRuns = async (
         updated_at = UTC_TIMESTAMP()
     WHERE status = 'running'
       AND id <> ?
-      AND started_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? MINUTE)
+      AND COALESCE(updated_at, started_at) < DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? MINUTE)
     `,
     [currentRunId, ORPHAN_RUN_AFTER_MINUTES],
   );
 };
+
+/**
+ * Tells the run list "this run is alive" by moving updated_at forward.
+ *
+ * The orphan rule above is about *silence*, not age: a row is abandoned when
+ * nothing has touched it for ORPHAN_RUN_AFTER_MINUTES. It used to be measured
+ * from started_at, so a run that was healthy but slow (the host is shared and
+ * loaded; a full ingestion is ~11 minutes on a good day) was reaped as
+ * "Abandoned" by whichever sync started next, while it was still working.
+ * Every other sync never touches its row, and updated_at starts equal to
+ * started_at, so for them nothing changes. The window itself is not widened.
+ */
+export const touchIngestionRun = async (runId: number): Promise<void> => {
+  await withConnection(async (conn) => {
+    await conn.execute(
+      `UPDATE ingest_runs SET updated_at = ? WHERE id = ? AND status = 'running'`,
+      [utcNowSql(), runId],
+    );
+  });
+};
+
+/**
+ * Records an attempt that did not run because another run of the same job holds
+ * its advisory lock. This is the normal outcome whenever two triggers overlap
+ * (the in-app cron and the GitHub heartbeat both start an RSS run, and a run
+ * outlives the gap between them), so it is stored as its own quiet status rather
+ * than as a failure: counting it in `failed` made the run list read as a string
+ * of errors when nothing had gone wrong.
+ */
+export const recordSkippedIngestionRun = async (params: {
+  triggerType: string;
+  reason: string;
+  startedAt: Date;
+}): Promise<number> =>
+  withConnection(async (conn) => {
+    const now = utcNowSql();
+    const [result] = await conn.execute<ResultSetHeader>(
+      `
+      INSERT INTO ingest_runs
+        (trigger_type, status, started_at, ended_at, duration_ms, summary_json, created_at, updated_at)
+      VALUES (?, 'skipped', ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        params.triggerType,
+        toSqlDateTime(params.startedAt),
+        now,
+        Math.max(0, Date.now() - params.startedAt.getTime()),
+        JSON.stringify({ skipped: params.reason }),
+        now,
+        now,
+      ],
+    );
+    return result.insertId;
+  });
 
 export const createIngestionRun = async (
   triggerType: string,
@@ -134,18 +188,41 @@ export const writeIngestionError = async (params: {
   });
 };
 
-export const getRecentRuns = async (limit = 20): Promise<RowDataPacket[]> =>
+export interface RecentRunFilters {
+  /** Skip this many of the newest matching runs — the list used to stop at the latest 20 with no way back. */
+  offset?: number;
+  /** Only runs with this status: running | success | failed | skipped. */
+  status?: string;
+  /** Only runs started by this trigger: internal-cron | admin-manual | ... */
+  triggerType?: string;
+}
+
+export const getRecentRuns = async (
+  limit = 20,
+  filters: RecentRunFilters = {},
+): Promise<RowDataPacket[]> =>
   withConnection(async (conn: PoolConnection) => {
+    const conditions: string[] = [];
+    const params: Array<string | number> = [];
+    if (filters.status) {
+      conditions.push("status = ?");
+      params.push(filters.status);
+    }
+    if (filters.triggerType) {
+      conditions.push("trigger_type = ?");
+      params.push(filters.triggerType);
+    }
     const [rows] = await conn.query<RowDataPacket[]>(
       `
       SELECT id, trigger_type, status, started_at, ended_at, duration_ms,
              fetched_count, inserted_count, updated_count, unchanged_count, failed_feeds_count,
              error_message, summary_json
       FROM ingest_runs
+      ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
       ORDER BY id DESC
-      LIMIT ?
+      LIMIT ? OFFSET ?
       `,
-      [limit],
+      [...params, limit, Math.max(0, filters.offset ?? 0)],
     );
     return rows;
   });
