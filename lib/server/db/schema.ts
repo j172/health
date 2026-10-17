@@ -1792,6 +1792,22 @@ export const TABLE_DDL = {
       INDEX idx_station (station_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 每日 TDX Senior/Rail 同步的「每系統最後成功時間」(issue #704) — 同步每個 RailSystem
+  // 抓完就寫入，行程被主機殺掉後下一輪依此優先處理最久沒成功的系統。主鍵只有
+  // rail_system（一個系統一列），時間欄位都是普通欄位、不在任何 key 裡，所以每次同步是
+  // UPDATE 而不是無限累積新列。
+  accessibleTransitSyncState: `
+    CREATE TABLE IF NOT EXISTS accessible_transit_sync_state (
+      rail_system VARCHAR(16) NOT NULL PRIMARY KEY,
+      last_success_at DATETIME NULL,
+      last_attempt_at DATETIME NULL,
+      last_error VARCHAR(500) NULL,
+      stations_count INT NOT NULL DEFAULT 0,
+      maps_count INT NOT NULL DEFAULT 0,
+      transfers_count INT NOT NULL DEFAULT 0,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
   wraInundationSensors: `
     CREATE TABLE IF NOT EXISTS wra_inundation_sensors (
       sensor_id VARCHAR(64) PRIMARY KEY,

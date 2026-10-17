@@ -144,6 +144,7 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.accessibleTransitFacilityAlerts);
   await p.query(TABLE_DDL.accessibleTransitStationMaps);
   await p.query(TABLE_DDL.accessibleTransitTransfers);
+  await p.query(TABLE_DDL.accessibleTransitSyncState);
   await p.query(TABLE_DDL.wraInundationSensors);
   await p.query(TABLE_DDL.wraWaterOutages);
   // 水質分頁：台水鄉鎮總硬度 (issue #673) — new table, no ALTER needed.

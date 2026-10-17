@@ -32,8 +32,16 @@ test("runSync walks RailSystems sequentially (no Promise.all batches) and fails 
   const body = src.slice(start, end);
   assert.doesNotMatch(body, /Promise\.all/);
   assert.doesNotMatch(body, /batchSize/);
-  assert.ok((body.match(/for \(const system of RAIL_SYSTEMS\)/g) || []).length >= 2);
+  // The daily sync's per-system loop moved to railSyncCore.ts (issue #704: write each system as it is
+  // fetched); the alerts job still loops over RAIL_SYSTEMS here.
+  assert.ok((body.match(/for \(const system of RAIL_SYSTEMS\)/g) || []).length >= 1);
+  assert.match(body, /runRailSystemsSync\(/);
   assert.equal((body.match(/await getTdxToken\(\)/g) || []).length, 2);
+
+  const core = read("lib/server/transit/railSyncCore.ts");
+  assert.doesNotMatch(core, /Promise\.all/);
+  assert.doesNotMatch(core, /batchSize/);
+  assert.match(core, /for \(const system of ordered\)/);
 });
 
 test("admin route can run one job at a time via ?job=", () => {
