@@ -183,21 +183,45 @@ const TRUSTED_CAS = [
   TWCA_CYBER_ROOT_CA,
 ];
 
-// issue #401: passing `ca: TRUSTED_CAS` (Node's ~170-cert root store + 4
-// project PEMs) inline on every request with no agent (Node's default has
-// keepAlive: false) forced a brand-new tls.SecureContext to be constructed
-// from native code on every single HTTPS call this app makes. Enough
-// concurrent calls exhausted the native heap — three std::bad_alloc crashes
-// on 2026-09-23 all shared the exact same SSL_CTX_add_client_CA /
-// SecureContext::AddCACert native stack trace. Building the CA list into
-// one shared, keep-alive Agent (constructed once, at module load) means the
-// SecureContext is built once and reused across every request instead.
+// issue #401 / #699: passing `ca: TRUSTED_CAS` (Node's ~120-cert root store + 4
+// project PEMs) forces a brand-new tls.SecureContext to be built from native
+// code for EVERY TLS connection — and that holds even when the `ca` list sits
+// on a shared keep-alive Agent, because the Agent only forwards the option to
+// tls.connect(), which builds a context per socket. Measured on Node 20/26
+// (scratch benchmark for #699): ~0.8 MB of native memory per context, 150
+// connections = +110-125 MB RSS, while process.memoryUsage().external moves by
+// 0.1 MB — V8 cannot see it, so it never decides to collect, and a context
+// stays alive as long as its (keep-alive!) socket does. Three std::bad_alloc
+// crashes on 2026-09-23 (SecureContext::AddCACert) and the SIGKILLs ~3 minutes
+// into every RSS ingestion run on 2026-10-16 (the run touches ~100 distinct
+// hosts) are the same mechanism. The fix is to build ONE SecureContext here,
+// at module load, and hand that object to the Agent: the same 150
+// connections then cost +4 MB. `ca` is deliberately not passed any more.
+const SHARED_SECURE_CONTEXT = tls.createSecureContext({ ca: TRUSTED_CAS });
+
+/**
+ * An idle keep-alive socket is closed after this long. Without it the agent
+ * keeps every socket until the *remote* end closes it (a minute or more for
+ * most origins), and each one pins TLS session state — one per publisher the
+ * ingestion has visited. Requests to the same host come in bursts of a few
+ * seconds, so 10 s keeps the reuse and drops the rest.
+ */
+const IDLE_SOCKET_TIMEOUT_MS = 10_000;
+
 const httpsAgent = new https.Agent({
   keepAlive: true,
   maxSockets: 50,
-  ca: TRUSTED_CAS,
+  timeout: IDLE_SOCKET_TIMEOUT_MS,
+  secureContext: SHARED_SECURE_CONTEXT,
 });
-const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 50 });
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  maxSockets: 50,
+  timeout: IDLE_SOCKET_TIMEOUT_MS,
+});
+
+/** Test seam: lets a test assert the agents share one SecureContext and expire idle sockets. */
+export const httpAgentsForTests = { httpsAgent, httpAgent, secureContext: SHARED_SECURE_CONTEXT };
 
 export interface HttpRequestOptions {
   method?: string;
@@ -215,10 +239,29 @@ export interface HttpRequestOptions {
    * runs only *after* the full body has already been buffered.
    */
   maxResponseBytes?: number;
+  /**
+   * Read at most this many bytes of the body and then stop, instead of failing
+   * (maxResponseBytes) or reading to the end. The socket is dropped as soon as
+   * enough has arrived and the result is flagged `truncated`.
+   *
+   * For callers that only need the start of a document — og:image lives in
+   * <head>, so reading and parsing a 1.5 MB news page to find it costs ~75 MB of
+   * DOM for nothing (measured for #699). Asks the origin for an uncompressed
+   * body (a cut-off gzip stream cannot be parsed); if it compresses anyway the
+   * stream is decoded as far as it goes. Not for anything that must be complete.
+   */
+  truncateAtBytes?: number;
 }
 
 /** 24MB — comfortably above the largest article image we fetch, far below the heap cap. */
 export const DEFAULT_MAX_RESPONSE_BYTES = 24 * 1024 * 1024;
+
+/**
+ * A decompressed body may be this many times the wire limit. JSON and CSV open-data
+ * dumps legitimately inflate 10:1, so the guard is loose on purpose — it exists to
+ * stop a gzip bomb, not to second-guess a big dataset.
+ */
+const MAX_DECODE_RATIO = 8;
 
 export class ResponseTooLargeError extends Error {
   constructor(url: string, limit: number) {
@@ -231,20 +274,95 @@ export interface HttpResponse {
   status: number;
   headers: http.IncomingHttpHeaders;
   buffer: Buffer;
+  /** True when the body was cut at `truncateAtBytes`; `buffer` is then only the start of the document. */
+  truncated?: boolean;
 }
 
+/**
+ * Decompresses a response body, never producing more than `maxOutputBytes`.
+ *
+ * maxResponseBytes only bounds what comes off the wire; a 10 MB gzip stream can
+ * inflate to gigabytes, and the unbounded call used to try. An over-limit body
+ * now surfaces as ResponseTooLargeError (like an over-limit download), while any
+ * other decoding problem still falls back to the raw bytes as before.
+ *
+ * `partial` decodes as far as a cut-off stream goes (Z_SYNC_FLUSH instead of
+ * demanding a complete trailer) — used for truncated reads only.
+ */
 const decodeBody = (
   buffer: Buffer,
   contentEncoding: string | undefined,
+  url: string,
+  maxOutputBytes: number,
+  partial: boolean,
 ): Buffer => {
+  const common = {
+    maxOutputLength: Math.max(1, maxOutputBytes),
+    ...(partial ? { finishFlush: zlib.constants.Z_SYNC_FLUSH } : {}),
+  };
   try {
-    if (contentEncoding === "gzip") return zlib.gunzipSync(buffer);
-    if (contentEncoding === "br") return zlib.brotliDecompressSync(buffer);
-    if (contentEncoding === "deflate") return zlib.inflateSync(buffer);
-  } catch {
+    if (contentEncoding === "gzip") return zlib.gunzipSync(buffer, common);
+    if (contentEncoding === "deflate") return zlib.inflateSync(buffer, common);
+    if (contentEncoding === "br") {
+      return zlib.brotliDecompressSync(buffer, {
+        maxOutputLength: common.maxOutputLength,
+        ...(partial ? { finishFlush: zlib.constants.BROTLI_OPERATION_FLUSH } : {}),
+      });
+    }
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code === "ERR_BUFFER_TOO_LARGE") {
+      throw new ResponseTooLargeError(url, maxOutputBytes);
+    }
     // Fall through and return the raw buffer if decompression fails.
   }
   return buffer;
+};
+
+/**
+ * Collects a response body into ONE buffer.
+ *
+ * `Buffer.concat(chunks)` holds every chunk and the joined copy at the same time,
+ * so a 12 MB image needs 24 MB at its peak. When the origin declared a
+ * Content-Length the right-sized buffer is allocated up front and each chunk is
+ * copied in and dropped; without one (chunked encoding) it falls back to concat.
+ */
+const createBodyCollector = (declaredLength: number) => {
+  const preallocated =
+    Number.isFinite(declaredLength) && declaredLength > 0
+      ? Buffer.allocUnsafe(declaredLength)
+      : null;
+  let chunks: Buffer[] = [];
+  let received = 0;
+  let overflowed = false;
+
+  return {
+    get received() {
+      return received;
+    },
+    push(chunk: Buffer): void {
+      if (preallocated && !overflowed && received + chunk.length <= preallocated.length) {
+        chunk.copy(preallocated, received);
+      } else {
+        if (preallocated && !overflowed) {
+          // The origin sent more than it declared: keep what we have and carry on with a list.
+          overflowed = true;
+          chunks = [Buffer.from(preallocated.subarray(0, received))];
+        }
+        chunks.push(chunk);
+      }
+      received += chunk.length;
+    },
+    finish(maxBytes?: number): Buffer {
+      const whole =
+        preallocated && !overflowed
+          ? preallocated.subarray(0, received)
+          : Buffer.concat(chunks);
+      chunks = [];
+      return maxBytes !== undefined && whole.length > maxBytes
+        ? whole.subarray(0, maxBytes)
+        : whole;
+    },
+  };
 };
 
 const requestOnce = (
@@ -261,12 +379,13 @@ const requestOnce = (
     }
 
     const transport = parsed.protocol === "http:" ? http : https;
+    const truncateAt = options.truncateAtBytes;
     const req = transport.request(
       parsed,
       {
         method: options.method ?? "GET",
         headers: {
-          "Accept-Encoding": "gzip, deflate, br",
+          "Accept-Encoding": truncateAt ? "identity" : "gzip, deflate, br",
           // Cloudflare-fronted origins (Pixabay's CDN, in particular) rate-limit
           // or challenge requests with no User-Agent much more aggressively than
           // ones that look like a normal browser — confirmed live: the exact
@@ -283,37 +402,78 @@ const requestOnce = (
         const limit = options.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
 
         // Trust Content-Length when the origin sends one — this rejects an
-        // oversized download before a single byte of it is buffered.
+        // oversized download before a single byte of it is buffered. (A
+        // truncating read never fails on size: it simply stops early.)
         const declared = Number(res.headers["content-length"]);
-        if (Number.isFinite(declared) && declared > limit) {
+        if (!truncateAt && Number.isFinite(declared) && declared > limit) {
           res.destroy();
           reject(new ResponseTooLargeError(url, limit));
           return;
         }
 
-        const chunks: Buffer[] = [];
-        let received = 0;
+        const body = createBodyCollector(
+          truncateAt ? Number.NaN : declared,
+        );
         let aborted = false;
+
+        const settle = (wasTruncated: boolean) => {
+          const contentEncoding = res.headers["content-encoding"];
+          try {
+            const raw = body.finish(truncateAt && !contentEncoding ? truncateAt : undefined);
+            let decoded: Buffer;
+            let truncatedResult = wasTruncated;
+            try {
+              // A compressed truncated read decodes as far as it goes; the
+              // decoded size is bounded to a multiple of what we asked for.
+              decoded = decodeBody(
+                raw,
+                contentEncoding,
+                url,
+                (truncateAt ?? limit) * MAX_DECODE_RATIO,
+                wasTruncated,
+              );
+            } catch (error) {
+              // A truncating caller only wanted the start of the document; one
+              // that inflates past the guard yields nothing rather than failing.
+              if (!truncateAt || !(error instanceof ResponseTooLargeError)) throw error;
+              decoded = Buffer.alloc(0);
+              truncatedResult = true;
+            }
+            resolve({
+              status: res.statusCode ?? 0,
+              headers: res.headers,
+              buffer: decoded,
+              ...(truncatedResult ? { truncated: true } : {}),
+            });
+          } catch (error) {
+            // Thrown from inside an event handler would be an uncaught exception.
+            reject(error);
+          }
+        };
 
         res.on("data", (chunk: Buffer) => {
           if (aborted) return;
-          received += chunk.length;
-          if (received > limit) {
+          if (truncateAt) {
+            body.push(chunk);
+            if (body.received >= truncateAt) {
+              aborted = true;
+              // Enough of the document has arrived; drop the connection rather than download the rest.
+              res.destroy();
+              settle(true);
+            }
+            return;
+          }
+          if (body.received + chunk.length > limit) {
             aborted = true;
             res.destroy();
             reject(new ResponseTooLargeError(url, limit));
             return;
           }
-          chunks.push(chunk);
+          body.push(chunk);
         });
         res.on("end", () => {
           if (aborted) return;
-          const raw = Buffer.concat(chunks);
-          resolve({
-            status: res.statusCode ?? 0,
-            headers: res.headers,
-            buffer: decodeBody(raw, res.headers["content-encoding"]),
-          });
+          settle(false);
         });
         res.on("error", (error) => {
           if (aborted) return;
@@ -355,9 +515,13 @@ export const httpRequest = async (
 export const httpGetText = async (
   url: string,
   options: HttpRequestOptions = {},
-): Promise<{ status: number; text: string }> => {
+): Promise<{ status: number; text: string; truncated?: boolean }> => {
   const response = await httpRequest(url, options);
-  return { status: response.status, text: response.buffer.toString("utf-8") };
+  return {
+    status: response.status,
+    text: response.buffer.toString("utf-8"),
+    ...(response.truncated ? { truncated: true } : {}),
+  };
 };
 
 export const httpGetJson = async <T = unknown>(

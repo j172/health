@@ -23,11 +23,24 @@ const requestOnceBody = source.slice(
   source.indexOf("export const httpRequest ="),
 );
 
-test("issue #401: a shared, keep-alive https.Agent (carrying TRUSTED_CAS) is constructed once at module scope, not per-request", () => {
+test("issue #401: a shared, keep-alive https.Agent (carrying ONE prebuilt SecureContext) is constructed once at module scope, not per-request", () => {
+  // #699: the first fix put `ca: TRUSTED_CAS` on the Agent, but an Agent only forwards `ca` to tls.connect(), which builds
+  // a fresh ~0.8 MB native SecureContext for every connection (150 connections = +118 MB RSS; shared: +4 MB). The CA list
+  // must be turned into a SecureContext once, here, and that object handed to the Agent.
   assert.match(
     moduleScope,
-    /new https\.Agent\(\s*\{[^}]*keepAlive:\s*true[^}]*ca:\s*TRUSTED_CAS/s,
-    "expected a module-scope `new https.Agent({ keepAlive: true, ..., ca: TRUSTED_CAS })`",
+    /SHARED_SECURE_CONTEXT\s*=\s*tls\.createSecureContext\(\s*\{\s*ca:\s*TRUSTED_CAS\s*\}\s*\)/,
+    "expected the CA list to be built into one SecureContext at module scope",
+  );
+  assert.match(
+    moduleScope,
+    /new https\.Agent\(\s*\{[^}]*keepAlive:\s*true[^}]*secureContext:\s*SHARED_SECURE_CONTEXT/s,
+    "expected a module-scope `new https.Agent({ keepAlive: true, ..., secureContext: SHARED_SECURE_CONTEXT })`",
+  );
+  assert.doesNotMatch(
+    moduleScope,
+    /new https\.Agent\(\s*\{[^}]*\bca:/s,
+    "the Agent must not be given `ca` directly: that is a SecureContext per connection again",
   );
   assert.doesNotMatch(
     requestOnceBody,

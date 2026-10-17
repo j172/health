@@ -157,6 +157,24 @@ const pickLeadImageUrl = (
   return null;
 };
 
+/**
+ * The three fields that decide whether a raw feed entry is kept at all (title and
+ * link) and whether it is fresh enough to be worth processing (published date),
+ * read the same way normalizeItem reads them — without the expensive part. A
+ * stale entry used to go through a cheerio parse of its description and a SHA-256
+ * of its whole payload before the freshness gate threw it away; on the Google
+ * `site:` feeds that is ~98 of every 100 entries.
+ */
+export const readItemIdentity = (
+  rawItem: Record<string, unknown>,
+): { title: string; link: string; publishedAtUtc: Date | null } => ({
+  title: pickText(rawItem.title),
+  link: pickLink(rawItem.link),
+  publishedAtUtc: parseRfc822ToDate(
+    rawItem.pubDate || rawItem.published || rawItem.updated,
+  ),
+});
+
 export const normalizeItem = (
   feed: FeedConfig,
   rawItem: Record<string, unknown>,

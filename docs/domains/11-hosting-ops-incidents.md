@@ -22,6 +22,8 @@
 3. **啟用 Next.js 圖片最佳化**：數十張圖同時縮放會衝破 768MB → 全域 `images.unoptimized: true`。
 4. **在主機上 `npm ci`**：會產生大量行程拖垮 NPROC；改為上傳預先建置好的產物。
 5. **用管線改寫正式 crontab**（`crontab -l | sed | crontab -` 曾清空整份 crontab）。
+6. **把 `ca:` 清單塞進 `https.Agent`／請求選項**：`ca` 只會被轉交給 `tls.connect()`，而它**每條連線都重建一個 `SecureContext`**（約 0.8 MB 原生記憶體，`process.memoryUsage().external` 幾乎不動，V8 看不到、不會因此做 GC）。實測 150 條連線 +118 MB RSS；改傳「預先建好、共用的 `secureContext`」同樣 150 條只 +4 MB（#699）。`httpClient.ts` 已改成模組載入時建一次，`lib/server/net/httpClient.limits.test.mjs` 會擋回頭。
+7. **用 cheerio 為整頁文章建 DOM 只為了讀 `<meta>`**：parse5 的 DOM 約為原始 HTML 的 **50 倍**（500 KB 頁面活著 26 MB、1.5 MB 頁面 73 MB，另有等量以上的垃圾）。取 og:image 只讀頁面前 256 KB 並只解析 `<head>`（`extractOpenGraphCandidates`）；詳情頁先剝 `<script>`／`<style>`、超過 `DETAIL_PAGE_MAX_CHARS` 就放棄。
 
 ### 1.2 Node 版本回滾步驟（#481）
 正式主機（103.21.221.12，帳號 `tw123457`）`~/.nvm/versions/node/` 同時裝有 v20.20.2（回滾用）與 v24.19.0（2026-10-13 切換後的正式版本）。PM2 的 `exec_interpreter` 是切換時明確指定的絕對路徑，**不是**從 `nvm alias default` 動態解析——所以回滾不能只改 default alias，要直接指定回舊路徑：
@@ -46,7 +48,7 @@
 
 | # | 項目 | 說明 |
 |---|---|---|
-| O-1 | **httpClient 每次 HTTPS 請求都重建 TLS SecureContext**（#401 OPEN） | 同日 3 次 `std::bad_alloc` 崩潰都在 OpenSSL `AddCACert`；斷路器降低了頻率但機制仍在。修法：共用 keep-alive `https.Agent`（目前 `httpClient.ts` 無 Agent） |
+| O-1 | ~~httpClient 每次 HTTPS 連線都重建 TLS SecureContext~~（#401；#699 修正，待上線驗證） | 先前加的共用 keep-alive `https.Agent` **沒有**解決它：`ca` 選項只被轉交給 `tls.connect()`，仍是每條連線一個 context。#699 改成模組載入時 `tls.createSecureContext({ ca })` 建一次、以 `secureContext` 傳給 Agent，並讓閒置 socket 10 秒後關閉。上線後觀察 `std::bad_alloc`（`AddCACert`）是否消失，再關 #401 |
 | O-2 | Issue #391（雙 God Daemon）、#394（`_next/image` OOM）仍為 OPEN | 修正已上線，issue 待驗證後關閉 |
 | O-3 | ~~Node 20 已 EOL~~ | 2026-10-13 正式切換到 v24.19.0（先在非正式連接埠 3099 實測、觀察後才切換，過程中也修正了主機 `.env` 裡過期的 `MYSQL_PASSWORD`）；v20.20.2 保留作回滾，CI 已改為 24；進入 #481 要求的一週觀察期，每日記錄在 issue 留言 |
 | O-4 | 共享主機鄰居搶 CPU | 主機層級問題，非程式可解；load average 長期 10–12 |
@@ -104,9 +106,16 @@
 - 首頁 30+ 張圖同時打 `/_next/image` 衝破記憶體；改 `images.unoptimized: true`，靜態資源由 LiteSpeed／PHP 直接回應。
 - 備註：因此 `sharp` 已無用途（2.0 將移除；若未來重新啟用圖片最佳化需一併恢復）。
 
-#### httpClient 共用 keep-alive TLS Agent ❌
+#### httpClient 共用 keep-alive TLS Agent 🟡（#699 修正，待上線驗證）
 - 原檔：[httpclient-shared-tls-agent.md](../archive/specs/httpclient-shared-tls-agent.md)（#401）
 - 見待辦 O-1。
+
+#### RSS 匯入記憶體尖峰（SIGKILL 於匯入啟動後約 3 分鐘）🟡（#699，待上線驗證）
+- 現象：Node 回滾到 20.20.2（#700）後 SIGABRT 消失，但每小時仍有 3–6 次 SIGKILL（沒有 V8 FATAL ERROR，RSS 遠低於 `max_memory_restart`，是主機 LVE 的實體記憶體管控），多數落在 RSS 匯入啟動後約 3 分鐘；匯入被殺所以 `ingest_runs` 永遠停在 `running`。
+- 無法對正式站量測，所以做了本機可重現的量測治具（`scripts/measure-rss-ingestion-memory.mjs`，真的 `runRssIngestion` 對本機合成世界跑，不碰任何真實網站）。找到的記憶體大戶，依貢獻排序：①整頁 cheerio DOM 只為了取 og:image；②每條 TLS 連線一個 `SecureContext`；③V8 不知道主機的實體上限，死掉的堆積（DOM、XML、HTTP body）不會被及時回收；④列表頁縮圖每輪重抓（已加 6 小時 URL→檔案記憶）。
+- 修法與護欄：`lib/server/rss/runMonitor.ts`（單位工作之間：鎖心跳＋堆積預算＋一行階段日誌＋讓出事件迴圈）、`lib/server/sync/heapGovernor.ts`、`lib/server/sync/stageLog.ts`；階段日誌事件名 `rss_ingestion_stage`（每個 feed／來源一行，含 `heapUsedMB`／`rssMB`／`externalMB`），被殺前最後一行就是當時在跑的來源。
+- 鎖：`internal-cron` 與 `admin-manual` 都走 `runRssIngestion` 的同一把 MySQL advisory lock（`rss_ingestion_lock`）。先取鎖、才建立 `ingest_runs` 列；取不到鎖的嘗試寫成 `status='skipped'`（不是 `failed`、不丟例外、不寫 `ingest_errors`）。匯入期間每個單位工作間用 `IS_USED_LOCK` 確認鎖還在（連線被資料庫關掉鎖會無聲消失），並順便更新 `ingest_runs.updated_at`；孤兒判定改看「沉默 20 分鐘」而非「開始 20 分鐘」，窗口沒有放寬。
+- `GET /api/admin/ingestion-runs` 新增 `limit`／`offset`／`status`／`trigger` 參數。
 
 ### 4.3 CDN
 

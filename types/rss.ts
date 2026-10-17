@@ -226,4 +226,10 @@ export interface IngestionSummary {
   staleRejected: number;
   failedFeeds: number;
   feedResults: FeedFetchResult[];
+  /**
+   * Set when this attempt did not run because another ingestion held the lock —
+   * the normal result of two triggers overlapping, not a failure. Every count
+   * above is then zero.
+   */
+  skipped?: "lock_held";
 }

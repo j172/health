@@ -1,6 +1,6 @@
 import "server-only";
 import { createHash } from "node:crypto";
-import { mkdir, rename, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { httpRequest } from "@/lib/server/net/httpClient";
 import {
@@ -81,6 +81,49 @@ const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
 
 /**
+ * Source URL -> where we stored it, so the same listing-page thumbnail is not
+ * downloaded again on every 30-minute run.
+ *
+ * The ~50 per-publisher scrapers download every card's image BEFORE the
+ * unchanged-article check (processSpecialSource only sees items once their
+ * assets exist), so a steady-state run re-fetched, re-hashed and re-wrote
+ * ~750 images that were already on disk — each one a transient buffer of up to
+ * 12 MB plus a TLS round trip, for nothing (#699). Remembering a URL for a few
+ * hours removes nearly all of that. The file must still exist (a cleanup may
+ * have removed it) and the entry expires, so a replaced photo at the same URL
+ * is picked up within IMAGE_REUSE_TTL_MS.
+ */
+const IMAGE_REUSE_TTL_MS = 6 * 60 * 60 * 1000;
+const MAX_REMEMBERED_IMAGES = 3000;
+const rememberedImages = new Map<string, { localPath: string; at: number }>();
+
+const rememberImage = (sourceUrl: string, localPath: string): void => {
+  rememberedImages.delete(sourceUrl);
+  rememberedImages.set(sourceUrl, { localPath, at: Date.now() });
+  if (rememberedImages.size > MAX_REMEMBERED_IMAGES) {
+    // Maps iterate in insertion order, so the first key is the oldest.
+    const oldest = rememberedImages.keys().next().value;
+    if (oldest !== undefined) rememberedImages.delete(oldest);
+  }
+};
+
+const recallImage = async (sourceUrl: string): Promise<string | null> => {
+  const entry = rememberedImages.get(sourceUrl);
+  if (!entry) return null;
+  if (Date.now() - entry.at > IMAGE_REUSE_TTL_MS) {
+    rememberedImages.delete(sourceUrl);
+    return null;
+  }
+  try {
+    await access(path.join(PUBLIC_DIRECTORY, path.basename(entry.localPath)));
+    return entry.localPath;
+  } catch {
+    rememberedImages.delete(sourceUrl);
+    return null;
+  }
+};
+
+/**
  * Downloads an article's own embedded image and stores it locally under
  * public/images/news/articles/, returning a same-origin path instead of the
  * source site's URL. Mirrors lib/server/pixabay/download.ts's validation
@@ -92,6 +135,18 @@ const errorMessage = (error: unknown): string =>
  * article — but it now reports *which* check rejected the image.
  */
 export const downloadArticleImageDetailed = async (
+  sourceUrl: string,
+  customReferer?: string,
+): Promise<ArticleImageResult> => {
+  const recalled = await recallImage(sourceUrl);
+  if (recalled) return { ok: true, localPath: recalled };
+
+  const result = await downloadArticleImageUncached(sourceUrl, customReferer);
+  if (result.ok) rememberImage(sourceUrl, result.localPath);
+  return result;
+};
+
+const downloadArticleImageUncached = async (
   sourceUrl: string,
   customReferer?: string,
 ): Promise<ArticleImageResult> => {

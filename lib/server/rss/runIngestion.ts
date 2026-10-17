@@ -1,6 +1,7 @@
 import type {
   EnrichedRssItem,
   FeedCode,
+  FeedConfig,
   FeedFetchResult,
   IngestionSummary,
   NormalizedRssItem,
@@ -9,11 +10,13 @@ import { RSS_FEEDS } from "@/lib/server/config/rss-feeds";
 import {
   createIngestionRun,
   finishIngestionRun,
+  recordSkippedIngestionRun,
   writeIngestionError,
 } from "@/lib/server/logging/ingestionLogger";
 import { withAdvisoryLock } from "@/lib/server/db/mysql";
 import { fetchFeedXml } from "@/lib/server/rss/fetchFeeds";
-import { parseFeedXml } from "@/lib/server/rss/parseRss";
+import { parseFeedXmlGated } from "@/lib/server/rss/parseRss";
+import { createRunMonitor, type RunMonitor } from "@/lib/server/rss/runMonitor";
 import { fetchDetailPage } from "@/lib/server/rss/fetchDetailPage";
 import { fetchMirrorMediaHealthnews } from "@/lib/server/rss/fetchMirrorMediaExternals";
 import { fetchUdnHealthNews } from "@/lib/server/rss/fetchUdnHealthNews";
@@ -92,6 +95,14 @@ import { isGovSource } from "@/lib/server/news/sourceCategories";
 import type { NewsAsset } from "@/types/rss";
 
 const LOCK_NAME = "rss_ingestion_lock";
+
+/**
+ * Enriched items are written to the database this many at a time, not once per
+ * feed: a feed whose articles carry full detail HTML (the gov feeds) held every
+ * one of them — and the transaction's parameter arrays — until its last item was
+ * done. Ten keeps a transaction short and the working set to a handful of pages.
+ */
+const ENRICH_BATCH_SIZE = 10;
 
 const FEEDS_BY_CODE = new Map(RSS_FEEDS.map((feed) => [feed.code, feed]));
 
@@ -243,6 +254,8 @@ interface SpecialSourceContext {
   stats: RunningPersistStats;
   /** Fixed for the whole run so every feed is judged against the same clock. */
   now: Date;
+  /** Heartbeat, memory budget, stage log and event-loop hand-back between units of work. */
+  monitor: RunMonitor;
 }
 
 const processSpecialSource = async (
@@ -273,6 +286,7 @@ const processSpecialSource = async (
       message: result.errorMessage ?? `Unknown ${meta.name} fetch error`,
       detail: {},
     });
+    await ctx.monitor.checkpoint("source_done", { source: meta.code, ok: false });
     return { skippedUnchanged: 0, staleRejected: 0 };
   }
 
@@ -304,11 +318,16 @@ const processSpecialSource = async (
   // ever touch one source_name anyway.
   const recentImageUrlsBySource = new Map<string, Set<string>>();
 
-  // Scoped to this one source's fresh items — persisted immediately below
-  // instead of accumulating into a run-wide array (see RunningPersistStats).
-  const sourceEnrichedItems: EnrichedRssItem[] = [];
+  // Scoped to a handful of this source's fresh items — persisted as soon as
+  // ENRICH_BATCH_SIZE are ready instead of accumulating into a run-wide array
+  // (see RunningPersistStats) or even a source-wide one.
+  let sourceEnrichedItems: EnrichedRssItem[] = [];
+  let enriched = 0;
 
   for (const item of fresh) {
+    // Collect if the budget is spent, and let requests/timers run between items.
+    await ctx.monitor.tick();
+
     if (isUnchanged(hashes, item)) {
       skippedUnchanged += 1;
       continue;
@@ -371,21 +390,182 @@ const processSpecialSource = async (
       keywords: seo.keywords,
       geoSummary: seo.geoSummary,
     });
+    enriched += 1;
+
+    if (sourceEnrichedItems.length >= ENRICH_BATCH_SIZE) {
+      mergePersistStats(ctx.stats, await persistItems(sourceEnrichedItems));
+      sourceEnrichedItems = [];
+    }
   }
 
-  const persisted = await persistItems(sourceEnrichedItems);
-  mergePersistStats(ctx.stats, persisted);
+  if (sourceEnrichedItems.length > 0) {
+    mergePersistStats(ctx.stats, await persistItems(sourceEnrichedItems));
+  }
+
+  await ctx.monitor.checkpoint("source_done", {
+    source: meta.code,
+    ok: true,
+    items: result.itemCount,
+    fresh: fresh.length,
+    stale: rejected.length,
+    unchanged: skippedUnchanged,
+    enriched,
+  });
 
   return { skippedUnchanged, staleRejected: rejected.length };
+};
+
+interface RssFeedContext {
+  runId: number;
+  feedResults: FeedFetchResult[];
+  stats: RunningPersistStats;
+  /** Fixed for the whole run so every feed is judged against the same clock. */
+  now: Date;
+  monitor: RunMonitor;
+}
+
+/**
+ * Fetch, freshness-gate, hash-check, enrich and persist one RSS feed.
+ *
+ * Fetch-everything-then-enrich-everything-then-persist-once held every fresh
+ * item from all ~70 feeds (detail HTML, images, AI SEO text) in memory for the
+ * whole ~11 minute run; per-feed persistence bounds peak memory to one feed's
+ * items (see RunningPersistStats above for the full rationale), and writing in
+ * ENRICH_BATCH_SIZE slices bounds it to a few items.
+ */
+const processRssFeed = async (
+  feed: FeedConfig,
+  ctx: RssFeedContext,
+): Promise<{ skippedUnchanged: number; staleRejected: number }> => {
+  let fresh: NormalizedRssItem[] = [];
+  let staleRejected = 0;
+  let itemCount = 0;
+
+  try {
+    const response = await fetchFeedXml(feed);
+
+    // Freshness gate, RSS half — the earliest point at which an item exists in
+    // a form we can judge. Everything downstream of this line is per-item and
+    // expensive: the payload-hash lookup, the detail-page fetch, the og:image
+    // download, the AI SEO call, the geo extraction and the upsert. A stale item
+    // now costs one XML parse and nothing else — it is not even normalized.
+    const gated = parseFeedXmlGated(feed, response.xml, ctx.now);
+    fresh = gated.fresh;
+    staleRejected = gated.staleRejected;
+    itemCount = gated.total;
+
+    ctx.feedResults.push({
+      feed,
+      ok: true,
+      httpStatus: response.status,
+      itemCount,
+      staleRejectedCount: staleRejected,
+      errorMessage: null,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown feed error";
+
+    // A publisher that blocks this host's whole IP range is not a failure
+    // anyone can act on. Reporting it every 30 minutes only teaches the
+    // reader to ignore failed_feeds — which is exactly what happened here:
+    // three feeds were failing for months and nobody could tell which,
+    // because the count was permanently non-zero.
+    if (feed.tolerateForbidden && /\bHTTP (401|403)\b/.test(message)) {
+      ctx.feedResults.push({
+        feed,
+        ok: true,
+        httpStatus: null,
+        itemCount: 0,
+        errorMessage: `${message} — tolerated, this source blocks datacentre addresses`,
+      });
+      await ctx.monitor.checkpoint("feed_done", { feed: feed.code, ok: true, tolerated: true });
+      return { skippedUnchanged: 0, staleRejected: 0 };
+    }
+
+    ctx.feedResults.push({
+      feed,
+      ok: false,
+      httpStatus: null,
+      itemCount: 0,
+      errorMessage: message,
+    });
+    await writeIngestionError({
+      runId: ctx.runId,
+      feedCode: feed.code,
+      url: feed.url,
+      message,
+      detail: { error },
+    });
+    await ctx.monitor.checkpoint("feed_done", { feed: feed.code, ok: false });
+    return { skippedUnchanged: 0, staleRejected: 0 };
+  }
+
+  let skippedUnchanged = 0;
+  let enriched = 0;
+
+  if (fresh.length > 0) {
+    const feedHashes = await getExistingPayloadHashes(fresh);
+    let batch: EnrichedRssItem[] = [];
+
+    for (const item of fresh) {
+      // Collect if the budget is spent, and let requests/timers run between items.
+      await ctx.monitor.tick();
+
+      if (isUnchanged(feedHashes, item)) {
+        // Already stored with an identical payload — skip the expensive detail-page
+        // fetch/parse entirely instead of redoing it on every run just to no-op.
+        skippedUnchanged += 1;
+        continue;
+      }
+
+      batch.push(await enrichItem(item));
+      enriched += 1;
+
+      if (batch.length >= ENRICH_BATCH_SIZE) {
+        mergePersistStats(ctx.stats, await persistItems(batch));
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      mergePersistStats(ctx.stats, await persistItems(batch));
+    }
+  }
+
+  await ctx.monitor.checkpoint("feed_done", {
+    feed: feed.code,
+    ok: true,
+    items: itemCount,
+    fresh: fresh.length,
+    stale: staleRejected,
+    unchanged: skippedUnchanged,
+    enriched,
+  });
+
+  return { skippedUnchanged, staleRejected };
 };
 
 export const runRssIngestion = async (
   trigger: "internal-cron" | "admin-manual",
 ): Promise<IngestionSummary> => {
   const started = new Date();
-  const runId = await createIngestionRun(trigger);
 
-  const lockResult = await withAdvisoryLock(LOCK_NAME, 1, async () => {
+  // The lock comes FIRST, and the run row is created only once it is ours.
+  // Both triggers (the in-app cron at :05/:35 and the GitHub heartbeat through
+  // the admin route) land here, so this one named lock is what keeps two
+  // ingestions from running at once, across processes as well as within one.
+  // An attempt that finds the lock taken records a quiet 'skipped' row below
+  // instead of a 'running' one that the next attempt would have to reap.
+  const lockResult = await withAdvisoryLock(LOCK_NAME, 1, async (lockConn) => {
+    const runId = await createIngestionRun(trigger);
+    const monitor = createRunMonitor({
+      runId,
+      trigger,
+      startedAtMs: started.getTime(),
+      lockName: LOCK_NAME,
+      lockConn,
+    });
     const feedResults: FeedFetchResult[] = [];
     const stats = newRunningStats();
     let staleRejected = 0;
@@ -400,91 +580,20 @@ export const runRssIngestion = async (
       feedResults.reduce((sum, result) => sum + result.itemCount, 0);
 
     try {
-      // Fetch, freshness-gate, hash-check, enrich and persist one feed at a
-      // time — not fetch-everything-then-enrich-everything-then-persist-once.
-      // The old shape held every fresh item from all ~70 RSS feeds (detail
-      // HTML, images, AI SEO text) in memory for the whole ~11 minute run;
-      // per-feed persistence bounds peak memory to one feed's items instead
-      // (see RunningPersistStats above for the full rationale).
+      monitor.log("run_start", { feeds: RSS_FEEDS.length });
+
+      // One feed at a time, each fetched, gated, hash-checked, enriched and
+      // persisted before the next begins (see processRssFeed).
       for (const feed of RSS_FEEDS) {
-        let fresh: NormalizedRssItem[] = [];
-        try {
-          const response = await fetchFeedXml(feed);
-          const items = parseFeedXml(feed, response.xml);
-
-          // Freshness gate, RSS half — the earliest point at which an item
-          // exists in a form we can judge. Everything downstream of this line
-          // is per-item and expensive: the payload-hash lookup, the
-          // detail-page fetch, the og:image download, the AI SEO call, the geo
-          // extraction and the upsert. A stale item now costs one XML parse
-          // and nothing else.
-          const gated = partitionByFreshness(items, started);
-          fresh = gated.fresh;
-          staleRejected += gated.rejected.length;
-
-          feedResults.push({
-            feed,
-            ok: true,
-            httpStatus: response.status,
-            itemCount: items.length,
-            staleRejectedCount: gated.rejected.length,
-            errorMessage: null,
-          });
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "Unknown feed error";
-
-          // A publisher that blocks this host's whole IP range is not a failure
-          // anyone can act on. Reporting it every 30 minutes only teaches the
-          // reader to ignore failed_feeds — which is exactly what happened here:
-          // three feeds were failing for months and nobody could tell which,
-          // because the count was permanently non-zero.
-          if (feed.tolerateForbidden && /\bHTTP (401|403)\b/.test(message)) {
-            feedResults.push({
-              feed,
-              ok: true,
-              httpStatus: null,
-              itemCount: 0,
-              errorMessage: `${message} — tolerated, this source blocks datacentre addresses`,
-            });
-            continue;
-          }
-
-          feedResults.push({
-            feed,
-            ok: false,
-            httpStatus: null,
-            itemCount: 0,
-            errorMessage: message,
-          });
-          await writeIngestionError({
-            runId,
-            feedCode: feed.code,
-            url: feed.url,
-            message,
-            detail: { error },
-          });
-          continue;
-        }
-
-        if (fresh.length === 0) continue;
-
-        const feedHashes = await getExistingPayloadHashes(fresh);
-        const feedEnrichedItems: EnrichedRssItem[] = [];
-        for (const item of fresh) {
-          if (isUnchanged(feedHashes, item)) {
-            // Already stored with an identical payload — skip the expensive detail-page
-            // fetch/parse entirely instead of redoing it on every run just to no-op.
-            skippedUnchanged += 1;
-            continue;
-          }
-
-          const enriched = await enrichItem(item);
-          feedEnrichedItems.push(enriched);
-        }
-
-        const persisted = await persistItems(feedEnrichedItems);
-        mergePersistStats(stats, persisted);
+        const feedOutcome = await processRssFeed(feed, {
+          runId,
+          feedResults,
+          stats,
+          now: started,
+          monitor,
+        });
+        skippedUnchanged += feedOutcome.skippedUnchanged;
+        staleRejected += feedOutcome.staleRejected;
       }
 
       const specialSourceCtx: SpecialSourceContext = {
@@ -492,6 +601,7 @@ export const runRssIngestion = async (
         feedResults,
         stats,
         now: started,
+        monitor,
       };
 
       // -----------------------------------------------------------------------
@@ -1177,11 +1287,22 @@ export const runRssIngestion = async (
         summaryJson: JSON.stringify(summary),
       });
 
+      monitor.log("run_end", {
+        status: "success",
+        fetched: summary.fetched,
+        inserted: summary.inserted,
+        updated: summary.updated,
+        unchanged: summary.unchanged,
+        failedFeeds: summary.failedFeeds,
+        gcCollections: monitor.governor.collections,
+      });
+
       return summary;
     } catch (error) {
       const ended = new Date();
       const message =
         error instanceof Error ? error.message : "Unknown ingestion error";
+      monitor.log("run_failed", { error: message.slice(0, 200) });
       await writeIngestionError({
         runId,
         message,
@@ -1222,8 +1343,22 @@ export const runRssIngestion = async (
   });
 
   if (!lockResult.acquired) {
+    // Two triggers overlapped (the in-app cron and the GitHub heartbeat both
+    // start a run, and a run outlives the gap between them): the other one is
+    // doing the work, so this attempt steps aside. That is the lock working, not
+    // a failure — it is recorded as a 'skipped' row, returned as a summary with
+    // `skipped` set, and never thrown, so neither the run list nor the cron log
+    // nor the admin route reports an error.
+    const runId = await recordSkippedIngestionRun({
+      triggerType: trigger,
+      reason: "lock_held",
+      startedAt: started,
+    });
     const now = new Date();
-    const blockedSummary: IngestionSummary = {
+    console.info(
+      `[runIngestion] ${trigger} attempt skipped: another ingestion holds the lock (run ${runId})`,
+    );
+    return {
       trigger,
       runId,
       startedAt: started.toISOString(),
@@ -1235,24 +1370,10 @@ export const runRssIngestion = async (
       unchanged: 0,
       externalIdDrift: 0,
       staleRejected: 0,
-      failedFeeds: 1,
+      failedFeeds: 0,
       feedResults: [],
+      skipped: "lock_held",
     };
-
-    await finishIngestionRun({
-      runId,
-      status: "failed",
-      startedAt: started,
-      fetchedCount: 0,
-      insertedCount: 0,
-      updatedCount: 0,
-      unchangedCount: 0,
-      failedFeedsCount: 1,
-      summaryJson: JSON.stringify(blockedSummary),
-      errorMessage: "Another ingestion is currently running.",
-    });
-
-    throw new Error("Another ingestion is currently running.");
   }
 
   return lockResult.result;
