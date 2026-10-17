@@ -81,10 +81,11 @@ test("Senior Tourism cron: jobs registered at non-colliding minutes and admin sy
   assert.ok(cronContent.includes("runSeniorTourismAlertsSync"), "registerJobs.ts should schedule the Tourism alerts sync");
   assert.ok(cronContent.includes("runSeniorCardSync"), "registerJobs.ts should schedule the SeniorCard sync");
 
-  // Minutes picked for this feature (20 3, 17/47, 25 3) must not collide with
-  // Spec A's existing transit-accessibility entries (15 3, 16,46).
+  // Minutes picked for this feature (20 3, 17, 25 3) must not collide with
+  // Spec A's existing transit-accessibility entries (15 3, 16). The alerts job runs hourly
+  // (it was half-hourly, 17,47, until the 2026-10-18 TDX request-budget cut).
   assert.ok(cronContent.includes('"20 3 * * *"'), "senior-tourism sync should be scheduled at an unused 3am minute");
-  assert.ok(cronContent.includes('"17,47 * * * *"'), "senior-tourism alerts sync should be scheduled at unused half-hourly minutes");
+  assert.ok(cronContent.includes('"17 * * * *"'), "senior-tourism alerts sync should be scheduled hourly at an unused minute");
   assert.ok(cronContent.includes('"25 3 * * *"'), "senior-card sync should be scheduled at a different unused 3am minute");
   assert.ok(!cronContent.includes('"20 3 * * *"') || cronContent.includes('"15 3 * * *"'), "transit-accessibility's existing 15 3 entry should remain untouched");
 
