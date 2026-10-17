@@ -1,6 +1,7 @@
 import "server-only";
 import { httpRequest } from "@/lib/server/net/httpClient";
 import { describeTokenFailure, nextTokenFailureLogAt } from "@/lib/server/tdx/tokenDiagnostics";
+import { tdxCircuitBreaker } from "@/lib/server/tdx/circuitBreaker";
 
 interface TdxTokenResponse {
   access_token: string;
@@ -39,10 +40,17 @@ export async function getTdxToken(): Promise<string | null> {
     return null;
   }
 
+  // 斷路器開啟（或已有一個探測請求在途）時完全不碰 TDX，連快取中的 token 也不給——呼叫端本來
+  // 就會走「token 取不到」的降級路徑（circuitBreaker.ts）。
+  if (tdxCircuitBreaker.isBlocked()) return null;
+
   const now = Date.now();
   if (cachedToken && now < tokenExpiresAt) {
     return cachedToken;
   }
+
+  const gate = tdxCircuitBreaker.acquire();
+  if (gate === "blocked") return null;
 
   try {
     // Raw httpRequest instead of httpPostForm: httpPostForm JSON.parses the body
@@ -77,11 +85,14 @@ export async function getTdxToken(): Promise<string | null> {
       cachedToken = data.access_token;
       // 提早 60 秒到期，確保安全邊界
       tokenExpiresAt = now + Math.max(0, ((data.expires_in ?? 0) - 60) * 1000);
+      tdxCircuitBreaker.settleTokenRequest(gate, { ok: true, httpStatus: res.status });
       return cachedToken;
     }
+    tdxCircuitBreaker.settleTokenRequest(gate, { ok: false, httpStatus: res.status });
     logTokenFailure(describeTokenFailure(res.status, bodyText));
     return null;
   } catch (err) {
+    tdxCircuitBreaker.settleTokenRequest(gate, { ok: false, httpStatus: null });
     console.warn("TDX token fetch failed:", err instanceof Error ? err.message : String(err));
     return null;
   }
