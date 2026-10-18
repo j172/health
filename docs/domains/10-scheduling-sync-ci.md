@@ -11,7 +11,7 @@
 
 | 軌道 | 數量 | 說明 |
 |---|---|---|
-| in-app node-cron（`lib/server/cron/registerJobs.ts`） | 36 個 job（2026-10-10 TDX 同步加入後） | 隨 Next.js 啟動；RSS（`5,35`）、CWA（`15,45`）、急診（`7,22,37,52`）、圖庫指派（每 10 分）、YouBike（每 5 分）等；每個 job 記錄記憶體用量，記憶體吃緊時降載 |
+| in-app node-cron（`lib/server/cron/registerJobs.ts`） | 52 個 job（2026-10-18，YouBike 拆成雙北／TDX 兩個之後） | 隨 Next.js 啟動；RSS（`5,35`）、CWA（`15,45`）、急診（`7,22,37,52`）、圖庫指派（每 10 分）、YouBike（臺北市／新北市每 5 分走開放資料；其餘 13 縣市走 TDX，`11,26,39,54`）等；每個 job 記錄記憶體用量，記憶體吃緊時降載 |
 | GitHub Actions | 14 個 workflow | 需要外部 IP（被主機封鎖的上游）、長時間批次、或部署相關的工作；透過 SSH 在主機上執行，**不走 TCP 轉發**（HawkHost 已關閉 `AllowTcpForwarding`） |
 | 系統 crontab | 1 個 | 只保留 `pm2-ensure-running` 自我修復 watchdog |
 
@@ -71,11 +71,55 @@
 - **RSS 匯入的重疊觸發靠同一把 MySQL advisory lock 擋住**（#699）：in-app cron（`:05/:35`）與 GitHub 心跳（admin 路由，`:20/:50`）都呼叫 `runRssIngestion`，鎖名 `rss_ingestion_lock`。一輪匯入約 11 分鐘，兩個觸發點本來就會重疊；沒搶到鎖的嘗試寫成 `ingest_runs.status='skipped'`（安靜的跳過，不是 `failed`）。先取鎖、才建立 `running` 的列。鎖綁在一條閒置一輪的 MySQL 連線上，連線被關掉鎖就無聲消失，所以匯入每個單位工作之間都用 `IS_USED_LOCK` 心跳確認，鎖丟了就停（`AdvisoryLockLostError`）。
 - 長時間的行程內工作要像 `runMonitor.ts` 那樣在單位工作之間：確認鎖／更新 `updated_at` → 超過預算才強制 GC（`heapGovernor.ts`；PM2 的 `node_args` 我們不能改，所以執行期用 `v8.setFlagsFromString('--expose-gc')` 取得 `gc`）→ 寫一行 JSON 階段日誌（沿用 #697 的 `stageLog` 形狀）→ `yieldToEventLoop()`。
 - **每日 TDX 樂齡軌道同步（`runTransitAccessibilitySync`，`15 3 * * *`）每個 RailSystem 抓完就寫入、可續跑**（#704）：5 req/min 共用限流下整輪約 11 分鐘，而 `health-web` 平均約每 12 分鐘被主機 SIGKILL，原本「先全部收進記憶體、最後才寫 DB」的做法永遠寫不出來（`stationMaps`／`transfers` 一直是 0）。現在邏輯在 `lib/server/transit/railSyncCore.ts`、SQL 在 `railSyncStore.ts`：一個系統抓完（county＋Facility＋Service＋Map＋Transfer）就寫，再抓下一個；站點走 `uniq_station` upsert，maps／transfers 每個系統用**一個交易**只 `DELETE … WHERE rail_system = ?` 後重插，且要過 `decideSnapshotReconcile`（抓取失敗、回空、或少於已存筆數的 50% 一律不刪、不影響其他系統）；Facility 抓失敗就不寫該系統的站點列。每系統的最後成功時間記在 `accessible_transit_sync_state`（主鍵只有 `rail_system`），下一輪**最久沒成功的系統先跑**（從未成功者排最前），所以即使每次只跑得完幾個系統，幾天內也會補齊。每步輸出一行 `{"event":"transit_accessibility_sync_stage","stage":…,"system":…,"heapUsedMB":…,"rssMB":…}`；用 MySQL advisory lock `transit_accessibility_sync_lock` 防止 admin 手動觸發與 cron 重疊。被 guard 擋下（回空／驟減）的系統不算成功，下一輪會優先重試並在 `errors[]` 留下原因。
+- **YouBike 拆成兩個 job，TDX 只負責其餘 13 縣市且平常只打 Availability**（2026-10-18，#668）：`youbike-sync`（`*/5`）只讀臺北市、新北市的免費開放資料，**完全不碰 TDX**，log（`logs/youbike-sync-cron.log`）的 `source` 是 `"direct"`；`youbike-tdx-sync`（`11,26,39,54`，約每 15 分鐘，`logs/youbike-tdx-sync-cron.log`）負責 TYCG、HSC、HCH、MAL、TXG、CHA、YUN、CYI、CYQ、TNN、KHH、PTT、TTT，**`"source":"tdx"` 只會出現在這個 log**。TDX 回合（`lib/server/youbike/tdxSyncCore.ts`）每縣市只打 1 次 `Bike/Availability`，站名／地址／座標／車柱數從 `youbike_stations` 併入；只有「該縣市靜態資料從未載入或距上次載入超過 24 小時」「Availability 出現資料庫沒有的 StationID（同縣市每小時最多一次）」才補打 `Bike/Station`，每輪上限 3 次（冷啟動 13 縣市分 5 輪載完），Station 請求失敗的縣市 1 小時內不重試。「上次載入時間」存在 `youbike_sync_state`（主鍵 `city_code`，時間欄位不在任何 key 裡），行程重啟不會重載。每個批次（3 縣市）抓完就寫入。新竹市直連（`odws.hccg.gov.tw`，幾乎永遠逾時）只在 TDX 沒有新竹資料且資料庫也沒有真正的 TDX 新竹站點時才當後備，逾時 5 秒、失敗後 1 小時內不再試，且與其餘縣市同時進行。前台「更新延遲」徽章：雙北 15 分鐘、其餘縣市 30 分鐘（TDX 約每 15 分鐘一輪，一輪約 3 分鐘）。
+- **TDX 全域斷路器與每日請求預算見 §2.1**；`transit-accessibility-alerts`（`16`）與 `senior-tourism-alerts`（`17`）從每 30 分鐘改為每小時，`metro-alerts` 維持每 30 分鐘。
 - 共用 concurrency group 時，`cancel-in-progress: true` 會**跨 workflow** 取消別人；長時間任務不可與之同組同時段。
 - 打主機 API 一律用 SSH loopback（`scripts/lib/ssh-loopback.mjs`），不打公開網址（Cloudflare 會對 runner 發 JS 挑戰）。
 - Cloudflare 快取清除失敗不得中斷部署（`continue-on-error`）。
 - 部署請選在 `:15–:30` 或 `:45–:00`，避免 PM2 重啟打斷正在跑的擷取。
 - GitHub Actions 的 Environment secrets（`FTP_SERVER`）會覆蓋同名 Repository secrets，更新 secret 時兩層都要檢查。
+
+### 2.1 TDX 每日請求預算、斷路器與症狀判讀（2026-10-18）
+
+TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` 每 13 秒放行一個，理論上限 86,400 ÷ 13 ≈ **6,646 次/天**），另有點數用量；所有 in-app TDX job 共用同一個行程內限流器、同一組憑證、同一個斷路器。2026-10-15 起 token 請求被拒、收到點數用量超過 100% 的通知之後做了降載，下表是「每個 job 每輪幾個請求、一天幾次」（請求數 = 程式碼推算，不含 429 重試多送的請求；`tdx_parking`／`tdx_aps` 由半年同步觸發，一次性約 88＋22 次，不在表內）：
+
+| job（`logs/` 下的 log 檔） | 排程 | 每輪 TDX 請求 | 每日次數（現在） | 每日次數（改前） |
+|---|---|---|---|---|
+| `youbike-tdx-sync-cron.log`：13 縣市 `Bike/Availability` | `11,26,39,54 * * * *` | 13 | **1,248** | — |
+| 　同上，`Bike/Station` 靜態資料重載 | 每縣市約每 24 小時一次（每輪上限 3 次） | 0–3 | ≈13 | — |
+| `youbike-sync-cron.log`（改前：15 縣市 × Station＋Availability；現在：臺北／新北走開放資料） | `*/5 * * * *` | 改前 30；現在 **0** | 0 | 4,320（一輪約 6.5 分鐘，重疊的 tick 被跳過，約每 10 分鐘一輪 × 144） |
+| `metro-alerts-sync-cron.log`（8 個軌道系統） | `0,30 * * * *` | 8 | 384 | 384 |
+| `transit-accessibility-alerts-cron.log`（10 個 RailSystem） | `16 * * * *`（改前 `16,46`） | 10 | 240 | 480 |
+| `senior-tourism-alerts-cron.log` | `17 * * * *`（改前 `17,47`） | 1 | 24 | 48 |
+| `transit-accessibility-sync-cron.log`（10 系統 × county／Facility／Service／Map／Transfer） | `15 3 * * *` | ≈50 | 50 | 50 |
+| `senior-tourism-sync-cron.log`（Facility／Service／Package） | `20 3 * * *` | 3 | 3 | 3 |
+| `senior-card-sync-cron.log`（22 縣市） | `25 3 * * *` | 22 | 22 | 22 |
+| `transit-bus-sync-cron.log`（22 縣市 × Vehicle／Schedule） | `30 3 * * *` | 44 | 44 | 44 |
+| **合計** | | | **≈2,028**（占理論上限約 31%） | **≈5,351**（約 81%） |
+
+YouBike 一項就從 4,320 降到 ≈1,261（−71%）。這張表是靠程式碼推算的名目值，上線後以各 log 的 `summary.tdx.availabilityCalls`／`stationCalls`（YouBike）與 `[tdx-breaker]` 行核對。
+
+**斷路器**（`lib/server/tdx/circuitBreaker.ts`，行程內 singleton，由 `getTdxToken()` 與 `tdxGetJsonWithRetry()` 共用，不放寬共用限流器）：
+
+- **開啟條件**：token 請求拿到非 200 的 HTTP 回應（含 400 `unauthorized_client`／`invalid_client`、401／403／429、5xx）；API 的 429 在 `tdxGetJsonWithRetry` 用盡重試（3 次）後仍是 429；429 的 `ratelimit-reset` 大於 120 秒（不可能是每分鐘節流，視為配額視窗，不重試、也不餵給限流器）；API 回 403。
+- **不會開啟**：逾時／連線重設等沒有 HTTP 回應的錯誤、401、5xx、404（避免一次網路抖動讓 `03:15–03:30` 的每日同步整批停擺）。
+- **開啟期間**：`getTdxToken()` 直接回 `null`（連快取中的 token 也不給），所有呼叫端走本來就有的降級路徑；`tdxGetJsonWithRetry` 回 `{ status: 503, circuitOpen: true }`，不送出任何請求，各 client 的錯誤訊息會多一句 `(circuit breaker open, nothing was sent)`。
+- **退避**：15 分鐘 → 30 分鐘 → 60 分鐘（上限 60 分鐘）。到期後只放**一次**探測（half-open）：探測期間其他請求仍被擋；探測成功立即關閉並重置退避；探測失敗升級到下一級。探測請求若逾 5 分鐘沒回報，允許下一個請求接手。
+- **只存在行程記憶體**：重啟 `health-web` = 回到 closed，第一個請求會立刻重新判斷一次；憑證或配額恢復後不需要人工介入，最慢 60 分鐘內探測成功自動關閉。
+- **日誌**：每次狀態轉換一行 `[tdx-breaker] OPEN for 15 min (reason: …)`／`HALF-OPEN`／`CLOSED`，只有狀態與時間，不含憑證。
+
+**症狀與判讀**——先分清楚是「token 端」還是「API 端」，兩者原因與處置不同，**不要把「token 失敗」直接等同於「點數超額」**：
+
+| 日誌裡看到 | 意義 | 處置 |
+|---|---|---|
+| `TDX token request rejected: HTTP 400, error=unauthorized_client, description=Invalid client credentials`（或 `invalid_client`；每 10 分鐘最多一行） | token 端點認得這個 client，但**拒絕這組憑證**：憑證被停用或 secret 已更換。不是每分鐘限流，也不是 API 點數 | 到 TDX 會員中心確認 client 狀態，更新主機 `.env` 的 `TDX_CLIENT_SECRET`（不要把 secret 貼進對話或日誌），再重啟 `health-web` |
+| 各 cron log：`TDX token unavailable (not configured, or the token request itself failed)`、`TDX credentials missing or token request failed — nothing was fetched` | 拿不到 token（沒設憑證、被拒，或斷路器開啟） | 看同時間有沒有上一列的 `token request rejected` 與 `[tdx-breaker]` 行判斷是哪一種 |
+| 公車／軌道等 log：`… returned status 429`，且 `[tdx-breaker] OPEN … (reason: rate_limited)` | API 端的每分鐘節流在重試後仍被拒；偶發是正常的（共用限流器會排隊），連續出現代表呼叫量超過 5 次/分鐘的承載 | 檢查同一時段有哪些 job 同時跑（上表），必要時錯開排程 |
+| `[tdx-breaker] OPEN … (reason: quota_exceeded)`（429 且 `ratelimit-reset` > 120 秒） | API 端**配額／點數用盡**（TDX 另會寄「虛擬點數用量超過 100%」通知信） | 降低請求量（上表）、到 TDX 確認點數與方案；用量視窗過後探測會自動恢復 |
+| `… returned status 503 (circuit breaker open, nothing was sent)` | 斷路器擋下的呼叫，**沒有**送到 TDX | 不是 TDX 在回 503；找 `[tdx-breaker] OPEN` 那一行看原因 |
+| `youbike-tdx-sync-cron.log` 的 `summary.errors` 出現 `TDX unavailable (…)` | 13 縣市本輪完全沒更新（臺北／新北不受影響，走開放資料） | 同上；YouBike 前台這些縣市會標「更新延遲」 |
+
+斷路器開啟時受影響的功能：YouBike 其餘 13 縣市停止更新、軌道告警、無障礙設施告警、樂齡觀光告警、公車低地板日同步降級；臺北市與新北市 YouBike 不受影響。
 
 ---
 
@@ -109,7 +153,7 @@
 
 #### 即時資料排程入庫與部署驗證 ✅
 - 原檔：[realtime-sync-scheduler-and-pipeline-resilience.md](../archive/specs/realtime-sync-scheduler-and-pipeline-resilience.md)（#213）
-- YouBike（每 5 分）、捷運公告（每 30 分、Big5 CSV）、病蟲害（每 6 小時）、書籍排行；超過 15 分鐘未更新前台標「更新延遲」。
+- YouBike（原為每 5 分；2026-10-18 起臺北市／新北市每 5 分走開放資料，其餘 13 縣市走 TDX 約每 15 分，見 §2、§2.1）、捷運公告（每 30 分、Big5 CSV）、病蟲害（每 6 小時）、書籍排行；超過 15 分鐘（TDX 縣市為 30 分鐘）未更新前台標「更新延遲」。
 
 #### 部署快取清除與半年同步強化 ✅
 - 原檔：[ci-deploy-and-sync-resilience.md](../archive/specs/ci-deploy-and-sync-resilience.md)（#229、#224）
