@@ -9,34 +9,50 @@
  * max_size 10M, retain 3, compress, rotate daily at 00:00.
  *
  * Three jobs, each "plan, then execute": a PURE planner (planPm2LogRetention) turns
- * a list of files (name / size / mtime / whether THIS process is writing it) into a
- * list of actions, and a thin fs layer (runPm2LogRetention) carries them out one
- * file at a time. Nothing is ever read into memory: rotation is copyFile, then
+ * a list of files (name / size / mtime / whether it is this process's CURRENT log)
+ * into a list of actions, and a thin fs layer (runPm2LogRetention) carries them out
+ * one file at a time. Nothing is ever read into memory: rotation is copyFile, then
  * truncate.
  *
- * 1. Rotate by copytruncate the log files this process is writing right now. They
- *    are found from /proc/self/fd/1 and /proc/self/fd/2 (never guessed from a
- *    name); if either cannot be resolved to a health-web-out|error log inside the
- *    log directory it is simply skipped. A file is rotated when it is larger than
- *    8 MiB, or when more than ~1 day has passed since its newest rotated copy
- *    (judged from the copies' mtimes, so there is no state file). It is copied to
- *    `<name without .log>__YYYY-MM-DD_HH-mm-ss.log` and truncated in place; PM2
- *    opens its logs with O_APPEND, so the next write simply lands at offset 0.
+ * WHO WRITES THE LOGS, and so how "the current log" is found. Not this process. In
+ * fork mode PM2 gives health-web's stdout/stderr to the God Daemon, and the DAEMON
+ * opens the log files and appends to them (O_APPEND). Measured on the production
+ * host (2026-10-18): health-web's /proc/self/fd/1 and fd/2 are `socket:[...]`, not
+ * files, while the daemon's fds point at ~/.pm2/logs/health-web-out-1.log,
+ * health-web-error-1.log, mall-out-2.log, mall-error-2.log and ~/.pm2/pm2.log.
+ * PM2 does tell this process which files are its own: the environment variables
+ * `pm_out_log_path` and `pm_err_log_path` (plus `pm_id`, `name`). Those are the
+ * primary source of the current log files; /proc/self/fd/1|2 is only a fallback for
+ * a process PM2 did not start (env absent). Whichever gives a path, it counts only
+ * if it sits directly in the log directory and is named health-web-(out|error)...;
+ * otherwise the current logs are "not resolved" and nothing is guessed.
+ *
+ * 1. Rotate by copytruncate the current logs (above). If either one is not resolved
+ *    it is simply skipped. A file is rotated when it is larger than 8 MiB, or when
+ *    more than ~1 day has passed since its newest rotated copy (judged from the
+ *    copies' mtimes, so there is no state file). It is copied to
+ *    `<name without .log>__YYYY-MM-DD_HH-mm-ss.log` and truncated in place
+ *    (open O_WRONLY + ftruncate(0)). That is safe even though the writer is another
+ *    process: the daemon holds the file open with O_APPEND, so its next write simply
+ *    lands at the new end, offset 0 (no hole, no stale offset).
  *    Lines written between the copy and the truncate are lost (the usual
  *    copytruncate caveat). `~/.pm2/pm2.log` (the God Daemon's own log, the record
  *    of every SIGKILL) is rotated the same way, by size only, and is never deleted.
  * 2. Delete expired files, only ever these shapes and only when older than 7 days
  *    (mtime): rotated `health-web-(out|error)[-N]__<stamp>.log[.gz]`, rotated
  *    `pm2__<stamp>.log[.gz]`, leftover logs of a previous PM2 instance
- *    `health-web-(out|error)-N.log` that this process is NOT writing (only if both
- *    of this process's log files were resolved, otherwise a quiet live error log
- *    could be mistaken for a leftover), and pm2-logrotate's own `pm2-logrotate-*.log`.
+ *    `health-web-(out|error)-N.log` that are NOT the current logs (only if both of
+ *    the current logs were resolved, otherwise a quiet live error log could be
+ *    mistaken for a leftover), and pm2-logrotate's own `pm2-logrotate-*.log`.
  * 3. Print and return one JSON summary line:
- *    {"event":"pm2_log_retention","ts":...,"rotated":[...],"deleted":[...],"skipped":n,"freedMB":x,"errors":[]}
+ *    {"event":"pm2_log_retention","ts":...,"rotated":[...],"deleted":[...],"skipped":n,"freedMB":x,"errors":[],
+ *     "active":["health-web-out-1.log","health-web-error-1.log"],"activeResolved":true}
+ *    (`active` / `activeResolved` say which current logs were found; an empty
+ *    `active` is the signature of the "cannot find the current logs" failure.)
  *
  * What it will never touch: `mall-*` (the other app on this account), any name that
- * is not exactly one of the shapes above, a file this process is writing (other
- * than rotating it), anything that is not a plain file (symlinks included: every
+ * is not exactly one of the shapes above, the current logs (other than rotating
+ * them), anything that is not a plain file (symlinks included: every
  * candidate is lstat()ed), and anything in ~/.pm2 outside logs/ other than the
  * pm2.log / pm2__<stamp>.log pair (dump.pm2, pids, modules, sockets stay alone).
  * Failures are recorded in `errors` and never thrown.
@@ -107,7 +123,11 @@ export interface Pm2LogFile {
   name: string;
   size: number;
   mtimeMs: number;
-  /** True when this process is writing the file right now (resolved from /proc/self/fd/1|2). */
+  /**
+   * True when this is one of this process's CURRENT PM2 logs (pm_out_log_path /
+   * pm_err_log_path, else /proc/self/fd/1|2). The writer is the PM2 God Daemon, not
+   * this process; "active" only means "do not delete, rotate when due".
+   */
   active: boolean;
 }
 
@@ -123,7 +143,7 @@ export interface PlanInput {
   /** YYYY-MM-DD_HH-mm-ss for the name of any rotated copy made in this run. */
   stamp: string;
   /**
-   * True only when BOTH of this process's log files (stdout and stderr) were
+   * True only when BOTH of this process's current logs (stdout and stderr) were
    * resolved to health-web logs inside the log directory. Without that, a log
    * that merely looks like a previous instance's could be the live one.
    */
@@ -218,10 +238,15 @@ export const formatRotationStamp = (date: Date): string => {
   );
 };
 
+/**
+ * Candidate paths of this process's current stdout / stderr log files, not yet
+ * validated (resolveActiveLogs does that). Each is PM2's `pm_out_log_path` /
+ * `pm_err_log_path` when the environment has one, otherwise where
+ * /proc/self/fd/1 / fd/2 point (readlink; under PM2 fork mode these are
+ * `socket:[...]`, which never validates), otherwise null.
+ */
 export interface ActiveLogTargets {
-  /** Where /proc/self/fd/1 points (readlink), or null. */
   stdout: string | null;
-  /** Where /proc/self/fd/2 points (readlink), or null. */
   stderr: string | null;
 }
 
@@ -233,14 +258,26 @@ const readlinkOrNull = (fdPath: string): string | null => {
   }
 };
 
-/** The real source of ActiveLogTargets; null for both where /proc does not exist. */
-export const readActiveLogTargets = (): ActiveLogTargets => ({
-  stdout: readlinkOrNull("/proc/self/fd/1"),
-  stderr: readlinkOrNull("/proc/self/fd/2"),
+const nonEmptyOrNull = (value: string | undefined | null): string | null =>
+  typeof value === "string" && value.trim() !== "" ? value.trim() : null;
+
+/**
+ * The real source of ActiveLogTargets. PM2's env paths win; /proc/self/fd/1|2 is
+ * the fallback for a process PM2 did not start (env absent), and gives null where
+ * /proc does not exist. An env value that is present is NOT second-guessed by
+ * falling back to the fd: if PM2 named a file, it must validate, or nothing is
+ * resolved. `env` and `readlink` are test seams.
+ */
+export const readActiveLogTargets = (
+  env: Record<string, string | undefined> = process.env,
+  readlink: (fdPath: string) => string | null = readlinkOrNull,
+): ActiveLogTargets => ({
+  stdout: nonEmptyOrNull(env.pm_out_log_path) ?? readlink("/proc/self/fd/1"),
+  stderr: nonEmptyOrNull(env.pm_err_log_path) ?? readlink("/proc/self/fd/2"),
 });
 
 export interface ResolvedActiveLogs {
-  /** Basenames of the log files this process is writing, inside the log directory. */
+  /** Basenames of this process's current log files, inside the log directory. */
   names: Set<string>;
   /** True only when both stdout and stderr resolved. */
   resolved: boolean;
@@ -249,8 +286,9 @@ export interface ResolvedActiveLogs {
 /**
  * PURE. A target counts only if it sits directly in the log directory (as given,
  * or as its realpath, since /proc shows the real one) and is named like a
- * health-web out/error log. Anything else (a pipe, a tty, a " (deleted)" file,
- * another directory) resolves to nothing: no guessing.
+ * health-web out/error log. Anything else (a `socket:[...]`, a pipe, a tty, a
+ * " (deleted)" file, a relative path, another directory, a mall-* log) resolves to
+ * nothing: no guessing.
  */
 export const resolveActiveLogs = (
   targets: ActiveLogTargets,
@@ -281,13 +319,17 @@ export interface Pm2LogRetentionSummary {
   freedMB: number;
   /** Failures, recorded instead of thrown. */
   errors: string[];
+  /** Basenames of this process's current logs that were found; empty means they could NOT be found. */
+  active: string[];
+  /** True when both current logs were found (what leftover-instance cleanup requires). */
+  activeResolved: boolean;
 }
 
 export interface Pm2LogRetentionOptions {
   /** Defaults to $PM2_LOG_DIR, else ~/.pm2/logs. The ~/.pm2 directory is its parent (only when it is named `logs`). */
   logDir?: string;
   now?: () => number;
-  /** Test seam for /proc/self/fd/1|2. */
+  /** Test seam for the current-log candidates (default: readActiveLogTargets(): PM2 env, else /proc/self/fd/1|2). */
   readActiveTargets?: () => ActiveLogTargets;
   /** Where the summary line goes; defaults to console.log (the pm2 out log). */
   write?: (line: string) => void;
@@ -395,6 +437,8 @@ export const runPm2LogRetention = async (options: Pm2LogRetentionOptions = {}): 
     skipped: 0,
     freedMB: 0,
     errors: [],
+    active: [],
+    activeResolved: false,
   };
   let freedBytes = 0;
 
@@ -405,6 +449,8 @@ export const runPm2LogRetention = async (options: Pm2LogRetentionOptions = {}): 
     const realLogDir = await realpath(logDir).catch(() => logDir);
 
     const active = resolveActiveLogs((options.readActiveTargets ?? readActiveLogTargets)(), [logDir, realLogDir]);
+    summary.active = [...active.names].sort();
+    summary.activeResolved = active.resolved;
     const logs = await listCandidates(logDir, "logs", active.names);
     const root = rootDir ? await listCandidates(rootDir, "root", new Set()) : { files: [], ignored: 0 };
 
