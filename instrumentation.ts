@@ -8,7 +8,10 @@
  *
  * It also starts the five-minute `proc_resources` log line (issue #709,
  * lib/server/logging/procResourceLogger.ts), which has its own production-only
- * gate (PROC_RESOURCE_LOG=1 forces it on elsewhere, =0 off in production).
+ * gate (PROC_RESOURCE_LOG=1 forces it on elsewhere, =0 off in production). The
+ * same logger also runs a 15-second account-RSS peak sampler and writes a
+ * `proc_resources_spike` line at >= 800 MB (PROC_RESOURCE_SPIKE_MB); the
+ * `activeJobs` it gets from `extraFields` below go on both kinds of line.
  * Every import stays inside the `NEXT_RUNTIME === "nodejs"` block so the edge
  * bundle never sees node:fs / node:perf_hooks.
  */

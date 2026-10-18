@@ -57,6 +57,7 @@ import {
 } from "@/lib/server/antiFraud/runTrendSync";
 import { runGdacsSync, runGdacsCleanup } from "@/lib/server/gdacs/runSync";
 import { runWhoDonSync, runWhoDonCleanup } from "@/lib/server/who/runSync";
+import { runPm2LogRetention } from "@/lib/server/logging/pm2LogRetention";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
 
@@ -648,5 +649,17 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "24 4 * * *",
     runGuarded("who-don-cleanup-cron.log", () => runWhoDonCleanup()),
+  );
+  // PM2 日誌保留期 (issue #709) — 取代即將移除的 pm2-logrotate 模組（它常駐約
+  // 45–55 MB，而本帳號實體記憶體上限只有 1 GB）。每天一次：copytruncate 輪替
+  // 本行程正在寫的 health-web 日誌（超過 8 MB 或約一天沒輪替）與 ~/.pm2/pm2.log
+  // （超過 8 MB），並刪除 mtime 超過 7 天的輪替檔，沒有任何常駐行程、也不用主機
+  // crontab。細節與「絕不碰」的清單見 lib/server/logging/pm2LogRetention.ts。
+  // 01:46：分鐘 46 不被本檔案任何 job 的分鐘欄位使用（cronCollisions 的 unusedMinutes
+  // 清單），所以在任何整點都不會與其他 job 同 tick，也不是 youbike 每 5 分鐘格線
+  // 的倍數；凌晨 1 點沒有任何每日／每週 job。
+  cron.schedule(
+    "46 1 * * *",
+    runGuarded("pm2-log-retention-cron.log", () => runPm2LogRetention()),
   );
 };
