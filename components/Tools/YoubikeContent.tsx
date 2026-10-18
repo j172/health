@@ -9,6 +9,14 @@ import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildGoogleMapsDirUrl, getNavigationButtonLabel } from "@/lib/utils/mapNavigation";
 
+// 「更新延遲」徽章的門檻。臺北市／新北市每 5 分鐘從開放資料更新，超過 15 分鐘沒動就是漏了兩輪以上；
+// 其餘縣市改由 TDX 約每 15 分鐘更新一輪（一輪約 3 分鐘，再加上來源自己的時間差，正常情況下最舊的
+// 一筆約 20 分鐘），沿用 15 分鐘會讓正常狀態下每個週期都有一段時間誤標「更新延遲」，所以放寬為 30 分鐘
+// （漏掉一整輪時約 35 分鐘，仍會標出來）。
+const DIRECT_CITY_CODES = ["TPE", "NTPC"];
+const staleAfterMs = (cityCode: string): number =>
+  (DIRECT_CITY_CODES.includes(cityCode) ? 15 : 30) * 60 * 1000;
+
 // 與 lib/server/youbike/tdxClient.ts 的 TDX_CITIES 保持一致（issue #453：由 11
 // 個縣市擴充為 TDX 涵蓋的全部 15 個）。此處是 client component，無法直接 import
 // server-only 的 tdxClient.ts，故維持獨立的一份對照表。
@@ -453,7 +461,7 @@ export default function YoubikeContent({
                         {(() => {
                           if (!station.updatedAtSource) return null;
                           const t2 = new Date(station.updatedAtSource).getTime();
-                          if (!isNaN(t2) && Date.now() - t2 > 15 * 60 * 1000) {
+                          if (!isNaN(t2) && Date.now() - t2 > staleAfterMs(station.cityCode)) {
                             return (
                               <span className="rounded bg-amber-50 px-1.5 py-0.2 text-[10px] font-medium text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                                 {t("youbikeTool.updateDelayedBadge", "更新延遲")}

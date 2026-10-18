@@ -1,4 +1,4 @@
-import { test } from "node:test";
+import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -42,6 +42,11 @@ registerHooks({
 
 const { tdxGetJsonWithRetry } = await import("../lib/server/tdx/getJsonWithRetry.ts");
 const { createTdxRateLimiter, TDX_BASIC_TIER_SPACING_MS } = await import("../lib/server/tdx/rateLimiter.ts");
+const { tdxCircuitBreaker } = await import("../lib/server/tdx/circuitBreaker.ts");
+
+// A 429 that survives every retry now opens the process-wide circuit breaker (circuitBreaker.ts),
+// and these tests call tdxGetJsonWithRetry() with the default singleton — so each test starts closed.
+beforeEach(() => tdxCircuitBreaker.reset());
 
 // --- rateLimiter.ts ---------------------------------------------------
 

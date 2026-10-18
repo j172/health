@@ -31,7 +31,7 @@ import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGarbageRoutesSync } from "@/lib/server/garbageRoutes/runSync";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
-import { runYouBikeSync } from "@/lib/server/youbike/runSync";
+import { runYouBikeDirectSync, runYouBikeTdxSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runForestFireSync } from "@/lib/server/forestFire/runSync";
@@ -230,8 +230,8 @@ export const registerCronJobs = (): void => {
   // news-card-images+power-sync 0/10/20/30/40/50, water-outages 25,
   // wra-water-outages 18/48, aqx-sync 10/40, wra-sync 8/38, wra-iot
   // 12/27/42/57, youbike every-5, metro-alerts 0/30, emergency-rooms
-  // 7/22/37/52, transit-accessibility-alerts 16/46, senior-tourism-alerts
-  // 17/47.
+  // 7/22/37/52, transit-accessibility-alerts 16, senior-tourism-alerts
+  // 17.
   cron.schedule(
     "36 4 * * *",
     runGuarded("earthquakes-retention-cleanup-cron.log", () => runEarthquakeRetentionCleanup()),
@@ -425,10 +425,25 @@ export const registerCronJobs = (): void => {
     "58 4 * * *",
     runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
   );
-  // YouBike 2.0 every 5 minutes — batch upserts real-time station availability across Taipei, NTPC, Hsinchu
+  // YouBike 2.0 Taipei + New Taipei every 5 minutes — straight from each city's free open-data feed,
+  // never through TDX (no quota, no wait in the shared 5 req/min limiter). This is the only job that
+  // keeps the original every-5-minute grid; summary.source is "direct" in logs/youbike-sync-cron.log.
   cron.schedule(
     "*/5 * * * *",
-    runGuarded("youbike-sync-cron.log", () => runYouBikeSync()),
+    runGuarded("youbike-sync-cron.log", () => runYouBikeDirectSync()),
+  );
+  // YouBike 2.0 for the other 13 cities, from TDX, about every 15 minutes (logs/youbike-tdx-sync-cron.log).
+  // A round is one Bike/Availability request per city (13) — the static half comes from youbike_stations
+  // and Bike/Station is only re-fetched about once a day per city, see lib/server/youbike/tdxSyncCore.ts.
+  // That is ~1,250 TDX requests a day against the ~4,300 the old every-5-minute, 15-city, two-endpoint
+  // round cost. A round takes ~3 minutes in the shared limiter (13 x 13 s).
+  // 11/26/39/54: every minute of a clean quarter-hour grid (m, m+15, m+30, m+45) is already taken by
+  // some other job, so these four unused minutes (gaps of 13-17 minutes) are the closest fit. None is a
+  // multiple of 5 (the youbike-sync grid above), none is used by any other job at any hour, and the
+  // round (~3 min) ends before the next TDX-heavy job: metro-alerts :00/:30, transit-accessibility-alerts :16.
+  cron.schedule(
+    "11,26,39,54 * * * *",
+    runGuarded("youbike-tdx-sync-cron.log", () => runYouBikeTdxSync()),
   );
   // Rail alerts every 30 minutes (issue #470) — fans out across all 6 TDX metro/light-rail
   // systems + TRA + THSR (Promise.allSettled-isolated per system), falling back to Taipei
@@ -464,7 +479,7 @@ export const registerCronJobs = (): void => {
   // 週一 02:32。分鐘 32 不在任何「每小時」job 的格線上 (rss 5/35、aqi 20/50、
   // cwa 15/45、earthquakes 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、
   // water-outages 25、wra-water-outages 18/48、emergency-rooms 7/22/37/52、
-  // transit-accessibility-alerts 16/46、senior-tourism-alerts 17/47、gdacs
+  // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs
   // 14/44、wra-iot 12/27/42/57、metro-alerts 0/30、news-card-images+power
   // 0/10/20/30/40/50、youbike 每 5 分鐘)，2 點區段目前只有 cdc-alerts 的 15
   // 分。刻意不用 spec 提議的 34 分，避免與同期其他 FDA 週更 ticket 撞同一個
@@ -508,10 +523,11 @@ export const registerCronJobs = (): void => {
     runGuarded("transit-accessibility-sync-cron.log", () => runTransitAccessibilitySync()),
   );
   // TDX Senior/Rail 設施停用公告 (issue #434) — 來源 UpdateInterval 為 -1
-  // (事件觸發)，需要比上面每日同步更高的更新頻率；16/46 這兩個分鐘在本檔案中
-  // 目前未被任何其他 job 佔用。
+  // (事件觸發)，需要比上面每日同步更高的更新頻率；分鐘 16 在本檔案中目前未被任何其他
+  // job 佔用。原本每 30 分鐘（16,46）一次、每次 10 個 RailSystem 請求（每天 480 個
+  // TDX 請求）；TDX 點數超額後減半為每小時一次（每天 240 個），分鐘 16 不變。
   cron.schedule(
-    "16,46 * * * *",
+    "16 * * * *",
     runGuarded("transit-accessibility-alerts-cron.log", () => runTransitFacilityAlertsSync()),
   );
   // TDX Senior/Tourism 景區無障礙設施/服務/樂齡套票 (issue #436) — 來源
@@ -522,10 +538,12 @@ export const registerCronJobs = (): void => {
     runGuarded("senior-tourism-sync-cron.log", () => runSeniorTourismSync()),
   );
   // TDX Senior/Tourism 景區設施停用公告 (issue #436) — 來源 UpdateInterval 為
-  // -1 (事件觸發)，需要比上面每日同步更高的更新頻率；17/47 這兩個分鐘在本檔案中
-  // 目前未被任何其他 job 佔用 (不與 transit-accessibility-alerts 的 16/46 衝突)。
+  // -1 (事件觸發)，需要比上面每日同步更高的更新頻率；分鐘 17 在本檔案中
+  // 目前未被任何其他 job 佔用 (不與 transit-accessibility-alerts 的 16 衝突)。
+  // 原本每 30 分鐘（17,47）一次、每次 1 個 TDX 請求；TDX 點數超額後減半為每小時一次
+  // （每天 24 個請求），分鐘 17 不變。
   cron.schedule(
-    "17,47 * * * *",
+    "17 * * * *",
     runGuarded("senior-tourism-alerts-cron.log", () => runSeniorTourismAlertsSync()),
   );
   // TDX Senior/SeniorCard 22縣市敬老卡交通補助 (issue #436) — 補助政策不會頻繁
@@ -589,7 +607,7 @@ export const registerCronJobs = (): void => {
   // 0/10/20/30/40/50、water-outages 的 25、wra-water-outages 的 18/48、aqx 的
   // 10/40、wra-sync 的 8/38、wra-iot 的 12/27/42/57、metro-alerts 的
   // 0/30、emergency-rooms 的 7/22/37/52、transit-accessibility-alerts 的
-  // 16/46、senior-tourism-alerts 的 17/47，也不是 youbike 的每 5 分鐘格線
+  // 16、senior-tourism-alerts 的 17，也不是 youbike 的每 5 分鐘格線
   // (0/5/10/.../55) 上。這個 job 自己再用 withAdvisoryLock 防重疊，見
   // lib/server/gdacs/runSync.ts。
   cron.schedule(
@@ -613,7 +631,7 @@ export const registerCronJobs = (): void => {
   // 3/13/23/33/43/53、news-card-images+power-realtime 0/10/20/30/40/50、
   // water-outages 25、wra-water-outages 18/48、aqx 10/40、wra-sync 8/38、
   // wra-iot 12/27/42/57、metro-alerts 0/30、emergency-rooms 7/22/37/52、
-  // transit-accessibility-alerts 16/46、senior-tourism-alerts 17/47、gdacs-sync
+  // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs-sync
   // 14/44)，也不是 culture-shows 的 10 分或 pest-alerts 的 12 分，所以在
   // 0/6/12/18 這四個整點都不會撞到任何既有 job。這個 job 自己再用
   // withAdvisoryLock 防重疊，見 lib/server/who/runSync.ts。
