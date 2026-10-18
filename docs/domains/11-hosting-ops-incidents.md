@@ -11,7 +11,7 @@
 |---|---|
 | 主機 | HawkHost 共享主機（新加坡），CloudLinux 8＋LiteSpeed＋MariaDB 10.11＋cPanel；與 `bid.j172.tw` 共用同一帳號 |
 | 行程 | PM2 v7（`health-web`），Node **v20.20.2**（nvm；**2026-10-16 從 Node 24 回滾**,見 #481：本帳號對行程的位址空間上限（RLIMIT_AS）是 **2 GiB**,Node 24.19 閒置虛擬記憶體 1.29 GB、Node 20.20.2 只有 0.74 GB,Node 24 實際生效（#634 之後,2026-10-15）起 `health-web` 每小時被 SIGABRT 中止 10–25 次（「Committing semi space failed」,堆積才約 300 MB）。要再升 Node 24 前必須先在主機量測閒置 `ps -o vsz` 與執行中行程的 `VmPeak`）,`--max-old-space-size=768`、`max_memory_restart: 1024M`；`ecosystem.config.cjs` 釘住的 interpreter 就是每次部署會套用的版本 |
-| CloudLinux 限制 | **NPROC 100**、**Entry Processes 20**（兩者不同；耗盡的通常是 NPROC） |
+| CloudLinux 限制 | 帳號（LVE `lve2004`）**實體記憶體 PMEM 只有 1 GB**（SIGKILL 的真正原因，見 1.3）、**NPROC 100**、**Entry Processes 20**（兩者不同；NPROC／EP 耗盡是另一種事故）；完整限額表見 1.3 |
 | 前端 CDN | Cloudflare Free（Full Strict、Smart Tiered Cache、Bot Fight Mode） |
 | 部署 | GitHub Actions 建置 → FTPS 上傳 prebuilt；`next.config.js` 也必須上傳（`next start` 從工作目錄讀取） |
 | 自我修復 | `.remote-health-index.php`：每 5 分鐘 `pm2-ensure-running`（以 `fsockopen` 探測 port 3000，不 fork），探測失敗後先做約 25 秒的**寬限重探測**（見 4.1「Watchdog 在 PM2 自動拉起的空窗誤判離線」），仍不通才升級；`/__ops/*` 維運端點 |
@@ -33,6 +33,36 @@
 
 切換當天（2026-10-13）的實測基準：Node 24 下 `/`、`/news`、`/api/aqi`、`/api/accessible-transit` 等頁面/API 皆正常，RSS 約 370MB（50 秒內，有真實流量），跟 v20.20.2 時期的量級一致。
 
+### 1.3 CloudLinux LVE 限額與 #709（SIGKILL）根因（2026-10-18）
+
+> 狀態：🟡 **根因已知，記憶體尚未降下來**。這一節只記錄證據與判讀方法，不代表 #709 已解決；降常駐量的做法（`max_memory_restart`、`--max-old-space-size`、PM2 重啟間隔等）使用者尚未授權，這份文件也沒有改 `ecosystem.config.cjs`。
+
+**本帳號（`tw123457`，LVE `lve2004`）的限額**（cPanel → Resource Usage 顯示）：
+
+| 資源 | 上限 | 超過時的行為 |
+|---|---|---|
+| SPEED（CPU） | 100% | 節流（變慢），**不砍行程** |
+| **PMEM（實體記憶體）** | **1 GB** | **超過就 SIGKILL 帳號內的行程（= `health-web` 被外部 SIGKILL）** |
+| IO | 15 MB/s | 節流，**不砍行程** |
+| IOPS | 5120 | 節流 |
+| NPROC | 100 | 無法 fork（`EAGAIN`），見 4.1 |
+| Entry Processes（EP） | 20 | 請求被拒（503），見 4.1 |
+| inodes | 500000 | 無法建立檔案 |
+
+**證據**（cPanel Resource Usage，2026-10-18 台北時間 08:00–21:00）：
+- Faults：**PMEM 22**、CPU 33、IO 52；NPROC（用 46／上限 100）、Entry Processes（上限 20）、IOPS（上限 5120）**全部 0 fault**。CPU／IO 的 fault 是節流，不會砍行程，所以排除。
+- 逐小時對照：每個小時的 PMEM faults 與 `~/.pm2/pm2.log` 內 `exited with code [0] via signal [SIGKILL]` 的次數，**13 個小時裡有 11 個小時完全相同**。→ 每一次 PMEM fault 就是一次 SIGKILL。
+- 每小時**平均** PMEM 只有 580–730 MB，所以 fault 來自小時內的**短暫尖峰**（平均看不到，5 分鐘一行的 `proc_resources` 也容易漏掉）。
+- 帳號內的行程：`health-web`（Next，約 450–600 MB，cwd `~/health_app`）、`mall`（另一個 Next app，cwd `~/mall_app`，**不在本 repo**）、PM2 God Daemon、`pm2-logrotate`（常駐約 45–55 MB，已決定移除，見 4.2）、`lsphp`。PMEM 是**帳號內所有行程加總**，所以 `mall` 或 PM2 本身漲上去，也會讓 `health-web` 被砍。
+
+**怎麼在 cPanel 重現這個對照**：
+1. cPanel → Metrics → **Resource Usage** → **Current usage**（或 Details），選逐小時，看 **Physical Memory Usage** 那一列的 **Faults**；其他資源（CPU、IO、IOPS、NPROC、EP）同一頁看。
+2. 主機上數同一小時的 SIGKILL：`grep 'via signal \[SIGKILL\]' ~/.pm2/pm2.log | cut -c1-13 | sort | uniq -c`（假設每行以 ISO 時間戳開頭，`cut` 取到「小時」；實際格式以檔案為準）。
+3. 兩邊的**時區可能不同**（先前事故紀錄用 UTC，cPanel 這次用台北時間 = UTC+8），對照前先換算成同一個時區。
+4. `pm2.log` 是分析 SIGKILL 的唯一來源，**不能被輪替掉或丟掉**（4.2 的保留期 job 只在它超過 8 MB 時 copytruncate，並保留 7 天的輪替檔）。
+
+**接下來**：降低記憶體前，先靠 4.2「尖峰與逐行程組成」新增的欄位（`proc_resources_spike`、`acctRssPeakMB`、`procs`）找出尖峰是誰造成的，再決定要降哪一個。
+
 ---
 
 ## 2. 長期有效的決策
@@ -52,7 +82,7 @@
 | O-2 | Issue #391（雙 God Daemon）、#394（`_next/image` OOM）仍為 OPEN | 修正已上線，issue 待驗證後關閉 |
 | O-3 | Node 20 已 EOL，但正式主機**暫時留在 v20.20.2** | 2026-10-13 曾嘗試切到 v24.19.0（#481），但 2026-10-15 `ecosystem.config.cjs` 把 24 釘住後，`health-web` 每小時 SIGABRT 10–25 次：本帳號對行程的位址空間上限（RLIMIT_AS）是 **2 GiB**，Node 24 閒置虛擬記憶體 1.29 GB、Node 20 只有 0.74 GB，少了約 550 MB 餘裕，V8 在堆積約 300 MB 時就撞上限。**2026-10-16 已回滾到 v20.20.2（PR #700）**；回滾後 SIGABRT 為 0。再升級前必須先在主機量測：閒置 `ps -o vsz` 與執行中行程的 `VmPeak` 要有明確餘裕（建議 `VmPeak` < 1.6 GB；Node 20 目前就已 1.7–1.9 GB）。CI 仍用 Node 24 建置，與主機執行環境不同。#481 維持開啟 |
 | O-4 | 共享主機鄰居搶 CPU | 主機層級問題，非程式可解；load average 長期 10–12 |
-| O-5 | `health-web` 約每 15–35 分鐘被外部 SIGKILL，原因不明（#709） | 一開始以為只砍 `health-web`，但 2026-10-17 10:13–10:14 UTC 同帳號 mall 也同時被砍 5 次（50 秒內 `health-web` 被砍 7 次）→ 帳號層級（CloudLinux LVE `/lve2004`）管控；`health-web` RSS 約 430–630 MB、`VmPeak` 1.7–1.9 GB（`RLIMIT_AS` 2 GiB）。#707 只縮短中斷時間，沒有減少被砍次數。第一步是 `proc_resources` 日誌（見 4.2「health-web 每 5 分鐘一行資源日誌」），上線累積幾次被砍之後，依「死前 5 分鐘」趨勢判斷是位址空間、實體記憶體還是行程／fd 數；#709 保持開啟 |
+| O-5 | `health-web` 約每 15–35 分鐘被外部 SIGKILL，原因不明（#709） | 一開始以為只砍 `health-web`，但 2026-10-17 10:13–10:14 UTC 同帳號 mall 也同時被砍 5 次（50 秒內 `health-web` 被砍 7 次）→ 帳號層級（CloudLinux LVE `/lve2004`）管控；`health-web` RSS 約 430–630 MB、`VmPeak` 1.7–1.9 GB（`RLIMIT_AS` 2 GiB）。#707 只縮短中斷時間，沒有減少被砍次數。第一步是 `proc_resources` 日誌（見 4.2「health-web 每 5 分鐘一行資源日誌」），上線累積幾次被砍之後，依「死前 5 分鐘」趨勢判斷是位址空間、實體記憶體還是行程／fd 數；#709 保持開啟。**2026-10-18 更新：根因已用 cPanel Resource Usage 證實是帳號實體記憶體（PMEM）上限只有 1 GB，每次 PMEM fault 就是一次 SIGKILL（見 1.3）；記憶體尚未降下來。** 下一步：①用 `proc_resources_spike`／`acctRssPeakMB`／`procs` 找出短暫尖峰是誰造成的（見 4.2「尖峰與逐行程組成」）；②`pm2-logrotate`（常駐 45–55 MB）已決定移除，改由 app 內每日 job 做日誌保留期（見 4.2）；③`mall` 的日誌量很小（合計約 76 KB），移除 `pm2-logrotate` 後不需處理，日後成長再議（見 4.2） |
 
 ---
 
@@ -100,7 +130,7 @@
 
 #### HawkHost 主機最佳化與治理 ✅
 - 原檔：[hawkhost-server-optimization.md](../archive/specs/hawkhost-server-optimization.md)
-- V8 heap 預設依主機可見的 54GB 配置 → 被 LVE 靜默 SIGKILL；改為固定 768MB 讓記憶體壓力變成可捕捉的錯誤；PM2 log rotate；Node 版本固定。
+- V8 heap 預設依主機可見的 54GB 配置 → 被 LVE 靜默 SIGKILL；改為固定 768MB 讓記憶體壓力變成可捕捉的錯誤；PM2 log rotate（`pm2-logrotate` 模組；2026-10-18 起改由 app 內每日 job 取代，見 4.2）；Node 版本固定。
 
 ### 4.2 記憶體與 502
 
@@ -135,9 +165,37 @@
 - 護欄：每個欄位各自 try/catch，任何讀取失敗只會讓該欄位變 `null`，不會丟例外；interval 有 `unref()`，不會讓行程停不下來；`globalThis` 上用 `Symbol.for("health.procResourceLogger")` 守衛，熱重載或模組被載入兩次也只有一個 timer；只在 `NODE_ENV=production` 執行（本機要試用設 `PROC_RESOURCE_LOG=1`；`PROC_RESOURCE_LOG=0` 可在正式環境關掉而不必改程式）。成本：每 5 分鐘讀一次 `/proc` 小檔案與列一次 fd 目錄，加上一個 libuv 內建取樣 timer，不新增行程或執行緒。
 - 被砍之後怎麼看（正式主機，帳號 `tw123457`）：
   1. 在 `~/.pm2/pm2.log` 找到 `exited with code [0] via signal [SIGKILL]` 的時間。
-  2. `grep proc_resources ~/.pm2/logs/health-web-out*.log | tail`（輪替後的舊檔也一起 grep；每行內有 `ts` 可對時間）。被砍行程的最後一行，就是死前 0–5 分鐘內的狀態；它的 `pid` 與 `uptimeS` 可對應到該次行程，`uptimeS` 小的下一行就是重啟後的第一行。
+  2. `grep '"event":"proc_resources"' ~/.pm2/logs/health-web-out*.log | tail`（輪替後的舊檔也一起 grep；每行內有 `ts` 可對時間。**要帶引號與逗號前的完整 `"event":"proc_resources"`**：2026-10-18 起還有 `proc_resources_spike` 行，單用 `grep proc_resources` 兩種都會撈到，後者沒有 `rssMB`／heap 等欄位）。被砍行程的最後一行，就是死前 0–5 分鐘內的狀態；它的 `pid` 與 `uptimeS` 可對應到該次行程，`uptimeS` 小的下一行就是重啟後的第一行。
   3. 判讀：`vmPeakMB` 在死前逼近 2048 → 位址空間（`RLIMIT_AS`）而非實體記憶體；`rssMB` 逼近同帳號實體上限而 `vmSizeMB` 平穩 → 實體記憶體；`fdCount`／`threads` 持續上升 → 洩漏或行程數；死前最後一行的 `eventLoopDelayMaxMs` 很大 → 行程已先卡死；`activeJobs` 非空 → 對照是哪個 cron 工作在跑；`acctProcs`／`acctThreads` 逼近 CloudLinux 的 NPROC／Entry Processes 上限或 `acctRssMB` 逼近 LVE 實體記憶體上限 → 帳號層級資源耗盡，多個 app 一起被砍（拿 `lveinfo` 的 LVE 上限與被砍時刻比對）；`loadAvg1` 持續偏高（本機長期 10–12）只代表鄰居搶 CPU，單獨不足以解釋被砍。
 - 上線後驗證：①部署重啟後 `health-web-out*.log` 在約 10 秒內出現第一行 `proc_resources`（`vmSizeMB`／`vmPeakMB`／`fdCount`／`threads`／`acctProcs`／`loadAvg1` 是數字、不是 `null`，證明 `/proc` 在 LVE 內可讀；`acctProcs` 應與 `ps -u tw123457` 的行程數同量級，約 5–10，若遠小於代表 CageFS 隱藏了其他行程，這時 `acct*` 只代表可見範圍）；②之後每 5 分鐘一行（`ts` 間隔約 300 秒）；③下一次 SIGKILL 後，死前最後一行落在被殺時間前 5 分鐘內；④確認沒有新增行程（`ps` 計數不變）、`/api/*` 回應不受影響。若 LVE 內 `/proc/self/status` 讀不到，欄位會是 `null`，那時改以 `rssMB`／`externalMB` 趨勢推斷。
+
+#### 尖峰與逐行程組成：`proc_resources` 新欄位與 `proc_resources_spike` 🟡（#709，2026-10-18，待上線驗證）
+- 背景：帳號實體記憶體上限只有 1 GB（見 1.3），每小時平均 580–730 MB，被砍是**小時內的短暫尖峰**；5 分鐘一行只有「帳號 RSS 總和」，取樣太稀，也看不出尖峰是誰造成的。所以在 `lib/server/logging/procResourceLogger.ts` 追加：
+  - **15 秒快速取樣**（另一個 `unref()` 計時器，同一個啟用開關與 `globalThis` 守衛）：只走 `/proc/<pid>/status` 讀同 uid 行程的 `VmRSS`，記錄自上一行 `proc_resources` 以來的**帳號 RSS 總和高點**。只有創新高、寫 spike 行、或組 5 分鐘行時，才多讀前幾名行程的 `cmdline`／`cwd` 來貼標籤；平常不讀。
+  - **`proc_resources` 新欄位（一律接在既有欄位與 `activeJobs` 之後，既有欄位名稱與順序沒動）**：`acctRssPeakMB`／`acctRssPeakAt`（上一行以來帳號 RSS 總和的高點與發生時間，ISO）、`ownRssPeakMB`（同期間本行程 RSS 高點）、`ownHwmMB`（本行程 `VmHWM`，自啟動以來的 RSS 歷史高點）、`peakProcs`（**帳號高點當下**的逐行程明細）、`procs`（本行取樣當下的逐行程明細）。`/proc` 不存在（Windows／macOS）時全部是 `null`／`[]`。
+  - **逐行程明細**：每筆 `{pid,label,rssMB,hwmMB}`，依 RSS 由大到小取前 6 筆。`label`：`health-web`（cwd 含 `health_app`）、`mall`（cwd 含 `mall_app`）、`pm2-daemon`（cmdline／comm 含 `PM2`／`God Daemon`）、`pm2-module`（cmdline 含 `.pm2/modules`，即 pm2-logrotate）、`pm2-cli`（`pm2 jlist` 這類指令，例如看門狗開的）、`lsphp`、`deploy`（`tar`／`gzip`／`sh -lc cd …health_app`／`apply-prebuilt`），其餘用 `comm`。命令優先於 cwd 判斷（God Daemon、pm2 模組、部署用 shell 的 cwd 也可能是 `health_app`）。
+  - **`proc_resources_spike` 行**：帳號 RSS 總和 ≥ 800 MB（環境變數 `PROC_RESOURCE_SPIKE_MB` 可覆寫）時立刻多印一行 `{"event":"proc_resources_spike","ts","acctRssMB","ownRssMB","procs":[…],"activeJobs":[…],"eventLoopDelayMaxMs"}`，同一行程最多每 60 秒一行。`eventLoopDelayMaxMs` 是「自上一行 `proc_resources` 以來」的最大值，讀取時不重設直方圖（重設屬於 5 分鐘那行）。
+  - 行長：5 分鐘行約 1.2 KB（6+6 筆明細時），spike 行約 0.5 KB；超過 2000 字元時先砍明細陣列（`peakProcs`、`procs`），再砍 `activeJobs`，其他欄位不動。
+- 怎麼讀：
+  1. 在 cPanel 找出有 PMEM fault 的小時（見 1.3），或在 `pm2.log` 找到 SIGKILL 時間。
+  2. `grep proc_resources_spike ~/.pm2/logs/health-web-out*.log | tail`：spike 行的 `ts` 與 SIGKILL 時間對照；`procs` 就是當下誰用了多少。再用 `grep '"event":"proc_resources"'` 看同一個 5 分鐘區間的 `acctRssPeakMB`／`acctRssPeakAt`／`peakProcs`（尖峰當下的組成）。
+  3. 判讀：`health-web` 一個就超過約 700 MB → 降 `health-web` 本身（堆積、同時進行的 cron job 看 `activeJobs`）；`mall` 佔大宗 → 要和 mall 一起處理（另一個 repo）；`pm2-module`（pm2-logrotate，約 45–55 MB）與 `pm2-daemon` 是固定成本，只能靠移除模組／減少重啟；`deploy`、`pm2-cli`、`lsphp` 出現在尖峰裡 → 是部署、看門狗或 PHP 代理造成的短暫增量；`acctRssPeakMB` 遠高於 `acctRssMB` → 尖峰很短，要靠 15 秒取樣才看得到。
+  4. `acctRssMB`／`acctRssPeakMB` 是各行程 `VmRSS` 直接相加，共用頁面重複計算，是 LVE 實際計費值的**上限估計**，看趨勢與哪個行程貢獻最多，不要當精確值（實際 PMEM 可能略低，所以 800 MB 的門檻比 1 GB 上限低一些，留給預警）。
+- 成本：每 15 秒讀約 5–30 個小檔案（同一次呼叫內各自 try/catch），不新增依賴、行程或執行緒；diagnostics 本身失敗只會讓該行少欄位，不會影響 web 行程。
+
+#### PM2 日誌保留期：移除 `pm2-logrotate`，改由 app 內每日 job 🟡（#709，2026-10-18，待上線驗證）
+- 決定：使用者 2026-10-18 決定**移除 `pm2-logrotate`**——它常駐約 45–55 MB 並佔 10 個 task，而帳號實體記憶體上限只有 1 GB（見 1.3）。**正式主機上的 `pm2 uninstall pm2-logrotate` 不在這個 PR 裡，由維運人員另行操作**（這個 PR 沒有改 `ecosystem.config.cjs`，也沒有改任何 PM2 設定）。
+- 移除前的設定（供回滾）：`max_size` **10M**、`retain` **3**、`compress` **true**、每日 **00:00** 輪替。
+- 回滾指令：`pm2 install pm2-logrotate && pm2 set pm2-logrotate:max_size 10M && pm2 set pm2-logrotate:retain 3 && pm2 set pm2-logrotate:compress true`。回滾後 app 內 job 可以先留著（它只動符合樣式的檔案，命名與保留期判斷都只看檔名與 mtime，不會和 pm2-logrotate 互相覆蓋），但兩者做同一件事，建議擇一。
+- 為什麼不能什麼都不做：`~/.pm2/logs` 約 50 MB／92 個檔，`health-web` 的 out 與 error 各約 3 MB／天，沒有輪替就會無限成長。
+- 取代它的 job：`lib/server/logging/pm2LogRetention.ts`，在 `lib/server/cron/registerJobs.ts` 以 `runGuarded("pm2-log-retention-cron.log", …)` 註冊，**每天 01:46**（分鐘 46 是 cron 碰撞 lint 的未使用分鐘，沒有新增 baseline）。沒有常駐行程、不用主機 crontab；規劃（純函式 `planPm2LogRetention`，輸入檔案的 name／size／mtime／是否為本行程的現行日誌）與執行（薄薄一層 fs，一次處理一個檔案，用 `copyFile`，不把日誌讀進記憶體）分兩段，規劃函式有完整單元測試。目錄預設 `~/.pm2/logs`，`PM2_LOG_DIR` 可覆寫。
+  - **誰在寫日誌、「現行日誌」怎麼找（2026-10-18 正式主機唯讀實測）**：寫日誌的**不是 `health-web` 本行程，而是 PM2 God Daemon**。fork 模式下 PM2 用 pipe 把 `health-web` 的 stdout／stderr 交給 daemon，由 **daemon** 以 append（`O_APPEND`）方式開檔寫入：`health-web` 自己的 `/proc/self/fd/1`、`fd/2` 是 `socket:[…]`，不是檔案；daemon 的 `/proc/<daemon pid>/fd/*` 才指向 `~/.pm2/logs/health-web-out-1.log`、`health-web-error-1.log`、`mall-out-2.log`、`mall-error-2.log` 與 `~/.pm2/pm2.log`。所以 job **不能**從自己的 fd 解析現行日誌（第一版就是這樣，在正式環境會永遠解析失敗：現行日誌不輪替、遺留檔清理全部跳過）。PM2 有把路徑放進 `health-web` 行程的環境變數：`pm_out_log_path`、`pm_err_log_path`（另有 `pm_id`、`name`）。job 以這兩個變數為**主要來源**，`/proc/self/fd/1`、`fd/2` 只在變數缺少時（不是 PM2 啟動的行程）當後備；不論來源，路徑都必須**直接位於日誌目錄、檔名符合 `health-web-(out|error)` 樣式**才算數（`socket:[…]`、日誌目錄外、含 `..`、`mall-*`、輪替檔、`pm2.log` 一律被拒絕）。PM2 給了路徑但驗證不過時，不會改用 fd 再試一次——驗證不過就是「未解析」，什麼都不猜。每次的摘要行有 `active`（找到的現行日誌檔名）與 `activeResolved`，`active` 為空就是「找不到現行日誌」。
+  1. **輪替（copytruncate）**：①現行日誌（上一項；任一個未解析就跳過該個），**嚴格大於 8 MiB**，或距離最新一份輪替檔已超過約 23 小時（用輪替檔的 mtime 判斷，沒有狀態檔；刻意略小於 24 小時，避免每天啟動時間的毫秒級抖動讓它隔天才輪替）且檔案非空，就 `copyFile` 成 `<原名去掉 .log>__YYYY-MM-DD_HH-mm-ss.log`（伺服器本地時間，與 pm2-logrotate 的命名同形）再 `open(O_WRONLY)` ＋ `ftruncate(0)` 清空原檔。寫入者雖然是另一個行程（daemon），截斷仍然安全：daemon 以 `O_APPEND` 持有檔案，下一次寫入會落在新的檔尾（offset 0），不會留下空洞或沿用舊位移（測試用一個持有 `O_APPEND` 控制代碼的「假 daemon」驗證過）；複製與截斷之間寫入的幾行會遺失（copytruncate 的通例）。②`~/.pm2/pm2.log`（God Daemon 自己的日誌，SIGKILL 的唯一紀錄）只看大小（> 8 MiB），**絕不刪除**。
+  2. **刪除過期檔**（mtime **嚴格大於 7 天**，剛好 7 天保留）：輪替檔 `health-web-(out|error)[-N]__<日期>.log[.gz]` 與 `pm2__<日期>.log[.gz]`（`.gz` 是 pm2-logrotate 的 `compress` 留下的）；PM2 舊實例遺留、**不是現行日誌**的 `health-web-(out|error)-N.log`（只有在 stdout 與 stderr 兩個現行日誌都解析成功時才刪，否則一個很久沒有寫入的現行 error 日誌會被誤判為遺留）；pm2-logrotate 自己的 `pm2-logrotate-*.log`。
+  3. **絕不碰**：`mall-*`、不符合上述樣式的任何檔案、現行日誌（只輪替不刪除）、符號連結與非一般檔案（只處理 `readdir` 結果中名稱**完全符合**樣式的檔案，並再 `lstat` 一次確認不是連結；`unlink` 只移除名稱，不會跟著連結刪到別處）、`~/.pm2` 下除了 `pm2.log`／`pm2__*.log` 之外的所有東西（`dump.pm2`、`pm2.pid`、`modules/`、socket…）。`~/.pm2` 只有在日誌目錄本身叫 `logs` 時才會被查看。
+  4. **摘要**：每次執行印出並回傳一行 `{"event":"pm2_log_retention","ts","rotated":[…],"deleted":[…],"skipped":n,"freedMB":x,"errors":[…],"active":[…],"activeResolved":true}`（`console.log` 進 pm2 out 日誌，`runGuarded` 也會寫進 `logs/pm2-log-retention-cron.log`）。任何失敗只記在 `errors`，不拋出。查：`grep pm2_log_retention ~/.pm2/logs/health-web-out*.log | tail`。
+- **`mall-*` 日誌**：`pm2-logrotate` 原本也在輪替 `~/.pm2/logs` 下所有檔案（含 `mall-*`），移除後 `mall` 的日誌沒有人輪替；但 2026-10-18 實測 `mall-*` 全部加起來只有約 76 KB（約 10 KB／天），**已確認不需處理**，日後成長再議。這個 job 依規定**不碰** `mall-*`（另一個 repo、不在這裡）。
+- 上線後驗證：①部署重啟後（含 `pm2 uninstall pm2-logrotate`）隔天 01:46 之後出現 `pm2_log_retention` 行，`errors` 為空，**`active` 是兩個現行日誌檔名（如 `["health-web-error-1.log","health-web-out-1.log"]`）且 `activeResolved` 為 `true`**（`active` 為空代表找不到現行日誌：先檢查 `health-web` 行程環境有沒有 `pm_out_log_path`／`pm_err_log_path`，讀 `/proc/<pid>/environ` 時不要印出其他變數）；②`ls -la ~/.pm2/logs` 看到 `health-web-out-N__<日期>.log`、原檔已截斷；③`pm2.log` 還在、`mall-*` 沒被動到；④`ps` 看不到 `pm2-logrotate` 行程，`acctRssMB` 少約 45–55 MB。
 
 ### 4.3 CDN
 
