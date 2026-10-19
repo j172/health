@@ -1,10 +1,10 @@
 import {
-  NativeDictItem,
-  SearchNativeDictParams,
-  SearchNativeDictResult,
   CHILD_TOPIC_CATEGORIES,
+  type NativeDictItem,
+  type SearchNativeDictParams,
+  type SearchNativeDictResult,
 } from "./types";
-import seedData from "@/data/child-native-languages-seed.json";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 
 interface SeedLanguageSection {
   count: number;
@@ -18,7 +18,27 @@ interface SeedStructure {
   };
 }
 
-const typedSeed = seedData as unknown as SeedStructure;
+/**
+ * 資料庫沒資料（或連不上）時的後備種子，約 30 MB。
+ *
+ * 絕對不能 `import … from "@/data/child-native-languages-seed.json"`：Next 預設開機就載入全部
+ * 路由，被打包進 chunk 的 JSON 會變成永遠常駐的原始碼字串（≈ 24 MB），第一次執行後再多一份
+ * 解析後的物件（≈ 21 MB）。這個 API 在正式站 18 天只被打了 12 次（#709）。
+ *
+ * 改成真的需要後備時才用 `readTransientSeedJson`（lib/server/db/transientSeed.ts）讀 `public/data/`
+ * （或 `data/`）並解析，解析結果只保留 {@link SEED_TTL_MS} 毫秒（從載入時起算），到期後交給 GC。
+ * 找不到檔案時該 helper 會寫一行 `[seed]` 警告並回傳 null，這裡退成空資料（和以前
+ * `entries || []` 的形狀相同）。TTL 比 helper 預設的 60 秒長：重新解析 30 MB 要 ≈ 270 ms，
+ * 2 分鐘內的連續請求共用同一份。
+ */
+const SEED_FILENAME = "child-native-languages-seed.json";
+const SEED_TTL_MS = 2 * 60 * 1000;
+
+function loadSeedPool(lang: string): NativeDictItem[] {
+  const seed = readTransientSeedJson<SeedStructure>(SEED_FILENAME, { ttlMs: SEED_TTL_MS });
+  if (!seed) return [];
+  return (seed.languages as Record<string, SeedLanguageSection | undefined>)[lang]?.entries || [];
+}
 
 export async function searchNativeDict(
   params: SearchNativeDictParams,
@@ -92,8 +112,7 @@ export async function searchNativeDict(
   }
 
   // Fallback to local high-frequency seed dataset
-  const pool: NativeDictItem[] =
-    typedSeed.languages[lang]?.entries || [];
+  const pool: NativeDictItem[] = loadSeedPool(lang);
 
   let filtered = pool;
 
