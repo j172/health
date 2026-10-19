@@ -191,14 +191,12 @@ const EMPTY_ROOT = () => fs.mkdtempSync(path.join(os.tmpdir(), "seed-709-empty-"
 // ---------------------------------------------------------------------------
 
 test("app/、lib/、components/ 不再靜態 import 超過 100 KB 的 JSON（除已知例外）", () => {
-  // 例外只允許兩項，且都要有理由：
-  //  - data/child-native-languages-seed.json：辭典種子（約 30 MB）由另一個 PR 處理。
+  // 例外只允許一項，且要有理由：
   //  - lib/server/news/data/cedict-terms.json：以 import() 惰性載入，只有每 10 分鐘的
   //    news-card-images 排程與管理 API 會用到；評估結果見 PR 說明。
-  const ALLOWED = new Set([
-    "data/child-native-languages-seed.json",
-    "lib/server/news/data/cedict-terms.json",
-  ]);
+  // （辭典種子 data/child-native-languages-seed.json 已改用 readTransientSeedJson，
+  //   不再是例外；見 tests/dictionary-seed-on-demand-709.test.mjs。）
+  const ALLOWED = new Set(["lib/server/news/data/cedict-terms.json"]);
   const LIMIT = 100 * 1024;
   const offenders = [];
 
