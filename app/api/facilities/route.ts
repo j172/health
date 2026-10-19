@@ -5,12 +5,7 @@ import { countFacilities, countFilteredFacilities, searchFacilities } from "@/li
 import { getFacilitySourceDataStatus } from "@/lib/server/facilities/dataStatus";
 import { parseDataStatusSourceParam } from "@/lib/format/facilityDataStatus";
 
-import tourismFactorySeed from "@/data/facilities-seeds/tourism_factory.json";
-import bookstoreSeed from "@/data/facilities-seeds/bookstore.json";
-import contraceptionSeed from "@/data/contraception-map-seed.json";
-import cpcGasStationSeed from "@/data/facilities-seeds/cpc_gas_station.json";
-import aedSeed from "@/data/facilities-seeds/aed.json";
-import vetClinicSeedRaw from "@/data/facilities-seeds/vet_clinic.json";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 
 export const runtime = "nodejs";
 
@@ -27,25 +22,40 @@ interface SeedFacilityItem {
   distance_km?: number;
 }
 
-const vetClinicSeed: SeedFacilityItem[] = ((vetClinicSeedRaw as any).records || []).map((r: any, idx: number) => ({
-  id: idx + 1,
-  name: r.name,
-  address: r.address || null,
-  phone: r.phone || null,
-  lat: r.lat ? Number(r.lat) : null,
-  lng: r.lng ? Number(r.lng) : null,
-  service_item: r.serviceItem || null,
-  service_time: r.serviceTime || null,
-  extra_json: r.extra || null,
-}));
-
-const SEED_FACILITIES: Record<string, SeedFacilityItem[]> = {
-  tourism_factory: tourismFactorySeed as unknown as SeedFacilityItem[],
-  bookstore: bookstoreSeed as unknown as SeedFacilityItem[],
-  cpc_gas_station: cpcGasStationSeed as unknown as SeedFacilityItem[],
-  aed: aedSeed as unknown as SeedFacilityItem[],
-  vet_clinic: vetClinicSeed,
+// 這幾份種子（合計約 3.5 MB）原本是靜態 import，文字永久常駐於 server chunk、解析後的物件
+// 也永遠留在模組裡；現在只在「資料庫沒資料／查詢失敗／避孕諮詢」需要時才按需讀檔，
+// 並於短暫停留後釋放（#709，見 lib/server/db/transientSeed.ts）。
+// 檔名一律寫死在這裡，絕不可把 facilityType 之類的使用者輸入帶進讀取器。
+const STATIC_SEED_FILES: Record<string, string> = {
+  tourism_factory: "facilities-seeds/tourism_factory.json",
+  bookstore: "facilities-seeds/bookstore.json",
+  cpc_gas_station: "facilities-seeds/cpc_gas_station.json",
+  aed: "facilities-seeds/aed.json",
 };
+const VET_CLINIC_SEED_FILE = "facilities-seeds/vet_clinic.json";
+const CONTRACEPTION_SEED_FILE = "contraception-map-seed.json";
+
+/** 回傳該類型的內建種子；沒有內建種子（或檔案讀不到）時回傳 undefined，由呼叫端走原本的通用後備。 */
+function loadBundledSeed(facilityType: string): SeedFacilityItem[] | undefined {
+  if (facilityType === "vet_clinic") {
+    const vetClinicSeedRaw = readTransientSeedJson<any>(VET_CLINIC_SEED_FILE);
+    if (!vetClinicSeedRaw) return undefined;
+    return (vetClinicSeedRaw.records || []).map((r: any, idx: number) => ({
+      id: idx + 1,
+      name: r.name,
+      address: r.address || null,
+      phone: r.phone || null,
+      lat: r.lat ? Number(r.lat) : null,
+      lng: r.lng ? Number(r.lng) : null,
+      service_item: r.serviceItem || null,
+      service_time: r.serviceTime || null,
+      extra_json: r.extra || null,
+    }));
+  }
+  if (!Object.prototype.hasOwnProperty.call(STATIC_SEED_FILES, facilityType)) return undefined;
+  const seed = readTransientSeedJson<SeedFacilityItem[]>(STATIC_SEED_FILES[facilityType]);
+  return seed ?? undefined;
+}
 
 function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -76,11 +86,12 @@ function getFacilitySeedFallback(
   },
 ): { facilities: SeedFacilityItem[]; total: number; allTotal: number } | null {
   try {
-    let raw = SEED_FACILITIES[facilityType];
+    let raw = loadBundledSeed(facilityType);
 
     if (options.serviceItem === "避孕諮詢" && (facilityType === "clinic" || facilityType === "pharmacy")) {
       const isClinic = facilityType === "clinic";
-      const beokPoints = ((contraceptionSeed as any).points || []).filter(
+      const contraceptionSeed = readTransientSeedJson<any>(CONTRACEPTION_SEED_FILE);
+      const beokPoints = ((contraceptionSeed as any)?.points || []).filter(
         (p: any) => (isClinic ? p.category === "clinic" : p.category === "pharmacy"),
       );
       raw = beokPoints.map((p: any) => ({

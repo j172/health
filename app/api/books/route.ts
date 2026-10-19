@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLatestBooks } from "@/lib/server/books/service";
-import type { BookPlatform, BookItem } from "@/lib/server/books/types";
-import latestBooksSeed from "@/data/latest-books-seed.json";
+import type { BookPlatform } from "@/lib/server/books/types";
 
 export const runtime = "nodejs";
 
@@ -20,19 +19,17 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "24", 10);
 
-    const fallbackBooks = ((latestBooksSeed as any)?.books || []) as BookItem[];
-
-    const result = await getLatestBooks(
-      {
-        platform,
-        categoryId,
-        search,
-        sortBy,
-        page: isNaN(page) ? 1 : page,
-        limit: isNaN(limit) ? 24 : limit,
-      },
-      fallbackBooks,
-    );
+    // 離線後備種子（latest-books-seed.json，約 0.3 MB）不再於此靜態 import（#709）：
+    // getLatestBooks 只有在資料庫沒資料／查詢失敗時才會呼叫 loadOfflineBooksSeed()，
+    // 由它按需讀檔、短暫停留後釋放。
+    const result = await getLatestBooks({
+      platform,
+      categoryId,
+      search,
+      sortBy,
+      page: isNaN(page) ? 1 : page,
+      limit: isNaN(limit) ? 24 : limit,
+    });
 
     return NextResponse.json(result, {
       headers: {

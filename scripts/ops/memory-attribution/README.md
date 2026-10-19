@@ -20,6 +20,7 @@
 | `partition-known-holders.mjs` | 把一份 snapshot 切成互不重疊的幾塊（JS 原始碼文字、Next 頁面快取 `LRUCache`、辭典解析後物件、藝文解析後資料、其餘），各列相加＝reachable heap；辭典與藝文是用屬性名簽章找的，換資料結構要改簽章 |
 | `compare-reports.mjs` | 兩份 `--json` 報告相減（A−B＝排程依賴圖的常駐成本；30 分鐘−5 分鐘＝成長） |
 | `measure-json-cost.mjs` | 不經 Next，單獨量各大型 JSON 種子「原文字串」與「解析後物件」在堆積裡各占多少 |
+| `seed-route-golden.mjs` | 把靜態 import 的 JSON 種子改成按需讀檔時，證明輸出沒變：在資料庫不可用（`MYSQL_PORT=1`）下對「舊樹」與「新樹」各跑同一組 57 個固定請求（哺乳室、避孕諮詢、遺產地圖、書籍、寵物領養、設施、中油站點、藝文、公共藝術），記下狀態碼／Cache-Control／body SHA-256，`diff` 子指令逐案比對（#709，見 PR 說明）。用法：`run --repo <樹> --out <資料夾>`、`diff <A> <B>` |
 
 ## 在乾淨資料夾重現
 

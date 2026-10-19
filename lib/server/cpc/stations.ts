@@ -1,5 +1,17 @@
 import { withConnection } from "@/lib/server/db/mysql";
-import seedStations from "@/data/facilities-seeds/cpc_gas_station.json";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
+
+/**
+ * 中油站點種子（約 1.1 MB）改成按需讀檔、短暫停留後釋放（#709），不再用
+ * `import ... "@/data/facilities-seeds/cpc_gas_station.json"` 打包進 server chunk
+ * （原本在 /api/facilities 與這個模組各打包一份）。
+ */
+const CPC_SEED_FILE = "facilities-seeds/cpc_gas_station.json";
+
+function loadSeedStations(): CpcStationItem[] {
+  const seed = readTransientSeedJson<CpcStationItem[]>(CPC_SEED_FILE);
+  return Array.isArray(seed) ? seed : [];
+}
 
 export interface CpcFuelTypes {
   unleaded92: boolean;
@@ -163,7 +175,7 @@ export async function searchCpcStations(params: CpcStationSearchParams = {}): Pr
   }
 
   // Seed Fallback
-  let items = (seedStations as unknown as CpcStationItem[]).map((s) => ({ ...s }));
+  let items = loadSeedStations().map((s) => ({ ...s }));
 
   if (keyword && keyword.trim()) {
     const kw = keyword.trim().toLowerCase();
@@ -205,14 +217,26 @@ export async function searchCpcStations(params: CpcStationSearchParams = {}): Pr
   };
 }
 
+/**
+ * 服務項目清單（幾十個字串）只由種子算一次就留著，這樣即使資料庫正常、每次查詢都要
+ * 這份清單，也不必為此一直把 1.1 MB 的種子留在記憶體或反覆解析。種子在一次部署內不會
+ * 變（原本是建置時打包），所以永久記住這份「衍生的小結果」與原行為等價。
+ * 種子讀不到時回傳空陣列且不記住，下一次請求會重試。
+ */
+let cachedAllServices: string[] | null = null;
+
 function getAllServicesFromSeed(): string[] {
+  if (cachedAllServices) return [...cachedAllServices];
+  const stations = loadSeedStations();
   const set = new Set<string>();
-  for (const st of seedStations as unknown as CpcStationItem[]) {
+  for (const st of stations) {
     if (st.extra_json?.services) {
       for (const s of st.extra_json.services) {
         set.add(s);
       }
     }
   }
-  return Array.from(set).sort();
+  const services = Array.from(set).sort();
+  if (stations.length > 0) cachedAllServices = services;
+  return [...services];
 }

@@ -1,6 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import { withConnection, withConnectionFallback, utcNowSql } from "@/lib/server/db/mysql";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 import type { RowDataPacket } from "mysql2/promise";
 import type {
   CulturalActivityItem,
@@ -15,35 +14,30 @@ import { runIngestExternalEvents } from "./ingestExternalEvents";
 let isSeedingShows = false;
 let isSeedingPublicArt = false;
 
-let cachedCulturalSeed: { ok: boolean; total: number; updatedAt: string; events: CulturalActivityItem[] } | null = null;
-function getCulturalSeed() {
-  if (cachedCulturalSeed) return cachedCulturalSeed;
+// 兩份後備種子（cultural-events-seed.json 約 3 MB、public-art.json 約 6.8 MB）過去讀進來後
+// 存在模組層變數、永遠不釋放，解析後的物件合計約 7.3 MB 常駐（#709 量測）。而它們只在資料庫
+// 沒資料／查詢失敗（含關鍵字查無結果）時才用，所以改成按需讀檔、短暫停留後釋放，
+// 見 lib/server/db/transientSeed.ts。
+type CulturalSeed = { ok: boolean; total: number; updatedAt: string; events: CulturalActivityItem[] };
+
+function getCulturalSeed(): CulturalSeed | null {
   try {
-    const p = path.join(process.cwd(), "data", "cultural-events-seed.json");
-    if (fs.existsSync(p)) {
-      cachedCulturalSeed = JSON.parse(fs.readFileSync(p, "utf-8"));
-      return cachedCulturalSeed;
-    }
+    return readTransientSeedJson<CulturalSeed>("cultural-events-seed.json");
   } catch (err) {
     console.warn("[Culture Queries] Failed to read cultural-events-seed.json:", err);
+    return null;
   }
-  return null;
 }
 
-let cachedPublicArtSeed: any[] | null = null;
 function getPublicArtSeed(): any[] | null {
-  if (cachedPublicArtSeed) return cachedPublicArtSeed;
   try {
-    const p = path.join(process.cwd(), "data", "public-art.json");
-    if (fs.existsSync(p)) {
-      const parsed = JSON.parse(fs.readFileSync(p, "utf-8"));
-      cachedPublicArtSeed = Array.isArray(parsed) ? parsed : parsed.artworks || [];
-      return cachedPublicArtSeed;
-    }
+    const parsed = readTransientSeedJson<any>("public-art.json");
+    if (!parsed) return null;
+    return Array.isArray(parsed) ? parsed : parsed.artworks || [];
   } catch (err) {
     console.warn("[Culture Queries] Failed to read public-art.json:", err);
+    return null;
   }
-  return null;
 }
 
 function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
