@@ -1,23 +1,22 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs";
-import path from "node:path";
 import { getHeritageMapData } from "@/lib/server/culture/queries";
-import heritageMapSeed from "@/data/heritage-map-seed.json";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800; // 30 minutes — the source datasets sync infrequently (BOCH open data changes slowly)
 
+/**
+ * 後備種子（約 1.5 MB）改成「資料庫沒資料或查詢失敗時才讀檔」，並在短暫停留後釋放（#709）。
+ * 原本是靜態 `import ... "@/data/heritage-map-seed.json"`（文字永久常駐於 server chunk）
+ * 再加一份同檔的 fs 後備；兩者是同一個檔案，所以合併成一次按需讀取，結果不變。
+ */
+const SEED_FILE = "heritage-map-seed.json";
+
 function getHeritageSeedFallback() {
   try {
-    if (heritageMapSeed && Array.isArray((heritageMapSeed as any).points) && (heritageMapSeed as any).points.length > 0) {
-      return heritageMapSeed;
-    }
-    const seedPath = path.join(process.cwd(), "data", "heritage-map-seed.json");
-    if (fs.existsSync(seedPath)) {
-      const raw = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
-      if (raw.points && raw.points.length > 0) {
-        return raw;
-      }
+    const seed = readTransientSeedJson<any>(SEED_FILE);
+    if (seed && Array.isArray(seed.points) && seed.points.length > 0) {
+      return seed;
     }
     return null;
   } catch (err) {

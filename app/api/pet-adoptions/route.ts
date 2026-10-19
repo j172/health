@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cacheInit } from "@/lib/server/http/cacheControl";
-import fs from "node:fs";
-import path from "node:path";
 import { searchPetAdoptions } from "@/lib/server/petAdoption/queries";
 import type { PetAdoptionItem } from "@/lib/server/petAdoption/types";
-import petAdoptionsSeed from "@/data/pet-adoptions-seed.json";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 
 export const runtime = "nodejs";
+
+/**
+ * 後備種子（約 0.1 MB）改成「資料庫沒資料或查詢失敗時才讀檔」、短暫停留後釋放（#709）。
+ * 原本是靜態 import（文字永久常駐於 server chunk）外加一份同檔的 fs 後備，兩者是同一個檔案。
+ */
+const SEED_FILE = "pet-adoptions-seed.json";
 
 function getSeedFallback(
   kind?: string,
@@ -18,13 +22,8 @@ function getSeedFallback(
   limit = 24,
 ): { items: PetAdoptionItem[]; total: number; totalAll: number } {
   try {
-    let raw = (Array.isArray(petAdoptionsSeed) ? petAdoptionsSeed : null) as PetAdoptionItem[] | null;
-    if (!raw || raw.length === 0) {
-      const seedPath = path.join(process.cwd(), "data", "pet-adoptions-seed.json");
-      if (fs.existsSync(seedPath)) {
-        raw = JSON.parse(fs.readFileSync(seedPath, "utf-8")) as PetAdoptionItem[];
-      }
-    }
+    const seed = readTransientSeedJson<PetAdoptionItem[]>(SEED_FILE);
+    const raw = Array.isArray(seed) ? seed : null;
     if (!raw || raw.length === 0) return { items: [], total: 0, totalAll: 0 };
     const totalAll = raw.length;
 

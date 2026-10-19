@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cacheInit } from "@/lib/server/http/cacheControl";
-import contraceptionSeed from "@/data/contraception-map-seed.json";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 
 export const runtime = "nodejs";
+
+/**
+ * 種子 JSON（約 0.5 MB）改成請求時才讀檔、短暫停留後釋放（#709），不再用
+ * `import ... from "@/data/contraception-map-seed.json"` 打包進 server chunk。
+ */
+const SEED_FILE = "contraception-map-seed.json";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,6 +16,15 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category")?.trim(); // "clinic" | "pharmacy" | "all"
     const city = searchParams.get("city")?.trim();
     const keyword = searchParams.get("keyword")?.trim().toLowerCase();
+
+    const contraceptionSeed = readTransientSeedJson<any>(SEED_FILE);
+    if (!contraceptionSeed) {
+      // 種子檔不在（部署缺檔）：沒有其他資料來源，回 503 並禁止快取（原因見讀取器日誌）。
+      return NextResponse.json(
+        { ok: false, error: "避孕諮詢據點資料暫時無法讀取，請稍後再試" },
+        { status: 503, headers: { "Cache-Control": "no-store" } },
+      );
+    }
 
     let points = (contraceptionSeed as any).points || [];
 

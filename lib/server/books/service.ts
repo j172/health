@@ -3,16 +3,19 @@ import { withConnection, utcNowSql, ensureSchema } from "@/lib/server/db/mysql";
 import type { BookItem, BookListResponse, BookQueryParams } from "./types";
 import { BOOKS_CATEGORIES, getCategoryById } from "./categories";
 import { scrapeCategory } from "./scraper";
-import { readSeedJson } from "@/lib/server/db/seedReader";
+import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
 
 /**
  * Load offline seed books as reliable fallback.
+ *
+ * 種子（latest-books-seed.json）按需讀檔、短暫停留後釋放（#709），不再由
+ * /api/books 靜態 import 後常駐。
  */
 export function loadOfflineBooksSeed(inMemoryFallback?: BookItem[]): BookItem[] {
   if (Array.isArray(inMemoryFallback) && inMemoryFallback.length > 0) {
     return inMemoryFallback;
   }
-  const seed = readSeedJson<{ books?: BookItem[] }>("latest-books-seed.json");
+  const seed = readTransientSeedJson<{ books?: BookItem[] }>("latest-books-seed.json");
   if (Array.isArray(seed?.books)) {
     return seed.books;
   }
