@@ -2343,9 +2343,60 @@ $triggerPm2Watchdog = static function () use ($opsKey, $processGate): void {
     }
 };
 
+// Upstream circuit for the proxy path (#709). lsphp workers are ~85-135 MB each and the account has
+// a 1 GB physical-memory limit; while health-web is down or hung, every visitor request used to sit in
+// a worker for up to 2 x 30 s, so 4-5 workers piled up (350-520 MB) and pushed the account over the
+// limit, which killed health-web again (restart spiral). Now: a refused connection, or two timeouts /
+// empty replies within 15 s, open this gate for 5 s, and while it is open every proxied request answers
+// 503 + Retry-After at once instead of occupying a worker. Long-running admin/internal calls are exempt
+// (they legitimately wait up to 280 s). The state is one tiny JSON file; losing it only closes the gate.
+$upstreamStateFile = '/home/tw123457/health_app/.proxy-upstream-state';
+$upstreamOpenSeconds = 5;
+$upstreamFailWindowSeconds = 15;
+$readUpstreamState = static function () use ($upstreamStateFile): array {
+    $raw = @file_get_contents($upstreamStateFile);
+    $state = is_string($raw) ? json_decode($raw, true) : null;
+    return [
+        'until' => is_array($state) ? (int) ($state['until'] ?? 0) : 0,
+        'fails' => is_array($state) && is_array($state['fails'] ?? null) ? array_map('intval', $state['fails']) : [],
+    ];
+};
+$writeUpstreamState = static function (int $until, array $fails) use ($upstreamStateFile): void {
+    if ($until === 0 && $fails === []) {
+        @unlink($upstreamStateFile);
+        return;
+    }
+    @file_put_contents($upstreamStateFile, json_encode(['until' => $until, 'fails' => array_values($fails)]), LOCK_EX);
+};
+$recordUpstreamFailure = static function (int $curlErrno) use ($readUpstreamState, $writeUpstreamState, $upstreamOpenSeconds, $upstreamFailWindowSeconds): void {
+    // 7 = could not connect: nothing is listening, a definite "down", no second opinion needed.
+    // 28 = timed out, 52 = empty reply, 56 = receive failure: only a pattern (two within the window) counts.
+    if (!in_array($curlErrno, [7, 28, 52, 56], true)) {
+        return;
+    }
+    $now = time();
+    $state = $readUpstreamState();
+    $fails = array_values(array_filter($state['fails'], static fn (int $t): bool => $now - $t <= $upstreamFailWindowSeconds));
+    $fails[] = $now;
+    $open = $curlErrno === 7 || count($fails) >= 2;
+    $writeUpstreamState($open ? $now + $upstreamOpenSeconds : $state['until'], $open ? [] : $fails);
+};
+if (!$isLongRunningApi) {
+    $upstreamState = $readUpstreamState();
+    if ($upstreamState['until'] > time()) {
+        http_response_code(503);
+        header('Retry-After: ' . $upstreamOpenSeconds);
+        header('Cache-Control: no-store');
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Service is restarting, please retry in a few seconds.';
+        exit;
+    }
+}
+
 $maxAttempts = $allowSelfHealRetry ? 2 : 1;
 $response = false;
 $lastCurlError = '';
+$lastCurlErrno = 0;
 $attempt = 0;
 
 while ($attempt < $maxAttempts) {
@@ -2364,8 +2415,10 @@ while ($attempt < $maxAttempts) {
         CURLOPT_HTTPHEADER => $headers,
         CURLOPT_POSTFIELDS => in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE']) ? $body : null,
         CURLOPT_ENCODING => '',
-        CURLOPT_TIMEOUT => $isLongRunningApi ? 280 : 30,
-        CURLOPT_CONNECTTIMEOUT => 5,
+        // 20 s (was 30) for visitor pages: Next answers well under a second when healthy, and a worker
+        // held for 30 s while it is hung is what the upstream circuit above exists to prevent.
+        CURLOPT_TIMEOUT => $isLongRunningApi ? 280 : 20,
+        CURLOPT_CONNECTTIMEOUT => 2,
         CURLOPT_TCP_KEEPALIVE => 1,
         CURLOPT_TCP_KEEPIDLE => 30,
         CURLOPT_TCP_KEEPINTVL => 15,
@@ -2377,11 +2430,27 @@ while ($attempt < $maxAttempts) {
     }
 
     $lastCurlError = curl_error($ch);
+    $lastCurlErrno = curl_errno($ch);
     curl_close($ch);
+    if (!$isLongRunningApi) {
+        $recordUpstreamFailure($lastCurlErrno);
+    }
 
-    if ($attempt < $maxAttempts) {
+    // Retry (after nudging the watchdog) only when nothing was listening. A timeout means Next is
+    // there but hung: a second 20 s wait would just double the time this worker is held.
+    if ($attempt < $maxAttempts && $lastCurlErrno === 7) {
         $triggerPm2Watchdog();
         usleep(700000);
+    } else {
+        break;
+    }
+}
+
+if ($response !== false && !$isLongRunningApi) {
+    // Any HTTP answer proves the upstream is alive: forget earlier failures (one cheap read first).
+    $okState = $readUpstreamState();
+    if ($okState['until'] !== 0 || $okState['fails'] !== []) {
+        $writeUpstreamState(0, []);
     }
 }
 
