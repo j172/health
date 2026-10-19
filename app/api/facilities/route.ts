@@ -6,6 +6,7 @@ import { getFacilitySourceDataStatus } from "@/lib/server/facilities/dataStatus"
 import { parseDataStatusSourceParam } from "@/lib/format/facilityDataStatus";
 
 import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
+import { isSafeSeedFileStem } from "@/lib/server/facilities/seedFileName";
 
 export const runtime = "nodejs";
 
@@ -124,7 +125,8 @@ function getFacilitySeedFallback(
       }
     }
 
-    if (!raw) {
+    if (!raw && isSafeSeedFileStem(facilityType)) {
+      // facilityType 來自網址參數：只接受單純的檔名，避免 `../` 讀到種子資料夾以外的 .json。
       const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
       if (fs.existsSync(seedPath)) {
         const parsed = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
