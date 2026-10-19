@@ -3,6 +3,14 @@
 const nextConfig = {
   reactStrictMode: true,
   distDir: ".next3",
+  // Next 記憶體內頁面快取（ISR／SSG 的 HTML＋RSC）上限，單位 bytes，預設 50 MB。
+  // 它用字串「長度」計算（next/dist/server/lib/incremental-cache/memory-cache.external.js），
+  // 中文頁面是雙位元組字串，實際堆積可達 2 倍；本機實測 30 分鐘、爬完 266 條路由後
+  // 這塊就占 ≈ 64 MB（堆積 46＋Buffer 18），是 5→30 分鐘成長的最大來源（#709、
+  // docs/specs/memory-attribution-709.md §3.4）。未留在記憶體的頁面，下一次請求改從
+  // .next3/server/app 的磁碟檔讀回（FileSystemCache.get 的磁碟後備），不影響快取語意。
+  // 0 = 完全關閉記憶體快取；要放寬或關閉，改這一行即可。
+  cacheMaxMemorySize: 10 * 1024 * 1024,
   images: {
     unoptimized: true,
     formats: ["image/avif", "image/webp"],
