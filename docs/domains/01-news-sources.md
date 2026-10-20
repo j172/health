@@ -13,7 +13,7 @@
 | `RSS_FEEDS` 設定筆數 | 53（`lib/server/config/rss-feeds.ts`；2026-10-16 起含 `tfc_news`） |
 | 其中 Google News `site:` 搜尋代理 | 11 筆（2026-08-31 時為 18 筆，已依新鮮度閘門陸續淘汰） |
 | 來源分類（`sourceCategories.ts`） | `gov` 官方 26、`media` 媒體 49、`npo` 公益社福 26、`factcheck` 事實查核／謠言 2（`tfc`、`mygopen`），共 103 個 `sourceName`（2026-10-16 實數） |
-| 擷取路徑 | **A. 標準 RSS**（`runIngestion.ts` → `enrichItem()`）＋ **B. 特殊來源爬蟲**（`processSpecialSource()`，約 50 個 feed code） |
+| 擷取路徑 | **A. 標準 RSS**（`runIngestion.ts` → `enrichItem()`）＋ **B. 特殊來源爬蟲**（`processSpecialSource()`，約 48 個 feed code；2026-10-20 退役 `tase_news`、`commonhealth_club_new` 後） |
 | 寫入者 | 只剩 `persistItems.ts` 一個寫入 `news_items`（WRA 與 gov-opendata 第二寫入者皆已移除） |
 | 新鮮度閘門 | `FRESHNESS_WINDOW_DAYS = 90`，超過 90 天的項目不入庫 |
 | 排程 | in-app node-cron `5,35 * * * *`（每 30 分鐘），`withAdvisoryLock("rss_ingestion_lock")` 互斥 |
@@ -49,6 +49,7 @@
 | N-1 | Google News `site:` 代理仍有 11 筆 | news-freshness-gate | 依新鮮度閘門持續觀察，不合格者逐一淘汰 |
 | N-2 | 運動部新聞來源 | add-6-gov-news-sources | 需客製爬蟲做日期截斷，使用者決定之後再處理 |
 | N-3 | `nhi.gov.tw` 新聞 | remove-9-never-succeeded | 健保署封鎖資料中心 IP（主機與 GitHub runner 皆 403），程式無解 |
+| N-4 | `top1health`、`moe_news` 逾時 | #705 | 本機（住宅 IP）抓取兩者皆正常且內容新鮮，但正式站匯入出現 `Request timed out`；需 `ingest_errors` 歷史判斷是持續（機房 IP 被限流／封鎖，比照 N-3、hpa 與 `sfaa_news`）或間歇（主機資源緊繃）。**待資料，未改程式** |
 
 ---
 
@@ -203,6 +204,13 @@
 - 原檔：[remove-9-never-succeeded-news-sources.md](../archive/specs/remove-9-never-succeeded-news-sources.md)（#386）
 - `nhi_web`（IP 封鎖）、`uniqman_blog`（403）、`sfaa_news`（逾時）、`unitedway_news`（對方 TLS 憑證鏈缺中繼憑證，以 openssl 確認）、`moe_familyedu`、`moc_news`（403）、PChome×3（共用解析器、對方 502）。
 - 不為小型 NPO 降低 TLS 驗證基準。
+
+#### 退役 2 個特殊來源爬蟲：`tase_news`、`commonhealth_club_new` ✅
+- Issue #705（2026-10-17 匯入 run 4748 有 4 個來源失敗，逐一檢視）；兩者皆為 `processSpecialSource()` 的爬蟲，不在 `RSS_FEEDS`，理由記在 `rss-feeds.ts` 頂端註解。
+- `tase_news`（台灣性教育學會）：站方改版為 WordPress，舊的 `news.php`／`content.php?pid=` 全數 404；新站雖有 `/feed/`，但最新一篇是 2026-04-30、前後相隔數月，會被 90 天新鮮度閘門擋掉，不補替代來源。
+- `commonhealth_club_new`（康健大人社團）：站方在 Cloudflare 後面，對機房 IP 回 403（`Cf-Mitigated: challenge`），住宅 IP 同一個瀏覽器 UA 則 200——IP 信譽封鎖，程式無解。
+- 已刪除 `fetchTaseNews.ts`、`fetchCommonHealthClub`／`parseCommonHealthClubHtml` 與 `runIngestion.ts` 兩個呼叫點；`news_items` 既有列、`sourceLabels`／`sourceCategories` 標籤與 `FeedCode` 字面量保留。
+- 同一張票的 `top1health`、`moe_news`（逾時）**未動**，見第 3 節 N-4。
 
 #### 移除 5 個永久逾時的國健署 RSS ✅
 - 原檔：[remove-hpa-timeout-sources.md](../archive/specs/remove-hpa-timeout-sources.md)

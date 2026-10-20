@@ -3,7 +3,8 @@
  * fetched — `healthforall`, `twhealth`, `worldpeace`, `greenpeace`,
  * `love_newlife`, `durex_article`, `commonhealth_club` — retired from
  * RSS_FEEDS in issue #92. Their rows stay in the table, so their codes stay in
- * the union; see the comment above RSS_FEEDS.
+ * the union; see the comment above RSS_FEEDS. Two special-source scrapers
+ * (`tase_news`, `commonhealth_club_new`) were retired the same way in #705.
  */
 export type FeedCode =
   | "16"
