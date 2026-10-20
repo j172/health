@@ -5,6 +5,35 @@ $uri = $_SERVER['REQUEST_URI'] ?? '/';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
+// #709: which requests inflate an lsphp worker? Workers were seen at 85-141 MB RSS (baseline 36-48)
+// while the whole account has a 1 GB physical-memory limit, and 3-4 of them sit in every memory
+// spike. This samples every request whose PHP peak allocation exceeds 16 MB into a small append-only
+// log so the heavy paths can be found: UTC time, method, peak MB, seconds, HTTP status, path.
+// Path only, never the query string (/__ops/* carries the ops key). Capped at 20 MB, then it stops.
+//   sort -k3 -rn /home/tw123457/health_app/logs/php-peak.log | head -20
+$phpPeakStartedAt = microtime(true);
+register_shutdown_function(static function () use ($path, $method, $phpPeakStartedAt): void {
+    $peak = memory_get_peak_usage(true);
+    if ($peak < 16 * 1048576) {
+        return;
+    }
+    $log = '/home/tw123457/health_app/logs/php-peak.log';
+    if (is_file($log) && filesize($log) > 20 * 1048576) {
+        return;
+    }
+    $line = sprintf(
+        "%s	%s	%d	%.2f	%d	%s
+",
+        gmdate('Y-m-dTH:i:sZ'),
+        $method,
+        (int) round($peak / 1048576),
+        microtime(true) - $phpPeakStartedAt,
+        (int) (http_response_code() ?: 0),
+        substr($path, 0, 200)
+    );
+    @file_put_contents($log, $line, FILE_APPEND | LOCK_EX);
+});
+
 if (str_starts_with($path, '/api/admin/')) {
     @set_time_limit(290);
 }
