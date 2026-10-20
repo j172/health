@@ -7,14 +7,19 @@ $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
 // #709: which requests inflate an lsphp worker? Workers were seen at 85-141 MB RSS (baseline 36-48)
 // while the whole account has a 1 GB physical-memory limit, and 3-4 of them sit in every memory
-// spike. This samples every request whose PHP peak allocation exceeds 16 MB into a small append-only
-// log so the heavy paths can be found: UTC time, method, peak MB, seconds, HTTP status, path.
+// spike. PHP 8.1 has no memory_reset_peak_usage(), and under LSAPI the worker is persistent, so
+// memory_get_peak_usage() carries over from earlier requests: the first version of this hook logged
+// 68 MB for a readfile() of a static image. What identifies the culprit is a request that RAISES the
+// worker's peak: compare the peak at request start with the peak at shutdown and log only those,
+// with both values, so the log reads "this request took the worker from X MB to Y MB".
+// Columns: UTC time, method, peak before MB, peak after MB, real (chunk) peak MB, seconds, status, path.
 // Path only, never the query string (/__ops/* carries the ops key). Capped at 20 MB, then it stops.
-//   sort -k3 -rn /home/tw123457/health_app/logs/php-peak.log | head -20
+//   sort -k4 -rn /home/tw123457/health_app/logs/php-peak.log | head -20
 $phpPeakStartedAt = microtime(true);
-register_shutdown_function(static function () use ($path, $method, $phpPeakStartedAt): void {
-    $peak = memory_get_peak_usage(true);
-    if ($peak < 16 * 1048576) {
+$phpPeakBefore = memory_get_peak_usage(false);
+register_shutdown_function(static function () use ($path, $method, $phpPeakStartedAt, $phpPeakBefore): void {
+    $peakAfter = memory_get_peak_usage(false);
+    if ($peakAfter <= $phpPeakBefore || $peakAfter < 16 * 1048576) {
         return;
     }
     $log = '/home/tw123457/health_app/logs/php-peak.log';
@@ -22,11 +27,13 @@ register_shutdown_function(static function () use ($path, $method, $phpPeakStart
         return;
     }
     $line = sprintf(
-        "%s	%s	%d	%.2f	%d	%s
+        "%s	%s	%d	%d	%d	%.2f	%d	%s
 ",
         gmdate('c'),
         $method,
-        (int) round($peak / 1048576),
+        (int) round($phpPeakBefore / 1048576),
+        (int) round($peakAfter / 1048576),
+        (int) round(memory_get_peak_usage(true) / 1048576),
         microtime(true) - $phpPeakStartedAt,
         (int) (http_response_code() ?: 0),
         substr($path, 0, 200)
