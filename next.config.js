@@ -11,6 +11,15 @@ const nextConfig = {
   // .next3/server/app 的磁碟檔讀回（FileSystemCache.get 的磁碟後備），不影響快取語意。
   // 0 = 完全關閉記憶體快取；要放寬或關閉，改這一行即可。
   cacheMaxMemorySize: 10 * 1024 * 1024,
+  experimental: {
+    // Next 預設（true）在 `next start` 開機當下就把全部 286 個頁面／路由模組載入記憶體
+    // （next/dist/server/next-server.js 的 unstable_preloadEntries），所以每次重啟後
+    // 前 10 分鐘就多 ≈ 50～75 MB 堆積／≈ 40～80 MB RSS，與有沒有請求無關（#709、
+    // docs/specs/memory-attribution-709.md §3.4）。關閉後各路由改成第一次被請求時才載入，
+    // 穩態記憶體不變（爬完全站後兩者收斂），代價是每次重啟後各路由「第一次」回應較慢。
+    // health-web 目前被外部每 15～35 分鐘砍一次，這個窗口正是它大部分的生命。
+    preloadEntriesOnStart: false,
+  },
   images: {
     unoptimized: true,
     formats: ["image/avif", "image/webp"],
