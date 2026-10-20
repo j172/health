@@ -19,6 +19,27 @@ import type { FeedConfig } from "@/types/rss";
  * as well. `types/rss.ts` keeps the FeedCode literals for the same reason: the
  * codes persist in news_items.feed_code.
  *
+ * Retired 2026-10-20 (issue #705): `tase_news` and `commonhealth_club_new`.
+ * Both were special-source scrapers (fetchTaseNews / fetchCommonHealthClub
+ * called from runIngestion), not RSS_FEEDS entries; they are listed here so
+ * every retirement lives in one place. Their `news_items` rows, labels
+ * (sourceLabels.ts / sourceCategories.ts) and FeedCode literals stay, same as
+ * above.
+ *   - `tase_news` (台灣性教育學會, `tase.tw/news.php`): the site was rebuilt on
+ *     WordPress, so the old PHP list page and every `content.php?pid=` article
+ *     URL the scraper parsed now answer HTTP 404 — a permanent change, not a
+ *     blip. The new site does publish a standard `/feed/`, but its newest item
+ *     was 2026-04-30 and the ones before it are months apart, so the 90-day
+ *     freshness gate would reject nearly everything; not worth a replacement
+ *     entry (same reasoning as factchecklab.org in the #701 block below).
+ *   - `commonhealth_club_new` (康健大人社團, `club.commonhealth.com.tw/new`):
+ *     the site sits behind a Cloudflare managed challenge that answers
+ *     datacentre addresses with HTTP 403 (`Cf-Mitigated: challenge`), while a
+ *     residential address with the same browser User-Agent gets 200 and fresh
+ *     articles. That is an IP-reputation block no code change can fix. It is
+ *     the same publisher as `commonhealth_club`, the Google `site:` feed
+ *     retired above.
+ *
  * Candidate verification 2026-09-14 (issue #258): 11 user-supplied URLs were
  * checked for a real subscribable RSS/Atom/JSON feed before considering
  * addition here. None qualified — no entries were added:

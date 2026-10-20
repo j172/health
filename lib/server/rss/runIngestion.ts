@@ -31,7 +31,6 @@ import {
   fetchChildrenEvents,
   fetchChildrenResearch,
   fetchHelloYishiHealth,
-  fetchCommonHealthClub,
   fetchTheNewsLensHealth,
   fetchTheNewsLensLifestyle,
   fetchTheNewsLensElderly,
@@ -49,7 +48,6 @@ import { fetchModaNews } from "@/lib/server/rss/fetchModaNews";
 import { fetchSungfulKnowledge } from "@/lib/server/rss/fetchSungfulKnowledge";
 import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
 import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
-import { fetchTaseNews } from "@/lib/server/rss/fetchTaseNews";
 import { fetchAntidrugNews } from "@/lib/server/rss/fetchAntidrugNews";
 import { fetchPolice7505News } from "@/lib/server/rss/fetchPolice7505News";
 import {
@@ -901,19 +899,6 @@ export const runRssIngestion = async (
       skippedUnchanged += tascResult.skippedUnchanged;
       staleRejected += tascResult.staleRejected;
 
-      const taseResult = await processSpecialSource(
-        {
-          code: "tase_news",
-          name: "台灣性教育學會",
-          url: "https://tase.tw/news.php",
-          sourceName: "tase",
-        },
-        fetchTaseNews,
-        specialSourceCtx,
-      );
-      skippedUnchanged += taseResult.skippedUnchanged;
-      staleRejected += taseResult.staleRejected;
-
       // -----------------------------------------------------------------------
       // Phase 16: 反毒大本營「毒家新聞」(antidrug) / 警政署「各警察機關新聞
       // 發布」data.gov.tw 7505 (police_7505) — issue #568 / spec #562.
@@ -1184,15 +1169,6 @@ export const runRssIngestion = async (
             sourceName: "helloyishi",
           },
           fetchFn: fetchHelloYishiHealth,
-        },
-        {
-          meta: {
-            code: "commonhealth_club_new" as FeedCode,
-            name: "康健大人社團",
-            url: "https://club.commonhealth.com.tw/new",
-            sourceName: "commonhealth_club",
-          },
-          fetchFn: fetchCommonHealthClub,
         },
         {
           meta: {
