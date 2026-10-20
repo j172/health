@@ -24,7 +24,7 @@ register_shutdown_function(static function () use ($path, $method, $phpPeakStart
     $line = sprintf(
         "%s	%s	%d	%.2f	%d	%s
 ",
-        gmdate('Y-m-dTH:i:sZ'),
+        gmdate('c'),
         $method,
         (int) round($peak / 1048576),
         microtime(true) - $phpPeakStartedAt,
