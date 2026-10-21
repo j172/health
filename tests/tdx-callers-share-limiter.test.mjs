@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 // (see lib/server/tdx/rateLimiter.ts). The facility sources (tdx_parking /
 // tdx_aps) and — via PR #659 — the Senior/Rail sync queue through the shared
 // process-wide limiter in tdxGetJsonWithRetry(). The other TDX callers
-// (YouBike, rail/metro alerts, bus low-floor, Senior tourism + card) used raw
+// (rail/metro alerts, bus low-floor, Senior tourism + card) used raw
 // httpGetJson(), so their bursts competed for the same quota and triggered
 // HTTP 429s for every other job (all of them run in the same Node process via
 // lib/server/cron/registerJobs.ts, so one shared limiter covers them all).
@@ -23,7 +23,6 @@ const stripComments = (src) =>
 
 // file -> number of TDX GET call sites it must route through tdxGetJsonWithRetry.
 const CONVERTED = {
-  "lib/server/youbike/tdxClient.ts": 2, // Bike/Station + Bike/Availability
   "lib/server/metroAlerts/tdxClient.ts": 1, // one helper shared by 6 metro + TRA + THSR
   "lib/server/transit/tdxBusClient.ts": 2, // Bus/Vehicle + Bus/Schedule
   "lib/server/seniorTourism/tdxClient.ts": 2, // fetchSeniorTourism helper + fetchSeniorCard

@@ -63,6 +63,9 @@ export const getMysqlPool = (): Pool => {
 
 export const getPool = getMysqlPool;
 
+/** issue #727：已移除功能留下的資料表，runSchemaMigrations 會冪等地 DROP 它們（不可再被任何 CREATE 建回）。 */
+const RETIRED_YOUBIKE_TABLES = ["youbike_stations", "youbike_sync_state"] as const;
+
 const runSchemaMigrations = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
@@ -119,9 +122,17 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.petAdoptions);
   await p.query(TABLE_DDL.latestBooks);
   await p.query(TABLE_DDL.metroAlerts);
-  await p.query(TABLE_DDL.youbikeStations);
-  // YouBike TDX sync: per-city "static data last loaded" time (a new table, no ALTER needed).
-  await p.query(TABLE_DDL.youbikeSyncState);
+  // issue #727：YouBike 整個移除。這兩張表已沒有任何建表敘述、種子或讀寫程式，
+  // 這裡以冪等的 DROP TABLE IF EXISTS 清掉已部署環境裡殘留的表（不備份，使用者已決定）。
+  // 全新資料庫沒有這兩張表、已經刪過的環境重跑，都是 no-op。
+  // 失敗（例如帳號沒有 DROP 權限）只記警告：不能讓整個 ensureSchema 失敗而拖垮其他路由。
+  for (const legacyTable of RETIRED_YOUBIKE_TABLES) {
+    try {
+      await p.query(`DROP TABLE IF EXISTS \`${legacyTable}\``);
+    } catch (err) {
+      console.warn(`[ensureSchema] DROP TABLE IF EXISTS ${legacyTable} warning:`, err);
+    }
+  }
   await p.query(TABLE_DDL.pestAlerts);
   await p.query(TABLE_DDL.powerGenerationUnits);
   await p.query(TABLE_DDL.powerGenerationMix);
@@ -636,49 +647,6 @@ const runSchemaMigrations = async (): Promise<void> => {
     }
   } catch (err) {
     console.warn("[ensureSchema] metro_alerts seed warning:", err);
-  }
-
-  // Auto-seed youbike_stations from bundled data/youbike-stations-seed.json if empty
-  try {
-    const [youbikeCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM youbike_stations");
-    if ((youbikeCount[0]?.cnt ?? 0) === 0) {
-      const stations = readSeedJson<any[]>("youbike-stations-seed.json");
-      if (Array.isArray(stations) && stations.length > 0) {
-        const now = toSqlDateTime(new Date());
-        const BATCH_SIZE = 250;
-        for (let i = 0; i < stations.length; i += BATCH_SIZE) {
-          const chunk = stations.slice(i, i + BATCH_SIZE);
-          const values = chunk.map((s: any) => [
-            s.cityCode,
-            s.stationNo,
-            s.nameTw,
-            s.districtTw,
-            s.addressTw,
-            s.lat,
-            s.lng,
-            s.totalSpaces,
-            s.availableBikes,
-            s.availableEbikes || 0,
-            s.emptySpaces,
-            s.isActive,
-            s.updatedAtSource,
-            now,
-            now,
-          ]);
-          await p.query(
-            `INSERT IGNORE INTO youbike_stations (
-              city_code, station_no, name_tw, district_tw, address_tw,
-              lat, lng, total_spaces, available_bikes, available_ebikes,
-              empty_spaces, is_active, updated_at_source, created_at, updated_at
-            ) VALUES ?`,
-            [values]
-          );
-        }
-        console.log(`[ensureSchema] Successfully seeded ${stations.length} youbike stations into MySQL`);
-      }
-    }
-  } catch (err) {
-    console.warn("[ensureSchema] youbike_stations seed warning:", err);
   }
 
   // Auto-seed pest_alerts from bundled data/pest-alerts-seed.json if empty

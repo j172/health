@@ -424,63 +424,6 @@ const TOOL_I18N_CONTENT: Record<TranslatedToolSlug, Record<PathLocale, Localized
       ],
     },
   },
-  youbike: {
-    en: {
-      title: "Public Bike-Share (YouBike 2.0) Real-Time Status",
-      description:
-        "Real-time lookup of YouBike 2.0 and 2.0E rental stations nationwide across 15 counties/cities, with available bikes and open docks.",
-      directAnswer:
-        "Real-time bike-share status integrates YouBike 2.0 stations across 15 counties/cities nationwide, showing available bikes, open return docks, e-bike counts, and navigation to nearby stations.",
-      faqs: [
-        {
-          question: "Which counties/cities does this cover for YouBike lookup?",
-          answer:
-            "Currently integrates YouBike 2.0 rental stations with real-time available-bike and open-dock counts across 15 counties/cities: Taipei City, New Taipei City, Taoyuan City, Hsinchu City, Hsinchu County, Miaoli County, Taichung City, Changhua County, Yunlin County, Chiayi City, Chiayi County, Tainan City, Kaohsiung City, Pingtung County, and Taitung County.",
-        },
-        {
-          question: "How do I find the nearest rental station?",
-          answer:
-            "Once location access is granted, stations are sorted nearest-first by straight-line distance, with available bike counts highlighted in green when supply is good.",
-        },
-      ],
-    },
-    ja: {
-      title: "公共自転車（YouBike 2.0）リアルタイム状況",
-      description:
-        "全国15県市のYouBike 2.0・2.0Eレンタルステーションの貸出可能台数と空きドック数をリアルタイムで検索。",
-      directAnswer:
-        "公共自転車リアルタイム状況は全国15県市のYouBike 2.0ステーションを統合し、貸出可能台数、返却可能な空きドック数、電動アシスト車台数、最寄りステーションへのナビを提供します。",
-      faqs: [
-        {
-          question: "YouBikeの検索対応エリアはどこですか？",
-          answer:
-            "現在、台北市、新北市、桃園市、新竹市、新竹県、苗栗県、台中市、彰化県、雲林県、嘉義市、嘉義県、台南市、高雄市、屏東県、台東県の15県市のYouBike 2.0ステーションの貸出可能台数・空きドック数をリアルタイムで統合しています。",
-        },
-        {
-          question: "最寄りのレンタルステーションはどうやって探せますか？",
-          answer:
-            "位置情報の利用を許可すると、直線距離が近い順にステーションが並び替わり、貸出可能台数が十分な場合は緑色で表示されます。",
-        },
-      ],
-    },
-    ko: {
-      title: "공공자전거(YouBike 2.0) 실시간 현황",
-      description: "전국 15개 현·시의 YouBike 2.0 및 2.0E 대여소 대여 가능 자전거 수와 반납 가능 거치대 수를 실시간으로 조회합니다.",
-      directAnswer:
-        "공공자전거 실시간 현황은 전국 15개 현·시의 YouBike 2.0 대여소를 통합하여 실시간 대여 가능 자전거 수, 반납 가능 거치대 수, 전기자전거 수량, 인근 대여소 길찾기를 제공합니다.",
-      faqs: [
-        {
-          question: "YouBike 조회는 어느 현·시를 지원하나요?",
-          answer:
-            "현재 타이베이시, 신베이시, 타오위안시, 신주시, 신주현, 먀오리현, 타이중시, 창화현, 윈린현, 자이시, 자이현, 타이난시, 가오슝시, 핑둥현, 타이둥현 등 15개 현·시의 YouBike 2.0 대여소 실시간 대여 가능 수량 및 거치대 공석 수를 통합 제공합니다.",
-        },
-        {
-          question: "가장 가까운 대여소는 어떻게 찾나요?",
-          answer: "위치 정보 사용을 허용하면 직선거리가 가까운 순으로 대여소가 정렬되며, 대여 가능 자전거 수가 충분하면 초록색으로 표시됩니다.",
-        },
-      ],
-    },
-  },
   "metro-alerts": {
     en: {
       title: "Nationwide Rail Service Disruption Board",

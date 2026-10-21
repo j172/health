@@ -30,14 +30,14 @@ test("tdxBusClient.ts: covers all 22 counties and hits the v3 Bus Vehicle+Schedu
   );
   assert.ok(content.includes("IsLowFloor"), "should read IsLowFloor off the TDX response shapes");
 
-  // Count TDX_BUS_CITIES entries the same way ncdr-and-tdx.test.mjs counts
-  // youbike's TDX_CITIES, to pin the total at exactly 22 counties.
+  // Count TDX_BUS_CITIES entries the same way the Bus TDX client's county map is counted;
+  // pin the total at exactly 22 counties.
   const entryMatches = content.match(/^\s*[A-Z]{2,5}:\s*{\s*tdxName:/gm) || [];
   assert.strictEqual(entryMatches.length, 22, `Expected TDX_BUS_CITIES to have exactly 22 entries, found ${entryMatches.length}`);
 
   assert.ok(
     content.includes("Promise.allSettled"),
-    "per-county TDX failures must be isolated (mirrors youbike/tdxClient.ts), not Promise.all",
+    "per-county TDX failures must be isolated (mirrors the other TDX clients), not Promise.all",
   );
 });
 

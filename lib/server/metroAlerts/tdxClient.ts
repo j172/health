@@ -216,7 +216,6 @@ export interface RailAlertsFanOutResult {
  * Fans out across all 8 RAIL_ALERT_SOURCES (6 metro/light-rail systems + TRA
  * + THSR) via Promise.allSettled, in batches of 4 to stay within TDX's
  * per-second rate limit (same convention as
- * lib/server/youbike/tdxClient.ts's fetchAllTdxStations() and
  * lib/server/transit/tdxBusClient.ts's fetchAllTdxBusRoutes()). One source's
  * failure (timeout, non-200, a schema TDX didn't document the way we
  * guessed) is recorded into `errors[code]` and that source simply

@@ -117,10 +117,33 @@ test("every locale's earthquakes redirect is carried over", () => {
   }
 });
 
+test("issue #727: /tools/youbike and its en/ja/ko siblings all redirect to the tools home /tools", () => {
+  for (const source of ["/tools/youbike", ...REDIRECT_LOCALES.map((locale) => `/${locale}/tools/youbike`)]) {
+    const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === source && !r.has);
+    assert.ok(rule, `missing youbike redirect for ${source}`);
+    assert.equal(rule.destination, "/tools");
+    assert.equal(rule.permanent, true);
+  }
+});
+
+test("issue #727: the retired /tools/youbike?lang=<locale> rules are gone, so the legacy URL redirects once, straight to /tools", () => {
+  // Same first-match loop as middleware.ts.
+  const firstMatch = (pathname, lang) =>
+    PERMANENT_REDIRECT_RULES.find((r) => r.source === pathname && (!r.has || lang === r.has.value));
+  for (const locale of REDIRECT_LOCALES) {
+    assert.equal(firstMatch("/tools/youbike", locale)?.destination, "/tools");
+  }
+  assert.equal(
+    PERMANENT_REDIRECT_RULES.filter((r) => r.source === "/tools/youbike" && r.has).length,
+    0,
+    "a leftover ?lang= rule would send the old URL to /en/tools/youbike first and chain a second redirect",
+  );
+});
+
 test("every ?lang= tool-slug redirect is carried over, scoped by locale via `has`", () => {
   const slugs = [
     "aed", "er-status", "emergency-hotlines", "clinics", "pharmacies", "public-toilets",
-    "youbike", "metro-alerts", "accessible-transit", "weather-alerts", "aqi", "uv",
+    "metro-alerts", "accessible-transit", "weather-alerts", "aqi", "uv",
     "disaster-map", "cool-spots", "cultural-events", "heritage-map", "tourism-factories",
   ];
   for (const locale of REDIRECT_LOCALES) {

@@ -31,7 +31,6 @@ import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGarbageRoutesSync } from "@/lib/server/garbageRoutes/runSync";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
-import { runYouBikeDirectSync, runYouBikeTdxSync } from "@/lib/server/youbike/runSync";
 import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runForestFireSync } from "@/lib/server/forestFire/runSync";
@@ -230,7 +229,7 @@ export const registerCronJobs = (): void => {
   // 20/50, cwa 15/45, earthquakes-sync 3/13/23/33/43/53,
   // news-card-images+power-sync 0/10/20/30/40/50, water-outages 25,
   // wra-water-outages 18/48, aqx-sync 10/40, wra-sync 8/38, wra-iot
-  // 12/27/42/57, youbike every-5, metro-alerts 0/30, emergency-rooms
+  // 12/27/42/57, metro-alerts 0/30, emergency-rooms
   // 7/22/37/52, transit-accessibility-alerts 16, senior-tourism-alerts
   // 17.
   cron.schedule(
@@ -305,8 +304,7 @@ export const registerCronJobs = (): void => {
   // minute in this file (rss 5/35, aqi 20/50, cwa 15/45, earthquakes
   // 3/13/23/33/43/53, news-card-images+power-realtime
   // 0/10/20/30/40/50, aqx 10/40, wra-sync 8/38, wra-iot 12/27/42/57, metro
-  // 0/30, emergency-rooms 7/22/37/52) other than youbike's unavoidable
-  // every-5-minute grid. Coordinate further with the
+  // 0/30, emergency-rooms 7/22/37/52). Coordinate further with the
   // github-actions-cron-decollision ticket if that lands first.
   cron.schedule(
     "18,48 * * * *",
@@ -315,7 +313,7 @@ export const registerCronJobs = (): void => {
   // 水質分頁 (issue #673 / Track B B-13) — 台水 36605 鄉鎮總硬度，目錄標示每 3
   // 個月更新，所以每月 2 日 05:29 跑一次即可（日後 B-14 的淨水場檢驗結果也掛
   // 在同一個 job 裡，見 lib/server/waterQuality/runSync.ts）。29 分不在任何
-  // 其他 job 的分鐘格線上，也不是 youbike 每 5 分鐘格線的倍數；5 點區段已用的
+  // 其他 job 的分鐘格線上；5 點區段已用的
   // 分鐘是 5、12(僅每月 1 日)、15(僅週六)、18(僅每月 1 日)、22、30，加上每小時
   // job 的分鐘——29 與它們都不會在同一個 tick 碰撞（由 waterQuality 的
   // dbConventions.test.mjs 逐一解析所有 cron 運算式驗證）。這個 job 自己再用
@@ -328,7 +326,7 @@ export const registerCronJobs = (): void => {
   // (data.gov.tw 14718)。一年才公布一次，但人事行政總處會中途修正（114 年就在
   // 2025-10-20 改了三天），所以不是每年一次而是每週三 06:34 抓一次：成本是兩個
   // 7 KB 的檔案，修正最慢一週內就會反映。34 分不在任何 job 使用的分鐘裡（見
-  // cronCollisions.mjs 的 unusedMinutes），也不是 youbike 每 5 分鐘格線的倍數，
+  // cronCollisions.mjs 的 unusedMinutes），
   // 所以與所有既有 job 都不會同 tick（由 officeCalendar 的 dbConventions.test.mjs
   // 逐一解析所有 cron 運算式驗證）。這個 job 自己再用 withAdvisoryLock 防重疊。
   cron.schedule(
@@ -374,8 +372,7 @@ export const registerCronJobs = (): void => {
   // every 15 minutes. Minutes 12/27/42/57 are picked to sit clear of every
   // other job's grid in this file — not on :00/:15/:30/:45, not on
   // wra-sync's 8/38, not on aqx-sync's 10/40 or earthquake-sync's
-  // 3/13/23/33/43/53, and not a multiple of 5 (youbike-sync's every-5-minute
-  // grid) — so this doesn't stack onto an already-busy tick.
+  // 3/13/23/33/43/53 — so this doesn't stack onto an already-busy tick.
   cron.schedule(
     "12,27,42,57 * * * *",
     runGuarded("wra-iot-sync-cron.log", () => runWraIotSync()),
@@ -426,26 +423,6 @@ export const registerCronJobs = (): void => {
     "58 4 * * *",
     runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
   );
-  // YouBike 2.0 Taipei + New Taipei every 5 minutes — straight from each city's free open-data feed,
-  // never through TDX (no quota, no wait in the shared 5 req/min limiter). This is the only job that
-  // keeps the original every-5-minute grid; summary.source is "direct" in logs/youbike-sync-cron.log.
-  cron.schedule(
-    "*/5 * * * *",
-    runGuarded("youbike-sync-cron.log", () => runYouBikeDirectSync()),
-  );
-  // YouBike 2.0 for the other 13 cities, from TDX, about every 15 minutes (logs/youbike-tdx-sync-cron.log).
-  // A round is one Bike/Availability request per city (13) — the static half comes from youbike_stations
-  // and Bike/Station is only re-fetched about once a day per city, see lib/server/youbike/tdxSyncCore.ts.
-  // That is ~1,250 TDX requests a day against the ~4,300 the old every-5-minute, 15-city, two-endpoint
-  // round cost. A round takes ~3 minutes in the shared limiter (13 x 13 s).
-  // 11/26/39/54: every minute of a clean quarter-hour grid (m, m+15, m+30, m+45) is already taken by
-  // some other job, so these four unused minutes (gaps of 13-17 minutes) are the closest fit. None is a
-  // multiple of 5 (the youbike-sync grid above), none is used by any other job at any hour, and the
-  // round (~3 min) ends before the next TDX-heavy job: metro-alerts :00/:30, transit-accessibility-alerts :16.
-  cron.schedule(
-    "11,26,39,54 * * * *",
-    runGuarded("youbike-tdx-sync-cron.log", () => runYouBikeTdxSync()),
-  );
   // Rail alerts every 30 minutes (issue #470) — fans out across all 6 TDX metro/light-rail
   // systems + TRA + THSR (Promise.allSettled-isolated per system), falling back to Taipei
   // Metro's own Big5 CSV for TRTC only when TDX's TRTC call itself fails
@@ -455,8 +432,7 @@ export const registerCronJobs = (): void => {
   );
   // 林火風險 (農業部 ForestFireAlertWCF, B-12 / issue #672) — 來源每日一批（每個
   // 測站/森林遊樂區一列、帶 CreateDate），一天兩次（06:09、12:09）足以在早上與中午
-  // 各補一次當日資料。分鐘 9 不在任何既有 job 的格線上：不是 youbike 每 5 分鐘格線
-  // (0/5/10/.../55)，也不是 rss 5/35、aqi 20/50、cwa 15/45、earthquakes
+  // 各補一次當日資料。分鐘 9 不在任何既有 job 的格線上：不是 rss 5/35、aqi 20/50、cwa 15/45、earthquakes
   // 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、wra-iot 12/27/42/57、metro 0/30、
   // emergency-rooms 7/22/37/52 等每小時 job 的分鐘，也不是 culture-shows 的 10、
   // pest-alerts 的 12、who-don 的 19，所以 6 點與 12 點都不會跟任何 job 同 tick
@@ -482,7 +458,7 @@ export const registerCronJobs = (): void => {
   // water-outages 25、wra-water-outages 18/48、emergency-rooms 7/22/37/52、
   // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs
   // 14/44、wra-iot 12/27/42/57、metro-alerts 0/30、news-card-images+power
-  // 0/10/20/30/40/50、youbike 每 5 分鐘)，2 點區段目前只有 cdc-alerts 的 15
+  // 0/10/20/30/40/50)，2 點區段目前只有 cdc-alerts 的 15
   // 分。刻意不用 spec 提議的 34 分，避免與同期其他 FDA 週更 ticket 撞同一個
   // tick。這個 job 自己再用 withAdvisoryLock 防重疊，見
   // lib/server/drugs/runShortagesSync.ts。
@@ -608,8 +584,7 @@ export const registerCronJobs = (): void => {
   // 0/10/20/30/40/50、water-outages 的 25、wra-water-outages 的 18/48、aqx 的
   // 10/40、wra-sync 的 8/38、wra-iot 的 12/27/42/57、metro-alerts 的
   // 0/30、emergency-rooms 的 7/22/37/52、transit-accessibility-alerts 的
-  // 16、senior-tourism-alerts 的 17，也不是 youbike 的每 5 分鐘格線
-  // (0/5/10/.../55) 上。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // 16、senior-tourism-alerts 的 17。這個 job 自己再用 withAdvisoryLock 防重疊，見
   // lib/server/gdacs/runSync.ts。
   cron.schedule(
     "14,44 * * * *",
@@ -626,8 +601,8 @@ export const registerCronJobs = (): void => {
   );
   // WHO Disease Outbreak News (issue #596 / #583) — 每 6 小時一次，供「國際疫
   // 情」項目後續的 WHO 圖釘疊加使用。沿用 culture-shows (10 0,6,12,18) /
-  // pest-alerts (12 0,6,12,18) 的每 6 小時慣例，但取未被佔用的 19 分：不是
-  // youbike 每 5 分鐘格線 (0/5/10/.../55) 上的分鐘，也不在本檔案任何其他
+  // pest-alerts (12 0,6,12,18) 的每 6 小時慣例，但取未被佔用的 19 分：不在
+  // 本檔案任何其他
   // 「每小時」job 的分鐘上 (rss 5/35、aqi 20/50、cwa 15/45、earthquakes
   // 3/13/23/33/43/53、news-card-images+power-realtime 0/10/20/30/40/50、
   // water-outages 25、wra-water-outages 18/48、aqx 10/40、wra-sync 8/38、
@@ -656,8 +631,8 @@ export const registerCronJobs = (): void => {
   // （超過 8 MB），並刪除 mtime 超過 7 天的輪替檔，沒有任何常駐行程、也不用主機
   // crontab。細節與「絕不碰」的清單見 lib/server/logging/pm2LogRetention.ts。
   // 01:46：分鐘 46 不被本檔案任何 job 的分鐘欄位使用（cronCollisions 的 unusedMinutes
-  // 清單），所以在任何整點都不會與其他 job 同 tick，也不是 youbike 每 5 分鐘格線
-  // 的倍數；凌晨 1 點沒有任何每日／每週 job。
+  // 清單），所以在任何整點都不會與其他 job 同 tick；
+  // 凌晨 1 點沒有任何每日／每週 job。
   cron.schedule(
     "46 1 * * *",
     runGuarded("pm2-log-retention-cron.log", () => runPm2LogRetention()),

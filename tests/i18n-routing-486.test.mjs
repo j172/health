@@ -7,7 +7,7 @@ import { registerHooks } from "node:module";
 import { existsSync } from "node:fs";
 
 // Issue #486 (parent #438 §Q) — the medical/transport/weather/disaster
-// i18n batch (clinics, pharmacies, public-toilets, youbike, metro-alerts,
+// i18n batch (clinics, pharmacies, public-toilets, metro-alerts,
 // accessible-transit, weather-alerts, earthquakes, aqi, uv, disaster-map),
 // built on top of issue #485's /en//ja//ko/ routing mechanism. This suite
 // only covers what's specific to THIS batch — the mechanism itself (hreflang
@@ -78,7 +78,6 @@ const BATCH_486_SLUGS = [
   "clinics",
   "pharmacies",
   "public-toilets",
-  "youbike",
   "metro-alerts",
   "accessible-transit",
   "weather-alerts",

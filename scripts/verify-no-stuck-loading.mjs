@@ -49,7 +49,6 @@ const criticalComponents = [
   "components/ContraceptionMap/ContraceptionMapContent.tsx",
   "components/HeritageMap/HeritageMapContent.tsx",
   "components/Activities/PublicArtContent.tsx",
-  "components/Tools/YoubikeContent.tsx",
   "components/Tools/useNearestStation.ts",
   "components/Tools/LocalWeatherSvgWidget.tsx",
   "components/Tools/WeatherRainfallLocator.tsx",

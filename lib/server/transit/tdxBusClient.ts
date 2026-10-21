@@ -10,13 +10,12 @@ import type { AccessibleTransitRoute } from "./types";
 
 /**
  * TDX's Basic Bus service (`/api/basic/v3/Bus/...`) city enumeration, covering
- * all 22 Taiwan counties/cities (unlike lib/server/youbike/tdxClient.ts's
- * TDX_CITIES, which only lists the 15 counties with YouBike coverage — bus
- * service exists everywhere). The 15 entries shared with YouBike use the
- * exact same tdxName strings already confirmed live by that client; the
- * remaining 7 (Keelung/Nantou/Yilan/Hualien/Penghu/Kinmen/Lienchiang) follow
+ * all 22 Taiwan counties/cities (bus service exists everywhere). Fifteen of
+ * the entries use tdxName strings that were confirmed live by an earlier
+ * (since removed) client; the remaining 7
+ * (Keelung/Nantou/Yilan/Hualien/Penghu/Kinmen/Lienchiang) follow
  * TDX's standard county-naming convention but have not been hit by any
- * existing client in this repo — fetchAllTdxBusRoutes() isolates each city's
+ * other client in this repo — fetchAllTdxBusRoutes() isolates each city's
  * failure individually (see below), so a wrong enum value for any one of
  * these shows up as that one county's error in the sync summary rather than
  * breaking the other 21.
@@ -113,8 +112,7 @@ const routeKeyOf = (item: { RouteUID?: string; RouteID?: string }): string | nul
  * AccessibleTransitRoute rows via busLowFloorMath.buildRoutesFromTdxBusData().
  * Returns an empty array (never throws past this point) on anything short of
  * both network calls succeeding, so a single county's failure can be isolated
- * by the caller exactly the way lib/server/youbike/tdxClient.ts isolates
- * per-city failures.
+ * by the caller (fetchAllTdxBusRoutes() isolates per-county failures).
  */
 export async function fetchCityBusRoutes(cityCode: string): Promise<AccessibleTransitRoute[]> {
   const cityConfig = TDX_BUS_CITIES[cityCode];
@@ -174,8 +172,7 @@ export async function fetchCityBusRoutes(cityCode: string): Promise<AccessibleTr
 }
 
 /**
- * Batch-fetches every TDX_BUS_CITIES county's bus routes. Mirrors
- * lib/server/youbike/tdxClient.ts's fetchAllTdxStations(): batches of 3
+ * Batch-fetches every TDX_BUS_CITIES county's bus routes. Batches of 3
  * concurrent requests (TDX per-minute rate limit headroom) via
  * Promise.allSettled, so one county's failure (bad enum, timeout, TDX 5xx,
  * etc.) is recorded into `errors` and never aborts the other counties'
