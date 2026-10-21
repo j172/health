@@ -5,8 +5,9 @@ import { createHash } from "node:crypto";
  * Helpers every HTML news scraper needs.
  *
  * These two were defined identically in all six site scrapers
- * (fetchSetnHealthNews, fetchEttodayHealthNews, fetchHealthnewsNews,
- * fetchFiftyplusHealthNews, fetchUdnHealthNews, fetchBusinessweeklyHealthNews).
+ * (fetchSetnHealthNews, fetchEttodayHealthNews — removed, see git history —
+ * fetchHealthnewsNews, fetchFiftyplusHealthNews, fetchUdnHealthNews,
+ * fetchBusinessweeklyHealthNews).
  * Six copies of a hash function is six places for the hash to quietly diverge,
  * and payload_hash divergence would re-insert every article as new.
  */
