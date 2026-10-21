@@ -1,6 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import { fetchGovData } from "@/lib/server/http/govFetch";
+import { readSeedText } from "@/lib/server/db/transientSeed";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 
 const TRAVEL_ALERT_CSV_URL =
@@ -102,23 +101,8 @@ function parseSqlDateTime(dateStr?: string | null): string | null {
 }
 
 function readLocalCsvFallback(filename: string): string {
-  const candidatePaths = [
-    path.join(process.cwd(), "data", filename),
-    path.join(process.cwd(), "public", "data", filename),
-  ];
-  for (const p of candidatePaths) {
-    if (fs.existsSync(p)) {
-      try {
-        const content = fs.readFileSync(p, "utf-8");
-        if (content.trim().length > 0) {
-          return content;
-        }
-      } catch (err) {
-        console.warn(`[CDC Ingest] Failed to read fallback file ${p}:`, err);
-      }
-    }
-  }
-  return "";
+  // 順序與日誌規則由 readSeedText 統一（public/data 優先，#741）。
+  return readSeedText(filename) ?? "";
 }
 
 export async function runCdcAlertsSync(payload?: {

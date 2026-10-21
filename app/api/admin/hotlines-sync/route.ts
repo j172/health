@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminSecret } from "@/lib/server/config/adminAuth";
 import { internalErrorResponse } from "@/lib/server/http/errorResponse";
 import { upsertGovernmentHotlines, type HotlineRecord } from "@/lib/server/hotlines/hotlinesQueries";
-import fs from "node:fs";
-import path from "node:path";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -23,11 +22,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     let records: HotlineRecord[] | undefined = body?.records;
 
     if (!Array.isArray(records) || records.length === 0) {
-      const filePath = path.join(process.cwd(), "data", "government-hotlines.json");
-      if (fs.existsSync(filePath)) {
-        const raw = fs.readFileSync(filePath, "utf-8");
-        records = JSON.parse(raw);
-      }
+      records = readSeedJson<HotlineRecord[]>("government-hotlines.json") ?? undefined;
     }
 
     if (!Array.isArray(records) || records.length === 0) {

@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import mysql, {
   type Pool,
   type PoolConnection,
@@ -7,7 +5,7 @@ import mysql, {
 } from "mysql2/promise";
 import { env } from "@/lib/server/config/env";
 import { TABLE_DDL } from "@/lib/server/db/schema";
-import { readSeedJson } from "./seedReader";
+import { readSeedJson } from "./transientSeed";
 
 let pool: Pool | null = null;
 /** In-flight/completed promise for the migration run below, or null before the
@@ -465,9 +463,8 @@ const runSchemaMigrations = async (): Promise<void> => {
 
   // Auto-seed / sync sheltered workshops (62 organizations with merchandise/products) into facilities
   try {
-    const filePath = path.join(process.cwd(), "data", "sheltered-workshops.json");
-    if (fs.existsSync(filePath)) {
-      const workshops = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    const workshops = readSeedJson<any[]>("sheltered-workshops.json");
+    if (workshops) {
       if (Array.isArray(workshops) && workshops.length > 0) {
         for (const item of workshops) {
           const sourceId = `sheltered_${item.id}`;
@@ -517,9 +514,8 @@ const runSchemaMigrations = async (): Promise<void> => {
       "SELECT COUNT(*) AS cnt FROM pet_adoptions"
     );
     if ((petCountRows[0]?.cnt ?? 0) === 0) {
-      const filePath = path.join(process.cwd(), "data", "pet-adoptions-seed.json");
-      if (fs.existsSync(filePath)) {
-        const seedRows = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      const seedRows = readSeedJson<any[]>("pet-adoptions-seed.json");
+      if (seedRows) {
         if (Array.isArray(seedRows) && seedRows.length > 0) {
           for (const r of seedRows) {
             await p.query(
@@ -554,9 +550,8 @@ const runSchemaMigrations = async (): Promise<void> => {
       "SELECT COUNT(*) AS cnt FROM public_arts"
     );
     if ((paCountRows[0]?.cnt ?? 0) === 0) {
-      const filePath = path.join(process.cwd(), "data", "public-art.json");
-      if (fs.existsSync(filePath)) {
-        const rawJson = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+      const rawJson = readSeedJson<any[]>("public-art.json");
+      if (rawJson) {
         if (Array.isArray(rawJson) && rawJson.length > 0) {
           const now = toSqlDateTime(new Date());
           const BATCH_SIZE = 250;

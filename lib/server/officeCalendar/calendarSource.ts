@@ -14,8 +14,7 @@
  * age, not a placeholder. The table always wins for a date it has: a
  * government correction synced later overrides the seed.
  */
-import fs from "node:fs";
-import path from "node:path";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 import { addDays, isValidIsoDate, taipeiDateOf, type IsoDate, type OfficeCalendarDay } from "../../tools/workSchoolStatus/calendar";
 import type { CalendarDataSource } from "../../tools/workSchoolStatus/apiTypes";
 
@@ -50,12 +49,9 @@ let cachedSeed: OfficeCalendarSeed | null | undefined;
 export const readOfficeCalendarSeed = (): OfficeCalendarSeed | null => {
   if (cachedSeed !== undefined) return cachedSeed;
   let seed: OfficeCalendarSeed | null = null;
-  try {
-    const parsed = JSON.parse(fs.readFileSync(path.join(process.cwd(), "data", "office-calendar-seed.json"), "utf-8"));
-    seed = parsed && typeof parsed === "object" && parsed.days && typeof parsed.days === "object" ? parsed : null;
-  } catch (error) {
-    console.warn("[officeCalendar] Could not read data/office-calendar-seed.json:", error);
-  }
+  // 順序與日誌規則由 readSeedJson 統一（public/data 優先，找不到或壞掉會寫警告，#741）。
+  const parsed = readSeedJson<any>("office-calendar-seed.json");
+  seed = parsed && typeof parsed === "object" && parsed.days && typeof parsed.days === "object" ? parsed : null;
   cachedSeed = seed;
   return seed;
 };

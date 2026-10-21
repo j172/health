@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import fs from "node:fs";
-import path from "node:path";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import ChildSubsidiesContent from "@/components/Tools/ChildSubsidiesContent";
@@ -34,27 +33,11 @@ export const metadata: Metadata = {
  * relying on every future edit to keep filtering it out of one shared array.
  */
 function getChildSubsidyRules(): ChildSubsidyRule[] {
-  try {
-    const filePath = path.join(process.cwd(), "data", "child-subsidies.json");
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    }
-  } catch (err) {
-    console.warn("Failed to read child-subsidies.json:", err);
-  }
-  return [];
+  return readSeedJson<ChildSubsidyRule[]>("child-subsidies.json") ?? [];
 }
 
 function getPolicyWatchItems(): PolicyWatchItem[] {
-  try {
-    const filePath = path.join(process.cwd(), "data", "child-subsidies-policy-watch.json");
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    }
-  } catch (err) {
-    console.warn("Failed to read child-subsidies-policy-watch.json:", err);
-  }
-  return [];
+  return readSeedJson<PolicyWatchItem[]>("child-subsidies-policy-watch.json") ?? [];
 }
 
 export default async function ChildSubsidiesPage() {

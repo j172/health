@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "node:fs";
-import path from "node:path";
 import { countFacilities, countFilteredFacilities, searchFacilities } from "@/lib/server/facilities/queries";
 import { getFacilitySourceDataStatus } from "@/lib/server/facilities/dataStatus";
 import { parseDataStatusSourceParam } from "@/lib/format/facilityDataStatus";
 
-import { readTransientSeedJson } from "@/lib/server/db/transientSeed";
+import { readSeedJson, readTransientSeedJson } from "@/lib/server/db/transientSeed";
 import { isSafeSeedFileStem } from "@/lib/server/facilities/seedFileName";
 
 export const runtime = "nodejs";
@@ -35,6 +33,7 @@ const STATIC_SEED_FILES: Record<string, string> = {
 };
 const VET_CLINIC_SEED_FILE = "facilities-seeds/vet_clinic.json";
 const CONTRACEPTION_SEED_FILE = "contraception-map-seed.json";
+const NHI_PENALTY_SEED_FILE = "facilities-seeds/nhi-penalties.json";
 
 /** 回傳該類型的內建種子；沒有內建種子（或檔案讀不到）時回傳 undefined，由呼叫端走原本的通用後備。 */
 function loadBundledSeed(facilityType: string): SeedFacilityItem[] | undefined {
@@ -108,9 +107,8 @@ function getFacilitySeedFallback(
     }
 
     if (options.serviceItem === "違規／停約" && facilityType === "clinic") {
-      const penaltySeedPath = path.join(process.cwd(), "data", "facilities-seeds", "nhi-penalties.json");
-      if (fs.existsSync(penaltySeedPath)) {
-        const parsed = JSON.parse(fs.readFileSync(penaltySeedPath, "utf-8"));
+      const parsed = readSeedJson<unknown>(NHI_PENALTY_SEED_FILE);
+      if (parsed !== null) {
         const list = Array.isArray(parsed) ? parsed : [];
         raw = list.map((item: any, idx: number) => ({
           id: item.id ?? idx + 1,
@@ -127,9 +125,9 @@ function getFacilitySeedFallback(
 
     if (!raw && isSafeSeedFileStem(facilityType)) {
       // facilityType 來自網址參數：只接受單純的檔名，避免 `../` 讀到種子資料夾以外的 .json。
-      const seedPath = path.join(process.cwd(), "data", "facilities-seeds", `${facilityType}.json`);
-      if (fs.existsSync(seedPath)) {
-        const parsed = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
+      // optional：多數類型本來就沒有種子檔，找不到不該寫警告（也避免網址參數製造無限多筆警告紀錄）。
+      const parsed = readSeedJson<any>(`facilities-seeds/${facilityType}.json`, { optional: true });
+      if (parsed !== null) {
         const list = Array.isArray(parsed) ? parsed : (parsed.records || parsed.facilities || []);
         raw = list.map((item: any, idx: number) => ({
           id: item.id ?? idx + 1,

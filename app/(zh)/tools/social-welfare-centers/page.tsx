@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import fs from "node:fs";
-import path from "node:path";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import SocialWelfareCentersContent, { type SocialWelfareCenter } from "@/components/Tools/SocialWelfareCentersContent";
@@ -32,9 +31,7 @@ export const metadata: Metadata = {
  */
 function readSeedCenters(): SocialWelfareCenter[] {
   try {
-    const seedPath = path.join(process.cwd(), "data", "facilities-seeds", "social_welfare_center.json");
-    if (!fs.existsSync(seedPath)) return [];
-    const parsed = JSON.parse(fs.readFileSync(seedPath, "utf-8"));
+    const parsed = readSeedJson<unknown>("facilities-seeds/social_welfare_center.json");
     const list = Array.isArray(parsed) ? parsed : [];
     return list.map((item: any) => ({
       name: item.name,
