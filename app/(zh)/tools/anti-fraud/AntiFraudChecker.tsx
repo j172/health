@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { appendOutboundUtm } from "@/lib/format/outboundLink";
 
 type CheckStatus = "matched" | "not-listed" | "invalid";
 
@@ -220,7 +221,10 @@ export default function AntiFraudChecker() {
           {result.normalizedHost && (
             <div className="pt-2">
               <a
-                href={`https://transparencyreport.google.com/safe-browsing/search?url=${encodeURIComponent(result.normalizedHost)}&hl=zh_TW`}
+                href={appendOutboundUtm(
+                  `https://transparencyreport.google.com/safe-browsing/search?url=${encodeURIComponent(result.normalizedHost)}&hl=zh_TW`,
+                  { medium: "anti_fraud_checker", campaign: "safe_browsing" },
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50/70 px-3.5 py-2 text-xs font-semibold text-indigo-700 transition-colors hover:bg-indigo-100 dark:border-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-300 dark:hover:bg-indigo-900/60"
