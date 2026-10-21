@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getNearestRainfallOverview,
   listTopRainfallStations,
+  listActiveCwaAlerts,
 } from "@/lib/server/cwa/queries";
+import { filterCwaAlertsByCounty } from "@/lib/server/cwa/filterAlertsByCounty";
+import { resolveNearestCounty } from "@/lib/server/facilities/countyBounds";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -51,16 +54,26 @@ export async function GET(request: NextRequest) {
       lng = COUNTY_COORDINATES[countyParam].lng;
     }
 
-    const [nearest, topStations] = await Promise.all([
-      !isNaN(lat) && !isNaN(lng) ? getNearestRainfallOverview(lat, lng) : null,
+    const hasCoords = !isNaN(lat) && !isNaN(lng);
+    const [nearest, topStations, activeAlerts] = await Promise.all([
+      hasCoords ? getNearestRainfallOverview(lat, lng) : null,
       listTopRainfallStations(5),
+      hasCoords ? listActiveCwaAlerts(100) : Promise.resolve<Awaited<ReturnType<typeof listActiveCwaAlerts>>>([]),
     ]);
+
+    // 所在縣市＋該縣市目前的特報（issue: 依定位看特報，比全國扁平清單直覺）。
+    // resolveNearestCounty 永遠回傳一個縣市，所以只要有座標就一定能算出 county／countyAlerts，
+    // 不會有「算不出來」的狀態；沒有座標（純縣市下拉選擇）時兩者皆為 null，維持舊行為。
+    const county = hasCoords ? resolveNearestCounty(lat, lng) : null;
+    const countyAlerts = county ? filterCwaAlertsByCounty(activeAlerts, county) : null;
 
     return NextResponse.json({
       success: true,
       data: {
         nearest,
         topStations,
+        county,
+        countyAlerts,
       },
     });
   } catch (error) {

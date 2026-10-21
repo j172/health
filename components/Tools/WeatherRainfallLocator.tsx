@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
+  CwaAlertItem,
   NearestRainfallOverview,
   TopRainfallStation,
 } from "@/lib/server/cwa/queries";
@@ -114,6 +115,8 @@ export default function WeatherRainfallLocator({
   const [locationName, setLocationName] = useState<string | null>(null);
   const [rainfallData, setRainfallData] = useState<NearestRainfallOverview | null>(null);
   const [topStations, setTopStations] = useState<TopRainfallStation[]>(initialTopStations);
+  const [resolvedCounty, setResolvedCounty] = useState<string | null>(null);
+  const [countyAlerts, setCountyAlerts] = useState<CwaAlertItem[] | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   // 使用者按下「GPS 重新定位」後才需要等待下面的 effect 處理 useSharedGeolocation 的結果。
   const [manualGpsRequested, setManualGpsRequested] = useState(false);
@@ -141,6 +144,8 @@ export default function WeatherRainfallLocator({
         if (json.data.topStations) {
           setTopStations(json.data.topStations);
         }
+        setResolvedCounty(json.data.county ?? null);
+        setCountyAlerts(json.data.countyAlerts ?? null);
       } else {
         setErrorMsg(t("weatherAlertsTool.errorFetchFailed", "無法取得該區域雨量資訊，請稍後再試。"));
       }
@@ -289,6 +294,52 @@ export default function WeatherRainfallLocator({
       {errorMsg && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
           ⚠️ {errorMsg}
+        </div>
+      )}
+
+      {/* County-level alerts for the resolved location — a direct answer ("your county has N
+          active alerts") instead of making the visitor scan the full nationwide list below for
+          their own area. Pure filter of the same data that list renders, so it can never disagree
+          with it. Only shown once a location has actually resolved (county !== null). */}
+      {resolvedCounty && countyAlerts && (
+        <div
+          className={`rounded-xl border p-3.5 ${
+            countyAlerts.length > 0
+              ? "border-red-200 bg-red-50/60 dark:border-red-900/50 dark:bg-red-950/20"
+              : "border-emerald-200 bg-emerald-50/60 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+          }`}
+        >
+          <p
+            className={`text-sm font-bold ${
+              countyAlerts.length > 0
+                ? "text-red-900 dark:text-red-200"
+                : "text-emerald-900 dark:text-emerald-200"
+            }`}
+          >
+            {countyAlerts.length > 0
+              ? t(
+                  "weatherAlertsTool.countyAlertsActiveTemplate",
+                  "📍 {county} 目前有 {count} 則生效中特報",
+                )
+                  .replace("{county}", resolvedCounty)
+                  .replace("{count}", String(countyAlerts.length))
+              : t("weatherAlertsTool.countyAlertsNoneTemplate", "📍 {county} 目前無生效中特報").replace(
+                  "{county}",
+                  resolvedCounty,
+                )}
+          </p>
+          {countyAlerts.length > 0 && (
+            <ul className="mt-1.5 flex flex-wrap gap-1.5">
+              {countyAlerts.map((alert) => (
+                <li
+                  key={alert.id}
+                  className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800 dark:bg-red-900/60 dark:text-red-200"
+                >
+                  {alert.event}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
