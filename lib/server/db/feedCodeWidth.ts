@@ -12,6 +12,9 @@
  */
 export const FEED_CODE_COLUMN_LENGTH = 63;
 
+/** ALTER 等 metadata 鎖的上限秒數，見 widenFeedCodeColumns。 */
+export const LOCK_WAIT_TIMEOUT_SECONDS = 10;
+
 /** 受影響的欄位（news_items.feed_code 是 NOT NULL；ingest_errors.feed_code 可為 NULL）。 */
 export const FEED_CODE_COLUMNS: ReadonlyArray<{ table: string; column: string; nullable: boolean }> = [
   { table: "news_items", column: "feed_code", nullable: false },
@@ -62,8 +65,11 @@ export const widenFeedCodeColumns = async (
         result.unchanged.push(label);
         continue;
       }
+      // 這個 ALTER 需要短暫的 metadata 鎖；若有長交易（例如進行中的匯入）持有該表，預設的
+      // lock_wait_timeout（一天）會讓 ALTER 排隊，後面所有對該表的查詢都卡在它後面。
+      // `SET STATEMENT ... FOR`（MariaDB）只對這一句生效，等不到鎖就在 10 秒後放棄並記警告，下次啟動再試。
       await db.query(
-        `ALTER TABLE \`${table}\`
+        `SET STATEMENT lock_wait_timeout=${LOCK_WAIT_TIMEOUT_SECONDS} FOR ALTER TABLE \`${table}\`
            MODIFY COLUMN \`${column}\` VARCHAR(${FEED_CODE_COLUMN_LENGTH}) ${nullable ? "NULL" : "NOT NULL"},
            ALGORITHM=INPLACE, LOCK=NONE`,
       );

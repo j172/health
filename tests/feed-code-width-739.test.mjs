@@ -197,6 +197,8 @@ test("migration: widens both columns from 10 to 63 and the ALTER keeps nullabili
   assert.match(newsAlter.sql, /ALTER TABLE `news_items`\s+MODIFY COLUMN `feed_code` VARCHAR\(63\) NOT NULL/);
   assert.match(errorsAlter.sql, /ALTER TABLE `ingest_errors`\s+MODIFY COLUMN `feed_code` VARCHAR\(63\) NULL/);
   for (const a of [newsAlter, errorsAlter]) assert.match(a.sql, /ALGORITHM=INPLACE, LOCK=NONE/);
+  // 等 metadata 鎖不能無限久：每個 ALTER 都帶 10 秒的 lock_wait_timeout，否則會讓後面的查詢排在它後面。
+  for (const a of [newsAlter, errorsAlter]) assert.match(a.sql, /^\s*SET STATEMENT lock_wait_timeout=10 FOR ALTER TABLE/);
   assert.deepEqual(db.widths, { "news_items.feed_code": 63, "ingest_errors.feed_code": 63 });
 });
 
