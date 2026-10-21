@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import fs from "node:fs";
-import path from "node:path";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import EmergencyHotlinesContent from "@/components/Tools/EmergencyHotlinesContent";
@@ -49,16 +48,7 @@ export const metadata: Metadata = {
 };
 
 function getHotlinesData(): HotlineRecord[] {
-  try {
-    const filePath = path.join(process.cwd(), "data", "government-hotlines.json");
-    if (fs.existsSync(filePath)) {
-      const raw = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(raw);
-    }
-  } catch (err) {
-    console.warn("Failed to read government-hotlines.json:", err);
-  }
-  return [];
+  return readSeedJson<HotlineRecord[]>("government-hotlines.json") ?? [];
 }
 
 export default async function EmergencyHotlinesPage() {

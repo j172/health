@@ -1,7 +1,7 @@
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnectionFallback } from "@/lib/server/db/mysql";
 import type { PestAlertItem } from "./types";
-import { readSeedJson } from "@/lib/server/db/seedReader";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 
 function getSeedAlerts(): PestAlertItem[] {
   return readSeedJson<PestAlertItem[]>("pest-alerts-seed.json") || [];

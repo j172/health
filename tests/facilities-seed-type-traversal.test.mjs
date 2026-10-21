@@ -42,7 +42,8 @@ test("isSafeSeedFileStem rejects anything that can leave the seed folder or is n
 test("the facilities route only builds the generic seed path from a checked name", () => {
   const src = fs.readFileSync(new URL("../app/api/facilities/route.ts", import.meta.url), "utf8");
   assert.match(src, /isSafeSeedFileStem\(facilityType\)/);
-  const idx = src.indexOf("`${facilityType}.json`");
+  // 路徑現在是 `facilities-seeds/${facilityType}.json`（交給 readSeedJson 依統一順序找檔，#741）
+  const idx = src.indexOf("${facilityType}.json`");
   assert.ok(idx > 0, "generic seed path is still built from facilityType");
   const before = src.slice(Math.max(0, idx - 400), idx);
   assert.match(before, /isSafeSeedFileStem\(facilityType\)/, "the path construction must sit behind the name check");

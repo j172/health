@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import fs from "node:fs";
-import path from "node:path";
 import { getBaseUrl } from "@/lib/server/news/seo";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import LtcBenefitsContent from "@/components/Tools/LtcBenefitsContent";
@@ -30,27 +29,11 @@ export const metadata: Metadata = {
  * `app/(zh)/tools/child-subsidies/page.tsx`).
  */
 function getLtcBenefitsSchedule(): LtcBenefitsSchedule | null {
-  try {
-    const filePath = path.join(process.cwd(), "data", "ltc-benefits.json");
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    }
-  } catch (err) {
-    console.warn("Failed to read ltc-benefits.json:", err);
-  }
-  return null;
+  return readSeedJson<LtcBenefitsSchedule>("ltc-benefits.json");
 }
 
 function getLtc3PlanItems(): Ltc3PlanItem[] {
-  try {
-    const filePath = path.join(process.cwd(), "data", "ltc-3-0-updates.json");
-    if (fs.existsSync(filePath)) {
-      return JSON.parse(fs.readFileSync(filePath, "utf-8"));
-    }
-  } catch (err) {
-    console.warn("Failed to read ltc-3-0-updates.json:", err);
-  }
-  return [];
+  return readSeedJson<Ltc3PlanItem[]>("ltc-3-0-updates.json") ?? [];
 }
 
 export default async function LtcBenefitsPage() {

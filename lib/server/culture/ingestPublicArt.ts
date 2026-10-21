@@ -1,6 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
 import { fetchGovData } from "@/lib/server/http/govFetch";
+import { readSeedJson } from "@/lib/server/db/transientSeed";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 import type { ResultSetHeader } from "mysql2/promise";
 
@@ -43,13 +42,9 @@ export async function runPublicArtSync(
 
   if (!rawList || rawList.length === 0) {
     try {
-      const localFile = path.join(process.cwd(), "data", "public-art.json");
-      if (fs.existsSync(localFile)) {
-        const content = fs.readFileSync(localFile, "utf-8");
-        const json = JSON.parse(content);
-        if (Array.isArray(json)) {
-          rawList = json;
-        }
+      const json = readSeedJson<unknown>("public-art.json");
+      if (Array.isArray(json)) {
+        rawList = json;
       }
     } catch (fsErr) {
       console.error("[Public Art Ingest] Failed to load local data/public-art.json:", fsErr);
