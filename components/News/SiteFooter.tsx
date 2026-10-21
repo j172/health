@@ -6,6 +6,7 @@ import { buildFooterModel } from "@/lib/server/tools/navModel";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { cfImageUrl } from "@/lib/format/cfImageUrl";
+import { AFFILIATE_LINK_REL, HAWKHOST_REFERRAL_URL } from "@/lib/constants/affiliateLinks";
 
 const FooterColumn = ({
   label,
@@ -39,11 +40,24 @@ const FooterLink = ({
   </li>
 );
 
+// 外聯符號（issue #746）：視覺與「主站 j172.tw ↗」一致（連結文字後接空格＋↗），
+// 但符號本身對輔助科技隱藏（aria-hidden），改由視覺隱藏（sr-only）的
+// 「（另開新視窗）」文字傳達「會在新視窗開啟」。
+const ExternalLinkMark = ({ newWindowLabel }: { newWindowLabel: string }) => (
+  <>
+    {" "}
+    <span aria-hidden="true">↗</span>
+    <span className="sr-only">{newWindowLabel}</span>
+  </>
+);
+
 const FooterExternalLink = ({
   href,
+  newWindowLabel,
   children,
 }: {
   href: string;
+  newWindowLabel: string;
   children: React.ReactNode;
 }) => (
   <li>
@@ -54,6 +68,7 @@ const FooterExternalLink = ({
       className="text-slate-600 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
     >
       {children}
+      <ExternalLinkMark newWindowLabel={newWindowLabel} />
     </a>
   </li>
 );
@@ -159,6 +174,7 @@ const FOOTER_LINK_LABEL_KEYS: Record<string, string> = {
 
 export default function SiteFooter() {
   const { t, locale } = useLanguage();
+  const newWindowLabel = t("footer.opensInNewWindow", "（另開新視窗）");
 
   // Issue #461: wires the already-built (issue #443) buildFooterModel() in,
   // replacing the old hand-rolled 1 overview + one column per catalog tool
@@ -299,7 +315,11 @@ export default function SiteFooter() {
               <FooterColumn key={block.id} label={headerLabel}>
                 {block.links.map((link) =>
                   isExternal ? (
-                    <FooterExternalLink key={link.href} href={link.href}>
+                    <FooterExternalLink
+                      key={link.href}
+                      href={link.href}
+                      newWindowLabel={newWindowLabel}
+                    >
                       {link.label}
                     </FooterExternalLink>
                   ) : (
@@ -313,8 +333,27 @@ export default function SiteFooter() {
           })}
         </div>
 
+        {/* HawkHost 推薦連結（issue #746）：獨立於「公民夥伴」欄、位於版權列上方。
+            商業推薦必須明確揭露「推薦連結」與「可能獲得回饋」，揭露文字就在連結內，
+            讓輔助科技朗讀連結時也一併讀到。href 使用原始網址常數，刻意不經過
+            appendOutboundUtm()（避免污染聯盟追蹤），詳見 lib/constants/affiliateLinks.ts。 */}
+        <p className="mt-10 text-[11px] text-slate-600 dark:text-slate-500">
+          <a
+            href={HAWKHOST_REFERRAL_URL}
+            target="_blank"
+            rel={AFFILIATE_LINK_REL}
+            className="underline underline-offset-2 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+          >
+            {t(
+              "footer.hostingReferral",
+              "本站架設於 HawkHost（推薦連結，若經此註冊本站可能獲得回饋）",
+            )}
+            <ExternalLinkMark newWindowLabel={newWindowLabel} />
+          </a>
+        </p>
+
         {/* Bottom copyright */}
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-600 sm:flex-row sm:items-center dark:border-slate-900">
+        <div className="mt-6 flex flex-col items-start justify-between gap-3 border-t border-slate-100 pt-6 text-[11px] text-slate-600 sm:flex-row sm:items-center dark:border-slate-900">
           <p suppressHydrationWarning>
             &copy; {new Date().getFullYear()} j172tw Healthz.{" "}
             {t("footer.license", "程式碼採 MIT 授權 · 結構化資料採 CC0-1.0 釋出")}

@@ -1,0 +1,295 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
+import { registerHooks } from "node:module";
+import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
+
+// Issue #746: 頁尾「公民夥伴」欄 9 個外部連結的外聯符號（↗ 對輔助科技隱藏，改以
+// 視覺隱藏的「（另開新視窗）」傳達）＋ 版權列上方的 HawkHost 推薦（聯盟）連結
+// （原始網址、不加 UTM、rel="sponsored nofollow noopener noreferrer"）＋ 隱私權政策說明。
+//
+// 這個 repo 沒有 jsdom／@testing-library，所以這裡用最小的方式「真的把頁尾渲染成 HTML」：
+// 以 repo 本來就有的 typescript 把 SiteFooter.tsx 轉成 JS（Node 內建的 type stripping
+// 不認得 JSX），next/link、next/image、LanguageContext 換成極簡替身，其餘（navModel、
+// 字典、affiliateLinks）全部是真的程式碼；再用 react-dom/server 渲染，只斷言輸出的 HTML
+// （外部行為），不檢查實作細節。不新增任何依賴。
+
+const REPO_ROOT = new URL("../", import.meta.url);
+const ROOT_DIR = fileURLToPath(REPO_ROOT);
+const requireFromRepo = createRequire(import.meta.url);
+const ts = requireFromRepo("typescript");
+
+const STUBS = {
+  "next/link": `
+    import { createElement } from "react";
+    export default function Link({ href, children, ...rest }) {
+      return createElement("a", { href, ...rest }, children);
+    }`,
+  "next/image": `
+    import { createElement } from "react";
+    export default function Image({ src, alt }) {
+      return createElement("img", { src: String(src), alt });
+    }`,
+  "@/app/context/LanguageContext": `
+    import { lookupDictionaryKey } from ${JSON.stringify(new URL("lib/i18n/dictionary.ts", REPO_ROOT).href)};
+    export function useLanguage() {
+      const locale = globalThis.__footerTestLocale ?? "zh-TW";
+      return { locale, t: (key, defaultValue) => lookupDictionaryKey(locale, key, defaultValue) };
+    }`,
+};
+
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "server-only") {
+      return { url: "data:text/javascript,", shortCircuit: true };
+    }
+    if (specifier in STUBS) {
+      return { url: `stub:${specifier}`, shortCircuit: true };
+    }
+    let target = specifier;
+    let parentURL = context.parentURL;
+    if (parentURL?.startsWith("stub:")) {
+      parentURL = new URL("tests/x.mjs", REPO_ROOT).href;
+    }
+    if (specifier.startsWith("@/")) {
+      target = `./${specifier.slice(2)}`;
+      parentURL = REPO_ROOT.href;
+    }
+    if (target.startsWith(".") && !/\.[cm]?[jt]sx?$/.test(target) && !target.endsWith(".json")) {
+      for (const extension of [".ts", ".tsx", ".mjs", ".js"]) {
+        const candidate = new URL(target + extension, parentURL);
+        if (existsSync(fileURLToPath(candidate))) {
+          return nextResolve(target + extension, { ...context, parentURL });
+        }
+      }
+    }
+    if (specifier.startsWith("@/") && target.endsWith(".json")) {
+      return nextResolve(target, { ...context, parentURL });
+    }
+    return nextResolve(target, { ...context, parentURL });
+  },
+  load(url, context, nextLoad) {
+    if (url.startsWith("stub:")) {
+      return { format: "module", source: STUBS[url.slice("stub:".length)], shortCircuit: true };
+    }
+    if (url.endsWith(".json")) {
+      const source = fs.readFileSync(fileURLToPath(url), "utf8");
+      return { format: "json", source, shortCircuit: true };
+    }
+    if (url.endsWith(".tsx")) {
+      const source = fs.readFileSync(fileURLToPath(url), "utf8");
+      const { outputText } = ts.transpileModule(source, {
+        compilerOptions: {
+          jsx: ts.JsxEmit.ReactJSX,
+          module: ts.ModuleKind.ESNext,
+          target: ts.ScriptTarget.ES2022,
+        },
+      });
+      return { format: "module", source: outputText, shortCircuit: true };
+    }
+    return nextLoad(url, context);
+  },
+});
+
+const { createElement } = await import("react");
+const { renderToStaticMarkup } = await import("react-dom/server");
+const { default: SiteFooter } = await import("../components/News/SiteFooter.tsx");
+const { CIVIC_PARTNER_LINKS } = await import("../lib/server/tools/navModel.ts");
+const { HAWKHOST_REFERRAL_URL, AFFILIATE_LINK_REL } = await import(
+  "../lib/constants/affiliateLinks.ts"
+);
+const { appendOutboundUtm } = await import("../lib/format/outboundLink.ts");
+const { PRIVACY_SECTIONS, buildPrivacyLlmsPageContent } = await import(
+  "../lib/server/content/privacyContent.ts"
+);
+
+const LOCALES = ["zh-TW", "en", "ja", "ko"];
+const EXPECTED_HAWKHOST_URL = "https://my.hawkhost.com/aff.php?aff=18170";
+
+const readLocale = (locale) =>
+  JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "locales", `${locale}.json`), "utf8"));
+
+function renderFooter(locale) {
+  globalThis.__footerTestLocale = locale;
+  try {
+    return renderToStaticMarkup(createElement(SiteFooter));
+  } finally {
+    delete globalThis.__footerTestLocale;
+  }
+}
+
+/** 所有 <a …>…</a>（頁尾沒有巢狀 <a>）。 */
+function anchors(html) {
+  return [...html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+    index: m.index,
+    attrs: m[1],
+    inner: m[2],
+    raw: m[0],
+  }));
+}
+
+const hostOf = (href) => {
+  try {
+    return new URL(href).hostname;
+  } catch {
+    return null;
+  }
+};
+
+const attr = (attrs, name) => attrs.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+
+test("HawkHost 推薦網址常數：與指定網址完全相同、不含任何 utm 參數", () => {
+  assert.equal(HAWKHOST_REFERRAL_URL, EXPECTED_HAWKHOST_URL);
+  assert.ok(!/utm_/i.test(HAWKHOST_REFERRAL_URL));
+  assert.equal(AFFILIATE_LINK_REL, "sponsored nofollow noopener noreferrer");
+  // 對照組：若被 appendOutboundUtm 包裝就會被加參數——這正是不可包裝的理由。
+  assert.notEqual(appendOutboundUtm(HAWKHOST_REFERRAL_URL), HAWKHOST_REFERRAL_URL);
+});
+
+test("SiteFooter 原始碼：HawkHost 連結不經過 appendOutboundUtm", () => {
+  const source = fs.readFileSync(path.join(ROOT_DIR, "components", "News", "SiteFooter.tsx"), "utf8");
+  assert.ok(source.includes("HAWKHOST_REFERRAL_URL"));
+  assert.ok(!/appendOutboundUtm\(\s*HAWKHOST_REFERRAL_URL/.test(source));
+  const affiliateSource = fs.readFileSync(
+    path.join(ROOT_DIR, "lib", "constants", "affiliateLinks.ts"),
+    "utf8",
+  );
+  assert.ok(!/import[^;]*outboundLink/.test(affiliateSource), "affiliateLinks.ts 不可引入 UTM 機制");
+});
+
+for (const locale of LOCALES) {
+  test(`[${locale}] 公民夥伴 9 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
+    const html = renderFooter(locale);
+    const newWindow = readLocale(locale).footer.opensInNewWindow;
+    assert.ok(newWindow && newWindow.length > 0);
+    assert.equal(CIVIC_PARTNER_LINKS.length, 9);
+
+    const all = anchors(html);
+    for (const partner of CIVIC_PARTNER_LINKS) {
+      const host = new URL(partner.href).hostname;
+      const matches = all.filter((a) => hostOf(attr(a.attrs, "href")) === host);
+      assert.equal(matches.length, 1, `${host} 應該剛好出現一次`);
+      const [link] = matches;
+      assert.equal(attr(link.attrs, "target"), "_blank");
+      assert.ok(
+        link.inner.includes('<span aria-hidden="true">↗</span>'),
+        `${host} 缺少 aria-hidden 的 ↗：${link.inner}`,
+      );
+      assert.ok(
+        link.inner.includes(`<span class="sr-only">${newWindow}</span>`),
+        `${host} 缺少視覺隱藏的「${newWindow}」：${link.inner}`,
+      );
+      // 符號只出現一次：地區化字串本身不可再帶 ↗，否則會變成「↗ ↗」。
+      assert.equal(link.inner.split("↗").length - 1, 1, `${host} 的 ↗ 應該只有一個：${link.inner}`);
+      // 符號之前必須有可見的連結文字。
+      const visibleLabel = link.inner.slice(0, link.inner.indexOf('<span aria-hidden="true">')).trim();
+      assert.ok(visibleLabel.length > 0, `${host} 缺少可見的連結文字`);
+    }
+  });
+
+  test(`[${locale}] HawkHost 連結：網址完全相同、無 utm、rel/target 正確、位於版權列之前且獨立於公民夥伴欄`, () => {
+    const html = renderFooter(locale);
+    const dict = readLocale(locale).footer;
+    const all = anchors(html);
+
+    const hawk = all.filter((a) => a.attrs.includes("hawkhost"));
+    assert.equal(hawk.length, 1, "頁尾只應有一個 HawkHost 連結");
+    const [link] = hawk;
+
+    assert.equal(attr(link.attrs, "href"), EXPECTED_HAWKHOST_URL);
+    assert.ok(!/utm_/i.test(link.attrs), "聯盟連結不可有任何 utm 參數");
+    assert.equal(attr(link.attrs, "rel"), "sponsored nofollow noopener noreferrer");
+    assert.equal(attr(link.attrs, "target"), "_blank");
+
+    // 揭露文字在連結內，並帶有外聯符號與「另開新視窗」。
+    assert.ok(link.inner.includes(dict.hostingReferral), "連結文字應為完整的揭露句");
+    assert.ok(link.inner.includes('<span aria-hidden="true">↗</span>'));
+    assert.ok(link.inner.includes(`<span class="sr-only">${dict.opensInNewWindow}</span>`));
+
+    // 位置：在所有公民夥伴連結之後、版權列（© … j172tw Healthz.）之前。
+    const copyrightIndex = html.indexOf("j172tw Healthz.");
+    assert.ok(copyrightIndex > 0, "找不到版權列");
+    assert.ok(link.index < copyrightIndex, "HawkHost 行必須在版權列之前");
+    const lastPartnerIndex = Math.max(
+      ...CIVIC_PARTNER_LINKS.map((p) => {
+        const host = new URL(p.href).hostname;
+        return all.find((a) => attr(a.attrs, "href").includes(host)).index;
+      }),
+    );
+    assert.ok(link.index > lastPartnerIndex, "HawkHost 行必須在公民夥伴欄之後");
+
+    // 獨立於公民夥伴欄：不在 <li>／<ul> 之內，而是自己的 <p>。
+    const before = html.slice(0, link.index);
+    assert.ok(before.lastIndexOf("<p") > before.lastIndexOf("</ul>"), "HawkHost 不可位於任何 <ul> 清單內");
+    assert.match(before, /<p class="[^"]*">$/);
+  });
+
+  test(`[${locale}] 公民夥伴連結仍有 UTM，聯盟連結以外的外部連結不受影響`, () => {
+    const html = renderFooter(locale);
+    for (const partner of CIVIC_PARTNER_LINKS) {
+      const host = new URL(partner.href).hostname;
+      const link = anchors(html).find((a) => attr(a.attrs, "href").includes(host));
+      assert.match(attr(link.attrs, "href"), /utm_source=health\.j172\.tw/);
+      assert.equal(attr(link.attrs, "rel"), "noreferrer noopener");
+    }
+    // 「主站」與社群圖示維持原樣。
+    const main = anchors(html).find((a) => attr(a.attrs, "href").startsWith("https://www.j172.tw"));
+    assert.ok(main.inner.includes("↗"));
+    assert.equal(attr(main.attrs, "rel"), "noreferrer noopener");
+  });
+}
+
+test("HawkHost 揭露文字在 zh/en/ja/ko 都明確寫出「推薦連結」與「可能獲得回饋」", () => {
+  const expectations = {
+    "zh-TW": [/HawkHost/, /推薦連結/, /可能獲得回饋/],
+    en: [/HawkHost/, /referral/i, /may receive a commission/i],
+    ja: [/HawkHost/, /紹介リンク/, /紹介報酬を受け取る場合があります/],
+    ko: [/HawkHost/, /추천 링크/, /수수료를 받을 수 있습니다/],
+  };
+  for (const locale of LOCALES) {
+    const text = readLocale(locale).footer.hostingReferral;
+    for (const pattern of expectations[locale]) {
+      assert.match(text, pattern, `${locale}: footer.hostingReferral 應符合 ${pattern}`);
+    }
+  }
+});
+
+test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存在，且 7 個公民夥伴標籤不再自帶 ↗", () => {
+  const labelKeys = [
+    "g0v",
+    "kumaAcademy",
+    "antiCognitiveWarfare",
+    "taiwanCriminals",
+    "sportsCoach",
+    "mohwVio",
+    "council2026",
+  ];
+  for (const locale of LOCALES) {
+    const footer = readLocale(locale).footer;
+    for (const key of ["opensInNewWindow", "hostingReferral"]) {
+      assert.equal(typeof footer[key], "string", `${locale}.json 缺少 footer.${key}`);
+      assert.ok(footer[key].trim().length > 0);
+    }
+    for (const key of labelKeys) {
+      assert.ok(!footer[key].includes("↗"), `${locale}.json footer.${key} 不應再自帶 ↗（改由元件繪製）`);
+    }
+  }
+});
+
+test("隱私權政策：說明頁尾 HawkHost 推薦連結可能由 HawkHost 設定追蹤 Cookie（頁面與 llms.txt／markdown 同源）", () => {
+  const texts = PRIVACY_SECTIONS.flatMap((section) => [
+    ...(section.paragraphs ?? []),
+    ...(section.items ?? []).map((item) => `${item.label ?? ""}${item.body}`),
+  ]);
+  const matched = texts.filter((text) => text.includes("HawkHost"));
+  assert.equal(matched.length, 1, "隱私權政策應剛好有一則 HawkHost 說明");
+  assert.match(matched[0], /推薦（聯盟）連結/);
+  assert.match(matched[0], /追蹤 Cookie/);
+
+  const llms = buildPrivacyLlmsPageContent("https://health.j172.tw");
+  const llmsText = llms.sections.flatMap((s) => s.paragraphs).join("\n");
+  assert.ok(llmsText.includes("HawkHost"));
+});

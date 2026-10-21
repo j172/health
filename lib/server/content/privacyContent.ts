@@ -7,7 +7,7 @@ import type { LlmsPageContent, LlmsPageSection } from "./llmsPage";
  * this same structure instead of each keeping its own copy of the policy
  * text (issue #444 acceptance criterion 5).
  */
-export const LAST_UPDATED = "2026-10-13";
+export const LAST_UPDATED = "2026-10-21";
 
 export interface PrivacySectionItem {
   /** Optional bold lead-in label rendered before `body` (e.g. "地理位置資訊："). */
@@ -56,6 +56,10 @@ export const PRIVACY_SECTIONS: PrivacySection[] = [
       {
         label: "文章瀏覽計數 Cookie",
         body: "當您閱讀一篇新聞文章時，本站會於您的瀏覽器設置一個不含個人資料、以文章編號命名的 Cookie（有效期 24 小時），僅用於避免同一裝置短時間內重複瀏覽同一篇文章被重複計入「熱門焦點新聞」的點閱統計，不用於廣告、追蹤或建立個人輪廓，也不會與其他資料串接識別您的身分。",
+      },
+      {
+        label: "頁尾的 HawkHost 推薦連結",
+        body: "本站頁尾的「HawkHost」為推薦（聯盟）連結，若您點擊後前往 HawkHost 網站，HawkHost 可能依其自身政策設定追蹤 Cookie，用於辨識推薦來源與計算回饋；該網站的資料處理方式請以 HawkHost 的隱私權政策為準，不受本政策規範。",
       },
     ],
   },
