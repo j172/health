@@ -6,8 +6,8 @@
  * 沒有 Cache-Control 的 /api/* 會被上游補上預設 30 分鐘，所以每個分支都必須顯式宣告。
  */
 
-/** 正常（含「沒有警報」）：Cloudflare 快取 60 秒，過期後 120 秒內可先回舊值並背景更新。 */
-export const TYPHOON_STATUS_CACHE_NORMAL = "public, s-maxage=60, stale-while-revalidate=120";
+/** 正常（含「沒有警報」）：瀏覽器不留存（max-age=0，否則 Cloudflare 會補上 30 分鐘）、Cloudflare 快取 60 秒，過期後 120 秒內可先回舊值並背景更新。 */
+export const TYPHOON_STATUS_CACHE_NORMAL = "public, max-age=0, s-maxage=60, stale-while-revalidate=120";
 
 /** 資料庫讀不到而回 active:false：只快取 10 秒，恢復後馬上能顯示。 */
 export const TYPHOON_STATUS_CACHE_DB_UNAVAILABLE = "public, max-age=0, s-maxage=10";
