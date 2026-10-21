@@ -3,7 +3,7 @@ export const TABLE_DDL = {
     CREATE TABLE IF NOT EXISTS news_items (
       id BIGINT NOT NULL AUTO_INCREMENT,
       source_name VARCHAR(50) NOT NULL,
-      feed_code VARCHAR(10) NOT NULL,
+      feed_code VARCHAR(63) NOT NULL,
       feed_name VARCHAR(100) NOT NULL,
       external_id VARCHAR(100) NOT NULL,
       canonical_url VARCHAR(1000) NOT NULL,
@@ -382,7 +382,7 @@ export const TABLE_DDL = {
     CREATE TABLE IF NOT EXISTS ingest_errors (
       id BIGINT NOT NULL AUTO_INCREMENT,
       ingest_run_id BIGINT NOT NULL,
-      feed_code VARCHAR(10) NULL,
+      feed_code VARCHAR(63) NULL,
       url VARCHAR(1000) NULL,
       message TEXT NOT NULL,
       detail_json JSON NULL,
