@@ -34,6 +34,7 @@ export const buildSimulatedStatus = (level: TyphoonLevel, now: Date = new Date()
   active: true,
   level,
   name: level === "land" ? "（模擬）颱風陸上警報" : "（模擬）颱風海上警報",
+  names: ["（模擬）輕度颱風 測試 (TEST) 第99號"],
   issuedAt: now.toISOString(),
   simulated: true,
 });
