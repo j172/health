@@ -43,11 +43,6 @@ import {
   runTransitFacilityAlertsSync,
   runTransitBusSync,
 } from "@/lib/server/transit/runSync";
-import {
-  runSeniorTourismSync,
-  runSeniorTourismAlertsSync,
-  runSeniorCardSync,
-} from "@/lib/server/seniorTourism/runSync";
 import { runFraudDomainsSync, runModa165027Sync } from "@/lib/server/antiFraud/runSync";
 import {
   runPoliceFraudInterdictionStatsSync,
@@ -229,8 +224,7 @@ export const registerCronJobs = (): void => {
   // news-card-images+power-sync 0/10/20/30/40/50, water-outages 25,
   // wra-water-outages 18/48, aqx-sync 10/40, wra-sync 8/38, wra-iot
   // 12/27/42/57, emergency-rooms
-  // 7/22/37/52, transit-accessibility-alerts 16, senior-tourism-alerts
-  // 17.
+  // 7/22/37/52, transit-accessibility-alerts 16.
   cron.schedule(
     "36 4 * * *",
     runGuarded("earthquakes-retention-cleanup-cron.log", () => runEarthquakeRetentionCleanup()),
@@ -448,7 +442,7 @@ export const registerCronJobs = (): void => {
   // 週一 02:32。分鐘 32 不在任何「每小時」job 的格線上 (rss 5/35、aqi 20/50、
   // cwa 15/45、earthquakes 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、
   // water-outages 25、wra-water-outages 18/48、emergency-rooms 7/22/37/52、
-  // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs
+  // transit-accessibility-alerts 16、gdacs
   // 14/44、wra-iot 12/27/42/57、news-card-images+power
   // 0/10/20/30/40/50)，2 點區段目前只有 cdc-alerts 的 15
   // 分。刻意不用 spec 提議的 34 分，避免與同期其他 FDA 週更 ticket 撞同一個
@@ -499,32 +493,13 @@ export const registerCronJobs = (): void => {
     "16 * * * *",
     runGuarded("transit-accessibility-alerts-cron.log", () => runTransitFacilityAlertsSync()),
   );
-  // TDX Senior/Tourism 景區無障礙設施/服務/樂齡套票 (issue #436) — 來源
-  // UpdateInterval 多為 86400 (每日)，排在 3am off-peak 區段，避開 public-art 的
-  // "0 3" 與 transit-accessibility 的 "15 3"。
-  cron.schedule(
-    "20 3 * * *",
-    runGuarded("senior-tourism-sync-cron.log", () => runSeniorTourismSync()),
-  );
-  // TDX Senior/Tourism 景區設施停用公告 (issue #436) — 來源 UpdateInterval 為
-  // -1 (事件觸發)，需要比上面每日同步更高的更新頻率；分鐘 17 在本檔案中
-  // 目前未被任何其他 job 佔用 (不與 transit-accessibility-alerts 的 16 衝突)。
-  // 原本每 30 分鐘（17,47）一次、每次 1 個 TDX 請求；TDX 點數超額後減半為每小時一次
-  // （每天 24 個請求），分鐘 17 不變。
-  cron.schedule(
-    "17 * * * *",
-    runGuarded("senior-tourism-alerts-cron.log", () => runSeniorTourismAlertsSync()),
-  );
-  // TDX Senior/SeniorCard 22縣市敬老卡交通補助 (issue #436) — 補助政策不會頻繁
-  // 變動，daily 即可；排在 3am 區段的 25 分，避開上面兩個新 job 用到的 20 分。
-  cron.schedule(
-    "25 3 * * *",
-    runGuarded("senior-card-sync-cron.log", () => runSeniorCardSync()),
-  );
+  // issue #729：樂齡旅遊（景區無障礙設施／服務／套票每日同步、設施停用公告每小時同步）
+  // 與敬老卡每日同步三個 TDX 排程已移除。敬老卡補助改為靜態資料，需要更新時由管理員
+  // 手動呼叫 POST /api/admin/senior-card-sync。
   // TDX Basic Bus Vehicle/Schedule 低地板公車比率 (issue #467) — 取代
   // accessible_transit_routes 原本寫死的種子值。來源為即時車輛/班次資料而非
   // UpdateInterval 固定值，daily 已足夠反映車隊配置的實際變動；排在 3am
-  // 區段的 30 分，避開上面三個 transit/senior job 用到的 15/20/25 分。
+  // 區段的 30 分，避開同區段 transit-accessibility 的 15 分。
   cron.schedule(
     "30 3 * * *",
     runGuarded("transit-bus-sync-cron.log", () => runTransitBusSync()),
@@ -576,7 +551,7 @@ export const registerCronJobs = (): void => {
   // 0/10/20/30/40/50、water-outages 的 25、wra-water-outages 的 18/48、aqx 的
   // 10/40、wra-sync 的 8/38、wra-iot 的 12/27/42/57、
   // emergency-rooms 的 7/22/37/52、transit-accessibility-alerts 的
-  // 16、senior-tourism-alerts 的 17。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // 16。這個 job 自己再用 withAdvisoryLock 防重疊，見
   // lib/server/gdacs/runSync.ts。
   cron.schedule(
     "14,44 * * * *",
@@ -599,7 +574,7 @@ export const registerCronJobs = (): void => {
   // 3/13/23/33/43/53、news-card-images+power-realtime 0/10/20/30/40/50、
   // water-outages 25、wra-water-outages 18/48、aqx 10/40、wra-sync 8/38、
   // wra-iot 12/27/42/57、emergency-rooms 7/22/37/52、
-  // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs-sync
+  // transit-accessibility-alerts 16、gdacs-sync
   // 14/44)，也不是 culture-shows 的 10 分或 pest-alerts 的 12 分，所以在
   // 0/6/12/18 這四個整點都不會撞到任何既有 job。這個 job 自己再用
   // withAdvisoryLock 防重疊，見 lib/server/who/runSync.ts。

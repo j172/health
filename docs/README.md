@@ -43,7 +43,7 @@
 | **高** | DB-1 | `schema.ts` 建表 DDL 仍是舊的寬 UNIQUE KEY；資料庫重建後 4 張表會再度無限膨脹（重演 2026-09-21 全站中斷） | [09](domains/09-database-data-integrity.md) |
 | **高** | O-1 | httpClient 每次 HTTPS 請求重建 TLS SecureContext，記憶體壓力下 `std::bad_alloc` 崩潰（#401 OPEN） | [11](domains/11-hosting-ops-incidents.md) |
 | **高** | T-1 | `npm test` 會執行健保懲處匯入器：`scripts/verify-nhi-penalties.test.mjs` import 了 `scripts/import-nhi-penalties.mjs`，後者在最外層呼叫 `main()` → 每次測試都連網下載並覆寫 `data/facilities-seeds/nhi-penalties.json`，若環境有 `ADMIN_SECRET` 還會推送正式 API。修法：腳本加 `if (import.meta.url === pathToFileURL(process.argv[1]).href)` 守衛 | [05](domains/05-tools-medical-food.md) |
-| **高** | W-1 | TDX 樂齡 API base path 未確認，`accessible-transit` 與 `senior-friendly` 實際跑種子資料。**2026-10-12 已找到正確路徑**（`/api/seniors/V1/Senior`），修正在分支 `fix/tdx-seniors-base-path`，待合併部署後實測；研究見 [2.0/tdx-basic-integration-research.md](2.0/tdx-basic-integration-research.md) | [06](domains/06-tools-welfare-family-culture.md) |
+| **高** | W-1 | TDX 樂齡 API base path 未確認，`accessible-transit` 與 `senior-friendly`（#729 起只剩敬老卡補助，靜態資料）實際跑種子資料。**2026-10-12 已找到正確路徑**（`/api/seniors/V1/Senior`），修正在分支 `fix/tdx-seniors-base-path`，待合併部署後實測；研究見 [2.0/tdx-basic-integration-research.md](2.0/tdx-basic-integration-research.md) | [06](domains/06-tools-welfare-family-culture.md) |
 | 中 | I-1 | 新聞內頁 JSON-LD 圖片卡在通用來源圖（疑 ISR 時序） | [02](domains/02-news-images.md) |
 | 中 | D-1 | NCDR 全類別示警只有後端，沒有前端分頁 | [07](domains/07-tools-disaster-environment-energy.md) |
 | 中 | DB-2 | `migrations/*.sql` 沒有套用紀錄表 | [09](domains/09-database-data-integrity.md) |

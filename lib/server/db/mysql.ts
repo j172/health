@@ -69,6 +69,14 @@ const RETIRED_YOUBIKE_TABLES = ["youbike_stations", "youbike_sync_state"] as con
 /** issue #728：全台軌道營運通阻整個移除，metro_alerts 同樣由 runSchemaMigrations 冪等 DROP（不可再被任何 CREATE 建回）。 */
 const RETIRED_METRO_ALERTS_TABLES = ["metro_alerts"] as const;
 
+/** issue #729：樂齡旅遊整個移除，四張表同樣由 runSchemaMigrations 冪等 DROP（不可再被任何 CREATE 建回）；敬老卡表 senior_card_subsidies 不在此列。 */
+const RETIRED_SENIOR_TOURISM_TABLES = [
+  "senior_tourism_facilities",
+  "senior_tourism_services",
+  "senior_tour_packages",
+  "senior_tourism_alerts",
+] as const;
+
 const runSchemaMigrations = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
@@ -179,11 +187,17 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.waterPlantQuality);
   await p.query(TABLE_DDL.moaDebrisFlowAlerts);
   await p.query(TABLE_DDL.governmentHotlines);
-  // TDX Senior/Tourism + SeniorCard (issue #436) — new tables, no ALTER needed.
-  await p.query(TABLE_DDL.seniorTourismFacilities);
-  await p.query(TABLE_DDL.seniorTourismServices);
-  await p.query(TABLE_DDL.seniorTourPackages);
-  await p.query(TABLE_DDL.seniorTourismAlerts);
+  // issue #729：樂齡旅遊整個移除。這四張表已沒有任何建表敘述、種子或讀寫程式，
+  // 這裡以冪等的 DROP TABLE IF EXISTS 清掉已部署環境裡殘留的表（不備份，使用者已決定）；
+  // 全新資料庫沒有這些表、已經刪過的環境重跑，都是 no-op。失敗只記警告，理由同 YouBike／軌道通阻。
+  // 敬老卡補助表 senior_card_subsidies 保留（靜態資料，優先讀資料表、空表才用種子）。
+  for (const legacyTable of RETIRED_SENIOR_TOURISM_TABLES) {
+    try {
+      await p.query(`DROP TABLE IF EXISTS \`${legacyTable}\``);
+    } catch (err) {
+      console.warn(`[ensureSchema] DROP TABLE IF EXISTS ${legacyTable} warning:`, err);
+    }
+  }
   await p.query(TABLE_DDL.seniorCardSubsidies);
   // Fraud-domain list (issue #564) — new table, no ALTER needed.
   await p.query(TABLE_DDL.fraudDomains);
