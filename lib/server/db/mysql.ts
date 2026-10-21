@@ -77,6 +77,12 @@ const RETIRED_SENIOR_TOURISM_TABLES = [
   "senior_tourism_alerts",
 ] as const;
 
+/** issue #730：無障礙交通頁瘦身，車站導覽圖與跨運具轉乘兩張永遠為空的表由 runSchemaMigrations 冪等 DROP（不可再被任何 CREATE 建回）；其餘 accessible_transit_* 表保留。 */
+const RETIRED_ACCESSIBLE_TRANSIT_TABLES = [
+  "accessible_transit_station_maps",
+  "accessible_transit_transfers",
+] as const;
+
 const runSchemaMigrations = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
@@ -176,8 +182,18 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.accessibleTransitRoutes);
   await p.query(TABLE_DDL.accessibleTransitFacilities);
   await p.query(TABLE_DDL.accessibleTransitFacilityAlerts);
-  await p.query(TABLE_DDL.accessibleTransitStationMaps);
-  await p.query(TABLE_DDL.accessibleTransitTransfers);
+  // issue #730：無障礙交通頁瘦身。導覽圖與轉乘兩張表（每日軌道同步的產物，從來沒有資料）已沒有任何
+  // 建表敘述、種子或讀寫程式，這裡以冪等的 DROP TABLE IF EXISTS 清掉已部署環境裡殘留的表
+  // （不備份，使用者已決定）；全新資料庫沒有這兩張表、已經刪過的環境重跑，都是 no-op。
+  // 失敗只記警告，理由同 YouBike／軌道通阻／樂齡旅遊。
+  // 其餘 accessible_transit_* 表（routes／facilities／facility_alerts／sync_state）保留。
+  for (const legacyTable of RETIRED_ACCESSIBLE_TRANSIT_TABLES) {
+    try {
+      await p.query(`DROP TABLE IF EXISTS \`${legacyTable}\``);
+    } catch (err) {
+      console.warn(`[ensureSchema] DROP TABLE IF EXISTS ${legacyTable} warning:`, err);
+    }
+  }
   await p.query(TABLE_DDL.accessibleTransitSyncState);
   await p.query(TABLE_DDL.wraInundationSensors);
   await p.query(TABLE_DDL.wraWaterOutages);
@@ -362,11 +378,11 @@ const runSchemaMigrations = async (): Promise<void> => {
     ALTER TABLE aqi_readings
       ADD INDEX IF NOT EXISTS idx_aqi_reading_geo (lat, lng)
   `);
-  // TDX Senior/Rail sync (issue #434) upgrades accessible_transit_facilities
+  // TDX Senior/Rail sync (issue #434) upgraded accessible_transit_facilities
   // from one-time seed data to a real daily sync: source distinguishes seed
   // rows from tdx_senior rows, station_id is TDX's own station code, and the
-  // unique key lets runSync() upsert one row per (station, system) instead
-  // of only ever inserting.
+  // unique key let the sync upsert one row per (station, system). The daily
+  // sync was removed in issue #730; the columns/key stay for the rows already there.
   await p.query(`
     ALTER TABLE accessible_transit_facilities
       ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'seed' COMMENT 'seed | tdx_senior' AFTER lng,
@@ -377,12 +393,12 @@ const runSchemaMigrations = async (): Promise<void> => {
     ALTER TABLE accessible_transit_facilities
       ADD UNIQUE KEY IF NOT EXISTS uniq_station (station_id, system_type)
   `);
-  // TDX Basic Bus sync (issue #467) upgrades accessible_transit_routes'
-  // low_floor_ratio from a one-time hardcoded seed value to a real daily
-  // sync from GET /v3/Bus/Vehicle,Schedule/City/{City} — source distinguishes
-  // seed rows from tdx_bus rows, and sample_trips_json holds a small sample
-  // of per-schedule IsLowFloor flags for the "某條路線某個班次是否為低地板車"
-  // UI requirement (see lib/server/transit/busLowFloorMath.ts).
+  // TDX Basic Bus sync (issue #467) upgraded accessible_transit_routes'
+  // low_floor_ratio from a one-time hardcoded seed value to a daily sync from
+  // GET /v3/Bus/Vehicle,Schedule/City/{City} — source distinguishes seed rows
+  // from tdx_bus rows, and sample_trips_json holds a small sample of
+  // per-schedule IsLowFloor flags. The daily bus sync was removed in issue #730;
+  // the columns stay for the rows already there (frozen, not live).
   await p.query(`
     ALTER TABLE accessible_transit_routes
       ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'seed' COMMENT 'seed | tdx_bus' AFTER description,

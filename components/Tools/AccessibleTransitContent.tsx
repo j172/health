@@ -4,13 +4,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import type {
   AccessibleTransitRoute,
   AccessibleTransitFacility,
   AccessibleTransitHotline,
-  AccessibleTransitStationMap,
-  AccessibleTransitTransfer,
   TransitAccessibilityOverview,
   TransitSystemType,
 } from "@/lib/server/transit/types";
@@ -96,29 +93,6 @@ export default function AccessibleTransitContent() {
     });
   }, [data?.alerts, nowTs]);
 
-  // 以站名比對導覽圖／轉乘資料到對應的設施卡片（TDX 同步資料的 stationOrAgency
-  // 即站名；舊版 seed 資料的 stationOrAgency 是機構全稱，比對不到也沒關係，單純
-  // 不顯示額外資訊）。
-  const mapsByStation = useMemo(() => {
-    const m = new Map<string, AccessibleTransitStationMap[]>();
-    for (const map of data?.stationMaps || []) {
-      const list = m.get(map.stationName) || [];
-      list.push(map);
-      m.set(map.stationName, list);
-    }
-    return m;
-  }, [data?.stationMaps]);
-
-  const transfersByStation = useMemo(() => {
-    const m = new Map<string, AccessibleTransitTransfer[]>();
-    for (const t of data?.transfers || []) {
-      const list = m.get(t.stationName) || [];
-      list.push(t);
-      m.set(t.stationName, list);
-    }
-    return m;
-  }, [data?.transfers]);
-
   const counties = data?.counties || [
     "臺北市", "新北市", "基隆市", "桃園市", "新竹市", "新竹縣", "苗栗縣",
     "臺中市", "彰化縣", "南投縣", "雲林縣", "嘉義市", "嘉義縣", "臺南市",
@@ -136,7 +110,7 @@ export default function AccessibleTransitContent() {
                 only the surrounding generic label is translated. */}
             <span>♿ {t("accessibleTransitTool.dataSourceLabel", "通用無障礙資料來源：")}交通部 TDX ＋ 衛福部</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>{t("accessibleTransitTool.countyCoverageBadge", "22 縣市即時覆蓋")}</span>
+            <span>{t("accessibleTransitTool.countyCoverageBadge", "22 縣市資料覆蓋")}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
             {t("accessibleTransitTool.pageTitle", "全台無障礙通用交通地圖")}
@@ -480,50 +454,6 @@ export default function AccessibleTransitContent() {
                         </a>
                       </div>
                     )}
-
-                    {/* 導覽圖連結（有資料才顯示） */}
-                    {(mapsByStation.get(f.stationOrAgency) || [])
-                      .filter((m) => m.mapUrl)
-                      .slice(0, 1)
-                      .map((m, mIdx) => (
-                        <div key={mIdx} className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
-                          <a
-                            href={appendOutboundUtm(m.mapUrl!, {
-                              medium: "tool_outbound",
-                              campaign: "accessible_transit",
-                            })}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-                          >
-                            <span>🗺️</span>
-                            <span>
-                              {t("accessibleTransitTool.stationMapLabel", "查看車站導覽圖")}
-                              {m.mapName ? `（${m.mapName}）` : ""}
-                            </span>
-                          </a>
-                        </div>
-                      ))}
-
-                    {/* 周邊轉乘摘要（有資料才顯示） */}
-                    {(transfersByStation.get(f.stationOrAgency) || []).length > 0 && (
-                      <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
-                        <div className="text-xs text-slate-500 mb-1">
-                          {t("accessibleTransitTool.nearbyTransfersLabel", "周邊轉乘：")}
-                        </div>
-                        <ul className="space-y-0.5">
-                          {(transfersByStation.get(f.stationOrAgency) || [])
-                            .slice(0, 3)
-                            .map((transfer, tIdx) => (
-                              <li key={tIdx} className="text-xs text-slate-600 dark:text-slate-300">
-                                🔀 {transfer.transferMode || t("accessibleTransitTool.transferFallback", "轉乘")}
-                                {transfer.exitName ? `（${transfer.exitName}）` : ""}
-                                {transfer.transferDescription ? ` — ${transfer.transferDescription}` : ""}
-                              </li>
-                            ))}
-                        </ul>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -537,6 +467,13 @@ export default function AccessibleTransitContent() {
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>🚌</span>
                   <span>{t("accessibleTransitTool.busRoutesHeading", "主力低地板公車無障礙路線")}</span>
+                  {/* issue #730：低地板比率改為靜態種子資料（每日 TDX 公車同步已移除），明確標示非即時。 */}
+                  <span
+                    data-testid="bus-static-badge"
+                    className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400"
+                  >
+                    {t("accessibleTransitTool.busStaticBadge", "種子資料・非即時")}
+                  </span>
                 </h2>
                 <span className="text-xs text-slate-500">
                   {t("accessibleTransitTool.busRoutesCountTemplate", "共 {count} 條推薦就醫交通路線").replace(
@@ -545,6 +482,12 @@ export default function AccessibleTransitContent() {
                   )}
                 </span>
               </div>
+              <p data-testid="bus-static-note" className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                {t(
+                  "accessibleTransitTool.busStaticNote",
+                  "低地板公車比率為種子資料（靜態整理），並非即時車輛資料，僅供規劃出行參考；實際班次與車輛請以各縣市客運業者公告為準。",
+                )}
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {data?.routes.map((r, idx) => (
                   <div
@@ -557,24 +500,6 @@ export default function AccessibleTransitContent() {
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
                             {r.county}
                           </span>
-                          {/* 真實資料 vs 示範種子資料標示 — 對應 issue #467 驗收標準「來自每日
-                              同步的真實資料，不是寫死的數字」，讓使用者（與人工部署後驗證）一看
-                              就能分辨這條路線是哪種來源。 */}
-                          {r.source === "tdx_bus" ? (
-                            <span
-                              className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400"
-                              title={t("accessibleTransitTool.liveSyncTitle", "交通部 TDX 每日同步之真實車輛資料")}
-                            >
-                              {t("accessibleTransitTool.liveSyncBadge", "✓ 即時同步")}
-                            </span>
-                          ) : (
-                            <span
-                              className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-400"
-                              title={t("accessibleTransitTool.demoDataTitle", "尚未完成 TDX 同步，暫以示範資料顯示")}
-                            >
-                              {t("accessibleTransitTool.demoDataBadge", "示範資料")}
-                            </span>
-                          )}
                         </div>
                         <span className="text-xs font-medium text-slate-400">
                           {r.operatorName}
@@ -587,8 +512,7 @@ export default function AccessibleTransitContent() {
                         {r.description}
                       </p>
 
-                      {/* 班次層級低地板標示 — issue #467「可以看到某條路線某個班次是否為
-                          低地板車」，資料來自 TDX Bus/Schedule 的 Timetable.IsLowFloor 取樣。 */}
+                      {/* 班次層級低地板標示 — issue #467；只有早期 TDX 同步已寫入的路線才有（凍結快照，非即時）。 */}
                       {r.sampleTrips && r.sampleTrips.length > 0 && (
                         <div className="mb-4">
                           <div className="text-xs text-slate-500 mb-1.5">

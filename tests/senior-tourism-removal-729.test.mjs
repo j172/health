@@ -104,12 +104,12 @@ test("registerJobs.ts schedules no senior tourism or senior card job, but the el
   const jobs = extractCronSchedules(source);
   assert.ok(!jobs.some((job) => /senior/i.test(job.name)), "no senior-tourism-*/senior-card-* cron job");
   assert.doesNotMatch(stripComments(source), /runSeniorTourism|runSeniorCardSync|seniorCard|seniorTourism/);
-  // 不誤傷：無障礙交通頁的電梯停用公告與每日軌道無障礙同步（另一個資料來源與資料表）。
+  // 不誤傷：無障礙交通頁的電梯停用公告（另一個資料來源與資料表）。
   const elevator = jobs.find((job) => job.name === "transit-accessibility-alerts-cron.log");
   assert.ok(elevator, "transit-accessibility-alerts must still be scheduled");
   assert.equal(elevator.expression, "16 * * * *");
-  assert.ok(jobs.some((job) => job.name === "transit-accessibility-sync-cron.log"), "daily rail accessibility sync stays");
-  assert.ok(fs.existsSync(path.join(REPO_ROOT_PATH, "lib", "server", "transit", "tdxSeniorClient.ts")), "rail accessibility TDX client stays");
+  // 每日軌道無障礙同步已在 issue #730 移除（見 tests/accessible-transit-slimdown-730.test.mjs）。
+  assert.ok(fs.existsSync(path.join(REPO_ROOT_PATH, "lib", "server", "transit", "tdxSeniorClient.ts")), "rail accessibility TDX client (elevator-outage alerts) stays");
   assert.match(stripComments(read("lib", "server", "db", "schema.ts")), /CREATE TABLE IF NOT EXISTS accessible_transit_facility_alerts/);
   // 不寫死總數：後續移除功能的票也會減少排程，精確數字以 docs/domains/10-scheduling-sync-ci.md 為準。
   assert.ok(jobs.length >= 30, `expected the reader to still find the other jobs, found ${jobs.length}`);

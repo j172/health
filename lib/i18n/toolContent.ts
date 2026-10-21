@@ -428,7 +428,7 @@ const TOOL_I18N_CONTENT: Record<TranslatedToolSlug, Record<PathLocale, Localized
     en: {
       title: "Nationwide Accessible Transit Map: Low-Floor Buses / Metro Accessibility / Universal Taxis / Rehabus",
       description:
-        "Real-time lookup of low-floor bus ratios across 22 counties/cities, accessible-boarding-ramp reservations for Taipei and Kaohsiung Metro plus Taiwan Railway/High Speed Rail, a nationwide universal accessible-taxi dispatch platform, and each county/city's Rehabus (復康巴士) dispatch hotline.",
+        "Lookup of low-floor bus ratios (static seed data, not real-time) across 22 counties/cities, accessible-boarding-ramp reservations for Taipei and Kaohsiung Metro plus Taiwan Railway/High Speed Rail, a nationwide universal accessible-taxi dispatch platform, and each county/city's Rehabus (復康巴士) dispatch hotline.",
       directAnswer:
         "This map integrates the Ministry of Transportation's TDX data and each municipality's low-floor bus routes, accessible boarding assistance on Taiwan Railway/High Speed Rail/Metro, and Rehabus plus universal-taxi hotlines across all 22 counties/cities nationwide — helping people with disabilities and older adults travel safely and accessibly.",
       faqs: [
@@ -452,7 +452,7 @@ const TOOL_I18N_CONTENT: Record<TranslatedToolSlug, Record<PathLocale, Localized
     ja: {
       title: "全台バリアフリー交通マップ：低床バス／MRTバリアフリー／ユニバーサルタクシー／福祉バス",
       description:
-        "全国22県市の低床バス比率、台北・高雄MRTおよび台湾鉄路・新幹線のバリアフリー乗車用渡し板予約、全国対応のユニバーサル配車プラットフォーム、各県市の福祉バス（復康巴士）配車専用電話をリアルタイムで検索。",
+        "全国22県市の低床バス比率、台北・高雄MRTおよび台湾鉄路・新幹線のバリアフリー乗車用渡し板予約、全国対応のユニバーサル配車プラットフォーム、各県市の福祉バス（復康巴士）配車専用電話を検索（低床バス比率は静的なシードデータで、リアルタイムではありません）。",
       directAnswer:
         "本マップは交通部TDXと各直轄市の低床バス幹線、台湾鉄路・新幹線・MRTのバリアフリー案内設備、そして全国22県市の福祉バスとユニバーサルタクシー専用電話を統合し、障がい者や高齢者の安全でバリアフリーな移動を支援します。",
       faqs: [
@@ -476,7 +476,7 @@ const TOOL_I18N_CONTENT: Record<TranslatedToolSlug, Record<PathLocale, Localized
     ko: {
       title: "전국 무장애 교통지도: 저상버스 / 지하철 장애인 편의 / 유니버설 택시 / 재활버스",
       description:
-        "전국 22개 현·시의 저상버스 비율, 타이베이·가오슝 지하철 및 대만철도·고속철도의 장애인 승차 램프 예약, 전국 유니버설 장애인 택시 호출 플랫폼, 각 현·시의 재활버스(復康巴士) 배차 전용 전화를 실시간으로 조회합니다.",
+        "전국 22개 현·시의 저상버스 비율, 타이베이·가오슝 지하철 및 대만철도·고속철도의 장애인 승차 램프 예약, 전국 유니버설 장애인 택시 호출 플랫폼, 각 현·시의 재활버스(復康巴士) 배차 전용 전화를 조회합니다(저상버스 비율은 정적 시드 데이터이며 실시간이 아닙니다).",
       directAnswer:
         "이 지도는 교통부 TDX와 각 직할시의 저상버스 노선, 대만철도·고속철도·지하철의 장애인 안내 편의시설, 그리고 전국 22개 현·시의 재활버스 및 유니버설 택시 전용 전화를 통합하여 장애인과 고령자의 안전하고 편리한 이동을 지원합니다.",
       faqs: [

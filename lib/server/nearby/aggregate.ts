@@ -6,7 +6,7 @@
  * — each caller supplies a `run()` closure per type, and this module just
  * runs them all through `Promise.allSettled` and turns each outcome into a
  * uniform ok/error result. Same isolation shape as
- * lib/server/transit/tdxBusClient.ts (per-county): one type throwing (a
+ * the per-county TDX fetchers (lib/server/facilities/sources/tdxParking.ts): one type throwing (a
  * timeout, a DB error, an unexpected shape) never takes down the others, and
  * is reported rather than silently dropped.
  *

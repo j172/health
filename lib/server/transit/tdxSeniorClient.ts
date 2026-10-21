@@ -7,88 +7,14 @@ import type { RailSystem } from "./railStationCounty";
 /**
  * Base path for TDX's "Senior" (樂齡/敬老) Rail accessibility APIs — issue
  * #434 / docs/archive/specs/tdx-senior-rail-accessibility-upgrade.md section 2.
+ * issue #730：只剩 Facility/Alert（每小時電梯停用公告）一支；Facility／Service／Map／Transfer
+ * 四支（每日軌道無障礙同步）已移除。
  *
  * The 2026-10-10 implementation guessed `/api/advanced/v1/Senior/Rail/...`
  * and every tier/version variant 404'd with a valid token. The real base is
  * TDX's separate `seniors` service category (see lib/server/tdx/seniors.ts).
  */
 const SENIOR_RAIL_BASE = `${TDX_SENIORS_API_BASE}/Rail/Station`;
-
-export interface SeniorFacilityItem {
-  FacilityID?: string;
-  FacilityName?: string;
-  FloorLevel?: string;
-  Description?: string;
-  ExitID?: string;
-  ExitName?: string;
-  /** Typed `string` in TDX's OpenAPI document — coerce with parseTdxCoordinate(). */
-  PositionLon?: string | number;
-  PositionLat?: string | number;
-  PlatformID?: string;
-  PlatformName?: string;
-}
-
-/**
- * The Facility response's known categories (Elevators/Toilets/AEDs/
- * PowerBankRentalStations per the spec's example payload) plus an index
- * signature — TDX may add further facility-category arrays over time, and
- * flattenFacilityCategories() below picks up any array-valued key rather
- * than hard-coding an exhaustive category list.
- */
-export interface SeniorStationFacility {
-  StationID: string;
-  StationName?: string;
-  AutorityCode?: string;
-  UpdateTime?: string;
-  UpdateInterval?: number;
-  Elevators?: SeniorFacilityItem[];
-  Toilets?: SeniorFacilityItem[];
-  AEDs?: SeniorFacilityItem[];
-  PowerBankRentalStations?: SeniorFacilityItem[];
-  [category: string]: unknown;
-}
-
-export interface SeniorStationService {
-  StationID: string;
-  StationName?: string;
-  ServiceName?: string;
-  Description?: string;
-  ServiceURL?: string;
-  ServicePhone?: string;
-  AutorityCode?: string;
-  UpdateTime?: string;
-  UpdateInterval?: number;
-}
-
-export interface SeniorStationMap {
-  StationID: string;
-  StationName?: string;
-  FloorLevel?: string;
-  MapName?: string;
-  MapURL?: string;
-  Geometry?: string;
-  AutorityCode?: string;
-  UpdateTime?: string;
-  UpdateInterval?: number;
-}
-
-export interface SeniorStationTransfer {
-  StationID: string;
-  StationName?: string;
-  FloorLevel?: string;
-  ExitID?: string;
-  ExitName?: string;
-  /** Typed `string` in TDX's OpenAPI document — coerce with parseTdxCoordinate(). */
-  PositionLon?: string | number;
-  PositionLat?: string | number;
-  TransferRouteDescription?: string;
-  TransferMode?: string;
-  TransferDescription?: string;
-  IsOnSiteTransfer?: boolean;
-  AutorityCode?: string;
-  UpdateTime?: string;
-  UpdateInterval?: number;
-}
 
 export interface SeniorStationFacilityAlert {
   AlertID: string;
@@ -107,29 +33,6 @@ export interface SeniorStationFacilityAlert {
   UpdateTime?: string;
   UpdateInterval?: number;
 }
-
-const NON_CATEGORY_KEYS = new Set([
-  "StationID",
-  "StationName",
-  "AutorityCode",
-  "UpdateTime",
-  "UpdateInterval",
-]);
-
-/** Flattens every array-valued facility category on a SeniorStationFacility row into a single {category, item}[] list, regardless of exactly which category names TDX returns. */
-export const flattenFacilityCategories = (
-  facility: SeniorStationFacility,
-): Array<{ category: string; item: SeniorFacilityItem }> => {
-  const out: Array<{ category: string; item: SeniorFacilityItem }> = [];
-  for (const [key, value] of Object.entries(facility)) {
-    if (NON_CATEGORY_KEYS.has(key)) continue;
-    if (!Array.isArray(value)) continue;
-    for (const item of value) {
-      out.push({ category: key, item: item as SeniorFacilityItem });
-    }
-  }
-  return out;
-};
 
 /**
  * Every call goes through tdxGetJsonWithRetry(), i.e. the process-wide
@@ -153,18 +56,6 @@ const fetchSeniorRail = async <T>(path: string, system: RailSystem): Promise<T[]
   }
   return res.data;
 };
-
-export const fetchSeniorFacility = (system: RailSystem) =>
-  fetchSeniorRail<SeniorStationFacility>("/Facility", system);
-
-export const fetchSeniorService = (system: RailSystem) =>
-  fetchSeniorRail<SeniorStationService>("/Service", system);
-
-export const fetchSeniorMap = (system: RailSystem) =>
-  fetchSeniorRail<SeniorStationMap>("/Map", system);
-
-export const fetchSeniorTransfer = (system: RailSystem) =>
-  fetchSeniorRail<SeniorStationTransfer>("/Transfer", system);
 
 export const fetchSeniorFacilityAlert = (system: RailSystem) =>
   fetchSeniorRail<SeniorStationFacilityAlert>("/Facility/Alert", system);

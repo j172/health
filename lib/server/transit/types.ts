@@ -9,8 +9,9 @@ export type TransitSystemType =
 // One sample schedule/trip-level low-floor flag for a route (issue #467's
 // "可以看到某條路線某個班次是否為低地板車" requirement) — sourced from TDX's
 // GET /v3/Bus/Schedule/City/{City}, whose Timetable entries each carry their
-// own IsLowFloor. Only a small sample (see buildSampleTrips() in
-// busLowFloorMath.ts) is kept per route, not every scheduled trip.
+// own IsLowFloor. issue #730 removed the daily bus sync that wrote it; the
+// column is kept and rows that an earlier sync already wrote are still read
+// back (frozen snapshot, not live).
 export interface AccessibleTransitRouteTrip {
   tripId: string;
   departureTime?: string | null;
@@ -27,11 +28,12 @@ export interface AccessibleTransitRoute {
   isAllLowFloor: boolean;
   wheelchairSlots: number;
   description?: string | null;
-  // Present once this row comes from a real TDX Basic Bus sync rather than
-  // the hardcoded seed (lib/server/transit/data/transitSeed.ts).
+  // "tdx_bus" only on rows an earlier TDX Basic Bus sync already wrote (that
+  // sync was removed in issue #730); otherwise the hardcoded seed
+  // (lib/server/transit/data/transitSeed.ts).
   source?: "seed" | "tdx_bus";
   // Small sample of this route's schedule-level low-floor flags — only set
-  // for source: "tdx_bus" rows that had matching Schedule/City data.
+  // for source: "tdx_bus" rows that had matching Schedule/City data (frozen).
   sampleTrips?: AccessibleTransitRouteTrip[];
 }
 
@@ -62,7 +64,8 @@ export interface AccessibleTransitFacility {
   featureItems?: AccessibleTransitFacilityItem[];
   lat?: number | null;
   lng?: number | null;
-  // Present once this row comes from a real TDX sync rather than seed data.
+  // "tdx_senior" only on rows an earlier TDX Senior/Rail sync already wrote
+  // (removed in issue #730); otherwise seed data.
   source?: "seed" | "tdx_senior";
   stationId?: string | null;
 }
@@ -87,29 +90,11 @@ export interface AccessibleTransitFacilityAlert {
   endTime?: string | null;
 }
 
-export interface AccessibleTransitStationMap {
-  stationName: string;
-  railSystem: string;
-  floorLevel?: string | null;
-  mapName?: string | null;
-  mapUrl?: string | null;
-}
-
-export interface AccessibleTransitTransfer {
-  stationName: string;
-  railSystem: string;
-  exitName?: string | null;
-  transferMode?: string | null;
-  transferDescription?: string | null;
-}
-
 export interface TransitAccessibilityOverview {
   routes: AccessibleTransitRoute[];
   facilities: AccessibleTransitFacility[];
   hotlines: AccessibleTransitHotline[];
   alerts: AccessibleTransitFacilityAlert[];
-  stationMaps: AccessibleTransitStationMap[];
-  transfers: AccessibleTransitTransfer[];
   summary: {
     totalRoutes: number;
     avgLowFloorRatio: number;

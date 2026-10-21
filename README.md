@@ -186,7 +186,7 @@ flowchart TD
 | **身心障礙福利服務機構** | [`/tools/disability-welfare`](https://health.j172.tw/tools/disability-welfare) | 衛生福利部社會及家庭署 | 日間日間照顧、住宿式全日型生活機構 |
 | **無障礙自動櫃員機 (ATM)** | [`/tools/disability-atm`](https://health.j172.tw/tools/disability-atm) | 金融監督管理委員會 / 銀行公會 | 視障語音、輪椅友善升降無障礙 ATM 定位 |
 | **全國非營利公衛組織 (NPO)** | [`/tools/npo-organizations`](https://health.j172.tw/tools/npo-organizations) | 內政部人民團體資料庫 | 公衛醫療基金會、罕病協會與長照公益組織 |
-| **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車、輪椅接駁客運班次路線總覽 |
+| **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車（靜態種子資料，非即時）、輪椅接駁客運班次路線與每小時電梯停用公告 |
 | **全臺身心障礙庇護工場** | [`/tools/sheltered-workshops`](https://health.j172.tw/tools/sheltered-workshops) | 勞動部勞動力發展署 | 烘焙、手工藝、清潔服務庇護商品與訂購指南 |
 | **助聽器補助特約廠商** | [`/tools/hearing-aid-subsidies`](https://health.j172.tw/tools/hearing-aid-subsidies) | 社會局身心障礙輔具中心 | 政府聽力輔具評估與特約代償墊付門市 |
 | **綠色殯葬與環保設施** | [`/tools/funeral-facilities`](https://health.j172.tw/tools/funeral-facilities) | 內政部殯葬資訊網 | 樹葬、海葬、灑葬環保自然葬園區查詢 |

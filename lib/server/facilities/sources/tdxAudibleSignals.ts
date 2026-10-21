@@ -98,8 +98,7 @@ function mapAps(item: TdxApsItem, countyLabel: string): FacilityRecord | null {
 }
 
 /**
- * Fetches one county's audible-signal points. Mirrors
- * `fetchCityBusRoutes()` in tdxBusClient.ts: returns `[]` (never throws) for
+ * Fetches one county's audible-signal points. Returns `[]` (never throws) for
  * an unknown city code or a missing token, but DOES throw on a non-200 HTTP
  * response or bad token — letting the caller's Promise.allSettled isolate
  * that one county's failure from the others, same as the Bus client.
@@ -128,8 +127,8 @@ export async function fetchCityAudibleSignals(cityCode: string): Promise<Facilit
 /**
  * Fetches every TDX_BUS_CITIES county's audible-signal points, isolating
  * each county's failure individually (Promise.allSettled, batches of 3 —
- * same rate-limit-headroom batching as fetchAllTdxBusRoutes/
- * fetchAllTdxStations) so one bad county (an enum mismatch, a timeout, a TDX
+ * same rate-limit-headroom batching as the other TDX
+ * per-county fetchers) so one bad county (an enum mismatch, a timeout, a TDX
  * 5xx) never zeroes out the whole national sync. Never throws past this
  * point: a county that fails is logged and simply contributes zero rows,
  * which is this repo's established facilities-source convention (the
