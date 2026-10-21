@@ -34,7 +34,7 @@ const recordingQuery = (responder = () => []) => {
   return { query, calls };
 };
 
-const call = async (qs, { authorized = true, responder } = {}) => {
+const call = async (qs, { authorized = true, responder, activeFeedCodes } = {}) => {
   const { query, calls } = recordingQuery(responder);
   const logs = [];
   const result = await handleDiagnosticsRequest({
@@ -43,6 +43,7 @@ const call = async (qs, { authorized = true, responder } = {}) => {
     query,
     log: (line) => logs.push(line),
     caller: "203.0.113.9",
+    ...(activeFeedCodes ? { activeFeedCodes } : {}),
   });
   return { result, calls, logs };
 };
@@ -207,11 +208,55 @@ test("news-feed-stats aggregates per-feed ok/failed counts, last ok time and a c
   assert.deepEqual(data.ingestErrorRows, [{ feedCode: "nhi_web", count: 3 }]);
   // failing feeds sort first
   assert.equal(data.feeds[0].feed, "nhi_web");
+  // 沒傳 activeFeedCodes：不過濾，維持舊行為（excludedFeedCodes 回 null 而不是 0，
+  // 跟「有過濾但一個都沒排除」區分開）。
+  assert.equal(data.excludedFeedCodes, null);
   const text = JSON.stringify(result.body);
   assert.ok(!text.includes("SHOULD-NOT-LEAK"));
   assert.ok(!text.includes("RAW MESSAGE SHOULD NOT APPEAR"));
   assert.ok(!text.includes("https://example.test"));
   assert.ok(calls.length >= 2);
+});
+
+// issue: news-feed-stats／ingest_errors 分組彙總要自動排除不在「現行清單」內的
+// feed_code（例如 #705 下架的 tase_news、commonhealth_club_new 留在 7 天窗口裡的舊
+// 失敗紀錄），不用在 diagnostics.ts 裡手動列一份「已退役清單」。這裡用假的現行清單
+// （只有 A、B）＋ 假的統計資料（A、B、已退役的 C）驗證：輸出只剩 A、B，且回報排除了
+// 幾個相異代碼。
+test("news-feed-stats excludes feed codes outside the active list and reports how many were dropped", async () => {
+  const run = (id, startedAt, feedResults) => ({ id, started_at: new Date(startedAt), summary_json: { feedResults } });
+  const item = (code, ok) => ({ feed: { code, name: "n", url: "u", sourceName: "s" }, ok, httpStatus: ok ? 200 : 500, itemCount: 1, errorMessage: ok ? null : "boom" });
+  const { result } = await call("report=news-feed-stats&days=2", {
+    activeFeedCodes: ["feed_a", "feed_b"],
+    responder: (sql) => {
+      if (/FROM ingest_runs/.test(sql)) return [run(1, "2026-10-21T03:00:00Z", [item("feed_a", true), item("feed_b", false), item("feed_c_retired", false)])];
+      if (/FROM ingest_errors/.test(sql)) {
+        return [
+          { feed_code: "feed_a", error_rows: 1 },
+          { feed_code: "feed_c_retired", error_rows: 247 },
+        ];
+      }
+      return [];
+    },
+  });
+  assert.equal(result.status, 200);
+  const { data } = result.body;
+  assert.deepEqual(data.feeds.map((f) => f.feed).sort(), ["feed_a", "feed_b"]);
+  assert.deepEqual(data.ingestErrorRows, [{ feedCode: "feed_a", count: 1 }]);
+  // feed_c_retired is the only distinct excluded code, seen in both feedResults and ingest_errors.
+  assert.equal(data.excludedFeedCodes, 1);
+});
+
+test("news-feed-stats with an empty active list excludes everything and reports every distinct code seen", async () => {
+  const run = (id, startedAt, feedResults) => ({ id, started_at: new Date(startedAt), summary_json: { feedResults } });
+  const item = (code) => ({ feed: { code, name: "n", url: "u", sourceName: "s" }, ok: true, httpStatus: 200, itemCount: 1 });
+  const { result } = await call("report=news-feed-stats", {
+    activeFeedCodes: [],
+    responder: (sql) => (/FROM ingest_runs/.test(sql) ? [run(1, "2026-10-21T00:00:00Z", [item("x"), item("y")])] : []),
+  });
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body.data.feeds, []);
+  assert.equal(result.body.data.excludedFeedCodes, 2);
 });
 
 test("news-feed-stats stops paging once the scan cap is reached", async () => {
