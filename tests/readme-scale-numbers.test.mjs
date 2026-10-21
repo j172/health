@@ -1,5 +1,6 @@
-// Guard: the hand-written "scale numbers" in the four portfolio READMEs
-// (README.md / README.en.md / README.ja.md / README.ko.md) must match the code.
+// Guard: the hand-written "scale numbers" in the portfolio READMEs
+// (README.md / README.en.md — the ja/ko machine-translated drafts were removed
+// 2026-10-21, pending a native speaker before they come back) must match the code.
 //
 // Why: the previous README claimed 79 tools while TOOL_CATALOG already had 86,
 // and nobody noticed because the number was typed by hand. The numbers stay
@@ -73,16 +74,6 @@ const READMES = [
     file: "README.en.md",
     badgeLabels: { tools: "tools", cron: "scheduled jobs", "news-sources": "news sources" },
     strayTools: /\d+\+?\s+(?:[\w-]+\s+)?tools\b/i,
-  },
-  {
-    file: "README.ja.md",
-    badgeLabels: { tools: "ツール", cron: "定期ジョブ", "news-sources": "ニュースソース" },
-    strayTools: /\d+\+?\s*(?:種類|款|個)?のツール/,
-  },
-  {
-    file: "README.ko.md",
-    badgeLabels: { tools: "도구", cron: "예약 작업", "news-sources": "뉴스 출처" },
-    strayTools: /\d+\+?\s*개의?\s*도구/,
   },
 ];
 

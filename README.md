@@ -1,6 +1,6 @@
 <div align="center">
 
-**繁體中文** | [English](README.en.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
+**繁體中文** | [English](README.en.md)
 
 <img src="public/images/og/home.png" alt="j172tw Healthz 首頁封面：健康新聞與工具總覽" width="720" />
 
