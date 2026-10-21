@@ -29,7 +29,9 @@ function getAllSourceFiles(dir) {
 // letter) load-balancing subdomain, e.g. `https://{s}.tile.openstreetmap.org/...`
 // or `https://a.tile.openstreetmap.org/...`. The OSMF Tile Usage Policy warns
 // against hardcoding subdomain variants — they may be withdrawn without notice.
-// See lib/constants/mapTiles.ts for the single approved constant.
+// See components/Map/tileConfig.ts (FALLBACK_TILE_URL) for the single approved
+// constant — the old lib/constants/mapTiles.ts was removed once issue #476/#475
+// made BaseMap.tsx + tileConfig.ts the only place a <TileLayer> may appear.
 export function findHardcodedTileSubdomainViolations(fileContent, filePath = "") {
   const lines = fileContent.split("\n");
   const violations = [];
@@ -77,7 +79,7 @@ test("Regression Guard: no source file hardcodes a subdomain-prefixed OSM tile U
       .map((v) => `  - ${v.file}:${v.line} -> ${v.code}`)
       .join("\n");
     assert.fail(
-      `Found hardcoded subdomain-prefixed OSM tile URL(s) (violates OSMF Tile Usage Policy — subdomains may be withdrawn without notice):\n${errorDetails}\nUse OSM_TILE_URL from '@/lib/constants/mapTiles' instead.`
+      `Found hardcoded subdomain-prefixed OSM tile URL(s) (violates OSMF Tile Usage Policy — subdomains may be withdrawn without notice):\n${errorDetails}\nUse FALLBACK_TILE_URL from '@/components/Map/tileConfig' instead.`
     );
   }
 
@@ -106,6 +108,8 @@ test("9 site-wide map components all delegate to the shared BaseMap instead of r
   // of components/Map/BaseMap.tsx, which is the single place <TileLayer> (now the
   // NLSC-primary/OSM-fallback pair from components/Map/tileConfig.ts) is allowed to
   // appear for these 9 — superseding this test's old per-file OSM_TILE_URL check.
+  // These 9 must also not import components/Map/tileConfig.ts directly: BaseMap.tsx
+  // is the sole importer, keeping the tile URLs at one choke point.
   const rootDir = process.cwd();
   const expectedFiles = [
     "components/HeritageMap/HeritageMapLeaflet.tsx",
@@ -132,8 +136,8 @@ test("9 site-wide map components all delegate to the shared BaseMap instead of r
       `${relPath} must not render its own <TileLayer> — that's now BaseMap's job exclusively`
     );
     assert.ok(
-      !content.includes('from "@/lib/constants/mapTiles"'),
-      `${relPath} must not import the old single-basemap OSM tile constants anymore`
+      !content.includes('from "@/components/Map/tileConfig"'),
+      `${relPath} must not import the tile URL constants directly — BaseMap.tsx is the single choke point`
     );
   }
 });
