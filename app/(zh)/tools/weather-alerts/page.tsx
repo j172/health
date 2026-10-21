@@ -8,6 +8,9 @@ import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import WeatherRainfallLocator from "@/components/Tools/WeatherRainfallLocator";
 import WeatherAlertsList from "@/components/Tools/WeatherAlertsList";
+import TyphoonWindMap from "@/components/Tools/TyphoonWindMap";
+import { loadTyphoonStatus } from "@/lib/server/typhoon/status";
+import { shouldShowTyphoonBanner } from "@/lib/typhoon/typhoonStatus";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
@@ -46,10 +49,12 @@ export const metadata: Metadata = {
 };
 
 export default async function WeatherAlertsPage() {
-  const [alerts, topStations] = await Promise.all([
+  const [alerts, topStations, typhoonStatus] = await Promise.all([
     listActiveCwaAlerts(WEATHER_ALERTS_FETCH_LIMIT),
     listTopRainfallStations(5),
+    loadTyphoonStatus(),
   ]);
+  const showTyphoonWindMap = shouldShowTyphoonBanner(typhoonStatus);
 
   return (
     <ToolPageShell
@@ -81,6 +86,9 @@ export default async function WeatherAlertsPage() {
         >
           <WeatherRainfallLocator initialTopStations={topStations} />
         </section>
+
+        {/* 1.5. Typhoon wind-map embed — only rendered while a warning is in force */}
+        {showTyphoonWindMap ? <TyphoonWindMap /> : null}
 
         {/* 2. Active Weather Alerts Section */}
         <section aria-labelledby="alerts-list-heading" className="space-y-4">
