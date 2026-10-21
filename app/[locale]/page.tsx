@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { listDiverseHomeNews } from "@/lib/server/news/queries";
 import { buildHomeGraphJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
+import HomeQuickEntryCards from "@/components/Home/HomeQuickEntryCards";
 import HomeStatusBar from "@/components/Home/HomeStatusBar";
 import GuideCardsSection from "@/components/Home/GuideCardsSection";
 import RecentToolsSection from "@/components/Home/RecentToolsSection";
@@ -127,6 +128,7 @@ export default async function LocaleHome({ params }: { params: Params }) {
         variant="home"
         homeTopSections={
           <>
+            <HomeQuickEntryCards />
             <HomeStatusBar />
             <GuideCardsSection locale={locale} />
             <RecentToolsSection />
