@@ -329,6 +329,12 @@ test("components/Home/GuideCardsSection.tsx renders all 5 GUIDES entries linking
   }
 });
 
+test("components/Home/GuideCardsSection.tsx keeps a fixed 3-wide grid at every breakpoint (no 5-wide column on large screens orphaning the 6th card)", () => {
+  const src = readSource("components", "Home", "GuideCardsSection.tsx");
+  assert.match(src, /className="grid gap-3 sm:grid-cols-3"/);
+  assert.ok(!src.includes("lg:grid-cols-5"), "must not reintroduce a wider breakpoint that splits 6 cards into 5+1");
+});
+
 test("components/Home/RecentToolsSection.tsx reads from localStorage client-side only and renders nothing before hydration / before any tool has been visited", () => {
   const src = readSource("components", "Home", "RecentToolsSection.tsx");
   assert.ok(src.includes('"use client"'));
