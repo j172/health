@@ -63,7 +63,7 @@
 
 #### 無障礙交通地圖＋積淹水感測地圖（Phase 2 雙旗艦） ✅
 - 原檔：[accessible-transit-and-inundation-map.md](../archive/specs/accessible-transit-and-inundation-map.md)（#295）
-- 第 61、62 款工具；無障礙交通原本為種子資料（後由 TDX Spec A 升級，見 [06](06-tools-welfare-family-culture.md)）。
+- 第 61、62 款工具；無障礙交通原本為種子資料（後由 TDX Spec A 升級，#730 又瘦身回以靜態種子為主、只留電梯停用公告，見 [06](06-tools-welfare-family-culture.md)）。
 
 #### NCDR 全類別災害示警（研究與設計） 🟡
 - 原檔：[ncdr-disaster-alerts-integration.md](../archive/specs/ncdr-disaster-alerts-integration.md)

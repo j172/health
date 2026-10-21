@@ -10,8 +10,6 @@ import type {
   AccessibleTransitRoute,
   AccessibleTransitFacility,
   AccessibleTransitFacilityAlert,
-  AccessibleTransitStationMap,
-  AccessibleTransitTransfer,
   TransitAccessibilityOverview,
   TransitSystemType,
 } from "./types";
@@ -45,11 +43,12 @@ interface DbFacilityRow extends RowDataPacket {
   station_id: string | null;
 }
 
-// alerts/stationMaps/transfers carry rail_system + station_id but no county
-// or system_type column of their own (see docs/archive/specs/
-// tdx-senior-rail-accessibility-upgrade.md section 3.2-3.4's literal DDL) —
+// alerts carry rail_system + station_id but no county or system_type
+// column of their own (see docs/archive/specs/
+// tdx-senior-rail-accessibility-upgrade.md section 3.2's literal DDL) —
 // the county/systemType filters below recover both by joining each row back
-// to the accessible_transit_facilities row the same sync run wrote for that
+// to the accessible_transit_facilities row (already in the table; the daily
+// rail sync that wrote them was removed in issue #730) for that
 // station_id. TDX station codes aren't guaranteed globally unique across all
 // 10 rail systems, so this join is a pragmatic best-effort, not a strict
 // guarantee — acceptable here since it only narrows a results list, it's
@@ -66,28 +65,6 @@ interface DbAlertRow extends RowDataPacket {
   start_time: string | null;
   end_time: string | null;
   publish_time: string | null;
-  county: string | null;
-  system_type: string | null;
-}
-
-interface DbMapRow extends RowDataPacket {
-  rail_system: string;
-  station_id: string;
-  station_name: string;
-  floor_level: string | null;
-  map_name: string | null;
-  map_url: string | null;
-  county: string | null;
-  system_type: string | null;
-}
-
-interface DbTransferRow extends RowDataPacket {
-  rail_system: string;
-  station_id: string;
-  station_name: string;
-  exit_name: string | null;
-  transfer_mode: string | null;
-  transfer_description: string | null;
   county: string | null;
   system_type: string | null;
 }
@@ -273,8 +250,8 @@ export async function getTransitAccessibilityOverview(filter?: {
       hotlines = hotlines.filter((h) => h.county === filter.county);
     }
 
-    // alerts/stationMaps/transfers: see the DbAlertRow comment above for why
-    // this joins back to accessible_transit_facilities for county/systemType.
+    // alerts: see the DbAlertRow comment above for why this joins back to
+    // accessible_transit_facilities for county/systemType.
     const joinedWhere = (table: string) => {
       let sql = `SELECT t.*, f.county AS county, f.system_type AS system_type
         FROM ${table} t
@@ -319,38 +296,6 @@ export async function getTransitAccessibilityOverview(filter?: {
     );
     const activeAlertCount = Number(activeAlertRows[0]?.cnt || 0);
 
-    const mapsQ = joinedWhere("accessible_transit_station_maps");
-    if (filter?.query && filter.query.trim()) {
-      mapsQ.sql += " AND (t.station_name LIKE ? OR t.map_name LIKE ?)";
-      const q = `%${filter.query.trim()}%`;
-      mapsQ.params.push(q, q);
-    }
-    const [mapRows] = await conn.query<DbMapRow[]>(mapsQ.sql, mapsQ.params);
-    const stationMaps: AccessibleTransitStationMap[] = mapRows
-      .filter((m) => !!m.map_url)
-      .map((m) => ({
-        stationName: m.station_name,
-        railSystem: m.rail_system,
-        floorLevel: m.floor_level,
-        mapName: m.map_name,
-        mapUrl: m.map_url,
-      }));
-
-    const transfersQ = joinedWhere("accessible_transit_transfers");
-    if (filter?.query && filter.query.trim()) {
-      transfersQ.sql += " AND (t.station_name LIKE ? OR t.transfer_description LIKE ?)";
-      const q = `%${filter.query.trim()}%`;
-      transfersQ.params.push(q, q);
-    }
-    const [transferRows] = await conn.query<DbTransferRow[]>(transfersQ.sql, transfersQ.params);
-    const transfers: AccessibleTransitTransfer[] = transferRows.map((t) => ({
-      stationName: t.station_name,
-      railSystem: t.rail_system,
-      exitName: t.exit_name,
-      transferMode: t.transfer_mode,
-      transferDescription: t.transfer_description,
-    }));
-
     const totalRoutes = routes.length;
     const avgLowFloorRatio =
       totalRoutes > 0
@@ -373,8 +318,6 @@ export async function getTransitAccessibilityOverview(filter?: {
       facilities,
       hotlines,
       alerts,
-      stationMaps,
-      transfers,
       summary: {
         totalRoutes,
         avgLowFloorRatio,

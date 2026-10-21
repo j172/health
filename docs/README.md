@@ -43,7 +43,7 @@
 | **高** | DB-1 | `schema.ts` 建表 DDL 仍是舊的寬 UNIQUE KEY；資料庫重建後 4 張表會再度無限膨脹（重演 2026-09-21 全站中斷） | [09](domains/09-database-data-integrity.md) |
 | **高** | O-1 | httpClient 每次 HTTPS 請求重建 TLS SecureContext，記憶體壓力下 `std::bad_alloc` 崩潰（#401 OPEN） | [11](domains/11-hosting-ops-incidents.md) |
 | **高** | T-1 | `npm test` 會執行健保懲處匯入器：`scripts/verify-nhi-penalties.test.mjs` import 了 `scripts/import-nhi-penalties.mjs`，後者在最外層呼叫 `main()` → 每次測試都連網下載並覆寫 `data/facilities-seeds/nhi-penalties.json`，若環境有 `ADMIN_SECRET` 還會推送正式 API。修法：腳本加 `if (import.meta.url === pathToFileURL(process.argv[1]).href)` 守衛 | [05](domains/05-tools-medical-food.md) |
-| **高** | W-1 | TDX 樂齡 API base path 未確認，`accessible-transit` 與 `senior-friendly`（#729 起只剩敬老卡補助，靜態資料）實際跑種子資料。**2026-10-12 已找到正確路徑**（`/api/seniors/V1/Senior`），修正在分支 `fix/tdx-seniors-base-path`，待合併部署後實測；研究見 [2.0/tdx-basic-integration-research.md](2.0/tdx-basic-integration-research.md) | [06](domains/06-tools-welfare-family-culture.md) |
+| **高** | W-1 | TDX 樂齡 API base path 未確認，`accessible-transit`（#730 起以靜態種子為主，只剩電梯停用公告用 TDX）與 `senior-friendly`（#729 起只剩敬老卡補助，靜態資料）實際跑種子資料。**2026-10-12 已找到正確路徑**（`/api/seniors/V1/Senior`），修正在分支 `fix/tdx-seniors-base-path`，待合併部署後實測；研究見 [2.0/tdx-basic-integration-research.md](2.0/tdx-basic-integration-research.md) | [06](domains/06-tools-welfare-family-culture.md) |
 | 中 | I-1 | 新聞內頁 JSON-LD 圖片卡在通用來源圖（疑 ISR 時序） | [02](domains/02-news-images.md) |
 | 中 | D-1 | NCDR 全類別示警只有後端，沒有前端分頁 | [07](domains/07-tools-disaster-environment-energy.md) |
 | 中 | DB-2 | `migrations/*.sql` 沒有套用紀錄表 | [09](domains/09-database-data-integrity.md) |
@@ -233,7 +233,7 @@
 | [specs/SPEC-HEALTH-20260907-P1P2-NPROC-RESILIENCE.md](archive/specs/SPEC-HEALTH-20260907-P1P2-NPROC-RESILIENCE.md) | [11 主機維運](domains/11-hosting-ops-incidents.md) | 停止在主機上 npm ci、阻斷 NPROC 連鎖 | ✅ |
 | [specs/standardize-taiwan-orthography-tai.md](archive/specs/standardize-taiwan-orthography-tai.md) | [13 SEO多語](domains/13-seo-performance-i18n-ai.md) | 全系統「台」→「臺」 | ✅ |
 | [specs/taipower-energy-dashboard.md](archive/specs/taipower-energy-dashboard.md) | [07 防災環境](domains/07-tools-disaster-environment-energy.md) | 全台電力概況儀表板 | ✅ |
-| [specs/tdx-senior-rail-accessibility-upgrade.md](archive/specs/tdx-senior-rail-accessibility-upgrade.md) | [06 社福文化](domains/06-tools-welfare-family-culture.md) | TDX 樂齡軌道無障礙，升級無障礙交通（Spec A） | 🟡 |
+| [specs/tdx-senior-rail-accessibility-upgrade.md](archive/specs/tdx-senior-rail-accessibility-upgrade.md) | [06 社福文化](domains/06-tools-welfare-family-culture.md) | TDX 樂齡軌道無障礙，升級無障礙交通（Spec A；#730 已瘦身，只留電梯停用公告） | 🟡 |
 | [specs/tdx-senior-tourism-and-card-new-tool.md](archive/specs/tdx-senior-tourism-and-card-new-tool.md) | [06 社福文化](domains/06-tools-welfare-family-culture.md) | TDX 樂齡觀光＋敬老卡，新增 senior-friendly（Spec B） | 🟡 |
 | [specs/tgos-batch-geocoding-workflow.md](archive/specs/tgos-batch-geocoding-workflow.md) | [08 設施地圖](domains/08-facilities-geocode-maps.md) | TGOS 批次門牌比對工作流 | ✅ |
 | [specs/tgos-primary-geocoder.md](archive/specs/tgos-primary-geocoder.md) | [08 設施地圖](domains/08-facilities-geocode-maps.md) | TGOS 成為主要 geocoder | ✅ |

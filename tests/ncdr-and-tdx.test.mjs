@@ -12,22 +12,17 @@ test("TDX shared auth: lib/server/tdx/auth.ts exports getTdxToken (issue #434)",
   assert.ok(authContent.includes("TDX_CLIENT_SECRET"), "auth.ts should read TDX_CLIENT_SECRET");
 });
 
-test("TDX Senior/Rail client: covers all 5 endpoints across the 10 RailSystem codes and degrades gracefully (issue #434)", () => {
+test("TDX Senior/Rail client: keeps only the Facility/Alert endpoint across the 10 RailSystem codes (issues #434, #730)", () => {
   const clientFile = path.join(process.cwd(), "lib", "server", "transit", "tdxSeniorClient.ts");
   assert.ok(fs.existsSync(clientFile), "tdxSeniorClient.ts should exist");
   const content = fs.readFileSync(clientFile, "utf-8");
 
-  for (const fn of [
-    "fetchSeniorFacility",
-    "fetchSeniorService",
-    "fetchSeniorMap",
-    "fetchSeniorTransfer",
-    "fetchSeniorFacilityAlert",
-  ]) {
-    assert.ok(content.includes(fn), `tdxSeniorClient.ts should export ${fn}`);
+  assert.ok(content.includes("fetchSeniorFacilityAlert"), "tdxSeniorClient.ts should export fetchSeniorFacilityAlert");
+  // issue #730：每日軌道無障礙同步的四支（Facility／Service／Map／Transfer）已移除。
+  for (const fn of ["fetchSeniorFacility =", "fetchSeniorService", "fetchSeniorMap", "fetchSeniorTransfer", "flattenFacilityCategories"]) {
+    assert.ok(!content.includes(fn), `tdxSeniorClient.ts should no longer contain ${fn}`);
   }
   assert.ok(content.includes("getTdxToken"), "should use the shared TDX auth helper");
-  assert.ok(content.includes("flattenFacilityCategories"), "should expose a helper to flatten dynamic facility categories");
 
   const countyFile = path.join(process.cwd(), "lib", "server", "transit", "railStationCounty.ts");
   assert.ok(fs.existsSync(countyFile), "railStationCounty.ts should exist");
@@ -35,37 +30,32 @@ test("TDX Senior/Rail client: covers all 5 endpoints across the 10 RailSystem co
   for (const system of ["TRA", "THSR", "TRTC", "NTMC", "TYMC", "TMRT", "KRTC", "KLRT", "NTDLRT", "NTALRT"]) {
     assert.ok(countyContent.includes(`"${system}"`), `RAIL_SYSTEMS should include ${system}`);
   }
-  assert.ok(countyContent.includes("fetchStationCountyMap"), "should export fetchStationCountyMap");
+  assert.ok(!countyContent.includes("fetchStationCountyMap"), "the daily county lookup was removed in issue #730");
 });
 
-test("TDX Senior/Rail sync: upserts facilities/maps/transfers/alerts and records per-system errors instead of throwing (issue #434)", () => {
+test("TDX Senior/Rail sync: upserts the hourly elevator-outage alerts and records per-system errors instead of throwing (issues #434, #730)", () => {
   const syncFile = path.join(process.cwd(), "lib", "server", "transit", "runSync.ts");
   assert.ok(fs.existsSync(syncFile), "lib/server/transit/runSync.ts should exist");
   const content = fs.readFileSync(syncFile, "utf-8");
 
-  assert.ok(content.includes("export async function runTransitAccessibilitySync"), "should export the daily sync function");
+  assert.ok(!content.includes("runTransitAccessibilitySync"), "the daily sync was removed in issue #730");
   assert.ok(content.includes("export async function runTransitFacilityAlertsSync"), "should export the alerts sync function");
-  assert.ok(content.includes("ON DUPLICATE KEY UPDATE"), "facilities/alerts upserts should use ON DUPLICATE KEY UPDATE");
+  assert.ok(content.includes("ON DUPLICATE KEY UPDATE"), "alerts upserts should use ON DUPLICATE KEY UPDATE");
   assert.ok(content.includes("summary.errors.push"), "failures should be recorded into errors[] rather than thrown");
-  // try/catch-per-system so one failing endpoint never takes down the rest
+  // try/catch-per-system so one failing system never takes down the rest
   const tryCount = (content.match(/\btry\s*{/g) || []).length;
-  assert.ok(tryCount >= 5, `expected multiple independent try/catch blocks for per-endpoint resilience, found ${tryCount}`);
+  assert.ok(tryCount >= 2, `expected independent try/catch blocks for per-system resilience, found ${tryCount}`);
 });
 
-test("TDX Senior/Rail: new tables registered in schema.ts/mysql.ts and ALTER adds source/station_id/uniq_station (issue #434)", () => {
+test("TDX Senior/Rail: alerts table registered in schema.ts/mysql.ts and ALTER adds source/station_id/uniq_station (issues #434, #730)", () => {
   const schemaContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "db", "schema.ts"), "utf-8");
-  for (const table of [
-    "accessible_transit_facility_alerts",
-    "accessible_transit_station_maps",
-    "accessible_transit_transfers",
-  ]) {
-    assert.ok(schemaContent.includes(table), `schema.ts should define CREATE TABLE IF NOT EXISTS ${table}`);
-  }
+  assert.ok(
+    schemaContent.includes("CREATE TABLE IF NOT EXISTS accessible_transit_facility_alerts"),
+    "schema.ts should define CREATE TABLE IF NOT EXISTS accessible_transit_facility_alerts",
+  );
 
   const mysqlContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "db", "mysql.ts"), "utf-8");
   assert.ok(mysqlContent.includes("TABLE_DDL.accessibleTransitFacilityAlerts"), "mysql.ts should run the new alerts table DDL");
-  assert.ok(mysqlContent.includes("TABLE_DDL.accessibleTransitStationMaps"), "mysql.ts should run the new station maps table DDL");
-  assert.ok(mysqlContent.includes("TABLE_DDL.accessibleTransitTransfers"), "mysql.ts should run the new transfers table DDL");
   assert.ok(
     mysqlContent.includes("ALTER TABLE accessible_transit_facilities") &&
       mysqlContent.includes("ADD COLUMN IF NOT EXISTS source") &&
@@ -75,9 +65,9 @@ test("TDX Senior/Rail: new tables registered in schema.ts/mysql.ts and ALTER add
   );
 });
 
-test("TDX Senior/Rail: cron jobs registered at non-colliding minutes and admin sync route exists (issue #434)", () => {
+test("TDX Senior/Rail: the hourly alerts cron job is registered and the admin sync route exists (issues #434, #730)", () => {
   const cronContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "cron", "registerJobs.ts"), "utf-8");
-  assert.ok(cronContent.includes("runTransitAccessibilitySync"), "registerJobs.ts should schedule the daily sync");
+  assert.ok(!cronContent.includes("runTransitAccessibilitySync"), "the daily sync is no longer scheduled (issue #730)");
   assert.ok(cronContent.includes("runTransitFacilityAlertsSync"), "registerJobs.ts should schedule the alerts sync");
 
   const adminRouteFile = path.join(process.cwd(), "app", "api", "admin", "transit-accessibility-sync", "route.ts");
@@ -89,8 +79,8 @@ test("TDX Senior/Rail: cron jobs registered at non-colliding minutes and admin s
 test("Accessible Transit queries: features_json reader accepts both legacy string[] and new {tags, items} shapes (issue #434)", () => {
   const queriesContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "transit", "queries.ts"), "utf-8");
   assert.ok(queriesContent.includes("alerts"), "overview should return alerts");
-  assert.ok(queriesContent.includes("stationMaps"), "overview should return stationMaps");
-  assert.ok(queriesContent.includes("transfers"), "overview should return transfers");
+  assert.ok(!queriesContent.includes("stationMaps"), "overview no longer returns stationMaps (issue #730)");
+  assert.ok(!/\btransfers\b/.test(queriesContent), "overview no longer returns transfers (issue #730)");
   assert.ok(queriesContent.includes("activeAlertCount"), "summary should include activeAlertCount");
   assert.ok(queriesContent.includes("parseFeaturesJson"), "should centralize features_json parsing in one function");
 });

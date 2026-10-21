@@ -28,7 +28,7 @@
 
 - `navLabel` 只影響 Nav／Footer 顯示，**永不改動**工具頁 SEO `title`。
 - 合併工具一律真正合併為同一路由，舊 slug 用 **301** 永久轉址。
-- **下架（不併入其他工具）的工具**：頁面網址（含 en／ja／ko 前綴）301 導向 `/tools`，對應的 `/api/*` 只留極小的 route handler 回 **410 Gone**（附明確 `Cache-Control`），並一併移除 `catalog`、`translatedPages`、`toolContent`、`locales/*.json`、導覽與其他工具的 `relatedSlugs`。首例：YouBike（#727，2026-10-21，導向 `/tools`）；其次：全台軌道營運通阻 `metro-alerts`（#728，2026-10-21，頁面網址導向對應語系的 `/tools/accessible-transit`）。
+- **下架（不併入其他工具）的工具**：頁面網址（含 en／ja／ko 前綴）301 導向 `/tools`，對應的 `/api/*` 只留極小的 route handler 回 **410 Gone**（附明確 `Cache-Control`），並一併移除 `catalog`、`translatedPages`、`toolContent`、`locales/*.json`、導覽與其他工具的 `relatedSlugs`。首例：YouBike（#727，2026-10-21，導向 `/tools`）；其次：全台軌道營運通阻 `metro-alerts`（#728，2026-10-21，頁面網址導向對應語系的 `/tools/accessible-transit`）。**瘦身而非下架**：無障礙交通 `/tools/accessible-transit`（#730，2026-10-21）頁面與網址保留，只拿掉空的導覽圖／轉乘區塊與兩個每日 TDX 排程，公車低地板比率標註「種子資料・非即時」。
 - 毛孩認養＋動物醫院、AQI＋AQX **不合併**（#256 決議）。
 - 所有工具「資料先入 DB、讀 DB、不直連 API」，且必須有種子備援（零空白）。
 - 公民友站外連帶 `utm_source=health.j172.tw`；情境卡（`ContextualPartnerCard`）常駐、不可關閉。

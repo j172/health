@@ -1704,44 +1704,10 @@ export const TABLE_DDL = {
       INDEX idx_station (station_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // TDX Senior/Rail 車站導覽圖 (issue #434) — v1 只存 map_url 連結與原始 WKT
-  // geometry 字串，不做幾何渲染（成本高、非本次重點，見 spec 第 3.3 節）。
-  accessibleTransitStationMaps: `
-    CREATE TABLE IF NOT EXISTS accessible_transit_station_maps (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      rail_system VARCHAR(16) NOT NULL,
-      station_id VARCHAR(32) NOT NULL,
-      station_name VARCHAR(128) NOT NULL,
-      floor_level VARCHAR(32) NULL,
-      map_name VARCHAR(128) NULL,
-      map_url VARCHAR(512) NULL,
-      geometry TEXT NULL COMMENT 'WKT 格式，本次僅儲存不渲染',
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX idx_station (station_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
-  // TDX Senior/Rail 跨運具轉乘 (issue #434) — 一個出入口可對應多種轉乘方式，
-  // 沒有單一天然 key，用 AUTO_INCREMENT + station 索引供查詢。
-  accessibleTransitTransfers: `
-    CREATE TABLE IF NOT EXISTS accessible_transit_transfers (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      rail_system VARCHAR(16) NOT NULL,
-      station_id VARCHAR(32) NOT NULL,
-      station_name VARCHAR(128) NOT NULL,
-      floor_level VARCHAR(32) NULL,
-      exit_id VARCHAR(32) NULL,
-      exit_name VARCHAR(64) NULL,
-      lat DECIMAL(10, 7) NULL,
-      lng DECIMAL(10, 7) NULL,
-      transfer_mode VARCHAR(32) NULL,
-      transfer_route_description TEXT NULL,
-      transfer_description TEXT NULL,
-      is_onsite_transfer TINYINT(1) NOT NULL DEFAULT 0,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      INDEX idx_station (station_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
-  // 每日 TDX Senior/Rail 同步的「每系統最後成功時間」(issue #704) — 同步每個 RailSystem
+  // issue #730：accessible_transit_station_maps（車站導覽圖）與 accessible_transit_transfers（跨運具轉乘）
+  // 已移除，沒有任何建表敘述；已部署環境由 mysql.ts 的 runSchemaMigrations 冪等 DROP。
+  // 每日 TDX Senior/Rail 同步的「每系統最後成功時間」(issue #704；該每日同步已於 issue #730 移除，
+  // 表保留、目前沒有程式讀寫) — 同步每個 RailSystem
   // 抓完就寫入，行程被主機殺掉後下一輪依此優先處理最久沒成功的系統。主鍵只有
   // rail_system（一個系統一列），時間欄位都是普通欄位、不在任何 key 裡，所以每次同步是
   // UPDATE 而不是無限累積新列。

@@ -39,9 +39,7 @@ import { runDrugRecallsSync } from "@/lib/server/drugs/runRecallsSync";
 import { runPowerRealtimeSync, runPowerMixSync } from "@/lib/server/power/runSync";
 import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
 import {
-  runTransitAccessibilitySync,
   runTransitFacilityAlertsSync,
-  runTransitBusSync,
 } from "@/lib/server/transit/runSync";
 import { runFraudDomainsSync, runModa165027Sync } from "@/lib/server/antiFraud/runSync";
 import {
@@ -478,17 +476,13 @@ export const registerCronJobs = (): void => {
     "7,22,37,52 * * * *",
     runGuarded("emergency-rooms-sync-cron.log", () => runEmergencyRoomSync()),
   );
-  // TDX Senior/Rail 無障礙設施/服務/導覽圖/跨運具轉乘 (issue #434) — 來源
-  // UpdateInterval 多為 86400 (每日)，排在 3am off-peak 區段但避開 public-art
-  // 的 "0 3"。
-  cron.schedule(
-    "15 3 * * *",
-    runGuarded("transit-accessibility-sync-cron.log", () => runTransitAccessibilitySync()),
-  );
+  // issue #730：無障礙交通頁瘦身。每日軌道無障礙同步（設施／服務／導覽圖／轉乘，
+  // 15 3 * * *）與每日公車低地板比率同步（30 3 * * *）兩個 TDX 排程已移除；頁面改以
+  // 靜態種子資料（及資料表內既有資料）為主，只保留下面每小時的電梯停用公告。
   // TDX Senior/Rail 設施停用公告 (issue #434) — 來源 UpdateInterval 為 -1
-  // (事件觸發)，需要比上面每日同步更高的更新頻率；分鐘 16 在本檔案中目前未被任何其他
-  // job 佔用。原本每 30 分鐘（16,46）一次、每次 10 個 RailSystem 請求（每天 480 個
-  // TDX 請求）；TDX 點數超額後減半為每小時一次（每天 240 個），分鐘 16 不變。
+  // (事件觸發)；分鐘 16 在本檔案中目前未被任何其他 job 佔用。原本每 30 分鐘（16,46）
+  // 一次、每次 10 個 RailSystem 請求（每天 480 個 TDX 請求）；TDX 點數超額後減半為
+  // 每小時一次（每天 240 個），分鐘 16 不變。
   cron.schedule(
     "16 * * * *",
     runGuarded("transit-accessibility-alerts-cron.log", () => runTransitFacilityAlertsSync()),
@@ -496,14 +490,6 @@ export const registerCronJobs = (): void => {
   // issue #729：樂齡旅遊（景區無障礙設施／服務／套票每日同步、設施停用公告每小時同步）
   // 與敬老卡每日同步三個 TDX 排程已移除。敬老卡補助改為靜態資料，需要更新時由管理員
   // 手動呼叫 POST /api/admin/senior-card-sync。
-  // TDX Basic Bus Vehicle/Schedule 低地板公車比率 (issue #467) — 取代
-  // accessible_transit_routes 原本寫死的種子值。來源為即時車輛/班次資料而非
-  // UpdateInterval 固定值，daily 已足夠反映車隊配置的實際變動；排在 3am
-  // 區段的 30 分，避開同區段 transit-accessibility 的 15 分。
-  cron.schedule(
-    "30 3 * * *",
-    runGuarded("transit-bus-sync-cron.log", () => runTransitBusSync()),
-  );
   // 警政署 176455「遭停止解析涉詐網站」(issue #564) — 來源約每月發佈一批新
   // 名單，monthly 即可；第 1 天 05:12 是 off-peak 時段裡本檔案目前完全沒有
   // day-of-month 限制、也沒被 5 點區段其他 job（power-mix 的 5 5、latest-books

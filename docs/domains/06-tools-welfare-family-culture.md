@@ -30,7 +30,7 @@
 
 | # | 項目 | 來源文件 | 說明 |
 |---|---|---|---|
-| W-1 | **TDX「樂齡」API base path 未確認** | tdx-senior-* | 2026-10-10 以真實 OAuth token 測了 10 多種路徑組合全部 404（同 token 呼叫 Basic Rail 正常）。目前 `accessible-transit` 與 `senior-friendly` 實際跑種子資料。需從 TDX 會員權限頁或 swagger「Try it out」的 Network 擷取真實路徑；修正只需改 `SENIOR_RAIL_BASE`／`SENIOR_CARD_BASE` 常數（`SENIOR_TOURISM_BASE` 已隨樂齡旅遊於 #729 移除；敬老卡自 #729 起為靜態資料、沒有排程，只剩管理員手動同步） |
+| W-1 | **TDX「樂齡」API base path 未確認** | tdx-senior-* | 2026-10-10 以真實 OAuth token 測了 10 多種路徑組合全部 404（同 token 呼叫 Basic Rail 正常）。目前 `accessible-transit`（#730 後以靜態種子為主，只剩電梯停用公告用 TDX）與 `senior-friendly` 實際跑種子資料。需從 TDX 會員權限頁或 swagger「Try it out」的 Network 擷取真實路徑；修正只需改 `SENIOR_RAIL_BASE`／`SENIOR_CARD_BASE` 常數（`SENIOR_TOURISM_BASE` 已隨樂齡旅遊於 #729 移除；敬老卡自 #729 起為靜態資料、沒有排程，只剩管理員手動同步） |
 | W-2 | 文化資產局（BOCH）從正式主機的連線未驗證 | heritage-assets-map | 延到下次 `six-monthly-sync.yml` 自然執行時確認 |
 
 ---
@@ -51,9 +51,10 @@
 - 原檔：[phase2-disability-accessible-atm.md](../archive/specs/phase2-disability-accessible-atm.md)
 - 信合社輪椅 ATM 與語音 ATM 兩份 CSV 以「代號」合併為一頁，用類別篩選切換。
 
-#### TDX 樂齡軌道無障礙，升級無障礙交通（Spec A） 🟡
+#### TDX 樂齡軌道無障礙，升級無障礙交通（Spec A） 🟡 已於 #730 瘦身
 - 原檔：[tdx-senior-rail-accessibility-upgrade.md](../archive/specs/tdx-senior-rail-accessibility-upgrade.md)（#434、PR #435）
-- 10 種軌道系統的設施、服務、導覽圖、轉乘、停用公告；新增每日同步。程式已上線，但 API 路徑未確認（待辦 W-1）。
+- 原設計：10 種軌道系統的設施、服務、導覽圖、轉乘、停用公告；新增每日同步。程式已上線，但 API 路徑未確認（待辦 W-1）。
+- **2026-10-21（#730）瘦身**：無障礙交通頁保留，改以靜態種子資料為主；只留每小時電梯停用公告（`transit-accessibility-alerts`）。每日軌道無障礙同步（設施／服務／導覽圖／轉乘）與每日公車低地板比率同步移除，頁面拿掉永遠為空的導覽圖與轉乘區塊、公車低地板比率標註「種子資料・非即時」，`accessible_transit_station_maps`、`accessible_transit_transfers` 兩張表由 `ensureSchema()` 冪等 DROP。細節見 [10](10-scheduling-sync-ci.md)。
 
 #### TDX 樂齡觀光＋敬老卡，新增 senior-friendly（Spec B） 🗄️ 樂齡旅遊已於 #729 移除
 - 原檔：[tdx-senior-tourism-and-card-new-tool.md](../archive/specs/tdx-senior-tourism-and-card-new-tool.md)（#436、PR #437；此 spec 原為未提交草稿，整合時一併納入版控）
