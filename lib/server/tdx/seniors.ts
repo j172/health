@@ -1,6 +1,7 @@
 /**
  * TDX「高齡友善服務」(service category `seniors`, group 高齡友善出行資料服務
- * v1) — the base URL every Senior Rail / Tourism / SeniorCard call shares.
+ * v1) — the base URL shared by the Senior Rail (hourly elevator-outage alerts) and
+ * SeniorCard (manual sync only) calls.
  *
  * Confirmed 2026-10-12 from TDX's own OpenAPI document for that group
  * (https://tdx.transportdata.tw/webapi/File/Swagger/V3/17214f64-de51-4246-b231-3c937d25d422,
@@ -12,16 +13,5 @@
  */
 export const TDX_SENIORS_API_BASE = "https://tdx.transportdata.tw/api/seniors/V1/Senior";
 
-/**
- * The Senior OpenAPI document types `PositionLon`/`PositionLat` as strings,
- * not numbers. Coerce before they reach a DECIMAL column: a numeric string
- * becomes a number, while an empty/blank string, a non-numeric value, or an
- * exact 0 (never a real coordinate in Taiwan, a common "unknown" filler)
- * becomes null instead of failing the INSERT in strict mode.
- */
-export const parseTdxCoordinate = (value: unknown): number | null => {
-  if (value === null || value === undefined) return null;
-  const n = typeof value === "number" ? value : typeof value === "string" ? Number(value.trim() || NaN) : NaN;
-  if (!Number.isFinite(n) || n === 0) return null;
-  return n;
-};
+// issue #731：parseTdxCoordinate（PositionLon／PositionLat 字串轉座標）原本給樂齡旅遊與軌道
+// 設施同步用，那些同步移除（#729／#730）後已沒有任何呼叫端，連同測試一併刪除。

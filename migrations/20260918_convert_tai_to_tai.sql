@@ -47,7 +47,6 @@ WHERE name LIKE '%台灣%';
 
 -- 2. youbike_stations 資料表更新（若存在）
 --    注意：youbike_stations 已於 issue #727 隨 YouBike 功能移除（ensureSchema 會 DROP）。
---    這段是歷史紀錄；日後若在沒有該表的資料庫重跑本檔，請略過第 2 段。。注意：youbike_stations 已於 issue #727 隨 YouBike 功能移除（ensureSchema 會 DROP），
 --    這段是歷史紀錄；日後若在沒有該表的資料庫重跑本檔，請略過第 2 段。
 UPDATE youbike_stations
 SET name = REPLACE(name, '台北', '臺北')

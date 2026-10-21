@@ -3,7 +3,7 @@ import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { getTdxToken } from "@/lib/server/tdx/auth";
 import { toCoordinate } from "@/lib/server/db/coords";
-import { TDX_BUS_CITIES } from "@/lib/server/transit/tdxBusClient";
+import { TDX_CITIES } from "@/lib/server/tdx/cities";
 
 /**
  * TDX 基礎服務「停車資訊」資料來源 (issue #469, parent #438 §P T3) — 全台停車場
@@ -38,7 +38,7 @@ import { TDX_BUS_CITIES } from "@/lib/server/transit/tdxBusClient";
  * 保留 7/9/10/13（刻意不含 8 婦女車位——issue 明確只列 4 種）。
  *
  * City enum 同樣像 #467/#468 一樣「每個端點各自列出的 enum 不完整，但實際資料
- * 涵蓋全國」——沿用 `lib/server/transit/tdxBusClient.ts` 的 `TDX_BUS_CITIES`
+ * 涵蓋全國」——沿用 `lib/server/tdx/cities.ts` 的 `TDX_CITIES`
  * （全 22 縣市），每個縣市、每種（路外／路邊）各自呼叫、各自隔離錯誤。
  *
  * `AvailableSpaces`/`NumberOfSpaces` 的 swagger 描述：`AvailableSpaces` 為
@@ -141,7 +141,7 @@ async function fetchJsonForCity<T>(url: string, token: string): Promise<T | null
  * contributes zero records.
  */
 export async function fetchCityOffStreetParking(cityCode: string): Promise<FacilityRecord[]> {
-  const cityConfig = TDX_BUS_CITIES[cityCode];
+  const cityConfig = TDX_CITIES[cityCode];
   if (!cityConfig) return [];
 
   const token = await getTdxToken();
@@ -204,7 +204,7 @@ export async function fetchCityOffStreetParking(cityCode: string): Promise<Facil
 
 /** Same join/filter/emit shape as `fetchCityOffStreetParking`, for 路邊停車 (on-street curb) segments, keyed by `ParkingSegmentID`. */
 export async function fetchCityOnStreetParking(cityCode: string): Promise<FacilityRecord[]> {
-  const cityConfig = TDX_BUS_CITIES[cityCode];
+  const cityConfig = TDX_CITIES[cityCode];
   if (!cityConfig) return [];
 
   const token = await getTdxToken();
@@ -269,7 +269,7 @@ export async function fetchCityOnStreetParking(cityCode: string): Promise<Facili
 }
 
 /**
- * Fetches every TDX_BUS_CITIES county's off-street + on-street special-space
+ * Fetches every TDX_CITIES county's off-street + on-street special-space
  * records, isolating each (county, kind) pair's failure individually
  * (`Promise.allSettled`, batches of 3 — same rate-limit headroom as the other
  * TDX multi-county clients in this repo). One bad county or one bad kind
@@ -281,7 +281,7 @@ export async function fetchTdxAccessibleParking(): Promise<FacilityRecord[]> {
 
   type Task = { cityCode: string; kind: "offstreet" | "onstreet"; run: () => Promise<FacilityRecord[]> };
   const tasks: Task[] = [];
-  for (const cityCode of Object.keys(TDX_BUS_CITIES)) {
+  for (const cityCode of Object.keys(TDX_CITIES)) {
     tasks.push({ cityCode, kind: "offstreet", run: () => fetchCityOffStreetParking(cityCode) });
     tasks.push({ cityCode, kind: "onstreet", run: () => fetchCityOnStreetParking(cityCode) });
   }

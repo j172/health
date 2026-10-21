@@ -141,7 +141,7 @@ flowchart TD
 
 ## 🧰 70+ 款生活便民與公衛防災工具速查矩陣
 
-平臺提供 7 大專業領域、79 款互動式計算與全臺地理圖資工具（分類與統計依 `lib/server/tools/catalog.ts` 的 `TOOL_GROUP_META` 單一事實來源，與站內導覽選單、頁尾分類及 `/tools` 索引頁完全同步）：
+平臺提供 7 大專業領域、86 款互動式計算與全臺地理圖資工具（2026-10-21 實際 `TOOL_CATALOG.length`；分類與統計依 `lib/server/tools/catalog.ts` 的 `TOOL_GROUP_META` 單一事實來源，與站內導覽選單、頁尾分類及 `/tools` 索引頁完全同步）：
 
 ### A. 健康自我評估 (12 款)
 

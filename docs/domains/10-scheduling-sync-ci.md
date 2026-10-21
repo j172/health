@@ -70,7 +70,7 @@
 - **in-app cron 有自動 lint**（#669）：`lib/server/cron/cronCollisions.test.mjs` 解析 `registerJobs.ts` 內所有 `cron.schedule` 運算式，凍結一份「既有同 tick 配對」清單（含已知的 `30 4 * * *` green-products／wra-catalog 雙排程），**任何新 job 與既有 job 同 tick 都會讓測試失敗**，訊息會列出目前沒有任何 job 使用的分鐘。不要把新配對加進清單，換一個沒人用的分鐘。此 lint 只涵蓋 `registerJobs.ts`，GitHub Actions 的 `schedule:` 仍要人工對照本節的表。
 - **RSS 匯入的重疊觸發靠同一把 MySQL advisory lock 擋住**（#699）：in-app cron（`:05/:35`）與 GitHub 心跳（admin 路由，`:20/:50`）都呼叫 `runRssIngestion`，鎖名 `rss_ingestion_lock`。一輪匯入約 11 分鐘，兩個觸發點本來就會重疊；沒搶到鎖的嘗試寫成 `ingest_runs.status='skipped'`（安靜的跳過，不是 `failed`）。先取鎖、才建立 `running` 的列。鎖綁在一條閒置一輪的 MySQL 連線上，連線被關掉鎖就無聲消失，所以匯入每個單位工作之間都用 `IS_USED_LOCK` 心跳確認，鎖丟了就停（`AdvisoryLockLostError`）。
 - 長時間的行程內工作要像 `runMonitor.ts` 那樣在單位工作之間：確認鎖／更新 `updated_at` → 超過預算才強制 GC（`heapGovernor.ts`；PM2 的 `node_args` 我們不能改，所以執行期用 `v8.setFlagsFromString('--expose-gc')` 取得 `gc`）→ 寫一行 JSON 階段日誌（沿用 #697 的 `stageLog` 形狀）→ `yieldToEventLoop()`。
-- **無障礙交通瘦身（2026-10-21，#730）**：`/tools/accessible-transit`（長照／身障主題核心）保留，改以靜態種子資料為主，**只留每小時電梯停用公告**這一個 TDX 排程（`transit-accessibility-alerts`，`16 * * * *`，10 個軌道系統的 Senior/Rail Facility/Alert，每天 240 次請求，資料表 `accessible_transit_facility_alerts`）。兩個每日 TDX 排程刪除：每日軌道無障礙同步（`transit-accessibility-sync`，`15 3 * * *`，10 系統 × county／Facility／Service／Map／Transfer，每天約 50 次；含 #704 的「每系統抓完就寫、可續跑」邏輯 `railSyncCore.ts`／`railSyncStore.ts`、advisory lock `transit_accessibility_sync_lock`）與每日公車低地板比率同步（`transit-bus-sync`，`30 3 * * *`，22 縣市 × Vehicle／Schedule，每天約 44 次；`busLowFloorMath.ts`、`/api/admin/transit-bus-sync`），排程 47 → 45，TDX 預算每天少 50＋44 ＝ 94 次（≈334 → ≈240）。頁面拿掉永遠為空的「站內導覽圖」與「周邊轉乘」區塊，公車低地板比率區塊標註「種子資料・非即時」（含 en／ja／ko）；`/api/accessible-transit` 移除恆為空的 `stationMaps`／`transfers` 兩個欄位（前端是唯一消費者，舊版前端本來就用 `|| []` 讀取），`routes`／`facilities`／`hotlines`／`alerts`／`summary`／`counties`／`systemTypes` 形狀不變，資料讀取順序不變（資料表有資料就用，空表才灌 `lib/server/transit/data/transitSeed.ts`；早期同步已寫入的 `source=tdx_bus`／`tdx_senior` 列照舊讀出，只是不再更新）。資料表 `accessible_transit_station_maps`、`accessible_transit_transfers` 由 `ensureSchema()`（`runSchemaMigrations`，在原建表位置）以冪等的 `DROP TABLE IF EXISTS` 於下次啟動時刪除（不備份），**不再有任何建表敘述或種子**會把它們建回；DROP 失敗只記警告。其餘 `accessible_transit_routes`／`_facilities`／`_facility_alerts` 保留；`accessible_transit_sync_state`（#704 的每系統最後成功時間）已沒有任何程式讀寫，但不在核准的 DROP 清單內，先保留（留給 #731 清掃決定）。管理員手動 `POST /api/admin/transit-accessibility-sync` 只剩跑電梯停用公告（不再有 `?job=`）；`TDX_BUS_CITIES`（`tdxBusClient.ts` 只剩這份縣市清單）仍供手動 facilities-sync 的停車、有聲號誌來源使用，TDX token／限流器／斷路器保留。
+- **無障礙交通瘦身（2026-10-21，#730）**：`/tools/accessible-transit`（長照／身障主題核心）保留，改以靜態種子資料為主，**只留每小時電梯停用公告**這一個 TDX 排程（`transit-accessibility-alerts`，`16 * * * *`，10 個軌道系統的 Senior/Rail Facility/Alert，每天 240 次請求，資料表 `accessible_transit_facility_alerts`）。兩個每日 TDX 排程刪除：每日軌道無障礙同步（`transit-accessibility-sync`，`15 3 * * *`，10 系統 × county／Facility／Service／Map／Transfer，每天約 50 次；含 #704 的「每系統抓完就寫、可續跑」邏輯 `railSyncCore.ts`／`railSyncStore.ts`、advisory lock `transit_accessibility_sync_lock`）與每日公車低地板比率同步（`transit-bus-sync`，`30 3 * * *`，22 縣市 × Vehicle／Schedule，每天約 44 次；`busLowFloorMath.ts`、`/api/admin/transit-bus-sync`），排程 47 → 45，TDX 預算每天少 50＋44 ＝ 94 次（≈334 → ≈240）。頁面拿掉永遠為空的「站內導覽圖」與「周邊轉乘」區塊，公車低地板比率區塊標註「種子資料・非即時」（含 en／ja／ko）；`/api/accessible-transit` 移除恆為空的 `stationMaps`／`transfers` 兩個欄位（前端是唯一消費者，舊版前端本來就用 `|| []` 讀取），`routes`／`facilities`／`hotlines`／`alerts`／`summary`／`counties`／`systemTypes` 形狀不變，資料讀取順序不變（資料表有資料就用，空表才灌 `lib/server/transit/data/transitSeed.ts`；早期同步已寫入的 `source=tdx_bus`／`tdx_senior` 列照舊讀出，只是不再更新）。資料表 `accessible_transit_station_maps`、`accessible_transit_transfers` 由 `ensureSchema()`（`runSchemaMigrations`，在原建表位置）以冪等的 `DROP TABLE IF EXISTS` 於下次啟動時刪除（不備份），**不再有任何建表敘述或種子**會把它們建回；DROP 失敗只記警告。其餘 `accessible_transit_routes`／`_facilities`／`_facility_alerts` 保留；`accessible_transit_sync_state`（#704 的每系統最後成功時間）已沒有任何程式讀寫，但不在核准的 DROP 清單內，先保留；#731 清掃再次確認除了建表敘述與形狀測試（`lib/server/transit/railSyncConventions.test.mjs`）之外沒有任何讀寫（含管理路由、測試、文件），列為**建議刪除、待使用者批准**，批准前表與其形狀測試都保留。管理員手動 `POST /api/admin/transit-accessibility-sync` 只剩跑電梯停用公告（不再有 `?job=`）；22 縣市代碼表（#731 起為 `lib/server/tdx/cities.ts` 的 `TDX_CITIES`，原為 `transit/tdxBusClient.ts` 的 `TDX_BUS_CITIES`；`transit/railStationCounty.ts` 同步改名 `transit/railSystems.ts`，內容與行為不變）仍供 facilities-sync 的停車、有聲號誌來源使用，TDX token／限流器／斷路器保留。
 - **YouBike 已整個移除**（2026-10-21，#727）：與網站主題無關、價值低。`youbike-sync`（`*/5`）與 `youbike-tdx-sync`（`11,26,39,54`）兩個 job、`/tools/youbike`（含 en／ja／ko）、`/api/youbike`、`lib/server/youbike/*`、`youbike-stations-seed.json` 與 `scripts/sync-youbike.mjs` 全部刪除。舊頁面網址 301 導向 `/tools`，`/api/youbike` 只回 410。資料表 `youbike_stations`、`youbike_sync_state` 由 `ensureSchema()`（`lib/server/db/mysql.ts` 的 `runSchemaMigrations`）以冪等的 `DROP TABLE IF EXISTS` 在下次啟動時刪除（不備份），**不再有任何建表敘述或種子**會把它們建回來；DROP 失敗只記警告、不讓 schema 初始化失敗。同步移除後，`*/5` 格線不再被任何 job 使用。TDX 斷路器、限流器與 token 保留給其餘 TDX 呼叫端（無障礙電梯停用公告、手動 facilities-sync）。
 - **TDX 全域斷路器與每日請求預算見 §2.1**；`transit-accessibility-alerts`（`16`）從每 30 分鐘改為每小時。（`metro-alerts` 原維持每 30 分鐘、`senior-tourism-alerts`［`17`］原也改為每小時，已分別於 2026-10-21 隨 #728、#729 整個移除。）
 - **全台軌道營運通阻（`metro-alerts`）已整個移除**（2026-10-21，#728）：一般列車延誤／停駛資訊與網站主題距離遠。`metro-alerts-sync`（`0,30 * * * *`，8 個軌道系統的 TDX 公告抓取＋臺北捷運 CSV 備援）job、`/tools/metro-alerts`（含 en／ja／ko）、`/api/metro-alerts`、`MetroAlertsContent`、`lib/server/metroAlerts/*`、`metro-alerts-seed.json` 與 `scripts/sync-metro-alerts.mjs` 全部刪除。舊頁面網址 301 導向對應語系的 `/tools/accessible-transit`（`/en|ja|ko/tools/accessible-transit`；`?lang=` 舊規則同樣一次到位），`/api/metro-alerts` 只回 410。資料表 `metro_alerts` 由 `ensureSchema()`（`runSchemaMigrations`，在原建表位置）以冪等的 `DROP TABLE IF EXISTS` 於下次啟動時刪除（不備份），**不再有任何建表敘述、ALTER 或種子**會把它建回；DROP 失敗只記警告。台風地震情境頁（`/guides/typhoon-earthquake`）的「查詢交通是否停駛」步驟與即時通阻 badge 一併移除。**不受影響**：無障礙交通頁自己的電梯停用公告（`transit-accessibility-alerts`，`16 * * * *`，資料表 `accessible_transit_facility_alerts`）；TDX 的 token、限流器、斷路器保留給其餘呼叫端。
@@ -83,7 +83,7 @@
 
 ### 2.1 TDX 每日請求預算、斷路器與症狀判讀（2026-10-18）
 
-TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` 每 13 秒放行一個，理論上限 86,400 ÷ 13 ≈ **6,646 次/天**），另有點數用量；所有 in-app TDX job 共用同一個行程內限流器、同一組憑證、同一個斷路器。2026-10-15 起 token 請求被拒、收到點數用量超過 100% 的通知之後做了降載，下表是「每個 job 每輪幾個請求、一天幾次」（請求數 = 程式碼推算，不含 429 重試多送的請求；`tdx_parking`／`tdx_aps` 由半年同步觸發，一次性約 88＋22 次，不在表內）：
+TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` 每 13 秒放行一個，理論上限 86,400 ÷ 13 ≈ **6,646 次/天**），另有點數用量；所有 in-app TDX job 共用同一個行程內限流器、同一組憑證、同一個斷路器。2026-10-15 起 token 請求被拒、收到點數用量超過 100% 的通知之後做了降載，下表是「每個 job 每輪幾個請求、一天幾次」（請求數 = 程式碼推算，不含 429 重試多送的請求；`tdx_parking`／`tdx_aps` 由半年同步或管理員手動觸發，一次性約 88＋22 次，不在表內）：
 
 | job（`logs/` 下的 log 檔） | 排程 | 每輪 TDX 請求 | 每日次數（現在） | 每日次數（改前） |
 |---|---|---|---|---|
@@ -91,6 +91,17 @@ TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` �
 | **合計** | | | **≈240**（占理論上限約 3.6%） | **≈480**（約 7%；改前含 YouBike、軌道通阻、樂齡旅遊／敬老卡與無障礙交通兩個每日同步時為 ≈5,735） |
 
 2026-10-21 起 YouBike 整個移除（#727），原本最大宗的 YouBike（改前 4,320、降載後 ≈1,261 次/天）不再佔用 TDX 預算；2026-10-21 起全台軌道營運通阻（`metro-alerts-sync`，8 個軌道系統 × 每 30 分鐘 ＝ 384 次/天）也整個移除（#728），同樣不再佔用 TDX 預算（現在的合計由 ≈767 降到 ≈383）；2026-10-21 起樂齡旅遊每日同步（3 次/天）、樂齡旅遊每小時設施停用公告（24 次/天）與敬老卡每日同步（22 次/天）也整個停掉（#729），合計再扣 49 次到 ≈334；2026-10-21 起無障礙交通的每日軌道無障礙同步（約 50 次/天：10 個系統各 county 對照＋Facility／Service／Map／Transfer）與每日公車低地板比率同步（44 次/天）也整個停掉（#730），合計再扣 94 次到 ≈240，只剩每小時電梯停用公告（10 × 24）。上表「改前」欄也已扣掉這些項目，方便與現在比較。這張表是靠程式碼推算的名目值，上線後以各 log 與 `[tdx-breaker]` 行核對。
+
+**一句話總結（#731）：只有電梯停用公告與管理員手動觸發的設施同步（停車約 88 次、有聲號誌約 22 次，一次性）會打 TDX。** 完整的 TDX 呼叫端清單如下（`tests/tdx-callers-inventory-731.test.mjs` 以原始碼掃描守住，新增或移除呼叫端時測試會失敗，提醒同步更新本節與預算表）：
+
+| 呼叫端 | 觸發方式 | 每次 TDX 請求 | 備註 |
+|---|---|---|---|
+| `lib/server/transit/tdxSeniorClient.ts`（電梯停用公告，`runTransitFacilityAlertsSync`） | in-app 排程 `transit-accessibility-alerts`（`16 * * * *`）；管理員手動 `POST /api/admin/transit-accessibility-sync` | 10（10 個 RailSystem） | 唯一的 TDX 排程，≈240 次／天 |
+| `lib/server/facilities/sources/tdxParking.ts`（`tdx_parking`） | `POST /api/admin/facilities-sync`：半年同步（`six-monthly-sync.yml`，不帶 `sources` ＝ 跑全部來源）或管理員手動（可帶 `{"sources":["tdx_parking"]}`） | ≈88（22 縣市 × 路外／路邊各兩支） | 一次性，不計入每日預算 |
+| `lib/server/facilities/sources/tdxAudibleSignals.ts`（`tdx_aps`） | 同上 | ≈22（22 縣市各一支） | 一次性，不計入每日預算 |
+| `lib/server/seniorCard/tdxClient.ts`（敬老卡，`runSeniorCardSync`） | 只剩管理員手動 `POST /api/admin/senior-card-sync`（#729 起敬老卡為靜態資料，沒有排程） | ≈22 | 一次性，不計入每日預算 |
+
+以上全部經 `tdxGetJsonWithRetry`，共用同一個 5 次／分鐘行程內限流器與斷路器（`tests/tdx-callers-share-limiter.test.mjs`）。
 
 **斷路器**（`lib/server/tdx/circuitBreaker.ts`，行程內 singleton，由 `getTdxToken()` 與 `tdxGetJsonWithRetry()` 共用，不放寬共用限流器）：
 
@@ -101,7 +112,7 @@ TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` �
 - **只存在行程記憶體**：重啟 `health-web` = 回到 closed，第一個請求會立刻重新判斷一次；憑證或配額恢復後不需要人工介入，最慢 60 分鐘內探測成功自動關閉。
 - **日誌**：每次狀態轉換一行 `[tdx-breaker] OPEN for 15 min (reason: …)`／`HALF-OPEN`／`CLOSED`，只有狀態與時間，不含憑證。
 
-**症狀與判讀**——先分清楚是「token 端」還是「API 端」，兩者原因與處置不同，**不要把「token 失敗」直接等同於「點數超額」**：
+**症狀與判讀**——先分清楚是「token 端」還是「API 端」，兩者原因與處置不同，**不要把「token 失敗」直接等同於「點數超額」**。速查：token 端 `unauthorized_client`／`invalid_client` ＝ 金鑰被停用或用量滿額（2026-10-15 起的實例：TDX 因用量已滿而停用金鑰，要到 TDX 重置或升級方案才恢復）；API 端 429／403 ＝ 每分鐘（5 次）或點數配額。
 
 | 日誌裡看到 | 意義 | 處置 |
 |---|---|---|
@@ -109,6 +120,7 @@ TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` �
 | 各 cron log：`TDX token unavailable (not configured, or the token request itself failed)`、`TDX credentials missing or token request failed — nothing was fetched` | 拿不到 token（沒設憑證、被拒，或斷路器開啟） | 看同時間有沒有上一列的 `token request rejected` 與 `[tdx-breaker]` 行判斷是哪一種 |
 | 公車／軌道等 log：`… returned status 429`，且 `[tdx-breaker] OPEN … (reason: rate_limited)` | API 端的每分鐘節流在重試後仍被拒；偶發是正常的（共用限流器會排隊），連續出現代表呼叫量超過 5 次/分鐘的承載 | 檢查同一時段有哪些 job 同時跑（上表），必要時錯開排程 |
 | `[tdx-breaker] OPEN … (reason: quota_exceeded)`（429 且 `ratelimit-reset` > 120 秒） | API 端**配額／點數用盡**（TDX 另會寄「虛擬點數用量超過 100%」通知信） | 降低請求量（上表）、到 TDX 確認點數與方案；用量視窗過後探測會自動恢復 |
+| `… returned status 403`，且 `[tdx-breaker] OPEN … (reason: forbidden)` | API 端拒絕這次呼叫（帳號對該 API 無權限，或點數／方案限制），任何 403 都會開啟斷路器 | 先確認是不是新增了帳號沒有權限的 API；到 TDX 確認方案與點數 |
 | `… returned status 503 (circuit breaker open, nothing was sent)` | 斷路器擋下的呼叫，**沒有**送到 TDX | 不是 TDX 在回 503；找 `[tdx-breaker] OPEN` 那一行看原因 |
 
 斷路器開啟時受影響的功能：無障礙電梯停用公告（#730 之後公車低地板為靜態種子，不再受影響）。

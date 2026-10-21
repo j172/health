@@ -1,13 +1,15 @@
 /**
- * TDX 公車縣市列舉，涵蓋全台 22 縣市。
+ * TDX 縣市列舉（停車、有聲號誌這類以縣市為路徑參數的 API 共用），涵蓋全台 22 縣市。
  *
- * issue #730：每日公車低地板比率同步（Bus/Vehicle + Bus/Schedule，fetchAllTdxBusRoutes）已移除，
- * 這個檔案不再呼叫 TDX，只剩縣市清單，給手動 facilities-sync 的 tdx_parking／tdx_aps 兩個來源
+ * 本檔不呼叫 TDX，只是縣市代碼表：給 facilities-sync 的 tdx_parking／tdx_aps 兩個來源
  * 共用同一組 22 縣市的 tdxName（見 lib/server/facilities/sources/tdxParking.ts、tdxAudibleSignals.ts）。
  * 其中 7 個（Keelung/Nantou/Yilan/Hualien/Penghu/Kinmen/Lienchiang）遵循 TDX 標準縣市命名
  * 慣例；各來源對單一縣市的失敗各自隔離，列舉值有誤只會讓該縣市回報錯誤，不影響其餘 21 個。
+ *
+ * issue #731：原為 lib/server/transit/tdxBusClient.ts 的 TDX_BUS_CITIES。每日公車低地板比率同步
+ * （issue #730）移除後，這裡已與公車無關，所以改名 TDX_CITIES 並搬到 lib/server/tdx/；行為與內容不變。
  */
-export const TDX_BUS_CITIES: Record<string, { tdxName: string; label: string }> = {
+export const TDX_CITIES: Record<string, { tdxName: string; label: string }> = {
   TPE: { tdxName: "Taipei", label: "臺北市" },
   NTPC: { tdxName: "NewTaipei", label: "新北市" },
   KEE: { tdxName: "Keelung", label: "基隆市" },

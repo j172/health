@@ -146,7 +146,7 @@
 | data.gov.tw | 多數既有來源的索引 | 本文 Top 15 的 #1–#7、#9–#11、#15 | ✅ 完整目錄 CSV 可下載；`/api/v2/rest/dataset/{id}` 可查單一資料集 | <https://data.gov.tw/datasets/export/csv> |
 | opendata.taichung.gov.tw（API 在 `newdatacenter.taichung.gov.tw`） | 無 | 垃圾清運及資源回收車動態（每 10 分鐘） | ✅ 200，JSON；正式主機未確認 | [83558](https://data.gov.tw/dataset/83558) |
 | data.tainan.gov.tw（API 在 `soa.tainan.gov.tw`） | 無 | 垃圾車 GPS；詐欺、毒品案件統計（僅統計） | ✅ 垃圾車 200；正式主機未確認 | [136310](https://data.gov.tw/dataset/136310) |
-| data.taipei | 捷運營運公告（`metro-alerts`）等 | 垃圾車點位路線（含抵達時間）、藥癮名單（全國版）、美沙冬跨區給藥；水質監測（15 分鐘）、環境輻射（5 分鐘）僅限臺北 | ✅ 200 | [136515](https://data.gov.tw/dataset/136515)、[133353](https://data.gov.tw/dataset/133353) |
+| data.taipei | 捷運營運公告（`metro-alerts`，已於 2026-10-21 隨 #728 移除）等 | 垃圾車點位路線（含抵達時間）、藥癮名單（全國版）、美沙冬跨區給藥；水質監測（15 分鐘）、環境輻射（5 分鐘）僅限臺北 | ✅ 200 | [136515](https://data.gov.tw/dataset/136515)、[133353](https://data.gov.tw/dataset/133353) |
 | data.ntpc.gov.tw | 部分設施 | 垃圾車即時位置（每 2 分鐘）＋路線；衛生局約 120 個 2026 年有更新的資料集多為新北限定（泳池／溫泉水質、流感抗病毒藥劑合約院所、月子餐機構…） | ✅ 垃圾車 200 | [122972](https://data.gov.tw/dataset/122972)、[125664](https://data.gov.tw/dataset/125664) |
 | data.moa.gov.tw | 病蟲害、動物醫院、認養、土石流（`disaster-map` 圖層）、農藥殘留 | 林火風險、果菜批發行情；寵物遺失啟事（**含飼主電話與 Email，不建議轉載個資**） | ✅ 三支皆 200 | <https://data.moa.gov.tw/openapi.json> |
 | data.kcg.gov.tw（API 在 `openapi.kcg.gov.tw`） | 無 | 垃圾車動態；垃圾車到點時間預估（[117726](https://data.gov.tw/dataset/117726)，未實打）；毒防局社區關懷站 | ✅ 垃圾車 200；正式主機未確認 | [138256](https://data.gov.tw/dataset/138256) |
@@ -224,7 +224,7 @@
 | 縣市版藥癮名單、縣市版防空避難（作為單獨來源） | 與全國版重複，或只覆蓋單一縣市 |
 | 新北市衛生局約 120 個資料集 | 9/14 的 N7 礦區本次已展開：多數是新北限定名冊，全國版已有對應（藥局、AED、長照、母嬰親善）；不單獨接 |
 | 測速執法、集會遊行 | 不排除但列次要：與「健康生活」主軸較遠 |
-| 臺北捷運分時進出量、置物櫃 | 僅臺北，且 2.0 已決定（T4）把 `metro-alerts` 改接 TDX 全台軌道 |
+| 臺北捷運分時進出量、置物櫃 | 僅臺北，且 2.0 已決定（T4）把 `metro-alerts` 改接 TDX 全台軌道（後續於 2026-10-21 改為整個移除，#728） |
 
 ---
 

@@ -1,7 +1,7 @@
 import "server-only";
 import { getPool } from "@/lib/server/db/mysql";
 import { getTdxToken } from "@/lib/server/tdx/auth";
-import { RAIL_SYSTEMS, type RailSystem } from "./railStationCounty";
+import { RAIL_SYSTEMS, type RailSystem } from "./railSystems";
 import { fetchSeniorFacilityAlert, type SeniorStationFacilityAlert } from "./tdxSeniorClient";
 
 // issue #730：無障礙交通頁瘦身。每日軌道無障礙同步（設施／服務／導覽圖／轉乘）與每日公車

@@ -5,6 +5,8 @@
 - **範圍**：`basic` 分類全部 18 個群組、674 支 API，逐一比對本站 84 個工具。另附 `seniors` 分類（高齡友善）的修正結果。
 - **狀態**：2026-10-12 使用者核准，**T1–T4、T6 納入 2.0**（PRD [#438](https://github.com/j172/health/issues/438) §P；T6 排 P0、T1–T4 排 P2）；T5、T7–T11 留待 2.0 之後。原則：不新增 catalog 工具頁，資料餵給既有工具、hub 與「我附近」。
 
+> **2026-10-21 範圍調整（#727–#731）**：本文提到的 YouBike（T6）、全台軌道營運通阻（T4，`metro-alerts`）、樂齡旅遊，以及無障礙交通的 TDX 即時同步（T1 每日公車低地板比率、每日軌道無障礙同步）已**整個移除或降級為靜態種子資料**；下文對應段落保留作當時的決策與研究紀錄，**不再是現況**。現況：TDX 只剩每小時電梯停用公告（`transit-accessibility-alerts`，約 240 次／天）、半年一次的設施同步（停車 T3、有聲號誌 T2，仍在）與管理員手動的敬老卡同步；請求預算與症狀判讀見 [domains/10-scheduling-sync-ci.md](../domains/10-scheduling-sync-ci.md) §2.1。
+
 ---
 
 ## 0. 先修好的：高齡友善 API（`seniors` 分類）
@@ -40,7 +42,7 @@ server 一律是 `https://tdx.transportdata.tw/api/basic`。
 
 ## 2. 已納入 2.0（T1–T4；T6 見 §3）
 
-### T1. 無障礙公車改用真實資料（取代種子）★
+### T1. 無障礙公車改用真實資料（取代種子）★（已於 2026-10-21 隨 #730 移除，改回靜態種子）
 - **現況**：`accessible_transit_routes` 的「低地板公車比率」是寫死的種子值（`transitSeed.ts`，例如 100.0、98.5）。當初 Spec A 認為 TDX 沒有這筆資料，但那只是 `seniors` 分類沒有。
 - **TDX 實際有的**：
   - `GET /v3/Bus/Vehicle/City/{City}`：每台車的 `IsLowFloor`（是否低地板）、`HasLiftOrRamp`（是否有升降或斜坡板）。
@@ -60,7 +62,7 @@ server 一律是 `https://tdx.transportdata.tw/api/basic`。
 - **服務對象**：「懷孕到育兒」hub（孕婦親子車位）、「身心障礙者生活」hub、「我附近」更多類型。
 - **注意**：車位總量很大，同步只保留上述 4 種 `SpaceType`，避免資料表膨脹（參考 [09](../domains/09-database-data-integrity.md) 的教訓）。
 
-### T4. 全台軌道營運通阻（升級捷運公告） ★
+### T4. 全台軌道營運通阻（升級捷運公告） ★（已於 2026-10-21 隨 #728 整個移除）
 - **現況**：[/tools/metro-alerts](https://health.j172.tw/tools/metro-alerts) 只有臺北捷運，來源是 data.taipei 的 Big5 CSV。
 - **TDX**：
   - `/v2/Rail/Metro/Alert/{RailSystem}`：TRTC 臺北、TRTCMG 貓空纜車、TYMC 桃捷、TMRT 中捷、KRTC 高捷、KLRT 高雄輕軌。
@@ -79,7 +81,7 @@ server 一律是 `https://tdx.transportdata.tw/api/basic`。
 
 | # | 項目 | API | 說明 |
 |---|---|---|---|
-| T6 ✅ 已納入 2.0 P0 | YouBike 擴至 15 縣市 | `/v2/Bike/{Station, Availability}/City/{City}` | 現有程式已用 TDX，只需把 `TDX_CITIES` 從 5 個加到 15 個（新增台中、苗栗、彰化、雲林、嘉義縣市、屏東、台東、高雄、台南）。改動很小，**也可以放進 2.0 P0** |
+| T6 ✅ 已納入 2.0 P0，**後於 2026-10-21 整個移除（#727）** | YouBike 擴至 15 縣市 | `/v2/Bike/{Station, Availability}/City/{City}` | 現有程式已用 TDX，只需把 `TDX_CITIES` 從 5 個加到 15 個（新增台中、苗栗、彰化、雲林、嘉義縣市、屏東、台東、高雄、台南）。改動很小，**也可以放進 2.0 P0** |
 | T7 | 道路事件（防災相關） | `/v1/Traffic/RoadEvent/LiveEvent/{Highway, Freeway, City/{City}}` | `EventType` 5 天氣、6 災害、4 特殊管制；可補 NCDR 待辦 D-1 的「公路」類別 |
 | T8 | 偏鄉需求反應式公車（DRTS） | `/v3/Bus/DRTS/*` | 預約條件、站位、班表；偏鄉長者就醫交通，可放入「家有長輩」hub |
 | T9 | 電動車充電站 | `/v1/EV/{Station, ConnectorLiveStatus}/City/{City}` | 全新工具，與現有工具無重疊 |
@@ -98,7 +100,7 @@ server 一律是 `https://tdx.transportdata.tw/api/basic`。
 ## 5. 實作共通注意事項
 
 1. 一律走既有的 `getTdxToken()` 與 `httpGetJson`（禁止全域 `fetch`）；TDX 有每秒請求上限，逐縣市呼叫要依序加間隔。
-2. 座標在 TDX schema 中多為字串，一律經 `parseTdxCoordinate()` 轉換。
+2. 座標在 TDX schema 中多為字串，一律經 `parseTdxCoordinate()` 轉換。（該函式已於 #731 隨最後一個呼叫端移除；停車、有聲號誌來源各自有座標轉換。）
 3. 只存「最新狀態」的資料表，UNIQUE KEY **不得包含時間欄位**（見 [09](../domains/09-database-data-integrity.md)）。
 4. 每個新同步都要有種子備援，並列入 GitHub Actions 或 in-app 排程時參考 [10](../domains/10-scheduling-sync-ci.md) 錯開分鐘數；目前 in-app 已有 36 個 job，需注意 NPROC。
 5. 縣市代碼：TDX 有兩套，basic 用英文名（`Taipei`、`NewTaipei`），`seniors` 用 3 碼（`TPE`、`NWT`）；建議集中一份對照表。
