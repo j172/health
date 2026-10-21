@@ -4,7 +4,7 @@
  * Footer components' sort order (see `compareByStrokeOrder` below).
  *
  * GENERATED — do not hand-edit. Regenerate with:
- *   node scripts/generate-stroke-table.mjs（已移除，見 git 歷史）
+ *   node scripts/generate-stroke-table.mjs
  * Source of truth: the `cnchar` + `cnchar-trad` npm packages (devDependencies
  * only — see that script for why this is a committed static table rather
  * than a runtime dependency).
@@ -12,55 +12,65 @@
 export const STROKE_COUNTS: Record<string, number> = {
   "中": 4,
   "交": 6,
+  "今": 4,
   "信": 9,
   "健": 10,
   "兒": 8,
   "全": 6,
-  "公": 4,
+  "出": 5,
   "助": 7,
   "卡": 5,
   "即": 7,
   "去": 5,
   "合": 6,
   "器": 16,
-  "國": 11,
   "在": 6,
-  "地": 6,
+  "垃": 8,
   "壓": 17,
   "婦": 11,
+  "孕": 5,
   "室": 9,
+  "家": 10,
   "就": 12,
   "庇": 7,
   "心": 4,
   "急": 9,
+  "懷": 19,
   "成": 6,
   "戒": 7,
   "戶": 4,
-  "捷": 11,
+  "托": 6,
   "敬": 12,
   "文": 4,
+  "早": 6,
   "書": 10,
+  "有": 6,
   "本": 5,
   "母": 5,
   "每": 7,
   "無": 12,
+  "特": 10,
   "環": 17,
+  "產": 11,
   "目": 5,
   "睡": 13,
   "碳": 14,
+  "社": 7,
   "空": 8,
   "緊": 14,
   "罕": 7,
+  "育": 8,
   "腰": 13,
-  "臺": 14,
   "藥": 18,
   "血": 6,
   "身": 7,
   "農": 13,
+  "遠": 13,
   "避": 16,
   "醫": 18,
   "長": 8,
   "防": 6,
+  "颱": 14,
   "食": 9,
   "飲": 12,
   "體": 22,
@@ -110,5 +120,9 @@ export function compareByStrokeOrder(a: string, b: string, locale?: string): num
   }
   if (countA !== undefined) return -1;
   if (countB !== undefined) return 1;
-  return a.localeCompare(b, undefined, { numeric: true });
+  // Explicit locale, never `undefined`: the default locale differs between the
+  // Node server and the visitor's browser, and a label whose first character is
+  // missing from STROKE_COUNTS lands here — so the SSR'd nav order and the
+  // client's would disagree and React would throw hydration error #418.
+  return a.localeCompare(b, "zh-Hant", { numeric: true });
 }
