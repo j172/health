@@ -1,406 +1,142 @@
-# j172tw Healthz (智慧健康與生活資訊整合平臺)
+<div align="center">
+
+**繁體中文** | [English](README.en.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
+
+<img src="public/images/og/home.png" alt="j172tw Healthz 首頁封面：健康新聞與工具總覽" width="720" />
+
+# j172tw Healthz
+
+**臺灣公衛醫療新聞、生活便民工具與即時災害環境資料，整合在一個免安裝的網站。**
+
+[**線上體驗 health.j172.tw »**](https://health.j172.tw)
+
+</div>
+
+<!-- 以下數字由 tests/readme-scale-numbers.test.mjs 對照程式碼驗證；改數字時四份 README 要一起改。 -->
 
 <p align="center">
-  <img src="https://health.j172.tw/images/hero/hero-card.webp" alt="j172tw Healthz Banner" width="800" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+  <a href="https://github.com/j172/health/actions/workflows/deploy-ftps.yml"><img src="https://img.shields.io/github/actions/workflow/status/j172/health/deploy-ftps.yml?branch=main&label=deploy&style=flat-square&logo=githubactions&logoColor=white" alt="deploy-ftps 工作流程狀態" /></a>
+  <a href="https://github.com/j172/health/commits/main"><img src="https://img.shields.io/github/last-commit/j172/health/main?style=flat-square&logo=github" alt="最後一次 commit" /></a>
+  <a href="https://github.com/j172/health/issues"><img src="https://img.shields.io/github/issues/j172/health?style=flat-square&logo=github" alt="開放中的 issue" /></a>
+  <a href="https://github.com/j172/health/pulls"><img src="https://img.shields.io/github/issues-pr/j172/health?style=flat-square&logo=github" alt="開放中的 pull request" /></a>
 </p>
 
 <p align="center">
-  <strong>全方位臺灣公衛醫療新聞、70+ 款免安裝生活便民工具、即時災害環境觀測與開放資料整合樞紐</strong>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/next?style=flat-square&logo=nextdotjs&logoColor=white" alt="next 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/react?style=flat-square&logo=react&logoColor=white" alt="react 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/dev/typescript?style=flat-square&logo=typescript&logoColor=white" alt="typescript 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/dev/tailwindcss?style=flat-square&logo=tailwindcss&logoColor=white" alt="tailwindcss 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/maplibre-gl?style=flat-square&logo=maplibre&logoColor=white" alt="maplibre-gl 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/leaflet?style=flat-square&logo=leaflet&logoColor=white" alt="leaflet 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/mysql2?style=flat-square&logo=mysql&logoColor=white" alt="mysql2 版本" /></a>
+  <a href="package.json"><img src="https://img.shields.io/github/package-json/dependency-version/j172/health/node-cron?style=flat-square&logo=nodedotjs&logoColor=white" alt="node-cron 版本" /></a>
 </p>
 
 <p align="center">
-  <a href="https://health.j172.tw"><strong>🌐 立即線上體驗 (Live Demo) »</strong></a>
+  <a href="lib/server/tools/catalog.ts"><img src="https://img.shields.io/badge/工具-86_款-0ea5e9?style=flat-square" alt="工具 86 款" /></a>
+  <a href="lib/server/cron/registerJobs.ts"><img src="https://img.shields.io/badge/排程-45_項-8b5cf6?style=flat-square" alt="內建排程 45 項" /></a>
+  <a href="lib/server/news/sourceCategories.ts"><img src="https://img.shields.io/badge/新聞來源-103_個-f59e0b?style=flat-square" alt="新聞來源 103 個" /></a>
+  <img src="https://img.shields.io/badge/語言-zh--TW_%7C_en_%7C_ja_%7C_ko-64748b?style=flat-square" alt="支援語言：zh-TW、en、ja、ko" />
 </p>
 
 <p align="center">
-  <!-- 1. 專案狀態與部署 -->
-  <a href="https://health.j172.tw"><img src="https://img.shields.io/badge/Production-Live%20Online-success?style=for-the-badge&logo=vercel&logoColor=white&color=059669" alt="Production Status" /></a>
-  <a href="https://github.com/j172/health/actions/workflows/deploy-ftps.yml"><img src="https://img.shields.io/github/actions/workflow/status/j172/health/deploy-ftps.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI%2FCD%20Deploy" alt="Deploy Status" /></a>
-  <a href="https://health.j172.tw"><img src="https://img.shields.io/badge/Cloudflare-Edge%20Cached-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare" /></a>
-  <a href="https://health.j172.tw"><img src="https://img.shields.io/badge/HTTP%20Status-200%20OK-brightgreen?style=for-the-badge&logo=statuspal&logoColor=white" alt="HTTP Status" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT_%2B_CC0--1.0-blue?style=flat-square" alt="授權：MIT + CC0-1.0" /></a>
+  <a href="https://data.gov.tw/license"><img src="https://img.shields.io/badge/上游資料-OGDL--Taiwan--1.0-red?style=flat-square" alt="上游資料：政府資料開放授權條款第 1 版" /></a>
+  <a href="https://health.j172.tw"><img src="https://img.shields.io/website?url=https%3A%2F%2Fhealth.j172.tw&label=health.j172.tw&style=flat-square" alt="網站狀態" /></a>
 </p>
 
-<p align="center">
-  <!-- 2. 核心技術棧版本 -->
-  <img src="https://img.shields.io/badge/Next.js-16.3%20(Turbopack)-black?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" />
-  <img src="https://img.shields.io/badge/React-19.3-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-6.0-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 6" />
-  <img src="https://img.shields.io/badge/Node.js-20%2B%20%7C%2022%2B-5FA04E?style=flat-square&logo=node.js&logoColor=white" alt="Node.js 20+" />
-  <img src="https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
-  <img src="https://img.shields.io/badge/MySQL-8.0%20(Pooled)-4479A1?style=flat-square&logo=mysql&logoColor=white" alt="MySQL 8.0" />
-</p>
+---
+
+## 這是什麼
+
+j172tw Healthz 把分散在各機關與媒體的**公衛醫療新聞**、**生活便民工具**與**即時災害環境觀測資料**整理到同一個網站：打開就能用，不用註冊、不用安裝，也沒有廣告。目前收錄 <!--scale:tools-->86<!--/scale--> 款互動工具、<!--scale:news-sources-->103<!--/scale--> 個新聞來源，並以 <!--scale:cron-->45<!--/scale--> 項內建排程持續更新資料。
+
+這個專案同時也是一份**作品集**：從資料擷取、資料庫、前端、地圖、多語系到維運自動化，在資源受限的共享主機上跑成可長期營運的公共資訊服務。
+
+## 功能亮點
+
+### 新聞：官方與媒體分流，圖片不破圖
+- 彙整官方機構、媒體、公益團體與事實查核單位的健康與生活新聞（RSS 加上針對特定網站的擷取器），有新鮮度閘門與來源失敗隔離。
+- 官方來源在站內呈現全文；商業媒體只保存標題、摘要與縮圖，點擊後回到原站，尊重著作權。
+- **四層新聞圖片漏斗**：原文真圖 → 圖庫備援（Pixabay → Pexels → Unsplash，含限流冷卻）→ 重用已收錄的歷史圖庫 → 向量封面（`ThematicCover`）。官方公報刻意不配圖庫照片，改用向量封面，維持嚴肅性。
+- 事實查核單位的卡片會明確標示「查核機構，非本站判定」。
+
+### 生活便民工具：<!--scale:tools-->86<!--/scale--> 款，分成 7 大類
+健康自我評估（BMI、熱量、血壓、睡眠…）、就醫與用藥（診所、藥局、藥品許可證、急診即時壅塞…）、長照與社會福利、婦幼與家庭、防災與示警、環境與食品安全、交通生活與文化。所有工具的分類、導覽、頁尾與 `/tools` 索引都由同一份 [`catalog.ts`](lib/server/tools/catalog.ts) 產生，不會彼此脫節。另有 [`/guides`](https://health.j172.tw/guides) 情境指南與 [`/nearby`](https://health.j172.tw/nearby)：定位一次，同時查 AED、診所、藥局、避難所等急用點位。
+
+### 防災與環境即時資料
+- 中央氣象署天氣示警、颱風橫幅、空氣品質與紫外線、水庫水情、淹水感測、停水通報、電力結構。
+- 全球顯著地震整合 USGS、EMSC、香港天文臺與中央氣象署四個來源並去重。
+- 「全球動態地球」以 MapLibre 3D 地球呈現空氣品質、災害、地震、疫情與颱風。
+
+### 設施地圖：數十萬筆機構資料
+診所、藥局、AED、公廁、長照、托育等設施資料，經過地址正規化與多層地理編碼（TGOS → OpenCage → Nominatim，含每日額度、輪替游標與縣市邊界防護），在 Leaflet 地圖上顯示並附 Google 地圖導航連結。原則是「資料先入庫、前台只讀資料庫、每個工具都有備援資料」，不讓使用者看到空白頁。
+
+### 多語與無障礙
+- 繁體中文為預設，另有 English、日本語、한국어（以 `/en/`、`/ja/`、`/ko/` 路徑提供；日、韓文目前翻譯介面與名稱，內文維持中文）。清單以臺灣筆劃序排序。
+- 設有[無障礙宣告](https://health.j172.tw/accessibility)，以數位發展部《無障礙網頁開發規範 2.1》與 WCAG 2.1 AA 為設計目標，提供快速鍵導引；新聞可語音朗讀、沉浸閱讀；支援深色模式與 PWA。
+- AI 友善：提供 `llms.txt`、`llms-full.txt` 與 JSON-LD 結構化資料。
+
+## 規模數字
+
+| 項目 | 數量 | 計算方式（單一事實來源） |
+|---|---|---|
+| 互動工具 | <!--scale:tools-->86<!--/scale--> 款 | [`lib/server/tools/catalog.ts`](lib/server/tools/catalog.ts) 的 `TOOL_CATALOG` |
+| 內建排程 | <!--scale:cron-->45<!--/scale--> 項 | [`lib/server/cron/registerJobs.ts`](lib/server/cron/registerJobs.ts) 的 `cron.schedule(` 呼叫（另有 GitHub Actions 排程，不計入） |
+| 新聞來源 | <!--scale:news-sources-->103<!--/scale--> 個 | [`lib/server/news/sourceCategories.ts`](lib/server/news/sourceCategories.ts)：官方機構 26、媒體 49、公益團體 26、事實查核 2（含已停止擷取、但歷史文章仍保留的來源） |
+
+這些數字是手寫的，由 [`tests/readme-scale-numbers.test.mjs`](tests/readme-scale-numbers.test.mjs) 在每次 `npm test` 對照程式碼，四份 README 任何一份過時都會讓測試失敗。
+
+## 技術棧
 
 <p align="center">
-  <!-- 3. 品質與測試指標 -->
-  <img src="https://img.shields.io/badge/Automated%20Tests-620%2F620%20Passing-success?style=flat-square&logo=node.js&logoColor=white" alt="Tests" />
-  <img src="https://img.shields.io/badge/Typecheck-0%20Errors-success?style=flat-square&logo=typescript&logoColor=white" alt="Typecheck" />
-  <img src="https://img.shields.io/badge/Image%20Funnel-4--Tier%20Resilient-blueviolet?style=flat-square&logo=unsplash&logoColor=white" alt="Four Tier Funnel" />
-  <img src="https://img.shields.io/badge/Broken%20Images-0%25%20Guaranteed-brightgreen?style=flat-square" alt="Zero Broken Images" />
-  <img src="https://img.shields.io/badge/Memory%20Ceiling-768MB%20Resilient-orange?style=flat-square&logo=ram&logoColor=white" alt="768MB RAM" />
-</p>
-
-<p align="center">
-  <!-- 4. 國際化、AI 與開源協議 -->
-  <img src="https://img.shields.io/badge/i18n-4%20Languages%20(zh--TW%20%7C%20en%20%7C%20ja%20%7C%20ko)-blue?style=flat-square&logo=translate&logoColor=white" alt="i18n" />
-  <a href="https://health.j172.tw/llms.txt"><img src="https://img.shields.io/badge/LLMs.txt-Compliant-8A2BE2?style=flat-square&logo=openai&logoColor=white" alt="llms.txt" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Code%20License-MIT-blue.svg?style=flat-square" alt="MIT License" /></a>
-  <a href="https://spdx.org/licenses/CC0-1.0"><img src="https://img.shields.io/badge/Data%20License-CC0--1.0-lightgrey.svg?style=flat-square" alt="CC0 1.0" /></a>
-  <img src="https://img.shields.io/badge/Taiwan%20OGDL-1.0%20Compliant-red?style=flat-square" alt="OGDL" />
-</p>
-
-<p align="center">
-  <!-- 5. 上游政府與權威資料源陣列 -->
+  <img src="https://skillicons.dev/icons?i=nextjs,react,ts,js,tailwind,nodejs" alt="Next.js、React、TypeScript、JavaScript、Tailwind CSS、Node.js" />
   <br />
-  <strong>🏛️ 官方開放資料串接 (Official Data Partners)</strong><br />
-  <img src="https://img.shields.io/badge/衛福部-MOHW-008080?style=flat-square" alt="MOHW" />
-  <img src="https://img.shields.io/badge/疾管署-CDC-1E3A8A?style=flat-square" alt="CDC" />
-  <img src="https://img.shields.io/badge/食藥署-TFDA-B91C1C?style=flat-square" alt="TFDA" />
-  <img src="https://img.shields.io/badge/國健署-HPA-15803D?style=flat-square" alt="HPA" />
-  <img src="https://img.shields.io/badge/中央氣象署-CWA-0369A1?style=flat-square" alt="CWA" />
-  <img src="https://img.shields.io/badge/環境部-MOENV-047857?style=flat-square" alt="MOENV" />
-  <img src="https://img.shields.io/badge/經濟部水利署-WRA-0284C7?style=flat-square" alt="WRA" />
-  <img src="https://img.shields.io/badge/台灣電力公司-Taipower-F59E0B?style=flat-square" alt="Taipower" />
-  <img src="https://img.shields.io/badge/交通部-TDX-4338CA?style=flat-square" alt="TDX" />
-  <img src="https://img.shields.io/badge/農業部-MOA-65A30D?style=flat-square" alt="MOA" />
-  <img src="https://img.shields.io/badge/文化部-MOC-9333EA?style=flat-square" alt="MOC" />
-  <img src="https://img.shields.io/badge/客委會-Hakka-0D9488?style=flat-square" alt="Hakka" />
+  <img src="https://img.shields.io/badge/MapLibre_GL-396CB2?style=for-the-badge&logo=maplibre&logoColor=white" alt="MapLibre GL" />
+  <img src="https://img.shields.io/badge/Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white" alt="Leaflet" />
 </p>
 
----
+- **前端**：Next.js（App Router）、React、TypeScript、Tailwind CSS、`next-themes`；地圖用 Leaflet（設施）與 MapLibre GL（3D 地球）。
+- **後端**：Next.js 伺服器端渲染與 ISR、`mysql2` 連線池、`zod` 資料驗證、`cheerio` 與 `fast-xml-parser` 解析來源資料。
+- **排程**：`node-cron` 在應用程式內排程，搭配 GitHub Actions 處理需要乾淨出口 IP 或長時間的批次工作。
+- **邊緣與部署**：Cloudflare 在前端做快取與防護；GitHub Actions 建置並以 FTPS 部署預建置產物，PM2 常駐。
 
-## 📖 專案目錄 (Table of Contents)
-
-1. [平臺核心亮點與願景](#-平臺核心亮點與願景)
-2. [四層新聞圖片漏斗架構 (Four-Tier Funnel)](#-四層新聞圖片漏斗架構-four-tier-image-funnel)
-3. [70+ 款生活便民與公衛防災工具速查矩陣](#-70-款生活便民與公衛防災工具速查矩陣)
-   - [A. 健康自我評估 (12 款)](#a-健康自我評估-12-款)
-   - [B. 就醫與用藥 (13 款)](#b-就醫與用藥-13-款)
-   - [C. 長照與社會福利 (9 款)](#c-長照與社會福利-9-款)
-   - [D. 婦幼與家庭 (9 款)](#d-婦幼與家庭-9-款)
-   - [E. 防災與示警 (13 款)](#e-防災與示警-13-款)
-   - [F. 環境與食品安全 (11 款)](#f-環境與食品安全-11-款)
-   - [G. 交通、生活與文化 (12 款)](#g-交通生活與文化-12-款)
-4. [高防禦性系統工程與架構設計](#-高防禦性系統工程與架構設計)
-5. [雙軌定時排程矩陣 (Dual-Track Cron)](#-雙軌定時排程矩陣-dual-track-cron)
-6. [多語言國際化 (i18n & Collation)](#-多語言國際化-i18n--collation)
-7. [AI Agent 友善生態 (LLMs.txt & Geo-Summary)](#-ai-agent-友善生態-llmstxt--geo-summary)
-8. [本機開發與快速啟動 (Quickstart)](#-本機開發與快速啟動-quickstart)
-9. [雙重授權條款與資料權益宣告 (License)](#-雙重授權條款與資料權益宣告-license)
-
----
-
-## 🌟 平臺核心亮點與願景
-
-`j172tw Healthz` 致力於打造**臺灣最值得信賴的公共衛生、民生防災與生活決策資訊整合平臺**。整合逾 50 家中央與地方官方公報、醫療專科頻道與環境感測物聯網，消弭資訊孤島，堅持：
-
-1. **嚴謹求真，權威分流**：官方機構公文堅持白皮書特刊微視覺與原廠圖表，杜絕不相干商業圖庫侵蝕公信力。
-2. **零阻礙即開即用**：全站 70+ 款生活工具無廣告干擾、免下載安裝、支援離線 PWA 與暗色模式。
-3. **極限環境工程美學**：在 768MB RAM 極限主機記憶體下，以純原生 HTTP 與高防禦性管線實現零崩潰、零破圖、0 CLS。
-4. **開放資料與 AI 友善**：遵循 `llms.txt` 標準，原創 Schema 與 AI 結構化資料全面以 `CC0-1.0` 開放賦能 AI Agent。
-
----
-
-## 🎨 四層新聞圖片漏斗架構 (Four-Tier Image Funnel)
-
-全站新聞卡片與導航頁全面導入頂級 **四層圖片漏斗備援機制**，確保全站萬篇新聞 **0 破圖、0 粗糙文字空卡、0 CLS 視覺位移**：
+## 架構
 
 ```mermaid
-flowchart TD
-    A[新聞採集進站 / 缺圖排程掃描] --> B{來源是否為官方公報?}
-    
-    %% 官方公報分流 (Decision 6)
-    B -->|是 (CDC / TFDA / MOHW / CWA 等)| K{是否含原廠圖表 / 疫情地圖?}
-    K -->|有原廠圖表| C[Tier 1: 保留顯示真實公文圖表]
-    K -->|無圖表| L[Tier 4: ThematicCover 官方白皮書特刊向量微視覺]
+flowchart LR
+    U["使用者 / PWA / AI 爬蟲"] --> CF["Cloudflare 邊緣快取與防護"]
+    CF --> APP["Next.js<br/>SSR / ISR"]
+    APP --> DB[("MySQL 相容資料庫")]
 
-    %% 民間媒體四層漏斗
-    B -->|否 (自由 / 聯合 / 康健 / ESG 媒體)| D{Tier 1: 真圖優先}
-    D -->|具 RSS / OG / 內文高解析圖片| C2[落地快取至 news_assets]
-    
-    D -->|無真圖| E{Tier 2: 媒體圖庫 API 備援}
-    E -->|Pixabay / Pexels / Unsplash 命中新圖| F[下載新素材並關聯至 news_card_images]
-    
-    E -->|API 429 限流 / 全冷卻 / 無金鑰| G{Tier 3: 已收錄歷史圖庫池復用}
-    G -->|命中同主題標籤 且 通過 100 篇防撞冷卻 且 檔案存在| H[復用既有本地圖檔，零磁碟消耗寫入 DB]
-    
-    G -->|無相符主題 或 冷卻中 或 實體遺失| I{Tier 4: 專屬向量封面}
-    I --> J[ThematicCover 媒體品牌風格向量微視覺]
-
-    style B fill:#f9f,stroke:#333,stroke-width:2px
-    style L fill:#bbf,stroke:#333,stroke-width:2px
-    style H fill:#bfb,stroke:#333,stroke-width:2px
+    SRC["政府開放資料 / RSS / 氣象與環境 API"] --> ING["擷取層<br/>node-cron 內建排程 + GitHub Actions"]
+    ING -->|"zod 驗證"| DB
+    ING --> IMG["新聞圖片四層漏斗"]
+    IMG --> DB
+    GEO["地理編碼<br/>TGOS → OpenCage → Nominatim"] --> DB
 ```
 
-### 核心技術突破
-* **嚴肅性隔離 (Decision 6)**：官方公報強制排除於圖庫排程之外，以向量徽章、公文排版打造「官方特刊白皮書封面」，維持衛政權威。
-* **100 篇防撞冷卻窗口 (Recency Guard)**：歷史庫存圖復用時，強制比對全站最近 100 篇發布文章（`RECENCY_COLLISION_WINDOW = 100`），相鄰文章絕不出現相同圖片。
-* **解除資料庫唯一限制**：放寬 `news_card_images` 歷史殘留之單圖唯一約束，允許多篇文章關聯同一個實體檔案，零硬碟空間重複浪費。
-* **視覺全面昇華**：首頁主卡（`HeroPost`）具備滿版 `heroMode` 兜底，次要新聞與搜尋 Modal（`SearchModal`）全面升級為 `CardThumb` 縮圖。
+整套系統刻意為資源受限的共享主機設計：伺服器端不使用全域 `fetch()`，改走自家的 `node:https` 用戶端；不在請求當下做 WASM 或圖片轉檔；資料庫結構以冪等的 `ensureSchema()` 啟動時補齊。細節與取捨見 [系統架構總覽](docs/architecture.md)。
 
----
+## 文件導覽
 
-## 🧰 70+ 款生活便民與公衛防災工具速查矩陣
+開發、維運、事故紀錄與各功能的決策都放在 `docs/`（文件以繁體中文撰寫），README 不展開：
 
-平臺提供 7 大專業領域、86 款互動式計算與全臺地理圖資工具（2026-10-21 實際 `TOOL_CATALOG.length`；分類與統計依 `lib/server/tools/catalog.ts` 的 `TOOL_GROUP_META` 單一事實來源，與站內導覽選單、頁尾分類及 `/tools` 索引頁完全同步）：
+- 總索引：[docs/README.md](docs/README.md)　系統架構：[docs/architecture.md](docs/architecture.md)
+- 新聞：[01 新聞來源](docs/domains/01-news-sources.md)・[02 新聞圖片](docs/domains/02-news-images.md)・[03 新聞地標](docs/domains/03-news-geo-landmark.md)
+- 工具：[04 資訊架構與導覽](docs/domains/04-ia-navigation-civic.md)・[05 醫療與食藥](docs/domains/05-tools-medical-food.md)・[06 社福與兒少家庭](docs/domains/06-tools-welfare-family-culture.md)・[07 防災環境能源](docs/domains/07-tools-disaster-environment-energy.md)
+- 資料：[08 設施與地圖](docs/domains/08-facilities-geocode-maps.md)・[09 資料庫與正確性](docs/domains/09-database-data-integrity.md)
+- 營運：[10 排程與 CI/CD](docs/domains/10-scheduling-sync-ci.md)・[11 主機與維運](docs/domains/11-hosting-ops-incidents.md)
+- 前端與品質：[12 前端穩定性](docs/domains/12-frontend-stability.md)・[13 SEO、效能、多語與 AI 友善](docs/domains/13-seo-performance-i18n-ai.md)
 
-### A. 健康自我評估 (12 款)
+## 雙重授權條款與資料權益宣告
 
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **BMI 計算器** | [`/tools/bmi`](https://health.j172.tw/tools/bmi) | 衛福部國健署 & WHO 體重標準 | 支援男女各年齡層健康體重範圍對照 |
-| **卡路里需求計算器** | [`/tools/calories`](https://health.j172.tw/tools/calories) | Mifflin-St Jeor 基礎代謝公式 | 5 段活動係數計算 BMR 與 TDEE 熱量赤字建議 |
-| **每日營養素分配** | [`/tools/nutrition`](https://health.j172.tw/tools/nutrition) | 均衡飲食、生酮、增肌比例調配 | 精算碳水化合物、蛋白質與脂肪每日克數 |
-| **每日飲水量計算器** | [`/tools/water`](https://health.j172.tw/tools/water) | 體重活動量綜合法 | 智慧生成 8 段分時補水時間表 |
-| **體脂率計算器** | [`/tools/body-fat`](https://health.j172.tw/tools/body-fat) | 美國海軍體脂演算法 (Navy Method) | 免儀器透過頸圍、腰圍、臀圍精準估算 |
-| **腰臀比計算器** | [`/tools/waist-hip`](https://health.j172.tw/tools/waist-hip) | WHO 腹部中心性肥胖分類標準 | 評估向心型肥胖與心血管慢性病風險等級 |
-| **目標心率計算器** | [`/tools/heart-rate`](https://health.j172.tw/tools/heart-rate) | Karvonen 儲備心率 (HRR) 公式 | 劃分熱身、燃脂、有氧、無氧 5 大運動區間 |
-| **血壓分析器** | [`/tools/blood-pressure`](https://health.j172.tw/tools/blood-pressure) | 2023 ESH 歐洲高血壓學會指南 | 即時判別低血壓、理想、正常高值與高血壓期別 |
-| **睡眠品質評估 (PSQI)** | [`/tools/sleep`](https://health.j172.tw/tools/sleep) | 匹茲堡睡眠品質指數量表 (PSQI) | 7 大維度睡眠障礙診斷與改善建議 |
-| **自覺壓力檢測 (PSS-10)** | [`/tools/stress`](https://health.j172.tw/tools/stress) | PSS-10 國際知覺壓力量表 | 辨識身心過負荷狀態與心理韌性分析 |
-| **去脂體重 (LBM)** | [`/tools/lbm`](https://health.j172.tw/tools/lbm) | Boer & James 精密公式 | 健美、運動員骨骼肌重量與用藥劑量基準 |
-| **最大攝氧量 (VO2Max)** | [`/tools/vo2max`](https://health.j172.tw/tools/vo2max) | Uth 安靜心率心肺對比公式 | 評估心肺耐力，可搭配穿戴裝置數值比對 |
+本專案採行複合式雙重授權機制（SPDX 識別碼：`MIT AND CC0-1.0`），明確劃分「軟體工程代碼」與「結構化開放資料」，完整條文見 [LICENSE](LICENSE)。
 
-### B. 就醫與用藥 (13 款)
-
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **全國醫療特約診所** | [`/tools/clinics`](https://health.j172.tw/tools/clinics) | 衛生福利部中央健康保險署 | 依縣市行政區、科別篩選特約基層診所 |
-| **特約健保藥局地圖** | [`/tools/pharmacies`](https://health.j172.tw/tools/pharmacies) | 衛生福利部中央健康保險署 | 全臺藥局地址、電話與即時營業導航 |
-| **藥品許可證查詢** | [`/tools/drugs`](https://health.j172.tw/tools/drugs) | 衛生福利部食品藥物管理署 (TFDA) | 核准藥品許可證字號、中英文品名與外觀顏色／形狀辨識 |
-| **成人預防健康檢查地圖** | [`/tools/health-checks`](https://health.j172.tw/tools/health-checks) | 勞動部職業安全衛生署 / 衛福部 | 勞工體格檢查、公務健檢與一般體檢機構 |
-| **全國急診即時壅塞監測** | [`/tools/er-status`](https://health.j172.tw/tools/er-status) | 衛福部緊急醫療管理系統 (EMIS) | 全國醫學中心急診等候住院、推床即時量能 |
-| **健康食品與保健認證小綠人** | [`/tools/health-supplements`](https://health.j172.tw/tools/health-supplements) | 衛生福利部審核通過健康食品 | 取得衛署健食字號認證之功效宣稱與保健成分 |
-| **心靈健康諮商與醫療** | [`/tools/mental-health`](https://health.j172.tw/tools/mental-health) | 衛福部心理健康司 | 心理諮商所、臨床心理所與精神復健機構 |
-| **戒菸服務特約醫療院所** | [`/tools/smoking-cessation`](https://health.j172.tw/tools/smoking-cessation) | 國健署戒菸治療服務系統 | 尼古丁戒斷門診、衛教諮詢與補助方案機構 |
-| **成人預防保健特約機構** | [`/tools/adult-preventive-care`](https://health.j172.tw/tools/adult-preventive-care) | 衛福部國民健康署 | 免費成人健檢、三高與四癌篩檢機構 |
-| **罕見疾病照護網絡** | [`/tools/rare-disease-care`](https://health.j172.tw/tools/rare-disease-care) | 衛生福利部國民健康署 | 罕見疾病照護諮詢機構與遺傳諮詢中心 |
-| **器官捐贈與移植醫院** | [`/tools/organ-donation-hospitals`](https://health.j172.tw/tools/organ-donation-hospitals) | 財團法人器官捐贈移植登錄及病人自主推廣中心 | 器官摘取與移植認可合格醫院清單 |
-| **居家急症照護機構** | [`/tools/home-emergency-care`](https://health.j172.tw/tools/home-emergency-care) | 衛生福利部新制急症照護 | 在宅急症抗生素治療與遠距照護特約機構 |
-| **醫事人員性別事件查詢（狼醫專區）** | [`/tools/medical-violators`](https://health.j172.tw/tools/medical-violators) | 衛生福利部醫事司 | 公告經法院判決或醫事審議懲戒確定之性平事件醫事人員名冊 |
-
-### C. 長照與社會福利 (9 款)
-
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **長照照顧圈地圖** | [`/tools/long-term-care`](https://health.j172.tw/tools/long-term-care) | 衛生福利部長期照顧司 / 中央健康保險署 / 社會及家庭署 / 客家委員會 | 整合長照2.0特約機構、居家醫療、老人福利機構與伯公照護站，可切換1/3/5公里照顧圈半徑 |
-| **身心障礙福利服務機構** | [`/tools/disability-welfare`](https://health.j172.tw/tools/disability-welfare) | 衛生福利部社會及家庭署 | 日間日間照顧、住宿式全日型生活機構 |
-| **無障礙自動櫃員機 (ATM)** | [`/tools/disability-atm`](https://health.j172.tw/tools/disability-atm) | 金融監督管理委員會 / 銀行公會 | 視障語音、輪椅友善升降無障礙 ATM 定位 |
-| **全國非營利公衛組織 (NPO)** | [`/tools/npo-organizations`](https://health.j172.tw/tools/npo-organizations) | 內政部人民團體資料庫 | 公衛醫療基金會、罕病協會與長照公益組織 |
-| **大眾無障礙交通轉乘路線** | [`/tools/accessible-transit`](https://health.j172.tw/tools/accessible-transit) | 交通部公路局公共運輸平臺 | 低地板公車（靜態種子資料，非即時）、輪椅接駁客運班次路線與每小時電梯停用公告 |
-| **全臺身心障礙庇護工場** | [`/tools/sheltered-workshops`](https://health.j172.tw/tools/sheltered-workshops) | 勞動部勞動力發展署 | 烘焙、手工藝、清潔服務庇護商品與訂購指南 |
-| **助聽器補助特約廠商** | [`/tools/hearing-aid-subsidies`](https://health.j172.tw/tools/hearing-aid-subsidies) | 社會局身心障礙輔具中心 | 政府聽力輔具評估與特約代償墊付門市 |
-| **綠色殯葬與環保設施** | [`/tools/funeral-facilities`](https://health.j172.tw/tools/funeral-facilities) | 內政部殯葬資訊網 | 樹葬、海葬、灑葬環保自然葬園區查詢 |
-| **敬老卡補助** | [`/tools/senior-friendly`](https://health.j172.tw/tools/senior-friendly) | 各縣市社會局（處）／衛福部社會及家庭署 | 全臺 22 縣市敬老卡交通補助查詢（靜態資料，由管理員視需要手動更新） |
-
-### D. 婦幼與家庭 (9 款)
-
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **兒童及少年福利機構** | [`/tools/child-welfare-institutions`](https://health.j172.tw/tools/child-welfare-institutions) | 衛生福利部社會及家庭署 | 公共托育家園、托嬰中心、早期療育發展機構 |
-| **全國公私立幼兒園清單** | [`/tools/kindergartens`](https://health.j172.tw/tools/kindergartens) | 教育部全國教保資訊網 | 公立、非營利、準公共幼兒園評鑑與核定人數 |
-| **全國短期補習班登記查詢** | [`/tools/cram-schools`](https://health.j172.tw/tools/cram-schools) | 教育部全國補習班資訊管理系統 | 立案狀態、科目類別、負責人與安全稽查 |
-| **本土原住民族語幼兒辭典** | [`/tools/child-native-languages`](https://health.j172.tw/tools/child-native-languages) | 教育部國語推行委員會 / 原民會 | 16 原住民族族語與客家語童趣注音辭庫 |
-| **全國公立動物收容認領養** | [`/tools/pet-adoption`](https://health.j172.tw/tools/pet-adoption) | 農業部動物保護資訊網 | 公立收容所犬貓等毛孩照片、特徵與認養手續 |
-| **全國公共場所哺集乳室** | [`/tools/breastfeeding-rooms`](https://health.j172.tw/tools/breastfeeding-rooms) | 國民健康署哺集乳室清冊 | 交通樞紐、觀光景點與百貨哺乳育嬰空間 |
-| **避孕措施衛教與諮詢地圖** | [`/tools/contraception-map`](https://health.j172.tw/tools/contraception-map) | 衛福部青少年健康衛教中心 | 婦產科門診、家庭計畫衛教機構諮詢 |
-| **全臺合法公私立動物醫院** | [`/tools/vet-clinics`](https://health.j172.tw/tools/vet-clinics) | 農業部動植物防疫檢疫署 | 執業獸醫診療機構、急診動物醫院證照查詢 |
-| **母嬰親善醫療院所認證** | [`/tools/baby-friendly-hospitals`](https://health.j172.tw/tools/baby-friendly-hospitals) | 衛生福利部國民健康署 | 鼓勵母乳哺育、24H 母嬰同室評鑑認證醫院 |
-
-### E. 防災與示警 (13 款)
-
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **全臺地面紫外線指數 (UVI)** | [`/tools/uv`](https://health.j172.tw/tools/uv) | 交通部中央氣象署 | 5 級防護提醒、防曬建議與最高暴曬時段預警 |
-| **全球顯著地震與海嘯觀測** | [`/tools/earthquakes`](https://health.j172.tw/tools/earthquakes) | CWA / USGS / EMSC / HKO | 全球 M6.0+ 與臺灣顯著有感地震即時推送 |
-| **兒童安全愛心熱點地圖** | [`/tools/child-safety-spots`](https://health.j172.tw/tools/child-safety-spots) | 內政部警政署 | 超商、學校警衛室兒少緊急庇護通報熱點 |
-| **國際旅遊公衛與疫情警示** | [`/tools/global-watch/epidemics`](https://health.j172.tw/tools/global-watch/epidemics) | 衛生福利部疾病管制署 | 全球旅遊疫情警戒（注意、警示、警告 3 級），併入「全球動態地球」國際疫情項目 |
-| **中央氣象署即時天氣示警** | [`/tools/weather-alerts`](https://health.j172.tw/tools/weather-alerts) | 交通部中央氣象署 | 大雨、豪雨、陸上強風、低溫與濃霧特報 |
-| **全臺主要水庫水情水情表** | [`/tools/water-conditions`](https://health.j172.tw/tools/water-conditions) | 經濟部水利署防災資訊網 | 各主要水庫即時蓄水量、蓄水率與入流量 |
-| **綜合災害動態地圖** | [`/tools/disaster-map`](https://health.j172.tw/tools/disaster-map) | 國家災害防救科技中心 (NCDR) | 避難收容所、前進指揮所、物資儲放點圖層 |
-| **動植物農業疫情與病蟲害** | [`/tools/pest-alerts`](https://health.j172.tw/tools/pest-alerts) | 農業部動植物防疫檢疫署 | 全國稻熱病、秋行軍蟲與重要動植物疫情警報 |
-| **全臺 AED 應急地圖** | [`/tools/aed`](https://health.j172.tw/tools/aed) | 衛生福利部公共場所 AED 登錄平臺 | 緊急自動體外心臟電擊去顫器 GPS 導航找尋 |
-| **全臺歷史即時淹水感測圖** | [`/tools/inundation-map`](https://health.j172.tw/tools/inundation-map) | 經濟部水利署物聯網感測器 | 道路、橋梁路面積水與感測器水位警戒 |
-| **全國即時停水通報通知** | [`/tools/water-outages`](https://health.j172.tw/tools/water-outages) | 台灣自來水公司 / 北水處 | 突發停水、降壓施工與預計復水時間查詢 |
-| **全臺急用緊急專線速查** | [`/tools/emergency-hotlines`](https://health.j172.tw/tools/emergency-hotlines) | 數位發展部 / NCC / 內政部消防署、警政署 | 110/119/112/113/118 等專線與 22 縣市 1999 代表號一鍵撥號、離線零延遲查詢 |
-| **防災避難包與居家儲備計算機** | [`/tools/emergency-supplies`](https://health.j172.tw/tools/emergency-supplies) | 國防部全民防衛動員署 / 內政部消防署 | 依家庭人數與儲備天數（3/7/14 天）動態試算飲水、乾糧與常備藥品 |
-
-### F. 環境與食品安全 (11 款)
-
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **全臺 AQI 空氣品質地圖** | [`/tools/aqi`](https://health.j172.tw/tools/aqi) | 環境部化學物質管理署 / 監測所 | 全臺 85+ 測站 AQI 指標與 PM2.5 實時色階圖 |
-| **TFDA 食品營養成分資料庫** | [`/tools/food-nutrition`](https://health.j172.tw/tools/food-nutrition) | 衛生福利部食品藥物管理署 | 臺灣本土各類食材熱量、微量元素與維生素分析 |
-| **全國合法食品業者登錄查詢** | [`/tools/food-operators`](https://health.j172.tw/tools/food-operators) | 衛生福利部食品藥物管理署 | 非登不可（FDA）合法食品製造加工餐飲登記 |
-| **室內空氣品質認證場所** | [`/tools/iaq-premises`](https://health.j172.tw/tools/iaq-premises) | 環境部室內空品法列管名單 | 醫療院所、捷運站、大專院校優良室內空品場所 |
-| **垃圾車與清潔隊** | [`/tools/cleaning-squads`](https://health.j172.tw/tools/cleaning-squads) | 臺北市／新北市政府（路線）、環境部資源循環署（清潔隊） | 臺北市、新北市垃圾車路線與收運時間，及各縣市清潔隊電話與地址（逐縣市標示覆蓋範圍） |
-| **生活碳足跡盤查與係數** | [`/tools/carbon-footprint`](https://health.j172.tw/tools/carbon-footprint) | 環境部氣候變遷署 | 日常通勤、電力瓦斯、差旅排碳量評估計算 |
-| **AQX 空品歷程即時監測** | [`/tools/aqx-monitoring`](https://health.j172.tw/tools/aqx-monitoring) | 環境部空氣品質監測網 | O3、SO2、CO、NO2 多重氣體污染物曲線圖 |
-| **綠色環保認證旅宿指南** | [`/tools/green-certifications`](https://health.j172.tw/tools/green-certifications) | 環境部國家綠色生活平臺 | 減塑、不主動提供備品之銅金銀級環保標章旅館（含綠色商店／環保餐廳／環保產品分頁） |
-| **蔬果農藥殘留與食安檢驗看板** | [`/tools/food-safety`](https://health.j172.tw/tools/food-safety) | 農業部農業試驗所 / 衛福部食藥署 | 常見蔬果官方抽驗合格率排行、違規超標農藥與黃金清洗指南 |
-| **室外防護與安全綜合指數** | [`/tools/outdoor-safety`](https://health.j172.tw/tools/outdoor-safety) | CWA 氣象署 / 環境部 | 結合體感溫度、紫外線與空品之戶外活動建議 |
-| **農藥殘留檢驗合格販售站** | [`/tools/pesticide-sales`](https://health.j172.tw/tools/pesticide-sales) | 農業部農業藥物毒物試驗所 | 合法登記農藥販賣商與管理人員證照查詢 |
-
-### G. 交通、生活與文化 (12 款)
-
-| 工具名稱 | 路徑 | 資料來源機關 / 參照標準 | 核心特色 |
-|---|---|---|---|
-| **全國優良環境公廁地圖** | [`/tools/public-toilets`](https://health.j172.tw/tools/public-toilets) | 環境部公共設施清冊 | 親子廁所、無障礙廁所、性別友善廁所定位 |
-| **全國藝文表演展覽日曆** | [`/tools/cultural-events`](https://health.j172.tw/tools/cultural-events) | 文化部全國藝文活動資訊網 | 音樂會、戲劇舞蹈、講座展覽日程與索票 |
-| **全臺公共藝術裝置地圖** | [`/tools/public-art`](https://health.j172.tw/tools/public-art) | 文化部公共藝術官方網站 | 街頭雕塑、捷運站裝置藝術與創作者解說 |
-| **全國法定文化資產圖鑑** | [`/tools/heritage-map`](https://health.j172.tw/tools/heritage-map) | 文化部文化資產局 (BOCH) | 國定古蹟、歷史建築、聚落建築群與遺址 |
-| **夏日公共遮陽避暑冷氣地圖** | [`/tools/cool-spots`](https://health.j172.tw/tools/cool-spots) | 各縣市政府公共避暑專區 | 公共圖書館、活動中心弱勢避暑共享空調空間 |
-| **獨立特色書店地圖** | [`/tools/bookstores`](https://health.j172.tw/tools/bookstores) | 文化部文化資源整合平臺 | 全臺實體書店、社區繪本書屋空間定位 |
-| **全國合法觀光工廠文化遊** | [`/tools/tourism-factories`](https://health.j172.tw/tools/tourism-factories) | 經濟部產業發展署 | 通過經濟部評鑑認證之生醫、食品產業文化園區 |
-| **全國最新好書出版目錄** | [`/tools/latest-books`](https://health.j172.tw/tools/latest-books) | 國家圖書館 ISBN 申辦中心 | 本月新書、親職教育與醫藥科普書單速遞 |
-| **臺電全臺發電結構即時儀表板** | [`/tools/power-grid-overview`](https://health.j172.tw/tools/power-grid-overview) | 台灣電力公司電力調度數據 | 燃煤、燃氣、核能、太陽能、風力即時發電佔比 |
-| **台灣中油油價查詢與加油站服務地圖** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油牌價走勢與全臺加油站洗車、充電樁等 20 項服務篩選（雙分頁） |
-
----
-
-## 🛠 高防禦性系統工程與架構設計
-
-本專案運行於 **CloudLinux 768MB RAM** 極度嚴苛的雲端容器環境中，整個系統架構以「極致節約內存、絕無記憶體洩漏、零破圖」為核心原則進行設計：
-
-```
-                      ┌───────────────────────────────────────┐
-                      │    Client Browsers / PWA / AI Bots    │
-                      └───────────────────┬───────────────────┘
-                                          │ HTTPS (Cloudflare CDN / HTTP/3)
-                      ┌───────────────────▼───────────────────┐
-                      │    Apache / LiteSpeed / PHP Proxy     │
-                      │  (.remote-health-index.php Front)     │ <── Direct Static Files & Assets
-                      └───────────────────┬───────────────────┘
-                                          │ 127.0.0.1:3000 (Internal Fast-Pipe)
-                      ┌───────────────────▼───────────────────┐
-                      │   Next.js 16.3 (Turbopack Engine)     │
-                      │   Node.js 20+ Runtime (PM2 Daemon)    │
-                      └───────────────────┬───────────────────┘
-                                          │
-            ┌─────────────────────────────┼─────────────────────────────┐
-            │                             │                             │
-┌───────────▼───────────┐   ┌─────────────▼───────────┐   ┌─────────────▼───────────┐
-│     MySQL 8.0 DB      │   │   Pure Native HTTP      │   │   In-App Task Engine    │
-│  (Connection Pooling) │   │ (httpClient.ts Agent)   │   │  (node-cron Memory-Safe)│
-│  • Idempotent Schema  │   │  • Zero-WASM Node Egress│   │  • No Loopback Self-Load│
-│  • Lock-Free Reads    │   │  • Bundled TWCA CA Root │   │  • External GHA Backup  │
-└───────────────────────┘   └─────────────────────────┘   └─────────────────────────┘
-```
-
-### 關鍵防禦機制 (Resilience Engineering)
-1. **純原生 HTTP 客戶端 (`lib/server/net/httpClient.ts`)**：
-   - 杜絕伺服器端調用全域 `fetch()`。避免 Node.js 預設之 Undici llhttp WASM 解析器在虛擬記憶體受限環境下拋出 `Out of Memory (502)`。
-   - 內建自製 TLS Agent 連線池，捆綁臺灣內政部與政府憑證（TWCA Root CA），無縫相容官方 API。
-2. **零 Sharp 即時轉碼負載 (`unoptimized: true`)**：
-   - 雲端環境禁止即時 CPU 轉碼圖像。所有縮圖於採集端進行格式檢查，Next.js 設定 `images: { unoptimized: true }`，交由 Cloudflare 邊緣 CDN 與前端進行高效向量/原生快取。
-3. **安全冪等資料庫遷移 (`ensureSchema`)**：
-   - 啟動時透過 `dropIndexSafely` 自動放寬歷史限制，全表約束兼顧多文章圖檔復用與併發排他鎖。
-
----
-
-## ⏰ 雙軌定時排程矩陣 (Dual-Track Cron)
-
-採用「**In-App 常駐排程**」搭配「**GitHub Actions 外部心跳保險**」雙軌容錯架構。任一軌受阻時，系統依然平穩向前推進：
-
-| 任務項目 | 排程頻率 | 執行軌道 | 任務內容與容錯機制 |
-|---|---|---|---|
-| **全球重大地震觀測** | 每 10 分鐘 (`*/10`) | In-App node-cron | 整合 USGS/EMSC/HKO/CWA 四源事件，模糊座標去重 |
-| **氣象預報與特警報** | 每 30 分鐘 (`:15/:45`) | In-App node-cron | 刷新海嘯警戒、降雨量、低溫與強風預警 |
-| **空品與紫外線快照** | 每 30 分鐘 (`:20/:50`) | In-App node-cron | 快照全國 85 站 AQI 與地面 UVI 指數 |
-| **RSS 新聞增量採集** | 每 30 分鐘 (`:05/:35`) | In-App + GHA 雙軌 | 萃取 50+ 來源正文、附件與多媒體 |
-| **真圖外部管線回填** | 每 30 分鐘 (`:10/:40`) | GitHub Actions 外部 | 藉由乾淨 Runner 出口解析媒體真實 OG 圖片並回填 |
-| **缺圖排程與漏斗指派** | 每 60 分鐘 (`:00`) | In-App + GHA 雙軌 | 啟動四層漏斗，依序嘗試真圖、外部 API 與歷史庫存復用 |
-| **健保與食藥名冊備份** | 每半年 (`0 0 1 */6 *`) | GitHub Actions 外部 | 全量同步健保署特約機構、TFDA 許可證大字典 |
-| **主機程序存活保險** | 每 5 分鐘 (`*/5`) | 主機系統 Crontab | `pm2-ensure-running` 自愈守護與 healthchecks.io 回報 |
-
----
-
-## 🌐 多語言國際化 (i18n & Collation)
-
-平臺全面支援四國主流語言，滿足國際旅客、外籍在臺人士與學術研究需求：
-
-* 🇹🇼 **正體中文 (`zh-TW`)**：臺灣官方規範字形與公衛常用術語。
-* 🇺🇸 **English (`en`)**：全站選單、工具試算與關鍵警報國際化。
-* 🇯🇵 **日本語 (`ja`)**：專為在臺日籍人士與觀光旅客打造之醫療地圖與觀測翻譯。
-* 🇰🇷 **한국어 (`ko`)**：包含急診醫療、生活導航與防災地圖韓文在地化。
-* **臺灣音序筆劃定序 (`compareByStrokeOrder`)**：
-  所有選單、標籤與機構目錄全面依循繁體中文第一字音序筆劃排序，並具備日韓英字元相容防護，排序效能高達 0.05ms。
-
----
-
-## 🤖 AI Agent 友善生態 (LLMs.txt & Geo-Summary)
-
-本平臺全站遵循開放 AI 生態協議，提供機器可讀（Machine-Readable）之語義格式：
-
-1. **結構化 AI 門戶 (`/llms.txt` & `/llms-full.txt`)**：
-   - 完全相容 [llmstxt.org](https://llmstxt.org/) 規範，提供全站架構索引、工具 API 規格與資料庫摘要，供 Perplexity、Claude、ChatGPT 與各式 Autonomous Agent 深度檢索。
-2. **正文語義重點摘要 (`#geo-summary`)**：
-   - 每篇公衛醫療新聞均包含高純度語義摘要區塊，支援 Markdown 語法引用與結構化元數據提取。
-3. **語義搜尋與 JSON-LD**：
-   - 全站文章包含合規之 `MedicalWebPage`、`Article` 與 `BreadcrumbList` 結構化資料標記。
-
----
-
-## 💻 本地開發與快速啟動 (Quickstart)
-
-### 環境需求
-* **Node.js**: `>= 20.0.0` (推薦 Node 22 或 26)
-* **MySQL**: `8.0+`
-* **作業系統**: Windows 11 / macOS / Ubuntu Linux
-
-### 1. 取得原始碼與安裝依賴
-```bash
-# 複製專案庫
-git clone https://github.com/j172/health.git
-cd health
-
-# 安裝依賴套件 (推薦使用 npm ci)
-npm install
-```
-
-### 2. 環境變數配置
-```bash
-cp .env.example .env
-# 請於 .env 中配置本機 MySQL 資料庫連線字串 (MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD 等)
-```
-
-### 3. 啟動本機開發伺服器
-```bash
-npm run dev
-# 瀏覽器訪問 http://localhost:3000
-```
-
-### 4. 執行驗證與測試套件
-```bash
-# 執行 TypeScript 靜態型態安全檢查 (0 errors)
-npm run typecheck
-
-# 執行全站 620 項單元與整合測試
-npm test
-
-# 執行 Next.js Turbopack 生產構建
-npm run build
-```
-
----
-
-## ⚖️ 雙重授權條款與資料權益宣告 (License)
-
-本專案採行複合式雙重授權機制（SPDX 識別碼：`MIT AND CC0-1.0`），明確劃分「軟體工程代碼」與「結構化開放資料」：
-
-```
-                      j172tw Healthz Dual-License Strategy
-      ┌─────────────────────────────────┴─────────────────────────────────┐
-      │                                                                   │
-┌─────▼─────────────────────────────┐               ┌─────────────────────▼─────────────────────┐
-│    軟體原始碼 (Source Code)       │               │ 衍生結構化資料 (Data & AI Metadata)       │
-│         [ MIT License ]           │               │          [ CC0-1.0 Universal ]            │
-├───────────────────────────────────┤               ├───────────────────────────────────────────┤
-│ • Next.js App / React Components  │               │ • 資料庫 Schema 與正規化字典               │
-│ • Tailwind CSS / 向量 SVG 封面    │               │ • AI 新聞結構化摘要 (#geo-summary)        │
-│ • 後端管線與 Native HTTP Client   │               │ • 地理座標補全與試算評估模型演算法        │
-│ • 自由修改、分發與商業應用        │               │ • 放棄一切著作權，無條件開放 AI Agent     │
-└───────────────────────────────────┘               └───────────────────────────────────────────┘
-```
+| 範圍 | 授權 | 內容 |
+|---|---|---|
+| 軟體原始碼 | MIT License | Next.js App、React 元件、Tailwind CSS、向量 SVG 封面、後端管線與 Native HTTP Client；自由修改、分發與商業應用 |
+| 衍生結構化資料與中繼標籤 | CC0-1.0 Universal | 資料庫 Schema 與正規化字典、AI 新聞結構化摘要（`geo_summary`）、地理座標補全與試算評估模型演算法；放棄一切著作權，無條件開放 AI Agent |
 
 * **原始程式碼 (Code)**：採用 [MIT License](LICENSE)。
   * Copyright (c) 2023 Next.js Templates
@@ -409,9 +145,8 @@ npm run build
 * **臺灣政府開放資料權益聲明**：
   本平臺所彙整之上游原始公衛、氣象、交通與環境監測數據，版權分屬中華民國衛生福利部、中央氣象署、環境部、經濟部、交通部及各地方政府所有，原始資料依據《[政府資料開放授權條款-第1版](https://data.gov.tw/license)》（OGDL-Taiwan-1.0）進行利用。
 
----
+資料來源包括衛生福利部（含中央健康保險署、國民健康署、疾病管制署、食品藥物管理署）、中央氣象署、環境部、經濟部水利署、交通部（TDX）、農業部、文化部、教育部、客家委員會、內政部，以及台灣電力公司等機關與機構公開的資料。本站資訊僅供參考，不構成醫療建議。
 
-<p align="center">
-  <strong>j172tw Healthz</strong> · 堅持為臺灣打造最純粹、最可靠的公衛醫療與生活數據燈塔。<br />
-  歡迎提交 Issue 與 Pull Request 一同完善開放資料生態！
-</p>
+## 關於作者
+
+由 [j172tw](https://github.com/j172) 開發與維運。歡迎透過 [Issues](https://github.com/j172/health/issues) 回報問題或提出建議，也歡迎直接[到網站使用看看](https://health.j172.tw)。
