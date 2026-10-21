@@ -174,6 +174,12 @@
 - 鎖：`internal-cron` 與 `admin-manual` 都走 `runRssIngestion` 的同一把 MySQL advisory lock（`rss_ingestion_lock`）。先取鎖、才建立 `ingest_runs` 列；取不到鎖的嘗試寫成 `status='skipped'`（不是 `failed`、不丟例外、不寫 `ingest_errors`）。匯入期間每個單位工作間用 `IS_USED_LOCK` 確認鎖還在（連線被資料庫關掉鎖會無聲消失），並順便更新 `ingest_runs.updated_at`；孤兒判定改看「沉默 20 分鐘」而非「開始 20 分鐘」，窗口沒有放寬。
 - `GET /api/admin/ingestion-runs` 新增 `limit`／`offset`／`status`／`trigger` 參數。
 
+#### 管理端唯讀診斷彙總 `/api/admin/diagnostics`（#738）🟡（待上線驗證）
+- 目的：診斷正式站資料庫狀態時，不必讀主機上的機密、也不必直連資料庫。`GET /api/admin/diagnostics`（不帶參數）列出白名單；`?report=<名稱>` 執行其中一種**事先寫死**的唯讀彙總。與其他 `/api/admin/*` 相同，用 `x-rss-sync-admin-secret` 標頭驗證，錯誤或缺少回 401。
+- 白名單（`lib/server/ops/diagnostics.ts` 的 `REPORTS`）：`news-feed-stats`（`days` 1–14，預設 3：每個新聞來源的成功／失敗次數、最近成功時間、最近一次錯誤（截斷 160 字元、遮蔽網址金鑰參數），資料來自 `ingest_runs.summary_json` 的 `feedResults`，另附 `ingest_errors` 每個 `feed_code` 的列數）、`column-widths`（`news_items`／`ingest_errors`／`ingest_runs`／`cwa_alerts` 的幾個指定欄位型別與寬度，用來確認 `feed_code` 實際寬度）、`table-row-counts`（白名單表的列數）、`schedule-latest-runs`（每種 `trigger_type` 最近一次 `ingest_runs` 的狀態、時間、耗時、截斷錯誤）、`typhoon-alert-sample`（`limit` 1–20，預設 5：`cwa_alerts` 中 dataset `W-C0034-001` 最近幾筆的 `event`、`headline`（截斷 120 字元）、`effective`、`expires` 與總列數，不回描述全文；用於 #744 第一次出現真實對臺警報時核對「海上／陸上」判斷用的 CAP 欄位文字）。
+- 護欄：不接受任何 SQL、表名或欄位名；名稱不在白名單、出現多餘或重複參數、`days`／`limit` 不是範圍內整數一律 400 且不執行任何查詢；每個陳述式都是 SELECT 常數，使用者輸入只以綁定參數出現；回應只含數字與短字串、上限 64 KB（超過回 500 `response too large`）、`Cache-Control: no-store`；資料庫錯誤只回固定字串，不回錯誤內容；每次呼叫印一行 `[admin-diagnostics] caller=… report=… status=… ms=…`。
+- 呼叫範例（金鑰由呼叫者自行從安全來源帶入，不要貼進日誌或 issue）：`curl -s -H "x-rss-sync-admin-secret: $RSS_SYNC_ADMIN_SECRET" "https://health.j172.tw/api/admin/diagnostics?report=news-feed-stats&days=7"`。
+
 #### health-web 每 5 分鐘一行資源日誌（`proc_resources`）🟡（#709，待上線驗證）
 - 背景：#703 之後 `health-web` 仍約每 15–35 分鐘被外部 SIGKILL（pm2 日誌 `exited with code [0] via signal [SIGKILL]`，沒有 V8 錯誤，被殺的行程也來不及留下任何東西），所以只能靠它**事先**印下的線索。這是 O-5 的第一步，只做觀測，不改變任何行為。
 - 實作：`lib/server/logging/procResourceLogger.ts`，由 `instrumentation.ts` 在 Node.js runtime 啟動（啟動時一行，之後每 5 分鐘一行，`console.log` 直接進 pm2 的 out 日誌，風格同 `lib/server/sync/stageLog.ts`）。沒有新增任何路由，對外不暴露任何東西。
