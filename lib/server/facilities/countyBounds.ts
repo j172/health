@@ -99,3 +99,36 @@ export function isWithinCountyBounds(county: string, lat: number, lng: number): 
   return lat >= bounds.minLat && lat <= bounds.maxLat && lng >= bounds.minLng && lng <= bounds.maxLng;
 }
 
+/**
+ * Resolves a visitor's GPS coordinates to the single most likely county/city,
+ * for county-level features (e.g. "此縣市目前有哪些特報") that don't need the
+ * geocoding precision `countyForAddress` / an actual reverse-geocode API would
+ * give. Not exact at county borders — these bounds are deliberately loose — but
+ * good enough that a visitor standing anywhere in a county sees that county.
+ *
+ * - If exactly one county's bounds contain the point, that's the answer.
+ * - If none do (open sea, outlying islands' bounds don't quite reach, a point
+ *   just outside every box) or more than one does (the loose boxes overlap
+ *   near some borders), falls back to whichever county's bounding-box *center*
+ *   is nearest — a bounding box's center is a reasonable stand-in for "the
+ *   county roughly centered there" at Taiwan's scale, and this never returns
+ *   `null` so the caller never has to show a dead end.
+ */
+export function resolveNearestCounty(lat: number, lng: number): string {
+  const containing = Object.keys(BOUNDS).filter((county) => isWithinCountyBounds(county, lat, lng));
+  if (containing.length === 1) return containing[0];
+
+  let nearest = containing[0] ?? Object.keys(BOUNDS)[0];
+  let nearestDistance = Infinity;
+  for (const [county, bounds] of Object.entries(BOUNDS)) {
+    const centerLat = (bounds.minLat + bounds.maxLat) / 2;
+    const centerLng = (bounds.minLng + bounds.maxLng) / 2;
+    const distance = (lat - centerLat) ** 2 + (lng - centerLng) ** 2;
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = county;
+    }
+  }
+  return nearest;
+}
+

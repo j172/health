@@ -692,6 +692,11 @@ export const listActiveCwaAlerts = async (
   }
 };
 
+// Pure filter, re-exported here so callers keep importing it alongside the rest of the CWA
+// query API — see filterAlertsByCounty.ts's own doc comment for why its definition lives in
+// a separate, DB-import-free module (so it can be unit-tested without a database).
+export { filterCwaAlertsByCounty } from "@/lib/server/cwa/filterAlertsByCounty";
+
 // ---------------------------------------------------------------------------
 // Active CWA typhoon-track rows (cwa_alerts, dataset_id = 'W-C0034-005')
 // ---------------------------------------------------------------------------
