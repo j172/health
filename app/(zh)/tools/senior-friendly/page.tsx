@@ -16,14 +16,10 @@ export const metadata: Metadata = {
   keywords: [
     "敬老卡",
     "敬老卡補助",
-    "樂齡旅遊",
-    "樂齡套票",
-    "無障礙景區",
-    "長輩旅遊",
     "敬老愛心卡",
-    "景區無障礙設施",
-    "輪椅借用",
-    "語音導覽",
+    "敬老卡申請",
+    "長輩交通補助",
+    "老人公車優惠",
   ],
   alternates: { canonical },
   openGraph: {

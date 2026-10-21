@@ -9,7 +9,7 @@
 
 | 群組 | 工具 |
 |---|---|
-| 長者 | [長照照顧圈地圖（含伯公照護站）](https://health.j172.tw/tools/long-term-care)、[敬老／樂齡](https://health.j172.tw/tools/senior-friendly)、[無障礙交通](https://health.j172.tw/tools/accessible-transit) |
+| 長者 | [長照照顧圈地圖（含伯公照護站）](https://health.j172.tw/tools/long-term-care)、[敬老卡補助](https://health.j172.tw/tools/senior-friendly)（靜態資料；原「樂齡旅遊地圖」已於 2026-10-21 隨 #729 移除）、[無障礙交通](https://health.j172.tw/tools/accessible-transit) |
 | 身心障礙 | [身障福利機構](https://health.j172.tw/tools/disability-welfare)、[無障礙 ATM](https://health.j172.tw/tools/disability-atm)、[庇護工場](https://health.j172.tw/tools/sheltered-workshops)、[助聽器補助](https://health.j172.tw/tools/hearing-aid-subsidies) |
 | NPO | [公益組織查詢](https://health.j172.tw/tools/npo-organizations)（範圍收斂為 `facility_type='npo'`，live 約 47 筆主檔）；`/tools/tax-organizations` 已 301 併入 |
 | 兒少家庭 | [兒少福利機構](https://health.j172.tw/tools/child-welfare-institutions)、[幼兒園](https://health.j172.tw/tools/kindergartens)、[短期補習班](https://health.j172.tw/tools/cram-schools)、[兒童安全地點](https://health.j172.tw/tools/child-safety-spots)、[本土語言辭典](https://health.j172.tw/tools/child-native-languages)、[哺集乳室](https://health.j172.tw/tools/breastfeeding-rooms)、[避孕諮詢地圖](https://health.j172.tw/tools/contraception-map)、[毛孩認養](https://health.j172.tw/tools/pet-adoption) |
@@ -22,7 +22,7 @@
 - 使用「閩南語」「客語」（對齊教育部用詞），不用「台語」。
 - 庇護工場商品販售的組織，在 NPO 列表加權排前並附購買連結。
 - 婦幼安全警示地點的「地址」其實是路段描述，**不應強行 geocode**；改為誠實揭露無法定位的筆數。
-- TDX 樂齡 API 未確認前，程式必須優雅降級到種子資料，不得 crash。
+- TDX 樂齡 API 未確認前，程式必須優雅降級到種子資料，不得 crash。（敬老卡補助自 #729 起為靜態資料，優先讀 `senior_card_subsidies`、空表才用種子，已沒有排程。）
 
 ---
 
@@ -30,7 +30,7 @@
 
 | # | 項目 | 來源文件 | 說明 |
 |---|---|---|---|
-| W-1 | **TDX「樂齡」API base path 未確認** | tdx-senior-* | 2026-10-10 以真實 OAuth token 測了 10 多種路徑組合全部 404（同 token 呼叫 Basic Rail 正常）。目前 `accessible-transit` 與 `senior-friendly` 實際跑種子資料。需從 TDX 會員權限頁或 swagger「Try it out」的 Network 擷取真實路徑；修正只需改 `SENIOR_RAIL_BASE`／`SENIOR_TOURISM_BASE`／`SENIOR_CARD_BASE` 常數 |
+| W-1 | **TDX「樂齡」API base path 未確認** | tdx-senior-* | 2026-10-10 以真實 OAuth token 測了 10 多種路徑組合全部 404（同 token 呼叫 Basic Rail 正常）。目前 `accessible-transit` 與 `senior-friendly` 實際跑種子資料。需從 TDX 會員權限頁或 swagger「Try it out」的 Network 擷取真實路徑；修正只需改 `SENIOR_RAIL_BASE`／`SENIOR_CARD_BASE` 常數（`SENIOR_TOURISM_BASE` 已隨樂齡旅遊於 #729 移除；敬老卡自 #729 起為靜態資料、沒有排程，只剩管理員手動同步） |
 | W-2 | 文化資產局（BOCH）從正式主機的連線未驗證 | heritage-assets-map | 延到下次 `six-monthly-sync.yml` 自然執行時確認 |
 
 ---
@@ -55,9 +55,10 @@
 - 原檔：[tdx-senior-rail-accessibility-upgrade.md](../archive/specs/tdx-senior-rail-accessibility-upgrade.md)（#434、PR #435）
 - 10 種軌道系統的設施、服務、導覽圖、轉乘、停用公告；新增每日同步。程式已上線，但 API 路徑未確認（待辦 W-1）。
 
-#### TDX 樂齡觀光＋敬老卡，新增 senior-friendly（Spec B） 🟡
+#### TDX 樂齡觀光＋敬老卡，新增 senior-friendly（Spec B） 🗄️ 樂齡旅遊已於 #729 移除
 - 原檔：[tdx-senior-tourism-and-card-new-tool.md](../archive/specs/tdx-senior-tourism-and-card-new-tool.md)（#436、PR #437；此 spec 原為未提交草稿，整合時一併納入版控）
 - 上半部 22 縣市敬老卡交通補助、下半部景區無障礙設施／服務／樂齡套票。同受待辦 W-1 影響。
+- **2026-10-21（#729）已移除樂齡旅遊**（下半部：景區無障礙設施／服務／套票與每小時停用公告）：頁面與 `/api/senior-friendly` 只剩敬老卡；`/tools/senior-friendly` 網址不變，改名「敬老卡補助」；敬老卡改為靜態資料（`senior_card_subsidies` 優先、空表才用 `lib/server/seniorCard/data/seniorCardSeed.ts` 種子），不再有每日 TDX 同步排程，同步程式碼保留為管理員手動觸發 `POST /api/admin/senior-card-sync`。四張樂齡旅遊資料表由 `ensureSchema()` 冪等 DROP（不備份）；`senior_card_subsidies` 保留。詳見 [10 排程](10-scheduling-sync-ci.md)。
 
 ### 4.2 庇護工場與 NPO
 

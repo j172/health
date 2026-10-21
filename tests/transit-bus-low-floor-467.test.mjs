@@ -83,8 +83,8 @@ test("registerJobs.ts: runTransitBusSync is imported and scheduled at 30 3 * * *
   assert.ok(scheduleCalls.includes("30 3 * * *"), "transit-bus-sync should be scheduled at 30 3 * * *");
 
   // Only check the new job's own 3am slot against its documented neighbors
-  // (transit-accessibility 15, senior-tourism 20, senior-card 25, public-art
-  // 0) — a full file-wide collision audit is out of scope for this ticket and
+  // (transit-accessibility 15, public-art 0; the senior-tourism 20 / senior-card 25
+  // jobs were removed in issue #729) — a full file-wide collision audit is out of scope for this ticket and
   // would also flag a pre-existing, unrelated collision already on main
   // (green-products-cron and wra-catalog-sync-cron both at "30 4 * * *").
   const threeAmCalls = scheduleCalls.filter((expr) => expr.endsWith(" 3 * * *"));
