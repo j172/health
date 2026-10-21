@@ -109,6 +109,13 @@ const parseJsonValue = (value: unknown): unknown => {
 interface ReportOptions {
   days: number;
   limit: number;
+  /**
+   * 「目前真的在跑」的 feed_code 清單（由呼叫者注入，例如 route.ts 組好 RSS_FEEDS ＋
+   * special source 代碼後傳入；測試用假清單）。news-feed-stats 用它排除已退役、
+   * 不在清單內的 feed_code，不必在這個刻意不 import 任何模組的檔案裡自己維護一份
+   * 「已退役清單」。不傳（null）就不過濾，維持舊行為。
+   */
+  activeFeedCodes: ReadonlySet<string> | null;
 }
 
 interface ReportDefinition {
@@ -128,7 +135,7 @@ interface FeedAccumulator {
   lastHttpStatus: number | null;
 }
 
-const newsFeedStats = async (query: DiagnosticsQuery, { days }: ReportOptions): Promise<Record<string, unknown>> => {
+const newsFeedStats = async (query: DiagnosticsQuery, { days, activeFeedCodes }: ReportOptions): Promise<Record<string, unknown>> => {
   const feeds = new Map<string, FeedAccumulator>();
   let runsScanned = 0;
   let lastId = Number.MAX_SAFE_INTEGER;
@@ -189,7 +196,22 @@ const newsFeedStats = async (query: DiagnosticsQuery, { days }: ReportOptions): 
     [days],
   );
 
+  // 退役的 feed_code（例如 #705 下架的 tase_news、commonhealth_club_new）在統計窗口內
+  // 可能還留著下架前的失敗紀錄，混在現行來源裡會誤導判讀。activeFeedCodes 非 null 時，
+  // 只保留清單內的 feed_code；排除掉的相異代碼數量回報在 excludedFeedCodes，方便確認
+  // 排除有沒有生效，而不必列出名稱。
+  const isActive = (code: string): boolean => activeFeedCodes === null || activeFeedCodes.has(code);
+  const excludedCodes = new Set<string>();
+  if (activeFeedCodes !== null) {
+    for (const code of feeds.keys()) if (!isActive(code)) excludedCodes.add(code);
+    for (const row of errorRows) {
+      const code = clipText(row.feed_code, 64);
+      if (code !== null && !isActive(code)) excludedCodes.add(code);
+    }
+  }
+
   const sorted = [...feeds.values()]
+    .filter((f) => isActive(f.feed))
     .sort((a, b) => b.failed - a.failed || a.feed.localeCompare(b.feed))
     .slice(0, FEED_ROWS_MAX)
     .map((f) => ({
@@ -206,7 +228,10 @@ const newsFeedStats = async (query: DiagnosticsQuery, { days }: ReportOptions): 
     days,
     runsScanned,
     feeds: sorted,
-    ingestErrorRows: errorRows.map((r) => ({ feedCode: clipText(r.feed_code, 64), count: toInt(r.error_rows) })),
+    excludedFeedCodes: activeFeedCodes === null ? null : excludedCodes.size,
+    ingestErrorRows: errorRows
+      .map((r) => ({ feedCode: clipText(r.feed_code, 64), count: toInt(r.error_rows) }))
+      .filter((r) => r.feedCode === null || isActive(r.feedCode)),
   };
 };
 
@@ -300,7 +325,7 @@ const typhoonAlertSample = async (query: DiagnosticsQuery, { limit }: ReportOpti
 
 export const REPORTS: Readonly<Record<string, ReportDefinition>> = {
   "news-feed-stats": {
-    description: "每個新聞來源在最近 days 天（1-14，預設 3）的成功／失敗次數、最近成功時間、最近一次錯誤（截斷）",
+    description: "每個新聞來源在最近 days 天（1-14，預設 3）的成功／失敗次數、最近成功時間、最近一次錯誤（截斷）；已自動排除不在現行來源清單內（已退役）的 feed_code",
     params: ["days"],
     run: newsFeedStats,
   },
@@ -350,6 +375,12 @@ export interface HandleDiagnosticsParams {
   /** 呼叫者識別（例如 IP），只進日誌，不進回應。 */
   caller?: string;
   now?: () => number;
+  /**
+   * 「目前真的在跑」的 feed_code 清單，news-feed-stats 用來排除已退役的 feed_code（見
+   * ReportOptions.activeFeedCodes）。由路由組好真正的清單傳入（RSS_FEEDS ＋ special
+   * source 代碼，見 lib/server/config/），測試可以傳假清單；不傳就不過濾。
+   */
+  activeFeedCodes?: ReadonlyArray<string>;
 }
 
 export const handleDiagnosticsRequest = async (params: HandleDiagnosticsParams): Promise<DiagnosticsResult> => {
@@ -370,7 +401,7 @@ export const handleDiagnosticsRequest = async (params: HandleDiagnosticsParams):
   return result;
 };
 
-const run = async ({ searchParams, query, now = Date.now }: HandleDiagnosticsParams): Promise<DiagnosticsResult> => {
+const run = async ({ searchParams, query, now = Date.now, activeFeedCodes }: HandleDiagnosticsParams): Promise<DiagnosticsResult> => {
   const started = now();
   const keys = [...searchParams.keys()];
   const reportName = searchParams.get("report");
@@ -393,7 +424,11 @@ const run = async ({ searchParams, query, now = Date.now }: HandleDiagnosticsPar
   const allowed = new Set<string>(["report", ...definition.params]);
   if (keys.some((k) => !allowed.has(k)) || new Set(keys).size !== keys.length) return badRequest("unknown parameter");
 
-  const options: ReportOptions = { days: FEED_DAYS_DEFAULT, limit: TYPHOON_LIMIT_DEFAULT };
+  const options: ReportOptions = {
+    days: FEED_DAYS_DEFAULT,
+    limit: TYPHOON_LIMIT_DEFAULT,
+    activeFeedCodes: activeFeedCodes ? new Set(activeFeedCodes) : null,
+  };
   const rawDays = searchParams.get("days");
   if (rawDays !== null) {
     const days = parseBoundedInt(rawDays, 1, FEED_DAYS_MAX);
