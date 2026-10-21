@@ -574,3 +574,8 @@ test("zh 預設文案：每個 t() 的 key 都在四種語言的結構裡，且�
   // 不得出現「某縣市停止上班／放假／照常上班」這類自行轉述。
   assert.ok(!/(?:縣|市)[^"\n]{0,6}(?:停止上班|停止上課|照常上班|照常上課|放假)/.test(allCopy));
 });
+
+test("the client store revalidates instead of trusting a Cloudflare-inflated max-age", () => {
+  const store = fs.readFileSync(new URL("../lib/client/typhoonStatusStore.ts", import.meta.url), "utf8");
+  assert.match(store, /cache: "no-cache"/);
+});

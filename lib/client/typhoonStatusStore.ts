@@ -62,6 +62,9 @@ const doFetch = async (): Promise<void> => {
   try {
     const response = await fetch(simulation ? `${TYPHOON_STATUS_URL}?sim=${simulation.sim}` : TYPHOON_STATUS_URL, {
       signal: controller.signal,
+      // Cloudflare raises max-age to its 30-minute Browser Cache TTL even when the origin sends
+      // max-age=0, so the browser must revalidate itself (the edge still answers from its 60 s cache).
+      cache: "no-cache",
       headers: simulation ? { "x-typhoon-sim-key": simulation.key } : undefined,
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
