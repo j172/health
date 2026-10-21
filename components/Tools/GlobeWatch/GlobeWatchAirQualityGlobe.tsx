@@ -3,6 +3,7 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { AttributionControl, Map as MapLibreMap, NavigationControl } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
+import { configureMapLibreWorker } from "@/lib/tools/globeWatch/mapWorker";
 import type { Locale } from "@/lib/i18n/dictionary";
 import { buildLabelFieldExpression } from "@/lib/tools/globeWatch/basemapLabels";
 import {
@@ -76,6 +77,7 @@ export default function GlobeWatchAirQualityGlobe({
     const container = containerRef.current;
     if (!container) return;
 
+    configureMapLibreWorker();
     const map = new MapLibreMap({
       container,
       style: OPENFREEMAP_STYLE_URL,
@@ -86,7 +88,8 @@ export default function GlobeWatchAirQualityGlobe({
       attributionControl: false,
     });
     mapRef.current = map;
-    map.setProjection({ type: "globe" });
+    // `setProjection` throws "Style is not done loading" until the style is in, so it runs on `style.load`.
+    map.on("style.load", () => map.setProjection({ type: "globe" }));
     map.addControl(new NavigationControl({ visualizePitch: false, showCompass: true }), "top-left");
 
     map.on("load", () => {
