@@ -2,6 +2,7 @@ import { httpGetText } from "@/lib/server/net/httpClient";
 import { parseCsv, normalizeAddress } from "@/lib/server/facilities/csv";
 import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
+import { seedWriteDirectory } from "@/lib/server/db/transientSeed";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -384,9 +385,12 @@ export async function fetchNhiPenalties(): Promise<FacilityRecord[]> {
     }
   }
 
-  // Persist seed backup for offline fallback
+  // Persist seed backup for offline fallback. Written to public/data/, the first place the seed reader
+  // looks (lib/server/db/transientSeed.ts, #741): a deploy overwrites public/data/ every time, whereas on
+  // the production host data/ can be a stale real directory that the deploy never refreshes, so a backup
+  // written there would be shadowed by the deployed copy.
   try {
-    const seedDir = path.join(process.cwd(), "data", "facilities-seeds");
+    const seedDir = seedWriteDirectory("facilities-seeds");
     if (!fs.existsSync(seedDir)) {
       fs.mkdirSync(seedDir, { recursive: true });
     }

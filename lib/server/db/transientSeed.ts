@@ -32,7 +32,8 @@ import path from "node:path";
  * - `readSeedJson()`／`readSeedText()`：不快取，給頁面、一次性匯入與較小的檔案。
  * 三者共用同一個 `loadSeedFile()` 與同一份 `TRANSIENT_SEED_DIRS`，不要在別處再手寫
  * `path.join(process.cwd(), "data", ...)`（tests/seed-read-order-741.test.mjs 會擋）。
- * 寫入種子（例如 nhiPenalties 的離線備份、scripts/ 的產生器）不在此限，仍寫 `data/`。
+ * 執行期寫入種子（nhiPenalties 的離線備份）一律用 `seedWriteDirectory()`，寫進讀取順序的第一個位置
+ * （`public/data/`），才不會被部署帶來的同名檔遮住。scripts/ 的產生器是開發期工具，仍寫 `data/`。
  *
  * 找不到檔或解析失敗時回傳 `null` 並寫一行警告（同一檔每分鐘最多一行），
  * 由呼叫端決定降級行為。**只能傳入寫死的檔名，不要把使用者輸入帶進來。**
@@ -69,6 +70,11 @@ function warnOnce(key: string, message: string): void {
 }
 
 /** 回傳會嘗試的絕對路徑（測試與日誌用）。 */
+/** 執行期寫入種子檔時用的目錄：讀取順序的第一個位置（見上方說明）。 */
+export function seedWriteDirectory(...segments: string[]): string {
+  return path.join(/*turbopackIgnore: true*/ process.cwd(), ...TRANSIENT_SEED_DIRS[0], ...segments);
+}
+
 export function transientSeedCandidates(filename: string): string[] {
   return TRANSIENT_SEED_DIRS.map((dir) =>
     path.join(/*turbopackIgnore: true*/ process.cwd(), ...dir, filename),
