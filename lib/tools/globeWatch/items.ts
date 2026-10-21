@@ -107,4 +107,18 @@ export const GLOBE_WATCH_ITEMS: GlobeWatchItemDef[] = [
     labelDefault: "颱風",
     label: { "zh-TW": "颱風", en: "Typhoons", ja: "台風", ko: "태풍" },
   },
+  // Issue #774 (parent #773): the sixth global-watch item, "武裝衝突"
+  // (conflicts) — GDELT-sourced only for now (UCDP is #775, still blocked).
+  // Labels follow the same "shortened existing vocabulary, not invented"
+  // convention as every entry above — en "Conflicts" / ja "武力衝突" /
+  // ko "무력 충돌" are plain, widely-used translations, deliberately neutral
+  // (no "war"/"戰爭" wording) per #773's own framing that this item relays
+  // named open-data sources rather than making a political judgment call.
+  {
+    key: "conflicts",
+    path: "/tools/global-watch/conflicts",
+    emoji: "⚔️",
+    labelDefault: "武裝衝突",
+    label: { "zh-TW": "武裝衝突", en: "Conflicts", ja: "武力衝突", ko: "무력 충돌" },
+  },
 ];

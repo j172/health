@@ -635,6 +635,15 @@
       "readOriginal": "Read original ↗",
       "unknownCountry": "Unknown location",
       "emptyStateTemplate": "No {type} events right now"
+    },
+    "conflicts": {
+      "citation": "Data citation: The GDELT Project",
+      "disclaimer": "Globe markers on this page are relayed from conflict events collected by GDELT and reported by its listed media sources; they do not represent this site's own judgment about any conflict, political stance, or party's responsibility. Please verify details and accuracy against the original news source.",
+      "listHeading": "Currently relevant armed-conflict events (GDELT)",
+      "emptyState": "⚔️ No conflict events currently match the filter (GDELT).",
+      "unknownCountry": "Unknown location",
+      "fatalities": "Estimated casualties:",
+      "readOriginal": "Read original ↗"
     }
   },
   "aqiTool": {
