@@ -251,19 +251,14 @@ test("FacilityMap.tsx's prop contract is untouched by this merge (CareCircleMap 
   );
 });
 
-test("README.md merges the long-term-care-family rows and updates the affected section counts", () => {
+test("README.md does not list the long-term-care rows that were merged into /tools/long-term-care", () => {
   const content = read("README.md");
   assert.ok(!content.includes("/tools/home-healthcare"), "README should no longer list a standalone home-healthcare row");
   assert.ok(!content.includes("/tools/elder-welfare"), "README should no longer list a standalone elder-welfare row");
   assert.ok(!content.includes("/tools/hakka-bogong"), "README should no longer list a standalone hakka-bogong row");
-  assert.ok(content.includes("長照照顧圈地圖"), "README should list the retitled long-term-care row");
-  // Issue #445 later rewrote the README's category breakdown to always
-  // mirror lib/server/tools/catalog.ts's TOOL_GROUP_META (previously the
-  // README used a stale, hand-maintained category scheme that had drifted
-  // out of sync with the actual nav dropdowns / footer columns / /tools
-  // index, which all derive from TOOL_GROUP_META already). Issue #442
-  // reclassified TOOL_GROUP_META again right after, down to 7 groups; under
-  // that current layout, long-term-care lives in the "elder-care-welfare"
-  // group ("C. 長照與社會福利"), whose count (9) already reflects this merge.
-  assert.match(content, /C\. 長照與社會福利 \(9 款\)/, "elder-care-welfare section should list 9 tools, including the merged long-term-care row");
+  // The README used to carry a hand-written per-tool matrix whose section
+  // counts this test pinned ("C. 長照與社會福利 (9 款)"). The README is now a
+  // portfolio page without that matrix; the tool list and counts live in
+  // lib/server/tools/catalog.ts, and the headline numbers are guarded by
+  // tests/readme-scale-numbers.test.mjs.
 });
