@@ -959,5 +959,30 @@
       "sectionAriaLabel": "Recently Used Tools",
       "heading": "🕘 Recently Used Tools"
     }
+  },
+  "typhoon": {
+    "banner": {
+      "ariaLabel": "Typhoon warning",
+      "landTitle": "Typhoon land warning in effect",
+      "seaTitle": "Typhoon sea warning",
+      "landBadge": "Land warning",
+      "seaBadge": "Sea warning",
+      "notice": "Whether work and school are suspended tomorrow: please rely on the official announcement. This site does not state whether any city or county has closed.",
+      "linkOfficial": "Official work/school closure announcements (DGPA)",
+      "linkContacts": "Local government contact numbers",
+      "linkTool": "Weather alerts tool",
+      "issuedAtTemplate": "Issued {time}",
+      "simulated": "Test simulation"
+    },
+    "cards": {
+      "sectionAriaLabel": "Typhoon and alert shortcuts",
+      "alertsTitle": "Typhoon & Alerts",
+      "alertsDesc": "Live typhoon, heavy rain, earthquake and strong wind warnings",
+      "alertsActiveDesc": "A typhoon warning is in effect. See the latest alerts.",
+      "holidayTitle": "Day off tomorrow?",
+      "holidayDesc": "Check whether today or tomorrow is a workday, with links to official closure announcements",
+      "holidayActiveDesc": "Typhoon warning in effect. Check the official closure announcement.",
+      "cta": "Open"
+    }
   }
 }

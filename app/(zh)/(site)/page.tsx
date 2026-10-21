@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { listDiverseHomeNews } from "@/lib/server/news/queries";
 import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
+import HomeQuickEntryCards from "@/components/Home/HomeQuickEntryCards";
 import HomeStatusBar from "@/components/Home/HomeStatusBar";
 import GuideCardsSection from "@/components/Home/GuideCardsSection";
 import RecentToolsSection from "@/components/Home/RecentToolsSection";
@@ -67,6 +68,7 @@ export default async function Home() {
              * HomeStatusBar / RecentToolsSection 是 "use client" 元件，各自
              * 在瀏覽器端才抓資料（定位、/api/home-status、localStorage），
              * 不影響這個 Server Component 本身沿用的 60 秒 ISR 快取。 */}
+            <HomeQuickEntryCards />
             <HomeStatusBar />
             <GuideCardsSection />
             <RecentToolsSection />

@@ -962,5 +962,30 @@
       "sectionAriaLabel": "最近使用したツール",
       "heading": "🕘 最近使用したツール"
     }
+  },
+  "typhoon": {
+    "banner": {
+      "ariaLabel": "台風警報",
+      "landTitle": "台風の陸上警報が発表されています",
+      "seaTitle": "台風の海上警報",
+      "landBadge": "陸上警報",
+      "seaBadge": "海上警報",
+      "notice": "明日の出勤・休校については、必ず公式発表をご確認ください。当サイトは各県市の休業・休校の判断をお伝えしません。",
+      "linkOfficial": "行政院人事行政総処の休業・休校発表（公式）",
+      "linkContacts": "各県市の問い合わせ電話",
+      "linkTool": "気象警報ツール",
+      "issuedAtTemplate": "発表 {time}",
+      "simulated": "テスト用の模擬表示"
+    },
+    "cards": {
+      "sectionAriaLabel": "台風・警報のショートカット",
+      "alertsTitle": "台風と警報",
+      "alertsDesc": "台風・大雨・地震・強風などの最新警報",
+      "alertsActiveDesc": "台風警報が発表されています。最新の警報を確認",
+      "holidayTitle": "明日は休み？",
+      "holidayDesc": "今日・明日が出勤日か確認。公式の休業・休校発表へのリンク付き",
+      "holidayActiveDesc": "台風警報発表中。公式の休業・休校発表を確認してください",
+      "cta": "開く"
+    }
   }
 }

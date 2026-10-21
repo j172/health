@@ -11,6 +11,7 @@ import GoogleTag from "@/components/Analytics/GoogleTag";
 import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
 import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytics";
 import SkipToContent from "@/components/Accessibility/SkipToContent";
+import TyphoonBanner from "@/components/Typhoon/TyphoonBanner";
 import { PATH_LOCALES, isPathLocale, type PathLocale } from "@/lib/i18n/dictionary";
 
 /**
@@ -121,6 +122,7 @@ export default async function LocaleRootLayout({
         <CloudflareWebAnalytics />
         <Provider forcedLocale={pathLocale}>
           <SkipToContent />
+          <TyphoonBanner />
           <InAppBrowserBanner />
           <div id="main-content" tabIndex={-1} className="outline-none">
             {children}

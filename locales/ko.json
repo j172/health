@@ -962,5 +962,30 @@
       "sectionAriaLabel": "최근 사용한 도구",
       "heading": "🕘 최근 사용한 도구"
     }
+  },
+  "typhoon": {
+    "banner": {
+      "ariaLabel": "태풍 경보",
+      "landTitle": "태풍 육상 경보 발효 중",
+      "seaTitle": "태풍 해상 경보",
+      "landBadge": "육상 경보",
+      "seaBadge": "해상 경보",
+      "notice": "내일 출근·등교 여부는 반드시 공식 발표를 확인하세요. 이 사이트는 각 시·현의 휴업·휴교 여부를 알려 드리지 않습니다.",
+      "linkOfficial": "행정원 인사행정총처 휴업·휴교 공식 발표",
+      "linkContacts": "각 시·현 문의 전화",
+      "linkTool": "기상 경보 도구",
+      "issuedAtTemplate": "발표 {time}",
+      "simulated": "테스트 모의 표시"
+    },
+    "cards": {
+      "sectionAriaLabel": "태풍·경보 바로가기",
+      "alertsTitle": "태풍과 경보",
+      "alertsDesc": "태풍, 호우, 지진, 강풍 등 실시간 경보",
+      "alertsActiveDesc": "태풍 경보가 발효 중입니다. 최신 경보 보기",
+      "holidayTitle": "내일 쉬나요?",
+      "holidayDesc": "오늘·내일 출근일 여부 확인, 공식 휴업·휴교 발표 링크 포함",
+      "holidayActiveDesc": "태풍 경보 발효 중. 공식 휴업·휴교 발표를 확인하세요",
+      "cta": "열기"
+    }
   }
 }

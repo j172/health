@@ -23,6 +23,22 @@ import { memoizeQuery } from "@/lib/server/cache/memo";
  */
 export const TYPHOON_WARNING_DATASET_ID = "W-C0034-001";
 
+/**
+ * The "in force" predicate on `cwa_alerts` — one definition shared by the
+ * yes/no check below and the level-aware status (lib/server/typhoon/status.ts,
+ * issue #744), so the two can never disagree about whether a warning is active.
+ * Bind `TYPHOON_WARNING_DATASET_ID` to its single placeholder.
+ */
+export const TYPHOON_WARNING_IN_FORCE_SQL = `
+  dataset_id = ?
+  AND (
+    CASE
+      WHEN expires IS NOT NULL THEN expires > UTC_TIMESTAMP()
+      ELSE COALESCE(effective, synced_at) >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
+    END
+  )
+`;
+
 export const isTyphoonWarningActive = async (): Promise<boolean | null> => {
   try {
     return await memoizeQuery(
@@ -33,13 +49,7 @@ export const isTyphoonWarningActive = async (): Promise<boolean | null> => {
             `
             SELECT COUNT(*) AS cnt
             FROM cwa_alerts
-            WHERE dataset_id = ?
-              AND (
-                CASE
-                  WHEN expires IS NOT NULL THEN expires > UTC_TIMESTAMP()
-                  ELSE COALESCE(effective, synced_at) >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 7 DAY)
-                END
-              )
+            WHERE ${TYPHOON_WARNING_IN_FORCE_SQL}
             `,
             [TYPHOON_WARNING_DATASET_ID],
           );
