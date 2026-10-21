@@ -4453,7 +4453,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
 ];
 
 /**
- * The docs/archive/SPECIFICATION.md 5.1 collation rule, in one place.
+ * The SPECIFICATION 5.1 collation rule (original in git history, tag docs-archive-2026-10-21), in one place.
  *
  * It was previously retyped at seven call sites (here plus every SiteFooter
  * column), which is how the footer's English rendering ended up sorted by the

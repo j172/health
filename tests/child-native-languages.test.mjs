@@ -109,26 +109,12 @@ test("Seed: child-native-languages-seed.json has valid structure and contains es
   assert.ok(hasHakkaThanks, "hakka should contain thank-you/greetings entries");
 });
 
-test("Catalog & Spec: catalog.ts and SPECIFICATION.md register child-native-languages", () => {
+test("Catalog: catalog.ts registers child-native-languages", () => {
   const catalogPath = path.join(ROOT_DIR, "lib", "server", "tools", "catalog.ts");
   const catalogContent = fs.readFileSync(catalogPath, "utf-8");
 
   assert.ok(catalogContent.includes('slug: "child-native-languages"'), "Must register slug");
-  // issue #442: reclassified from the old "child-welfare" group (9-group
-  // scheme) into "family" (7-group scheme). The SPECIFICATION.md assertions
-  // below check docs/archive/'s frozen historical snapshot (issue #256,
-  // 60 tools / 9 groups) and are intentionally left referring to the old
-  // group name — that archive isn't kept in sync with live reclassifications.
+  // issue #442: reclassified from the old "child-welfare" group (9-group scheme) into "family" (7-group scheme).
   assert.ok(catalogContent.includes('group: "family"'), "Must belong to family");
   assert.ok(catalogContent.includes('title: "兒少本土語言辭典（閩南語／客語）"'), "Must have correct title");
-
-  const specPath = path.join(ROOT_DIR, "docs", "archive", "SPECIFICATION.md");
-  const specContent = fs.readFileSync(specPath, "utf-8");
-  // issue #256 reclassified 7 groups → 9 and merged 5 tool families (67 → 60
-  // tools); SPECIFICATION.md §5.2 now documents per-group counts in a table
-  // instead of enumerating every tool name (so it can't go stale the way the
-  // old hand-copied per-tool list did) — this only checks the group and the
-  // updated total are still documented, not an exact tool-name string.
-  assert.ok(specContent.includes("`child-welfare`"), "SPECIFICATION must document the child-welfare group");
-  assert.ok(specContent.includes("60 tools"), "SPECIFICATION must reflect 60 tools total");
 });
