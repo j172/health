@@ -5,6 +5,8 @@
 > 來源：2026-10-12 規劃＋/grill 共 24 項決策，以及同日追加的 TDX 資料整合（§P）與多語系支援、SEO／AEO／GEO／Schema.org、每頁 llms.txt、Cloudflare 免費方案整合（§Q–§T）。完整背景與研究見 repo 內 2.0 master plan 與 TDX 研究文件。本 spec 為 PRD，實作時再以 `/to-tickets` 拆成分期 issue。
 > 盤點基準：`origin/main` @ `7fe098b`（84 個工具）。
 
+> **2026-10-21 範圍調整（#727–#731）**：本文提到的 YouBike（T6）、全台軌道營運通阻（T4，`metro-alerts`）、樂齡旅遊，以及無障礙交通的 TDX 即時同步（T1 每日公車低地板比率、每日軌道無障礙同步）已**整個移除或降級為靜態種子資料**；下文對應段落保留作當時的決策與研究紀錄，**不再是現況**。現況：TDX 只剩每小時電梯停用公告（`transit-accessibility-alerts`，約 240 次／天）、半年一次的設施同步（停車 T3、有聲號誌 T2，仍在）與管理員手動的敬老卡同步；請求預算與症狀判讀見 [domains/10-scheduling-sync-ci.md](../domains/10-scheduling-sync-ci.md) §2.1。
+
 ## Problem Statement
 
 j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方資料源，但使用者「找不到」也「串不起來」：
@@ -19,7 +21,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 8. **技術債**：Node 20 已於 2026-04-30 EOL，正式環境仍跑 v20.20.2；`swiper`、`sharp` 零使用仍在相依；`iconv-lite`、`segmentit`、`framer-motion`、`react-hot-toast` 都有更輕的內建／自寫替代；25 個檔案各自呼叫定位 API（曾因此出現 4 處各自修的 timeout bug）；23 個 SaaS 樣板殘留空目錄。
 9. **外連追蹤不完整**：UTM 函式已存在，但只有 6 個檔案使用；20 個寫死外連與 catalog 內 139 個科學依據外連都沒有 UTM。
 10. **i18n 缺漏**：en／ja／ko 只翻譯了 60／84 個工具名稱，其餘在外語介面顯示中文。
-11. **無障礙與交通資料是假的或不完整**：無障礙交通頁的「低地板公車比率」是寫死的種子值；捷運公告只有臺北捷運；YouBike 只接了 TDX 15 個縣市中的 5 個；站上沒有任何有聲號誌或身障／孕婦親子車位資料——而這些 TDX 基礎服務都有提供。
+11. **無障礙與交通資料是假的或不完整**：無障礙交通頁的「低地板公車比率」是寫死的種子值；捷運公告只有臺北捷運；YouBike 只接了 TDX 15 個縣市中的 5 個；站上沒有任何有聲號誌或身障／孕婦親子車位資料——而這些 TDX 基礎服務都有提供。（2026-10 範圍調整：YouBike、軌道營運通阻已整個移除，低地板公車比率維持靜態種子並標註非即時，見上方說明。）
 12. **外語版本對搜尋引擎不存在**：`hreflang` 宣告 `?lang=en`／`ja`／`ko` 版本，但語言切換完全在瀏覽器端進行，伺服器永遠輸出中文（實測 Googlebot 抓 `/tools/aed?lang=en` 得到 `<html lang="zh-Hant-TW">` 與中文標題）。外語內容也只翻到名稱，使用者看不懂說明與 FAQ。
 13. **AI 爬蟲被擋**：`robots.txt` 明確允許 GPTBot、ClaudeBot，但 Cloudflare 的 AI 機器人防護實際回 403（PerplexityBot 卻回 200）；站上的 llms.txt 與 GEO 投資等於無效。llms.txt 也只有全站一份，沒有每頁的 Markdown 版本。
 14. **Cloudflare 設定靠手動點選**：除了 Smart Tiered Cache 有一支手動 workflow，其餘規則都只存在儀表板，無版本紀錄、無法回溯；站上另有自寫 IndexNow（曾因全域 `fetch` 造成 502），而 Cloudflare 免費的 Crawler Hints 可自動完成同一件事。
@@ -44,7 +46,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - **SEO／AEO／GEO／Schema.org 全面到位**：每種頁面類型都有完整結構化資料、一句話答案與 FAQ；AI 爬蟲三類全部放行。
 - **每一頁都有自己的 `llms.txt` 與 `.md` 全文**（含外語版）。
 - **Cloudflare 免費方案設定即程式碼**：快取、標頭、WAF、AI 爬蟲政策、Crawler Hints、Web Analytics、靜態圖轉換全部由 repo 管理。
-- **接上 TDX 真實交通無障礙資料**：低地板公車比率、盲人有聲號誌、身障／孕婦親子／復康巴士車位、全台軌道營運通阻、YouBike 全 15 縣市；餵給既有工具、生活情境 hub 與「我附近」，不新增工具頁。
+- **接上 TDX 真實交通無障礙資料**：低地板公車比率（已改回靜態種子，#730）、盲人有聲號誌、身障／孕婦親子／復康巴士車位、全台軌道營運通阻（已移除，#728）、YouBike 全 15 縣市（已移除，#727）；餵給既有工具、生活情境 hub 與「我附近」，不新增工具頁。
 
 ## User Stories
 
@@ -153,15 +155,15 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 80. 身為維運者，我想每期部署後實打 live API 驗證，以便及早發現綠燈測試沒抓到的正式環境回歸。
 
 ### TDX 交通無障礙資料（2026-10-12 追加）
-81. 身為輪椅使用者，我想看到我所在縣市真實的低地板公車比率，以便判斷搭公車是否可行，而不是看到寫死的數字。
-82. 身為輪椅使用者，我想知道某條路線的班次是否使用低地板公車，以便選擇搭得上的那一班。
+81. 身為輪椅使用者，我想看到我所在縣市真實的低地板公車比率，以便判斷搭公車是否可行，而不是看到寫死的數字。（已不實作：#730 改回靜態種子並標註非即時）
+82. 身為輪椅使用者，我想知道某條路線的班次是否使用低地板公車，以便選擇搭得上的那一班。（已不實作：#730）
 83. 身為視障者或陪同家屬，我想在「我附近」與「身心障礙者生活」hub 找到最近的盲人有聲號誌路口，以便規劃安全的步行路線。
 84. 身為視障者，我想知道該路口能否用 App 觸發有聲號誌並取得 App 下載連結，以便實際使用。
 85. 身為孕婦或帶幼兒的家長，我想找到附近有孕婦及親子專用車位的停車場與即時剩餘數，以便出門前知道停不停得到。
 86. 身為身障者或家屬，我想找到附近的身心障礙汽車／機車車位與復康巴士車位及即時剩餘數，以便就醫與外出。
-87. 身為颱風或地震期間的通勤者，我想在一頁看到臺北、桃園、臺中、高雄捷運、輕軌、貓空纜車、臺鐵、高鐵的營運通阻，以便知道哪些交通停駛。
-88. 身為非臺北的捷運使用者，我想在「全台軌道營運通阻」頁看到我所在城市的公告，以便這個工具對我也有用。
-89. 身為臺北以外 10 個縣市的 YouBike 使用者，我想查到附近站點的即時車位，以便這個工具在我的城市也能用。
+87. 身為颱風或地震期間的通勤者，我想在一頁看到臺北、桃園、臺中、高雄捷運、輕軌、貓空纜車、臺鐵、高鐵的營運通阻，以便知道哪些交通停駛。（已移除：#728）
+88. 身為非臺北的捷運使用者，我想在「全台軌道營運通阻」頁看到我所在城市的公告，以便這個工具對我也有用。（已移除：#728）
+89. 身為臺北以外 10 個縣市的 YouBike 使用者，我想查到附近站點的即時車位，以便這個工具在我的城市也能用。（已移除：#727）
 90. 身為站長，我想 TDX 的座標、縣市代碼都經過同一套轉換與對照，以便不同 TDX 資料源之間不會出現格式漂移。
 
 ### 多語系支援（2026-10-12 追加）
@@ -212,7 +214,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
   - 婦幼與家庭：baby-friendly-hospitals, breastfeeding-rooms, contraception-map, kindergartens, cram-schools, child-welfare-institutions, child-native-languages, pet-adoption, vet-clinics
   - 防災與示警：earthquakes, weather-alerts, uv, disaster-map, inundation-map, water-outages, water-conditions, emergency-hotlines, emergency-supplies, aed, travel-epidemic-alerts, pest-alerts, child-safety-spots
   - 環境與食品安全：aqi, aqx-monitoring, iaq-premises, outdoor-safety, food-safety, food-operators, food-nutrition, pesticide-sales, cleaning-squads, carbon-footprint, green-certifications
-  - 交通、生活與文化：youbike, metro-alerts, cpc-prices（合併後）, power-grid-overview, public-toilets, cool-spots, cultural-events, public-art, heritage-map, bookstores, latest-books, tourism-factories
+  - 交通、生活與文化：youbike（已移除）, metro-alerts（已移除）, cpc-prices（合併後）, power-grid-overview, public-toilets, cool-spots, cultural-events, public-art, heritage-map, bookstores, latest-books, tourism-factories
 - 排序沿用 #256 拍板規則：英文名稱在前，中文依首字筆畫由少到多；分類層與工具層各自套用。
 - catalog 模組新增一組**純函式導覽模型建構器**（暫名 `buildNavModel`、`buildFooterModel`、`buildCategoryPage`、`buildGuide`、`searchTools`、`buildRedirects`），Nav、Footer、`/tools` 索引、分類頁、hub、搜尋、sitemap、llms.txt 一律呼叫這些函式，不得自行持有分類清單。移除 `/tools` 索引頁的私有分類定義。
 - `ToolCatalogEntry` 新增 `keywords: string[]`（俗稱、同義詞、新聞關鍵字），同時供搜尋、新聞↔工具對照與 JSON-LD `keywords` 使用。
@@ -288,9 +290,9 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 - 維持 zh-TW／en／ja／ko 四語。**非指定頁面**只翻譯介面字串與名稱（分類、工具、hub、按鈕），補齊 24 個缺漏工具名稱翻譯與所有新字串，內文維持中文。**指定頁面**改為完整多語系，見 §Q（2026-10-12 追加決策取代原本「內文一律中文」）。
 
 ### O. 分期與交付
-- P0 速贏：移除 swiper／sharp／空目錄；M1、M2；Ctrl+K 搜尋工具；修正壞相關連結＋補 19 個孤兒；補翻譯；README；OSM 去 `{s}`；UTM 覆蓋率；**T6 YouBike 15 縣市**；**§T Cloudflare 設定即程式碼＋AI 爬蟲放行＋Crawler Hints（移除自寫 IndexNow）＋Web Analytics**（AI 爬蟲放行優先，越早上線越早被 AI 收錄）。
+- P0 速贏：移除 swiper／sharp／空目錄；M1、M2；Ctrl+K 搜尋工具；修正壞相關連結＋補 19 個孤兒；補翻譯；README；OSM 去 `{s}`；UTM 覆蓋率；**T6 YouBike 15 縣市（已於 2026-10-21 隨 #727 整個移除）**；**§T Cloudflare 設定即程式碼＋AI 爬蟲放行＋Crawler Hints（移除自寫 IndexNow）＋Web Analytics**（AI 爬蟲放行優先，越早上線越早被 AI 收錄）。
 - P1 資訊架構：7 分類、導覽模型建構器、分類頁、麵包屑加入分類層、mega menu、Footer、`/tools` 索引改用單一來源。
-- P2 交叉連結：keywords、新聞↔工具、5 個 hub、我附近、彈出視窗深連結；**TDX T1–T4**（T2、T3 是「我附近」與 hub 的資料來源，所以與它們同期）。前置：`fix/tdx-seniors-base-path`（共用 TDX 模組與座標轉換）須先合併。同期做 **§R Schema.org／AEO** 與 **§S 每頁 llms.txt＋.md**（新頁面類型一建立就帶齊）。
+- P2 交叉連結：keywords、新聞↔工具、5 個 hub、我附近、彈出視窗深連結；**TDX T1–T4**（T1 公車低地板與 T4 軌道通阻已於 2026-10 移除／降級，T2、T3 維持；T2、T3 是「我附近」與 hub 的資料來源，所以與它們同期）。前置：`fix/tdx-seniors-base-path`（共用 TDX 模組與座標轉換）須先合併。同期做 **§R Schema.org／AEO** 與 **§S 每頁 llms.txt＋.md**（新頁面類型一建立就帶齊）。
 - P3 版面：首頁＋snapshot API、工具頁重排、手機底部導覽、身體數據檔案。
 - P4 技術（可與 P1–P3 平行）：BaseMap＋EMAP、定位 hook、套件替換、Node 24、**§T 靜態圖片轉換**。
 - P5 合併：M3、M4。
@@ -300,15 +302,15 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
 ### P. TDX 交通資料整合（2026-10-12 追加）
 來源：TDX 基礎服務（server `https://tdx.transportdata.tw/api/basic`）OpenAPI 文件實測。原則：**不新增 catalog 工具頁**（維持 79 個），資料一律餵給既有工具、hub 與「我附近」。
 - **共通**：一律經既有 `getTdxToken()`＋`httpGetJson`；逐縣市呼叫依序執行並加間隔（TDX 有每秒請求上限）；座標一律經 `parseTdxCoordinate()`；集中一份縣市代碼對照表（basic 用英文名如 `Taipei`、`NewTaipei`，`seniors` 用 3 碼如 `TPE`）；只存最新狀態的表，UNIQUE KEY 不得含時間欄位；每個新同步都要有種子備援並錯開既有排程分鐘數（目前 in-app 已有 36 個 job）。
-- **T1 無障礙公車真實資料**：每日同步 `GET /v3/Bus/Vehicle/City/{City}`，依縣市計算 `IsLowFloor=1` 比率與 `HasLiftOrRamp` 比率，取代 `accessible_transit_routes` 的寫死種子值；路線層級用 `GET /v3/Bus/Schedule/City/{City}` 的班次 `IsLowFloor` 標示。呈現在 `accessible-transit`。
+- **T1 無障礙公車真實資料（已於 2026-10-21 隨 #730 移除，改回靜態種子）**：每日同步 `GET /v3/Bus/Vehicle/City/{City}`，依縣市計算 `IsLowFloor=1` 比率與 `HasLiftOrRamp` 比率，取代 `accessible_transit_routes` 的寫死種子值；路線層級用 `GET /v3/Bus/Schedule/City/{City}` 的班次 `IsLowFloor` 標示。呈現在 `accessible-transit`。
 - **T2 盲人有聲號誌**：同步 `GET /v1/Traffic/Road/APS/City/{City}`（座標、路名、各方向引導音、`AppActivatedSignal` 與 App 下載連結）。呈現為「我附近」的「更多類型」一類、「身心障礙者生活」hub 一步、`BaseMap` 圖層。
 - **T3 特殊車位**：同步路外 `OffStreet/{CarPark, ParkingSpace, ParkingAvailability}/City/{City}` 與路邊 `OnStreet/{ParkingSegmentSpace, ParkingSegmentAvailability}/City/{City}`，**只保留** `SpaceType` 7 孕婦及親子、9 身障汽車、10 身障機車、13 復康巴士。即時剩餘數獨立一張以「停車場＋SpaceType」為唯一鍵的表、每次覆寫。呈現為「我附近」更多類型、「懷孕到育兒」與「身心障礙者生活」hub。
-- **T4 全台軌道營運通阻**：`/v2/Rail/Metro/Alert/{TRTC|TRTCMG|TYMC|TMRT|KRTC|KLRT}`、`/v3/Rail/TRA/Alert`、`/v2/Rail/THSR/AlertInfo` 正規化為同一張通阻表；`/tools/metro-alerts` 保留 slug、標題改為「全台軌道營運通阻」，臺北捷運原 data.taipei CSV 來源退役（或作為備援，實作時依資料完整度決定）。納入「颱風地震來了」hub 一步。
-- **T6 YouBike 15 縣市**：`lib/server/youbike/tdxClient.ts` 的 `TDX_CITIES` 由 5 個擴充為 TDX `/v2/Bike/*/City/{City}` 列舉的全部 15 個。
+- **T4 全台軌道營運通阻（已於 2026-10-21 隨 #728 整個移除）**：`/v2/Rail/Metro/Alert/{TRTC|TRTCMG|TYMC|TMRT|KRTC|KLRT}`、`/v3/Rail/TRA/Alert`、`/v2/Rail/THSR/AlertInfo` 正規化為同一張通阻表；`/tools/metro-alerts` 保留 slug、標題改為「全台軌道營運通阻」，臺北捷運原 data.taipei CSV 來源退役（或作為備援，實作時依資料完整度決定）。納入「颱風地震來了」hub 一步。
+- **T6 YouBike 15 縣市（已於 2026-10-21 隨 #727 整個移除）**：`lib/server/youbike/tdxClient.ts` 的 `TDX_CITIES` 由 5 個擴充為 TDX `/v2/Bike/*/City/{City}` 列舉的全部 15 個。
 - 不納入（2.0 之後另開）：T5 醫院接駁公車、T7 道路災害事件、T8 偏鄉 DRTS、T9 充電站、T10 國定假日、T11 行政區界線。
 
 ### Q. 多語系支援（2026-10-12 追加）
-- **範圍（約 21 頁，清單集中定義於 catalog，供路由、sitemap、llms.txt、測試共用）**：緊急電話、急診看板、AED、醫療院所、藥局、公廁、YouBike、全台軌道通阻（metro-alerts）、無障礙交通、氣象警報、地震、AQI、UV、防災避難地圖、涼適點、藝文活動、文化資產、觀光工廠、「我附近」、`/guides/typhoon-earthquake`、首頁。其餘頁面不提供外語網址。
+- **範圍（約 21 頁，清單集中定義於 catalog，供路由、sitemap、llms.txt、測試共用）**：緊急電話、急診看板、AED、醫療院所、藥局、公廁、YouBike（已移除）、全台軌道通阻（metro-alerts，已移除）、無障礙交通、氣象警報、地震、AQI、UV、防災避難地圖、涼適點、藝文活動、文化資產、觀光工廠、「我附近」、`/guides/typhoon-earthquake`、首頁。其餘頁面不提供外語網址。
 - **網址**：路徑前綴 `/en/`、`/ja/`、`/ko/`；中文維持現有網址、不加前綴。伺服器端直接輸出該語言 HTML（`<html lang>`、`<title>`、meta、JSON-LD、內文皆為該語言），可被 ISR 與 Cloudflare 快取；同一套頁面元件服務四種語言，不得複製頁面檔案。
 - **翻譯深度**：介面＋頁面內容全翻（標題、description、directAnswer、FAQ、使用步驟、提示與錯誤訊息、hub 步驟說明）。**政府資料保留中文原文**（機構名稱、地址、公告內文），旁加英文類別標籤（例如 `AED`、`Hospital`）、「複製地址」與 Google 地圖導航按鈕。不在請求當下即時翻譯。
 - **翻譯產製**：以 AI 產生初稿、人工抽查醫療相關詞彙後存成靜態語系檔（版本控管）；新增或修改指定頁面的中文內容時，CI 檢查三語是否同步齊全。
@@ -371,7 +373,7 @@ j172tw Healthz 已累積 84 個便民工具、上萬篇新聞與數十個官方�
   - 已移除套件（swiper、sharp、framer-motion、react-hot-toast、iconv-lite，及通過 A/B 後的 segmentit）不得再被 import。
   - 先例：`no-server-fetch` 測試。
 - **接縫 ③ 聚合函式**：snapshot 與 nearby 的組裝函式以注入假資料來源測試——單一來源拋錯或逾時時，其餘區塊仍正確回傳、錯誤區塊標記為錯誤狀態；nearby 依距離排序、每類截取 3 筆、類型上限 8。先例：`useSidebarWidgetData`、`useNearestStation` 測試。
-- **TDX 資料（接縫 ②＋純函式）**：原始碼掃描確保所有 TDX 座標寫入都經 `parseTdxCoordinate()`（先例：`lib/server/tdx/seniors.test.mjs`）；以假 TDX 回應測試純函式——低地板比率計算（含 0 台車的縣市）、車位只保留 7／9／10／13 四種 `SpaceType`、三種軌道通阻格式正規化為同一結構、縣市代碼對照涵蓋 basic 與 seniors 兩套。
+- **TDX 資料（接縫 ②＋純函式）**：原始碼掃描確保所有 TDX 座標寫入都經 `parseTdxCoordinate()`（先例：`lib/server/tdx/seniors.test.mjs`；`parseTdxCoordinate()` 已於 #731 隨最後一個呼叫端移除，停車、有聲號誌來源各自有座標轉換）；以假 TDX 回應測試純函式——低地板比率計算（含 0 台車的縣市）、車位只保留 7／9／10／13 四種 `SpaceType`、三種軌道通阻格式正規化為同一結構、縣市代碼對照涵蓋 basic 與 seniors 兩套。
 - **多語系（接縫 ①）**：指定頁面清單中每頁都有 en／ja／ko 完整內容（標題、description、directAnswer、FAQ、步驟），不得有空字串或退回中文；hreflang 集合互相指涉且含 `x-default`；每個 `?lang=` 舊網址對應到正確的 301 目標；其餘頁面不得出現外語網址。
 - **llms.txt／.md 與 JSON-LD（純函式）**：每個工具、分類頁、hub 的 llms.txt 符合 llmstxt.org 文法（H1、blockquote、H2 下單行連結）且連結皆為完整網址；`.md` 不含 HTML 標籤；各頁面類型 JSON-LD 具備該型別必要屬性；外語版 JSON-LD 帶 `inLanguage` 與翻譯關聯。
 - **Cloudflare 設定**：設定檔以 schema 驗證；CI 只跑 plan、不跑 apply；原始碼掃描確保圖片轉換網址只出現在允許的靜態圖路徑、站上不再有自寫 IndexNow 呼叫。

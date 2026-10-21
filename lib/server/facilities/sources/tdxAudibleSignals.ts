@@ -3,7 +3,7 @@ import type { FacilityRecord } from "@/lib/server/facilities/queries";
 import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { getTdxToken } from "@/lib/server/tdx/auth";
 import { toCoordinate } from "@/lib/server/db/coords";
-import { TDX_BUS_CITIES } from "@/lib/server/transit/tdxBusClient";
+import { TDX_CITIES } from "@/lib/server/tdx/cities";
 
 /**
  * TDX 基礎服務「有聲號誌」資料來源 (issue #468, parent #438 §P T2) — 全台盲人
@@ -21,7 +21,7 @@ import { TDX_BUS_CITIES } from "@/lib/server/transit/tdxBusClient";
  * Tainan/Kaohsiung/Keelung/HsinchuCounty/ChanghuaCounty/NantouCounty），但
  * `x-enum` 顯示名稱對照表仍完整列出全部 22 縣市 — 與 #467 的 Bus API 同樣
  * 「enum 不完整但資料實際涵蓋全國」的落差，所以沿用
- * `lib/server/transit/tdxBusClient.ts` 的 `TDX_BUS_CITIES`（同一組 22 縣市
+ * `lib/server/tdx/cities.ts` 的 `TDX_CITIES`（同一組 22 縣市
  * 代碼→tdxName/label 對照，Bus client 已確認可用），不重新宣告一份；並對
  * 每個縣市各自呼叫、各自隔離錯誤——enum 未列出的 14 個縣市若真的回
  * 400/404，只讓該縣市的資料是空的，不會把其他 21 縣市的真實資料也清空。
@@ -104,7 +104,7 @@ function mapAps(item: TdxApsItem, countyLabel: string): FacilityRecord | null {
  * that one county's failure from the others, same as the Bus client.
  */
 export async function fetchCityAudibleSignals(cityCode: string): Promise<FacilityRecord[]> {
-  const cityConfig = TDX_BUS_CITIES[cityCode];
+  const cityConfig = TDX_CITIES[cityCode];
   if (!cityConfig) return [];
 
   const token = await getTdxToken();
@@ -125,7 +125,7 @@ export async function fetchCityAudibleSignals(cityCode: string): Promise<Facilit
 }
 
 /**
- * Fetches every TDX_BUS_CITIES county's audible-signal points, isolating
+ * Fetches every TDX_CITIES county's audible-signal points, isolating
  * each county's failure individually (Promise.allSettled, batches of 3 —
  * same rate-limit-headroom batching as the other TDX
  * per-county fetchers) so one bad county (an enum mismatch, a timeout, a TDX
@@ -145,7 +145,7 @@ export async function fetchTdxAudibleSignals(): Promise<FacilityRecord[]> {
   if (!token) return [];
 
   const records: FacilityRecord[] = [];
-  const cityKeys = Object.keys(TDX_BUS_CITIES);
+  const cityKeys = Object.keys(TDX_CITIES);
   const batchSize = 3;
   for (let i = 0; i < cityKeys.length; i += batchSize) {
     const batch = cityKeys.slice(i, i + batchSize);

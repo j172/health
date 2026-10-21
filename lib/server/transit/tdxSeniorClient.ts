@@ -2,7 +2,7 @@ import "server-only";
 import { getTdxToken } from "@/lib/server/tdx/auth";
 import { tdxGetJsonWithRetry } from "@/lib/server/tdx/getJsonWithRetry";
 import { TDX_SENIORS_API_BASE } from "@/lib/server/tdx/seniors";
-import type { RailSystem } from "./railStationCounty";
+import type { RailSystem } from "./railSystems";
 
 /**
  * Base path for TDX's "Senior" (樂齡/敬老) Rail accessibility APIs — issue

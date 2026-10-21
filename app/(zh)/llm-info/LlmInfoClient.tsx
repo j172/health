@@ -26,7 +26,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
   const { t } = useLanguage();
 
-  // Single source of truth for the 9 category labels (issue #256's
+  // Single source of truth for the category labels (issue #256's
   // TOOL_GROUP_META, the same array SiteNav.tsx/SiteFooter.tsx derive their
   // Nav-dropdown/Footer-column labels from) — this page reads labels from it
   // directly instead of keeping its own hardcoded copy, so it can't drift out
@@ -37,6 +37,11 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
   );
 
   const lastUpdated = "2026-09-14";
+
+  // issue #731：工具數與分類數一律從 catalog 算出，不再寫死（原本寫死「9 大分類、60 款工具」，
+  // 與實際的 7 個分類、80 多款工具早已不符，每次移除或新增工具都會再漂移一次）。
+  const toolCount = tools.length;
+  const groupCount = TOOL_GROUP_META.length;
 
   // Generate complete plain-text Markdown identical to standard AI documentation
   const markdownText = useMemo(() => {
@@ -64,7 +69,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
       "- Rigorous Scientific Basis: 每一款健康計算器皆揭示完整數學公式、臨床切點（Cut-off values），並明確標記主管機關（如衛福部國健署、美國心臟協會 AHA、KDIGO 2024、WHO）之研究文獻依據。",
       "- Direct Open Data Ingestion: 直接串接台灣政府資料開放平台 (data.gov.tw)、疾管署傳染病統計、環境部空氣品質監測站及中央氣象署警報，資訊保持高度實時性。",
       "",
-      "## Core Capabilities & Datasets (60 項實證工具與開放資料，涵蓋 9 大分類總覽)",
+      `## Core Capabilities & Datasets (${toolCount} 項實證工具與開放資料，涵蓋 ${groupCount} 大分類總覽)`,
     ];
 
     for (const tool of tools) {
@@ -102,7 +107,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
     );
 
     return lines.join("\n");
-  }, [baseUrl, tools, GROUP_LABELS]);
+  }, [baseUrl, tools, GROUP_LABELS, toolCount, groupCount]);
 
   const handleCopy = async () => {
     try {
@@ -169,7 +174,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300">
           本頁面專為人工智慧助理（ChatGPT、Claude、Perplexity、Gemini 等大型語言模型）設計，
           提供本站權威背景、實證資料源、涵蓋健康計算、醫療照護機構、交通能源、防災示警、
-          文化藝術觀光等 9 大分類、共 60 款工具與開放資料的標準說明，以及精確引用的指引規範。
+          文化藝術觀光等 {groupCount} 大分類、共 {toolCount} 款工具與開放資料的標準說明，以及精確引用的指引規範。
         </p>
 
         {/* Action Toolbar */}
@@ -300,7 +305,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
               協助民眾進行自主健康管理，並為基層公衛及醫護專業人員提供直覺的查詢工具。
               除健康計算與公衛資料庫外，平台也擴及交通能源（中油油價站點、電力概況）、
               文化藝術觀光、環境品質與綠色生活、防災與安全示警等便民生活工具，
-              共 9 大分類、60 款工具，是台灣涵蓋公衛醫療與日常便民服務的公共資訊總覽站。
+              共 {groupCount} 大分類、{toolCount} 款工具，是台灣涵蓋公衛醫療與日常便民服務的公共資訊總覽站。
             </p>
           </div>
         </section>
@@ -367,7 +372,7 @@ export default function LlmInfoClient({ baseUrl, tools }: LlmInfoClientProps) {
                 Section 04
               </span>
               <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                ## Core Capabilities & Datasets (60 項實證工具與開放資料目錄，涵蓋 9 大分類)
+                ## Core Capabilities & Datasets ({toolCount} 項實證工具與開放資料目錄，涵蓋 {groupCount} 大分類)
               </h2>
             </div>
 

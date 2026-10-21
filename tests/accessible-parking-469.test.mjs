@@ -210,13 +210,13 @@ test("app/(zh)/tools/accessible-parking/page.tsx exists, has metadata+canonical,
   assert.ok(src.includes('facilitySearchConfigs["accessible-parking"]'));
 });
 
-test("lib/server/facilities/sources/tdxParking.ts targets the swagger-confirmed OffStreet+OnStreet v1 paths and reuses TDX_BUS_CITIES", () => {
+test("lib/server/facilities/sources/tdxParking.ts targets the swagger-confirmed OffStreet+OnStreet v1 paths and reuses TDX_CITIES", () => {
   const src = readSource("lib", "server", "facilities", "sources", "tdxParking.ts");
   assert.ok(src.includes("/v1/Parking/OffStreet/CarPark/City/"));
   assert.ok(src.includes("/v1/Parking/OffStreet/ParkingAvailability/City/"));
   assert.ok(src.includes("/v1/Parking/OnStreet/ParkingSegment/City/"));
   assert.ok(src.includes("/v1/Parking/OnStreet/ParkingSegmentAvailability/City/"));
-  assert.ok(src.includes("TDX_BUS_CITIES"), "must reuse the existing 22-county map rather than re-declaring one");
+  assert.ok(src.includes("TDX_CITIES"), "must reuse the existing 22-county map rather than re-declaring one");
   assert.ok(src.includes("getTdxToken"), "must use the shared TDX OAuth2 client, not a second token implementation");
   assert.ok(src.includes("Promise.allSettled"), "must isolate per-county/per-kind failures, matching the Bus/APS TDX client precedent");
   assert.ok(src.includes('facilityType: "accessible_parking"'), "must map into the facility_type this ticket registers everywhere else");

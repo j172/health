@@ -24,8 +24,8 @@ test("TDX Senior/Rail client: keeps only the Facility/Alert endpoint across the 
   }
   assert.ok(content.includes("getTdxToken"), "should use the shared TDX auth helper");
 
-  const countyFile = path.join(process.cwd(), "lib", "server", "transit", "railStationCounty.ts");
-  assert.ok(fs.existsSync(countyFile), "railStationCounty.ts should exist");
+  const countyFile = path.join(process.cwd(), "lib", "server", "transit", "railSystems.ts");
+  assert.ok(fs.existsSync(countyFile), "railSystems.ts should exist");
   const countyContent = fs.readFileSync(countyFile, "utf-8");
   for (const system of ["TRA", "THSR", "TRTC", "NTMC", "TYMC", "TMRT", "KRTC", "KLRT", "NTDLRT", "NTALRT"]) {
     assert.ok(countyContent.includes(`"${system}"`), `RAIL_SYSTEMS should include ${system}`);

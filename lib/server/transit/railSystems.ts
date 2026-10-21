@@ -5,6 +5,7 @@
  *
  * issue #730：每日軌道無障礙同步（含 Basic Station 站點縣市對照）已移除，
  * 這個檔案只剩給每小時電梯停用公告迴圈用的系統代碼。
+ * issue #731：原檔名 railStationCounty.ts 已不符內容（站點縣市對照早已移除），改名 railSystems.ts。
  */
 export const RAIL_SYSTEMS = [
   "TRA",

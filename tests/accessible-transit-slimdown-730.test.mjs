@@ -9,7 +9,7 @@ import { extractCronSchedules } from "../lib/server/cron/cronCollisions.mjs";
 //   1. 兩個每日 TDX 排程（每日軌道無障礙同步、每日公車低地板比率同步）已移除，只留每小時電梯停用公告。
 //   2. 只被那兩個同步使用的程式碼（railSyncCore／railSyncStore／busLowFloorMath／TDX 公車客戶端／
 //      Facility、Service、Map、Transfer 抓取）已刪，但電梯公告客戶端、共用 TDX 基礎設施與
-//      手動 facilities-sync 用到的 TDX_BUS_CITIES 都還在。
+//      手動 facilities-sync 用到的縣市清單（#731 起為 lib/server/tdx/cities.ts 的 TDX_CITIES）都還在。
 //   3. 頁面不再有空的「站內導覽圖」「周邊轉乘」區塊；公車低地板區塊標註「種子資料、非即時」（含 en／ja／ko）。
 //   4. /api/accessible-transit 的讀取行為不變（DB 優先、空表才灌種子），只移除恆為空的 stationMaps／transfers 欄位。
 //   5. accessible_transit_station_maps、accessible_transit_transfers 由 ensureSchema 冪等 DROP 且不會被建回；
@@ -71,17 +71,21 @@ test("code used only by the two daily syncs is deleted; the elevator-outage clie
   assert.doesNotMatch(senior, /fetchSeniorFacility\s*=|fetchSeniorService|fetchSeniorMap|fetchSeniorTransfer|flattenFacilityCategories/);
   assert.doesNotMatch(senior, /"\/(Service|Map|Transfer)"/);
 
-  const county = stripComments(read("lib", "server", "transit", "railStationCounty.ts"));
+  // issue #731：railStationCounty.ts 改名 railSystems.ts（只剩 RAIL_SYSTEMS 代碼）。
+  assert.ok(!exists("lib", "server", "transit", "railStationCounty.ts"), "old file name must be gone");
+  const county = stripComments(read("lib", "server", "transit", "railSystems.ts"));
   assert.match(county, /export const RAIL_SYSTEMS/);
   assert.doesNotMatch(county, /fetchStationCountyMap|Rail\/TRA\/Station|Rail\/Metro\/Station|tdxGetJsonWithRetry/);
 
-  // 公車客戶端只剩縣市清單（手動 facilities-sync 的停車、有聲號誌來源共用），不再呼叫 TDX。
-  const bus = stripComments(read("lib", "server", "transit", "tdxBusClient.ts"));
-  assert.match(bus, /export const TDX_BUS_CITIES/);
-  assert.equal((bus.match(/^\s*[A-Z]{2,5}:\s*{\s*tdxName:/gm) || []).length, 22, "still exactly 22 counties");
-  assert.doesNotMatch(bus, /Bus\/Vehicle|Bus\/Schedule|getTdxToken|tdxGetJsonWithRetry|fetchAllTdxBusRoutes|fetchCityBusRoutes/);
+  // 縣市清單（手動 facilities-sync 的停車、有聲號誌來源共用）不再呼叫 TDX。
+  // issue #731：tdxBusClient.ts 的 TDX_BUS_CITIES 改名 TDX_CITIES，搬到 lib/server/tdx/cities.ts。
+  assert.ok(!exists("lib", "server", "transit", "tdxBusClient.ts"), "old file name must be gone");
+  const cities = stripComments(read("lib", "server", "tdx", "cities.ts"));
+  assert.match(cities, /export const TDX_CITIES/);
+  assert.equal((cities.match(/^\s*[A-Z]{2,5}:\s*{\s*tdxName:/gm) || []).length, 22, "still exactly 22 counties");
+  assert.doesNotMatch(cities, /Bus\/Vehicle|Bus\/Schedule|getTdxToken|tdxGetJsonWithRetry|fetchAllTdxBusRoutes|fetchCityBusRoutes/);
   for (const source of ["tdxParking.ts", "tdxAudibleSignals.ts"]) {
-    assert.match(read("lib", "server", "facilities", "sources", source), /TDX_BUS_CITIES.*transit\/tdxBusClient/s, `${source} still uses the county list`);
+    assert.match(read("lib", "server", "facilities", "sources", source), /TDX_CITIES.*tdx\/cities/s, `${source} still uses the county list`);
   }
 
   // TDX token／限流器／斷路器與 admin 手動觸發電梯公告都保留。
