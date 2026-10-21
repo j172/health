@@ -166,7 +166,7 @@ test("isTyphoonBannerExcludedPath: 後台頁面不顯示橫幅，其他頁面（
 // ---------------------------------------------------------------- 2. 端點 ---
 
 test("快取標頭常數：正常 60 秒（含 s-maxage 與 stale-while-revalidate）、讀不到時短 TTL、模擬 no-store", () => {
-  assert.equal(cacheControl.TYPHOON_STATUS_CACHE_NORMAL, "public, s-maxage=60, stale-while-revalidate=120");
+  assert.equal(cacheControl.TYPHOON_STATUS_CACHE_NORMAL, "public, max-age=0, s-maxage=60, stale-while-revalidate=120");
   assert.match(cacheControl.TYPHOON_STATUS_CACHE_DB_UNAVAILABLE, /s-maxage=10\b/);
   assert.ok(!/stale-while-revalidate/.test(cacheControl.TYPHOON_STATUS_CACHE_DB_UNAVAILABLE));
   assert.equal(cacheControl.TYPHOON_STATUS_CACHE_SIMULATED, "no-store");

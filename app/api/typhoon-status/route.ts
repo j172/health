@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
  * 由 Cloudflare 快取 60 秒者）完全不含警報內容。
  *
  * 快取標頭必須顯式宣告：沒有 Cache-Control 的 /api/* 會被上游補上預設 30 分鐘。
- *  - 正常（含「沒有警報」）：public, s-maxage=60, stale-while-revalidate=120
+ *  - 正常（含「沒有警報」）：public, max-age=0, s-maxage=60, stale-while-revalidate=120
  *  - 資料庫讀不到：回 active:false，但只快取 10 秒，恢復後馬上能顯示（不讓「讀不到」被當成「沒警報」久存）
  *  - 模擬（金鑰正確的測試請求）：no-store
  * 狀態碼一律 200：橫幅在 fetch 失敗時本來就不顯示，端點不需要用錯誤碼表達資料庫失敗。
