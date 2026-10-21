@@ -23,9 +23,7 @@ export const PRIMARY_ATTRIBUTION = "&copy; 內政部國土測繪中心";
 
 export const FALLBACK_TILE_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 
-// Copyright attribution link UTM-tagged per issue #451 (see lib/constants/mapTiles.ts
-// for the sibling OSM_TILE_ATTRIBUTION constant used by the 9 Leaflet-based map
-// components — this file's BaseMap-only fallback attribution duplicates the same URL).
+// Copyright attribution link UTM-tagged per issue #451.
 const OSM_COPYRIGHT_URL = appendOutboundUtm(
   "https://www.openstreetmap.org/copyright",
   { medium: "map_attribution", campaign: "map_tiles" },

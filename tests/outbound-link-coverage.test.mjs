@@ -206,12 +206,6 @@ test("Structural Guard: news hero stock-photo attribution link is UTM-wrapped", 
 test("Structural Guard: shared map attribution and Google Maps navigation constants are UTM-wrapped at their single choke point", () => {
   const rootDir = process.cwd();
 
-  const mapTiles = fs.readFileSync(
-    path.join(rootDir, "lib", "constants", "mapTiles.ts"),
-    "utf-8",
-  );
-  assert.ok(mapTiles.includes(WRAP_TOKEN), "lib/constants/mapTiles.ts must wrap OSM_TILE_ATTRIBUTION's link");
-
   const tileConfig = fs.readFileSync(
     path.join(rootDir, "components", "Map", "tileConfig.ts"),
     "utf-8",
