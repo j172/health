@@ -7,7 +7,7 @@ import { validateImportRows } from "@/lib/server/validation/importSchema";
 
 // data.gov.tw 6954「各縣市合約戒菸醫療院所」(issue #569, parent #562) — the
 // national baseline that replaces the 6 hand-written smoking_cessation seed
-// rows in scripts/build-expansion-seeds.mjs. 2026-10-14 實測：2,838 筆.
+// rows in scripts/build-expansion-seeds.mjs（已移除，見 git 歷史）. 2026-10-14 實測：2,838 筆.
 //
 // Distributed as an ODS (OpenDocument Spreadsheet) file, not CSV/JSON like
 // every other facilities source here — an ODS is a ZIP archive containing a

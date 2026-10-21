@@ -169,7 +169,7 @@
 
 #### RSS 匯入記憶體尖峰（SIGKILL 於匯入啟動後約 3 分鐘）🟡（#699，待上線驗證）
 - 現象：Node 回滾到 20.20.2（#700）後 SIGABRT 消失，但每小時仍有 3–6 次 SIGKILL（沒有 V8 FATAL ERROR，RSS 遠低於 `max_memory_restart`，是主機 LVE 的實體記憶體管控），多數落在 RSS 匯入啟動後約 3 分鐘；匯入被殺所以 `ingest_runs` 永遠停在 `running`。
-- 無法對正式站量測，所以做了本機可重現的量測治具（`scripts/measure-rss-ingestion-memory.mjs`，真的 `runRssIngestion` 對本機合成世界跑，不碰任何真實網站）。找到的記憶體大戶，依貢獻排序：①整頁 cheerio DOM 只為了取 og:image；②每條 TLS 連線一個 `SecureContext`；③V8 不知道主機的實體上限，死掉的堆積（DOM、XML、HTTP body）不會被及時回收；④列表頁縮圖每輪重抓（已加 6 小時 URL→檔案記憶）。
+- 無法對正式站量測，所以做了本機可重現的量測治具（`scripts/measure-rss-ingestion-memory.mjs（已移除，見 git 歷史）`，真的 `runRssIngestion` 對本機合成世界跑，不碰任何真實網站）。找到的記憶體大戶，依貢獻排序：①整頁 cheerio DOM 只為了取 og:image；②每條 TLS 連線一個 `SecureContext`；③V8 不知道主機的實體上限，死掉的堆積（DOM、XML、HTTP body）不會被及時回收；④列表頁縮圖每輪重抓（已加 6 小時 URL→檔案記憶）。
 - 修法與護欄：`lib/server/rss/runMonitor.ts`（單位工作之間：鎖心跳＋堆積預算＋一行階段日誌＋讓出事件迴圈）、`lib/server/sync/heapGovernor.ts`、`lib/server/sync/stageLog.ts`；階段日誌事件名 `rss_ingestion_stage`（每個 feed／來源一行，含 `heapUsedMB`／`rssMB`／`externalMB`），被殺前最後一行就是當時在跑的來源。
 - 鎖：`internal-cron` 與 `admin-manual` 都走 `runRssIngestion` 的同一把 MySQL advisory lock（`rss_ingestion_lock`）。先取鎖、才建立 `ingest_runs` 列；取不到鎖的嘗試寫成 `status='skipped'`（不是 `failed`、不丟例外、不寫 `ingest_errors`）。匯入期間每個單位工作間用 `IS_USED_LOCK` 確認鎖還在（連線被資料庫關掉鎖會無聲消失），並順便更新 `ingest_runs.updated_at`；孤兒判定改看「沉默 20 分鐘」而非「開始 20 分鐘」，窗口沒有放寬。
 - `GET /api/admin/ingestion-runs` 新增 `limit`／`offset`／`status`／`trigger` 參數。

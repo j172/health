@@ -9,9 +9,9 @@ import type { FraudDomainRecord } from "@/lib/server/antiFraud/sources/police176
 // #567 / #562. ONE-TIME HISTORICAL IMPORT ONLY — do not add a cron job for
 // this source. The dataset's own metadata says it stopped updating after
 // 2025-12-31 because its scope was folded into the broader 176455 list, so
-// there is no "latest batch" to keep polling for; `scripts/
-// import-police-160055.mjs` runs this exactly once, by hand, after deploy
-// (see that script's doc comment). Confirmed live 2026-10-14: HTTP 200, CSV,
+// there is no "latest batch" to keep polling for; POST /api/admin/police-160055-import
+// runs this exactly once, by hand, after deploy (the former standalone script
+// was removed 2026-10-21). Confirmed live 2026-10-14: HTTP 200, CSV,
 // UTF-8 with BOM, ~45,258 rows. Columns: 網站名稱,網址,件數,統計起始日期,
 // 統計結束日期.
 //
@@ -95,8 +95,7 @@ export function parsePolice160055Csv(csvText: string): FraudDomainRecord[] {
 }
 
 /**
- * Fetches the full 160055 CSV. Exported for `scripts/import-police-160055.mjs`
- * (the one-time import script) — there is no `runSync.ts` entry for this
+ * Fetches the full 160055 CSV. Exported for the one-time import (POST /api/admin/police-160055-import) — there is no `runSync.ts` entry for this
  * source and no cron job calls this; see the module doc comment above.
  */
 export async function fetchPolice160055FraudDomains(): Promise<FraudDomainRecord[]> {

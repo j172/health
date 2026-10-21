@@ -143,7 +143,7 @@ const SOURCES: FacilitySourceEntry[] = [
   // scripts/import-nhplatform-nursing-institutions.mjs (same source keys),
   // listed in docs/domains/10-scheduling-sync-ci.md §1.3.
   { key: "nhplatform_115950", fetch: fetchNhplatformNursingInstitutions },
-  // #614: 母嬰親善醫療院所地圖改用縣市真實資料，取代 build-expansion-seeds.mjs
+  // #614: 母嬰親善醫療院所地圖改用縣市真實資料，取代 build-expansion-seeds.mjs（已移除，見 git 歷史）
   // 的 4 筆手寫假資料。5 個縣市各自獨立來源鍵，可分別重跑——高雄（86397）刻意
   // 不接：效期全數落在 2016–2019，已全部過期，不是可用的現行名單。每個來源
   // 自己依該縣市實際的效期欄位格式過濾過期列（臺北/彰化有效期欄位，新北/臺中/
@@ -154,7 +154,7 @@ const SOURCES: FacilitySourceEntry[] = [
   { key: "baby_friendly_hospital_tainan_150985", fetch: fetchBabyFriendlyHospitalTainan },
   { key: "baby_friendly_hospital_changhua_30882", fetch: fetchBabyFriendlyHospitalChanghua },
   // #569 (parent #562): 戒菸院所查詢的全國基底資料——國健署「各縣市合約戒菸醫療
-  // 院所」（data.gov.tw 6954），取代 scripts/build-expansion-seeds.mjs 裡原本 6
+  // 院所」（data.gov.tw 6954），取代 scripts/build-expansion-seeds.mjs（已移除，見 git 歷史） 裡原本 6
   // 筆手寫資料。No coordinates of its own, geocoded via the usual facilities-
   // geocode backfill like every other address-only source here. #572 (六都覆蓋,
   // not started yet) will add per-county sources that batch-replace this

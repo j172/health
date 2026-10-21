@@ -11,7 +11,7 @@ import "server-only";
  * under heavy backfill (see docs/archive/specs/news-card-image-freshness-scheduling.md).
  *
  * data/cedict-terms.json is a prebuilt { traditionalWord: englishGloss } map
- * generated from CC-CEDICT by scripts/build-cedict-terms.mjs (see that
+ * generated from CC-CEDICT by scripts/build-cedict-terms.mjs（已移除，見 git 歷史） (see that
  * script's header for the source/license and regeneration instructions).
  * It's a plain JSON import rather than a runtime file read deliberately —
  * this app's deploy pipeline (.github/workflows/deploy-ftps.yml) only ships

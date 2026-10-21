@@ -13,7 +13,7 @@
 |---|---|
 | 工具數 | 84（`TOOL_CATALOG`，單一真相來源） |
 | 分類 | 9 類（`TOOL_GROUP_META`，#256）：健康工具 12／醫療照護機構 17／防災示警 12／環境 10／公益生活 11／交通能源 6／文化觀光 6／藥品食品 5／兒少 5 |
-| 排序 | 分類與工具各自「英文在前、中文依首字筆畫由少到多」（`compareByStrokeOrder`，`STROKE_COUNTS` 由 `scripts/generate-stroke-table.mjs` 產生） |
+| 排序 | 分類與工具各自「英文在前、中文依首字筆畫由少到多」（`compareByStrokeOrder`，`STROKE_COUNTS` 由 `scripts/generate-stroke-table.mjs（已移除，見 git 歷史）` 產生） |
 | Navbar | 首頁、新聞＋9 個下拉，≥1280px 才展開 |
 | Footer | 總覽 5＋9 分類 84 工具＋公民友站 7，共 11 欄 |
 | 工具頁外框 | `ToolPageShell`：自動產生 `MedicalWebPage`／`WebPage`＋`WebApplication`＋`FAQPage` JSON-LD、相關工具、FAQ、科學依據 |

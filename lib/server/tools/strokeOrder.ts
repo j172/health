@@ -4,7 +4,7 @@
  * Footer components' sort order (see `compareByStrokeOrder` below).
  *
  * GENERATED — do not hand-edit. Regenerate with:
- *   node scripts/generate-stroke-table.mjs
+ *   node scripts/generate-stroke-table.mjs（已移除，見 git 歷史）
  * Source of truth: the `cnchar` + `cnchar-trad` npm packages (devDependencies
  * only — see that script for why this is a committed static table rather
  * than a runtime dependency).

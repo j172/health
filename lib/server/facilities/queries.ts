@@ -356,7 +356,7 @@ export interface FacilitySearchParams {
    * two-dimension shape can reuse it without another query change.
    */
   serviceMethod?: string;
-  /** When true, only rows whose extra_json carries a charityUrl (see scripts/enrich-disability-charity-sales.mjs). */
+  /** When true, only rows whose extra_json carries a charityUrl (see scripts/enrich-disability-charity-sales.mjs（已移除，見 git 歷史）). */
   onlyCharity?: boolean;
   sort?: "distance" | "name" | "category" | "newest";
 }
