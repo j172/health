@@ -1253,42 +1253,6 @@ export const TABLE_DDL = {
       KEY idx_metro_system (system_code)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // 便民服務：北北桃竹公共自行車 (YouBike 2.0) 即時站點車位
-  youbikeStations: `
-    CREATE TABLE IF NOT EXISTS youbike_stations (
-      id BIGINT NOT NULL AUTO_INCREMENT,
-      city_code VARCHAR(10) NOT NULL,
-      station_no VARCHAR(50) NOT NULL,
-      name_tw VARCHAR(100) NOT NULL,
-      district_tw VARCHAR(50) NOT NULL,
-      address_tw VARCHAR(255) NOT NULL,
-      lat DECIMAL(10,7) NOT NULL,
-      lng DECIMAL(10,7) NOT NULL,
-      total_spaces INT NOT NULL DEFAULT 0,
-      available_bikes INT NOT NULL DEFAULT 0,
-      available_ebikes INT NOT NULL DEFAULT 0,
-      empty_spaces INT NOT NULL DEFAULT 0,
-      is_active TINYINT(1) NOT NULL DEFAULT 1,
-      updated_at_source DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL,
-      PRIMARY KEY (id),
-      UNIQUE KEY uq_youbike_station (city_code, station_no),
-      KEY idx_youbike_geo (lat, lng),
-      KEY idx_youbike_city_district (city_code, district_tw)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
-  // YouBike TDX 同步的「每縣市靜態資料最後載入時間」— TDX 回合平常只打 Bike/Availability（即時
-  // 車位），站名／地址／座標／車柱數從 youbike_stations 讀；只有資料庫沒有該縣市站點、距上次載入
-  // 超過 24 小時、或 Availability 出現未知 StationID 時才補打 Bike/Station。這張表記住「上次載入
-  // 是什麼時候」，行程被主機殺掉重啟後不會又把 13 個縣市全部重載一遍。主鍵只有 city_code（一個縣
-  // 市一列），時間欄位是普通欄位、不在任何 key 裡，所以每次是 UPDATE 而不是無限累積新列。
-  youbikeSyncState: `
-    CREATE TABLE IF NOT EXISTS youbike_sync_state (
-      city_code VARCHAR(10) NOT NULL PRIMARY KEY,
-      static_refreshed_at DATETIME NULL,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
   // 便民服務：作物病蟲害即時預警 (農業部動植物防疫檢疫署)
   pestAlerts: `
     CREATE TABLE IF NOT EXISTS pest_alerts (
@@ -1310,7 +1274,7 @@ export const TABLE_DDL = {
   // ~10-minute cadence. Latest-snapshot-only convention (issue's Out of Scope
   // explicitly excludes history/trend storage): unique key is unit_name alone
   // (機組名稱), no timestamp in the key, so each sync overwrites the previous
-  // reading in place — same shape as youbike_stations, not the
+  // reading in place — a one-row-per-key latest snapshot, not the
   // wra_reservoir_status timestamp-keyed history pattern.
   powerGenerationUnits: `
     CREATE TABLE IF NOT EXISTS power_generation_units (

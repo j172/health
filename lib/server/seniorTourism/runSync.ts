@@ -227,7 +227,7 @@ export async function runSeniorCardSync(): Promise<SeniorCardSyncSummary> {
     return summary;
   }
 
-  // Batch 3 counties at a time, mirroring youbike/tdxClient.ts's batchSize=3
+  // Batch 3 counties at a time, the other TDX clients' batchSize=3
   // throttle against TDX's per-minute rate limit.
   const batchSize = 3;
   for (let i = 0; i < SENIOR_CARD_CITIES.length; i += batchSize) {

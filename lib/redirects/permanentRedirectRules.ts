@@ -68,7 +68,6 @@ const LANG_QUERY_TOOL_SLUGS = [
   "clinics",
   "pharmacies",
   "public-toilets",
-  "youbike",
   "metro-alerts",
   "accessible-transit",
   "weather-alerts",
@@ -143,6 +142,10 @@ const simpleRedirects: Omit<PermanentRedirectRule, "permanent">[] = [
   // retired in favor of the 國際疫情 item #589 already shipped. This page only
   // ever had a zh route, so a single entry is enough.
   { source: "/tools/travel-epidemic-alerts", destination: "/tools/global-watch/epidemics" },
+  // issue #727 — YouBike 與網站主題無關，整個移除；舊網址導向工具首頁。
+  // `/tools/youbike?lang=en|ja|ko` 的舊 `?lang=` 規則也一併拿掉（LANG_QUERY_TOOL_SLUGS），
+  // 所以那類網址落到這條規則，只會導向一次到 /tools，不會先繞去 /en/tools/youbike。
+  { source: "/tools/youbike", destination: "/tools" },
 ];
 
 export const PERMANENT_REDIRECT_RULES: PermanentRedirectRule[] = [
@@ -175,6 +178,15 @@ export const PERMANENT_REDIRECT_RULES: PermanentRedirectRule[] = [
     (locale): PermanentRedirectRule => ({
       source: `/${locale}/tools/earthquakes`,
       destination: `/${locale}/tools/global-watch/earthquakes`,
+      permanent: true,
+    }),
+  ),
+  // issue #727 — YouBike 的 3 個語系版也導向（中文）工具首頁 /tools：/tools 沒有語系版，
+  // 而且被移除的功能在英日韓也不存在，不必硬導到 /{locale}/tools。
+  ...REDIRECT_LOCALES.map(
+    (locale): PermanentRedirectRule => ({
+      source: `/${locale}/tools/youbike`,
+      destination: "/tools",
       permanent: true,
     }),
   ),

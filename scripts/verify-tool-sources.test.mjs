@@ -150,12 +150,6 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   const maPath = path.join(ROOT_DIR, "data", "metro-alerts-seed.json");
   assert.ok(fs.existsSync(maPath), "metro-alerts-seed.json must exist");
 
-  // 13. YouBike stations seed
-  const ybPath = path.join(ROOT_DIR, "data", "youbike-stations-seed.json");
-  assert.ok(fs.existsSync(ybPath), "youbike-stations-seed.json must exist");
-  const ybData = JSON.parse(fs.readFileSync(ybPath, "utf-8"));
-  assert.ok(Array.isArray(ybData) && ybData.length > 2000, `Expected > 2000 youbike stations, got ${ybData.length}`);
-
   // 14. Pest alerts seed
   const pestPath = path.join(ROOT_DIR, "data", "pest-alerts-seed.json");
   assert.ok(fs.existsSync(pestPath), "pest-alerts-seed.json must exist");

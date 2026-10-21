@@ -83,7 +83,7 @@
 
 #### Google 地圖導航、日韓語系、三層 ISR ✅
 - 原檔：[issue-418-map-navigation-i18n-ja-ko-seo-isr.md](../archive/specs/issue-418-map-navigation-i18n-ja-ko-seo-isr.md)（#418）
-- 所有設施卡片與地圖加「🗺️ Google 地圖導航」深連結；新增 `ja.json`、`ko.json`；觀光相關工具（急診、AED、YouBike…）加強外語。
+- 所有設施卡片與地圖加「🗺️ Google 地圖導航」深連結；新增 `ja.json`、`ko.json`；觀光相關工具（急診、AED、YouBike…；YouBike 已於 2026-10-21 隨 #727 移除）加強外語。
 
 #### 全系統「台」→「臺」 ✅
 - 原檔：[standardize-taiwan-orthography-tai.md](../archive/specs/standardize-taiwan-orthography-tai.md)（#317）

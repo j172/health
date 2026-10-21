@@ -19,7 +19,7 @@ if (typeof global.gc !== "function") {
   process.exit(2);
 }
 const repo = path.resolve(opt("repo", "."));
-const files = (opt("files") || "data/child-native-languages-seed.json,data/public-art.json,lib/server/news/data/cedict-terms.json,data/heritage-map-seed.json,data/breastfeeding-rooms-seed.json,data/cultural-events-seed.json,data/youbike-stations-seed.json,data/performance-venues-seed.json,data/contraception-map-seed.json,data/latest-books-seed.json").split(",");
+const files = (opt("files") || "data/child-native-languages-seed.json,data/public-art.json,lib/server/news/data/cedict-terms.json,data/heritage-map-seed.json,data/breastfeeding-rooms-seed.json,data/cultural-events-seed.json,data/performance-venues-seed.json,data/contraception-map-seed.json,data/latest-books-seed.json").split(",");
 const MB = 1048576;
 const heap = () => {
   global.gc();

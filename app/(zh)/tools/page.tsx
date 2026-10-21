@@ -105,7 +105,6 @@ const TOOL_ICONS: Record<string, string> = {
   "disaster-map": "🆘",
   "heritage-map": "🏛️",
   "metro-alerts": "🚇",
-  youbike: "🚲",
   "pest-alerts": "🌱",
   "vet-clinics": "🐾",
   "latest-books": "📖",

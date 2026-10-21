@@ -72,7 +72,6 @@ export const LOCALE_ROUTES = [
   "/ko",
   "/en/tools/aed",
   "/ja/tools/aqi",
-  "/ko/tools/youbike",
 ];
 
 export const SWEEP_ROUTES = [...PAGE_ROUTES, ...TOOL_ROUTES, ...API_ROUTES, ...LOCALE_ROUTES];

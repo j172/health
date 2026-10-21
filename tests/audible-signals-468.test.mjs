@@ -181,7 +181,7 @@ test("lib/server/facilities/sources/tdxAudibleSignals.ts targets TDX's confirmed
   assert.ok(src.includes("/api/basic/v1/Traffic/Road/APS/City/"), "must use the swagger-confirmed base + path (v1, not v3)");
   assert.ok(src.includes("TDX_BUS_CITIES"), "must reuse the existing 22-county map rather than re-declaring one");
   assert.ok(src.includes("getTdxToken"), "must use the shared TDX OAuth2 client, not a second token implementation");
-  assert.ok(src.includes("Promise.allSettled"), "must isolate per-county failures, matching the Bus/YouBike TDX client precedent");
+  assert.ok(src.includes("Promise.allSettled"), "must isolate per-county failures, matching the Bus TDX client precedent");
   assert.ok(src.includes("facilityType: \"audible_signal\""), "must map into the facility_type this ticket registers everywhere else");
   assert.ok(src.includes("AppActivatedSignal"), "must read the App-triggering flag from TDX's Aps schema");
   assert.match(src, /export (async )?function fetchTdxAudibleSignals/);

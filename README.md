@@ -253,7 +253,6 @@ flowchart TD
 | **全國合法觀光工廠文化遊** | [`/tools/tourism-factories`](https://health.j172.tw/tools/tourism-factories) | 經濟部產業發展署 | 通過經濟部評鑑認證之生醫、食品產業文化園區 |
 | **全國最新好書出版目錄** | [`/tools/latest-books`](https://health.j172.tw/tools/latest-books) | 國家圖書館 ISBN 申辦中心 | 本月新書、親職教育與醫藥科普書單速遞 |
 | **大眾捷運即時營運事件警示** | [`/tools/metro-alerts`](https://health.j172.tw/tools/metro-alerts) | 北捷 / 高捷 / 桃捷 / 中捷 | 各線捷運設備異常、延誤、故障告警資訊 |
-| **YouBike 公共自行車即時車況** | [`/tools/youbike`](https://health.j172.tw/tools/youbike) | 交通部 TDX 運輸資料流通平臺 | 全國 5000+ 租借站可借車輛與可還空位即時更新 |
 | **臺電全臺發電結構即時儀表板** | [`/tools/power-grid-overview`](https://health.j172.tw/tools/power-grid-overview) | 台灣電力公司電力調度數據 | 燃煤、燃氣、核能、太陽能、風力即時發電佔比 |
 | **台灣中油油價查詢與加油站服務地圖** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油牌價走勢與全臺加油站洗車、充電樁等 20 項服務篩選（雙分頁） |
 

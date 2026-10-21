@@ -43,14 +43,13 @@ test("catalog.ts no longer defines a standalone cpc-stations TOOL_CATALOG entry 
   );
 });
 
-test("the merged cpc-prices catalog entry's relatedSlugs no longer self-references cpc-stations and still reaches power-grid-overview and youbike (issue #483)", () => {
+test("the merged cpc-prices catalog entry's relatedSlugs no longer self-references cpc-stations and still reaches power-grid-overview (issue #483)", () => {
   const catalogContent = fs.readFileSync(path.join(process.cwd(), "lib", "server", "tools", "catalog.ts"), "utf-8");
   const match = catalogContent.match(/slug:\s*"cpc-prices"[\s\S]*?relatedSlugs:\s*\[([^\]]*)\]/);
   assert.ok(match, "should find the cpc-prices entry's relatedSlugs array");
   const relatedSlugs = match[1];
   assert.ok(!relatedSlugs.includes("cpc-stations"), "relatedSlugs should not reference the retired cpc-stations slug");
   assert.ok(relatedSlugs.includes("power-grid-overview"), "relatedSlugs should include power-grid-overview");
-  assert.ok(relatedSlugs.includes("youbike"), "relatedSlugs should include youbike");
 });
 
 test("no other TOOL_CATALOG entry's relatedSlugs still references cpc-stations (issue #483)", () => {

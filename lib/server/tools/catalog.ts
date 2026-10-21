@@ -2749,7 +2749,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.metro.taipei",
       },
     ],
-    relatedSlugs: ["youbike", "disability-atm", "accessible-transit"],
+    relatedSlugs: ["disability-atm", "accessible-transit"],
     faqs: [
       {
         question: "這個工具涵蓋哪些軌道系統？",
@@ -2770,38 +2770,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "電梯檢修期間如何轉乘？",
         answer:
           "臺北捷運的電梯檢修公告均提供輪椅或行動不便旅客之替代出入口建議或替代車站指引。",
-      },
-    ],
-  },
-  {
-    slug: "youbike",
-    group: "life-culture",
-    lastUpdated: "2026-10-12",
-
-    title: "公共自行車 (YouBike 2.0) 即時動態",
-    keywords: ["YouBike", "公共自行車", "共享單車"],
-    description:
-      "即時查詢全台 15 縣市 YouBike 2.0 與 2.0E 租借站點、可借車輛與空位數量。",
-    directAnswer:
-      "公共自行車即時動態整合全台 15 縣市的 YouBike 2.0 站點，提供即時可借車輛數、可還空位數、電輔車數量與附近站點導航。",
-    scientificBasis: [
-      {
-        title: "公共自行車租賃系統即時開放資料",
-        authority: "交通部及各直轄市政府交通局",
-        url: "https://www.youbike.com.tw",
-      },
-    ],
-    relatedSlugs: ["metro-alerts", "aqi", "cpc-prices"],
-    faqs: [
-      {
-        question: "支援哪些縣市的 YouBike 查詢？",
-        answer:
-          "目前整合臺北市、新北市、桃園市、新竹市、新竹縣、苗栗縣、臺中市、彰化縣、雲林縣、嘉義市、嘉義縣、臺南市、高雄市、屏東縣與臺東縣共 15 個縣市之 YouBike 2.0 租借站點與即時可借車數、空位數。",
-      },
-      {
-        question: "如何查找最近的租借站？",
-        answer:
-          "開啟定位授權後，系統將依直線距離由近至遠排列站點，並標示可借車輛數（綠色為車輛充足）。",
       },
     ],
   },
@@ -2947,7 +2915,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ["附近加油站", "多元支付", "自助汽柴油、悠遊卡、一卡通、eTag", "廣大駕駛人", "全臺 600 多座站點支援"],
       ],
     },
-    relatedSlugs: ["power-grid-overview", "youbike"],
+    relatedSlugs: ["power-grid-overview"],
     faqs: [
       {
         question: "中油油價什麼時候調整與公布？",
@@ -3246,7 +3214,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["metro-alerts", "youbike", "disability-atm", "long-term-care", "senior-friendly"],
+    relatedSlugs: ["metro-alerts", "disability-atm", "long-term-care", "senior-friendly"],
     faqs: [
       {
         question: "如何預約捷運或臺鐵的無障礙愛心乘車渡板服務？",

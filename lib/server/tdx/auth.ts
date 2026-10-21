@@ -20,10 +20,10 @@ function logTokenFailure(detail: string): void {
 }
 
 // Shared OAuth2 client-credentials token cache for every TDX API consumer in
-// this repo (YouBike's lib/server/youbike/tdxClient.ts and the Senior/Rail
-// accessibility client both call getTdxToken() below) — extracted from
-// tdxClient.ts (issue #434) so the two callers share one cached token instead
-// of each maintaining its own cache and both hitting the token endpoint.
+// this repo (the Senior/Rail accessibility, bus, metro-alert and tourism
+// clients all call getTdxToken() below) — extracted from the first TDX client
+// (issue #434) so the callers share one cached token instead of each
+// maintaining its own cache and all hitting the token endpoint.
 let cachedToken: string | null = null;
 let tokenExpiresAt = 0;
 

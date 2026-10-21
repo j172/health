@@ -126,7 +126,6 @@ test("Integration check: all client map and tool components import fetchWithTime
     "components/Tools/NearbyRainfallCard.tsx",
     "components/Tools/OutdoorSafetyContent.tsx",
     "components/Tools/WeatherRainfallLocator.tsx",
-    "components/Tools/YoubikeContent.tsx",
   ];
 
   for (const relPath of requiredFiles) {
