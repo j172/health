@@ -505,7 +505,7 @@ export const registerCronJobs = (): void => {
   // 30 的 latest-books-sync）。這個 job 自己再用 withAdvisoryLock
   // (moda_165027_sync_lock，與 176455 的 fraud_domains_sync_lock 不同) 防
   // 重疊，見 lib/server/antiFraud/runSync.ts。160055（已停更的歷史資料）
-  // 刻意不排程——只在部署後手動跑一次 scripts/import-police-160055.mjs。
+  // 刻意不排程——只在部署後手動呼叫一次 POST /api/admin/police-160055-import。
   cron.schedule(
     "22 5 * * *",
     runGuarded("moda-165027-sync-cron.log", () => runModa165027Sync()),

@@ -8,10 +8,10 @@ export const runtime = "nodejs";
 /**
  * POST /api/admin/police-160055-import — issue #567.
  *
- * `scripts/import-police-160055.mjs` does the same one-time historical
- * import but is "direct-DB only (no admin-API path)" per its own doc
- * comment, same situation as scripts/backfill-news-topics.mjs before
- * #584 closed that gap for #565. This host's shared hosting has a
+ * the former `scripts/import-police-160055.mjs` (removed 2026-10-21, see git
+ * history) did the same one-time historical import but was "direct-DB only
+ * (no admin-API path)", same situation as scripts/backfill-news-topics.mjs
+ * before #584 closed that gap for #565. This host's shared hosting has a
  * documented 20-Entry-Process ceiling and no SSH AllowTcpForwarding (see
  * docs/domains memory), so spawning an extra node process or improvising a
  * tunnel to run the script directly on the host carries real operational

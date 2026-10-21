@@ -210,7 +210,7 @@ export const facilitySearchConfigs = {
       { value: "身心障礙日間作業設施", label: "身心障礙日間作業設施" },
     ],
     // "是否有愛心義賣" (issue #132) — extra_json.charityUrl is set for the ~62 institutions
-    // scripts/enrich-disability-charity-sales.mjs matched to a charity-sale listing; already
+    // scripts/enrich-disability-charity-sales.mjs（已移除，見 git 歷史） matched to a charity-sale listing; already
     // shown on every card as the 🛍️ badge (see FacilitySearchContent.tsx), this just adds a
     // way to filter down to only those.
     charityFilter: { label: "只顯示有愛心義賣的機構" },

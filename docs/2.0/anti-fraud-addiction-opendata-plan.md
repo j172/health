@@ -30,7 +30,7 @@
 
 | # | 主題 | 決策 |
 |---|---|---|
-| T1 | 戒菸院所資料 | **線上錯誤**：`/tools/smoking-cessation` 自稱「全國」，實際只有 [build-expansion-seeds.mjs:113](../../scripts/build-expansion-seeds.mjs) 手寫的 6 筆。改成國健署全國表 [6954](https://data.gov.tw/dataset/6954)（ODS，2,838 家，有給藥／衛教欄位，年更，沒有代碼和座標）當基底，**六都 CSV 依縣市整批覆蓋**：臺北 [121898](https://data.gov.tw/dataset/121898)、新北 [124244](https://data.gov.tw/dataset/124244)＋牙醫 [125915](https://data.gov.tw/dataset/125915)、桃園 [33872](https://data.gov.tw/dataset/33872)、臺中 [81720](https://data.gov.tw/dataset/81720)、臺南 [140122](https://data.gov.tw/dataset/140122)、高雄 [87259](https://data.gov.tw/dataset/87259)。不做逐筆比對去重；各縣市標示自己的資料日期；每月同步，交給 geocode 批次 |
+| T1 | 戒菸院所資料 | **線上錯誤**：`/tools/smoking-cessation` 自稱「全國」，實際只有 `build-expansion-seeds.mjs`（已移除，見 git 歷史）:113 手寫的 6 筆。改成國健署全國表 [6954](https://data.gov.tw/dataset/6954)（ODS，2,838 家，有給藥／衛教欄位，年更，沒有代碼和座標）當基底，**六都 CSV 依縣市整批覆蓋**：臺北 [121898](https://data.gov.tw/dataset/121898)、新北 [124244](https://data.gov.tw/dataset/124244)＋牙醫 [125915](https://data.gov.tw/dataset/125915)、桃園 [33872](https://data.gov.tw/dataset/33872)、臺中 [81720](https://data.gov.tw/dataset/81720)、臺南 [140122](https://data.gov.tw/dataset/140122)、高雄 [87259](https://data.gov.tw/dataset/87259)。不做逐筆比對去重；各縣市標示自己的資料日期；每月同步，交給 geocode 批次 |
 | T2 | 排期 | 第 0 期先把頁面上的「全國」改成誠實文字，並附國健署查詢連結；資料同步放在第 1 期，新增 issue **1-D** |
 | T3 | 新興菸品區塊 | 靜態宣導，每項附官方來源：電子煙全面禁止、加熱菸只有通過健康風險評估的品項合法、未滿 20 歲禁止、罰則、檢舉 0800-531-531；**喪屍煙彈警示**（連到 0800-770-885 和情境頁）；**合法加熱菸品項清單**（依國健署公告人工整理，標示公告日期，列入 six-monthly-sync 的人工更新清單） |
 | T4 | 不做 | 學生電子煙吸食率圖表（[14471](https://data.gov.tw/dataset/14471)／[14472](https://data.gov.tw/dataset/14472) 只到 106 年，會誤導使用者）；指定吸菸區與禁菸場所（列入 backlog，見 §5） |

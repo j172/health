@@ -17,7 +17,7 @@
  * SOURCE_LABELS/GOV_SOURCE_NAMES below mirror lib/server/news/sourceLabels.ts
  * and sourceCategories.ts's gov category — duplicated rather than imported
  * because this is a plain standalone Node script (this repo's convention
- * for scripts/, see e.g. build-cedict-terms.mjs) with no TS/path-alias
+ * for scripts/, see e.g. build-cedict-terms.mjs（已移除，見 git 歷史）) with no TS/path-alias
  * loader, while those are TS modules consumed by the Next.js app itself.
  * Keep in sync by hand if either list changes.
  */

@@ -50,7 +50,7 @@
 
 #### 急診即時看板＋AED 地圖 ✅
 - 原檔：[emergency-room-status-and-aed-map-expansion.md](../archive/specs/emergency-room-status-and-aed-map-expansion.md)（#290）
-- `emergency_room_status`（最新）＋`emergency_room_logs`（24 小時）；8 大生活圈分頁；`scripts/import-mohw-aed.mjs`。
+- `emergency_room_status`（最新）＋`emergency_room_logs`（24 小時）；8 大生活圈分頁；`scripts/import-mohw-aed.mjs（已移除，見 git 歷史）`。
 
 #### AED／防災地圖修復、定位標準化、全站工具巡檢 ✅
 - 原檔：[emergency-aed-disaster-map-and-site-wide-tools-health.md](../archive/specs/emergency-aed-disaster-map-and-site-wide-tools-health.md)（#300）

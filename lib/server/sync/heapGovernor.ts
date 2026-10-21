@@ -7,7 +7,7 @@
  * far lower and which V8 knows nothing about. V8 only starts a full collection
  * when the heap nears its own limit, and in the meantime short-lived but
  * promoted objects — cheerio documents, parsed XML, HTTP bodies — simply
- * accumulate: the measurement harness (scripts/measure-rss-ingestion-memory.mjs)
+ * accumulate: the measurement harness (scripts/measure-rss-ingestion-memory.mjs（已移除，見 git 歷史）)
  * saw a whole ingestion run, 18 s and several GB of allocation, trigger ONE
  * mark-compact, with ~100 MB of dead heap sitting on ~20 MB live. Native memory
  * behind finalizers (TLS contexts, Buffers) waits for the same collection. So a
