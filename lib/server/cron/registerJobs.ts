@@ -48,6 +48,7 @@ import {
 } from "@/lib/server/antiFraud/runTrendSync";
 import { runGdacsSync, runGdacsCleanup } from "@/lib/server/gdacs/runSync";
 import { runWhoDonSync, runWhoDonCleanup } from "@/lib/server/who/runSync";
+import { runConflictsGdeltSync, runConflictsGdeltCleanup } from "@/lib/server/conflicts/runSync";
 import { runPm2LogRetention } from "@/lib/server/logging/pm2LogRetention";
 
 const LOG_DIR = path.join(process.cwd(), "logs");
@@ -589,5 +590,21 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "46 1 * * *",
     runGuarded("pm2-log-retention-cron.log", () => runPm2LogRetention()),
+  );
+  // 全球動態地球「武裝衝突」— GDELT (issue #774, parent #773) — GDELT 的 15 分鐘
+  // 一批 event export 不需要這麼密集的輪詢，一天四次（01:21、07:21、13:21、
+  // 19:21）足夠讓這個圖層保持「大致即時」又不過度耗用；分鐘 21 是
+  // lib/server/cron/cronCollisions.test.mjs 驗證過目前未被本檔案任何其他 job
+  // 使用的分鐘。這個 job 自己再用 withAdvisoryLock 防重疊，見
+  // lib/server/conflicts/runSync.ts。
+  cron.schedule(
+    "21 1,7,13,19 * * *",
+    runGuarded("conflicts-gdelt-sync-cron.log", () => runConflictsGdeltSync()),
+  );
+  // 保留期清除 (issue #774) — event_date 超過 30 天的 GDELT 衝突事件每日清除一
+  // 次。分鐘 49 同樣是 cronCollisions.test.mjs 驗證過的未使用分鐘。
+  cron.schedule(
+    "49 4 * * *",
+    runGuarded("conflicts-gdelt-cleanup-cron.log", () => runConflictsGdeltCleanup()),
   );
 };

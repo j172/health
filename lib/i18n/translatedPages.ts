@@ -70,6 +70,9 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   // Issue #593 (parent #583): the 颱風 global-watch item sub-route — same
   // `{kind: "path"}` shape as the earthquakes/epidemics entries above.
   { kind: "path", path: "/tools/global-watch/typhoons", label: "颱風" },
+  // Issue #774 (parent #773): the sixth global-watch item sub-route,
+  // "武裝衝突" (GDELT-only for now — UCDP is #775, still blocked).
+  { kind: "path", path: "/tools/global-watch/conflicts", label: "武裝衝突" },
 ];
 
 /** Canonical (zh, unprefixed) path for a scope entry. */
@@ -162,6 +165,10 @@ export const TRANSLATED_STANDALONE_PATHS: ScopePageEntry[] = [
   // `app/[locale]/tools/global-watch/typhoons/page.tsx` route file is what
   // actually serves /en//ja//ko for this item.
   { kind: "path", path: "/tools/global-watch/typhoons", label: "颱風" },
+  // Issue #774 (parent #773): the matching
+  // `app/[locale]/tools/global-watch/conflicts/page.tsx` route file is what
+  // actually serves /en//ja//ko for this item.
+  { kind: "path", path: "/tools/global-watch/conflicts", label: "武裝衝突" },
 ];
 
 export const TRANSLATED_PAGES: ScopePageEntry[] = [

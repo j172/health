@@ -2107,6 +2107,51 @@ export const TABLE_DDL = {
       UNIQUE KEY uq_office_calendar_date (calendar_date)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 全球動態地球「武裝衝突」項目 (issue #774，parent #773) — 目前只有 GDELT 這個
+  // 來源寫入這張表（source = 'gdelt'）；#773 規劃的第二個來源 UCDP 阻擋於 #775，
+  // 尚未實作，但這張表的欄位設計已經預留給它（source 欄位本身就是為了日後能同時
+  // 存 'ucdp' 與 'gdelt' 兩種列而設計的，不是只為了 GDELT 硬寫一個常數）。
+  //
+  // UNIQUE KEY 刻意只用 (source, source_event_id) —— 絕對不能把 event_date 或任何
+  // 時間/日期欄位放進去。這個 repo 已經在 cwa_station_weather／cwa_rainfall／
+  // aqi_readings／fraud_domains／gdacs_events／who_outbreak_news 等表上真實發生過
+  // 「UNIQUE KEY 含時間欄位 → 每次同步的新時間值都被當成新 row → 表無限膨脹」的
+  // 事故（見 migrations/20260921_cwa_station_weather_narrow_unique_key.sql 等修
+  // 復）。GDELT 的 GLOBALEVENTID 是永久不變的事件識別碼，同一個 source_event_id
+  // 不會因為重新同步而改變 event_date，所以 event_date／country_iso／country_name／
+  // lat／lng／description 等全部都是一般欄位，用 ON DUPLICATE KEY UPDATE 覆蓋。
+  //
+  // event_type_label 存放上游分類代碼本身（GDELT：CAMEO 根類別代碼 "19"/"20"，見
+  // lib/server/gdelt/cameoConflictCodes.ts；日後 UCDP 存的會是 UCDP 自己的
+  // type_of_violence 代碼），不是已經本地化的文字——本地化在
+  // lib/tools/globeWatch/conflictCameoRootNames.ts 做，一般欄位不代表任何時間性。
+  //
+  // country_iso 存 GDELT 的 ActionGeo_CountryCode——這是 FIPS 10-4 代碼，不是真正
+  // 的 ISO 3166-1（兩者對多數國家剛好相同，但不是全部，例如德國 FIPS "GM" vs ISO
+  // "DE"），欄名沿用 #773 spec 原文用詞，但保留這個落差作為已知限制而非當成 bug。
+  conflictEvents: `
+    CREATE TABLE IF NOT EXISTS conflict_events (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      source VARCHAR(10) NOT NULL,
+      source_event_id VARCHAR(40) NOT NULL,
+      event_date DATE NOT NULL,
+      country_iso VARCHAR(3) NULL,
+      country_name VARCHAR(200) NULL,
+      lat DECIMAL(10,7) NOT NULL,
+      lng DECIMAL(10,7) NOT NULL,
+      fatalities_estimate INT NULL,
+      event_type_label VARCHAR(20) NOT NULL,
+      description VARCHAR(300) NOT NULL,
+      source_url VARCHAR(500) NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_conflict_event (source, source_event_id),
+      KEY idx_conflict_event_date (event_date),
+      KEY idx_conflict_event_source (source)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
 
 

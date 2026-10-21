@@ -638,6 +638,15 @@
       "readOriginal": "原文を読む ↗",
       "unknownCountry": "不明な地点",
       "emptyStateTemplate": "現在、{type}の事件はありません"
+    },
+    "conflicts": {
+      "citation": "データ引用：The GDELT Project",
+      "disclaimer": "このページの地球マーカーは、GDELTが収集し、その提携メディアが報じた武力衝突関連の事件を転載したものであり、特定の衝突・政治的立場・各当事者の責任について本サイト独自の判断を示すものではありません。詳細と正確性については元の報道元をご確認ください。",
+      "listHeading": "現在関連する武力衝突事件（GDELT）",
+      "emptyState": "⚔️ 現在、条件に合う衝突事件はありません（GDELT）。",
+      "unknownCountry": "不明な地点",
+      "fatalities": "推定死傷者数：",
+      "readOriginal": "原文を読む ↗"
     }
   },
   "aqiTool": {

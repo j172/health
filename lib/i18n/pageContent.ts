@@ -20,7 +20,7 @@ export interface LocalizedPageMeta {
 }
 
 const PAGE_I18N_CONTENT: Record<
-  "home" | "nearby" | "globalWatchEarthquakes" | "globalWatchTyphoons",
+  "home" | "nearby" | "globalWatchEarthquakes" | "globalWatchTyphoons" | "globalWatchConflicts",
   Record<PathLocale, LocalizedPageMeta>
 > = {
   home: {
@@ -109,10 +109,35 @@ const PAGE_I18N_CONTENT: Record<
         "인터랙티브 3D 지구본에 활동 중인 열대성 저기압을 표시합니다. 서태평양 태풍은 대만 중앙기상청 데이터(명칭·현재 위치·예상 경로)를, 그 외 해역은 GDACS 데이터를 사용하여 같은 태풍이 중복 표시되지 않도록 합니다.",
     },
   },
+  // Issue #774 (parent #773): the sixth global-watch item sub-route
+  // (`/tools/global-watch/conflicts`) — same reasoning as every entry
+  // above: not a TranslatedToolSlug, not a TOOL_CATALOG entry. GDELT-only
+  // for now (UCDP is #775, still blocked) — the description below says so
+  // explicitly rather than implying broader coverage than this ticket ships.
+  globalWatchConflicts: {
+    en: {
+      title: "Global Watch: Conflicts — GDELT Armed-Conflict Events on a 3D Globe",
+      shortTitle: "Conflicts",
+      description:
+        "Armed-conflict events reported by GDELT (filtered to CAMEO's FIGHT / mass-violence categories only) plotted on an interactive 3D globe, each linking back to its original news source — relayed open data, not this site's own political judgment.",
+    },
+    ja: {
+      title: "グローバルウォッチ：武力衝突 — GDELTによる武力衝突事件の3D地球儀表示",
+      shortTitle: "武力衝突",
+      description:
+        "GDELTが報じた武力衝突関連の事件（CAMEOのFIGHT／大規模暴力カテゴリーのみに絞り込み）をインタラクティブな3D地球儀上に表示し、各マーカーから元の報道記事にリンクします。本サイト独自の政治的判断ではなく、転載されたオープンデータです。",
+    },
+    ko: {
+      title: "글로벌 워치: 무력 충돌 — GDELT 기반 무력 충돌 사건 3D 지구본",
+      shortTitle: "무력 충돌",
+      description:
+        "GDELT가 보도한 무력 충돌 사건(CAMEO의 FIGHT·대규모 폭력 범주로만 한정)을 인터랙티브 3D 지구본에 표시하며, 각 마커는 원래 뉴스 출처로 연결됩니다. 본 사이트의 정치적 판단이 아니라 전재된 공개 데이터입니다.",
+    },
+  },
 };
 
 export function getLocalizedPageMeta(
-  page: "home" | "nearby" | "globalWatchEarthquakes" | "globalWatchTyphoons",
+  page: "home" | "nearby" | "globalWatchEarthquakes" | "globalWatchTyphoons" | "globalWatchConflicts",
   locale: PathLocale,
 ): LocalizedPageMeta {
   return PAGE_I18N_CONTENT[page][locale];
