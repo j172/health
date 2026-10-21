@@ -57,7 +57,7 @@ export default function GuideCardsSection({ locale = "zh-TW" }: { locale?: Local
           {t("homePage.guideCards.viewAllLink", "查看全部情境 →")}
         </Link>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid gap-3 sm:grid-cols-3">
         {guides.map((guide) => {
           const localized =
             isPathLocaleValue && isTranslatedGuideSlug(guide.slug) ? getLocalizedGuideMeta(guide.slug, locale) : null;
@@ -72,7 +72,7 @@ export default function GuideCardsSection({ locale = "zh-TW" }: { locale?: Local
               <h3 className="text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
                 {localized?.title ?? guide.title}
               </h3>
-              <p className="line-clamp-2 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
+              <p className="line-clamp-3 text-[11px] leading-relaxed text-slate-600 dark:text-slate-400">
                 {localized?.description ?? guide.description}
               </p>
             </Link>
