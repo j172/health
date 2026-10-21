@@ -292,3 +292,11 @@ test("部署模擬是照真實流程寫的：deploy-ftps.yml 與 .remote-health-
   assert.match(php, /ln -sfn public\/data data/, "data 不存在時建成指向 public/data 的符號連結");
   assert.match(php, /cp -rn public\/data\/\* data\//, "data 是實體資料夾時只做不覆寫的複製（所以讀取端必須優先 public/data）");
 });
+
+test("the nhi-penalties offline backup is written to public/data, where the reader looks first", () => {
+  const src = fs.readFileSync(new URL("../lib/server/facilities/sources/nhiPenalties.ts", import.meta.url), "utf8");
+  assert.match(src, /seedWriteDirectory\("facilities-seeds"\)/);
+  assert.doesNotMatch(src, /process\.cwd\(\)/);
+  const helper = fs.readFileSync(new URL("../lib/server/db/transientSeed.ts", import.meta.url), "utf8");
+  assert.match(helper, /seedWriteDirectory[\s\S]*?\.\.\.TRANSIENT_SEED_DIRS\[0\]/);
+});
