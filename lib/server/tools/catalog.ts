@@ -2727,53 +2727,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "metro-alerts",
-    group: "life-culture",
-    lastUpdated: "2026-10-13",
-
-    title: "全台軌道營運通阻",
-    keywords: ["捷運公告", "電梯檢修", "捷運停駛", "臺鐵誤點", "高鐵停駛", "軌道通阻"],
-    description:
-      "即時彙整全台 6 個捷運／輕軌系統（臺北捷運、貓空纜車、桃園捷運、臺中捷運、高雄捷運、高雄輕軌）、臺鐵與高鐵的營運通阻公告，以及臺北捷運各車站無障礙電梯檢修公告。資料來源：交通部 TDX 運輸資料流通服務、臺北大眾捷運公司。",
-    directAnswer:
-      "全台軌道營運通阻即時彙整全台 6 個捷運／輕軌系統、臺鐵與高鐵的營運異常、停駛與電梯檢修公告，任一系統資料暫時無法取得也不影響其他系統正常顯示。",
-    scientificBasis: [
-      {
-        title: "交通部 TDX 運輸資料流通服務：軌道即時資訊",
-        authority: "交通部運輸資料流通服務平臺",
-        url: "https://tdx.transportdata.tw",
-      },
-      {
-        title: "臺北捷運營運資訊與無障礙設施管理",
-        authority: "臺北大眾捷運股份有限公司",
-        url: "https://www.metro.taipei",
-      },
-    ],
-    relatedSlugs: ["disability-atm", "accessible-transit"],
-    faqs: [
-      {
-        question: "這個工具涵蓋哪些軌道系統？",
-        answer:
-          "涵蓋全台 6 個捷運／輕軌系統（臺北捷運、貓空纜車、桃園捷運、臺中捷運、高雄捷運、高雄輕軌）、臺鐵與高鐵，共 8 個來源的即時營運通阻公告。",
-      },
-      {
-        question: "公告資訊多久更新一次？",
-        answer:
-          "系統每 30 分鐘自動同步交通部 TDX 與臺北大眾捷運公司發布之最新營運通阻與電梯檢修排程，提供最新即時資訊。",
-      },
-      {
-        question: "如果某個系統暫時查不到資料，其他系統會受影響嗎？",
-        answer:
-          "不會。每個系統的資料都是獨立抓取，任一系統（例如某次高鐵資料逾時）暫時失敗，只會讓那個系統當次顯示為「暫無資料」，其餘系統仍會正常顯示最新公告。",
-      },
-      {
-        question: "電梯檢修期間如何轉乘？",
-        answer:
-          "臺北捷運的電梯檢修公告均提供輪椅或行動不便旅客之替代出入口建議或替代車站指引。",
-      },
-    ],
-  },
-  {
     slug: "pest-alerts",
     group: "disaster-alerts",
     lastUpdated: "2026-10-13",
@@ -3214,7 +3167,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["metro-alerts", "disability-atm", "long-term-care", "senior-friendly"],
+    relatedSlugs: ["disability-atm", "long-term-care", "senior-friendly"],
     faqs: [
       {
         question: "如何預約捷運或臺鐵的無障礙愛心乘車渡板服務？",
@@ -4123,7 +4076,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://laws.mol.gov.tw/FLAW/FLAWDAT01.aspx?id=FL049533",
       },
     ],
-    relatedSlugs: ["weather-alerts", "disaster-map", "metro-alerts", "emergency-supplies", "emergency-hotlines"],
+    relatedSlugs: ["weather-alerts", "disaster-map", "emergency-supplies", "emergency-hotlines"],
     faqs: [
       {
         question: "這個日曆適用誰？學校和一般公司也一樣嗎？",

@@ -38,7 +38,6 @@ export const I18N_SCOPE_PAGES: ScopePageEntry[] = [
   { kind: "tool", slug: "clinics" },
   { kind: "tool", slug: "pharmacies" },
   { kind: "tool", slug: "public-toilets" },
-  { kind: "tool", slug: "metro-alerts" },
   { kind: "tool", slug: "accessible-transit" },
   { kind: "tool", slug: "weather-alerts" },
   { kind: "tool", slug: "aqi" },
@@ -93,7 +92,6 @@ export const TRANSLATED_TOOL_SLUGS = [
   "clinics",
   "pharmacies",
   "public-toilets",
-  "metro-alerts",
   "accessible-transit",
   "weather-alerts",
   // "earthquakes" was retired by issue #590 (parent #583) — its real en/ja/

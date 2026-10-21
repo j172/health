@@ -110,7 +110,6 @@
     "contraception-map": "Contraception Consultation Map (OB-GYN Clinics & Pharmacies)",
     "latest-books": "Book Recommendations (Books.com.tw, Eslite & TAAZE Picks)",
     "vet-clinics": "Taiwan Veterinary Hospital & Clinic Finder",
-    "metro-alerts": "Metro Operations & Elevator Maintenance Alerts",
     "pest-alerts": "Crop Pest & Disease Real-Time Alerts",
     "power-grid-overview": "Taiwan Power Grid Status Dashboard",
     "cpc-prices": "CPC Fuel & Gas Prices and Station Finder",
@@ -485,26 +484,6 @@
     "emptyStateNoKeyword": "No registered restrooms found nearby — try a keyword search instead.",
     "emptyStateWithKeyword": "No matching restrooms found."
   },
-  "metroAlertsTool": {
-    "systemAll": "All systems",
-    "crossPromoTitle": "Traveling across counties, or need a low-floor bus?",
-    "crossPromoDesc": "Check low-floor bus ratios across all 22 counties/cities, plus each county/city's Rehabus and universal-taxi hotlines",
-    "crossPromoLink": "View the Accessible Transit Map",
-    "introHeading": "Nationwide Rail Service Disruption Live Notices",
-    "introDesc": "Real-time aggregation of service-disruption notices from Taiwan's 6 metro/light-rail systems (Taipei Metro, Maokong Gondola, Taoyuan Metro, Taichung Metro, Kaohsiung MRT, Kaohsiung Light Rail), Taiwan Railway, and Taiwan High Speed Rail, plus Taipei Metro's station-by-station accessible-elevator maintenance notices.",
-    "searchPlaceholder": "Search station/line name (e.g. Jingan, Taipei Main Station) or keyword...",
-    "filterAll": "All notices",
-    "typeSuspended": "Full-line suspension",
-    "typeOperational": "Service adjustment",
-    "typeElevator": "Elevator maintenance",
-    "loadingText": "Loading nationwide rail live notices...",
-    "emptyHeading": "All lines currently operating normally",
-    "emptyFilteredDesc": "No notices match your current filters — try switching back to all systems or clearing the keyword.",
-    "emptyNoneDesc": "All rail systems nationwide are currently operating smoothly, with no disruption or suspension notices.",
-    "sourceLabel": "Source: ",
-    "openDataSuffix": "Open Data",
-    "statusOngoing": "Ongoing"
-  },
   "accessibleTransitTool": {
     "systemAll": "All systems",
     "systemBus": "Low-floor buses",
@@ -517,7 +496,6 @@
     "countyCoverageBadge": "Real-time coverage across 22 counties/cities",
     "pageTitle": "Nationwide Accessible Transit Map",
     "pageDescription": "Built for older adults, wheelchair users, and parents with strollers: quickly check low-floor bus deployment ratios, Taiwan Railway/High Speed Rail/Metro accessible boarding-ramp reservations, and Rehabus dispatch centers plus accessible-taxi hotlines across all 22 counties/cities.",
-    "navMetroAlerts": "Nationwide Rail Service Disruptions",
     "navLongTermCare": "Long-Term Care Facility Search",
     "navDisabilityAtm": "Accessible ATM Locations",
     "summaryMainRoutesLabel": "Key accessible routes",
@@ -936,8 +914,6 @@
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "Life Situations",
-    "metroAlertActiveTemplate": "{count} rail-service disruption notices nationwide right now",
-    "metroAlertClear": "Rail service nationwide is operating normally — no disruption notices",
     "goToToolLink": "Go to tool →"
   },
   "homePage": {

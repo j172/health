@@ -66,6 +66,9 @@ export const getPool = getMysqlPool;
 /** issue #727：已移除功能留下的資料表，runSchemaMigrations 會冪等地 DROP 它們（不可再被任何 CREATE 建回）。 */
 const RETIRED_YOUBIKE_TABLES = ["youbike_stations", "youbike_sync_state"] as const;
 
+/** issue #728：全台軌道營運通阻整個移除，metro_alerts 同樣由 runSchemaMigrations 冪等 DROP（不可再被任何 CREATE 建回）。 */
+const RETIRED_METRO_ALERTS_TABLES = ["metro_alerts"] as const;
+
 const runSchemaMigrations = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
@@ -121,7 +124,17 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.wraWaterLevelStations);
   await p.query(TABLE_DDL.petAdoptions);
   await p.query(TABLE_DDL.latestBooks);
-  await p.query(TABLE_DDL.metroAlerts);
+  // issue #728：全台軌道營運通阻整個移除。metro_alerts 已沒有任何建表敘述、種子或讀寫程式，
+  // 這裡以冪等的 DROP TABLE IF EXISTS 清掉已部署環境裡殘留的表（不備份，使用者已決定）；
+  // 全新資料庫沒有這張表、已經刪過的環境重跑，都是 no-op。失敗只記警告，理由同下方 YouBike。
+  // 無障礙交通頁的電梯停用公告用的是另一張表 accessible_transit_facility_alerts，不受影響。
+  for (const legacyTable of RETIRED_METRO_ALERTS_TABLES) {
+    try {
+      await p.query(`DROP TABLE IF EXISTS \`${legacyTable}\``);
+    } catch (err) {
+      console.warn(`[ensureSchema] DROP TABLE IF EXISTS ${legacyTable} warning:`, err);
+    }
+  }
   // issue #727：YouBike 整個移除。這兩張表已沒有任何建表敘述、種子或讀寫程式，
   // 這裡以冪等的 DROP TABLE IF EXISTS 清掉已部署環境裡殘留的表（不備份，使用者已決定）。
   // 全新資料庫沒有這兩張表、已經刪過的環境重跑，都是 no-op。
@@ -360,18 +373,6 @@ const runSchemaMigrations = async (): Promise<void> => {
     ALTER TABLE accessible_transit_routes
       ADD COLUMN IF NOT EXISTS source VARCHAR(16) NOT NULL DEFAULT 'seed' COMMENT 'seed | tdx_bus' AFTER description,
       ADD COLUMN IF NOT EXISTS sample_trips_json JSON NULL AFTER source
-  `);
-  // Issue #470: metro_alerts upgraded from Taipei-only (data.taipei CSV) to
-  // all 6 TDX metro/light-rail systems + TRA + THSR. Defaults keep every
-  // pre-#470 row correctly labeled as Taipei Metro without a backfill.
-  await p.query(`
-    ALTER TABLE metro_alerts
-      ADD COLUMN IF NOT EXISTS system_code VARCHAR(20) NOT NULL DEFAULT 'TRTC' AFTER status,
-      ADD COLUMN IF NOT EXISTS system_label VARCHAR(50) NOT NULL DEFAULT '臺北捷運' AFTER system_code
-  `);
-  await p.query(`
-    ALTER TABLE metro_alerts
-      ADD INDEX IF NOT EXISTS idx_metro_system (system_code)
   `);
   // Unlike the DDL above, this can't use `ADD INDEX IF NOT EXISTS` — MySQL
   // has no "if not exists" form for FULLTEXT indexes, so a second run (or a
@@ -614,39 +615,6 @@ const runSchemaMigrations = async (): Promise<void> => {
     }
   } catch (seedErr) {
     console.warn("[ensureSchema] latest_books seed warning:", seedErr);
-  }
-
-  // Auto-seed metro_alerts from bundled data/metro-alerts-seed.json if empty
-  try {
-    const [metroCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM metro_alerts");
-    if ((metroCount[0]?.cnt ?? 0) === 0) {
-      const alerts = readSeedJson<any[]>("metro-alerts-seed.json");
-      if (Array.isArray(alerts) && alerts.length > 0) {
-        for (const a of alerts) {
-          await p.query(
-            `INSERT IGNORE INTO metro_alerts (
-              external_id, line_name, station_name, alert_title, alert_content,
-              alert_type, alert_time, status, system_code, system_label, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-            [
-              a.externalId,
-              a.lineName,
-              a.stationName,
-              a.alertTitle,
-              a.alertContent,
-              a.alertType,
-              a.alertTime,
-              a.status,
-              a.systemCode || "TRTC",
-              a.systemLabel || "臺北捷運",
-            ]
-          );
-        }
-        console.log(`[ensureSchema] Successfully seeded ${alerts.length} metro alerts into MySQL`);
-      }
-    }
-  } catch (err) {
-    console.warn("[ensureSchema] metro_alerts seed warning:", err);
   }
 
   // Auto-seed pest_alerts from bundled data/pest-alerts-seed.json if empty

@@ -31,7 +31,6 @@ import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGarbageRoutesSync } from "@/lib/server/garbageRoutes/runSync";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
-import { runMetroAlertsSync } from "@/lib/server/metroAlerts/runSync";
 import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runForestFireSync } from "@/lib/server/forestFire/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
@@ -229,7 +228,7 @@ export const registerCronJobs = (): void => {
   // 20/50, cwa 15/45, earthquakes-sync 3/13/23/33/43/53,
   // news-card-images+power-sync 0/10/20/30/40/50, water-outages 25,
   // wra-water-outages 18/48, aqx-sync 10/40, wra-sync 8/38, wra-iot
-  // 12/27/42/57, metro-alerts 0/30, emergency-rooms
+  // 12/27/42/57, emergency-rooms
   // 7/22/37/52, transit-accessibility-alerts 16, senior-tourism-alerts
   // 17.
   cron.schedule(
@@ -303,8 +302,8 @@ export const registerCronJobs = (): void => {
   // job's :25 (see above) at :18/:48 — not on any other hourly job's exact
   // minute in this file (rss 5/35, aqi 20/50, cwa 15/45, earthquakes
   // 3/13/23/33/43/53, news-card-images+power-realtime
-  // 0/10/20/30/40/50, aqx 10/40, wra-sync 8/38, wra-iot 12/27/42/57, metro
-  // 0/30, emergency-rooms 7/22/37/52). Coordinate further with the
+  // 0/10/20/30/40/50, aqx 10/40, wra-sync 8/38, wra-iot 12/27/42/57,
+  // emergency-rooms 7/22/37/52). Coordinate further with the
   // github-actions-cron-decollision ticket if that lands first.
   cron.schedule(
     "18,48 * * * *",
@@ -423,17 +422,10 @@ export const registerCronJobs = (): void => {
     "58 4 * * *",
     runGuarded("green-restaurants-cron.log", () => runGreenRestaurantsSync()),
   );
-  // Rail alerts every 30 minutes (issue #470) — fans out across all 6 TDX metro/light-rail
-  // systems + TRA + THSR (Promise.allSettled-isolated per system), falling back to Taipei
-  // Metro's own Big5 CSV for TRTC only when TDX's TRTC call itself fails
-  cron.schedule(
-    "0,30 * * * *",
-    runGuarded("metro-alerts-sync-cron.log", () => runMetroAlertsSync()),
-  );
   // 林火風險 (農業部 ForestFireAlertWCF, B-12 / issue #672) — 來源每日一批（每個
   // 測站/森林遊樂區一列、帶 CreateDate），一天兩次（06:09、12:09）足以在早上與中午
   // 各補一次當日資料。分鐘 9 不在任何既有 job 的格線上：不是 rss 5/35、aqi 20/50、cwa 15/45、earthquakes
-  // 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、wra-iot 12/27/42/57、metro 0/30、
+  // 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、wra-iot 12/27/42/57、
   // emergency-rooms 7/22/37/52 等每小時 job 的分鐘，也不是 culture-shows 的 10、
   // pest-alerts 的 12、who-don 的 19，所以 6 點與 12 點都不會跟任何 job 同 tick
   // （lib/server/forestFire/dbConventions.test.mjs 會檢查這點）。這個 job 自己再用
@@ -457,7 +449,7 @@ export const registerCronJobs = (): void => {
   // cwa 15/45、earthquakes 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、
   // water-outages 25、wra-water-outages 18/48、emergency-rooms 7/22/37/52、
   // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs
-  // 14/44、wra-iot 12/27/42/57、metro-alerts 0/30、news-card-images+power
+  // 14/44、wra-iot 12/27/42/57、news-card-images+power
   // 0/10/20/30/40/50)，2 點區段目前只有 cdc-alerts 的 15
   // 分。刻意不用 spec 提議的 34 分，避免與同期其他 FDA 週更 ticket 撞同一個
   // tick。這個 job 自己再用 withAdvisoryLock 防重疊，見
@@ -582,8 +574,8 @@ export const registerCronJobs = (): void => {
   // 任何其他 job 佔用：不在 rss 的 5/35、aqi 的 20/50、cwa 的 15/45、earthquakes
   // 的 3/13/23/33/43/53、news-card-images+power-realtime 的
   // 0/10/20/30/40/50、water-outages 的 25、wra-water-outages 的 18/48、aqx 的
-  // 10/40、wra-sync 的 8/38、wra-iot 的 12/27/42/57、metro-alerts 的
-  // 0/30、emergency-rooms 的 7/22/37/52、transit-accessibility-alerts 的
+  // 10/40、wra-sync 的 8/38、wra-iot 的 12/27/42/57、
+  // emergency-rooms 的 7/22/37/52、transit-accessibility-alerts 的
   // 16、senior-tourism-alerts 的 17。這個 job 自己再用 withAdvisoryLock 防重疊，見
   // lib/server/gdacs/runSync.ts。
   cron.schedule(
@@ -606,7 +598,7 @@ export const registerCronJobs = (): void => {
   // 「每小時」job 的分鐘上 (rss 5/35、aqi 20/50、cwa 15/45、earthquakes
   // 3/13/23/33/43/53、news-card-images+power-realtime 0/10/20/30/40/50、
   // water-outages 25、wra-water-outages 18/48、aqx 10/40、wra-sync 8/38、
-  // wra-iot 12/27/42/57、metro-alerts 0/30、emergency-rooms 7/22/37/52、
+  // wra-iot 12/27/42/57、emergency-rooms 7/22/37/52、
   // transit-accessibility-alerts 16、senior-tourism-alerts 17、gdacs-sync
   // 14/44)，也不是 culture-shows 的 10 分或 pest-alerts 的 12 分，所以在
   // 0/6/12/18 這四個整點都不會撞到任何既有 job。這個 job 自己再用

@@ -140,10 +140,45 @@ test("issue #727: the retired /tools/youbike?lang=<locale> rules are gone, so th
   );
 });
 
+test("issue #728: /tools/metro-alerts and its en/ja/ko siblings 301 to the matching locale's accessible-transit page", () => {
+  const cases = [
+    ["/tools/metro-alerts", "/tools/accessible-transit"],
+    ...REDIRECT_LOCALES.map((locale) => [`/${locale}/tools/metro-alerts`, `/${locale}/tools/accessible-transit`]),
+  ];
+  for (const [source, destination] of cases) {
+    const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === source && !r.has);
+    assert.ok(rule, `missing metro-alerts redirect for ${source}`);
+    assert.equal(rule.destination, destination);
+    assert.equal(rule.permanent, true);
+  }
+});
+
+test("issue #728: the destination pages exist (zh plus every translated locale) and the redirect is a single hop", () => {
+  assert.ok(existsSync(new URL("../app/(zh)/tools/accessible-transit/page.tsx", import.meta.url)));
+  assert.ok(existsSync(new URL("../app/[locale]/tools/accessible-transit/page.tsx", import.meta.url)));
+  // 第二跳的判斷用 middleware 同一套 first-match 迴圈：目的地的路徑本身不能又命中一條無條件規則。
+  const firstMatch = (pathname, lang) =>
+    PERMANENT_REDIRECT_RULES.find((r) => r.source === pathname && (!r.has || lang === r.has.value));
+  for (const rule of PERMANENT_REDIRECT_RULES.filter((r) => /\/tools\/metro-alerts$/.test(r.source))) {
+    const destinationPath = rule.destination.split("?")[0];
+    assert.equal(firstMatch(destinationPath, undefined), undefined, `${rule.source} -> ${rule.destination} would chain a second redirect`);
+  }
+});
+
+test("issue #728: /tools/metro-alerts?lang=<locale> goes straight to that locale's accessible-transit page, not via the zh one", () => {
+  const firstMatch = (pathname, lang) =>
+    PERMANENT_REDIRECT_RULES.find((r) => r.source === pathname && (!r.has || lang === r.has.value));
+  for (const locale of REDIRECT_LOCALES) {
+    assert.equal(firstMatch("/tools/metro-alerts", locale)?.destination, `/${locale}/tools/accessible-transit`);
+  }
+  assert.equal(firstMatch("/tools/metro-alerts", undefined)?.destination, "/tools/accessible-transit");
+  assert.equal(firstMatch("/tools/metro-alerts", "fr")?.destination, "/tools/accessible-transit");
+});
+
 test("every ?lang= tool-slug redirect is carried over, scoped by locale via `has`", () => {
   const slugs = [
     "aed", "er-status", "emergency-hotlines", "clinics", "pharmacies", "public-toilets",
-    "metro-alerts", "accessible-transit", "weather-alerts", "aqi", "uv",
+    "accessible-transit", "weather-alerts", "aqi", "uv",
     "disaster-map", "cool-spots", "cultural-events", "heritage-map", "tourism-factories",
   ];
   for (const locale of REDIRECT_LOCALES) {

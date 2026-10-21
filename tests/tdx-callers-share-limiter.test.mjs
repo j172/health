@@ -23,7 +23,6 @@ const stripComments = (src) =>
 
 // file -> number of TDX GET call sites it must route through tdxGetJsonWithRetry.
 const CONVERTED = {
-  "lib/server/metroAlerts/tdxClient.ts": 1, // one helper shared by 6 metro + TRA + THSR
   "lib/server/transit/tdxBusClient.ts": 2, // Bus/Vehicle + Bus/Schedule
   "lib/server/seniorTourism/tdxClient.ts": 2, // fetchSeniorTourism helper + fetchSeniorCard
   "lib/server/transit/tdxSeniorClient.ts": 1, // fetchSeniorRail helper (converted by PR #659)

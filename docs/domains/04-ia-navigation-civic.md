@@ -28,7 +28,7 @@
 
 - `navLabel` 只影響 Nav／Footer 顯示，**永不改動**工具頁 SEO `title`。
 - 合併工具一律真正合併為同一路由，舊 slug 用 **301** 永久轉址。
-- **下架（不併入其他工具）的工具**：頁面網址（含 en／ja／ko 前綴）301 導向 `/tools`，對應的 `/api/*` 只留極小的 route handler 回 **410 Gone**（附明確 `Cache-Control`），並一併移除 `catalog`、`translatedPages`、`toolContent`、`locales/*.json`、導覽與其他工具的 `relatedSlugs`。首例：YouBike（#727，2026-10-21）。
+- **下架（不併入其他工具）的工具**：頁面網址（含 en／ja／ko 前綴）301 導向 `/tools`，對應的 `/api/*` 只留極小的 route handler 回 **410 Gone**（附明確 `Cache-Control`），並一併移除 `catalog`、`translatedPages`、`toolContent`、`locales/*.json`、導覽與其他工具的 `relatedSlugs`。首例：YouBike（#727，2026-10-21，導向 `/tools`）；其次：全台軌道營運通阻 `metro-alerts`（#728，2026-10-21，頁面網址導向對應語系的 `/tools/accessible-transit`）。
 - 毛孩認養＋動物醫院、AQI＋AQX **不合併**（#256 決議）。
 - 所有工具「資料先入 DB、讀 DB、不直連 API」，且必須有種子備援（零空白）。
 - 公民友站外連帶 `utm_source=health.j172.tw`；情境卡（`ContextualPartnerCard`）常駐、不可關閉。
@@ -64,7 +64,7 @@
 
 #### 全台開放資料擴充與長照整併 ✅
 - 原檔：[open-data-tools-expansion-and-consolidation.md](../archive/specs/open-data-tools-expansion-and-consolidation.md)（#211）
-- 雙北桃高衛生局醫療院所、臺北捷運公告、北北桃竹 YouBike（已於 2026-10-21 隨 #727 整個移除）、農業部病蟲害、動物醫院、書籍；`ltc-contracted` 以 308 併入 `long-term-care`（該頁至今仍以 noindex 存在，2.0 M1 改 301）。
+- 雙北桃高衛生局醫療院所、臺北捷運公告（已於 2026-10-21 隨 #728 整個移除）、北北桃竹 YouBike（已於 2026-10-21 隨 #727 整個移除）、農業部病蟲害、動物醫院、書籍；`ltc-contracted` 以 308 併入 `long-term-care`（該頁至今仍以 noindex 存在，2.0 M1 改 301）。
 
 #### 全站列表預設 30 筆、分頁器、極細搜尋 ✅
 - 原檔：[site-wide-list-pagination-and-granular-search.md](../archive/specs/site-wide-list-pagination-and-granular-search.md)（PR #312）

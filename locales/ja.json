@@ -110,7 +110,6 @@
     "contraception-map": "避妊相談マップ（産婦人科・薬局検索）",
     "latest-books": "おすすめ書籍（博客來・誠品・TAAZE選書）",
     "vet-clinics": "台湾動物病院・獣医クリニック検索",
-    "metro-alerts": "MRT運行・エレベーター点検お知らせ",
     "pest-alerts": "農作物病害虫リアルタイム警報",
     "power-grid-overview": "全台湾電力供給状況ダッシュボード",
     "cpc-prices": "台湾中油（CPC）燃料・ガス価格とガソリンスタンド検索",
@@ -488,26 +487,6 @@
     "emptyStateNoKeyword": "近隣に登録済みの公衆トイレが見つかりません。キーワード検索をお試しください。",
     "emptyStateWithKeyword": "該当する公衆トイレが見つかりません。"
   },
-  "metroAlertsTool": {
-    "systemAll": "全システム",
-    "crossPromoTitle": "県市を越えた移動や低床バスの利用が必要ですか？",
-    "crossPromoDesc": "全国22県市の低床バス比率、各県市の福祉バス・ユニバーサルタクシー専用電話を確認",
-    "crossPromoLink": "バリアフリー交通マップを見る",
-    "introHeading": "全国軌道運行障害リアルタイム公告",
-    "introDesc": "全国6つのMRT・LRTシステム（台北MRT、猫空ロープウェイ、桃園MRT、台中MRT、高雄MRT、高雄LRT）、台湾鉄路、台湾新幹線の運行障害公告と、台北MRT各駅のバリアフリーエレベーター点検公告をリアルタイムで集約します。",
-    "searchPlaceholder": "駅名・路線名（例：景安、台北駅）またはキーワードを検索...",
-    "filterAll": "全公告",
-    "typeSuspended": "全線運休",
-    "typeOperational": "運行調整",
-    "typeElevator": "エレベーター点検",
-    "loadingText": "全国軌道リアルタイム公告を読み込み中...",
-    "emptyHeading": "現在すべての路線が正常運行中です",
-    "emptyFilteredDesc": "現在の条件に合う公告はありません。全システムに切り替えるかキーワードを消去してください。",
-    "emptyNoneDesc": "現在、全国の軌道システム設備は正常に稼働しており、障害や運休の通報はありません。",
-    "sourceLabel": "情報提供元：",
-    "openDataSuffix": "オープンデータ",
-    "statusOngoing": "進行中"
-  },
   "accessibleTransitTool": {
     "systemAll": "全システム",
     "systemBus": "低床バス",
@@ -520,7 +499,6 @@
     "countyCoverageBadge": "全国22県市をリアルタイムカバー",
     "pageTitle": "全台バリアフリー交通マップ",
     "pageDescription": "高齢者、車椅子利用者、ベビーカーを押す保護者のために：低床バス配置比率、台湾鉄路・新幹線・MRTのバリアフリー渡し板予約、全国22県市の福祉バス配車センターとバリアフリータクシー専用電話をすぐに確認できます。",
-    "navMetroAlerts": "全国軌道運行障害",
     "navLongTermCare": "長期介護サービス機関検索",
     "navDisabilityAtm": "バリアフリーATM拠点",
     "summaryMainRoutesLabel": "主要バリアフリー幹線",
@@ -939,8 +917,6 @@
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "生活シーン別ガイド",
-    "metroAlertActiveTemplate": "現在、全国で{count}件の鉄道運行障害公告があります",
-    "metroAlertClear": "全国の鉄道システムは正常に運行しており、運行障害の公告はありません",
     "goToToolLink": "ツールへ →"
   },
   "homePage": {
