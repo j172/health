@@ -123,7 +123,7 @@ export interface SourceLabelInput {
 export const resolveAuthorLabel = (item: SourceLabelInput): string =>
   item.dept_name || (item.source_name ? SOURCE_LABELS[item.source_name] : undefined) || item.feed_name;
 
-/** Looks up a source_name's display label directly (falls back to the raw source_name if unmapped) — used by the source-branded image-missing placeholder (sourcePlaceholder.ts) where there's no dept_name/feed_name to fall back through like resolveAuthorLabel has. */
+/** Looks up a source_name's display label directly (falls back to the raw source_name if unmapped) — for callers that have no dept_name/feed_name to fall back through like resolveAuthorLabel has (the former source-branded placeholder helper sourcePlaceholder.ts was removed, see git history). */
 export const getSourceLabel = (sourceName: string): string => SOURCE_LABELS[sourceName] || sourceName;
 
 /** Whether `sourceName` has a mapped label — i.e. whether scripts/generate-source-og-images.mjs will have generated a public/images/og/source/{sourceName}.png for it (that script mirrors this same map). Callers needing a static file path for an unmapped source should use "_default" instead. */

@@ -182,24 +182,6 @@
     transform: scale(0.97);
   }
 
-  /* SectionHeader (components/Common/SectionHeader.tsx) — replaces the
-     former framer-motion `motion.div` fade/slide-up-on-mount. `@starting-style`
-     transitions the element from these "before first paint" values to its
-     normal styles below as soon as it's rendered, the CSS-native equivalent
-     of framer-motion's initial→animate mount transition — issue #479. Same
-     250ms duration + cubic-bezier(0.16,1,0.3,1) ease the old variants used
-     (--duration-normal / --ease-out-emil already match exactly). */
-  .section-header-reveal {
-    opacity: 1;
-    translate: 0 0;
-    transition: opacity var(--duration-normal) var(--ease-out-emil), translate var(--duration-normal) var(--ease-out-emil);
-
-    @starting-style {
-      opacity: 0;
-      translate: 0 -20px;
-    }
-  }
-
   /* Toast (components/Common/Toast.tsx) entrance animation. */
   .toast-enter {
     animation: toast-in 0.2s var(--ease-out-emil) both;
@@ -221,17 +203,6 @@
       animation: none !important;
       transform: none !important;
       opacity: 0.9;
-    }
-    /* Fade-only, no translate — same reduced-motion treatment react-hot-toast
-       applied to its own enter/exit animation, and the bar this swap must
-       clear per issue #479's acceptance criteria. */
-    .section-header-reveal {
-      transition: opacity var(--duration-normal) var(--ease-out-emil);
-
-      @starting-style {
-        opacity: 0;
-        translate: 0 0;
-      }
     }
     .toast-enter {
       animation: none !important;

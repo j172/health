@@ -264,12 +264,6 @@ const DYNAMIC_HREF_ALLOWLIST = [
       "built by buildContextualPartnerUrl(), which injects the same utm_source=health.j172.tw (+ contextual_banner / civic_partner) and respects upstream UTM; covered by lib/constants/contextualPartners.test.mjs",
   },
   {
-    file: "components/Common/OutRedirectCountdown.tsx",
-    expr: "targetUrl",
-    reason:
-      "the /out interstitial's fallback link; app/(zh)/(site)/out/page.tsx already passes validateOutboundUrl() output through appendOutboundUtm() before handing it over",
-  },
-  {
     file: "components/News/SiteFooter.tsx",
     expr: "href",
     reason:
