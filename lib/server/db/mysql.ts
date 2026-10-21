@@ -5,6 +5,7 @@ import mysql, {
 } from "mysql2/promise";
 import { env } from "@/lib/server/config/env";
 import { TABLE_DDL } from "@/lib/server/db/schema";
+import { widenFeedCodeColumns } from "./feedCodeWidth";
 import { readSeedJson } from "./transientSeed";
 
 let pool: Pool | null = null;
@@ -252,6 +253,11 @@ const runSchemaMigrations = async (): Promise<void> => {
     ALTER TABLE public_arts
       ADD COLUMN IF NOT EXISTS extra_json JSON NULL AFTER agency
   `);
+  // issue #739：feed_code 原本是 VARCHAR(10)，但實際來源代碼最長 22 字元，正式站（非嚴格 SQL 模式）
+  // 把超長的值靜默截斷。CREATE TABLE IF NOT EXISTS 不會改已存在的表，所以這裡冪等地放寬已部署環境的欄位
+  // （寬度為 63 的理由見 feedCodeWidth.ts）。已夠寬就是 no-op；失敗只記警告、不讓啟動失敗。
+  // 既有的截斷列不在這裡修補（需要時另行處理，見 PR 說明）。
+  await widenFeedCodeColumns(p);
   await p.query(`
     ALTER TABLE news_items
       ADD COLUMN IF NOT EXISTS meta_title VARCHAR(255) NULL AFTER display_type,

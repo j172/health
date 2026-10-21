@@ -6,7 +6,7 @@ import { runSource } from "@/lib/server/sync/runSource";
 
 const LOCK_NAME = "drug_shortages_sync_lock";
 
-/** ingest_errors.feed_code is VARCHAR(10) — keep this within it (the longer *_SOURCE_KEY constants elsewhere would not fit). */
+/** ingest_errors.feed_code was VARCHAR(10) before issue #739 widened it to VARCHAR(63); this short code predates that and is kept as-is so existing ingest_errors rows still group together. */
 const DRUG_SHORTAGE_FEED_CODE = "drug_short";
 
 export interface DrugShortagesSourceResult {
