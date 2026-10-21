@@ -1,0 +1,55 @@
+# LiteSpeed / Apache Caching & Optimization for health.j172.tw
+CacheLookup on
+DirectoryIndex index.php
+RewriteEngine On
+
+RewriteRule ^favicon\.ico$ - [L]
+RewriteRule ^news/$ /news [R=301,L]
+RewriteRule ^index\.php$ - [L]
+# --- 直接代理（#724 / #709）：這些路徑由 LiteSpeed 直接代理到 Next，不經過 PHP 前端控制器 ---
+# PHP worker（lsphp）每個 85–141 MB，尖峰時 3–5 個同時存在，是帳號 1 GB 實體記憶體上限被撞破的主因。
+# 還原：刪掉下面這一行（或整個區塊），請求就回到 index.php。上游掛掉時 LiteSpeed 會自己回 503（已實測），
+# ErrorDocument 轉給 PHP 對 [P] 失敗不生效（已實測），所以看門狗由未直接代理的路徑（首頁等）與每 5 分鐘 cron 負責。
+RewriteRule ^news/([0-9]+)$ http://127.0.0.1:3000/news/$1 [P,L]
+# --- /直接代理 ---
+RewriteRule ^.*$ index.php [L,QSA]
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css application/xml application/xhtml+xml application/rss+xml application/javascript application/x-javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType application/x-javascript "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    <FilesMatch "\.(ico|pdf|flv|jpg|jpeg|png|gif|webp|js|css|swf|svg|woff|woff2|ttf)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
+
+# BEGIN cPanel-generated php ini directives, do not edit
+<IfModule php8_module>
+   php_value error_log /home/tw123457/logs/php.error.log
+   php_flag log_errors On
+</IfModule>
+<IfModule lsapi_module>
+   php_value error_log /home/tw123457/logs/php.error.log
+   php_flag log_errors On
+</IfModule>
+# END cPanel-generated php ini directives, do not edit
+diff: /dev/fd/63: No such file or directory

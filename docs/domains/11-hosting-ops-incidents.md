@@ -65,6 +65,22 @@
 
 ---
 
+### 1.4 訪客請求直接代理（不經 PHP，#724／#725，2026-10-21 起）
+
+**為什麼**：lsphp（PHP 前端控制器的 worker）每個 85–141 MB，爆發時 3–5 個同時存在（壓測 30 併發的文章頁會長到 21 個＝撞 Entry Processes 上限 20），是 1 GB 實體記憶體被撞破的主因。LiteSpeed 的 `.htaccess` 支援 `RewriteRule … [P]`（已實測），請求可完全不經過 PHP。
+
+**現況**：`/news/<id>` 已直接代理（canary）。同一個 30 併發壓測：lsphp 峰值 **21 → 3**，平均回應 2.24 s → 0.60 s。其餘路徑仍走 PHP（#725 擴大）。
+
+**真相來源**：`ops/htaccess/health.j172.tw.htaccess`（`.htaccess` 不隨 deploy-ftps.yml 部署，主機手動管理）。安裝用 `ops/htaccess/apply.sh`：備份 → 安裝 → 健康檢查（首頁與 `/news/<id>` 必須 200）→ 失敗自動還原。**還原**：刪掉檔案裡「直接代理」區塊的 `RewriteRule`，再跑 `apply.sh`（或在主機把 `~/health.j172.tw/.htaccess.bak-<時間>` 複製回去）。
+
+**對照工具**：`scripts/ops/proxy-parity/compare.mjs` 直連 origin IP，對同一組路徑比較「PHP 路徑」與「影子前綴直接代理」的狀態碼、標頭、解壓後內容。影子前綴需暫時加 `RewriteRule ^__direct/(.*)$ http://127.0.0.1:3000/$1 [P,L]`（比對完必須移除，不可 commit）。Windows Git Bash 執行要加 `MSYS_NO_PATHCONV=1`，否則 `--prefix /__direct` 會被轉成 `C:/Program Files/Git/__direct`。
+
+**已實測的行為（設計依據）**：
+- 上游掛掉時 LiteSpeed 自己立刻回 503（它的預設錯誤頁），不占 worker。
+- `ErrorDocument 502/503/504 /index.php` 對 `[P]` 的失敗**不生效**，無法用錯誤頁讓 PHP 喚醒看門狗。因此看門狗要靠「仍走 PHP 的路徑」（首頁等）與每 5 分鐘 cron；#725 擴大範圍時首頁要保留在 PHP 當哨兵。
+- 對照 36 個案例：GET 內容與關鍵標頭一致；差異只有 `Transfer-Encoding`、`Alt-Svc`（雜訊）、`/robots.txt` 的 `charset`、PHP 自己的 404 與重定向 `Location` 為絕對網址（直接代理為相對）。
+- **既有問題**：PHP 路徑對 `HEAD` 請求回 502（直接代理正常回 200），直接代理上線後該路徑的 HEAD 隨之修好。
+
 ## 2. 長期有效的決策
 
 - 恢復機制本身不得成為負載：任何修復動作都要先檢查 NPROC，並驗證 kill 真的生效。
