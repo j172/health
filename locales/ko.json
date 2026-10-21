@@ -110,7 +110,6 @@
     "contraception-map": "피임 상담 지도 (산부인과·약국 검색)",
     "latest-books": "추천 도서 (보커라이·에슬레이트·TAAZE 큐레이션)",
     "vet-clinics": "대만 동물병원 및 수의과 클리닉 검색",
-    "metro-alerts": "지하철 운행 및 엘리베이터 점검 공지",
     "pest-alerts": "농작물 병해충 실시간 경보",
     "power-grid-overview": "대만 전력 수급 현황 대시보드",
     "cpc-prices": "대만 중유(CPC) 연료·가스 가격 및 주유소 검색",
@@ -488,26 +487,6 @@
     "emptyStateNoKeyword": "주변에 등록된 공중화장실이 없습니다. 키워드 검색을 이용해 보세요.",
     "emptyStateWithKeyword": "일치하는 공중화장실이 없습니다."
   },
-  "metroAlertsTool": {
-    "systemAll": "전체 시스템",
-    "crossPromoTitle": "현·시를 넘어 이동하거나 저상버스가 필요하신가요?",
-    "crossPromoDesc": "전국 22개 현·시의 저상버스 비율과 각 현·시 재활버스·유니버설 택시 전용 전화 확인",
-    "crossPromoLink": "무장애 교통지도 보기",
-    "introHeading": "전국 철도 운행 장애 실시간 공지",
-    "introDesc": "전국 6개 지하철·경전철 시스템(타이베이 MRT, 마오쿵 곤돌라, 타오위안 MRT, 타이중 MRT, 가오슝 MRT, 가오슝 경전철), 대만철도, 대만고속철도의 운행 장애 공지와 타이베이 MRT 각 역의 장애인 엘리베이터 점검 공지를 실시간으로 집계합니다.",
-    "searchPlaceholder": "역명·노선명(예: 징안역, 타이베이역) 또는 키워드 검색...",
-    "filterAll": "전체 공지",
-    "typeSuspended": "전 노선 운행 중단",
-    "typeOperational": "운행 조정",
-    "typeElevator": "엘리베이터 점검",
-    "loadingText": "전국 철도 실시간 공지를 불러오는 중...",
-    "emptyHeading": "현재 모든 노선이 정상 운행 중입니다",
-    "emptyFilteredDesc": "현재 선택한 조건에 맞는 공지가 없습니다. 전체 시스템으로 전환하거나 키워드를 지워 보세요.",
-    "emptyNoneDesc": "현재 전국 철도 시스템 설비가 정상적으로 작동하고 있으며 장애나 운행 중단 통보가 없습니다.",
-    "sourceLabel": "정보 제공: ",
-    "openDataSuffix": "공개 데이터",
-    "statusOngoing": "진행 중"
-  },
   "accessibleTransitTool": {
     "systemAll": "전체 시스템",
     "systemBus": "저상버스",
@@ -520,7 +499,6 @@
     "countyCoverageBadge": "전국 22개 현·시 실시간 커버",
     "pageTitle": "전국 무장애 교통지도",
     "pageDescription": "고령자, 휠체어 이용자, 유모차를 끄는 부모를 위해 제작: 저상버스 배치 비율, 대만철도·고속철도·지하철의 장애인 승차 램프 예약, 전국 22개 현·시의 재활버스 배차 센터와 장애인 택시 전용 전화를 빠르게 확인할 수 있습니다.",
-    "navMetroAlerts": "전국 철도 운행 장애",
     "navLongTermCare": "장기요양 서비스기관 검색",
     "navDisabilityAtm": "장애인 ATM 거점",
     "summaryMainRoutesLabel": "주요 무장애 간선노선",
@@ -939,8 +917,6 @@
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "생활 상황별 가이드",
-    "metroAlertActiveTemplate": "현재 전국에 {count}건의 철도 운행 장애 공고가 있습니다",
-    "metroAlertClear": "전국 철도 시스템이 정상 운행 중이며 운행 장애 공고가 없습니다",
     "goToToolLink": "도구로 이동 →"
   },
   "homePage": {

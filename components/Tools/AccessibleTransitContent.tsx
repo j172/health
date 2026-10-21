@@ -150,13 +150,6 @@ export default function AccessibleTransitContent() {
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/tools/metro-alerts"
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
-            >
-              <span>🚇</span>
-              <span>{t("accessibleTransitTool.navMetroAlerts", "全台軌道營運通阻")}</span>
-            </Link>
-            <Link
               href="/tools/long-term-care"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition backdrop-blur-sm border border-white/10"
             >

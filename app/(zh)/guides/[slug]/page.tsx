@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildGuideGraphJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import { GUIDES, buildGuide } from "@/lib/server/tools/navModel";
-import { getActiveMetroAlertsCount } from "@/lib/server/metroAlerts/queries";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
 import { isTranslatedGuideSlug } from "@/lib/i18n/guideContent";
@@ -95,12 +94,6 @@ export default async function GuideHubPage({
 
   const guideGraph = buildGuideGraphJsonLd(guide);
 
-  // 「颱風地震來了」的「查詢交通是否停駛」一步（issue #470 acceptance
-  // criterion 3）要在 hub 頁本身就能看到目前有無通阻，而不是只能點進工具頁才
-  // 知道 —— 只在該步驟存在時才查詢，不影響其他 4 個情境頁。
-  const hasMetroAlertsStep = guide.steps.some((step) => step.toolSlug === "metro-alerts");
-  const activeMetroAlertsCount = hasMetroAlertsStep ? await getActiveMetroAlertsCount() : null;
-
   return (
     <>
       <script
@@ -174,22 +167,6 @@ export default async function GuideHubPage({
                     <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
                       {step.why}
                     </p>
-                    {step.toolSlug === "metro-alerts" && activeMetroAlertsCount !== null ? (
-                      <div
-                        className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                          activeMetroAlertsCount > 0
-                            ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
-                            : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
-                        }`}
-                      >
-                        <span>{activeMetroAlertsCount > 0 ? "⚠️" : "🟢"}</span>
-                        <span>
-                          {activeMetroAlertsCount > 0
-                            ? `目前全台有 ${activeMetroAlertsCount} 則軌道通阻公告`
-                            : "目前全台軌道系統運作正常，無通阻公告"}
-                        </span>
-                      </div>
-                    ) : null}
                     <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs font-semibold text-slate-700 group-hover:text-indigo-600 dark:border-slate-800 dark:text-slate-300 dark:group-hover:text-indigo-400">
                       <span>{step.tool.navLabel ?? step.tool.title}</span>
                       <span className="transition-transform duration-200 group-hover:translate-x-1">

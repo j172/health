@@ -252,7 +252,6 @@ flowchart TD
 | **獨立特色書店地圖** | [`/tools/bookstores`](https://health.j172.tw/tools/bookstores) | 文化部文化資源整合平臺 | 全臺實體書店、社區繪本書屋空間定位 |
 | **全國合法觀光工廠文化遊** | [`/tools/tourism-factories`](https://health.j172.tw/tools/tourism-factories) | 經濟部產業發展署 | 通過經濟部評鑑認證之生醫、食品產業文化園區 |
 | **全國最新好書出版目錄** | [`/tools/latest-books`](https://health.j172.tw/tools/latest-books) | 國家圖書館 ISBN 申辦中心 | 本月新書、親職教育與醫藥科普書單速遞 |
-| **大眾捷運即時營運事件警示** | [`/tools/metro-alerts`](https://health.j172.tw/tools/metro-alerts) | 北捷 / 高捷 / 桃捷 / 中捷 | 各線捷運設備異常、延誤、故障告警資訊 |
 | **臺電全臺發電結構即時儀表板** | [`/tools/power-grid-overview`](https://health.j172.tw/tools/power-grid-overview) | 台灣電力公司電力調度數據 | 燃煤、燃氣、核能、太陽能、風力即時發電佔比 |
 | **台灣中油油價查詢與加油站服務地圖** | [`/tools/cpc-prices`](https://health.j172.tw/tools/cpc-prices) | 台灣中油股份有限公司 | 92、95、98、柴油牌價走勢與全臺加油站洗車、充電樁等 20 項服務篩選（雙分頁） |
 

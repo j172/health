@@ -495,7 +495,8 @@ test("default (zh) output of the three existing page builders is unchanged: zh i
 });
 
 test("buildToolGraphJsonLd for every translated tool x locale: locale URL, inLanguage, translationOfWork, localized text", () => {
-  assert.ok(translatedPages.TRANSLATED_TOOL_SLUGS.length >= 17);
+  // 只確認清單不是空的／仍是一整批：下架翻譯過的工具（如 #728）會讓數量減少，不寫死精確下限。
+  assert.ok(translatedPages.TRANSLATED_TOOL_SLUGS.length >= 10);
   for (const slug of translatedPages.TRANSLATED_TOOL_SLUGS) {
     const catalogEntry = TOOL_CATALOG.find((tool) => tool.slug === slug);
     assert.ok(catalogEntry, `${slug} is in the catalog`);

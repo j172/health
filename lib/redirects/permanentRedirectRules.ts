@@ -68,7 +68,6 @@ const LANG_QUERY_TOOL_SLUGS = [
   "clinics",
   "pharmacies",
   "public-toilets",
-  "metro-alerts",
   "accessible-transit",
   "weather-alerts",
   "aqi",
@@ -146,9 +145,24 @@ const simpleRedirects: Omit<PermanentRedirectRule, "permanent">[] = [
   // `/tools/youbike?lang=en|ja|ko` 的舊 `?lang=` 規則也一併拿掉（LANG_QUERY_TOOL_SLUGS），
   // 所以那類網址落到這條規則，只會導向一次到 /tools，不會先繞去 /en/tools/youbike。
   { source: "/tools/youbike", destination: "/tools" },
+  // issue #728 — 全台軌道營運通阻整個移除；舊網址導向無障礙交通頁。
+  // `/tools/metro-alerts?lang=en|ja|ko` 的舊 `?lang=` 規則也從 LANG_QUERY_TOOL_SLUGS 拿掉，
+  // 改由 PERMANENT_REDIRECT_RULES 最前面的那組規則直接導向對應語系的無障礙交通頁（一次到位）。
+  { source: "/tools/metro-alerts", destination: "/tools/accessible-transit" },
 ];
 
 export const PERMANENT_REDIRECT_RULES: PermanentRedirectRule[] = [
+  // issue #728 — 必須排在 simpleRedirects 之前：middleware 取第一條相符的規則，
+  // `/tools/metro-alerts?lang=en` 要直接到 /en/tools/accessible-transit（一次 301），
+  // 不能被無語系的 /tools/metro-alerts 規則搶先，讓英日韓使用者落到中文版。
+  ...REDIRECT_LOCALES.map(
+    (locale): PermanentRedirectRule => ({
+      source: "/tools/metro-alerts",
+      destination: `/${locale}/tools/accessible-transit`,
+      permanent: true,
+      has: { type: "query", key: "lang", value: locale },
+    }),
+  ),
   ...REDIRECT_LOCALES.flatMap((locale) =>
     LANG_QUERY_TOOL_SLUGS.map(
       (slug): PermanentRedirectRule => ({
@@ -187,6 +201,14 @@ export const PERMANENT_REDIRECT_RULES: PermanentRedirectRule[] = [
     (locale): PermanentRedirectRule => ({
       source: `/${locale}/tools/youbike`,
       destination: "/tools",
+      permanent: true,
+    }),
+  ),
+  // issue #728 — 軌道通阻的 3 個語系版直接導向對應語系的無障礙交通頁（它在 en/ja/ko 都有真實內容）。
+  ...REDIRECT_LOCALES.map(
+    (locale): PermanentRedirectRule => ({
+      source: `/${locale}/tools/metro-alerts`,
+      destination: `/${locale}/tools/accessible-transit`,
       permanent: true,
     }),
   ),

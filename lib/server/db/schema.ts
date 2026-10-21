@@ -1226,33 +1226,6 @@ export const TABLE_DDL = {
       KEY idx_books_title (title(128))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // 便民服務：捷運營運與無障礙電梯公告
-  metroAlerts: `
-    CREATE TABLE IF NOT EXISTS metro_alerts (
-      id BIGINT NOT NULL AUTO_INCREMENT,
-      external_id VARCHAR(50) NOT NULL,
-      line_name VARCHAR(50) NOT NULL,
-      station_name VARCHAR(50) NOT NULL,
-      alert_title VARCHAR(255) NOT NULL,
-      alert_content TEXT NOT NULL,
-      alert_type VARCHAR(50) NOT NULL DEFAULT 'elevator',
-      alert_time DATETIME NOT NULL,
-      status VARCHAR(20) NOT NULL DEFAULT 'active',
-      -- Issue #470: upgraded from Taipei-only to all 6 metro/light-rail
-      -- systems + TRA + THSR. Defaults keep every legacy (pre-#470) row
-      -- correctly labeled as Taipei Metro without a backfill.
-      system_code VARCHAR(20) NOT NULL DEFAULT 'TRTC',
-      system_label VARCHAR(50) NOT NULL DEFAULT '臺北捷運',
-      created_at DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL,
-      PRIMARY KEY (id),
-      UNIQUE KEY uq_metro_alert (external_id),
-      KEY idx_metro_station (station_name),
-      KEY idx_metro_line (line_name),
-      KEY idx_metro_time (alert_time),
-      KEY idx_metro_system (system_code)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
   // 便民服務：作物病蟲害即時預警 (農業部動植物防疫檢疫署)
   pestAlerts: `
     CREATE TABLE IF NOT EXISTS pest_alerts (

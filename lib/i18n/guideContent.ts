@@ -57,10 +57,6 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "Find the nearest evacuation map",
           why: "If your home or location faces a safety risk during a disaster, the disaster-relief evacuation map helps you quickly find the nearest shelter and disaster-relief resources.",
         },
-        "metro-alerts": {
-          caption: "Check whether transit is suspended",
-          why: "During a typhoon or major earthquake, the MRT, light rail, Taiwan Railway, and High Speed Rail may all adjust schedules or suspend service entirely for safety reasons — check nationwide rail-service disruptions before heading to a shelter or resuming your daily commute, so you don't make a trip for nothing or get stranded partway.",
-        },
         "inundation-map": {
           caption: "Check real-time flooding conditions",
           why: "During heavy rain or a typhoon, road flooding and water-level warnings are the most direct risk in many areas — a real-time sensor map helps you judge which roads to avoid.",
@@ -117,10 +113,6 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "最寄りの避難マップを確認する",
           why: "災害発生時に自宅や現在地に安全上のリスクがある場合、防災避難マップは最寄りの避難所と防災資源の位置をすばやく見つけるのに役立ちます。",
         },
-        "metro-alerts": {
-          caption: "運行停止の有無を確認する",
-          why: "台風や強い地震の際、MRT、LRT、台湾鉄道、新幹線は安全上の理由で運行を調整したり、全線運休したりする可能性があります。避難所へ向かう前や通常通勤を再開する前に、全国の鉄道運行障害を確認し、無駄足や途中で取り残されることを防ぎましょう。",
-        },
         "inundation-map": {
           caption: "リアルタイムの浸水状況を確認する",
           why: "大雨や台風の際、道路の浸水や水位警戒は多くの地域で最も直接的なリスクです。リアルタイムセンサーマップは、どの道路を避けるべきか判断するのに役立ちます。",
@@ -176,10 +168,6 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
         "disaster-map": {
           caption: "가장 가까운 대피 지도 확인하기",
           why: "재해 발생 시 자택이나 현재 위치에 안전 위험이 있다면, 방재 대피 지도가 가장 가까운 대피소와 방재 자원의 위치를 빠르게 찾는 데 도움이 됩니다.",
-        },
-        "metro-alerts": {
-          caption: "교통 운행 중단 여부 확인하기",
-          why: "태풍이나 강진 발생 시 MRT, 경전철, 대만철도, 고속철도가 안전상의 이유로 운행을 조정하거나 전면 중단할 수 있습니다. 대피소로 이동하거나 일상 통근을 재개하기 전에 전국 철도 운행 장애 정보를 먼저 확인하여 헛걸음이나 도중에 고립되는 상황을 피하세요.",
         },
         "inundation-map": {
           caption: "실시간 침수 현황 확인하기",
