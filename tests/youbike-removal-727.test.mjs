@@ -15,6 +15,13 @@ import { extractCronSchedules } from "../lib/server/cron/cronCollisions.mjs";
 const REPO_ROOT_PATH = fileURLToPath(new URL("../", import.meta.url));
 const read = (...parts) => fs.readFileSync(path.join(REPO_ROOT_PATH, ...parts), "utf8");
 const exists = (...parts) => fs.existsSync(path.join(REPO_ROOT_PATH, ...parts));
+// 目錄本身不算「還在」：git 刪完檔案後本機可能留下空資料夾；只要底下沒有任何檔案就視為已移除。
+const hasAnyFile = (...parts) => {
+  const full = path.join(REPO_ROOT_PATH, ...parts);
+  if (!fs.existsSync(full)) return false;
+  if (!fs.statSync(full).isDirectory()) return true;
+  return fs.readdirSync(full, { withFileTypes: true }).some((e) => (e.isDirectory() ? hasAnyFile(...parts, e.name) : true));
+};
 
 registerHooks({
   resolve(specifier, context, nextResolve) {
@@ -56,7 +63,7 @@ test("YouBike pages, component, sync code, seed and script are all gone", () => 
     ["data", "youbike-stations-seed.json"],
     ["scripts", "sync-youbike.mjs"],
   ]) {
-    assert.ok(!exists(...gone), `${gone.join("/")} should have been removed`);
+    assert.ok(!hasAnyFile(...gone), `${gone.join("/")} should have been removed`);
   }
 });
 
@@ -80,7 +87,8 @@ test("ensureSchema DROPs both YouBike tables idempotently and nothing creates, s
   const offenders = [];
   const walk = (dir) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (["node_modules", ".next", ".git", "docs", ".claude"].includes(entry.name)) continue;
+      // .next* 是本機建置輸出（可能是移除前建的舊檔），不是原始碼。
+      if (["node_modules", ".git", "docs", ".claude"].includes(entry.name) || entry.name.startsWith(".next")) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
       else if (/\.(ts|tsx|js|mjs|cjs)$/.test(entry.name)) {
