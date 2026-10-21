@@ -73,13 +73,16 @@ export default function TyphoonBanner() {
       data-typhoon-banner={status.level}
       className={`w-full border-b px-4 py-2.5 text-sm ${tone}`}
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-1.5 sm:px-2">
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-bold">
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-1.5 text-center sm:px-2">
+        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-bold">
           <span aria-hidden="true">{isLand ? "🌀" : "🌊"}</span>
           <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${badgeTone}`}>
             {isLand ? t("typhoon.banner.landBadge", "陸上警報") : t("typhoon.banner.seaBadge", "海上警報")}
           </span>
           <span>{isLand ? t("typhoon.banner.landTitle", "颱風陸上警報生效中") : t("typhoon.banner.seaTitle", "颱風海上警報")}</span>
+          {status.names?.length ? (
+            <span data-typhoon-names>{status.names.join("、")}</span>
+          ) : null}
           {issuedAt ? (
             <span className="text-xs font-normal opacity-90">
               {t("typhoon.banner.issuedAtTemplate", "發布 {time}").replace("{time}", issuedAt)}
@@ -94,7 +97,7 @@ export default function TyphoonBanner() {
         <p className="text-xs leading-relaxed sm:text-sm">
           {t("typhoon.banner.notice", "明天是否停班停課請以官方公告為準。本站不判定各縣市是否停班停課。")}
         </p>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs sm:text-sm">
+        <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs sm:text-sm">
           <li>
             <a href={appendOutboundUtm(DGPA_CLOSURE_PAGE_URL, UTM)} target="_blank" rel="noopener noreferrer" className={linkClass}>
               {t("typhoon.banner.linkOfficial", "行政院人事行政總處停班停課公告")}

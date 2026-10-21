@@ -23,6 +23,11 @@ export interface TyphoonStatus {
   level: TyphoonLevel | null;
   /** 生效中警報的名稱（來自 CAP event／headline，已截短），只作為備註資訊。 */
   name?: string;
+  /**
+   * 目前 CWA 追蹤中的颱風完整名稱（來自颱風動態 W-C0034-005，例如「輕度颱風 薔琵 (CHAMPI) 第29號」），
+   * 最多 MAX_TYPHOON_NAMES 個。拿不到時省略，橫幅照常顯示、只是不帶名稱。
+   */
+  names?: string[];
   /** 發布時間（ISO 8601, UTC）。 */
   issuedAt?: string;
   /** 只有「持有正確金鑰的測試請求」會是 true（見 lib/server/typhoon/simulation.ts）。 */
@@ -43,6 +48,9 @@ const LAND_PATTERN = /陸上|陆上|\bland\b/i;
 const SEA_PATTERN = /海上|\bsea\b/i;
 
 const NAME_MAX_LENGTH = 60;
+
+/** 橫幅最多並列幾個颱風名稱。 */
+export const MAX_TYPHOON_NAMES = 3;
 
 const normalizeText = (value: unknown): string => {
   if (typeof value !== "string") return "";
@@ -74,6 +82,22 @@ const clipName = (value: string | null | undefined): string | undefined => {
   const text = normalizeText(value).replace(/\s+/g, " ").trim();
   if (!text) return undefined;
   return text.length > NAME_MAX_LENGTH ? `${text.slice(0, NAME_MAX_LENGTH - 1)}…` : text;
+};
+
+/**
+ * 從颱風動態（W-C0034-005）的 event 字串挑出要顯示的颱風名稱：
+ * 熱帶性低氣壓（只有編號、沒有名字，如「熱帶性低氣壓 TD22」）不列入；去重、截短、最多 MAX_TYPHOON_NAMES 個。
+ */
+export const pickTyphoonNames = (events: readonly unknown[] | null | undefined): string[] => {
+  if (!events) return [];
+  const names: string[] = [];
+  for (const event of events) {
+    const name = clipName(typeof event === "string" ? event : undefined);
+    if (!name || /^熱帶性低氣壓/.test(name) || names.includes(name)) continue;
+    names.push(name);
+    if (names.length >= MAX_TYPHOON_NAMES) break;
+  }
+  return names;
 };
 
 /**
@@ -115,6 +139,10 @@ export const parseTyphoonStatus = (json: unknown): TyphoonStatus => {
   const status: TyphoonStatus = { active: true, level: raw.level === "sea" ? "sea" : "land" };
   if (typeof raw.name === "string" && raw.name.trim()) status.name = clipName(raw.name);
   if (typeof raw.issuedAt === "string" && Number.isFinite(Date.parse(raw.issuedAt))) status.issuedAt = raw.issuedAt;
+  if (Array.isArray(raw.names)) {
+    const names = pickTyphoonNames(raw.names);
+    if (names.length > 0) status.names = names;
+  }
   if (raw.simulated === true) status.simulated = true;
   return status;
 };

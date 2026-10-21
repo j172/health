@@ -27,6 +27,7 @@ const {
   classifyTyphoonLevel,
   isTyphoonBannerExcludedPath,
   parseTyphoonStatus,
+  pickTyphoonNames,
   shouldShowTyphoonBanner,
 } = await import("../lib/typhoon/typhoonStatus.ts");
 const { buildSimulatedStatus, resolveSimulatedLevel } = await import("../lib/server/typhoon/simulation.ts");
@@ -578,4 +579,42 @@ test("zh 預設文案：每個 t() 的 key 都在四種語言的結構裡，且�
 test("the client store revalidates instead of trusting a Cloudflare-inflated max-age", () => {
   const store = fs.readFileSync(new URL("../lib/client/typhoonStatusStore.ts", import.meta.url), "utf8");
   assert.match(store, /cache: "no-cache"/);
+});
+
+// ---------------------------------------------------------------- 7. 置中與颱風名稱 ---
+
+test("pickTyphoonNames: 熱帶性低氣壓不列入、去重、最多三個、非字串略過", () => {
+  assert.deepEqual(pickTyphoonNames(["輕度颱風 薔琵 (CHAMPI) 第29號"]), ["輕度颱風 薔琵 (CHAMPI) 第29號"]);
+  assert.deepEqual(pickTyphoonNames(["熱帶性低氣壓 TD22", "強烈颱風 山竹 (Mangkhut) 第22號"]), ["強烈颱風 山竹 (Mangkhut) 第22號"]);
+  assert.deepEqual(pickTyphoonNames(["中度颱風 A 第1號", "中度颱風 A 第1號"]), ["中度颱風 A 第1號"]);
+  assert.equal(pickTyphoonNames(["a 1", "b 2", "c 3", "d 4", "e 5"]).length, 3);
+  assert.deepEqual(pickTyphoonNames([null, 42, "", "   "]), []);
+  assert.deepEqual(pickTyphoonNames(null), []);
+  assert.deepEqual(pickTyphoonNames(undefined), []);
+});
+
+test("parseTyphoonStatus: names 只接受字串陣列，壞值被丟掉且不影響橫幅", () => {
+  assert.deepEqual(parseTyphoonStatus({ active: true, level: "sea", names: ["輕度颱風 薔琵 (CHAMPI) 第29號"] }).names, ["輕度颱風 薔琵 (CHAMPI) 第29號"]);
+  assert.equal(parseTyphoonStatus({ active: true, level: "sea", names: "oops" }).names, undefined);
+  assert.equal(parseTyphoonStatus({ active: true, level: "sea", names: [1, null] }).names, undefined);
+  assert.equal(parseTyphoonStatus({ active: false, names: ["x"] }).active, false);
+});
+
+test("模擬回應帶有明顯標示的假颱風名稱", () => {
+  const sim = buildSimulatedStatus("land");
+  assert.equal(sim.names.length, 1);
+  assert.match(sim.names[0], /^（模擬）/);
+});
+
+test("伺服器端：警報生效時才查颱風動態取名稱，且用 pickTyphoonNames 過濾", () => {
+  const src = stripComments(read("lib", "server", "typhoon", "status.ts"));
+  assert.match(src, /if \(status\.active\) \{[\s\S]*?pickTyphoonNames\([\s\S]*?listActiveCwaTyphoons\(\)/);
+});
+
+test("橫幅三塊（標題列、說明、連結）都置中，名稱顯示在標題列", () => {
+  const src = stripComments(read("components", "Typhoon", "TyphoonBanner.tsx"));
+  assert.match(src, /flex max-w-5xl flex-col items-center gap-1\.5 text-center/);
+  assert.match(src, /flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-bold/);
+  assert.match(src, /<ul className="flex flex-wrap justify-center gap-x-4 gap-y-1/);
+  assert.match(src, /status\.names\?\.length[\s\S]*?data-typhoon-names[\s\S]*?status\.names\.join\("、"\)/);
 });
