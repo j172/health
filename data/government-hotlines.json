@@ -22,6 +22,17 @@
     "description": "火災滅火救災、到院前緊急救護、水域救援、山域搜救及風災水災震災等複合性災害搶救。"
   },
   {
+    "number": "1953",
+    "name": "教育部反霸凌專線",
+    "agency": "教育部",
+    "category": "教育校園",
+    "billing": "免付費",
+    "service_hours": "24小時",
+    "geographic_scope": "全國",
+    "alternative_number": "0800-088-590",
+    "description": "教育部於 2022 年啟用的 1953 反霸凌專線簡碼，取代舊長碼 0800-088-590，提供 24 小時專人接聽與案件管制；受理中小學及各級校園霸凌、肢體暴力、言語威脅、網路霸凌申訴，並直接介入處理與輔導。"
+  },
+  {
     "number": "112",
     "name": "全球行動電話緊急救難專線",
     "agency": "內政部警政署/消防署",
@@ -482,28 +493,6 @@
     "geographic_scope": "全國各國有林區",
     "alternative_number": "通報山火可同步撥打 119",
     "description": "通報山林森林火災、山老鼠盜伐貴重國有林木檢舉、野生動物盜獵與非法獸夾通報。"
-  },
-  {
-    "number": "0800-088-590",
-    "name": "教育部防制校園霸凌專線",
-    "agency": "教育部",
-    "category": "教育校園",
-    "billing": "免付費",
-    "service_hours": "24小時",
-    "geographic_scope": "全國",
-    "alternative_number": "1953 (教育部防制校園霸凌法定專線新簡碼)",
-    "description": "中小學及各級校園霸凌、肢體暴力、言語威脅、網路霸凌申訴與輔導案件直接介入處理。"
-  },
-  {
-    "number": "1953",
-    "name": "教育部反霸凌專線簡碼",
-    "agency": "教育部",
-    "category": "教育校園",
-    "billing": "免付費",
-    "service_hours": "24小時",
-    "geographic_scope": "全國",
-    "alternative_number": "0800-088-590",
-    "description": "教育部於 2022 年啟用的 1953 反霸凌專線簡碼，取代舊長碼，提供 24 小時專人接聽與案件管制。"
   },
   {
     "number": "0800-770-885",
