@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { listDiverseHomeNews } from "@/lib/server/news/queries";
-import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 import HomeQuickEntryCards from "@/components/Home/HomeQuickEntryCards";
 import HomeStatusBar from "@/components/Home/HomeStatusBar";
@@ -14,6 +14,7 @@ export const runtime = "nodejs";
 export const metadata: Metadata = {
   title: SITE_NAME,
   description: SITE_DESCRIPTION,
+  keywords: SITE_KEYWORDS,
   alternates: { canonical: getBaseUrl() },
   robots: {
     index: true,

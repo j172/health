@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["成人健檢", "免費癌症篩檢", "四癌篩檢", "子宮頸抹片", "乳房攝影", "糞便潛血檢查", "口腔黏膜檢查"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

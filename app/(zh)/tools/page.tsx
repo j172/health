@@ -18,7 +18,7 @@ const baseUrl = getBaseUrl();
 export const metadata: Metadata = {
   title: "健康工具與公衛資料庫總覽",
   description:
-    "免費線上健康計算器、疾病心血管評估、即時紫外線與地震監測，以及全台醫療院所與長照機構開放資料庫總覽。",
+    "免費線上健康計算器、長照與兒少福利查詢、醫療照護院所、交通能源、防災示警、遠離詐騙與成癮防治等全臺 80+ 款民生開放資料便民工具總覽。",
   keywords: [
     "健康工具",
     "BMI計算器",
@@ -28,6 +28,13 @@ export const metadata: Metadata = {
     "健保特約診所",
     "長照機構查詢",
     "食品營養成分",
+    "台灣便民工具",
+    "臺灣便民生活工具",
+    "兒少托育與補助查詢",
+    "165反詐騙查詢",
+    "戒菸與心理健康",
+    "防災示警與天氣警報",
+    "交通能源查詢",
   ],
   alternates: { canonical: `${baseUrl}/tools` },
   robots: {
@@ -45,7 +52,7 @@ export const metadata: Metadata = {
     type: "website",
     title: `健康工具與公衛資料庫總覽 | ${SITE_NAME}`,
     description:
-      "免費線上健康計算器、疾病心血管評估、即時紫外線與地震監測，以及全台醫療院所與長照機構開放資料庫總覽。",
+      "免費線上健康計算器、長照與兒少福利查詢、醫療照護院所、交通能源、防災示警、遠離詐騙與成癮防治等全臺 80+ 款民生開放資料便民工具總覽。",
     url: `${baseUrl}/tools`,
     siteName: SITE_NAME,
     locale: "zh_TW",
@@ -58,7 +65,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `健康工具與公衛資料庫總覽 | ${SITE_NAME}`,
     description:
-      "免費線上健康計算器、疾病心血管評估、即時紫外線與地震監測，以及全台醫療院所與長照機構開放資料庫總覽。",
+      "免費線上健康計算器、長照與兒少福利查詢、醫療照護院所、交通能源、防災示警、遠離詐騙與成癮防治等全臺 80+ 款民生開放資料便民工具總覽。",
     images: [`${baseUrl}/images/og/tools.png`],
   },
 };
@@ -108,6 +115,56 @@ const TOOL_ICONS: Record<string, string> = {
   "vet-clinics": "🐾",
   "latest-books": "📖",
   "emergency-hotlines": "🚨",
+  "accessible-parking": "🅿️",
+  "accessible-transit": "🚌",
+  "adult-preventive-care": "🩺",
+  aed: "⚡",
+  "pesticide-sales": "🌾",
+  "anti-fraud": "🛡️",
+  "senior-friendly": "🧓",
+  "audible-signals": "🔊",
+  "baby-friendly-hospitals": "🤱",
+  bookstores: "📚",
+  "breastfeeding-rooms": "🍼",
+  "child-native-languages": "🗣️",
+  "child-subsidies": "🧧",
+  "childcare-centers": "🧸",
+  "home-emergency-care": "🏥",
+  "hearing-aid-subsidies": "🦻",
+  "contraception-map": "💊",
+  "cpc-prices": "⛽",
+  "cultural-events": "🎭",
+
+  "early-intervention": "🌱",
+  "emergency-supplies": "🎒",
+  "er-status": "🚑",
+
+  "food-safety": "🥬",
+  "funeral-facilities": "🕯️",
+  "global-watch": "🌐",
+  "health-supplements": "🍯",
+
+
+  "inundation-map": "🌊",
+  "ltc-benefits": "🧮",
+
+  "medical-violators": "⚠️",
+  "mental-health": "💚",
+  "organ-donation-hospitals": "🎗️",
+  "outdoor-safety": "🏃",
+  "pet-adoption": "🐶",
+  "postpartum-care": "🛏️",
+  "power-grid-overview": "🔋",
+  "public-art": "🎨",
+  "rare-disease-care": "🔬",
+  "sheltered-workshops": "🏪",
+  "smoking-cessation": "🚭",
+  "social-welfare-centers": "🏛️",
+  "tourism-factories": "🏭",
+
+
+  "water-outages": "🚰",
+  "work-school-status": "📅",
 };
 
 /**
@@ -155,8 +212,8 @@ export default function ToolsIndexPage() {
               健康工具與公衛資料庫總覽
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
-              提供全台 30+
-              款免安裝線上健康試算工具、心肺睡眠量表評估、即時環境監測與公衛醫療機構資料庫檢索。
+              提供全臺 {TOOL_CATALOG.length} 款免安裝線上便民工具，涵蓋長照與社福、婦幼兒少、健康自我評估、就醫用藥、交通能源、防災示警、環境食安及遠離詐騙與成癮防治。
+
             </p>
           </section>
 

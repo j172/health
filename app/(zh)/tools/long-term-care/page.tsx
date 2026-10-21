@@ -20,7 +20,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["長照機構", "長期照顧", "長照2.0", "居家醫療", "老人福利機構", "伯公照護站", "照顧圈"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["器官捐贈", "器捐網絡責任醫院", "器捐意願簽署", "健保卡器捐註記", "大愛器捐", "安寧緩和醫療"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

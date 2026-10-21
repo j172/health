@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["產後護理之家", "月子中心", "坐月子中心查詢", "產後護理機構評鑑"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

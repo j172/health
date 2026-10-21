@@ -26,7 +26,6 @@ export const metadata: Metadata = {
     "社福機構查詢",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

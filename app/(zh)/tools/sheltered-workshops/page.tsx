@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["庇護工場", "身心障礙就業", "身障手作", "公益禮盒", "勞動部開放資料", "烘焙伴手禮"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

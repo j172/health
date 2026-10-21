@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["罕見疾病", "罕病照護諮詢中心", "遺傳諮詢", "罕病確診醫院", "重大傷病卡", "罕病用藥補助"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

@@ -27,7 +27,22 @@ export const resolveArticleImageUrl = (
 
 export const SITE_NAME = "j172tw Healthz";
 export const SITE_DESCRIPTION =
-  "彙整台灣官方機構公衛醫療新聞、ESG永續發展報導與中央氣象署即時警報，並提供健康計算、醫療照護、交通能源、防災示警等便民生活工具，打造繁體中文公共資訊與便民服務總覽。";
+  "彙整臺灣官方機構公衛醫療新聞、ESG永續發展報導與中央氣象署即時警報，並提供長照、兒少、健康計算、醫療照護、交通能源、防災示警、遠離詐騙與成癮等便民生活工具，打造繁體中文公共資訊與便民服務總覽。";
+export const SITE_KEYWORDS = [
+  "j172tw Healthz",
+  "台灣便民工具",
+  "臺灣便民生活工具",
+  "長照補助與機構查詢",
+  "兒少福利與托育補助",
+  "健康計算器",
+  "醫療照護與健保院所",
+  "交通能源與油價電力",
+  "防災示警與天氣警報",
+  "遠離詐騙與165反詐查詢",
+  "戒菸與心理健康成癮防治",
+  "台灣公衛醫療新聞",
+  "臺灣政府開放資料",
+];
 
 export const getBaseUrl = (): string => (process.env.APP_BASE_URL?.trim() || "https://health.j172.tw").replace(/\/$/, "");
 
@@ -142,7 +157,21 @@ export const buildOrganizationEntity = (baseUrl: string): Record<string, unknown
   },
   description: SITE_DESCRIPTION,
   inLanguage: "zh-TW",
-  knowsAbout: ["公共衛生", "醫療院所", "長期照顧", "空氣品質", "食品安全", "健康新聞", "傳染病防治", "健康計算評估"],
+  knowsAbout: [
+    "公共衛生",
+    "長期照顧",
+    "兒少福利",
+    "健康計算評估",
+    "醫療照護",
+    "交通能源",
+    "防災示警",
+    "反詐騙與資安防護",
+    "成癮防治與心理健康",
+    "空氣品質與環境安全",
+    "食品安全",
+    "健康新聞",
+    "傳染病防治",
+  ],
   publishingPrinciples: `${baseUrl}/privacy`,
   ethicsPolicy: `${baseUrl}/privacy`,
   correctionsPolicy: `${baseUrl}/privacy`,
@@ -401,6 +430,26 @@ export const buildToolGraphJsonLd = (
     },
   ];
 
+  if (tool.group !== "health-assessment" && tool.scientificBasis.length > 0) {
+    graph.push({
+      "@type": "Dataset",
+      "@id": `${canonical}#dataset`,
+      name: `${tool.title}開放資料集`,
+      description: tool.directAnswer || tool.description,
+      url: canonical,
+      inLanguage: pageLocale.inLanguage,
+      isAccessibleForFree: true,
+      license: "https://creativecommons.org/publicdomain/zero/1.0/",
+      creator: tool.scientificBasis.map((ref) => ({
+        "@type": "Organization",
+        name: ref.authority,
+        ...(ref.url ? { url: ref.url } : {}),
+      })),
+      dateModified: tool.lastUpdated,
+      isPartOf: { "@id": `${canonical}#webpage` },
+    });
+  }
+
   if (tool.faqs.length > 0) {
     graph.push({
       "@type": "FAQPage",
@@ -453,6 +502,10 @@ export const buildCategoryPageGraphJsonLd = (category: CategoryPageModel): Recor
         isPartOf: { "@id": `${baseUrl}/#website` },
         breadcrumb: { "@id": `${canonical}#breadcrumb` },
         mainEntity: { "@id": `${canonical}#catalog` },
+        speakable: {
+          "@type": "SpeakableSpecification",
+          cssSelector: ["h1", "#category-description"],
+        },
         inLanguage: "zh-TW",
       },
       {
@@ -605,7 +658,7 @@ export const buildGuidesIndexGraphJsonLd = (guides: Guide[]): Record<string, unk
         "@id": `${canonical}#webpage`,
         url: canonical,
         name: "生活情境指南",
-        description: "依家有長輩、懷孕到育兒、颱風地震、身心障礙者生活、出國與防疫等 5 種生活情境，依序整理對應工具的步驟指南。",
+        description: "依家有長輩、懷孕到育兒、颱風地震、身心障礙者生活、出國與防疫、遠離詐騙與成癮等 6 種生活情境，依序整理對應工具的步驟指南。",
         isPartOf: { "@id": `${baseUrl}/#website` },
         breadcrumb: { "@id": `${canonical}#breadcrumb` },
         inLanguage: "zh-TW",
@@ -696,7 +749,7 @@ export const buildToolsIndexGraphJsonLd = (tools: ToolCatalogEntry[]): Record<st
         url: `${baseUrl}/tools`,
         name: "健康工具與公衛資料庫總覽",
         description:
-          "免費線上健康計算器、疾病心血管評估、即時紫外線與地震監測，以及全台醫療院所與長照機構開放資料庫總覽。",
+          "免費線上健康計算器、長照與兒少福利查詢、醫療照護院所、交通能源、防災示警、遠離詐騙與成癮防治等全臺 80+ 款民生開放資料便民工具總覽。",
         isPartOf: { "@id": `${baseUrl}/#website` },
         breadcrumb: { "@id": `${baseUrl}/tools#breadcrumb` },
         inLanguage: "zh-TW",

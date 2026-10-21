@@ -25,7 +25,6 @@ export const metadata: Metadata = {
     "BeOK",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

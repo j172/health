@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["藥局查詢", "健保特約藥局", "一般藥局"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "藥局查詢", description: "查詢全台一般藥局及健保特約藥局。", url: canonical },
 };
 

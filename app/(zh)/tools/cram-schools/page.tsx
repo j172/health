@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["補習班", "短期補習班", "升學文理", "外語補習班", "技藝補習班", "立案查詢", "教育部"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "全國短期補習班查詢", description: "查詢全國 22 縣市立案短期補習班名冊與地址。", url: canonical },
 };
 

@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["室內空氣品質", "室內空氣品質管理法", "公告場所", "環境部"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

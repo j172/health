@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["身心障礙福利機構", "身障機構查詢", "衛福部"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "身心障礙福利機構查詢", description: "查詢全台身心障礙福利機構。", url: canonical },
 };
 

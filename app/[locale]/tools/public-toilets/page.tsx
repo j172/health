@@ -51,7 +51,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     ],
     alternates: { canonical, languages },
     // Matches app/(zh)/tools/public-toilets/page.tsx's own metadata.
-    robots: { index: false },
     openGraph: {
       title: meta.title,
       description: meta.description,

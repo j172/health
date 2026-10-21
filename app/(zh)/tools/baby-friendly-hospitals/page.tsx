@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["母嬰親善醫療院所", "母嬰同室", "母乳哺育", "婦幼醫院", "國際泌乳顧問", "婦產科診所"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

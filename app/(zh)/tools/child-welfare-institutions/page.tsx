@@ -23,7 +23,6 @@ export const metadata: Metadata = {
     "衛福部",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

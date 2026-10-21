@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["公廁查詢", "無障礙廁所", "親子廁所", "性別友善廁所", "尿布台"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

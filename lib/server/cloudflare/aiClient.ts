@@ -4,6 +4,7 @@ import { httpRequest } from "@/lib/server/net/httpClient";
 import { withRetry } from "@/lib/server/net/withRetry";
 
 const MODEL = "@cf/meta/llama-3.1-8b-instruct";
+const GEMINI_MODEL = "gemini-2.5-flash-lite";
 const DEFAULT_TIMEOUT_MS = 20_000;
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 750;
@@ -24,6 +25,48 @@ export class CloudflareAiQuotaExceededError extends Error {
     this.name = "CloudflareAiQuotaExceededError";
   }
 }
+
+interface GeminiGenerateContentResponse {
+  candidates?: {
+    content?: {
+      parts?: { text?: string }[];
+    };
+  }[];
+  error?: { message?: string; code?: number };
+}
+
+const runGeminiOnce = async (apiKey: string, prompt: string, timeoutMs: number): Promise<string> => {
+  const response = await httpRequest(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+    {
+      method: "POST",
+      timeoutMs,
+      headers: {
+        "x-goog-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { maxOutputTokens: 512, temperature: 0.2 },
+      }),
+    },
+  );
+
+  if (response.status < 200 || response.status >= 300) {
+    const bodyText = response.buffer.toString("utf-8").slice(0, 300);
+    if (response.status === 429) {
+      throw new CloudflareAiQuotaExceededError(`Google Gemini API free quota exceeded: ${bodyText}`);
+    }
+    throw new Error(`Google Gemini API request failed with HTTP ${response.status}: ${bodyText}`);
+  }
+
+  const json = JSON.parse(response.buffer.toString("utf-8")) as GeminiGenerateContentResponse;
+  const text = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("").trim();
+  if (!text) {
+    throw new Error(`Google Gemini API returned an empty response: ${json.error?.message ?? "no text part"}`);
+  }
+  return text;
+};
 
 interface WorkersAiChatResponse {
   success: boolean;
@@ -101,6 +144,43 @@ let quotaExceededOnUtcDay: string | null = null;
 let circuitOpenOnUtcDay: string | null = null;
 let consecutiveNonQuotaFailures = 0;
 const CIRCUIT_FAILURE_THRESHOLD = 3;
+let geminiQuotaExceededOnUtcDay: string | null = null;
+let geminiCircuitOpenOnUtcDay: string | null = null;
+let geminiConsecutiveFailures = 0;
+
+export const runGeminiAiChat = async (prompt: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> => {
+  const apiKey = env.geminiApiKey;
+  if (!apiKey) {
+    throw new CloudflareAiNotConfiguredError();
+  }
+  const today = currentUtcDay();
+  if (geminiQuotaExceededOnUtcDay === today) {
+    throw new CloudflareAiQuotaExceededError("Google Gemini API daily quota exceeded (skipping network request).");
+  }
+  if (geminiCircuitOpenOnUtcDay === today) {
+    throw new CloudflareAiCircuitOpenError("Google Gemini API circuit open for today (skipping network request).");
+  }
+  try {
+    const result = await withRetry(() => runGeminiOnce(apiKey, prompt, timeoutMs), {
+      maxAttempts: MAX_ATTEMPTS,
+      delayMs: RETRY_DELAY_MS,
+      isRetryable: (error) => !(error instanceof CloudflareAiQuotaExceededError),
+      nonErrorMessage: "Google Gemini API request failed.",
+    });
+    geminiConsecutiveFailures = 0;
+    return result;
+  } catch (error) {
+    if (error instanceof CloudflareAiQuotaExceededError) {
+      geminiQuotaExceededOnUtcDay = today;
+    } else {
+      geminiConsecutiveFailures += 1;
+      if (geminiConsecutiveFailures >= CIRCUIT_FAILURE_THRESHOLD) {
+        geminiCircuitOpenOnUtcDay = today;
+      }
+    }
+    throw error;
+  }
+};
 
 const currentUtcDay = (): string => new Date().toISOString().slice(0, 10);
 
@@ -121,16 +201,25 @@ const currentUtcDay = (): string => new Date().toISOString().slice(0, 10);
 export const runCloudflareAiChat = async (prompt: string, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<string> => {
   const { accountId, apiToken } = env.cloudflare;
   if (!accountId || !apiToken) {
+    if (env.geminiApiKey) {
+      return runGeminiAiChat(prompt, timeoutMs);
+    }
     throw new CloudflareAiNotConfiguredError();
   }
 
   const today = currentUtcDay();
   if (quotaExceededOnUtcDay === today) {
+    if (env.geminiApiKey) {
+      return runGeminiAiChat(prompt, timeoutMs);
+    }
     throw new CloudflareAiQuotaExceededError(
       "Cloudflare AI daily neuron quota exceeded (remembered from an earlier call today — skipping network request).",
     );
   }
   if (circuitOpenOnUtcDay === today) {
+    if (env.geminiApiKey) {
+      return runGeminiAiChat(prompt, timeoutMs);
+    }
     throw new CloudflareAiCircuitOpenError(
       `Cloudflare AI has failed ${CIRCUIT_FAILURE_THRESHOLD}+ times in a row today (remembered from earlier calls today — skipping network request).`,
     );
@@ -153,6 +242,9 @@ export const runCloudflareAiChat = async (prompt: string, timeoutMs = DEFAULT_TI
       if (consecutiveNonQuotaFailures >= CIRCUIT_FAILURE_THRESHOLD) {
         circuitOpenOnUtcDay = today;
       }
+    }
+    if (env.geminiApiKey) {
+      return runGeminiAiChat(prompt, timeoutMs);
     }
     throw error;
   }

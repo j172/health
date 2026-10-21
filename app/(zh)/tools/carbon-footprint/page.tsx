@@ -22,7 +22,6 @@ export const metadata: Metadata = {
     "溫室氣體",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

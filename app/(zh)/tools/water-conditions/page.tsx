@@ -24,7 +24,6 @@ export const metadata: Metadata = {
     "防汛",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

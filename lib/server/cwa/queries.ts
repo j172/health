@@ -376,6 +376,7 @@ export const upsertCwaRainfall = (records: CwaRainfallRecord[]) =>
        town_name = VALUES(town_name),
        lat = VALUES(lat),
        lng = VALUES(lng),
+       obs_time = VALUES(obs_time),
        precip_now = VALUES(precip_now),
        precip_10min = VALUES(precip_10min),
        precip_1hr = VALUES(precip_1hr),

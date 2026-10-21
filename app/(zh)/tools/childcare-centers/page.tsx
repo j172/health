@@ -18,7 +18,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["托嬰中心", "居家托育", "保母", "準公共", "公辦民營托嬰中心", "社區公共托育家園"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

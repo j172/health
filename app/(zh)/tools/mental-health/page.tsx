@@ -29,7 +29,6 @@ export const metadata: Metadata = {
     "0800-770-885",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

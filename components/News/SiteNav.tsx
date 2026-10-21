@@ -518,13 +518,13 @@ export default function SiteNav() {
     | { type: "link"; href: string; label: string; icon: string }
     | { type: "button"; label: string; icon: string; onClick: () => void }
   > = [
-    { type: "link", href: "/", label: "首頁", icon: "🏠" },
-    { type: "link", href: "/tools", label: "工具", icon: "🛠️" },
-    { type: "link", href: "/nearby", label: "我附近", icon: "📍" },
-    { type: "link", href: "/tools/emergency-hotlines", label: "緊急", icon: "🚨" },
+    { type: "link", href: "/", label: t("nav.home", "首頁"), icon: "🏠" },
+    { type: "link", href: "/tools", label: t("nav.toolsShort", "工具"), icon: "🛠️" },
+    { type: "link", href: "/nearby", label: t("nav.nearby", "我附近"), icon: "📍" },
+    { type: "link", href: "/tools/emergency-hotlines", label: t("nav.emergencyShort", "緊急"), icon: "🚨" },
     {
       type: "button",
-      label: "搜尋",
+      label: t("common.search", "搜尋"),
       icon: "🔍",
       onClick: () => setSearchOpen(true),
     },
@@ -655,7 +655,7 @@ export default function SiteNav() {
                   />
                 </svg>
                 <span className="sr-only sm:not-sr-only sm:inline">
-                  {t("nav.searchPlaceholder", "搜尋新聞...")}
+                  {t("nav.searchPlaceholder", "搜尋工具與新聞...")}
                 </span>
                 <kbd className="hidden rounded bg-slate-200/60 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 sm:inline-block dark:bg-slate-800 dark:text-slate-400">
                   ⌘K

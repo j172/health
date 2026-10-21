@@ -235,7 +235,7 @@ export default function SiteFooter() {
             <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
               {t(
                 "footer.tagline",
-                "彙整衛福部、疾管署、中央氣象署等官方機構與各大新聞媒體公開資訊，並提供健康計算、醫療照護、交通能源、防災示警等便民生活工具，協助您一手掌握公衛醫療動態與日常生活資訊。",
+                "彙整衛福部、疾管署、中央氣象署等官方機構與各大新聞媒體公開資訊，並提供長照、兒少、健康計算、醫療照護、交通能源、防災示警、遠離詐騙與成癮等便民生活工具，協助您一手掌握公衛醫療動態與日常生活資訊。",
               )}
             </p>
           </div>
@@ -310,7 +310,13 @@ export default function SiteFooter() {
             const headerLabel =
               block.id === "civic-partners"
                 ? t("footer.civicPartners", block.label)
-                : block.label;
+                : block.id === "overview"
+                  ? t("footer.aboutSite", block.label)
+                  : block.id === "categories"
+                    ? t("footer.toolCategories", block.label)
+                    : block.id === "guides"
+                      ? t("footer.lifeGuides", block.label)
+                      : block.label;
             return (
               <FooterColumn key={block.id} label={headerLabel}>
                 {block.links.map((link) =>

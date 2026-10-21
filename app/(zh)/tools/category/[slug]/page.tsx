@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { buildCategoryPageGraphJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import { TOOL_GROUP_META } from "@/lib/server/tools/catalog";
-import { buildCategoryPage } from "@/lib/server/tools/navModel";
+import { buildCategoryPage, GUIDES } from "@/lib/server/tools/navModel";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 
 // StabloHeader renders a live DB-backed weather-alert bar (same reason every
@@ -78,6 +78,10 @@ export default async function ToolCategoryPage({
   }
 
   const categoryGraph = buildCategoryPageGraphJsonLd(category);
+  const categoryToolSlugs = new Set(category.tools.map((t) => t.slug));
+  const relatedGuides = GUIDES.filter((guide) =>
+    guide.steps.some((step) => categoryToolSlugs.has(step.toolSlug)),
+  );
 
   return (
     <>
@@ -115,7 +119,10 @@ export default async function ToolCategoryPage({
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl dark:text-slate-100">
               {category.label}
             </h1>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            <p
+              id="category-description"
+              className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 dark:text-slate-400"
+            >
               {category.description}
             </p>
           </section>
@@ -144,6 +151,45 @@ export default async function ToolCategoryPage({
               </Link>
             ))}
           </div>
+          {relatedGuides.length > 0 && (
+            <section className="mt-12 border-t border-slate-200/80 pt-10 dark:border-slate-800" aria-labelledby="category-related-guides">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 id="category-related-guides" className="text-lg font-bold text-slate-900 dark:text-slate-100">
+                  相關生活情境指南
+                </h2>
+                <Link
+                  href="/guides"
+                  className="text-xs font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
+                >
+                  查看全部生活情境 →
+                </Link>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedGuides.map((guide) => (
+                  <Link
+                    key={guide.slug}
+                    href={`/guides/${guide.slug}`}
+                    className="group flex flex-col justify-between rounded-2xl border border-indigo-100 bg-indigo-50/40 p-5 transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:bg-white hover:shadow-sm dark:border-indigo-900/50 dark:bg-indigo-950/20 dark:hover:border-indigo-700"
+                  >
+                    <div>
+                      <span className="inline-block rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-bold text-indigo-700 dark:bg-indigo-900/60 dark:text-indigo-300">
+                        {guide.steps.length} 個步驟指南
+                      </span>
+                      <h3 className="mt-2.5 text-sm font-bold text-slate-900 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                        {guide.title}
+                      </h3>
+                      <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
+                        {guide.description}
+                      </p>
+                    </div>
+                    <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+                      前往情境指南 →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </main>
 
         <StabloFooter />

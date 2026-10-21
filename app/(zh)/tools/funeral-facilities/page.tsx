@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["公立公墓", "靈骨塔", "納骨塔", "火化場", "殯儀館", "合法禮儀公司", "樹葬自然葬", "內政部殯葬資訊網"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

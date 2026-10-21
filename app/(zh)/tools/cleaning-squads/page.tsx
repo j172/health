@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: catalogEntry.keywords,
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

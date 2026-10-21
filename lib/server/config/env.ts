@@ -83,4 +83,8 @@ export const env = {
   // null`) so a missing token renders a "not configured" status panel
   // instead of ever committing a real value into source (AC: 不寫死在原始碼).
   waqiToken: process.env.WAQI_TOKEN?.trim() || null,
+  geminiApiKey:
+    process.env.GEMINI_API_KEY?.trim() ||
+    process.env.GOOGLE_AI_API_KEY?.trim() ||
+    null,
 };

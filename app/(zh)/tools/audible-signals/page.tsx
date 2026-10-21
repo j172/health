@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["盲人有聲號誌", "行人穿越道語音號誌", "視障", "App觸發"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "全國盲人有聲號誌查詢", description: "查詢全國盲人有聲號誌設置路口與是否支援App觸發。", url: canonical },
 };
 

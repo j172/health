@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["無障礙ATM", "信用合作社", "輪椅可及", "語音服務ATM"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "信用合作社無障礙ATM查詢", description: "查詢全台信用合作社無障礙ATM。", url: canonical },
 };
 

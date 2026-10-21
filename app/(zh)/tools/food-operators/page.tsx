@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["食品業者登錄", "食品業者查詢", "食藥署", "統一編號查詢"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "食品業者登錄查詢", description: "查詢食品業者登錄字號與登錄項目。", url: canonical },
 };
 

@@ -43,7 +43,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     keywords: ["NHI-contracted medical facilities", "Taiwan hospital search", "clinic directory Taiwan"],
     alternates: { canonical, languages },
     // Matches app/(zh)/tools/clinics/page.tsx's own metadata.
-    robots: { index: false },
     openGraph: {
       title: meta.title,
       description: meta.description,

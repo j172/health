@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["戒菸門診", "二代戒菸", "戒菸補助", "戒菸藥局", "戒菸衛教", "國健署戒菸特約"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

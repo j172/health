@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["早期療育", "發展遲緩", "聯合評估中心"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "早期療育資源地圖", description: "查詢全國早期療育單位與縣市聯合評估中心。", url: canonical },
 };
 

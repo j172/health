@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["公共藝術", "文化部", "藝術地圖", "演藝場所", "表演場館", "演藝廳", "裝置藝術", "雕塑", "公共設施地標"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

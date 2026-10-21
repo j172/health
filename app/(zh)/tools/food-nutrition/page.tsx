@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["食品營養成分", "營養成分資料庫", "食藥署", "熱量查詢"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "食品營養成分查詢", description: "查詢食品熱量與各項營養成分含量。", url: canonical },
 };
 

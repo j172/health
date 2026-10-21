@@ -15,7 +15,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["動物認領養", "流浪動物", "公立收容所", "領養代替購買", "狗狗領養", "貓咪領養", "農業部開放資料"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

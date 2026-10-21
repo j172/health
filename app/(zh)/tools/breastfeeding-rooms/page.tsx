@@ -24,7 +24,6 @@ export const metadata: Metadata = {
     "自願設置哺集乳室",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: {
     title: catalogEntry.title,
     description: catalogEntry.description,

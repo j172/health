@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import "../globals.css";
 import type { Metadata, Viewport } from "next";
 import Provider from "./(site)/Provider";
-import { buildSiteGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/server/news/seo";
+import { buildSiteGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME } from "@/lib/server/news/seo";
 import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import InAppBrowserBanner from "@/components/Common/InAppBrowserBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
@@ -38,6 +38,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
   title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  keywords: SITE_KEYWORDS,
   description: SITE_DESCRIPTION,
   icons: { icon: "/images/favicon.ico", apple: "/images/icon/pwa-192.png" },
   appleWebApp: { capable: true, title: "j172tw Healthz", statusBarStyle: "default" },

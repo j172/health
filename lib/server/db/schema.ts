@@ -418,7 +418,7 @@ export const TABLE_DDL = {
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
-      UNIQUE KEY uq_aqi_reading (site_id, recorded_at),
+      UNIQUE KEY uq_aqi_reading (site_id),
       KEY idx_aqi_reading_county (county),
       KEY idx_aqi_reading_recorded (recorded_at),
       KEY idx_aqi_reading_geo (lat, lng)
@@ -442,7 +442,7 @@ export const TABLE_DDL = {
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
-      UNIQUE KEY uq_pm25_reading (site_name, recorded_at),
+      UNIQUE KEY uq_pm25_reading (site_name),
       KEY idx_pm25_reading_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
@@ -592,7 +592,7 @@ export const TABLE_DDL = {
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
-      UNIQUE KEY uq_cwa_station_weather (dataset_id, station_id, obs_time),
+      UNIQUE KEY uq_cwa_station_weather (dataset_id, station_id),
       KEY idx_cwa_station_weather_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
@@ -634,7 +634,7 @@ export const TABLE_DDL = {
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       PRIMARY KEY (id),
-      UNIQUE KEY uq_cwa_rainfall (station_id, obs_time),
+      UNIQUE KEY uq_cwa_rainfall (station_id),
       KEY idx_cwa_rainfall_geo (lat, lng)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,

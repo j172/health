@@ -27,17 +27,17 @@ const PAGE_I18N_CONTENT: Record<
     en: {
       title: "j172tw Healthz",
       description:
-        "A hub for Taiwan's official public-health and medical news, ESG sustainability reporting, and the Central Weather Administration's real-time alerts, together with health, transportation, energy, and disaster-preparedness tools for everyday life.",
+        "A hub for Taiwan's official public-health and medical news, ESG sustainability reporting, and the Central Weather Administration's real-time alerts, together with long-term care, child and youth welfare, health calculators, medical care, transportation, energy, disaster preparedness, and anti-fraud & addiction-support tools for everyday life.",
     },
     ja: {
       title: "j172tw Healthz",
       description:
-        "台湾の公的機関による公衆衛生・医療ニュース、ESGサステナビリティ報道、中央気象署のリアルタイム警報を集約し、健康計算、医療・介護、交通・エネルギー、防災警戒などの生活支援ツールを提供する公共情報ハブです。",
+        "台湾の公的機関による公衆衛生・医療ニュース、ESGサステナビリティ報道、中央気象署のリアルタイム警報を集約し、介護（長照）、児童・青少年福祉、健康計算、医療ケア、交通・エネルギー、防災警戒、詐欺対策・依存症支援などの生活支援ツールを提供する公共情報ハブです。",
     },
     ko: {
       title: "j172tw Healthz",
       description:
-        "대만 공공기관의 공중보건·의료 뉴스, ESG 지속가능경영 보도, 중앙기상청의 실시간 경보를 종합하고, 건강 계산, 의료·돌봄, 교통·에너지, 재난 대비 등 생활 편의 도구를 제공하는 공공정보 허브입니다.",
+        "대만 공공기관의 공중보건·의료 뉴스, ESG 지속가능경영 보도, 중앙기상청의 실시간 경보를 종합하고, 장기요양, 아동·청소년 복지, 건강 계산, 의료·돌봄, 교통·에너지, 재난 대비, 사기 예방 및 중독 지원 등 생활 편의 도구를 제공하는 공공정보 허브입니다.",
     },
   },
   nearby: {

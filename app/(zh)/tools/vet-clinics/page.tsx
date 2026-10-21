@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["動物醫院查詢", "獸醫診所", "寵物醫院", "全台獸醫師名冊"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "全台動物醫院與獸醫診所查詢", description: "查詢合法登記之獸醫診療機構與動物醫院。", url: canonical },
 };
 

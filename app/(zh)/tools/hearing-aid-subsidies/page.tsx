@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["助聽器評估", "身心障礙輔具補助", "聽力檢查", "純音聽力測驗", "助聽器選配", "社家署特約院所"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

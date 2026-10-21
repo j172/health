@@ -45,7 +45,6 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     keywords: ["pharmacy search Taiwan", "NHI-contracted pharmacy", "drug store directory"],
     alternates: { canonical, languages },
     // Matches app/(zh)/tools/pharmacies/page.tsx's own metadata.
-    robots: { index: false },
     openGraph: {
       title: meta.title,
       description: meta.description,

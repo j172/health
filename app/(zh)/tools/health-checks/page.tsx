@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["健康檢查機構", "勞工健檢", "健檢醫院", "職業傷病防治網絡"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "健康檢查機構查詢", description: "查詢勞工健康檢查認可醫療機構及職業傷病防治網絡醫院。", url: canonical },
 };
 

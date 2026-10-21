@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["藝文展覽", "文化部", "展覽查詢", "親子活動", "音樂會", "戲劇表演", "講座", "公益活動", "志工培訓", "台灣公益資訊中心"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

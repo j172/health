@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["在宅急症照護", "在宅醫療", "健保試辦計畫", "抗生素在宅施打", "遠距生理監控", "高齡在家住院"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 

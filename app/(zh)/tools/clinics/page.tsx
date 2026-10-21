@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   description: catalogEntry.description,
   keywords: ["醫療院所查詢", "健保特約醫院", "台灣醫院搜尋"],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: "醫療院所查詢", description: "查詢全民健保特約醫療院所。", url: canonical },
 };
 

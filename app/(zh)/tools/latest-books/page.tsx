@@ -25,7 +25,6 @@ export const metadata: Metadata = {
     "寵物照護書單",
   ],
   alternates: { canonical },
-  robots: { index: false },
   openGraph: { title: catalogEntry.title, description: catalogEntry.description, url: canonical },
 };
 
