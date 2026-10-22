@@ -6,6 +6,8 @@ import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { estimateLtcBenefits } from "@/lib/server/ltcBenefits/estimateLtcBenefits";
 import type { LtcBenefitsSchedule, LtcNeedLevelSelection, Ltc3PlanItem, WelfareStatus } from "@/lib/server/ltcBenefits/types";
 import { LTC_NEED_LEVELS } from "@/lib/server/ltcBenefits/types";
+import { TextWithPhoneLinks } from "@/components/Common/TextWithPhoneLinks";
+import type { TextWithPhoneLinks as TextWithPhoneLinksValue } from "@/lib/types/textWithPhoneLinks";
 
 interface Props {
   schedule: LtcBenefitsSchedule;
@@ -18,10 +20,10 @@ const WELFARE_STATUS_OPTIONS: { value: WelfareStatus; label: string }[] = [
   { value: "lowIncome", label: "低收入戶" },
 ];
 
-const APPLICATION_STEPS = [
+const APPLICATION_STEPS: { order: number; title: TextWithPhoneLinksValue; body: string }[] = [
   {
     order: 1,
-    title: "撥打 1966 長照專線",
+    title: [{ text: "撥打 " }, { tel: "1966", text: "1966" }, { text: " 長照專線" }],
     body: "免付費，週一至週五 08:30–20:30，例假日 09:00–17:30（國定假日除外）。可由本人、家屬或醫事人員代為申請，也可透過各縣市長期照顧管理中心臨櫃或線上申請。",
   },
   {
@@ -117,7 +119,9 @@ export default function LtcBenefitsContent({ schedule, updates }: Props) {
                 {step.order}
               </span>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{step.title}</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                  <TextWithPhoneLinks value={step.title} />
+                </h3>
                 <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{step.body}</p>
               </div>
             </li>

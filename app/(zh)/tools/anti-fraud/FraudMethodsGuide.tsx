@@ -1,4 +1,6 @@
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
+import { TextWithPhoneLinks } from "@/components/Common/TextWithPhoneLinks";
+import type { TextWithPhoneLinks as TextWithPhoneLinksValue } from "@/lib/types/textWithPhoneLinks";
 
 /**
  * Static "常見手法與應變" section for issue #570. No DB access — every
@@ -7,12 +9,17 @@ import { appendOutboundUtm } from "@/lib/format/outboundLink";
  * invented copy. Kept as plain static JSX (not a catalog-driven FAQ list)
  * since this needs richer formatting (辨識重點 bullet lists + a distinct
  * 應變步驟 block) than ToolCatalogEntry.faqs's flat Q/A shape supports.
+ *
+ * `identifyPoints` items are `TextWithPhoneLinks` (plain string, or a
+ * segment array when the sentence names a hotline) so the 165/110 mentions
+ * below render as clickable `tel:` links without rewriting every bullet
+ * that has no phone number in it.
  */
 
 interface FraudMethod {
   title: string;
   summary: string;
-  identifyPoints: string[];
+  identifyPoints: TextWithPhoneLinksValue[];
   sourceLabel: string;
   sourceUrl: string;
 }
@@ -61,7 +68,7 @@ const METHODS: FraudMethod[] = [
     identifyPoints: [
       "金管會與銀行局公開強調「三個不會」：不會主動聯繫民眾、不會要求管制或凍結民眾帳戶、不會以任何理由要求民眾匯款或繳交保證金",
       "司法機關不會透過電話要求「自證清白」或指示將款項轉入指定帳戶",
-      "接到這類電話應直接掛斷，改撥 165 或原機關公開電話查證，不要回撥來電顯示的號碼",
+      [{ text: "接到這類電話應直接掛斷，改撥 " }, { tel: "165", text: "165" }, { text: " 或原機關公開電話查證，不要回撥來電顯示的號碼" }],
     ],
     sourceLabel: "金融監督管理委員會",
     sourceUrl: "https://www.fsc.gov.tw/",
@@ -73,7 +80,7 @@ const METHODS: FraudMethod[] = [
     identifyPoints: [
       "對方長期不願意視訊、見面，或見面理由屢屢落空，應提高警覺",
       "交往過程中切勿透露過多個人與財務資訊，更不要依對方指示操作投資或匯款",
-      "一旦對方以任何理由要求金錢往來，應先暫停聯繫並向 165 查證",
+      [{ text: "一旦對方以任何理由要求金錢往來，應先暫停聯繫並向 " }, { tel: "165", text: "165" }, { text: " 查證" }],
     ],
     sourceLabel: "165全民防騙網",
     sourceUrl: "https://165.npa.gov.tw/",
@@ -81,17 +88,20 @@ const METHODS: FraudMethod[] = [
 ];
 
 interface ResponseStep {
-  step: string;
-  description: string;
+  step: TextWithPhoneLinksValue;
+  description: TextWithPhoneLinksValue;
   sourceLabel: string;
   sourceUrl: string;
 }
 
 const RESPONSE_STEPS: ResponseStep[] = [
   {
-    step: "撥打165查證或求助",
-    description:
-      "無論是尚在查證可疑訊息，還是已經確定受騙，第一步都是撥打 165 反詐騙諮詢專線（免付費），說明情況並依指示處理。",
+    step: [{ text: "撥打" }, { tel: "165", text: "165" }, { text: "查證或求助" }],
+    description: [
+      { text: "無論是尚在查證可疑訊息，還是已經確定受騙，第一步都是撥打 " },
+      { tel: "165", text: "165" },
+      { text: " 反詐騙諮詢專線（免付費），說明情況並依指示處理。" },
+    ],
     sourceLabel: "165全民防騙網",
     sourceUrl: "https://165.npa.gov.tw/",
   },
@@ -104,7 +114,11 @@ const RESPONSE_STEPS: ResponseStep[] = [
   },
   {
     step: "向警察機關報案",
-    description: "到就近派出所或撥打 110 報案，取得受理案件證明單（三聯單），這是後續申請圈存、保險理賠或其他求助程序常需要的文件。",
+    description: [
+      { text: "到就近派出所或撥打 " },
+      { tel: "110", text: "110" },
+      { text: " 報案，取得受理案件證明單（三聯單），這是後續申請圈存、保險理賠或其他求助程序常需要的文件。" },
+    ],
     sourceLabel: "165全民防騙網",
     sourceUrl: "https://165.npa.gov.tw/",
   },
@@ -153,10 +167,12 @@ export default function FraudMethodsGuide() {
             <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200">{method.title}</h3>
             <p className="mt-1 text-xs leading-relaxed text-slate-600 dark:text-slate-400">{method.summary}</p>
             <ul className="mt-2 space-y-1">
-              {method.identifyPoints.map((point) => (
-                <li key={point} className="flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+              {method.identifyPoints.map((point, index) => (
+                <li key={index} className="flex items-start gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
                   <span className="mt-0.5 text-indigo-500 dark:text-indigo-400">•</span>
-                  <span>{point}</span>
+                  <span>
+                    <TextWithPhoneLinks value={point} />
+                  </span>
                 </li>
               ))}
             </ul>
@@ -174,15 +190,19 @@ export default function FraudMethodsGuide() {
       <ol className="mt-3 space-y-3">
         {RESPONSE_STEPS.map((item, index) => (
           <li
-            key={item.step}
+            key={index}
             className="flex gap-3 rounded-xl border border-amber-200/80 bg-amber-50/50 p-3.5 dark:border-amber-900/50 dark:bg-amber-950/30"
           >
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-bold text-white">
               {index + 1}
             </span>
             <div>
-              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">{item.step}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">{item.description}</p>
+              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                <TextWithPhoneLinks value={item.step} />
+              </p>
+              <p className="mt-1 text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+                <TextWithPhoneLinks value={item.description} />
+              </p>
               <p className="mt-1.5 text-[11px]">
                 <SourceLink label={item.sourceLabel} url={item.sourceUrl} />
               </p>

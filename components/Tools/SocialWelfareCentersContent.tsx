@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { COUNTY_1999_LIST } from "@/lib/server/hotlines/county1999";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
+import { TextWithPhoneLinks } from "@/components/Common/TextWithPhoneLinks";
 import {
   QUICK_EXIT_URL,
   SITUATIONS,
@@ -167,7 +168,7 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
                   <li key={idx} className="flex gap-2">
                     <span className="shrink-0">•</span>
                     <span>
-                      {step.label}
+                      <TextWithPhoneLinks value={step.label} />
                       {step.href && (
                         <>
                           {" "}

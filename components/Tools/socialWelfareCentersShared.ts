@@ -9,6 +9,8 @@
  * all.
  */
 
+import type { TextWithPhoneLinks } from "@/lib/types/textWithPhoneLinks";
+
 export interface SocialWelfareCenter {
   name: string;
   address: string | null;
@@ -17,7 +19,8 @@ export interface SocialWelfareCenter {
 }
 
 export interface SituationStep {
-  label: string;
+  /** Plain string, or a segment array when this step's wording names a hotline number — see lib/types/textWithPhoneLinks.ts. */
+  label: TextWithPhoneLinks;
   href?: string;
 }
 
@@ -43,7 +46,13 @@ export const SITUATIONS: Situation[] = [
     description:
       "臨時收入中斷、急難事件或生活費周轉不來時，社福中心可以協助評估急難紓困、生活扶助金與其他社會救助資源，不需要自己摸索該申請哪一項。",
     steps: [
-      { label: "撥打 1957 福利諮詢專線（免付費，每日 08:00-22:00），由專人依您的狀況轉介適合的補助與資源。" },
+      {
+        label: [
+          { text: "撥打 " },
+          { tel: "1957", text: "1957" },
+          { text: " 福利諮詢專線（免付費，每日 08:00-22:00），由專人依您的狀況轉介適合的補助與資源。" },
+        ],
+      },
       { label: "線上查詢社會救助相關規定與資格。", href: "https://dep.mohw.gov.tw/DOSAASW/" },
       { label: "攜帶身分證件與收入相關資料，前往住家所在地的社福中心申請評估（見下方查詢）。" },
     ],
@@ -56,8 +65,20 @@ export const SITUATIONS: Situation[] = [
     description:
       "長期照顧家人造成身心疲憊、喘不過氣，是很多照顧者共同的處境。社福中心與長照體系都能協助分擔照顧壓力，安排喘息服務與其他支持資源。",
     steps: [
-      { label: "撥打 1966 長照服務專線（前 5 分鐘免付費，週一至週五 08:30-12:00、13:30-17:30），申請長照需求評估。" },
-      { label: "撥打 1957 福利諮詢專線（免付費，每日 08:00-22:00），尋求資源轉介與情緒支持。" },
+      {
+        label: [
+          { text: "撥打 " },
+          { tel: "1966", text: "1966" },
+          { text: " 長照服務專線（前 5 分鐘免付費，週一至週五 08:30-12:00、13:30-17:30），申請長照需求評估。" },
+        ],
+      },
+      {
+        label: [
+          { text: "撥打 " },
+          { tel: "1957", text: "1957" },
+          { text: " 福利諮詢專線（免付費，每日 08:00-22:00），尋求資源轉介與情緒支持。" },
+        ],
+      },
       { label: "到住家所在地社福中心洽談喘息服務、關懷訪視等資源（見下方查詢）。" },
     ],
     officialSource: { label: "長期照顧十年計畫 2.0", url: "https://1966.gov.tw" },
@@ -69,9 +90,27 @@ export const SITUATIONS: Situation[] = [
     description:
       "如果你自己正在經歷家庭暴力、目睹暴力，或懷疑身邊的兒童、少年正遭受虐待或疏忽，113 全國保護專線是 24 小時都能撥打的單一窗口，會協助轉介保護、醫療與法律資源。",
     steps: [
-      { label: "立刻撥打 113 全國保護專線（24 小時、免付費，聽語障人士可撥打 113 簡訊報案）。" },
+      {
+        label: [
+          { text: "立刻撥打 " },
+          { tel: "113", text: "113" },
+          { text: " 全國保護專線（24 小時、免付費，聽語障人士可撥打 " },
+          { tel: "113", text: "113" },
+          { text: " 簡訊報案）。" },
+        ],
+      },
       { label: "線上通報「關懷e起來」，可通報家暴、兒少保護、性侵害等保護性案件。", href: "https://ecare.mohw.gov.tw/" },
-      { label: "如有立即的生命安全危險，請先撥打 110 或 119 求援，再聯繫 113 後續協助。" },
+      {
+        label: [
+          { text: "如有立即的生命安全危險，請先撥打 " },
+          { tel: "110", text: "110" },
+          { text: " 或 " },
+          { tel: "119", text: "119" },
+          { text: " 求援，再聯繫 " },
+          { tel: "113", text: "113" },
+          { text: " 後續協助。" },
+        ],
+      },
     ],
     officialSource: { label: "關懷e起來（保護性案件線上通報）", url: "https://ecare.mohw.gov.tw/" },
     isAbuseRelated: true,
@@ -83,8 +122,16 @@ export const SITUATIONS: Situation[] = [
     description:
       "家中長輩獨居，擔心健康、安全或營養狀況，社福中心與長照體系可以協助安排關懷訪視、緊急救援連線、送餐等服務，不需要家人自己全年無休盯著。",
     steps: [
-      { label: "撥打 1957 福利諮詢專線，詢問所在地的獨居長輩關懷與送餐服務。" },
-      { label: "撥打 1966 長照服務專線，申請長照需求評估（居家服務、送餐、緊急救援連線等）。" },
+      {
+        label: [{ text: "撥打 " }, { tel: "1957", text: "1957" }, { text: " 福利諮詢專線，詢問所在地的獨居長輩關懷與送餐服務。" }],
+      },
+      {
+        label: [
+          { text: "撥打 " },
+          { tel: "1966", text: "1966" },
+          { text: " 長照服務專線，申請長照需求評估（居家服務、送餐、緊急救援連線等）。" },
+        ],
+      },
       { label: "聯繫住家所在地社福中心，請社工安排關懷訪視（見下方查詢）。" },
     ],
     officialSource: { label: "衛生福利部社會及家庭署", url: "https://www.sfaa.gov.tw/" },
@@ -96,7 +143,13 @@ export const SITUATIONS: Situation[] = [
     description:
       "未成年懷孕不需要自己一個人面對。全國未成年懷孕求助專線提供諮詢、資源轉介與陪伴，社福中心也能協助銜接就學、就養或其他社會福利資源。",
     steps: [
-      { label: "撥打全國未成年懷孕求助專線 0800-25-7085（衛生福利部社會及家庭署）。" },
+      {
+        label: [
+          { text: "撥打全國未成年懷孕求助專線 " },
+          { tel: "0800257085", text: "0800-25-7085" },
+          { text: "（衛生福利部社會及家庭署）。" },
+        ],
+      },
       { label: "查詢線上資源與常見問答。", href: "https://257085.sfaa.gov.tw/" },
       { label: "聯繫住家所在地社福中心，了解可運用的福利資源（見下方查詢）。" },
     ],
