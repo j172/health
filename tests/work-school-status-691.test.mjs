@@ -192,7 +192,7 @@ test("the catalog title and the homepage status-bar strings exist in en, ja and 
       "workdayOff",
       "workdayOffNamedTemplate",
       "workdayUnknown",
-      "workdayTyphoon",
+      "tomorrowWorkdayLabel",
     ]) {
       assert.ok(dict.homePage.statusBar[key]?.trim(), `${locale} homePage.statusBar.${key}`);
     }
@@ -300,17 +300,20 @@ test("the guide step is translated into en, ja and ko and keeps the 'this site d
 // 5. homepage status bar
 // ---------------------------------------------------------------------------
 
-test("HomeStatusBar has a 今日上班 pill linking the tool; a typhoon warning turns it red with 'go and check' wording, never a closure claim", () => {
+test("HomeStatusBar has separate 今天上班上課 and 明日上班 pills linking the tool, with no typhoon special-casing", () => {
   const bar = read("components", "Home", "HomeStatusBar.tsx");
-  assert.match(bar, /homePage\.statusBar\.workdayLabel", "今日上班"/);
+  assert.match(bar, /homePage\.statusBar\.workdayLabel", "今天上班上課"/);
+  assert.match(bar, /homePage\.statusBar\.tomorrowWorkdayLabel", "明日上班"/);
   assert.match(bar, /"\/tools\/work-school-status"/);
   assert.match(bar, /buildHomeWorkdayChip\(/);
   assert.match(bar, /sections\?\.workday/);
-  assert.match(bar, /tone="alert"|"alert"/);
-  assert.match(bar, /border-red-300 bg-red-50/, "the highlight colour");
-  const typhoonText = bar.match(/workdayTyphoon", "([^"]+)"/)?.[1];
-  assert.equal(typhoonText, "颱風警報中・查停班停課");
-  assert.ok(!/已(宣布)?停班|停止上班|照常上班/.test(typhoonText), "never says work is cancelled");
+  // home-alerts-severity-and-workday-tomorrow (follow-up to #691): the red
+  // typhoon-warning pill is gone — 今天上班上課/明日上班 only ever reflect the
+  // office calendar now. A typhoon warning is surfaced elsewhere (the
+  // site-wide TyphoonBanner, issue #744) and the /tools/work-school-status
+  // page's own ClosureGuidanceSection, both untouched by this file.
+  assert.ok(!/typhoonWarning/.test(bar), "HomeStatusBar must not special-case a typhoon warning any more");
+  assert.ok(!/workdayTyphoon/.test(bar));
   // The clock comes from the shared mounted-only hook, never from Date.now() during render.
   assert.match(bar, /const nowMs = useMinuteClock\(\);/);
   assert.ok(!/Date\.now\(\)/.test(bar), "HomeStatusBar must not read the clock itself");
@@ -322,8 +325,16 @@ test("HomeStatusBar has a 今日上班 pill linking the tool; a typhoon warning 
 test("the status-bar answer comes from the visitor's clock over the API's rows, so an edge-cached response can't show yesterday", () => {
   const route = read("lib", "server", "officeCalendar", "homeWorkday.ts");
   assert.match(route, /days: window\.rows\.filter/);
-  assert.match(route, /typhoonWarning: typhoonWarning === true/);
   assert.ok(!/state:\s*"workday"/.test(route), "the server must not pre-bake today's answer into a cached payload");
+});
+
+test("buildHomeWorkdayChip no longer takes a typhoon-warning argument, and homeWorkday.ts no longer fetches one for the status bar", () => {
+  const calendarSrc = read("lib", "tools", "workSchoolStatus", "calendar.ts");
+  assert.match(calendarSrc, /buildHomeWorkdayChip = \(rows: readonly OfficeCalendarDay\[\], now: Date \| number\): HomeWorkdayChip/);
+  assert.ok(!/typhoonWarning/.test(calendarSrc));
+  const homeWorkdaySrc = read("lib", "server", "officeCalendar", "homeWorkday.ts");
+  assert.ok(!/typhoonWarning/.test(homeWorkdaySrc));
+  assert.ok(!/isTyphoonWarningActive/.test(homeWorkdaySrc));
 });
 
 // ---------------------------------------------------------------------------

@@ -956,15 +956,15 @@
       "retryLocationButton": "🔄 위치 다시 시도",
       "refreshFailedNotice": "새로고침에 실패했습니다. 표시된 데이터가 오래된 정보일 수 있습니다.",
       "retryButton": "다시 시도",
-      "workdayLabel": "오늘 근무",
+      "workdayLabel": "오늘 근무·등교",
       "workdayWorkday": "근무일",
       "workdayMakeup": "대체근무일",
       "workdayOffWeekend": "휴무(주말)",
       "workdayOff": "휴무",
       "workdayOffNamedTemplate": "휴무 · {name}",
       "workdayUnknown": "달력 정보 없음",
-      "workdayTyphoon": "태풍 경보 · 휴무 확인",
-      "tomorrowShortcutLabel": "내일은 휴무인가요?"
+      "tomorrowShortcutLabel": "내일은 휴무인가요?",
+      "tomorrowWorkdayLabel": "내일 근무"
     },
     "guideCards": {
       "sectionAriaLabel": "생활 상황별 가이드",

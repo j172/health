@@ -10,8 +10,11 @@ import type { HomeStatusResponse, HomeStatusSection } from "@/app/api/home-statu
 import type { HomeStatusWorkday } from "@/lib/server/officeCalendar/homeWorkday";
 import type { CwaAlertItem } from "@/lib/server/cwa/queries";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { buildHomeWorkdayChip } from "@/lib/tools/workSchoolStatus/calendar";
+import { buildHomeWorkdayChip, type HomeWorkdayChip } from "@/lib/tools/workSchoolStatus/calendar";
 import { useMinuteClock } from "@/lib/hooks/useMinuteClock";
+
+/** Same shape as useLanguage()'s `t`, matching this repo's convention (e.g. components/Tools/WorkSchoolStatusContent.tsx) for typing a passed-down translator. */
+type Translate = (key: string, defaultValue?: string) => string;
 
 /**
  * Homepage top status bar (issue #472, parent #438 §G acceptance criterion
@@ -60,8 +63,77 @@ function magnitudeColor(mag: number): string {
   return "#4f46e5";
 }
 
-// Issue #691: "alert" is the highlighted look for the 今日上班 pill while a CWA
-// typhoon warning is in force — a prompt to read the official 停班停課 page.
+/**
+ * One emoji per CWA alert type, for the 警報 block's per-alert list
+ * (home-alerts-severity-and-workday-tomorrow follow-up to #777).
+ *
+ * Rules are tried top to bottom and the first match wins. The typhoon/
+ * tsunami dataset checks come first because a typhoon's own `event` text
+ * (e.g. "強烈颱風 薔琵 (CHAMPI) 第29號") also contains "風", which would
+ * otherwise satisfy the generic 陸上強風特報 keyword rule meant for ordinary
+ * W-C0033-* bulletins. The #774 township-level hazard rows (W-C0033-001)
+ * have no dataset-specific rule here: listActiveCwaAlerts (lib/server/cwa/
+ * queries.ts) aliases their `phenomena` text (大雨/強風/濃霧/...) into the
+ * same `event` column every other alert uses, so they fall through to the
+ * matching keyword rule below like any other bulletin would.
+ */
+const GENERIC_ALERT_EMOJI = "📢";
+
+const ALERT_EMOJI_RULES: ReadonlyArray<{ matches: (alert: CwaAlertItem) => boolean; emoji: string }> = [
+  // 颱風警報 (W-C0034-001) / 颱風路徑與消息 (W-C0034-005)
+  {
+    matches: (alert) =>
+      alert.dataset_id === "W-C0034-001" ||
+      alert.dataset_id === "W-C0034-005" ||
+      Boolean(alert.event?.includes("颱風")) ||
+      Boolean(alert.event?.includes("熱帶性低氣壓")),
+    emoji: "🌀",
+  },
+  // 海嘯 (E-A0014-001)
+  {
+    matches: (alert) => alert.dataset_id === "E-A0014-001" || Boolean(alert.event?.includes("海嘯")),
+    emoji: "⚠️",
+  },
+  // 豪大雨特報 (W-C0033-005)，以及任何含「雨」字的鄉鎮天氣現象特報
+  { matches: (alert) => Boolean(alert.event?.includes("雨")), emoji: "🌊" },
+  // 陸上強風特報 (W-C0033-003)，以及任何含「風」字的鄉鎮天氣現象特報
+  { matches: (alert) => Boolean(alert.event?.includes("風")), emoji: "💨" },
+  // 濃霧特報 (W-C0033-004)，以及任何含「霧」字的鄉鎮天氣現象特報
+  { matches: (alert) => Boolean(alert.event?.includes("霧")), emoji: "🌫️" },
+];
+
+/** Picks one alert's emoji; a type this table doesn't recognise still gets the generic fallback, never none. */
+function getAlertEmoji(alert: CwaAlertItem): string {
+  return ALERT_EMOJI_RULES.find((rule) => rule.matches(alert))?.emoji ?? GENERIC_ALERT_EMOJI;
+}
+
+/**
+ * CAP severity (`CwaAlertItem.severity`, one of Extreme/Severe/Moderate/
+ * Minor) → the same Chinese labels already shown on /tools/weather-alerts
+ * (WeatherAlertsList's severity badge), reused here (and already translated
+ * into en/ja/ko) so the two surfaces never disagree about what "Severe"
+ * means. Returns null for a missing/unrecognised severity so the caller can
+ * omit the "(...)" suffix entirely instead of showing "(null)".
+ */
+function getAlertSeverityLabel(t: Translate, severity: string | null): string | null {
+  switch (severity) {
+    case "Extreme":
+      return t("weatherAlertsTool.severityExtreme", "極端危險");
+    case "Severe":
+      return t("weatherAlertsTool.severitySevere", "嚴重警戒");
+    case "Moderate":
+      return t("weatherAlertsTool.severityModerate", "中度注意");
+    case "Minor":
+      return t("weatherAlertsTool.severityMinor", "輕微提示");
+    default:
+      return null;
+  }
+}
+
+// "alert" is the highlighted look used by the 警報 block below whenever at
+// least one CWA alert is active (hasAlerts) — the 今天上班上課/明日上班 pills no
+// longer use it (see the home-alerts-severity-and-workday-tomorrow follow-up
+// to issue #691: they stopped special-casing a typhoon warning).
 type PillTone = "default" | "alert";
 
 const PILL_TONE_CLASSES: Record<PillTone, { box: string; label: string; value: string }> = {
@@ -157,12 +229,13 @@ export default function HomeStatusBar() {
   const [manualDistrict, setManualDistrict] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
-  // Issue #691: the 今日上班 pill resolves "today" with the visitor's own clock
-  // (Asia/Taipei date, see lib/tools/workSchoolStatus/calendar.ts) from the
-  // rows /api/home-status returns, because that response is edge-cached for
-  // minutes and a cached answer served after midnight would be yesterday's.
-  // The clock comes from useMinuteClock (null until mounted, refreshed each
-  // minute) so it is never read during render.
+  // Issue #691: the 今天上班上課/明日上班 pills resolve their day with the
+  // visitor's own clock (Asia/Taipei date, see
+  // lib/tools/workSchoolStatus/calendar.ts) from the rows /api/home-status
+  // returns, because that response is edge-cached for minutes and a cached
+  // answer served after midnight would be yesterday's. The clock comes from
+  // useMinuteClock (null until mounted, refreshed each minute) so it is
+  // never read during render.
   const nowMs = useMinuteClock();
 
   const manualCoords = useMemo(() => {
@@ -235,11 +308,37 @@ export default function HomeStatusBar() {
     );
   }
 
-  // Issue #691: 今日上班. A typhoon warning turns the pill red and swaps its
-  // text for "go and check the official 停班停課 page" — it never says work or
-  // school is cancelled, because this site does not know that.
-  const workdayChip = (workday: HomeStatusWorkday) =>
-    nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs, workday.typhoonWarning);
+  // Issue #691, follow-up home-alerts-severity-and-workday-tomorrow:
+  // 今天上班上課 / 明日上班. Both pills only ever reflect the office calendar rows
+  // (lib/server/officeCalendar) — no typhoon special-casing any more. A CWA
+  // typhoon warning is surfaced elsewhere (the site-wide TyphoonBanner, issue
+  // #744) and via /tools/work-school-status's own ClosureGuidanceSection,
+  // untouched by this component. "Tomorrow" needs no new data: the API
+  // already returns yesterday-through-+2-days of rows (see
+  // fetchHomeStatusWorkday's doc comment), so resolving it is just +24h on
+  // the same clock reading — Taiwan has had no DST since 1979, so a flat
+  // 24h offset always lands on the next Asia/Taipei calendar date.
+  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+  const todayWorkdayChip = (workday: HomeStatusWorkday) => (nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs));
+  const tomorrowWorkdayChip = (workday: HomeStatusWorkday) =>
+    nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs + ONE_DAY_MS);
+
+  const describeWorkdayState = (chip: HomeWorkdayChip | null): React.ReactNode => {
+    if (!chip) return null;
+    switch (chip.state) {
+      case "workday":
+        return t("homePage.statusBar.workdayWorkday", "正常上班上課");
+      case "makeup-workday":
+        return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
+      case "off":
+        if (chip.offReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
+        return chip.name
+          ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.name)
+          : t("homePage.statusBar.workdayOff", "放假");
+      default:
+        return t("homePage.statusBar.workdayUnknown", "查無日曆資料");
+    }
+  };
 
   // 警報 is pulled out of the 5-pill horizontal row into its own full-width
   // block below: unlike the other sections it needs to list every active
@@ -318,11 +417,17 @@ export default function HomeStatusBar() {
           <p className={`text-[10px] font-semibold uppercase tracking-wide ${classes.label}`}>{alertsLabel}</p>
           {hasAlerts ? (
             <ul className={`mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs font-bold ${classes.value}`}>
-              {alerts.map((alert) => (
-                <li key={`${alert.dataset_id}-${alert.id}`}>
-                  {alert.event || alert.headline || t("homePage.statusBar.alertsGenericName", "氣象警報")}
-                </li>
-              ))}
+              {alerts.map((alert) => {
+                const name = alert.event || alert.headline || t("homePage.statusBar.alertsGenericName", "氣象警報");
+                const severityLabel = getAlertSeverityLabel(t, alert.severity);
+                return (
+                  <li key={`${alert.dataset_id}-${alert.id}`}>
+                    <span aria-hidden="true">{getAlertEmoji(alert)}</span>
+                    {name}
+                    {severityLabel ? ` (${severityLabel})` : ""}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className={`text-xs font-bold ${classes.value}`}>{t("homePage.statusBar.noAlerts", "無特報")}</p>
@@ -339,33 +444,23 @@ export default function HomeStatusBar() {
           {renderSection(
             nowMs === null ? undefined : sections?.workday,
             "🏢",
-            t("homePage.statusBar.workdayLabel", "今日上班"),
+            t("homePage.statusBar.workdayLabel", "今天上班上課"),
             "/tools/work-school-status",
-            (workday) => {
-              const chip = workdayChip(workday);
-              if (!chip) return null;
-              if (chip.typhoonWarning) return t("homePage.statusBar.workdayTyphoon", "颱風警報中・查停班停課");
-              switch (chip.state) {
-                case "workday":
-                  return t("homePage.statusBar.workdayWorkday", "正常上班上課");
-                case "makeup-workday":
-                  return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
-                case "off":
-                  if (chip.offReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
-                  return chip.name
-                    ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.name)
-                    : t("homePage.statusBar.workdayOff", "放假");
-                default:
-                  return t("homePage.statusBar.workdayUnknown", "查無日曆資料");
-              }
-            },
-            (workday) => (workdayChip(workday)?.typhoonWarning ? "alert" : "default"),
+            (workday) => describeWorkdayState(todayWorkdayChip(workday)),
           )}
           <WorkdayTomorrowShortcut
             href="/tools/work-school-status"
             label={t("homePage.statusBar.tomorrowShortcutLabel", "明天放假嗎？")}
           />
         </div>
+
+        {renderSection(
+          nowMs === null ? undefined : sections?.workday,
+          "📅",
+          t("homePage.statusBar.tomorrowWorkdayLabel", "明日上班"),
+          "/tools/work-school-status",
+          (workday) => describeWorkdayState(tomorrowWorkdayChip(workday)),
+        )}
 
         {renderSection(sections?.weather, "🌤️", t("homePage.statusBar.weatherLabel", "天氣"), "/tools/weather-alerts", (weather) =>
           weather ? (

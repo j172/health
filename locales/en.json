@@ -953,15 +953,15 @@
       "retryLocationButton": "🔄 Retry location",
       "refreshFailedNotice": "Refresh failed — the data shown may be out of date.",
       "retryButton": "Retry",
-      "workdayLabel": "Work Today",
+      "workdayLabel": "Work & School Today",
       "workdayWorkday": "Working day",
       "workdayMakeup": "Make-up workday",
       "workdayOffWeekend": "Day off (weekend)",
       "workdayOff": "Day off",
       "workdayOffNamedTemplate": "Day off · {name}",
       "workdayUnknown": "No calendar data",
-      "workdayTyphoon": "Typhoon warning · check closures",
-      "tomorrowShortcutLabel": "Is tomorrow a day off?"
+      "tomorrowShortcutLabel": "Is tomorrow a day off?",
+      "tomorrowWorkdayLabel": "Work Tomorrow"
     },
     "guideCards": {
       "sectionAriaLabel": "Life-Situation Guides",
