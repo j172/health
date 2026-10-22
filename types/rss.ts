@@ -129,6 +129,7 @@ export type FeedCode =
   | "antidrug_news"
   | "police_7505_news"
   | "tfc_news"
+  | "ithome_healthit"
   | (string & {});
 
 export interface FeedConfig {

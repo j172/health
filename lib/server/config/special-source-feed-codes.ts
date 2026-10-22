@@ -45,6 +45,7 @@ export const SPECIAL_SOURCE_FEED_CODES: ReadonlyArray<FeedCode> = [
   "tasctaiwan_news",
   "antidrug_news",
   "police_7505_news",
+  "ithome_healthit",
   // runIngestion.ts 的 `npoSources` 陣列。
   "amnesty_news",
   "npo_hotmsg",
