@@ -211,7 +211,10 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
               {t("hotlinesTool.card110Desc", "治安刑事 / 交通事故 / 突發危難")}
             </p>
             <div className="mt-3 border-t border-blue-400/20 pt-2 text-center text-[10px] text-blue-200/80">
-              {t("hotlinesTool.card110Note", "聽語障簡訊：0911-511-110")}
+              {t("hotlinesTool.card110Note", "聽語障簡訊：")}
+              <a href="sms:0911511110" className="underline hover:text-blue-100">
+                0911-511-110
+              </a>
             </div>
           </div>
 
@@ -232,7 +235,10 @@ export default function EmergencyHotlinesContent({ initialHotlines }: Props) {
               {t("hotlinesTool.card119Desc", "火警滅火 / 緊急送醫 / 災害搜救")}
             </p>
             <div className="mt-3 border-t border-red-400/20 pt-2 text-center text-[10px] text-red-200/80">
-              {t("hotlinesTool.card119Note", "聽語障簡訊：0911-511-119")}
+              {t("hotlinesTool.card119Note", "聽語障簡訊：")}
+              <a href="sms:0911511119" className="underline hover:text-red-100">
+                0911-511-119
+              </a>
             </div>
           </div>
 
