@@ -62,8 +62,9 @@ export async function GET(request: NextRequest) {
     ]);
 
     // 所在縣市＋該縣市目前的特報（issue: 依定位看特報，比全國扁平清單直覺）。
-    // resolveNearestCounty 永遠回傳一個縣市，所以只要有座標就一定能算出 county／countyAlerts，
-    // 不會有「算不出來」的狀態；沒有座標（純縣市下拉選擇）時兩者皆為 null，維持舊行為。
+    // resolveNearestCounty 現在是精確的點在多邊形內判斷，座標落在海上、離島邊界外側等
+    // 情況會回傳 null（「無法判斷」，不是亂猜），countyAlerts 也會跟著是 null；
+    // 沒有座標（純縣市下拉選擇）時兩者本來就皆為 null，維持舊行為。
     const county = hasCoords ? resolveNearestCounty(lat, lng) : null;
     const countyAlerts = county ? filterCwaAlertsByCounty(activeAlerts, county) : null;
 
