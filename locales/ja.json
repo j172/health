@@ -963,7 +963,6 @@
       "workdayOff": "休み",
       "workdayOffNamedTemplate": "休み・{name}",
       "workdayUnknown": "カレンダー情報なし",
-      "tomorrowShortcutLabel": "明日は休みですか？",
       "tomorrowWorkdayLabel": "明日の出勤"
     },
     "guideCards": {
