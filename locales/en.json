@@ -942,6 +942,7 @@
       "stableRecently": "Stable recently",
       "noAlerts": "No active alerts",
       "alertsCountTemplate": "{count} active alerts",
+      "alertsGenericName": "Weather alert",
       "loadFailed": "Load failed",
       "needsLocation": "Location needed",
       "deniedPrefix": "You denied location access, ",

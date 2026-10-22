@@ -945,6 +945,7 @@
       "stableRecently": "최근 안정적",
       "noAlerts": "발효된 경보 없음",
       "alertsCountTemplate": "유효 경보 {count}건",
+      "alertsGenericName": "기상 경보",
       "loadFailed": "불러오기 실패",
       "needsLocation": "위치 정보 필요",
       "deniedPrefix": "위치 정보 권한을 거부하셨습니다. ",
