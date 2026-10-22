@@ -1,9 +1,34 @@
 import { compareByStrokeOrder } from "./strokeOrder";
 import type { Topic } from "@/lib/server/news/classifyTopics";
+import type { TextSegment } from "@/lib/types/textWithPhoneLinks";
 
 export interface ToolFaq {
   question: string;
+  /**
+   * Always plain text — `answer` feeds the FAQPage JSON-LD `Answer.text`
+   * (lib/server/news/seo.ts), llms.txt/llms-full.txt, and meta descriptions
+   * across ~10 consuming files, none of which can render JSX, so it must
+   * stay a plain string with every digit of a phone/SMS number spelled out
+   * verbatim here (never segmented), even for an entry that also sets
+   * `answerSegments` below.
+   */
   answer: string;
+  /**
+   * Optional clickable-link rendering of `answer`, used only by the one
+   * consumer that actually renders JSX (ToolPageShell.tsx's FAQ accordion).
+   * Deliberately an additive sibling field rather than widening `answer`
+   * itself to `TextWithPhoneLinks` (as `SituationStep.label` did in
+   * components/Tools/socialWelfareCentersShared.ts) — `answer` here is
+   * consumed by far more call sites (JSON-LD, llms.txt, meta descriptions)
+   * that need a guaranteed plain string, so widening its type would force
+   * every one of those call sites to add a `plainTextOf()` call for the
+   * sake of the rare entry that needs a link. See PR #785's note that this
+   * field was deliberately left out of that ticket's scope for the same
+   * reason. When set, must flatten (via `plainTextOf`) to exactly `answer`
+   * — enforced by tests/phone-link-segments-in-narrative-text.test.mjs-style
+   * coverage.
+   */
+  answerSegments?: TextSegment[];
 }
 
 export interface ScientificReference {
@@ -3948,6 +3973,19 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "聽語障人士如何向 110 或 119 緊急報案？",
         answer:
           "警政署與消防署設有聽語障專用簡訊報案專線：警察報案請傳送簡訊至 0911-511-110；消防救災救護請傳送簡訊至 0911-511-119，亦可利用 119 報案 App 之定位及文字點選報案功能。",
+        // SMS-only reporting lines, not voice numbers — sms: not tel: (see
+        // PR #783's EmergencyHotlinesContent.tsx convention). `answer` above
+        // stays the plain-text source of truth for JSON-LD/llms.txt; this is
+        // the ToolPageShell FAQ accordion's clickable rendering of the same
+        // sentence (see ToolFaq.answerSegments's doc comment for why this is
+        // a sibling field rather than a widened `answer` type).
+        answerSegments: [
+          { text: "警政署與消防署設有聽語障專用簡訊報案專線：警察報案請傳送簡訊至 " },
+          { sms: "0911511110", text: "0911-511-110" },
+          { text: "；消防救災救護請傳送簡訊至 " },
+          { sms: "0911511119", text: "0911-511-119" },
+          { text: "，亦可利用 119 報案 App 之定位及文字點選報案功能。" },
+        ],
       },
       {
         question: "1925、1980 與 1995 心理輔導專線有何差別？",
