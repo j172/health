@@ -8,6 +8,7 @@ import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 import type { HomeStatusResponse, HomeStatusSection } from "@/app/api/home-status/route";
 import type { HomeStatusWorkday } from "@/lib/server/officeCalendar/homeWorkday";
+import type { CwaAlertItem } from "@/lib/server/cwa/queries";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { buildHomeWorkdayChip } from "@/lib/tools/workSchoolStatus/calendar";
 import { useMinuteClock } from "@/lib/hooks/useMinuteClock";
@@ -222,6 +223,97 @@ export default function HomeStatusBar() {
   const workdayChip = (workday: HomeStatusWorkday) =>
     nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs, workday.typhoonWarning);
 
+  // 警報 is pulled out of the 5-pill horizontal row into its own full-width
+  // block below: unlike the other sections it needs to list every active
+  // alert's name, not a single truncated line, so it can't share
+  // StatusPill's fixed-width layout. The tone convention (default/alert) and
+  // skeleton/error/unavailable handling still mirror `renderSection` above.
+  const alertsEmoji = "⚠️";
+  const alertsLabel = t("homePage.statusBar.alertsLabel", "警報");
+  const alertsHref = "/tools/weather-alerts";
+
+  function renderAlertsSection() {
+    const section = sections?.alerts;
+
+    if (showInitialSkeleton || !section) {
+      return (
+        <div className="flex w-full items-center gap-2.5 rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 shadow-xs dark:border-slate-800 dark:bg-slate-900">
+          <span aria-hidden="true" className="text-xl leading-none opacity-40">{alertsEmoji}</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">{alertsLabel}</p>
+            <div className="mt-1 h-3 w-24 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+          </div>
+        </div>
+      );
+    }
+
+    if (section.status === "error") {
+      return (
+        <Link
+          href={alertsHref}
+          className="flex w-full items-center gap-2.5 rounded-2xl border border-red-200 bg-red-50/70 px-3.5 py-2.5 shadow-xs dark:border-red-900/60 dark:bg-red-950/30"
+        >
+          <span aria-hidden="true" className="text-xl leading-none">{alertsEmoji}</span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">{alertsLabel}</p>
+            <p className="truncate text-xs font-semibold text-red-700 dark:text-red-300">
+              {t("homePage.statusBar.loadFailed", "載入失敗")}
+            </p>
+          </div>
+        </Link>
+      );
+    }
+
+    if (section.status === "unavailable") {
+      // Alerts are nationwide (see fetchHomeStatusAlerts) so this branch is
+      // not expected in practice, but HomeStatusSection's "unavailable"
+      // status is still a valid type-level case to handle.
+      return (
+        <button
+          type="button"
+          onClick={() => setShowPicker(true)}
+          className="flex w-full items-center gap-2.5 rounded-2xl border border-amber-200 bg-amber-50/70 px-3.5 py-2.5 text-left shadow-xs transition-colors hover:border-amber-300 dark:border-amber-900/60 dark:bg-amber-950/30"
+        >
+          <span aria-hidden="true" className="text-xl leading-none">{alertsEmoji}</span>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">{alertsLabel}</p>
+            <p className="truncate text-xs font-semibold text-amber-800 dark:text-amber-300">
+              {t("homePage.statusBar.needsLocation", "需要定位")}
+            </p>
+          </div>
+        </button>
+      );
+    }
+
+    const alerts: CwaAlertItem[] = section.data;
+    const hasAlerts = alerts.length > 0;
+    const tone: PillTone = hasAlerts ? "alert" : "default";
+    const classes = PILL_TONE_CLASSES[tone];
+
+    return (
+      <Link
+        href={alertsHref}
+        className={`flex w-full items-start gap-2.5 rounded-2xl border px-3.5 py-2.5 shadow-xs transition-colors ${classes.box}`}
+      >
+        <span aria-hidden="true" className="mt-0.5 text-xl leading-none">{alertsEmoji}</span>
+        <div className="min-w-0 flex-1">
+          <p className={`text-[10px] font-semibold uppercase tracking-wide ${classes.label}`}>{alertsLabel}</p>
+          {hasAlerts ? (
+            <ul className={`mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs font-bold ${classes.value}`}>
+              {alerts.map((alert) => (
+                <li key={`${alert.dataset_id}-${alert.id}`}>
+                  {alert.event || alert.headline || t("homePage.statusBar.alertsGenericName", "氣象警報")}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={`text-xs font-bold ${classes.value}`}>{t("homePage.statusBar.noAlerts", "無特報")}</p>
+          )}
+        </div>
+      </Link>
+    );
+  }
+
   return (
     <section aria-label={t("homePage.statusBar.sectionAriaLabel", "即時狀態總覽")} className="mb-8">
       <div className="flex flex-wrap gap-3">
@@ -236,7 +328,7 @@ export default function HomeStatusBar() {
             if (chip.typhoonWarning) return t("homePage.statusBar.workdayTyphoon", "颱風警報中・查停班停課");
             switch (chip.state) {
               case "workday":
-                return t("homePage.statusBar.workdayWorkday", "上班日");
+                return t("homePage.statusBar.workdayWorkday", "正常上班上課");
               case "makeup-workday":
                 return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
               case "off":
@@ -291,13 +383,9 @@ export default function HomeStatusBar() {
             t("homePage.statusBar.stableRecently", "近期平穩")
           ),
         )}
-
-        {renderSection(sections?.alerts, "⚠️", t("homePage.statusBar.alertsLabel", "警報"), "/tools/weather-alerts", (alerts) =>
-          alerts.length > 0
-            ? t("homePage.statusBar.alertsCountTemplate", "{count} 則有效警報").replace("{count}", String(alerts.length))
-            : t("homePage.statusBar.noAlerts", "無特報"),
-        )}
       </div>
+
+      <div className="mt-3">{renderAlertsSection()}</div>
 
       {needsLocationHint && (
         <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs dark:border-amber-900/60 dark:bg-amber-950/30">

@@ -945,6 +945,7 @@
       "stableRecently": "最近は安定",
       "noAlerts": "警報なし",
       "alertsCountTemplate": "有効な警報 {count} 件",
+      "alertsGenericName": "気象警報",
       "loadFailed": "読み込み失敗",
       "needsLocation": "位置情報が必要です",
       "deniedPrefix": "位置情報の利用が拒否されました。",
