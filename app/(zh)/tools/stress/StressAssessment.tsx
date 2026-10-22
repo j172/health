@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { secondaryButtonClass } from "@/components/Tools/toolStyles";
+import { TextWithPhoneLinks } from "@/components/Common/TextWithPhoneLinks";
+import type { TextWithPhoneLinks as TextWithPhoneLinksValue } from "@/lib/types/textWithPhoneLinks";
 
 /**
  * 知覺壓力量表 PSS-10（正體中文改編版）
@@ -34,7 +36,7 @@ interface StressResult {
   levelColor: string;
   bgColor: string;
   description: string;
-  copingStrategies: string[];
+  copingStrategies: TextWithPhoneLinksValue[];
 }
 
 function getStressResult(answers: Record<number, number>): StressResult {
@@ -81,7 +83,11 @@ function getStressResult(answers: Record<number, number>): StressResult {
       "暫時減少接觸壓力來源（新聞、社群媒體），保護心理空間",
       "確保每晚 7–8 小時睡眠，不足睡眠會急劇惡化壓力感受",
       "考慮正念減壓療程（MBSR）或認知行為治療（CBT）",
-      "向家人、朋友或心理諮詢熱線尋求支持（台灣：1925 安心專線）",
+      [
+        { text: "向家人、朋友或心理諮詢熱線尋求支持（台灣：" },
+        { tel: "1925", text: "1925" },
+        { text: " 安心專線）" },
+      ],
     ],
   };
 }
@@ -192,7 +198,7 @@ export default function StressAssessment() {
               <p className="text-sm font-medium text-neutral-800 dark:text-slate-100">建議應對策略：</p>
               {result.copingStrategies.map((tip, i) => (
                 <p key={i} className="text-sm text-neutral-600 dark:text-slate-300">
-                  • {tip}
+                  • <TextWithPhoneLinks value={tip} />
                 </p>
               ))}
             </div>
