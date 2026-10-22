@@ -100,6 +100,7 @@ test("the rules file carries over every previously-hand-written simple redirect"
     ["/tools/hakka-bogong", "/tools/long-term-care?type=hakka-bogong"],
     ["/tools/earthquakes", "/tools/global-watch/earthquakes"],
     ["/tools/travel-epidemic-alerts", "/tools/global-watch/epidemics"],
+    ["/tools/pest-alerts", "/tools"],
   ];
   for (const [source, destination] of expected) {
     const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === source && !r.has);
@@ -173,6 +174,25 @@ test("issue #728: /tools/metro-alerts?lang=<locale> goes straight to that locale
   }
   assert.equal(firstMatch("/tools/metro-alerts", undefined)?.destination, "/tools/accessible-transit");
   assert.equal(firstMatch("/tools/metro-alerts", "fr")?.destination, "/tools/accessible-transit");
+});
+
+test("issue #788: /tools/pest-alerts redirects to the tools home /tools — the tool never had a [locale] page, so there is no en/ja/ko sibling and no ?lang= rule to retire", () => {
+  const rule = PERMANENT_REDIRECT_RULES.find((r) => r.source === "/tools/pest-alerts" && !r.has);
+  assert.ok(rule, "missing pest-alerts redirect");
+  assert.equal(rule.destination, "/tools");
+  assert.equal(rule.permanent, true);
+
+  for (const locale of REDIRECT_LOCALES) {
+    assert.ok(
+      !PERMANENT_REDIRECT_RULES.some((r) => r.source === `/${locale}/tools/pest-alerts`),
+      `pest-alerts never had a /${locale} page, so no locale-prefixed redirect should exist`,
+    );
+  }
+  assert.equal(
+    PERMANENT_REDIRECT_RULES.filter((r) => r.source === "/tools/pest-alerts" && r.has).length,
+    0,
+    "pest-alerts was never in LANG_QUERY_TOOL_SLUGS, so no ?lang= rule should exist for it either",
+  );
 });
 
 test("every ?lang= tool-slug redirect is carried over, scoped by locale via `has`", () => {

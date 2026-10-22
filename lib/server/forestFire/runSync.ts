@@ -3,8 +3,9 @@
  * track-b-opendata-phase2-3-spec.md section 2.4 D-2). Feeds the forest-fire block
  * on /tools/outdoor-safety via /api/outdoor-safety/forest-fire.
  *
- * Egress: data.moa.gov.tw is already reached by the production host for pest
- * alerts and debris flow, but this `/api/v1/` path has no probe record from the
+ * Egress: data.moa.gov.tw is already reached by the production host for
+ * debris flow (pest alerts used it too until retired by issue #788), but
+ * this `/api/v1/` path has no probe record from the
  * production host (spec section 3). This module therefore implements the plain
  * direct-fetch path and relies on the first post-deploy run being verified
  * (the PR lists it as a TODO). If it turns out to be blocked, switch to the

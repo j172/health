@@ -149,6 +149,9 @@ const simpleRedirects: Omit<PermanentRedirectRule, "permanent">[] = [
   // `/tools/metro-alerts?lang=en|ja|ko` 的舊 `?lang=` 規則也從 LANG_QUERY_TOOL_SLUGS 拿掉，
   // 改由 PERMANENT_REDIRECT_RULES 最前面的那組規則直接導向對應語系的無障礙交通頁（一次到位）。
   { source: "/tools/metro-alerts", destination: "/tools/accessible-transit" },
+  // issue #788 — 作物病蟲害即時預警整個移除；舊網址導向工具首頁。這個工具從未有 [locale] 版本，
+  // 也不在 LANG_QUERY_TOOL_SLUGS 裡，所以只要這一條無條件規則（比照 YouBike，不需要語系版或 `?lang=` 規則）。
+  { source: "/tools/pest-alerts", destination: "/tools" },
 ];
 
 export const PERMANENT_REDIRECT_RULES: PermanentRedirectRule[] = [

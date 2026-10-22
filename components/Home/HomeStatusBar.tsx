@@ -36,10 +36,11 @@ type Translate = (key: string, defaultValue?: string) => string;
  * client fetch of their own. See
  * components/News/NewsSidebar.tsx's `hideStatusBarDuplicateWidgets` prop,
  * which hides only those 5 widgets on the home variant — per a 2026-10-13
- * product decision on issue #472, the other 5 sidebar widgets (ER status /
- * CPC fuel price / water outages / CDC travel alerts / pest alerts, which
+ * product decision on issue #472, the other sidebar widgets (ER status /
+ * CPC fuel price / water outages / CDC travel alerts, which
  * this status bar does NOT cover) keep rendering on home exactly as before,
- * with their own independent fetches untouched.
+ * with their own independent fetches untouched. (Pest alerts was a 5th such
+ * widget but was retired outright by issue #788.)
  * `useSidebarWidgetData`'s `buildUrl` deliberately returns `null` (skipping
  * the fetch) until geolocation reaches a terminal status
  * (success/denied/timeout/unsupported) so this fires exactly once per page

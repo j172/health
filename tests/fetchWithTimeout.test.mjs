@@ -155,7 +155,6 @@ test("Integration check: sidebar widgets that fetch their own data go through th
     "components/Tools/CpcPriceSidebarWidget.tsx",
     "components/Tools/WaterOutageSidebarWidget.tsx",
     "components/Tools/CdcAlertSidebarWidget.tsx",
-    "components/Tools/PestAlertSidebarWidget.tsx",
     "components/Tools/AntiFraudSidebarWidget.tsx",
   ];
 

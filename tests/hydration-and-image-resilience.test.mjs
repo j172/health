@@ -104,7 +104,6 @@ test("Sidebar API routes include s-maxage in Cache-Control response headers", ()
     "app/api/cpc-prices/route.ts",
     "app/api/water-outages/route.ts",
     "app/api/cdc/travel-alerts/route.ts",
-    "app/api/pest-alerts/route.ts",
     "app/api/weather-nearby/route.ts",
     "app/api/aqi/nearest/route.ts",
     "app/api/uv/nearest/route.ts",

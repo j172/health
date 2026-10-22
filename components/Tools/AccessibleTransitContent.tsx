@@ -83,7 +83,7 @@ export default function AccessibleTransitContent() {
 
   // 篩掉已過期的設施停用公告 — 依目前時間比對 endTime（無 endTime 視為持續有效）。
   // Date.now() 只在 lazy useState initializer 內呼叫一次，避免 render 期間呼叫
-  // impure function（比照 PestAlertSidebarWidget.tsx 的既有慣例）。
+  // impure function（既有慣例）。
   const [nowTs] = useState(() => Date.now());
   const activeAlerts = useMemo(() => {
     return (data?.alerts || []).filter((a) => {
