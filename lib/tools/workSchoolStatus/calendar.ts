@@ -192,25 +192,21 @@ export const buildWorkdayAnswer = (
   return { asOf, today, tomorrow, upcoming, windowFrom: asOf, windowTo, coveredFrom, coveredTo, windowTruncated };
 };
 
-/** What the homepage status bar needs: today's state plus whether to highlight it. */
+/**
+ * What the homepage status bar needs for one calendar day (今天 or 明天):
+ * just the classified day state, nothing typhoon-related — a CWA typhoon
+ * warning is surfaced elsewhere (the site-wide TyphoonBanner, issue #744;
+ * and /tools/work-school-status's own ClosureGuidanceSection), never by this
+ * chip. `now` is any instant; pass it +24h to resolve 明天 instead of 今天.
+ */
 export interface HomeWorkdayChip {
   state: DayState;
   offReason: DayStatus["offReason"];
   name: string | null;
-  /**
-   * True while the Central Weather Administration has a typhoon warning in
-   * force. It means "go and read the official 停班停課 announcement", never "work
-   * is cancelled" — this site does not know which counties announced what.
-   */
-  typhoonWarning: boolean;
 }
 
-export const buildHomeWorkdayChip = (
-  rows: readonly OfficeCalendarDay[],
-  now: Date | number,
-  typhoonWarning: boolean,
-): HomeWorkdayChip => {
+export const buildHomeWorkdayChip = (rows: readonly OfficeCalendarDay[], now: Date | number): HomeWorkdayChip => {
   const date = taipeiDateOf(now);
   const status = classifyDay(date, indexByDate(rows).get(date));
-  return { state: status.state, offReason: status.offReason, name: status.name, typhoonWarning };
+  return { state: status.state, offReason: status.offReason, name: status.name };
 };

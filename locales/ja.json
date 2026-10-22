@@ -956,15 +956,15 @@
       "retryLocationButton": "🔄 位置情報を再試行",
       "refreshFailedNotice": "更新に失敗しました。表示中のデータは古い可能性があります。",
       "retryButton": "再試行",
-      "workdayLabel": "今日の出勤",
+      "workdayLabel": "本日の出勤・登校",
       "workdayWorkday": "出勤日",
       "workdayMakeup": "振替出勤日",
       "workdayOffWeekend": "休み（週末）",
       "workdayOff": "休み",
       "workdayOffNamedTemplate": "休み・{name}",
       "workdayUnknown": "カレンダー情報なし",
-      "workdayTyphoon": "台風警報中・休業情報を確認",
-      "tomorrowShortcutLabel": "明日は休みですか？"
+      "tomorrowShortcutLabel": "明日は休みですか？",
+      "tomorrowWorkdayLabel": "明日の出勤"
     },
     "guideCards": {
       "sectionAriaLabel": "生活シーン別ガイド",
