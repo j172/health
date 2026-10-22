@@ -489,36 +489,21 @@ test("被快取的頁面與 layout 不引用任何伺服器端警報來源（HTM
   }
 });
 
-test("橫幅與卡片都是 client component，且只透過共用 store 取得狀態（不自己 fetch）", () => {
-  for (const file of [["components", "Typhoon", "TyphoonBanner.tsx"], ["components", "Home", "HomeQuickEntryCards.tsx"]]) {
-    const source = read(...file);
-    assert.match(source, /^"use client";/, file.join("/"));
-    assert.match(source, /useTyphoonStatus\(/);
-    assert.ok(!/\bfetch\(/.test(stripComments(source)), `${file.join("/")} 不應自己 fetch`);
-    assert.ok(!/from "@\/lib\/server\//.test(source), `${file.join("/")} 不應匯入伺服器端模組`);
-  }
+test("橫幅是 client component，且只透過共用 store 取得狀態（不自己 fetch）", () => {
+  const file = ["components", "Typhoon", "TyphoonBanner.tsx"];
+  const source = read(...file);
+  assert.match(source, /^"use client";/, file.join("/"));
+  assert.match(source, /useTyphoonStatus\(/);
+  assert.ok(!/\bfetch\(/.test(stripComments(source)), `${file.join("/")} 不應自己 fetch`);
+  assert.ok(!/from "@\/lib\/server\//.test(source), `${file.join("/")} 不應匯入伺服器端模組`);
   const storeSource = read("lib", "client", "typhoonStatusStore.ts");
   assert.match(storeSource, /const getServerSnapshot = \(\): TyphoonStatus \| null => null;/);
 });
 
-test("首頁（zh 與多語）：兩張大卡片在 HomeStatusBar 之上", () => {
-  for (const file of [["app", "(zh)", "(site)", "page.tsx"], ["app", "[locale]", "page.tsx"]]) {
-    const source = read(...file);
-    const cards = source.indexOf("<HomeQuickEntryCards />");
-    const bar = source.indexOf("<HomeStatusBar />");
-    assert.ok(cards !== -1 && bar !== -1 && cards < bar, file.join("/"));
-  }
-});
-
-test("首頁卡片連結：颱風與警報 → /tools/weather-alerts；明天放假嗎 → /tools/work-school-status（多語路徑會加語系前綴）", () => {
-  const source = read("components", "Home", "HomeQuickEntryCards.tsx");
-  assert.match(source, /localize\("\/tools\/weather-alerts"\)/);
-  assert.match(source, /localize\("\/tools\/work-school-status"\)/);
-  assert.match(source, /buildLocalizedPath\(path, locale\)/);
-  for (const dir of ["app/(zh)/tools/weather-alerts", "app/(zh)/tools/work-school-status", "app/[locale]/tools/weather-alerts", "app/[locale]/tools/work-school-status"]) {
-    assert.ok(fs.existsSync(path.join(ROOT, dir, "page.tsx")), `${dir} 存在`);
-  }
-});
+// 首頁常駐的兩張大卡片（HomeQuickEntryCards：颱風與警報／明天放假嗎？）已在
+// 後續的首頁改版中移除——全站颱風橫幅（上面的測試）已覆蓋同樣的警報資訊，
+// 兩者重複。「明天放假嗎？」的入口改成 HomeStatusBar「今日上班」薥目旁邊的
+// 小圖示連結，見 tests/home-rebuild-472.test.mjs 或 HomeStatusBar 自己的測試。
 
 test("橫幅：三個連結、「以官方公告為準」、紅（陸上）／橙（海上）、文字也標示級別、不靠顏色單獨表達", () => {
   const source = read("components", "Typhoon", "TyphoonBanner.tsx");
@@ -561,16 +546,20 @@ test("en／ja／ko 都有完整的橫幅與卡片文案，且 {time} 樣板保�
 });
 
 test("zh 預設文案：每個 t() 的 key 都在四種語言的結構裡，且全站不出現「某縣市放假／上班」的轉述", () => {
-  const sources = [read("components", "Typhoon", "TyphoonBanner.tsx"), read("components", "Home", "HomeQuickEntryCards.tsx")];
+  // HomeQuickEntryCards（原本的「颱風與警報」「明天放假嗎？」兩張首頁大卡片）
+  // 已移除，typhoon.cards.* 這組文案不再有元件引用，但仍留在 locale 檔案裡
+  // （無害的死文案，上面「en／ja／ko 都有完整的橫幅與卡片文案」那個測試仍會
+  // 檢查它們存在）。這裡只檢查現存唯一引用者 TyphoonBanner.tsx。
+  const sources = [read("components", "Typhoon", "TyphoonBanner.tsx")];
   const keys = new Set(sources.flatMap((s) => [...s.matchAll(/t\(\s*"(typhoon\.[\w.]+)"/g)].map((m) => m[1])));
-  assert.ok(keys.size >= 15);
+  assert.ok(keys.size >= 10);
   const en = JSON.parse(read("locales", "en.json"));
   for (const key of keys) {
     const value = key.split(".").reduce((acc, part) => acc?.[part], en);
     assert.equal(typeof value, "string", `en.${key}`);
   }
   const zhDefaults = sources.flatMap((s) => [...s.matchAll(/t\(\s*"typhoon\.[\w.]+"\s*,\s*"([^"]+)"/g)].map((m) => m[1]));
-  assert.ok(zhDefaults.length >= 15);
+  assert.ok(zhDefaults.length >= 10);
   const allCopy = zhDefaults.join("\n") + ["en", "ja", "ko"].map((l) => JSON.stringify(JSON.parse(read("locales", `${l}.json`)).typhoon)).join("\n");
   // 不得出現「某縣市停止上班／放假／照常上班」這類自行轉述。
   assert.ok(!/(?:縣|市)[^"\n]{0,6}(?:停止上班|停止上課|照常上班|照常上課|放假)/.test(allCopy));

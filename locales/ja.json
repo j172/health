@@ -963,7 +963,8 @@
       "workdayOff": "休み",
       "workdayOffNamedTemplate": "休み・{name}",
       "workdayUnknown": "カレンダー情報なし",
-      "workdayTyphoon": "台風警報中・休業情報を確認"
+      "workdayTyphoon": "台風警報中・休業情報を確認",
+      "tomorrowShortcutLabel": "明日は休みですか？"
     },
     "guideCards": {
       "sectionAriaLabel": "生活シーン別ガイド",

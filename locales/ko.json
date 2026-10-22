@@ -963,7 +963,8 @@
       "workdayOff": "휴무",
       "workdayOffNamedTemplate": "휴무 · {name}",
       "workdayUnknown": "달력 정보 없음",
-      "workdayTyphoon": "태풍 경보 · 휴무 확인"
+      "workdayTyphoon": "태풍 경보 · 휴무 확인",
+      "tomorrowShortcutLabel": "내일은 휴무인가요?"
     },
     "guideCards": {
       "sectionAriaLabel": "생활 상황별 가이드",

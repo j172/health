@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { listDiverseHomeNews } from "@/lib/server/news/queries";
 import { buildHomeGraphJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
-import HomeQuickEntryCards from "@/components/Home/HomeQuickEntryCards";
 import HomeStatusBar from "@/components/Home/HomeStatusBar";
 import GuideCardsSection from "@/components/Home/GuideCardsSection";
 import RecentToolsSection from "@/components/Home/RecentToolsSection";
@@ -128,7 +127,9 @@ export default async function LocaleHome({ params }: { params: Params }) {
         variant="home"
         homeTopSections={
           <>
-            <HomeQuickEntryCards />
+            {/* 首頁常駐的兩張大卡片（issue #744 新增的首頁快速入口卡片）已
+             * 移除：全站颱風橫幅已涵蓋同樣的警報資訊，見 zh 首頁同一處的
+             * 說明。 */}
             <HomeStatusBar />
             <GuideCardsSection locale={locale} />
             <RecentToolsSection />
