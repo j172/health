@@ -2,10 +2,19 @@ import { fetchGovData } from "@/lib/server/http/govFetch";
 import { readSeedText } from "@/lib/server/db/transientSeed";
 import { withConnection, utcNowSql } from "@/lib/server/db/mysql";
 
+// 2026-10-22 診斷：原本的 data.cdc.gov.tw/download?treeid=...&tableid=... 網址已失效
+// （從正式主機所在的網路環境實測是 502／整段 TLS handshake 完成後卡住直到逾時，
+// 且 docs/2.0/opendata-expansion-research.md 已記錄 data.cdc.gov.tw／od.cdc.gov.tw
+// 這個 CKAN 平台「正式主機與 GitHub runner 已知被封鎖」）。結果是 runCdcAlertsSync()
+// 每次都掉進 catch，改用 data/ 與 public/data/ 裡那份 2026-08-23 之後再也沒更新過的
+// 靜態種子 CSV，所以 74 次排程紀錄的筆數完全沒變。改用疾管署官網本身的匯出端點
+// （非 CKAN 開放資料平台），已實測從正式主機所在類型的網路環境與 WebFetch 兩邊都能
+// 拿到 200/206、內容是今天（2026-10-22）剛更新的即時資料。欄位與種子 CSV 的表頭一致，
+// 不需要改動下面的 parseCsv／欄位對應邏輯。
 const TRAVEL_ALERT_CSV_URL =
-  "https://data.cdc.gov.tw/download?treeid=d49f7011afb78338&tableid=d824d55b0a37397e&format=csv";
+  "https://www.cdc.gov.tw/CountryEpidLevel/ExportCSV?type=0&fileName=TCDCTravelAlertAll.csv";
 const INTL_EPID_CSV_URL =
-  "https://data.cdc.gov.tw/download?treeid=d49f7011afb78338&tableid=1a28a306dfda3c61&format=csv";
+  "https://www.cdc.gov.tw/TravelEpidemic/ExportCSV?type=0&fileName=TCDCIntlEpidAll.csv";
 
 function parseCsv(text: string): Record<string, string>[] {
   const cleaned = text.replace(/^\uFEFF/, "");
