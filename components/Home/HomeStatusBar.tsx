@@ -132,6 +132,24 @@ function ErrorPill({ emoji, label, href, message }: { emoji: string; label: stri
   );
 }
 
+// Issue #778 (母票沿用 #744 的拆除)：首頁常駐的「明天放假嗎？」大卡片
+// （舊 HomeQuickEntryCards）移除後，這個問題的入口改成附屬在「今日上班」
+// 薥目旁邊的一個小圖示連結——明顯比薥目本身小，不是另一個同等大小的薥目。
+// 點了一樣導向 /tools/work-school-status（該頁「明天」欄位；目前沒有專屬
+// 錨點，所以連去整頁）。
+function WorkdayTomorrowShortcut({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-label={label}
+      title={label}
+      className="flex h-9 w-9 flex-none items-center justify-center self-stretch rounded-xl border border-slate-200 bg-white text-base text-slate-500 shadow-xs transition-colors hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:text-indigo-400"
+    >
+      <span aria-hidden="true">🗓️</span>
+    </Link>
+  );
+}
+
 export default function HomeStatusBar() {
   const { t } = useLanguage();
   const geolocation = useSharedGeolocation();
@@ -317,31 +335,37 @@ export default function HomeStatusBar() {
   return (
     <section aria-label={t("homePage.statusBar.sectionAriaLabel", "即時狀態總覽")} className="mb-8">
       <div className="flex flex-wrap gap-3">
-        {renderSection(
-          nowMs === null ? undefined : sections?.workday,
-          "🏢",
-          t("homePage.statusBar.workdayLabel", "今日上班"),
-          "/tools/work-school-status",
-          (workday) => {
-            const chip = workdayChip(workday);
-            if (!chip) return null;
-            if (chip.typhoonWarning) return t("homePage.statusBar.workdayTyphoon", "颱風警報中・查停班停課");
-            switch (chip.state) {
-              case "workday":
-                return t("homePage.statusBar.workdayWorkday", "正常上班上課");
-              case "makeup-workday":
-                return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
-              case "off":
-                if (chip.offReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
-                return chip.name
-                  ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.name)
-                  : t("homePage.statusBar.workdayOff", "放假");
-              default:
-                return t("homePage.statusBar.workdayUnknown", "查無日曆資料");
-            }
-          },
-          (workday) => (workdayChip(workday)?.typhoonWarning ? "alert" : "default"),
-        )}
+        <div className="flex min-w-[9.5rem] flex-1 items-stretch gap-1.5">
+          {renderSection(
+            nowMs === null ? undefined : sections?.workday,
+            "🏢",
+            t("homePage.statusBar.workdayLabel", "今日上班"),
+            "/tools/work-school-status",
+            (workday) => {
+              const chip = workdayChip(workday);
+              if (!chip) return null;
+              if (chip.typhoonWarning) return t("homePage.statusBar.workdayTyphoon", "颱風警報中・查停班停課");
+              switch (chip.state) {
+                case "workday":
+                  return t("homePage.statusBar.workdayWorkday", "正常上班上課");
+                case "makeup-workday":
+                  return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
+                case "off":
+                  if (chip.offReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
+                  return chip.name
+                    ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.name)
+                    : t("homePage.statusBar.workdayOff", "放假");
+                default:
+                  return t("homePage.statusBar.workdayUnknown", "查無日曆資料");
+              }
+            },
+            (workday) => (workdayChip(workday)?.typhoonWarning ? "alert" : "default"),
+          )}
+          <WorkdayTomorrowShortcut
+            href="/tools/work-school-status"
+            label={t("homePage.statusBar.tomorrowShortcutLabel", "明天放假嗎？")}
+          />
+        </div>
 
         {renderSection(sections?.weather, "🌤️", t("homePage.statusBar.weatherLabel", "天氣"), "/tools/weather-alerts", (weather) =>
           weather ? (

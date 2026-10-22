@@ -960,7 +960,8 @@
       "workdayOff": "Day off",
       "workdayOffNamedTemplate": "Day off · {name}",
       "workdayUnknown": "No calendar data",
-      "workdayTyphoon": "Typhoon warning · check closures"
+      "workdayTyphoon": "Typhoon warning · check closures",
+      "tomorrowShortcutLabel": "Is tomorrow a day off?"
     },
     "guideCards": {
       "sectionAriaLabel": "Life-Situation Guides",

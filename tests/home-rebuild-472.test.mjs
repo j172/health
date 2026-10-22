@@ -220,6 +220,31 @@ test("components/Home/HomeStatusBar.tsx uses the shared useSharedGeolocation hoo
   }
 });
 
+// 首頁常駐的兩張大卡片（舊 components/Home/HomeQuickEntryCards.tsx，issue
+// #744：颱風與警報／明天放假嗎？）已移除——全站颱風橫幅（TyphoonBanner）已
+// 改成大卡片視覺樣式並涵蓋同樣的警報資訊，兩者重複。「明天放假嗎？」的入口
+// 保留為 HomeStatusBar「今日上班」薥目旁邊的一個小圖示連結。
+test("the old HomeQuickEntryCards component and its homepage mount are gone", () => {
+  assert.ok(!fs.existsSync(path.join(ROOT_DIR, "components", "Home", "HomeQuickEntryCards.tsx")));
+  for (const file of [["app", "(zh)", "(site)", "page.tsx"], ["app", "[locale]", "page.tsx"]]) {
+    const src = readSource(...file);
+    assert.ok(!src.includes("HomeQuickEntryCards"), `${file.join("/")} must not mount the removed cards`);
+  }
+});
+
+test("components/Home/HomeStatusBar.tsx keeps a small shortcut link beside the 今日上班 pill for 「明天放假嗎？」, clearly smaller than a full pill", () => {
+  const src = readSource("components", "Home", "HomeStatusBar.tsx");
+  assert.match(src, /function WorkdayTomorrowShortcut/);
+  assert.match(src, /<WorkdayTomorrowShortcut\s/);
+  assert.match(src, /href="\/tools\/work-school-status"/);
+  assert.match(src, /tomorrowShortcutLabel", "明天放假嗎？"/);
+  // The shortcut is a fixed small square (h-9 w-9, flex-none) — not another
+  // full-width/flex-1 pill like StatusPill.
+  const shortcutFn = src.slice(src.indexOf("function WorkdayTomorrowShortcut"), src.indexOf("export default function HomeStatusBar"));
+  assert.match(shortcutFn, /h-9 w-9 flex-none/);
+  assert.ok(!/min-w-\[9\.5rem\]/.test(shortcutFn), "must not reuse StatusPill's full pill width");
+});
+
 test("components/Home/HomeStatusBar.tsx offers a manual county picker gated on needsManualSelection, not an automatic fallback, and calls /api/home-status exactly once per resolved location", () => {
   const src = readSource("components", "Home", "HomeStatusBar.tsx");
   assert.ok(src.includes("needsManualSelection"), "must branch on the hook's explicit denied/timeout/unsupported signal");
