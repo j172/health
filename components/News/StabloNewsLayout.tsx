@@ -195,10 +195,12 @@ export default async function StabloNewsLayout({
                   // (components/Home/HomeStatusBar.tsx) now covers
                   // weather/AQI/UV/latest-earthquake/alerts via one
                   // aggregation API call, so only those 5 widgets are
-                  // hidden here on home (the other 5 — ER/CPC/water/CDC/
-                  // pest — are not covered by the status bar and keep
-                  // rendering, per the 2026-10-13 product decision on
-                  // issue #472). /news archive pages keep all 10
+                  // hidden here on home (the other widgets — ER/CPC/
+                  // water/CDC — are not covered by the status bar and
+                  // keep rendering, per the 2026-10-13 product decision
+                  // on issue #472; pest alerts was a 5th such widget but
+                  // was retired outright by issue #788). /news archive
+                  // pages keep all of them
                   // (hideStatusBarDuplicateWidgets defaults to false).
                   hideStatusBarDuplicateWidgets
                 />

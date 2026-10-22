@@ -43,8 +43,8 @@ export interface HomeStatusResponse {
  * per-widget client fetches that duplicated this same data
  * (LocalWeatherSvgWidget/AqiSidebarWidget/UvSidebarWidget, each previously
  * calling their own endpoint) — see components/Home/HomeStatusBar.tsx, the
- * sole caller. The other 5 sidebar widgets (ER status/CPC fuel price/water
- * outages/CDC travel alerts/pest alerts) are not covered by this status bar
+ * sole caller. The other sidebar widgets (ER status/CPC fuel price/water
+ * outages/CDC travel alerts) are not covered by this status bar
  * and keep rendering + fetching independently on the homepage, per a
  * 2026-10-13 product decision on issue #472 — see
  * components/News/NewsSidebar.tsx's `hideStatusBarDuplicateWidgets` prop.

@@ -11,7 +11,7 @@
 
 | 軌道 | 數量 | 說明 |
 |---|---|---|
-| in-app node-cron（`lib/server/cron/registerJobs.ts`） | 47 個 job（2026-10-22，新增全球動態地球「武裝衝突」GDELT 同步＋每日清除兩個 job［#774］，之前是 2026-10-21 移除 YouBike 的 2 個 job［#727］、`metro-alerts`［#728］、樂齡旅遊／敬老卡的 3 個 TDX job［#729］與無障礙交通的 2 個每日 TDX job［#730］之後的 45 個；以 `registerJobs.ts` 內 `cron.schedule(` 實際數量為準，測試不寫死總數） | 隨 Next.js 啟動；RSS（`5,35`）、CWA（`15,45`）、急診（`7,22,37,52`）、圖庫指派（每 10 分）等；每個 job 記錄記憶體用量，記憶體吃緊時降載 |
+| in-app node-cron（`lib/server/cron/registerJobs.ts`） | 46 個 job（2026-10-22，移除作物病蟲害即時預警的每 6 小時同步 job［#788］，之前是新增全球動態地球「武裝衝突」GDELT 同步＋每日清除兩個 job［#774］、2026-10-21 移除 YouBike 的 2 個 job［#727］、`metro-alerts`［#728］、樂齡旅遊／敬老卡的 3 個 TDX job［#729］與無障礙交通的 2 個每日 TDX job［#730］之後的 47 個；以 `registerJobs.ts` 內 `cron.schedule(` 實際數量為準，測試不寫死總數） | 隨 Next.js 啟動；RSS（`5,35`）、CWA（`15,45`）、急診（`7,22,37,52`）、圖庫指派（每 10 分）等；每個 job 記錄記憶體用量，記憶體吃緊時降載 |
 | GitHub Actions | 14 個 workflow | 需要外部 IP（被主機封鎖的上游）、長時間批次、或部署相關的工作；透過 SSH 在主機上執行，**不走 TCP 轉發**（HawkHost 已關閉 `AllowTcpForwarding`） |
 | 系統 crontab | 1 個 | 只保留 `pm2-ensure-running` 自我修復 watchdog |
 
@@ -157,7 +157,7 @@ TDX 基本方案整組憑證每分鐘 5 次（`lib/server/tdx/rateLimiter.ts` �
 
 #### 即時資料排程入庫與部署驗證 ✅
 - 原檔：[realtime-sync-scheduler-and-pipeline-resilience.md](../archive/specs/realtime-sync-scheduler-and-pipeline-resilience.md)（#213）
-- 病蟲害（每 6 小時）、書籍排行；超過 15 分鐘（TDX 縣市為 30 分鐘）未更新前台標「更新延遲」。（YouBike［#727］與捷運公告［#728］原在此列，2026-10-21 已移除。）
+- 病蟲害（每 6 小時，已於 2026-10-22 隨 #788 整個移除）、書籍排行；超過 15 分鐘（TDX 縣市為 30 分鐘）未更新前台標「更新延遲」。（YouBike［#727］與捷運公告［#728］原在此列，2026-10-21 已移除。）
 
 #### 部署快取清除與半年同步強化 ✅
 - 原檔：[ci-deploy-and-sync-resilience.md](../archive/specs/ci-deploy-and-sync-resilience.md)（#229、#224）

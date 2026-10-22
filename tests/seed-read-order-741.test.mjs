@@ -92,7 +92,6 @@ test("每個已知的讀取點都 import 共用函式", () => {
     "lib/server/culture/ingestPublicArt.ts",
     "lib/server/db/mysql.ts",
     "lib/server/officeCalendar/calendarSource.ts",
-    "lib/server/pestAlerts/queries.ts",
   ];
   for (const file of READ_POINTS) {
     const source = read(file);

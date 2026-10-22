@@ -6,9 +6,10 @@ import { buildForestFireUrl } from "./parse";
  * Fetches the MOA ForestFireAlertWCF feed for one Asia/Taipei date and returns
  * the decoded JSON (validation/parsing is parseForestFire's job).
  *
- * Egress note (spec section 3): data.moa.gov.tw is already used by production
- * sources (pest alerts, debris flow), but this `/api/v1/` path has not been
- * individually probed from the production host. The first live sync after
+ * Egress note (spec section 3): data.moa.gov.tw is already used by a production
+ * source (debris flow; pest alerts used it too until retired by issue #788),
+ * but this `/api/v1/` path has not been individually probed from the
+ * production host. The first live sync after
  * deploy is the check (see the PR's post-deploy TODOs); a block would surface
  * as a failed run in ingest_runs / ingest_errors, never as an empty page.
  *

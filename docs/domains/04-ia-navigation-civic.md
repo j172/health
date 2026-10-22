@@ -64,7 +64,7 @@
 
 #### 全台開放資料擴充與長照整併 ✅
 - 原檔：[open-data-tools-expansion-and-consolidation.md](../archive/specs/open-data-tools-expansion-and-consolidation.md)（#211）
-- 雙北桃高衛生局醫療院所、臺北捷運公告（已於 2026-10-21 隨 #728 整個移除）、北北桃竹 YouBike（已於 2026-10-21 隨 #727 整個移除）、樂齡旅遊地圖（景區無障礙設施／服務／套票；已於 2026-10-21 隨 #729 移除，`/tools/senior-friendly` 網址不變，改名「敬老卡補助」只留敬老卡）、農業部病蟲害、動物醫院、書籍；`ltc-contracted` 以 308 併入 `long-term-care`（該頁至今仍以 noindex 存在，2.0 M1 改 301）。
+- 雙北桃高衛生局醫療院所、臺北捷運公告（已於 2026-10-21 隨 #728 整個移除）、北北桃竹 YouBike（已於 2026-10-21 隨 #727 整個移除）、樂齡旅遊地圖（景區無障礙設施／服務／套票；已於 2026-10-21 隨 #729 移除，`/tools/senior-friendly` 網址不變，改名「敬老卡補助」只留敬老卡）、農業部病蟲害（已於 2026-10-22 隨 #788 整個移除）、動物醫院、書籍；`ltc-contracted` 以 308 併入 `long-term-care`（該頁至今仍以 noindex 存在，2.0 M1 改 301）。
 
 #### 全站列表預設 30 筆、分頁器、極細搜尋 ✅
 - 原檔：[site-wide-list-pagination-and-granular-search.md](../archive/specs/site-wide-list-pagination-and-granular-search.md)（PR #312）

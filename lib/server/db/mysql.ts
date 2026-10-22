@@ -82,6 +82,9 @@ const RETIRED_ACCESSIBLE_TRANSIT_TABLES = [
   "accessible_transit_transfers",
 ] as const;
 
+/** issue #788：作物病蟲害即時預警整個移除，pest_alerts 同樣由 runSchemaMigrations 冪等 DROP（不可再被任何 CREATE 建回）。 */
+const RETIRED_PEST_ALERTS_TABLES = ["pest_alerts"] as const;
+
 const runSchemaMigrations = async (): Promise<void> => {
   const p = getMysqlPool();
   await p.query(TABLE_DDL.newsItems);
@@ -159,7 +162,16 @@ const runSchemaMigrations = async (): Promise<void> => {
       console.warn(`[ensureSchema] DROP TABLE IF EXISTS ${legacyTable} warning:`, err);
     }
   }
-  await p.query(TABLE_DDL.pestAlerts);
+  // issue #788：作物病蟲害即時預警整個移除。pest_alerts 已沒有任何建表敘述、種子或讀寫程式，
+  // 這裡以冪等的 DROP TABLE IF EXISTS 清掉已部署環境裡殘留的表（不備份，使用者已決定）；
+  // 全新資料庫沒有這張表、已經刪過的環境重跑，都是 no-op。失敗只記警告，理由同 YouBike／軌道通阻／樂齡旅遊。
+  for (const legacyTable of RETIRED_PEST_ALERTS_TABLES) {
+    try {
+      await p.query(`DROP TABLE IF EXISTS \`${legacyTable}\``);
+    } catch (err) {
+      console.warn(`[ensureSchema] DROP TABLE IF EXISTS ${legacyTable} warning:`, err);
+    }
+  }
   await p.query(TABLE_DDL.powerGenerationUnits);
   await p.query(TABLE_DDL.powerGenerationMix);
   await p.query(TABLE_DDL.powerRadiationStations);
@@ -650,27 +662,6 @@ const runSchemaMigrations = async (): Promise<void> => {
     console.warn("[ensureSchema] latest_books seed warning:", seedErr);
   }
 
-  // Auto-seed pest_alerts from bundled data/pest-alerts-seed.json if empty
-  try {
-    const [pestCount] = await p.query<RowDataPacket[]>("SELECT COUNT(*) AS cnt FROM pest_alerts");
-    if ((pestCount[0]?.cnt ?? 0) === 0) {
-      const alerts = readSeedJson<any[]>("pest-alerts-seed.json");
-      if (Array.isArray(alerts) && alerts.length > 0) {
-        for (const a of alerts) {
-          await p.query(
-            `INSERT IGNORE INTO pest_alerts (
-              subject_name, monitor_type, alert_time, target_crops,
-              alert_data_json, status, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-            [a.subjectName, a.monitorType, a.alertTime, a.targetCrops, a.alertDataJson, a.status]
-          );
-        }
-        console.log(`[ensureSchema] Successfully seeded ${alerts.length} pest alerts into MySQL`);
-      }
-    }
-  } catch (err) {
-    console.warn("[ensureSchema] pest_alerts seed warning:", err);
-  }
 };
 
 export const ensureSchema = async (): Promise<void> => {
