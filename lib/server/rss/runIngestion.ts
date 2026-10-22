@@ -50,6 +50,7 @@ import { fetchMamibuyArticles } from "@/lib/server/rss/fetchMamibuyArticles";
 import { fetchTascTaiwanNews } from "@/lib/server/rss/fetchTascTaiwanNews";
 import { fetchAntidrugNews } from "@/lib/server/rss/fetchAntidrugNews";
 import { fetchPolice7505News } from "@/lib/server/rss/fetchPolice7505News";
+import { fetchIthomeHealthitNews } from "@/lib/server/rss/fetchIthomeHealthitNews";
 import {
   fetchAmnestyNews,
   fetchNpoHotMsg,
@@ -933,6 +934,25 @@ export const runRssIngestion = async (
       );
       skippedUnchanged += police7505Result.skippedUnchanged;
       staleRejected += police7505Result.staleRejected;
+
+      // -----------------------------------------------------------------------
+      // iThome「醫療IT」主題中心 — no category-specific RSS of its own (confirmed
+      // live; the site-wide /rss feed is "最新新聞", not scoped to healthit), so
+      // this scrapes the /healthit category listing page directly. Same
+      // treatment as udn_health/cgmh_press above.
+      // -----------------------------------------------------------------------
+      const ithomeResult = await processSpecialSource(
+        {
+          code: "ithome_healthit",
+          name: "iThome－醫療IT",
+          url: "https://www.ithome.com.tw/healthit",
+          sourceName: "ithome",
+        },
+        fetchIthomeHealthitNews,
+        specialSourceCtx,
+      );
+      skippedUnchanged += ithomeResult.skippedUnchanged;
+      staleRejected += ithomeResult.staleRejected;
 
       // -----------------------------------------------------------------------
       // NPO / NGO Sources: Amnesty, NPO Center, Down Syndrome, World Vision,

@@ -111,6 +111,7 @@ const SOURCE_LABELS: Record<string, string> = {
   antidrug: "反毒大本營",
   police_7505: "警政署",
   tfc: "台灣事實查核中心",
+  ithome: "iThome",
 };
 
 export interface SourceLabelInput {
