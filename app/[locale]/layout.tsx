@@ -12,6 +12,7 @@ import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
 import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytics";
 import SkipToContent from "@/components/Accessibility/SkipToContent";
 import TyphoonBanner from "@/components/Typhoon/TyphoonBanner";
+import EarthquakeBanner from "@/components/Earthquake/EarthquakeBanner";
 import { PATH_LOCALES, isPathLocale, type PathLocale } from "@/lib/i18n/dictionary";
 
 /**
@@ -123,6 +124,7 @@ export default async function LocaleRootLayout({
         <Provider forcedLocale={pathLocale}>
           <SkipToContent />
           <TyphoonBanner />
+          <EarthquakeBanner />
           <InAppBrowserBanner />
           <div id="main-content" tabIndex={-1} className="outline-none">
             {children}

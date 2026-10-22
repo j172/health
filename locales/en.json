@@ -997,5 +997,17 @@
       "holidayActiveDesc": "Typhoon warning in effect. Check the official closure announcement.",
       "cta": "Open"
     }
+  },
+  "earthquake": {
+    "banner": {
+      "ariaLabel": "Earthquake alert",
+      "badge": "Earthquake alert",
+      "title": "Felt earthquake",
+      "magnitudeTemplate": "Magnitude M{magnitude}",
+      "intensityTemplate": "Max intensity {intensity}",
+      "originTimeTemplate": "Occurred {time}",
+      "notice": "For the shaking-intensity map and further updates, please refer to the Central Weather Administration.",
+      "linkTool": "Earthquake monitor"
+    }
   }
 }

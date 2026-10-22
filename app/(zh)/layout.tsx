@@ -11,6 +11,7 @@ import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
 import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytics";
 import SkipToContent from "@/components/Accessibility/SkipToContent";
 import TyphoonBanner from "@/components/Typhoon/TyphoonBanner";
+import EarthquakeBanner from "@/components/Earthquake/EarthquakeBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -122,6 +123,7 @@ export default function RootLayout({
         <Provider>
           <SkipToContent />
           <TyphoonBanner />
+          <EarthquakeBanner />
           <InAppBrowserBanner />
           <div id="main-content" tabIndex={-1} className="outline-none">
             {children}
