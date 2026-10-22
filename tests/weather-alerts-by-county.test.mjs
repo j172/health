@@ -17,22 +17,45 @@ const read = (...segments) => fs.readFileSync(path.join(ROOT, ...segments), "utf
 const { resolveNearestCounty, isWithinCountyBounds } = await import("../lib/server/facilities/countyBounds.ts");
 const { filterCwaAlertsByCounty } = await import("../lib/server/cwa/filterAlertsByCounty.ts");
 
-test("resolveNearestCounty: a point inside exactly one county's bounds returns that county", () => {
+test("resolveNearestCounty: a point inside a county's real boundary returns that county", () => {
   assert.equal(resolveNearestCounty(25.04, 121.56), "臺北市"); // 台北市政府一帶
   assert.equal(resolveNearestCounty(22.63, 120.3), "高雄市");
 });
 
-test("resolveNearestCounty: never returns null/undefined, even for a point outside every county's bounds (open sea)", () => {
+test("resolveNearestCounty: returns null for a point outside every county's real boundary (open sea)", () => {
   const result = resolveNearestCounty(24.0, 123.5); // far off the east coast
-  assert.equal(typeof result, "string");
-  assert.ok(result.length > 0);
+  assert.equal(result, null);
 });
 
-test("resolveNearestCounty's fallback actually picks the nearest center, not just the first county in iteration order", () => {
-  // A point just east of 宜蘭縣's box (outside every county) should resolve to 宜蘭縣,
-  // not to an unrelated county that merely sorts earlier in BOUNDS' key order.
-  const result = resolveNearestCounty(24.6, 122.2);
-  assert.equal(result, "宜蘭縣");
+// Regression test for the live incident this change fixes: New Taipei City geographically
+// wraps around Taipei City, so the old bounding-box heuristic had Taipei's loose box sitting
+// entirely inside New Taipei's — any New Taipei district that fell inside both boxes (which
+// the old code treated as ambiguous) resolved to whichever box's *center* was nearest, and
+// Taipei's center was consistently the nearer one. Confirmed live during an active typhoon
+// warning: visitors in these New Taipei districts saw "no alerts" for 臺北市 (which had none)
+// instead of their real county 新北市 (which did). Point-in-polygon against the real boundary
+// must get every one of these right.
+test("resolveNearestCounty: New Taipei districts that wrap around Taipei resolve to 新北市, not 臺北市", () => {
+  assert.equal(resolveNearestCounty(25.036, 121.449), "新北市"); // 新莊區 — the confirmed live incident
+  assert.equal(resolveNearestCounty(25.0137, 121.4625), "新北市"); // 板橋區
+  assert.equal(resolveNearestCounty(25.0633, 121.4874), "新北市"); // 三重區
+  assert.equal(resolveNearestCounty(25.0078, 121.5154), "新北市"); // 永和區
+  assert.equal(resolveNearestCounty(24.9998, 121.4984), "新北市"); // 中和區
+});
+
+test("resolveNearestCounty: Taipei City districts still resolve to 臺北市, not misclassified the other way", () => {
+  assert.equal(resolveNearestCounty(25.0914, 121.5267), "臺北市"); // 士林區
+  assert.equal(resolveNearestCounty(25.0831, 121.5891), "臺北市"); // 內湖區
+  assert.equal(resolveNearestCounty(24.9887, 121.5701), "臺北市"); // 文山區
+});
+
+test("resolveNearestCounty: spot-checks near other counties' borders resolve correctly", () => {
+  assert.equal(resolveNearestCounty(24.9167, 121.1472), "桃園市"); // 楊梅區 (near the 新竹縣 border)
+  assert.equal(resolveNearestCounty(24.8989, 121.0414), "新竹縣"); // 湖口鄉
+  assert.equal(resolveNearestCounty(23.8988, 120.3764), "彰化縣"); // 二林鎮 (near the 雲林縣 border)
+  assert.equal(resolveNearestCounty(23.7444, 120.4891), "雲林縣"); // 莿桐鄉
+  assert.equal(resolveNearestCounty(22.7936, 120.2944), "高雄市"); // 岡山區 (near the 臺南市/屏東縣 side)
+  assert.equal(resolveNearestCounty(22.7144, 120.5106), "屏東縣"); // 九如鄉
 });
 
 test("filterCwaAlertsByCounty: matches both the 臺 and 台 spelling in area_desc", () => {
@@ -70,8 +93,10 @@ test("WeatherRainfallLocator renders the county-alerts summary only once a locat
   assert.match(src, /setCountyAlerts\(json\.data\.countyAlerts \?\? null\)/);
 });
 
-// isWithinCountyBounds already existed before this change — sanity-check it still works,
-// since resolveNearestCounty's containment pass depends on it.
+// isWithinCountyBounds is unrelated to resolveNearestCounty's point-in-polygon lookup now
+// (see countyGeo.ts) — it's still used elsewhere (geocodeBatch.ts, autoGeocode.ts,
+// policeStations5958.ts) as a deliberately loose sanity check on geocoding results, so its
+// own loose-bounding-box behavior must be unchanged.
 test("isWithinCountyBounds still behaves as the pre-existing function did", () => {
   assert.equal(isWithinCountyBounds("臺北市", 25.04, 121.56), true);
   assert.equal(isWithinCountyBounds("高雄市", 25.04, 121.56), false);

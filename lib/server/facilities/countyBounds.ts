@@ -1,9 +1,19 @@
+import { resolveCountyByPoint } from "@/lib/server/facilities/countyGeo";
+
 /**
  * Rough bounding boxes for Taiwan's 22 counties/cities — deliberately loose
  * (a few km of slack, not precise borders) since this is only used to catch
  * gross geocoding mismatches (e.g. an address genuinely in 臺中市 landing in
  * 臺北市 — confirmed live, e.g. 中山醫學大學附設醫院), not to validate exact
  * placement. Both 臺/台 spellings map to the same box.
+ *
+ * Kept deliberately loose for that use (`isWithinCountyBounds`, used by
+ * `geocodeBatch.ts` / `autoGeocode.ts` / `policeStations5958.ts` as a sanity
+ * check with slack, not a precise border test) — do NOT tighten these into
+ * exact borders. `resolveNearestCounty` below used to be built on these too,
+ * but no longer is: see `countyGeo.ts` for why (TL;DR: a loose box isn't
+ * precise enough to tell visitors which county's weather alerts apply to
+ * them).
  */
 export interface CountyBounds {
   minLat: number;
@@ -100,35 +110,28 @@ export function isWithinCountyBounds(county: string, lat: number, lng: number): 
 }
 
 /**
- * Resolves a visitor's GPS coordinates to the single most likely county/city,
- * for county-level features (e.g. "此縣市目前有哪些特報") that don't need the
- * geocoding precision `countyForAddress` / an actual reverse-geocode API would
- * give. Not exact at county borders — these bounds are deliberately loose — but
- * good enough that a visitor standing anywhere in a county sees that county.
+ * Resolves a visitor's GPS coordinates to the county/city whose real administrative
+ * boundary contains them, for county-level features (e.g. "此縣市目前有哪些特報") — an
+ * exact point-in-polygon test against actual county borders (see `countyGeo.ts` and
+ * `public/data/county-boundaries/ATTRIBUTION.md`), not an approximation.
  *
- * - If exactly one county's bounds contain the point, that's the answer.
- * - If none do (open sea, outlying islands' bounds don't quite reach, a point
- *   just outside every box) or more than one does (the loose boxes overlap
- *   near some borders), falls back to whichever county's bounding-box *center*
- *   is nearest — a bounding box's center is a reasonable stand-in for "the
- *   county roughly centered there" at Taiwan's scale, and this never returns
- *   `null` so the caller never has to show a dead end.
+ * Returns `null` when the point isn't inside any of the 22 counties' boundaries (open
+ * sea, an outlying area the simplified boundary doesn't quite reach, or a GPS fix
+ * that's simply off the island). Callers must treat `null` as "cannot determine" and
+ * show that honestly — never guess a nearby county.
+ *
+ * Used to be built on `BOUNDS` above: a point inside exactly one county's loose box was
+ * that county, and otherwise (including a point inside *two* overlapping boxes) it fell
+ * back to whichever box-center was nearest. That fallback is why a New Taipei City
+ * visitor near — or anywhere inside the part of New Taipei that wraps around — Taipei
+ * City could get misclassified as being in Taipei City: Taipei's bounding box sits
+ * entirely inside New Taipei's (New Taipei geographically encircles Taipei), so e.g.
+ * 新莊區 (genuinely New Taipei) fell inside both boxes, and Taipei's box-center happened
+ * to be the nearer one. Confirmed live during an active typhoon warning — visitors in
+ * those districts saw "no alerts" for a county that had none active, while their real
+ * county (New Taipei) did.
  */
-export function resolveNearestCounty(lat: number, lng: number): string {
-  const containing = Object.keys(BOUNDS).filter((county) => isWithinCountyBounds(county, lat, lng));
-  if (containing.length === 1) return containing[0];
-
-  let nearest = containing[0] ?? Object.keys(BOUNDS)[0];
-  let nearestDistance = Infinity;
-  for (const [county, bounds] of Object.entries(BOUNDS)) {
-    const centerLat = (bounds.minLat + bounds.maxLat) / 2;
-    const centerLng = (bounds.minLng + bounds.maxLng) / 2;
-    const distance = (lat - centerLat) ** 2 + (lng - centerLng) ** 2;
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearest = county;
-    }
-  }
-  return nearest;
+export function resolveNearestCounty(lat: number, lng: number): string | null {
+  return resolveCountyByPoint(lat, lng);
 }
 
