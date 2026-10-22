@@ -998,5 +998,17 @@
       "holidayActiveDesc": "台風警報発表中。公式の休業・休校発表を確認してください",
       "cta": "開く"
     }
+  },
+  "earthquake": {
+    "banner": {
+      "ariaLabel": "地震速報",
+      "badge": "地震速報",
+      "title": "有感地震",
+      "magnitudeTemplate": "規模 M{magnitude}",
+      "intensityTemplate": "最大震度 {intensity}",
+      "originTimeTemplate": "発生 {time}",
+      "notice": "震度分布や今後の地震情報は、気象庁相当機関である中央気象署の発表をご確認ください。",
+      "linkTool": "地震情報ツール"
+    }
   }
 }

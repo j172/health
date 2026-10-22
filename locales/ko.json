@@ -998,5 +998,17 @@
       "holidayActiveDesc": "태풍 경보 발효 중. 공식 휴업·휴교 발표를 확인하세요",
       "cta": "열기"
     }
+  },
+  "earthquake": {
+    "banner": {
+      "ariaLabel": "지진 속보",
+      "badge": "지진 속보",
+      "title": "유감 지진",
+      "magnitudeTemplate": "규모 M{magnitude}",
+      "intensityTemplate": "최대 진도 {intensity}",
+      "originTimeTemplate": "발생 {time}",
+      "notice": "진도 분포와 이후 지진 정보는 중앙기상서(기상청에 해당) 발표를 확인하세요.",
+      "linkTool": "지진 속보 도구"
+    }
   }
 }
