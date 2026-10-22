@@ -223,7 +223,8 @@ test("components/Home/HomeStatusBar.tsx uses the shared useSharedGeolocation hoo
 // 首頁常駐的兩張大卡片（舊 components/Home/HomeQuickEntryCards.tsx，issue
 // #744：颱風與警報／明天放假嗎？）已移除——全站颱風橫幅（TyphoonBanner）已
 // 改成大卡片視覺樣式並涵蓋同樣的警報資訊，兩者重複。「明天放假嗎？」的入口
-// 保留為 HomeStatusBar「今日上班」薥目旁邊的一個小圖示連結。
+// 原本保留為 HomeStatusBar「今日上班」薥目旁邊的一個小圖示連結，後來與新增的
+// 「明日上班」全尺寸薥目目的重疊，已收斂成只留「明日上班」一個（見下方測試）。
 test("the old HomeQuickEntryCards component and its homepage mount are gone", () => {
   assert.ok(!fs.existsSync(path.join(ROOT_DIR, "components", "Home", "HomeQuickEntryCards.tsx")));
   for (const file of [["app", "(zh)", "(site)", "page.tsx"], ["app", "[locale]", "page.tsx"]]) {
@@ -232,17 +233,11 @@ test("the old HomeQuickEntryCards component and its homepage mount are gone", ()
   }
 });
 
-test("components/Home/HomeStatusBar.tsx keeps a small shortcut link beside the 今日上班 pill for 「明天放假嗎？」, clearly smaller than a full pill", () => {
+test("components/Home/HomeStatusBar.tsx has consolidated the redundant 「明天放假嗎？」 shortcut icon into the single 明日上班 pill", () => {
   const src = readSource("components", "Home", "HomeStatusBar.tsx");
-  assert.match(src, /function WorkdayTomorrowShortcut/);
-  assert.match(src, /<WorkdayTomorrowShortcut\s/);
-  assert.match(src, /href="\/tools\/work-school-status"/);
-  assert.match(src, /tomorrowShortcutLabel", "明天放假嗎？"/);
-  // The shortcut is a fixed small square (h-9 w-9, flex-none) — not another
-  // full-width/flex-1 pill like StatusPill.
-  const shortcutFn = src.slice(src.indexOf("function WorkdayTomorrowShortcut"), src.indexOf("export default function HomeStatusBar"));
-  assert.match(shortcutFn, /h-9 w-9 flex-none/);
-  assert.ok(!/min-w-\[9\.5rem\]/.test(shortcutFn), "must not reuse StatusPill's full pill width");
+  assert.ok(!src.includes("WorkdayTomorrowShortcut"), "the small shortcut icon component must be removed, not just unused");
+  assert.ok(!src.includes("tomorrowShortcutLabel"), "the now-unused i18n key must not still be referenced");
+  assert.match(src, /tomorrowWorkdayLabel", "明日上班"/);
 });
 
 test("components/Home/HomeStatusBar.tsx offers a manual county picker gated on needsManualSelection, not an automatic fallback, and calls /api/home-status exactly once per resolved location", () => {

@@ -204,23 +204,9 @@ function ErrorPill({ emoji, label, href, message }: { emoji: string; label: stri
   );
 }
 
-// Issue #778 (母票沿用 #744 的拆除)：首頁常駐的「明天放假嗎？」大卡片
-// （舊 HomeQuickEntryCards）移除後，這個問題的入口改成附屬在「今日上班」
-// 薥目旁邊的一個小圖示連結——明顯比薥目本身小，不是另一個同等大小的薥目。
-// 點了一樣導向 /tools/work-school-status（該頁「明天」欄位；目前沒有專屬
-// 錨點，所以連去整頁）。
-function WorkdayTomorrowShortcut({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      title={label}
-      className="flex h-9 w-9 flex-none items-center justify-center self-stretch rounded-xl border border-slate-200 bg-white text-base text-slate-500 shadow-xs transition-colors hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:text-indigo-400"
-    >
-      <span aria-hidden="true">🗓️</span>
-    </Link>
-  );
-}
+// 原本這裡有一個「明天放假嗎？」小圖示連結，跟後來新增的「明日上班」全尺寸薥目
+// 目的重疊（都連到 /tools/work-school-status、都回答明天狀態），已收斂成只留
+// 「明日上班」一個，小圖示移除。
 
 export default function HomeStatusBar() {
   const { t } = useLanguage();
@@ -440,19 +426,13 @@ export default function HomeStatusBar() {
   return (
     <section aria-label={t("homePage.statusBar.sectionAriaLabel", "即時狀態總覽")} className="mb-8">
       <div className="flex flex-wrap gap-3">
-        <div className="flex min-w-[9.5rem] flex-1 items-stretch gap-1.5">
-          {renderSection(
-            nowMs === null ? undefined : sections?.workday,
-            "🏢",
-            t("homePage.statusBar.workdayLabel", "今天上班上課"),
-            "/tools/work-school-status",
-            (workday) => describeWorkdayState(todayWorkdayChip(workday)),
-          )}
-          <WorkdayTomorrowShortcut
-            href="/tools/work-school-status"
-            label={t("homePage.statusBar.tomorrowShortcutLabel", "明天放假嗎？")}
-          />
-        </div>
+        {renderSection(
+          nowMs === null ? undefined : sections?.workday,
+          "🏢",
+          t("homePage.statusBar.workdayLabel", "今天上班上課"),
+          "/tools/work-school-status",
+          (workday) => describeWorkdayState(todayWorkdayChip(workday)),
+        )}
 
         {renderSection(
           nowMs === null ? undefined : sections?.workday,

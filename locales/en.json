@@ -960,7 +960,6 @@
       "workdayOff": "Day off",
       "workdayOffNamedTemplate": "Day off · {name}",
       "workdayUnknown": "No calendar data",
-      "tomorrowShortcutLabel": "Is tomorrow a day off?",
       "tomorrowWorkdayLabel": "Work Tomorrow"
     },
     "guideCards": {

@@ -963,7 +963,6 @@
       "workdayOff": "휴무",
       "workdayOffNamedTemplate": "휴무 · {name}",
       "workdayUnknown": "달력 정보 없음",
-      "tomorrowShortcutLabel": "내일은 휴무인가요?",
       "tomorrowWorkdayLabel": "내일 근무"
     },
     "guideCards": {
