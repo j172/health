@@ -153,7 +153,11 @@ export default function WaterQualityTab({ initialCounty }: WaterQualityTabProps)
         </p>
         <p className="mt-2">
           依政府資料開放授權條款公開（授權說明見 data.gov.tw 資料集頁面）。以上為依台灣自來水公司公開資料整理的資訊，非本站判定；水質問題請洽供水單位，
-          自來水客服專線 1910。
+          自來水客服專線{" "}
+          <a href="tel:1910" className="underline">
+            1910
+          </a>
+          。
         </p>
       </div>
     </div>

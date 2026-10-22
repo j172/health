@@ -378,7 +378,15 @@ export default function EmergencyRoomContent({
 
                       <div className="mt-1 flex items-center gap-2">
                         <p className="text-xs text-slate-500">
-                          {hospital.address} {hospital.phone ? `｜ 📞 ${hospital.phone}` : ""}
+                          {hospital.address}{" "}
+                          {hospital.phone && (
+                            <>
+                              {"｜ 📞 "}
+                              <a href={`tel:${hospital.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">
+                                {hospital.phone}
+                              </a>
+                            </>
+                          )}
                         </p>
                         {hospital.address && <CopyAddressButton address={hospital.address} />}
                       </div>

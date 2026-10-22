@@ -204,7 +204,11 @@ export default function AntiFraudChecker() {
           </div>
 
           <p className="text-center text-sm text-red-700 dark:text-red-300">
-            請勿點擊此網址或提供個人資料、匯款。如已受騙，請立即撥打 165 反詐騙諮詢專線。
+            請勿點擊此網址或提供個人資料、匯款。如已受騙，請立即撥打{" "}
+            <a href="tel:165" className="font-semibold underline">
+              165
+            </a>{" "}
+            反詐騙諮詢專線。
           </p>
         </div>
       )}
@@ -216,7 +220,11 @@ export default function AntiFraudChecker() {
             <p className="break-all text-sm text-neutral-500 dark:text-slate-400">{result.normalizedHost}</p>
           )}
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-            ⚠️ 不在清單上不代表安全，請撥 165 查證。
+            ⚠️ 不在清單上不代表安全，請撥{" "}
+            <a href="tel:165" className="font-semibold underline">
+              165
+            </a>{" "}
+            查證。
           </p>
           {result.normalizedHost && (
             <div className="pt-2">
@@ -244,8 +252,11 @@ export default function AntiFraudChecker() {
 
       <p className="px-4 text-center text-xs text-neutral-500 dark:text-slate-400">
         ⚠️
-        本工具僅比對內政部警政署、數位發展部公開之涉詐網域清單，查詢結果僅供參考，不構成法律或投資建議。可疑電話或 LINE ID 請改撥
-        165 查證。
+        本工具僅比對內政部警政署、數位發展部公開之涉詐網域清單，查詢結果僅供參考，不構成法律或投資建議。可疑電話或 LINE ID 請改撥{" "}
+        <a href="tel:165" className="font-semibold underline">
+          165
+        </a>{" "}
+        查證。
       </p>
     </div>
   );
