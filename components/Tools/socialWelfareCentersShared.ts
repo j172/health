@@ -28,7 +28,8 @@ export interface Situation {
   id: string;
   emoji: string;
   title: string;
-  description: string;
+  /** Plain string, or a segment array when this scenario's wording names a hotline number — see lib/types/textWithPhoneLinks.ts. */
+  description: TextWithPhoneLinks;
   steps: SituationStep[];
   officialSource: { label: string; url: string };
   /** Shows the extra browsing-history privacy warning block (issue #603 AC). */
@@ -87,8 +88,11 @@ export const SITUATIONS: Situation[] = [
     id: "domestic-violence-child-abuse",
     emoji: "🛡️",
     title: "懷疑家暴兒虐",
-    description:
-      "如果你自己正在經歷家庭暴力、目睹暴力，或懷疑身邊的兒童、少年正遭受虐待或疏忽，113 全國保護專線是 24 小時都能撥打的單一窗口，會協助轉介保護、醫療與法律資源。",
+    description: [
+      { text: "如果你自己正在經歷家庭暴力、目睹暴力，或懷疑身邊的兒童、少年正遭受虐待或疏忽，" },
+      { tel: "113", text: "113" },
+      { text: " 全國保護專線是 24 小時都能撥打的單一窗口，會協助轉介保護、醫療與法律資源。" },
+    ],
     steps: [
       {
         label: [

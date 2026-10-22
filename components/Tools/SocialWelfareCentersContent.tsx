@@ -157,7 +157,7 @@ export default function SocialWelfareCentersContent({ centers }: { centers: Soci
                 {selectedSituation.emoji} {selectedSituation.title}
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-slate-300">
-                {selectedSituation.description}
+                <TextWithPhoneLinks value={selectedSituation.description} />
               </p>
             </div>
 

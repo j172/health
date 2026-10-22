@@ -2,7 +2,12 @@
  * Shared shape for narrative copy that may embed a real contact phone
  * number (e.g. "撥打 1957 福利諮詢專線申請") and needs that number to render
  * as a clickable `tel:` link, while the rest of the sentence stays plain
- * text.
+ * text. Also covers the rarer case of an SMS-only reporting line (e.g.
+ * "0911-511-110") that must render as `sms:`, never `tel:`, since it can't
+ * be dialed as a voice call — see `SmsLinkSegment` below, added for the
+ * 聽語障人士 SMS-reporting-line mention in lib/server/tools/catalog.ts,
+ * mirroring the `sms:` convention PR #783 established in
+ * EmergencyHotlinesContent.tsx.
  *
  * Design intent (issue: "narrative text embeds phone numbers, make them
  * clickable"): most strings in this codebase's `steps`/FAQ/content arrays
@@ -35,13 +40,32 @@ export interface PhoneLinkSegment {
   text: string;
 }
 
-export type TextSegment = PlainTextSegment | PhoneLinkSegment;
+/**
+ * A run that should render as a clickable `sms:` link — for an SMS-only
+ * reporting line (e.g. the deaf/speech-impaired 0911-511-110/119 lines),
+ * which is not reachable as a voice call, so a `tel:` link would be
+ * actively wrong. Kept as its own segment kind (not a flag on
+ * `PhoneLinkSegment`) so `isPhoneLinkSegment`/`isSmsLinkSegment` stay
+ * simple, mutually-exclusive type guards.
+ */
+export interface SmsLinkSegment {
+  /** Digits passed verbatim into `` `sms:${sms}` ``, same convention as `PhoneLinkSegment.tel`. */
+  sms: string;
+  /** Display text for the link — usually a human-readable dashed form (e.g. "0911-511-110"). */
+  text: string;
+}
 
-/** A piece of narrative copy: a plain string, or — only when it embeds a phone number — an ordered array of segments covering the whole sentence. */
+export type TextSegment = PlainTextSegment | PhoneLinkSegment | SmsLinkSegment;
+
+/** A piece of narrative copy: a plain string, or — only when it embeds a phone/SMS number — an ordered array of segments covering the whole sentence. */
 export type TextWithPhoneLinks = string | TextSegment[];
 
 export function isPhoneLinkSegment(segment: TextSegment): segment is PhoneLinkSegment {
   return typeof (segment as PhoneLinkSegment).tel === "string";
+}
+
+export function isSmsLinkSegment(segment: TextSegment): segment is SmsLinkSegment {
+  return typeof (segment as SmsLinkSegment).sms === "string";
 }
 
 /**

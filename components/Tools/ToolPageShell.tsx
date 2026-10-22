@@ -15,6 +15,7 @@ import { getDictionary, type Locale } from "@/lib/i18n/dictionary";
 import { buildLocalizedPath, isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
 import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
+import { TextWithPhoneLinks } from "@/components/Common/TextWithPhoneLinks";
 
 /**
  * Shared wrapper for every /tools/<slug> page.
@@ -495,7 +496,7 @@ export default async function ToolPageShell({
                         {t("toolShell.faqQLabel", "Q:")} {faq.question}
                       </dt>
                       <dd className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                        {t("toolShell.faqALabel", "A:")} {faq.answer}
+                        {t("toolShell.faqALabel", "A:")} <TextWithPhoneLinks value={faq.answerSegments ?? faq.answer} />
                       </dd>
                     </div>
                   ))}

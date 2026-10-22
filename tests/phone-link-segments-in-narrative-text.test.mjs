@@ -3,8 +3,39 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { registerHooks } from "node:module";
 
-const REPO_ROOT = fileURLToPath(new URL("../", import.meta.url));
+const REPO_ROOT_URL = new URL("../", import.meta.url);
+const REPO_ROOT = fileURLToPath(REPO_ROOT_URL);
+
+// lib/server/tools/catalog.ts (imported below, for the sms: segment
+// coverage) pulls in a chain of extensionless relative specifiers (e.g.
+// `./strokeOrder`) that Node's native TS-stripping loader can't resolve on
+// its own — same module-resolution shim already used by
+// tests/social-welfare-centers-603.test.mjs and
+// tests/garbage-live-trucks-679.test.mjs for the same reason.
+registerHooks({
+  resolve(specifier, context, nextResolve) {
+    if (specifier === "server-only") {
+      return { url: "data:text/javascript,", shortCircuit: true };
+    }
+    let target = specifier;
+    let parentURL = context.parentURL;
+    if (specifier.startsWith("@/")) {
+      target = `./${specifier.slice(2)}`;
+      parentURL = REPO_ROOT_URL.href;
+    }
+    if (target.startsWith(".") && !/\.[cm]?[jt]sx?$/.test(target)) {
+      for (const extension of [".ts", ".tsx", ".mjs", ".js"]) {
+        const candidate = new URL(target + extension, parentURL);
+        if (fs.existsSync(fileURLToPath(candidate))) {
+          return nextResolve(target + extension, { ...context, parentURL });
+        }
+      }
+    }
+    return nextResolve(target, { ...context, parentURL });
+  },
+});
 
 // Regression + structural guard for the "narrative text embeds a phone
 // number, make it clickable" rewrite: `lib/types/textWithPhoneLinks.ts`
@@ -24,7 +55,7 @@ const REPO_ROOT = fileURLToPath(new URL("../", import.meta.url));
 // literal, then walked with the real `plainTextOf` to assert that no
 // wording was lost and that every phone segment's `tel` is correct.
 
-const { plainTextOf, isPhoneLinkSegment } = await import("../lib/types/textWithPhoneLinks.ts");
+const { plainTextOf, isPhoneLinkSegment, isSmsLinkSegment } = await import("../lib/types/textWithPhoneLinks.ts");
 
 test("lib/types/textWithPhoneLinks: plainTextOf and isPhoneLinkSegment", () => {
   assert.equal(plainTextOf("plain string, no phone"), "plain string, no phone");
@@ -34,6 +65,17 @@ test("lib/types/textWithPhoneLinks: plainTextOf and isPhoneLinkSegment", () => {
   );
   assert.equal(isPhoneLinkSegment({ text: "x" }), false);
   assert.equal(isPhoneLinkSegment({ tel: "110", text: "110" }), true);
+});
+
+test("lib/types/textWithPhoneLinks: isSmsLinkSegment is mutually exclusive with isPhoneLinkSegment", () => {
+  assert.equal(isSmsLinkSegment({ text: "x" }), false);
+  assert.equal(isSmsLinkSegment({ tel: "110", text: "110" }), false);
+  assert.equal(isSmsLinkSegment({ sms: "0911511110", text: "0911-511-110" }), true);
+  assert.equal(isPhoneLinkSegment({ sms: "0911511110", text: "0911-511-110" }), false);
+  assert.equal(
+    plainTextOf([{ text: "警察報案請傳送簡訊至 " }, { sms: "0911511110", text: "0911-511-110" }]),
+    "警察報案請傳送簡訊至 0911-511-110",
+  );
 });
 
 /** Slices `text` from `startIdx` (which must point at `openChar`) to its matching `closeChar`, skipping bracket-looking characters inside string literals. */
@@ -234,6 +276,72 @@ test("socialWelfareCentersShared.ts: SITUATIONS steps with a hotline mention pre
   // Steps that carry a `href` link instead of a phone number stay plain strings.
   assert.equal(typeof byId["financial-hardship"].steps[1].label, "string");
   assert.equal(byId["financial-hardship"].steps[1].href, "https://dep.mohw.gov.tw/DOSAASW/");
+});
+
+test("socialWelfareCentersShared.ts: domestic-violence-child-abuse's description preserves wording and links 113; other descriptions stay plain strings", async () => {
+  const { SITUATIONS } = await import("../components/Tools/socialWelfareCentersShared.ts");
+  const byId = Object.fromEntries(SITUATIONS.map((s) => [s.id, s]));
+
+  const abuse = byId["domestic-violence-child-abuse"];
+  assert.ok(Array.isArray(abuse.description), "domestic-violence-child-abuse.description should be a segment array");
+  assert.equal(
+    plainTextOf(abuse.description),
+    "如果你自己正在經歷家庭暴力、目睹暴力，或懷疑身邊的兒童、少年正遭受虐待或疏忽，113 全國保護專線是 24 小時都能撥打的單一窗口，會協助轉介保護、醫療與法律資源。",
+  );
+  assert.deepEqual(abuse.description.filter(isPhoneLinkSegment).map((s) => s.tel), ["113"]);
+
+  // The other 4 scenarios' descriptions never name a phone number — still plain strings.
+  for (const id of ["financial-hardship", "caregiver-burnout", "elderly-living-alone", "teen-pregnancy"]) {
+    assert.equal(typeof byId[id].description, "string", `${id}.description should stay a plain string`);
+  }
+});
+
+test("components/Tools/SocialWelfareCentersContent.tsx: renders selectedSituation.description through the shared TextWithPhoneLinks component", () => {
+  const source = readSource("components/Tools/SocialWelfareCentersContent.tsx");
+  assert.match(source, /import \{ TextWithPhoneLinks \} from "@\/components\/Common\/TextWithPhoneLinks"/);
+  assert.match(source, /<TextWithPhoneLinks value=\{selectedSituation\.description\} \/>/);
+});
+
+// --- lib/server/tools/catalog.ts (JSX-free — imported directly) ---
+//
+// Unlike socialWelfareCentersShared.ts's `label`/`description`, catalog.ts's
+// `ToolFaq.answer` stays a plain string always (it feeds FAQPage JSON-LD
+// and llms.txt across many non-JSX consumers — see ToolFaq's doc comment in
+// lib/server/tools/catalog.ts for why). The 聽語障 FAQ instead gets an
+// additive `answerSegments` sibling field, used only by ToolPageShell's FAQ
+// accordion, with `sms:` segments (not `tel:`) since 0911-511-110/119 are
+// SMS-only reporting lines — mirroring the `sms:` convention PR #783
+// established in EmergencyHotlinesContent.tsx.
+
+test("catalog.ts: emergency-hotlines FAQ's 聽語障 answerSegments mirror answer verbatim and link both numbers as sms:, not tel:", async () => {
+  const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
+  const entry = TOOL_CATALOG.find((e) => e.slug === "emergency-hotlines");
+  assert.ok(entry, "emergency-hotlines catalog entry not found");
+  const faq = entry.faqs.find((f) => f.question === "聽語障人士如何向 110 或 119 緊急報案？");
+  assert.ok(faq, "expected FAQ not found in emergency-hotlines catalog entry");
+
+  assert.ok(Array.isArray(faq.answerSegments), "answerSegments should be a segment array");
+  assert.equal(plainTextOf(faq.answerSegments), faq.answer, "answerSegments must flatten back to answer verbatim");
+  assert.deepEqual(faq.answerSegments.filter(isSmsLinkSegment).map((s) => s.sms), ["0911511110", "0911511119"]);
+  assert.equal(faq.answerSegments.filter(isPhoneLinkSegment).length, 0, "these are SMS-only lines, must not be tel: segments");
+
+  // Every other FAQ in the catalog has no answerSegments — this is a one-off addition, not a type-wide rewrite.
+  const otherFaqsWithSegments = TOOL_CATALOG.flatMap((e) => e.faqs).filter((f) => f !== faq && f.answerSegments);
+  assert.equal(otherFaqsWithSegments.length, 0);
+});
+
+test("components/Tools/ToolPageShell.tsx: renders faq.answerSegments through TextWithPhoneLinks, falling back to plain faq.answer", () => {
+  const source = readSource("components/Tools/ToolPageShell.tsx");
+  assert.match(source, /import \{ TextWithPhoneLinks \} from "@\/components\/Common\/TextWithPhoneLinks"/);
+  assert.match(source, /<TextWithPhoneLinks value=\{faq\.answerSegments \?\? faq\.answer\} \/>/);
+});
+
+// --- components/Common/TextWithPhoneLinks.tsx renders sms: links too ---
+
+test("components/Common/TextWithPhoneLinks.tsx: renders an SmsLinkSegment as an sms: anchor, not tel:", () => {
+  const source = readSource("components/Common/TextWithPhoneLinks.tsx");
+  assert.match(source, /isSmsLinkSegment/);
+  assert.match(source, /href=\{`sms:\$\{segment\.sms\}`\}/);
 });
 
 // --- components/Tools/LtcBenefitsContent.tsx ---
