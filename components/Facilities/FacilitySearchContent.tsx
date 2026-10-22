@@ -903,7 +903,11 @@ export default function FacilitySearchContent({
                       )}
                     </div>
                   )}
-                  {f.phone && <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">📞 {f.phone}</p>}
+                  {f.phone && (
+                    <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
+                      📞 <a href={`tel:${f.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">{f.phone}</a>
+                    </p>
+                  )}
                   {f.extra_json?.serviceDistrict && (
                     <p className="mt-1 text-xs text-neutral-500 dark:text-slate-400">
                       📍 服務區域：{f.extra_json.serviceDistrict}

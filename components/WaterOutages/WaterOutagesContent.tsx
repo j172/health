@@ -240,7 +240,14 @@ export default function WaterOutagesContent() {
             <span className="text-xs text-slate-500">戶</span>
           </div>
           <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400">
-            客服專線: 台水 1910 / 北水 02-8733-5678
+            客服專線: 台水{" "}
+            <a href="tel:1910" className="font-semibold text-blue-600 hover:underline dark:text-blue-400">
+              1910
+            </a>{" "}
+            / 北水{" "}
+            <a href="tel:0287335678" className="font-semibold text-blue-600 hover:underline dark:text-blue-400">
+              02-8733-5678
+            </a>
           </p>
         </div>
       </div>
@@ -369,7 +376,18 @@ export default function WaterOutagesContent() {
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
                   <span className="text-slate-400">
-                    {station.contactPhone ? `電話: ${station.contactPhone}` : "免付費客服: 1910"}
+                    {station.contactPhone ? (
+                      <>
+                        電話:{" "}
+                        <a href={`tel:${station.contactPhone.replace(/[^0-9]/g, "")}`} className="hover:underline">
+                          {station.contactPhone}
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        免付費客服: <a href="tel:1910" className="hover:underline">1910</a>
+                      </>
+                    )}
                   </span>
                   <a
                     href={buildGoogleMapsDirUrl({

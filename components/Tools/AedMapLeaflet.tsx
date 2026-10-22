@@ -125,7 +125,7 @@ export default function AedMapLeaflet({
 
               {item.phone && (
                 <p className="mt-1 text-slate-500">
-                  📞 {item.phone}
+                  📞 <a href={`tel:${item.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">{item.phone}</a>
                 </p>
               )}
 

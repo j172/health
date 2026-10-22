@@ -133,7 +133,11 @@ export default function WaterPlantQualitySection({ plants, sourceUpdatedOn, load
               </p>
               <p className="mt-1">
                 {failedPlants.map((p) => p.plantName).join("、")}。這是台水公開檔案中的標示，檔案沒有說明是哪一項不合格，也沒有說明處理情形；
-                {PLANT_QUALITY_DISCLAIMER}。請洽台灣自來水公司（客服專線 1910）。
+                {PLANT_QUALITY_DISCLAIMER}。請洽台灣自來水公司（客服專線{" "}
+                <a href="tel:1910" className="underline">
+                  1910
+                </a>
+                ）。
               </p>
             </div>
           ) : (

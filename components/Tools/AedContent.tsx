@@ -478,7 +478,14 @@ export default function AedContent({
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-slate-500">
                       {item.address || t("aedTool.noAddress", "未提供詳細地址")}
-                      {item.phone && ` ｜ 📞 ${item.phone}`}
+                      {item.phone && (
+                        <>
+                          {" ｜ 📞 "}
+                          <a href={`tel:${item.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">
+                            {item.phone}
+                          </a>
+                        </>
+                      )}
                     </p>
                     {item.address && (
                       <CopyAddressButton

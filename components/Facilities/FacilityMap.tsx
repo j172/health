@@ -51,7 +51,11 @@ export default function FacilityMap({ userLocation, markers, showRadius = true, 
       <div className="text-sm leading-relaxed">
         <p className="font-semibold text-neutral-900">{m.name}</p>
         {m.address && <p className="text-neutral-600">{m.address}</p>}
-        {m.phone && <p className="text-blue-600">{m.phone}</p>}
+        {m.phone && (
+          <p className="text-blue-600">
+            <a href={`tel:${m.phone.replace(/[^0-9]/g, "")}`} className="hover:underline">{m.phone}</a>
+          </p>
+        )}
         {m.charityUrl && (
           <div className="mt-2 pt-1.5 border-t border-neutral-100">
             <a
