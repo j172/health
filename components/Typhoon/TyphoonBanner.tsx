@@ -21,6 +21,10 @@ import { CLOSURE_OFFICIAL_LINKS, DGPA_CLOSURE_PAGE_URL } from "@/lib/tools/workS
  *
  * 級別不只靠顏色：標題與徽章文字都寫「陸上警報／海上警報」。
  * 陸上：紅底白字（對比 > 6）；海上：橙底深色字（對比 > 8）。
+ *
+ * 視覺樣式（#744 restyle）：套用首頁常駐大卡片（components/Home/HomeQuickEntryCards.tsx）
+ * 的視覺語言——大圓角 rounded-3xl、陰影、大 emoji、大標題字級、生效中放大效果——但維持
+ * 「單條橫向橫幅」的版面，不拆成並排卡片；卡片本身維持原狀不受影響。
  */
 
 const CONTACTS_URL = CLOSURE_OFFICIAL_LINKS.find((link) => link.id === "contacts")?.url ?? DGPA_CLOSURE_PAGE_URL;
@@ -58,9 +62,11 @@ export default function TyphoonBanner() {
   const toolHref = isLocaleLocked ? buildLocalizedPath("/tools/weather-alerts", locale) : "/tools/weather-alerts";
   const issuedAt = formatIssuedAt(status.issuedAt, locale);
 
+  // 大卡片視覺語言（與 HomeQuickEntryCards 的 CARD_TONE_CLASSES 同一組紅／橙配色），
+  // 套在單條橫幅的圓角卡殼上：rounded-3xl、陰影、生效中略微放大。
   const tone = isLand
-    ? "border-red-900 bg-red-700 text-white"
-    : "border-orange-500 bg-orange-400 text-slate-900";
+    ? "border-red-900 bg-red-700 text-white hover:bg-red-800"
+    : "border-orange-500 bg-orange-400 text-slate-900 hover:bg-orange-300";
   const badgeTone = isLand ? "bg-white text-red-800" : "bg-slate-900 text-orange-100";
   const linkTone = isLand ? "text-white decoration-white/70 hover:decoration-white" : "text-slate-900 decoration-slate-900/60 hover:decoration-slate-900";
 
@@ -71,17 +77,21 @@ export default function TyphoonBanner() {
       role={isLand ? "alert" : "status"}
       aria-label={t("typhoon.banner.ariaLabel", "颱風警報")}
       data-typhoon-banner={status.level}
-      className={`w-full border-b px-4 py-2.5 text-sm ${tone}`}
+      className="mx-auto max-w-5xl px-4 pt-3 sm:px-6 sm:pt-4 lg:px-8"
     >
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-1.5 text-center sm:px-2">
-        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-bold">
-          <span aria-hidden="true">{isLand ? "🌀" : "🌊"}</span>
+      <div
+        className={`flex flex-col items-center gap-2 rounded-3xl border px-5 py-4 text-center text-sm shadow-lg transition-all motion-reduce:transition-none sm:scale-[1.02] sm:px-8 sm:py-5 ${tone}`}
+      >
+        <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-lg font-extrabold tracking-tight sm:text-xl">
+          <span aria-hidden="true" className="text-3xl leading-none sm:text-4xl">
+            {isLand ? "🌀" : "🌊"}
+          </span>
           <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${badgeTone}`}>
             {isLand ? t("typhoon.banner.landBadge", "陸上警報") : t("typhoon.banner.seaBadge", "海上警報")}
           </span>
           <span>{isLand ? t("typhoon.banner.landTitle", "颱風陸上警報生效中") : t("typhoon.banner.seaTitle", "颱風海上警報")}</span>
           {status.names?.length ? (
-            <span data-typhoon-names>{status.names.join("、")}</span>
+            <span data-typhoon-names className="text-base font-bold sm:text-lg">{status.names.join("、")}</span>
           ) : null}
           {issuedAt ? (
             <span className="text-xs font-normal opacity-90">

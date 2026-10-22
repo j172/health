@@ -611,10 +611,17 @@ test("伺服器端：警報生效時才查颱風動態取名稱，且用 pickTyp
   assert.match(src, /if \(status\.active\) \{[\s\S]*?pickTyphoonNames\([\s\S]*?listActiveCwaTyphoons\(\)/);
 });
 
-test("橫幅三塊（標題列、說明、連結）都置中，名稱顯示在標題列", () => {
+test("橫幅三塊（標題列、說明、連結）都置中，名稱顯示在標題列；視覺套用首頁大卡片語言但維持單條橫幅（#744 restyle）", () => {
   const src = stripComments(read("components", "Typhoon", "TyphoonBanner.tsx"));
-  assert.match(src, /flex max-w-5xl flex-col items-center gap-1\.5 text-center/);
-  assert.match(src, /flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-bold/);
+  assert.match(src, /flex flex-col items-center gap-2 rounded-3xl border[\s\S]*?text-center[\s\S]*?shadow-lg/);
+  assert.match(src, /flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-lg font-extrabold tracking-tight/);
   assert.match(src, /<ul className="flex flex-wrap justify-center gap-x-4 gap-y-1/);
   assert.match(src, /status\.names\?\.length[\s\S]*?data-typhoon-names[\s\S]*?status\.names\.join\("、"\)/);
+  // 大卡片視覺語言：大圓角、陰影、生效中放大、跟首頁卡片同尺寸的 emoji；仍是單條橫幅
+  // （沒有像 HomeQuickEntryCards 那樣拆成 grid 並排的兩張卡片）。
+  assert.match(src, /rounded-3xl/);
+  assert.match(src, /shadow-lg/);
+  assert.match(src, /sm:scale-\[1\.02\]/);
+  assert.match(src, /text-3xl leading-none sm:text-4xl/);
+  assert.ok(!/grid-cols-2|sm:grid-cols/.test(src), "橫幅不應拆成並排卡片");
 });
