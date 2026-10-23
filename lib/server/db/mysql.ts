@@ -7,6 +7,17 @@ import { env } from "@/lib/server/config/env";
 import { TABLE_DDL } from "@/lib/server/db/schema";
 import { widenFeedCodeColumns } from "./feedCodeWidth";
 import { readSeedJson } from "./transientSeed";
+import {
+  isConnectionUnavailableError,
+  isBuildPhase,
+  executeWithConnectionFallback,
+} from "./connectionFallback.mjs";
+
+export {
+  isConnectionUnavailableError,
+  isBuildPhase,
+  executeWithConnectionFallback,
+};
 
 let pool: Pool | null = null;
 /** In-flight/completed promise for the migration run below, or null before the
@@ -25,13 +36,7 @@ export const toSqlDateTime = (value: Date): string =>
 
 const nowUtc = (): string => toSqlDateTime(new Date());
 
-const isConnectionUnavailableError = (error: unknown): boolean => {
-  if (!error) return false;
-  const message = error instanceof Error ? error.message : String(error);
-  return /ECONNREFUSED|ETIMEDOUT|ENOTFOUND|EHOSTUNREACH|ECONNRESET|Connection lost|connect ECONNREFUSED/i.test(
-    message,
-  );
-};
+
 
 export const getMysqlPool = (): Pool => {
   if (pool) return pool;
@@ -700,20 +705,7 @@ export const withConnection = async <T>(
 export const withConnectionFallback = async <T>(
   fallbackValue: T,
   runner: (conn: PoolConnection) => Promise<T>,
-): Promise<T> => {
-  try {
-    return await withConnection(runner);
-  } catch (error) {
-    if (isConnectionUnavailableError(error)) {
-      console.warn(
-        `[mysql] Falling back to empty data because the database is unavailable: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      return fallbackValue;
-    }
-
-    throw error;
-  }
-};
+): Promise<T> => executeWithConnectionFallback(withConnection, fallbackValue, runner);
 
 export const withTransaction = async <T>(
   runner: (conn: PoolConnection) => Promise<T>,
