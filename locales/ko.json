@@ -181,7 +181,8 @@
     "mohwVio": "위생복리부 의료인 성비위 정보",
     "council2026": "2026 정치인 전과 기록",
     "license": "소스코드는 MIT 라이선스 · 구조화 데이터는 CC0-1.0 적용",
-    "accessibility": "웹 접근성 선언"
+    "accessibility": "웹 접근성 선언",
+    "recommendedServices": "추천 서비스:"
   },
   "tts_title": "음성 낭독",
   "tts_play": "기사 낭독",

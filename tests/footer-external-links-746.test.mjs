@@ -98,7 +98,7 @@ const { createElement } = await import("react");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { default: SiteFooter } = await import("../components/News/SiteFooter.tsx");
 const { CIVIC_PARTNER_LINKS } = await import("../lib/server/tools/navModel.ts");
-const { HAWKHOST_REFERRAL_URL, AFFILIATE_LINK_REL } = await import(
+const { HAWKHOST_REFERRAL_URL, AFFILIATE_LINK_REL, RECOMMENDED_AFFILIATE_LINKS } = await import(
   "../lib/constants/affiliateLinks.ts"
 );
 const { appendOutboundUtm } = await import("../lib/format/outboundLink.ts");
@@ -107,7 +107,7 @@ const { PRIVACY_SECTIONS, buildPrivacyLlmsPageContent } = await import(
 );
 
 const LOCALES = ["zh-TW", "en", "ja", "ko"];
-const EXPECTED_HAWKHOST_URL = "https://my.hawkhost.com/aff.php?aff=18170";
+const EXPECTED_HAWKHOST_URL = "https://my.hawkhost.com/aff.php?aff=18170&utm_source=j172.tw";
 
 const readLocale = (locale) =>
   JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "locales", `${locale}.json`), "utf8"));
@@ -139,14 +139,28 @@ const hostOf = (href) => {
   }
 };
 
-const attr = (attrs, name) => attrs.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1];
+const attr = (attrs, name) => attrs.match(new RegExp(`\\b${name}="([^"]*)"`))?.[1]?.replace(/&amp;/g, "&");
 
-test("HawkHost 推薦網址常數：與指定網址完全相同、不含任何 utm 參數", () => {
+test("HawkHost 推薦網址常數：與指定網址完全相同、保留指定之 utm_source=j172.tw", () => {
   assert.equal(HAWKHOST_REFERRAL_URL, EXPECTED_HAWKHOST_URL);
-  assert.ok(!/utm_/i.test(HAWKHOST_REFERRAL_URL));
+  assert.match(HAWKHOST_REFERRAL_URL, /utm_source=j172\.tw/);
+  assert.ok(!/utm_source=health\.j172\.tw/i.test(HAWKHOST_REFERRAL_URL));
   assert.equal(AFFILIATE_LINK_REL, "sponsored nofollow noopener noreferrer");
-  // 對照組：若被 appendOutboundUtm 包裝就會被加參數——這正是不可包裝的理由。
+  // 對照組：若被 appendOutboundUtm 包裝就會被改寫/附加 health.j172.tw——這正是不可包裝的理由。
   assert.notEqual(appendOutboundUtm(HAWKHOST_REFERRAL_URL), HAWKHOST_REFERRAL_URL);
+});
+
+test("RECOMMENDED_AFFILIATE_LINKS 常數清單：4 個指定服務網址與 rel 屬性完整", () => {
+  assert.equal(RECOMMENDED_AFFILIATE_LINKS.length, 4);
+  assert.equal(RECOMMENDED_AFFILIATE_LINKS[0].url, EXPECTED_HAWKHOST_URL);
+  assert.equal(RECOMMENDED_AFFILIATE_LINKS[1].url, "https://hahow.in/ur/j172?utm_source=j172.tw");
+  assert.equal(RECOMMENDED_AFFILIATE_LINKS[2].url, "https://www.uber.com/invite/sgyal?utm_source=j172.tw");
+  assert.equal(RECOMMENDED_AFFILIATE_LINKS[3].url, "https://www.klook.com/zh-TW/invite/D3ZWFN?c=TWD&utm_source=j172.tw");
+
+  for (const item of RECOMMENDED_AFFILIATE_LINKS) {
+    assert.match(item.url, /utm_source=j172\.tw/);
+    assert.ok(!/utm_source=health\.j172\.tw/i.test(item.url));
+  }
 });
 
 test("SiteFooter 原始碼：HawkHost 連結不經過 appendOutboundUtm", () => {
@@ -200,7 +214,8 @@ for (const locale of LOCALES) {
     const [link] = hawk;
 
     assert.equal(attr(link.attrs, "href"), EXPECTED_HAWKHOST_URL);
-    assert.ok(!/utm_/i.test(link.attrs), "聯盟連結不可有任何 utm 參數");
+    assert.ok(!/utm_source=health\.j172\.tw/i.test(link.attrs), "聯盟連結不可被附加 health.j172.tw 之 UTM");
+    assert.match(attr(link.attrs, "href"), /utm_source=j172\.tw/, "聯盟連結應保留指定之 j172.tw UTM 參數");
     assert.equal(attr(link.attrs, "rel"), "sponsored nofollow noopener noreferrer");
     assert.equal(attr(link.attrs, "target"), "_blank");
 
@@ -269,7 +284,7 @@ test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存�
   ];
   for (const locale of LOCALES) {
     const footer = readLocale(locale).footer;
-    for (const key of ["opensInNewWindow", "hostingReferral"]) {
+    for (const key of ["opensInNewWindow", "hostingReferral", "recommendedServices"]) {
       assert.equal(typeof footer[key], "string", `${locale}.json 缺少 footer.${key}`);
       assert.ok(footer[key].trim().length > 0);
     }

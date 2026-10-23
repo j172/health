@@ -181,7 +181,8 @@
     "mohwVio": "衛生福利部 医療従事者性暴力情報",
     "council2026": "2026年 政治家経歴",
     "license": "ソースコードは MIT ライセンス · 構造化データは CC0-1.0 で公開",
-    "accessibility": "アクセシビリティ宣言"
+    "accessibility": "アクセシビリティ宣言",
+    "recommendedServices": "おすすめサービス："
   },
   "tts_title": "音声読み上げ",
   "tts_play": "記事を読み上げる",
