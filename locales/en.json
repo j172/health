@@ -915,14 +915,16 @@
     "locating": "Finding your location…",
     "manualPromptSuffix": "Please select your county/city instead, to search for urgent points nearby.",
     "retryLocationButton": "🔄 Retry location",
-    "defaultSectionHeading": "8 Default Urgent-Use Point Types (Nearest 3)",
+    "defaultSectionHeading": "8 Default Urgent-Use Point Types (Nearest 5)",
     "queryingLoading": "Searching…",
     "moreTypesToggle": "More types",
     "dataAsOfTemplate": "Data as of {date}",
     "dataSourceTemplate": "Based on open data from {source}; not determined by this site",
-    "footerPrefix": "Each type shows only the nearest 3 results — see the full list and map on each",
+    "footerPrefix": "Each type shows the nearest 5 results — see the full list and map on each",
     "footerLinkText": "facility search tool",
-    "footerSuffix": "page."
+    "footerSuffix": "page.",
+    "seeMoreCategory": "See more {category} ↗",
+    "seeMoreCategoryAria": "See more {category} (opens dedicated tool page)"
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "Life Situations",

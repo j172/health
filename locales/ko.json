@@ -918,14 +918,16 @@
     "locating": "위치 확인 중…",
     "manualPromptSuffix": "대신 거주 중인 현·시를 선택하여 주변 긴급 지점을 조회해 주세요.",
     "retryLocationButton": "🔄 위치 다시 시도",
-    "defaultSectionHeading": "8가지 기본 긴급 지점 유형(가장 가까운 3곳)",
+    "defaultSectionHeading": "8가지 기본 긴급 지점 유형(가장 가까운 5곳)",
     "queryingLoading": "조회 중…",
     "moreTypesToggle": "더 많은 유형",
     "dataAsOfTemplate": "데이터 기준일: {date}",
     "dataSourceTemplate": "{source} 공개 데이터 기준이며 본 사이트의 판단이 아닙니다",
-    "footerPrefix": "각 유형은 가장 가까운 3곳만 표시합니다. 전체 목록과 지도는 각",
+    "footerPrefix": "각 유형은 가장 가까운 5곳을 표시합니다. 전체 목록과 지도는 각",
     "footerLinkText": "시설 조회 도구",
-    "footerSuffix": "페이지에서 확인하세요."
+    "footerSuffix": "페이지에서 확인하세요.",
+    "seeMoreCategory": "{category} 더 보기 ↗",
+    "seeMoreCategoryAria": "{category} 더 보기(전용 도구 페이지 열기)"
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "생활 상황별 가이드",

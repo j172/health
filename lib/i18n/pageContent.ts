@@ -45,19 +45,19 @@ const PAGE_I18N_CONTENT: Record<
       title: "Near Me: One Location Fix, All Urgent Points at Once",
       shortTitle: "Near Me",
       description:
-        "Get your location once to simultaneously search AED, clinics, pharmacies, public restrooms, cool spots, accessible ATMs, real-time ER congestion, and shelters — each showing the nearest 3 results with distance, with more facility types available to expand.",
+        "Get your location once to simultaneously search AED, real-time ER congestion, police stations, shelters, clinics, pharmacies, public restrooms, and cool spots — each showing the nearest 5 results with distance, with more facility types available to expand.",
     },
     ja: {
       title: "我附近（マイエリア）：一度の位置情報で全ての緊急ポイントを確認",
       shortTitle: "マイエリア",
       description:
-        "位置情報を一度取得するだけで、AED、診療所、薬局、公共トイレ、涼適点、バリアフリーATM、救急外来のリアルタイム混雑状況、避難所などの緊急ポイントを同時に検索。各カテゴリーの最寄り3件と距離を表示し、さらに多くの施設タイプを展開して確認できます。",
+        "位置情報を一度取得するだけで、AED、救急外来の混雑状況、警察署・交番、避難所、診療所、薬局、公共トイレ、涼適点などの緊急ポイントを同時に検索。各カテゴリーの最寄り5件と距離を表示し、さらに多くの施設タイプを展開して確認できます。",
     },
     ko: {
       title: "내 주변: 한 번의 위치 확인으로 모든 긴급 지점 보기",
       shortTitle: "내 주변",
       description:
-        "위치를 한 번만 확인하면 AED, 의료기관, 약국, 공중화장실, 쾌적 쉼터, 무장애 ATM, 응급실 실시간 혼잡도, 대피소 등 긴급 지점을 동시에 조회할 수 있습니다. 각 유형별로 가장 가까운 3곳과 거리를 표시하며, 더 많은 시설 유형도 펼쳐서 확인할 수 있습니다.",
+        "위치를 한 번만 확인하면 AED, 응급실 실시간 혼잡도, 경찰서·파출소, 대피소, 의료기관, 약국, 공중화장실, 쾌적 쉼터 등 긴급 지점을 동시에 조회할 수 있습니다. 각 유형별로 가장 가까운 5곳과 거리를 표시하며, 더 많은 시설 유형도 펼쳐서 확인할 수 있습니다.",
     },
   },
   // Issue #588 (parent #583): the first global-watch item sub-route

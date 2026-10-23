@@ -918,14 +918,16 @@
     "locating": "位置情報を取得中…",
     "manualPromptSuffix": "代わりにお住まいの県市を選択して、近くの緊急ポイントを検索してください。",
     "retryLocationButton": "🔄 位置情報を再試行",
-    "defaultSectionHeading": "8種類の緊急ポイント（最寄り3件）",
+    "defaultSectionHeading": "8種類の緊急ポイント（最寄り5件）",
     "queryingLoading": "検索中…",
     "moreTypesToggle": "その他の種類",
     "dataAsOfTemplate": "データ日付：{date}",
     "dataSourceTemplate": "{source}の公開データに基づく（当サイトによる判定ではありません）",
-    "footerPrefix": "各種類は最寄り3件のみ表示します。完全なリストと地図は各",
+    "footerPrefix": "各種類は最寄り5件を表示します。完全なリストと地図は各",
     "footerLinkText": "施設検索ツール",
-    "footerSuffix": "ページでご確認ください。"
+    "footerSuffix": "ページでご確認ください。",
+    "seeMoreCategory": "{category}をもっと見る ↗",
+    "seeMoreCategoryAria": "{category}をもっと見る（専用ツールページを開く）"
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "生活シーン別ガイド",

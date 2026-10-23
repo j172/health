@@ -342,5 +342,11 @@
     "dialButton": "📞 一鍵直撥",
     "categoryBadge": "Hotline",
     "antiFraudCheckLink": "查可疑網址"
+  },
+  "nearbyPage": {
+    "defaultSectionHeading": "8 類急用點位（最近 5 筆）",
+    "footerPrefix": "每類顯示最近 5 筆，完整列表與地圖可至各",
+    "seeMoreCategory": "查看更多{category} ↗",
+    "seeMoreCategoryAria": "查看更多{category}（另開專用查詢頁面）"
   }
 }

@@ -81,19 +81,32 @@ const readSource = (...segments) => fs.readFileSync(path.join(ROOT_DIR, ...segme
 // 1. Registry: the 8 defaults + "更多類型" expansion, single source of truth
 // ---------------------------------------------------------------------------
 
-test("NEARBY_DEFAULT_TYPES has exactly the 8 types issue #466 asks for", () => {
+test("NEARBY_DEFAULT_TYPES has exactly the 8 types sorted strictly by urgency level (issue #800, #801)", () => {
   assert.equal(NEARBY_DEFAULT_TYPES.length, 8);
-  const keys = NEARBY_DEFAULT_TYPES.map((d) => d.key);
-  for (const expected of ["aed", "clinics", "pharmacies", "public-toilets", "cool-spots", "disability-atm", "er", "shelter"]) {
-    assert.ok(keys.includes(expected), `defaults must include "${expected}"`);
+  const expectedOrder = [
+    "aed",
+    "er",
+    "police-stations",
+    "shelter",
+    "clinics",
+    "pharmacies",
+    "public-toilets",
+    "cool-spots",
+  ];
+  assert.deepEqual(
+    NEARBY_DEFAULT_TYPES.map((d) => d.key),
+    expectedOrder,
+    "defaults must match the exact urgency order"
+  );
+  for (const def of NEARBY_DEFAULT_TYPES) {
+    assert.ok(def.toolSlug, `default "${def.key}" must define a toolSlug`);
   }
-  assert.equal(new Set(keys).size, keys.length, "no duplicate keys among the 8 defaults");
 });
 
-test("the 6 facility-backed defaults are sourced from facilitySearchConfigs, not a re-declared copy", async () => {
+test("the 5 facilitySearchConfigs-derived defaults match their config definitions", async () => {
   const { facilitySearchConfigs } = await import("../app/(zh)/tools/facilityConfigs.ts");
   for (const def of NEARBY_DEFAULT_TYPES) {
-    if (def.kind !== "facility") continue;
+    if (def.kind !== "facility" || def.key === "police-stations") continue;
     const cfg = facilitySearchConfigs[def.toolSlug];
     assert.ok(cfg, `facilitySearchConfigs must have an entry for "${def.toolSlug}"`);
     assert.equal(def.facilityType, cfg.facilityType);
@@ -102,11 +115,20 @@ test("the 6 facility-backed defaults are sourced from facilitySearchConfigs, not
   }
 });
 
-test("er and shelter defaults declare their own kind, independent of facilitySearchConfigs", () => {
+test("er, shelter, and police-stations declare their specialized data mappings", () => {
   const er = NEARBY_DEFAULT_TYPES.find((d) => d.key === "er");
   const shelter = NEARBY_DEFAULT_TYPES.find((d) => d.key === "shelter");
+  const police = NEARBY_DEFAULT_TYPES.find((d) => d.key === "police-stations");
+
   assert.equal(er.kind, "er");
+  assert.equal(er.toolSlug, "er-status");
+
   assert.equal(shelter.kind, "shelter");
+  assert.equal(shelter.toolSlug, "disaster-map");
+
+  assert.equal(police.kind, "facility");
+  assert.equal(police.facilityType, "police_station");
+  assert.equal(police.toolSlug, "child-safety-spots");
 });
 
 test('NEARBY_MORE_TYPES excludes every default key ("更多類型" never re-offers a default)', () => {
