@@ -5,7 +5,7 @@
 > 來源：2026-10-12 規劃＋/grill 共 24 項決策，以及同日追加的 TDX 資料整合（§P）與多語系支援、SEO／AEO／GEO／Schema.org、每頁 llms.txt、Cloudflare 免費方案整合（§Q–§T）。完整背景與研究見 repo 內 2.0 master plan 與 TDX 研究文件。本 spec 為 PRD，實作時再以 `/to-tickets` 拆成分期 issue。
 > 盤點基準：`origin/main` @ `7fe098b`（84 個工具）。
 
-> **2026-10-21 範圍調整（#727–#731）**：本文提到的 YouBike（T6）、全台軌道營運通阻（T4，`metro-alerts`）、樂齡旅遊，以及無障礙交通的 TDX 即時同步（T1 每日公車低地板比率、每日軌道無障礙同步）已**整個移除或降級為靜態種子資料**；下文對應段落保留作當時的決策與研究紀錄，**不再是現況**。現況：TDX 只剩每小時電梯停用公告（`transit-accessibility-alerts`，約 240 次／天）、半年一次的設施同步（停車 T3、有聲號誌 T2，仍在）與管理員手動的敬老卡同步；請求預算與症狀判讀見 [domains/10-scheduling-sync-ci.md](../domains/10-scheduling-sync-ci.md) §2.1。
+> **2026-10-21 範圍調整（#727–#731）**：本文提到的 YouBike（T6）、全台軌道營運通阻（T4，`metro-alerts`）、樂齡旅遊，以及無障礙交通的 TDX 即時同步（T1 每日公車低地板比率、每日軌道無障礙同步）已**整個移除或降級為靜態種子資料**；下文對應段落保留作當時的決策與研究紀錄，**不再是現況**。現況：TDX 基礎會員為 0 元/月、3 點/月（約 3,000 次/月）、5 次/分/金鑰；TDX 只剩每 3 小時電梯停用公告（`transit-accessibility-alerts`，`16 */3 * * *`，約 80 次／天，月計約 2,400 次）、半年一次的設施同步（停車 T3、有聲號誌 T2，仍在）與管理員手動的敬老卡同步；請求預算與症狀判讀見 [domains/10-scheduling-sync-ci.md](../domains/10-scheduling-sync-ci.md) §2.1。
 
 ## Problem Statement
 
