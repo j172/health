@@ -6,6 +6,7 @@ import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
 import { NEARBY_DEFAULT_TYPES, NEARBY_MORE_TYPES, findNearbyTypeDef } from "@/lib/server/nearby/registry";
 import { buildGoogleMapsDirUrl } from "@/lib/utils/mapNavigation";
+import { cleanTelUri, formatDisplayPhone } from "@/lib/utils/phoneUtils";
 import { buildLocalizedPath, isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
@@ -113,33 +114,64 @@ function TypeResultCard({
                 address: item.address,
               });
               const distanceLabel = formatDistance(item.distanceKm, t);
-              const ariaLabel = `${item.name}${item.address ? `，${item.address}` : ""}${distanceLabel ? `，距離約 ${distanceLabel}` : ""}，開啟 Google 地圖導航（另開新視窗）`;
+              const displayPhone = formatDisplayPhone(item.phone);
+              const telUri = cleanTelUri(item.phone);
+
+              const navAriaLabel = `${item.name}${item.address ? `，${item.address}` : ""}${distanceLabel ? `，距離約 ${distanceLabel}` : ""}，開啟 Google 地圖導航（另開新視窗）`;
+              const callAriaLabel = `撥打電話至 ${item.name}：${displayPhone ?? ""}`;
 
               return (
-                <li key={item.id}>
+                <li
+                  key={item.id}
+                  className="group -mx-2 flex items-start justify-between gap-3 rounded-xl p-2 transition-colors hover:bg-neutral-100/80 dark:hover:bg-slate-800/60"
+                >
+                  {/* 左側資訊區：點擊跳轉 Google 地圖導航 */}
                   <a
                     href={navUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={ariaLabel}
-                    className="group -mx-2 flex items-start justify-between gap-3 rounded-xl px-2 py-1.5 text-sm transition-colors hover:bg-neutral-100/80 dark:hover:bg-slate-800/60"
+                    aria-label={navAriaLabel}
+                    className="min-w-0 flex-1 cursor-pointer"
                   >
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-neutral-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                        {item.name}
+                    {/* 第 1 行：點位名稱 */}
+                    <p className="truncate font-medium text-neutral-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                      {item.name}
+                    </p>
+
+                    {/* 第 2 行：電話號碼（若有） */}
+                    {displayPhone ? (
+                      <p className="mt-0.5 truncate font-mono text-xs text-indigo-600 dark:text-indigo-400">
+                        📞 {displayPhone}
                       </p>
-                      {item.address ? (
-                        <p className="truncate text-xs text-neutral-500 dark:text-slate-400">
-                          {item.address}
-                        </p>
-                      ) : null}
-                    </div>
+                    ) : null}
+
+                    {/* 第 3 行：門牌地址（若有） */}
+                    {item.address ? (
+                      <p className="mt-0.5 truncate text-xs text-neutral-500 dark:text-slate-400">
+                        {item.address}
+                      </p>
+                    ) : null}
+                  </a>
+
+                  {/* 右側操作區：距離標籤 + 獨立撥號按鈕 */}
+                  <div className="flex shrink-0 flex-col items-end gap-1.5 pt-0.5">
                     {item.distanceKm !== null ? (
-                      <span className="shrink-0 whitespace-nowrap rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                      <span className="whitespace-nowrap rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
                         {distanceLabel}
                       </span>
                     ) : null}
-                  </a>
+
+                    {telUri ? (
+                      <a
+                        href={telUri}
+                        aria-label={callAriaLabel}
+                        className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 bg-white px-2 py-0.5 text-xs font-semibold text-indigo-700 shadow-2xs transition-colors hover:border-indigo-400 hover:bg-indigo-50 dark:border-indigo-800 dark:bg-slate-800 dark:text-indigo-300 dark:hover:bg-slate-700"
+                      >
+                        <span aria-hidden="true">📞</span>
+                        <span>{t("nearbyPage.callButton", "撥打")}</span>
+                      </a>
+                    ) : null}
+                  </div>
                 </li>
               );
             })}

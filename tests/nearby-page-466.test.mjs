@@ -314,3 +314,30 @@ test("components/Nearby/NearbyContent.tsx requests 5 items, renders 2 columns, p
   assert.ok(src.includes("nearbyPage.seeMoreCategory"), "must use seeMoreCategory translation key");
   assert.ok(src.includes("toolHref"), "must render toolHref link");
 });
+
+test("components/Nearby/NearbyContent.tsx displays phone on line 2, provides sibling tel: call buttons with accessible labels (issue #803, #805)", () => {
+  const src = readSource("components", "Nearby", "NearbyContent.tsx");
+
+  // 1. imports phoneUtils
+  assert.ok(src.includes("cleanTelUri"), "must import cleanTelUri");
+  assert.ok(src.includes("formatDisplayPhone"), "must import formatDisplayPhone");
+
+  // 2. displays phone on line 2 (between name and address in JSX block)
+  const jsxStart = src.indexOf("{/* 第 1 行：點位名稱 */}");
+  const jsxEnd = src.indexOf("{/* 右側操作區");
+  assert.ok(jsxStart > 0 && jsxEnd > jsxStart, "JSX block must exist");
+  const jsxBlock = src.slice(jsxStart, jsxEnd);
+
+  const namePos = jsxBlock.indexOf("{item.name}");
+  const phonePos = jsxBlock.indexOf("{displayPhone}");
+  const addrPos = jsxBlock.indexOf("{item.address}");
+  assert.ok(namePos > 0 && phonePos > 0 && addrPos > 0, "all 3 lines must exist in JSX");
+  assert.ok(namePos < phonePos && phonePos < addrPos, "display order must be Line 1: name -> Line 2: phone -> Line 3: address");
+
+  // 3. sibling tel: call button (never nested in navigation link)
+  assert.ok(src.includes("href={telUri}"), "must render tel: call button");
+  assert.ok(src.includes("nearbyPage.callButton"), "must use callButton translation key");
+  const navAnchorMatch = src.match(/<a\b[^>]*href=\{navUrl\}[^>]*>([\s\S]*?)<\/a>/);
+  assert.ok(navAnchorMatch, "navUrl <a> must exist and close cleanly");
+  assert.ok(!navAnchorMatch[1].includes("<a"), "tel: link must never be nested inside navUrl link");
+});

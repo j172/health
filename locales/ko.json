@@ -927,7 +927,8 @@
     "footerLinkText": "시설 조회 도구",
     "footerSuffix": "페이지에서 확인하세요.",
     "seeMoreCategory": "{category} 더 보기 ↗",
-    "seeMoreCategoryAria": "{category} 더 보기(전용 도구 페이지 열기)"
+    "seeMoreCategoryAria": "{category} 더 보기(전용 도구 페이지 열기)",
+    "callButton": "통화"
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "생활 상황별 가이드",

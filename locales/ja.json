@@ -927,7 +927,8 @@
     "footerLinkText": "施設検索ツール",
     "footerSuffix": "ページでご確認ください。",
     "seeMoreCategory": "{category}をもっと見る ↗",
-    "seeMoreCategoryAria": "{category}をもっと見る（専用ツールページを開く）"
+    "seeMoreCategoryAria": "{category}をもっと見る（専用ツールページを開く）",
+    "callButton": "電話する"
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "生活シーン別ガイド",

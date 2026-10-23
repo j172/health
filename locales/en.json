@@ -924,7 +924,8 @@
     "footerLinkText": "facility search tool",
     "footerSuffix": "page.",
     "seeMoreCategory": "See more {category} ↗",
-    "seeMoreCategoryAria": "See more {category} (opens dedicated tool page)"
+    "seeMoreCategoryAria": "See more {category} (opens dedicated tool page)",
+    "callButton": "Call"
   },
   "guidePage": {
     "breadcrumbGuidesIndex": "Life Situations",
