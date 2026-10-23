@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSharedGeolocation } from "@/lib/hooks/useSharedGeolocation";
 import { fetchWithTimeout } from "@/lib/client/fetchWithTimeout";
-import { NEARBY_DEFAULT_TYPES, NEARBY_MORE_TYPES } from "@/lib/server/nearby/registry";
+import { NEARBY_DEFAULT_TYPES, NEARBY_MORE_TYPES, findNearbyTypeDef } from "@/lib/server/nearby/registry";
+import { buildGoogleMapsDirUrl } from "@/lib/utils/mapNavigation";
+import { buildLocalizedPath, isTranslatedToolSlug } from "@/lib/i18n/translatedPages";
 import { TAIWAN_COUNTY_CENTROIDS } from "@/lib/constants/taiwanDistricts";
 import CountyDistrictPicker from "@/components/Facilities/CountyDistrictPicker";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -72,62 +74,101 @@ function TypeResultCard({
   locale: ReturnType<typeof useLanguage>["locale"];
   t: Translator;
 }) {
-  // Issue #487: the API returns `label` in Chinese (it comes straight from
-  // the NearbyTypeDef registry) — on a /en//ja//ko/ page, re-resolve the
-  // display label from the translated registry (lib/i18n/nearbyLabelContent.ts)
-  // instead of showing that raw zh string, so "/nearby" is never a silent
-  // Chinese fallback on a translated locale.
   const displayLabel = isPathLocale(locale) ? getLocalizedNearbyLabel(result.key, locale, result.label) : result.label;
+  const typeDef = findNearbyTypeDef(result.key);
+  const toolSlug = typeDef?.toolSlug;
+  const toolHref = toolSlug
+    ? isPathLocale(locale) && isTranslatedToolSlug(toolSlug)
+      ? buildLocalizedPath(`/tools/${toolSlug}`, locale)
+      : `/tools/${toolSlug}`
+    : null;
 
-  // Issue #677: a facility type imported by hand (派出所) carries its release date in
-  // extra.dataAsOf; show it, and whose open data it is, under the list.
   const withDataDate = result.status === "ok" ? result.items.find((item) => typeof item.extra?.dataAsOf === "string") : undefined;
   const dataAsOf = withDataDate ? String(withDataDate.extra?.dataAsOf) : null;
   const dataOrg = typeof withDataDate?.extra?.dataOrg === "string" ? withDataDate.extra.dataOrg : null;
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs dark:border-slate-700 dark:bg-slate-900">
-      <h3 className="mb-2 flex items-center gap-1.5 text-base font-bold text-neutral-800 dark:text-slate-100">
-        <span aria-hidden="true">{result.emoji}</span>
-        <span>{displayLabel}</span>
-      </h3>
+    <div className="flex flex-col justify-between rounded-2xl border border-neutral-200 bg-white p-4.5 shadow-xs dark:border-slate-700 dark:bg-slate-900">
+      <div>
+        <h3 className="mb-3 flex items-center gap-1.5 text-base font-bold text-neutral-800 dark:text-slate-100">
+          <span aria-hidden="true">{result.emoji}</span>
+          <span>{displayLabel}</span>
+        </h3>
 
-      {result.status === "error" ? (
-        <p className="rounded-lg bg-red-50 p-2.5 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
-          {t("nearbyPage.queryFailed", "查詢失敗，請稍後再試。")}
-        </p>
-      ) : result.items.length === 0 ? (
-        <p className="text-sm text-neutral-500 dark:text-slate-400">
-          {t("nearbyPage.cardEmptyTemplate", "附近查無收錄的{label}。").replace("{label}", displayLabel)}
-        </p>
-      ) : (
-        <ul className="space-y-2">
-          {result.items.map((item) => (
-            <li key={item.id} className="flex items-start justify-between gap-2 text-sm">
-              <div className="min-w-0">
-                <p className="truncate font-medium text-neutral-800 dark:text-slate-100">{item.name}</p>
-                {item.address ? (
-                  <p className="truncate text-xs text-neutral-500 dark:text-slate-400">{item.address}</p>
-                ) : null}
-              </div>
-              {item.distanceKm !== null ? (
-                <span className="shrink-0 whitespace-nowrap rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                  {formatDistance(item.distanceKm, t)}
-                </span>
-              ) : null}
-            </li>
-          ))}
-        </ul>
+        {result.status === "error" ? (
+          <p className="rounded-lg bg-red-50 p-2.5 text-sm text-red-700 dark:bg-red-950/40 dark:text-red-300">
+            {t("nearbyPage.queryFailed", "查詢失敗，請稍後再試。")}
+          </p>
+        ) : result.items.length === 0 ? (
+          <p className="text-sm text-neutral-500 dark:text-slate-400">
+            {t("nearbyPage.cardEmptyTemplate", "附近查無收錄的{label}。").replace("{label}", displayLabel)}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {result.items.map((item) => {
+              const navUrl = buildGoogleMapsDirUrl({
+                lat: item.lat,
+                lng: item.lng,
+                name: item.name,
+                address: item.address,
+              });
+              const distanceLabel = formatDistance(item.distanceKm, t);
+              const ariaLabel = `${item.name}${item.address ? `，${item.address}` : ""}${distanceLabel ? `，距離約 ${distanceLabel}` : ""}，開啟 Google 地圖導航（另開新視窗）`;
+
+              return (
+                <li key={item.id}>
+                  <a
+                    href={navUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={ariaLabel}
+                    className="group -mx-2 flex items-start justify-between gap-3 rounded-xl px-2 py-1.5 text-sm transition-colors hover:bg-neutral-100/80 dark:hover:bg-slate-800/60"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-neutral-800 group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
+                        {item.name}
+                      </p>
+                      {item.address ? (
+                        <p className="truncate text-xs text-neutral-500 dark:text-slate-400">
+                          {item.address}
+                        </p>
+                      ) : null}
+                    </div>
+                    {item.distanceKm !== null ? (
+                      <span className="shrink-0 whitespace-nowrap rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                        {distanceLabel}
+                      </span>
+                    ) : null}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {dataAsOf ? (
+          <p className="mt-3 text-xs text-neutral-500 dark:text-slate-400">
+            {t("nearbyPage.dataAsOfTemplate", "資料日期：{date}").replace("{date}", dataAsOf)}
+            {dataOrg
+              ? ` · ${t("nearbyPage.dataSourceTemplate", "依{source}公開資料，非本站判定").replace("{source}", dataOrg)}`
+              : ""}
+          </p>
+        ) : null}
+      </div>
+
+      {toolHref && (
+        <div className="mt-3.5 border-t border-neutral-100 pt-2.5 text-right dark:border-slate-800">
+          <Link
+            href={toolHref}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 transition-colors hover:text-indigo-700 hover:underline dark:text-indigo-400 dark:hover:text-indigo-300"
+            aria-label={t("nearbyPage.seeMoreCategoryAria", "查看更多{category}（另開專用查詢頁面）").replace("{category}", displayLabel)}
+          >
+            <span>
+              {t("nearbyPage.seeMoreCategory", "查看更多{category} ↗").replace("{category}", displayLabel)}
+            </span>
+          </Link>
+        </div>
       )}
-
-      {dataAsOf ? (
-        <p className="mt-3 text-xs text-neutral-500 dark:text-slate-400">
-          {t("nearbyPage.dataAsOfTemplate", "資料日期：{date}").replace("{date}", dataAsOf)}
-          {dataOrg
-            ? ` · ${t("nearbyPage.dataSourceTemplate", "依{source}公開資料，非本站判定").replace("{source}", dataOrg)}`
-            : ""}
-        </p>
-      ) : null}
     </div>
   );
 }
@@ -170,7 +211,7 @@ export default function NearbyContent() {
           lat: String(effectiveCoords.lat),
           lng: String(effectiveCoords.lng),
           types: DEFAULT_TYPE_KEYS.join(","),
-          limit: "3",
+          limit: "5",
         });
         const res = await fetchWithTimeout(`/api/nearby?${params.toString()}`, { timeoutMs: 8000 });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -201,7 +242,7 @@ export default function NearbyContent() {
         lat: String(effectiveCoords.lat),
         lng: String(effectiveCoords.lng),
         types: key,
-        limit: "3",
+        limit: "5",
       });
       const res = await fetchWithTimeout(`/api/nearby?${params.toString()}`, { timeoutMs: 8000 });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -278,7 +319,7 @@ export default function NearbyContent() {
       {effectiveCoords && (
         <section>
           <h2 className="mb-3 text-lg font-bold text-neutral-800 dark:text-slate-100">
-            {t("nearbyPage.defaultSectionHeading", "8 類急用點位（最近 3 筆）")}
+            {t("nearbyPage.defaultSectionHeading", "8 類急用點位（最近 5 筆）")}
           </h2>
           {defaultLoading && !defaultResults ? (
             <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-6 text-center text-sm text-neutral-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
@@ -289,7 +330,7 @@ export default function NearbyContent() {
               {t("nearbyPage.queryFailed", "查詢失敗，請稍後再試。")}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {defaultResults?.map((result) => (
                 <TypeResultCard key={result.key} result={result} locale={locale} t={t} />
               ))}
@@ -336,7 +377,7 @@ export default function NearbyContent() {
               </div>
 
               {Object.keys(moreResults).length > 0 && (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   {Object.values(moreResults).map((result) => (
                     <TypeResultCard key={result.key} result={result} locale={locale} t={t} />
                   ))}
@@ -348,7 +389,7 @@ export default function NearbyContent() {
       )}
 
       <p className="text-xs text-neutral-400 dark:text-slate-500">
-        {t("nearbyPage.footerPrefix", "每類僅顯示最近 3 筆，完整列表與地圖可至各")}{" "}
+        {t("nearbyPage.footerPrefix", "每類顯示最近 5 筆，完整列表與地圖可至各")}{" "}
         <Link href="/tools" className="underline hover:text-neutral-600 dark:hover:text-slate-300">
           {t("nearbyPage.footerLinkText", "設施查詢工具")}
         </Link>{" "}

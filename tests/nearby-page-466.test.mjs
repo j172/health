@@ -295,3 +295,22 @@ test("components/Nearby/NearbyContent.tsx's 更多類型 expansion loads one typ
   assert.ok(/types:\s*key/.test(loaderBody), "the more-types loader must request exactly one type per call");
   assert.ok(!/NEARBY_MORE_TYPES\.map\(\(def\) => def\.key\)\.join/.test(src), "must not prefetch all more-types keys joined into one request");
 });
+
+test("components/Nearby/NearbyContent.tsx requests 5 items, renders 2 columns, provides Google Maps navigation links, and adds 'see more' links (issue #800, #802)", () => {
+  const src = readSource("components", "Nearby", "NearbyContent.tsx");
+
+  // 1. limit: "5"
+  assert.ok(src.includes('limit: "5"'), "must request limit=5");
+
+  // 2. 2-column layout (1 row 2 cards)
+  assert.ok(src.includes("grid-cols-1 gap-4 md:grid-cols-2"), "must use 2-column layout to avoid text truncation");
+
+  // 3. Google Maps navigation deep links
+  assert.ok(src.includes("buildGoogleMapsDirUrl"), "must wrap items with buildGoogleMapsDirUrl");
+  assert.ok(src.includes('target="_blank"'), "must open navigation in new window");
+  assert.ok(src.includes('rel="noopener noreferrer"'), "must specify noopener noreferrer");
+
+  // 4. See more tool link
+  assert.ok(src.includes("nearbyPage.seeMoreCategory"), "must use seeMoreCategory translation key");
+  assert.ok(src.includes("toolHref"), "must render toolHref link");
+});
