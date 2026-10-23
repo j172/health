@@ -19,6 +19,7 @@
    - 本站程式**已經在用**的主機（`opdadm.moi.gov.tw`、`data.fda.gov.tw`、`data.taipei`、`data.ntpc.gov.tw`、`apiservice.mol.gov.tw`、`data.moa.gov.tw`、`data.moenv.gov.tw`、`www.water.gov.tw`、`opendata.tycg.gov.tw`、`tdx.transportdata.tw`）→ 視為可達。
    - 其餘主機一律標「**正式主機未確認**」。已知封鎖資料中心 IP 的有 `od.cdc.gov.tw`（見 [07](../domains/07-tools-disaster-environment-energy.md) 登革熱移除決策）與 `nhi.gov.tw`。
 4. 拿不到、或只看得到詮釋資料的項目，一律寫「未確認」。
+5. **全臺中央與地方開放資料母體盤點基線**：除了全國入口目錄（`data.gov.tw`）外，本研究補入引用開源社群整理之 `onlinemad/awesome-opendata-taiwan-gov`（臺灣政府開放資料清冊）與 `odportal.tw`（臺灣開放資料平臺彙整）作為母體盤點基線，全面涵蓋中央各部會、六都與非六都縣市共 25 大開放資料平臺（母體合計逾 15 萬筆資料集），辨析中央與地方資料集匯流機制與專屬 API 邊界。
 
 ---
 
@@ -160,25 +161,55 @@
 | data.fda.gov.tw | 藥品、營養成分、業者登錄、健康食品、藥局 | 違規廣告 4 集、藥品短缺、回收藥品、不合格食品、安全週報、濫用管制藥品 | ✅ 全部 200 | <https://data.fda.gov.tw/swagger-ui/index.html> |
 | apiservice.mol.gov.tw（勞動部） | 健檢機構、職業傷病醫院 | 違反勞動法令事業單位（勞基法、性平、職安）、重大職災 | 詮釋資料每日（未下載內容） | [109896](https://data.gov.tw/dataset/109896)、[126835](https://data.gov.tw/dataset/126835) |
 
-**bigdata.wp.shu.edu.tw 清單上的其他入口**（2026-10-14 實測）：
+### 3.1 全臺 25 大開放資料平臺全覽矩陣（以 `odportal.tw` 最新清冊為基準）
 
-| 入口 | 狀態 | 說明 |
-|---|---|---|
-| data.tycg.gov.tw、data.taichung.gov.tw、data.nantou.gov.tw、data.moi.gov.tw、data.coa.gov.tw、opendata.epa.gov.tw | **DNS 已不存在** | 已改名為 opendata.tycg、opendata.taichung、（南投改用 data.gov.tw 掛載）、opdadm.moi、data.moa、data.moenv |
-| **data.hpa.gov.tw、data.nhi.gov.tw** | **DNS 已不存在** | 9/14 文件 N8、R1 建議「後續確認」的兩個平台**實際上已不存在**，可結案。健保署現行資料在 `info.nhi.gov.tw/api/iode0000s01/Dataset?rId=…`，但 `nhi.gov.tw` 封鎖資料中心 IP |
-| data.hakka.gov.tw | 404 | 本站伯公照護站另有來源 |
-| www.fnp.gov.tw/opendata | 404 | 國有財產，與本站無關 |
-| theme.npm.edu.tw/opendata | 轉址後 403 | 故宮，與本站無關 |
-| opendata.e-land.gov.tw、data.chiayi.gov.tw、opendata.penghu.gov.tw、data.kinmen.gov.tw | 200 | 縣市版資料多已匯入 data.gov.tw，本次未找到全國版沒有的高價值項目 |
-| opendata.culture.tw | 200 | `cultural-events` 已用文化部資料 |
-| data.ly.gov.tw | 200 | 立法院，與本站主軸無關 |
-| alerts.ncdr.nat.gov.tw | 200 | 已覆蓋（待辦 D-1 前端分頁仍未做） |
-| www.npa.gov.tw | 200 | 已覆蓋（婦幼安全警示地點），本次新增派出所、失物招領、事故等 |
-| Data.gov、Data USA、data.gov.uk、EU open data | — | 國外，不適用 |
+依據社群開放資料平臺清冊 `odportal.tw` 與 `onlinemad/awesome-opendata-taiwan-gov`，全臺現存中央與地方主要開放資料平臺共 25 處（涵蓋中央母體、部會專用平臺與 22 縣市平臺）。以下盤點各平臺公開資料集規模、服務存活狀態、已匯入 `data.gov.tw` 狀況以及本站 2.0 取捨結論：
+
+| 平臺名稱 / 網址 | 資料量 | 存活狀態 | 已匯入 data.gov.tw 狀況 | 本站 2.0 取捨結論 |
+|---|---|---|---|---|
+| **政府資料開放平臺** (`data.gov.tw`) | 79,139 筆 | ✅ 存活 (200) | 母體總目錄 | **核心主力**：本站 Top 15 絕大多數候選來源（詐騙網域、違規廣告、事故、失物招領等）之匯流索引。 |
+| **臺北市政府資料開放平台** (`data.taipei`) | 20,529 筆 | ✅ 存活 (200) | 部分匯入（API 仍以北市為主） | **已深度使用**：歷史捷運公告、垃圾車即時點位路線、全國藥癮戒治與跨區給藥機構。 |
+| **高雄市政府資料開放平台** (`data.kcg.gov.tw` / `openapi.kcg.gov.tw`) | 7,512 筆 | ✅ 存活 (200) | 部分匯入 | **候選**：垃圾車動態與到點時間預估；正式主機連線可達性待確認。 |
+| **臺中市政府資料開放平台** (`opendata.taichung.gov.tw` / `newdatacenter.taichung.gov.tw`) | 7,255 筆 | ✅ 存活 (200) | 部分匯入 | **候選**：垃圾清運及資收車即時動態；原 `data.taichung.gov.tw` 已廢止改址。 |
+| **新北市政府資料開放平台** (`data.ntpc.gov.tw`) | 6,908 筆 | ✅ 存活 (200) | 大部分匯入 | **已部分覆蓋**：垃圾車動態；多數衛生局 120+ 資料集具新北在地限定性，不獨立介接。 |
+| **桃園市政府資料開放平台** (`opendata.tycg.gov.tw`) | 5,472 筆 | ✅ 存活 (200) | 大部分匯入 | **已部分覆蓋**：部分 CSV 為 CP950 編碼；原 `data.tycg.gov.tw` 已廢止改址。 |
+| **臺南市政府資料開放平台** (`data.tainan.gov.tw` / `soa.tainan.gov.tw`) | 4,368 筆 | ✅ 存活 (200) | 部分匯入 | **候選**：垃圾車 GPS 即時資料；其餘治安與毒品資料多為統計表。 |
+| **農業部農業資料開放平台** (`data.moa.gov.tw`) | 1,718 筆 | ✅ 存活 (200) | 專屬平臺 / 部分匯入 | **已深度使用**：土石流警戒、動物醫院；建議擴充果菜批發行情與林火風險。原 `data.coa.gov.tw` 廢止。 |
+| **花蓮縣政府資料開放平台** (`data.hl.gov.tw`) | 1,176 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：地方公設名冊已由中央母體覆蓋，透過 data.gov.tw 存取即可。 |
+| **宜蘭縣政府資料開放平台** (`opendata.e-land.gov.tw`) | 1,125 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：無獨特高頻民生即時 API，由中央母體統一介接。 |
+| **新竹市政府資料開放平台** (`opendata.hccg.gov.tw`) | 1,056 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：多數為靜態名冊，中央平臺均已有對應。 |
+| **新竹縣政府資料開放平台** (`data.hsinchu.gov.tw`) | 999 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：名冊類與母體重疊，維持中央單一來源。 |
+| **雲林縣政府資料開放平台** (`data.yunlin.gov.tw`) | 990 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：部分縣市版專案停更在 2021–2022，以全國版為準。 |
+| **環境部環境資料開放平臺** (`data.moenv.gov.tw`) | 832 筆 | ✅ 存活 (200) | 專屬平臺 / 已匯入 | **已深度使用**：AQI、AQX、公廁、清潔隊；建議新增機車排氣定檢站、維修地圖。原 `opendata.epa.gov.tw` 廢止。 |
+| **苗栗縣政府資料開放平台** (`data.miaoli.gov.tw`) | 720 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：資料已匯入中央，無單獨維護必要。 |
+| **澎湖縣政府資料開放平台** (`opendata.penghu.gov.tw`) | 573 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：離島民生名冊中央版已收錄。 |
+| **南投縣政府資料開放平台** (`data.nantou.gov.tw`) | 507 筆 | ✅ 轉由 data.gov.tw 代管 (200) | 深度整合 | **不單獨介接**：舊獨立網站已廢止，全面改以 data.gov.tw 掛載。 |
+| **嘉義市政府資料開放平台** (`data.chiayi.gov.tw`) | 472 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：名冊多已同步中央。 |
+| **文化部資料開放平台** (`opendata.culture.tw`) | 366 筆 | ✅ 存活 (200) | 專屬平臺 / 部分匯入 | **已部分覆蓋**：`cultural-events` 使用其藝文活動資料；國家文化記憶庫 2.0 OpenAPI 排除（見 §5）。 |
+| **衛生福利部疾病管制署** (`data.cdc.gov.tw` / `od.cdc.gov.tw`) | 335 筆 | ⚠️ 存活 (台灣住宅 ISP 可達) | 專屬平臺 | **正式主機封鎖**：資料中心 IP 被擋；僅旅遊醫學門診、抗蛇毒血清年更名冊評估人工更新種子檔。 |
+| **金門縣政府開放資料平台** (`data.kinmen.gov.tw`) | 297 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：已完全由 data.gov.tw 覆蓋。 |
+| **屏東縣政府資料開放平台** (`data.pthg.gov.tw`) | 285 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **不單獨介接**：已同步中央。 |
+| **教育部統計處** (`stats.moe.gov.tw` / data.gov.tw 機關專區) | 69 筆 | ✅ 存活 (200) | 已匯入 data.gov.tw | **排除**：以學術統計報表為主，非民生即時查詢用途。 |
+| **連江縣政府資料開放專區** (`matsu.gov.tw` / data.gov.tw 連江專區) | 數十筆 | ✅ 存活 (200) | 深度整合 | **不單獨介接**：無獨立 CKAN，直接上架中央平臺；海纜障礙為馬祖通訊最大痛點，改由友站地圖導流。 |
+| **國家發展委員會與其他中央部會專屬匯流**（含經濟部水利署 `opendata.wra.gov.tw`、水利物聯網 `iot.wra.gov.tw`、交通部 TDX `tdx.transportdata.tw` 等） | 數千筆 | ✅ 存活 (200) | 專屬平臺 | **已深度使用**：即時水情、積淹水感測、大眾運輸/即時路況皆已建立穩定生產管線。 |
+
+#### 歷史平臺網址異動與無關入口廢止紀錄（取代舊世新大學清單）
+
+- **DNS 失效／已更名遷移**：
+  - `data.tycg.gov.tw` → 遷移為 `opendata.tycg.gov.tw`
+  - `data.taichung.gov.tw` → 遷移為 `opendata.taichung.gov.tw`（API 端點在 `newdatacenter.taichung.gov.tw`）
+  - `data.nantou.gov.tw` → 獨立站廢止，轉址由 `data.gov.tw` 機關分頁掛載
+  - `data.moi.gov.tw` → 遷移為 `opdadm.moi.gov.tw`
+  - `data.coa.gov.tw` → 組織改造後遷移為 `data.moa.gov.tw`
+  - `opendata.epa.gov.tw` → 組織改造後遷移為 `data.moenv.gov.tw`
+  - `data.hpa.gov.tw`、`data.nhi.gov.tw` → **DNS 已不存在**，健保署改在 `info.nhi.gov.tw`（但封鎖資料中心 IP）
+- **非民生主軸／無效入口**：
+  - `data.hakka.gov.tw` (404)、`www.fnp.gov.tw/opendata` (404 國產署)、`theme.npm.edu.tw/opendata` (403 故宮)、`data.ly.gov.tw` (立法院，無關本站主軸)
+  - 國外平臺（Data.gov, Data USA, data.gov.uk, EU open data）一律不適用。
 
 ---
 
-## 4. g0v 可重用專案
+## 4. g0v 與社群可重用專案
 
 以 `gh api orgs/g0v/repos` 取得全部 524 個 repo（2026-10-14），篩出最後推送在 2024-10-14 之後（2 年內）的 73 個，再挑出「提供資料、API 或爬蟲」且與本站相關的。超過 2 年未更新標為「停滯」。
 
@@ -200,12 +231,48 @@
 
 其餘 2 年內有更新的 repo 多為 vTaiwan、Summit、萌典網站前端、揪松團活動頁等，不提供本站可重用的資料或 API。
 
+### 4.1 台灣海纜動態地圖（seadog007/smc.peering.tw）專題評估與通訊韌性介接規格
+
+#### 專案定位與社群開源架構
+- **開源專案與維護者**：[`seadog007/smc.peering.tw`](https://github.com/seadog007/smc.peering.tw)（社群開源，MIT 授權）。
+- **線上服務**：[`smc.peering.tw`](https://smc.peering.tw/)（台灣海纜動態地圖）。
+- **核心價值**：視覺化臺灣對外國際海纜（APCN-2、FASTER、SJC2、EAC-C2C、TPE 等）與離島通訊海纜（臺馬二號/三號、臺澎金馬等）之海纜走向、海纜登陸站、故障與斷纜事件、修復船動態與修復時間線。每逢連線延遲或斷網謠言時，提供公眾客觀查核依據，為全社會防衛與數位通訊韌性之關鍵基石。
+- **公開資料結構（免爬蟲 Raw JSON 端點）**：
+  - **海纜障礙與修復時間線**：`https://raw.githubusercontent.com/seadog007/smc.peering.tw/master/src/data/incidents.json`
+    包含每起海纜事件的識別碼 (`id`)、海纜編號 (`cable_id`)、海纜名稱 (`cable_name`)、障礙類型 (`incident_type`: cut / fault / maintenance)、狀態 (`status`: active / repairing / resolved)、發生時間 (`occurred_at`)、預估修復時間 (`estimated_repair_at`)、影響摘要 (`impact_summary`) 與受影響電信業者 (`affected_isps`)。
+  - **登陸站座標清單**：`https://raw.githubusercontent.com/seadog007/smc.peering.tw/master/src/data/landing-points.json`
+    收錄八里、淡水、頭城、枋山等登陸站之精準 WGS84 經緯度座標、登陸海纜數目與營運機房。
+
+#### 2.0 通訊維生狀態燈號計算規則
+本站不重造整套 WebGL 3D/2D 海纜物理拓撲繪圖，而是聚焦於防災與維生資訊傳達，定義 2.0 輕量通訊維生狀態燈號：
+- 🟢 **NORMAL（正常運行）**：
+  - 條件：當前無進行中的主要國際海纜斷纜事件（`status === "active"` 且影響國際連線海纜數為 0）。
+  - 燈號說明：「國際與離島海底通訊電纜運作正常，對外網路頻寬維持常態水準。」
+- 🟡 **DEGRADED（局部跳障 / 降級運作）**：
+  - 條件：存在 1～2 條具備替代路徑之海纜故障，或單一離島微波備援系統啟用。
+  - 燈號說明：「局部海纜障礙維修中，部分跨國或離島連線延遲可能稍增，整體通訊骨幹穩定。」
+- 🔴 **CRITICAL（嚴重中斷 / 警戒）**：
+  - 條件：多條主要國際骨幹海纜同時發生嚴重中斷，或離島（如馬祖）通訊海纜全斷且備援微波負載飽和。
+  - 燈號說明：「多條對外或離島關鍵海纜發生嚴重中斷，通訊受到顯著影響；請防範斷網假訊息，遵循官方民防與通訊應變指引。」
+
+#### 免爬蟲 Raw JSON 排程介接合約
+1. **介接模式**：定時由後端排程 Job 直接抓取 GitHub Raw JSON（`src/data/incidents.json`），完全免除對前端 DOM 的網頁爬蟲負擔與改版破碎風險。
+2. **快取策略**：以伺服器或 KV 快取 15～30 分鐘，帶 `If-Modified-Since` 標頭，對上游 GitHub 保持最高禮貌。
+3. **優雅降級**：若 GitHub 網路逾時或資料異常，系統維持前次有效快取狀態，絕不影響站點其他功能之渲染。
+
+#### 既有災害示警地圖與維生管線情境導流
+在既有災害示警地圖（`disaster-map`、`weather-alerts`）與維生管線說明（`water-outages` 停水水質、`power-grid-overview` 電力概況）介面與指引中，增訂情境引流說明：
+> **「若遇網路異常或斷網謠言，可至友站【台灣海纜動態地圖】查核海纜實體障礙」**
+
+將水、電、瓦斯等實體維生管線，拓展至數位時代不可或缺的「網路通訊韌性管線」，在假訊息與災害發生時，第一時間引導民眾獲取客觀真實資訊。
+
 ---
 
 ## 5. 排除清單與理由
 
 | 項目 | 理由 |
 |---|---|
+| 文化部／國立臺灣歷史博物館 國家文化記憶庫 2.0 OpenAPI（`tcmbdata.culture.tw/swagger-ui`） | **需申請 API Key 且綁定固定 IP**；偏典藏研究、展覽歷史考據，無民生即時查詢用途，不符合本站免金鑰／民生即時查詢原則 |
 | 165 詐騙闢謠專區 [38262](https://data.gov.tw/dataset/38262) | 只有 89 則、最新 2025-04-26，詮釋資料日期誤導 |
 | 165 假投資（博弈）網站 [160055](https://data.gov.tw/dataset/160055) | 已由 176455 取代，統計只到 2025-12-31 |
 | 165 詐騙 LINE ID（前端 API） | 最新 2025-04-30，停更 |

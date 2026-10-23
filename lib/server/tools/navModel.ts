@@ -167,6 +167,7 @@ export const CIVIC_PARTNER_LINKS: FooterLinkModel[] = [
   // sufficient to get the UTM tagging — no extra wrapping needed.
   { href: "https://165.npa.gov.tw/", label: "165 全民防騙網" },
   { href: "https://antidrug.moj.gov.tw/", label: "反毒大本營" },
+  { href: "https://smc.peering.tw/", label: "台灣海纜動態地圖" },
 ];
 
 export interface BuildFooterModelOptions {
