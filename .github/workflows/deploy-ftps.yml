@@ -628,9 +628,17 @@ jobs:
                 -H 'content-type: application/json' -d '{\"scope\":\"all\"}'"
           echo
 
-          node scripts/list-warm-paths.mjs | \
+          WARM_OUTPUT="$(node scripts/list-warm-paths.mjs | \
             ssh "${SSH_OPTS[@]}" "$SSH_USER@$SSH_HOST" \
-              "bash -c $(printf %q "$(cat scripts/warm-isr-pages.sh)")"
+              "bash -c $(printf %q "$(cat scripts/warm-isr-pages.sh)")")"
+          printf '%s\n' "$WARM_OUTPUT"
+
+          STILL_STALE_COUNT="$(printf '%s\n' "$WARM_OUTPUT" | grep -c '^STILL-STALE ' || true)"
+          FAILED_COUNT="$(printf '%s\n' "$WARM_OUTPUT" | grep -c '^FAILED ' || true)"
+          if [ "$STILL_STALE_COUNT" -gt 0 ] || [ "$FAILED_COUNT" -gt 0 ]; then
+            SUMMARY_LINE="$(printf '%s\n' "$WARM_OUTPUT" | grep '^warm summary:' || echo "stale=${STILL_STALE_COUNT} failed=${FAILED_COUNT}")"
+            echo "::warning::ISR warming finished with unresolved paths (${SUMMARY_LINE}). Some DB-backed pages may serve empty build-time prerenders until next request."
+          fi
 
       - name: Purge Cloudflare cache
         continue-on-error: true

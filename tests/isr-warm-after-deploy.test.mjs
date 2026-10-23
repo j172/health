@@ -74,3 +74,25 @@ test("deploy-ftps.yml regenerates ISR pages after the new build is live and befo
   assert.match(step, /scripts\/list-warm-paths\.mjs/);
   assert.match(step, /scripts\/warm-isr-pages\.sh/);
 });
+
+// Issue #794: Warm script retries still-stale paths once, prints unresolved
+// paths, and deploy-ftps.yml captures output to emit a warning annotation
+// without interrupting the deployment pipeline (continue-on-error preserved).
+test("warm-isr-pages.sh retries paths that are still stale or failing, and prints final summary", () => {
+  const sh = read("scripts", "warm-isr-pages.sh");
+  assert.match(sh, /RETRY_PATHS=/, "must collect paths that were stale/failing for retry");
+  assert.match(sh, /RETRY \$\{p\}/, "must log retry attempts");
+  assert.match(sh, /STILL-STALE/, "must report unresolved stale paths");
+  assert.match(sh, /warm summary: ok=\$\{ok\} still_stale=\$\{stale\} failed=\$\{failed\}/, "must report structured warm summary");
+});
+
+test("deploy-ftps.yml captures warm-isr-pages output and emits a GitHub Actions warning on unresolved paths while remaining continue-on-error", () => {
+  const wf = read(".github", "workflows", "deploy-ftps.yml");
+  const regenerate = wf.indexOf("- name: Regenerate DB-backed ISR pages before purging Cloudflare");
+  const purge = wf.indexOf("- name: Purge Cloudflare cache");
+  const step = wf.slice(regenerate, purge);
+
+  assert.match(step, /continue-on-error:\s*true/, "must remain continue-on-error so warnings do not block deployment");
+  assert.match(step, /WARM_OUTPUT=/, "must capture warming output");
+  assert.match(step, /::warning::ISR warming finished with unresolved paths/, "must emit warning annotation if stale or failed paths persist");
+});
