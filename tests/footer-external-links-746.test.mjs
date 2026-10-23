@@ -163,10 +163,10 @@ test("RECOMMENDED_AFFILIATE_LINKS 常數清單：4 個指定服務網址與 rel 
   }
 });
 
-test("SiteFooter 原始碼：HawkHost 連結不經過 appendOutboundUtm", () => {
+test("SiteFooter 原始碼：推薦連結不經過 appendOutboundUtm", () => {
   const source = fs.readFileSync(path.join(ROOT_DIR, "components", "News", "SiteFooter.tsx"), "utf8");
-  assert.ok(source.includes("HAWKHOST_REFERRAL_URL"));
-  assert.ok(!/appendOutboundUtm\(\s*HAWKHOST_REFERRAL_URL/.test(source));
+  assert.ok(source.includes("RECOMMENDED_AFFILIATE_LINKS"));
+  assert.ok(!/appendOutboundUtm\(\s*link\.url/.test(source));
   const affiliateSource = fs.readFileSync(
     path.join(ROOT_DIR, "lib", "constants", "affiliateLinks.ts"),
     "utf8",
@@ -204,42 +204,38 @@ for (const locale of LOCALES) {
     }
   });
 
-  test(`[${locale}] HawkHost 連結：網址完全相同、無 utm、rel/target 正確、位於版權列之前且獨立於公民夥伴欄`, () => {
+  test(`[${locale}] 推薦服務連結列：4 個服務皆存在、保留指定 UTM、rel/target 正確、具外聯符號、位於版權列之前`, () => {
     const html = renderFooter(locale);
     const dict = readLocale(locale).footer;
     const all = anchors(html);
 
-    const hawk = all.filter((a) => a.attrs.includes("hawkhost"));
-    assert.equal(hawk.length, 1, "頁尾只應有一個 HawkHost 連結");
-    const [link] = hawk;
+    assert.ok(html.includes(dict.recommendedServices.replace(/&/g, "&amp;")), "頁尾應包含在地化推薦服務標題");
 
-    assert.equal(attr(link.attrs, "href"), EXPECTED_HAWKHOST_URL);
-    assert.ok(!/utm_source=health\.j172\.tw/i.test(link.attrs), "聯盟連結不可被附加 health.j172.tw 之 UTM");
-    assert.match(attr(link.attrs, "href"), /utm_source=j172\.tw/, "聯盟連結應保留指定之 j172.tw UTM 參數");
-    assert.equal(attr(link.attrs, "rel"), "sponsored nofollow noopener noreferrer");
-    assert.equal(attr(link.attrs, "target"), "_blank");
+    for (const item of RECOMMENDED_AFFILIATE_LINKS) {
+      const matched = all.filter((a) => attr(a.attrs, "href") === item.url);
+      assert.equal(matched.length, 1, `${item.name} 應剛好出現一次`);
+      const [link] = matched;
 
-    // 揭露文字在連結內，並帶有外聯符號與「另開新視窗」。
-    assert.ok(link.inner.includes(dict.hostingReferral), "連結文字應為完整的揭露句");
-    assert.ok(link.inner.includes('<span aria-hidden="true">↗</span>'));
-    assert.ok(link.inner.includes(`<span class="sr-only">${dict.opensInNewWindow}</span>`));
+      assert.equal(attr(link.attrs, "href"), item.url);
+      assert.ok(!/utm_source=health\.j172\.tw/i.test(link.attrs), "聯盟連結不可被附加 health.j172.tw 之 UTM");
+      assert.match(attr(link.attrs, "href"), /utm_source=j172\.tw/, "聯盟連結應保留指定之 j172.tw UTM 參數");
+      assert.equal(attr(link.attrs, "rel"), "sponsored nofollow noopener noreferrer");
+      assert.equal(attr(link.attrs, "target"), "_blank");
 
-    // 位置：在所有公民夥伴連結之後、版權列（© … j172tw Healthz.）之前。
-    const copyrightIndex = html.indexOf("j172tw Healthz.");
-    assert.ok(copyrightIndex > 0, "找不到版權列");
-    assert.ok(link.index < copyrightIndex, "HawkHost 行必須在版權列之前");
-    const lastPartnerIndex = Math.max(
-      ...CIVIC_PARTNER_LINKS.map((p) => {
-        const host = new URL(p.href).hostname;
-        return all.find((a) => attr(a.attrs, "href").includes(host)).index;
-      }),
-    );
-    assert.ok(link.index > lastPartnerIndex, "HawkHost 行必須在公民夥伴欄之後");
+      assert.ok(link.inner.includes(item.name), "連結文字應包含服務名稱");
+      assert.ok(link.inner.includes('<span aria-hidden="true">↗</span>'));
+      assert.ok(link.inner.includes(`<span class="sr-only">${dict.opensInNewWindow}</span>`));
 
-    // 獨立於公民夥伴欄：不在 <li>／<ul> 之內，而是自己的 <p>。
-    const before = html.slice(0, link.index);
-    assert.ok(before.lastIndexOf("<p") > before.lastIndexOf("</ul>"), "HawkHost 不可位於任何 <ul> 清單內");
-    assert.match(before, /<p class="[^"]*">$/);
+      const copyrightIndex = html.indexOf("j172tw Healthz.");
+      assert.ok(copyrightIndex > 0, "找不到版權列");
+      assert.ok(link.index < copyrightIndex, `${item.name} 必須在版權列之前`);
+    }
+
+    const firstLink = all.find((a) => attr(a.attrs, "href") === RECOMMENDED_AFFILIATE_LINKS[0].url);
+    const before = html.slice(0, firstLink.index);
+    assert.ok(before.lastIndexOf("<p") > before.lastIndexOf("</ul>"), "推薦列不可位於任何 <ul> 清單內");
+    const lastPTag = before.slice(before.lastIndexOf("<p"));
+    assert.match(lastPTag, /^<p class="[^"]*font-mono[^"]*">/);
   });
 
   test(`[${locale}] 公民夥伴連結仍有 UTM，聯盟連結以外的外部連結不受影響`, () => {

@@ -6,7 +6,10 @@ import { buildFooterModel } from "@/lib/server/tools/navModel";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import { cfImageUrl } from "@/lib/format/cfImageUrl";
-import { AFFILIATE_LINK_REL, HAWKHOST_REFERRAL_URL } from "@/lib/constants/affiliateLinks";
+import {
+  AFFILIATE_LINK_REL,
+  RECOMMENDED_AFFILIATE_LINKS,
+} from "@/lib/constants/affiliateLinks";
 
 const FooterColumn = ({
   label,
@@ -339,23 +342,26 @@ export default function SiteFooter() {
           })}
         </div>
 
-        {/* HawkHost 推薦連結（issue #746）：獨立於「公民夥伴」欄、位於版權列上方。
-            商業推薦必須明確揭露「推薦連結」與「可能獲得回饋」，揭露文字就在連結內，
-            讓輔助科技朗讀連結時也一併讀到。href 使用原始網址常數，刻意不經過
-            appendOutboundUtm()（避免污染聯盟追蹤），詳見 lib/constants/affiliateLinks.ts。 */}
-        <p className="mt-10 text-[11px] text-slate-600 dark:text-slate-500">
-          <a
-            href={HAWKHOST_REFERRAL_URL}
-            target="_blank"
-            rel={AFFILIATE_LINK_REL}
-            className="underline underline-offset-2 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
-          >
-            {t(
-              "footer.hostingReferral",
-              "本站架設於 HawkHost（推薦連結，若經此註冊本站可能獲得回饋）",
-            )}
-            <ExternalLinkMark newWindowLabel={newWindowLabel} />
-          </a>
+        {/* 推薦服務連結列（issue #797, #799）：Things I use & recommend
+            置中呈現、等寬字體、支援深淺色主題。各外部推薦連結指定原始網址（帶自訂 UTM 與邀請碼），
+            刻意不經 appendOutboundUtm() 改寫；rel 指定 sponsored nofollow noopener noreferrer，
+            並附帶 ExternalLinkMark 無障礙外聯符號與新視窗文字。 */}
+        <p className="mt-10 text-center font-mono text-xs text-slate-500 dark:text-slate-400">
+          <span>{t("footer.recommendedServices", "Things I use & recommend:")} </span>
+          {RECOMMENDED_AFFILIATE_LINKS.map((link, index) => (
+            <span key={link.id}>
+              {index > 0 && <span className="mx-1.5 opacity-60">·</span>}
+              <a
+                href={link.url}
+                target="_blank"
+                rel={AFFILIATE_LINK_REL}
+                className="underline underline-offset-2 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                {link.name}
+                <ExternalLinkMark newWindowLabel={newWindowLabel} />
+              </a>
+            </span>
+          ))}
         </p>
 
         {/* Bottom copyright */}

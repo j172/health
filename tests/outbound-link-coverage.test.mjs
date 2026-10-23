@@ -265,9 +265,9 @@ const DYNAMIC_HREF_ALLOWLIST = [
   },
   {
     file: "components/News/SiteFooter.tsx",
-    expr: "HAWKHOST_REFERRAL_URL",
+    expr: "link.url",
     reason:
-      "HawkHost affiliate referral link (issue #746): must be the raw URL from lib/constants/affiliateLinks.ts with NO utm_* parameters, otherwise the affiliate attribution is polluted; locked by tests/footer-external-links-746.test.mjs",
+      "curated recommended affiliate links (issue #797, #799): raw URLs from lib/constants/affiliateLinks.ts with preserve-as-is upstream campaign/affiliate params, locked by tests/footer-external-links-746.test.mjs",
   },
   {
     file: "app/(zh)/news/[id]/page.tsx",
