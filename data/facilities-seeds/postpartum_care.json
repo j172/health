@@ -1,0 +1,6268 @@
+[
+  {
+    "id": 1,
+    "source_id": "7411041101",
+    "name": "美好玥灣產後護理之家",
+    "address": "基隆市仁愛區水錦里16鄰劉銘傳路1之8號",
+    "phone": "24280000",
+    "city": "基隆市",
+    "lat": 25.127872,
+    "lng": 121.751037,
+    "service_item": "產婦床 18 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "基隆市仁愛區劉銘傳路1之8號9、10樓"
+    }
+  },
+  {
+    "id": 2,
+    "source_id": "7401011388",
+    "name": "晶英產後護理之家",
+    "address": "臺北市松山區安平里24鄰健康路500號",
+    "phone": "2745-8880",
+    "city": "臺北市",
+    "lat": 25.054281,
+    "lng": 121.568569,
+    "service_item": "產婦床 20 床 · 嬰兒床 22 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 22,
+      "infantBeds": 22,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市松山區健康路152、156號6樓"
+    }
+  },
+  {
+    "id": 3,
+    "source_id": "7401011486",
+    "name": "御兒軒產後護理之家",
+    "address": "臺北市松山區吉祥里13鄰南京東路五段108號",
+    "phone": "02-27479797",
+    "city": "臺北市",
+    "lat": 25.051248,
+    "lng": 121.562139,
+    "service_item": "產婦床 15 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市松山區南京東路5段108號11樓。"
+    }
+  },
+  {
+    "id": 4,
+    "source_id": "7401011566",
+    "name": "時尚產後護理之家",
+    "address": "臺北市松山區民有里25鄰民權東路三段140巷15號",
+    "phone": "287706298",
+    "city": "臺北市",
+    "lat": 25.0605,
+    "lng": 121.546741,
+    "service_item": "產婦床 17 床 · 嬰兒床 22 床",
+    "extra_json": {
+      "postpartumBeds": 17,
+      "babyBeds": 22,
+      "infantBeds": 22,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市松山區民權東路3段140巷15號3樓"
+    }
+  },
+  {
+    "id": 5,
+    "source_id": "7401011593",
+    "name": "人之初敦化館產後護理之家",
+    "address": "臺北市松山區民有里22鄰敦化北路230號",
+    "phone": "27131680",
+    "city": "臺北市",
+    "lat": 25.058993,
+    "lng": 121.549019,
+    "service_item": "產婦床 24 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市松山區敦化北路230號1至3樓"
+    }
+  },
+  {
+    "id": 6,
+    "source_id": "7401011637",
+    "name": "禧悅生小巨蛋壹館產後護理之家",
+    "address": "臺北市松山區敦化里14鄰八德路三段32號",
+    "phone": "225786155",
+    "city": "臺北市",
+    "lat": 25.048081,
+    "lng": 121.551709,
+    "service_item": "產婦床 9 床 · 嬰兒床 11 床",
+    "extra_json": {
+      "postpartumBeds": 9,
+      "babyBeds": 11,
+      "infantBeds": 11,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市松山區八德路三段32號14樓"
+    }
+  },
+  {
+    "id": 7,
+    "source_id": "7401011646",
+    "name": "禧悅生小巨蛋貳館產後護理之家",
+    "address": "臺北市松山區敦化里14鄰八德路三段30號",
+    "phone": "225786155",
+    "city": "臺北市",
+    "lat": 25.048082,
+    "lng": 121.551561,
+    "service_item": "產婦床 9 床 · 嬰兒床 11 床",
+    "extra_json": {
+      "postpartumBeds": 9,
+      "babyBeds": 11,
+      "infantBeds": 11,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市松山區 八德路三段30號14樓"
+    }
+  },
+  {
+    "id": 8,
+    "source_id": "7401021213",
+    "name": "愛兒家產後護理之家",
+    "address": "臺北市大安區光武里2鄰忠孝東路四段87號",
+    "phone": "02-8773-8628",
+    "city": "臺北市",
+    "lat": 25.041758,
+    "lng": 121.547624,
+    "service_item": "產婦床 22 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 22,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區忠孝東路4段87號6樓"
+    }
+  },
+  {
+    "id": 9,
+    "source_id": "7401021231",
+    "name": "小青田產後護理之家",
+    "address": "臺北市大安區民輝里22鄰市民大道三段152號",
+    "phone": "27788618",
+    "city": "臺北市",
+    "lat": 25.044616,
+    "lng": 121.535478,
+    "service_item": "產婦床 23 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區市民大道三段152號、156號1～7樓"
+    }
+  },
+  {
+    "id": 10,
+    "source_id": "7401021259",
+    "name": "英倫大安館產後護理之家",
+    "address": "臺北市大安區虎嘯里12鄰基隆路二段228之1號",
+    "phone": "02-23773996",
+    "city": "臺北市",
+    "lat": 25.023392,
+    "lng": 121.551194,
+    "service_item": "產婦床 32 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 32,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區基隆路2段228之1號、230號1-7樓、230號7樓之1"
+    }
+  },
+  {
+    "id": 11,
+    "source_id": "7401021295",
+    "name": "壹壹產後護理之家",
+    "address": "臺北市大安區住安里15鄰大安路二段39號",
+    "phone": "2703-1112",
+    "city": "臺北市",
+    "lat": 25.031604,
+    "lng": 121.546156,
+    "service_item": "產婦床 26 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 26,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區大安路2段39號1-7樓及地下1樓"
+    }
+  },
+  {
+    "id": 12,
+    "source_id": "7401021366",
+    "name": "馥御產後護理之家",
+    "address": "臺北市大安區建安里20鄰忠孝東路四段221號",
+    "phone": "287716877",
+    "city": "臺北市",
+    "lat": 25.041661,
+    "lng": 121.552577,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區忠孝東路4段221號9樓"
+    }
+  },
+  {
+    "id": 13,
+    "source_id": "7401021384",
+    "name": "孕學林產後護理之家",
+    "address": "臺北市大安區民輝里9鄰新生南路一段103巷32之3號",
+    "phone": "02-27115969",
+    "city": "臺北市",
+    "lat": 25.040572,
+    "lng": 121.535647,
+    "service_item": "產婦床 17 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 17,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區新生南路1段103巷32-3號1-7樓、B1"
+    }
+  },
+  {
+    "id": 14,
+    "source_id": "7401101243",
+    "name": "薇閣薇恩產後護理之家",
+    "address": "臺北市中山區成功里19鄰樂群三路56號",
+    "phone": "02-85025577",
+    "city": "臺北市",
+    "lat": 25.082474,
+    "lng": 121.552835,
+    "service_item": "產婦床 24 床 · 嬰兒床 26 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 26,
+      "infantBeds": 26,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區樂群三路56號3樓、3樓之1、3樓之2、4樓、4樓之1、4樓之2"
+    }
+  },
+  {
+    "id": 15,
+    "source_id": "7401101369",
+    "name": "協和婦女醫院附設產後護理之家",
+    "address": "臺北市中山區朱園里9鄰松江路85巷5號",
+    "phone": "02-2507-2222",
+    "city": "臺北市",
+    "lat": 25.050273,
+    "lng": 121.533942,
+    "service_item": "產婦床 35 床 · 嬰兒床 37 床",
+    "extra_json": {
+      "postpartumBeds": 35,
+      "babyBeds": 37,
+      "infantBeds": 37,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區松江路85巷5號5、6、7樓、93巷6號3、5、6樓"
+    }
+  },
+  {
+    "id": 16,
+    "source_id": "7401101458",
+    "name": "木恩產後護理之家",
+    "address": "臺北市中山區朱崙里16鄰長安東路二段258號",
+    "phone": "2501-2312",
+    "city": "臺北市",
+    "lat": 25.048158,
+    "lng": 121.543666,
+    "service_item": "產婦床 8 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 8,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區長安東路二段88、90號9樓"
+    }
+  },
+  {
+    "id": 17,
+    "source_id": "7401101476",
+    "name": "優兒寶產後護理之家",
+    "address": "臺北市中山區新生里3鄰松江路318號",
+    "phone": "02-7702-7600",
+    "city": "臺北市",
+    "lat": 25.060672,
+    "lng": 121.532888,
+    "service_item": "產婦床 20 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區松江路318號14樓"
+    }
+  },
+  {
+    "id": 18,
+    "source_id": "7401101501",
+    "name": "木芳產後護理之家",
+    "address": "臺北市中山區朱崙里16鄰長安東路二段258號",
+    "phone": "02-25170297",
+    "city": "臺北市",
+    "lat": 25.048158,
+    "lng": 121.543666,
+    "service_item": "產婦床 8 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 8,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區長安東路二段88、90號7樓"
+    }
+  },
+  {
+    "id": 19,
+    "source_id": "7401101574",
+    "name": "小青田大寶產後護理之家",
+    "address": "臺北市中山區朱園里6鄰建國北路一段80號",
+    "phone": "02-77021155",
+    "city": "臺北市",
+    "lat": 25.049541,
+    "lng": 121.536282,
+    "service_item": "產婦床 12 床 · 嬰兒床 16 床",
+    "extra_json": {
+      "postpartumBeds": 12,
+      "babyBeds": 16,
+      "infantBeds": 16,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區建國北路一段80號7樓"
+    }
+  },
+  {
+    "id": 20,
+    "source_id": "7401101592",
+    "name": "木芯產後護理之家",
+    "address": "臺北市中山區朱崙里16鄰長安東路二段258號",
+    "phone": "02-25172710",
+    "city": "臺北市",
+    "lat": 25.048158,
+    "lng": 121.543666,
+    "service_item": "產婦床 5 床 · 嬰兒床 8 床",
+    "extra_json": {
+      "postpartumBeds": 5,
+      "babyBeds": 8,
+      "infantBeds": 8,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區長安東路二段88、90號11樓"
+    }
+  },
+  {
+    "id": 21,
+    "source_id": "7401101636",
+    "name": "璽悅明水產後護理之家",
+    "address": "臺北市中山區敬業一路23號",
+    "phone": "02-77292505#116",
+    "city": "臺北市",
+    "lat": 25.081479,
+    "lng": 121.552496,
+    "service_item": "產婦床 40 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "臺北市中山區敬業一路23號1-3樓"
+    }
+  },
+  {
+    "id": 22,
+    "source_id": "7401111052",
+    "name": "永安福華產後護理之家",
+    "address": "臺北市內湖區寶湖里13鄰民權東路六段180巷6號",
+    "phone": "87927733",
+    "city": "臺北市",
+    "lat": 25.068196,
+    "lng": 121.592648,
+    "service_item": "產婦床 40 床 · 嬰兒床 46 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 46,
+      "infantBeds": 46,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市內湖區民權東路6段180巷6號3樓、3樓之1"
+    }
+  },
+  {
+    "id": 23,
+    "source_id": "7401111196",
+    "name": "愛兒麗產後護理之家",
+    "address": "臺北市內湖區寶湖里13鄰民權東路六段180巷6號",
+    "phone": "02-87914567",
+    "city": "臺北市",
+    "lat": 25.068196,
+    "lng": 121.592648,
+    "service_item": "產婦床 40 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市內湖區民權東路六段180巷6號7樓"
+    }
+  },
+  {
+    "id": 24,
+    "source_id": "7401111230",
+    "name": "大葉產後護理之家",
+    "address": "臺北市內湖區石潭里13鄰行善路473號",
+    "phone": "27951005",
+    "city": "臺北市",
+    "lat": 25.065653,
+    "lng": 121.586588,
+    "service_item": "產婦床 26 床 · 嬰兒床 29 床",
+    "extra_json": {
+      "postpartumBeds": 26,
+      "babyBeds": 29,
+      "infantBeds": 29,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市內湖區行善路351、353、355號11、12樓"
+    }
+  },
+  {
+    "id": 25,
+    "source_id": "7401111249",
+    "name": "嘉禾產後護理之家",
+    "address": "臺北市內湖區石潭里13鄰行善路473號",
+    "phone": "02-87911589",
+    "city": "臺北市",
+    "lat": 25.065653,
+    "lng": 121.586588,
+    "service_item": "產婦床 39 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 39,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市內湖區行善路351、353、355號2~4樓"
+    }
+  },
+  {
+    "id": 26,
+    "source_id": "7401111285",
+    "name": "國泰內湖產後護理之家",
+    "address": "臺北市內湖區港墘里20鄰瑞光路337號",
+    "phone": "02-26585999",
+    "city": "臺北市",
+    "lat": 25.077864,
+    "lng": 121.575546,
+    "service_item": "產婦床 43 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 43,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市內湖區瑞光路337號11-13樓"
+    }
+  },
+  {
+    "id": 27,
+    "source_id": "7401111301",
+    "name": "媽媽餵內湖產後護理之家",
+    "address": "臺北市內湖區港墘里20鄰瑞光路337號",
+    "phone": "02-2658-2272",
+    "city": "臺北市",
+    "lat": 25.077864,
+    "lng": 121.575546,
+    "service_item": "產婦床 30 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市內湖區瑞光路337號5-6樓"
+    }
+  },
+  {
+    "id": 28,
+    "source_id": "7401151109",
+    "name": "璽悅精緻產後護理之家",
+    "address": "臺北市士林區福佳里26鄰中正路420號",
+    "phone": "28312121",
+    "city": "臺北市",
+    "lat": 25.093413,
+    "lng": 121.519623,
+    "service_item": "產婦床 15 床 · 嬰兒床 22 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 22,
+      "infantBeds": 22,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市士林區中正路420號8樓"
+    }
+  },
+  {
+    "id": 29,
+    "source_id": "7401151181",
+    "name": "藍田士林產後護理之家",
+    "address": "臺北市士林區德華里14鄰福國路108號",
+    "phone": "2833-6833",
+    "city": "臺北市",
+    "lat": 25.102056,
+    "lng": 121.521615,
+    "service_item": "產婦床 15 床 · 嬰兒床 17 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 17,
+      "infantBeds": 17,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市士林區福國路108號2F-1,2、3F-1,2,3、4F-1,2、5F-1,2、6F-1,2、7F-1,2,3"
+    }
+  },
+  {
+    "id": 30,
+    "source_id": "7401151332",
+    "name": "璽悅天母產後護理之家",
+    "address": "臺北市士林區天福里6鄰忠誠路二段188號",
+    "phone": "(02) 7729-7775",
+    "city": "臺北市",
+    "lat": 25.116437,
+    "lng": 121.533689,
+    "service_item": "產婦床 24 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "不合格",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "不合格",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "臺北市士林區忠誠路2段188號3樓"
+    }
+  },
+  {
+    "id": 31,
+    "source_id": "7401151341",
+    "name": "禾馨士林產後護理之家",
+    "address": "臺北市士林區福德里6鄰中正路289之1號",
+    "phone": "02-2882-7333",
+    "city": "臺北市",
+    "lat": 25.094674,
+    "lng": 121.523942,
+    "service_item": "產婦床 54 床 · 嬰兒床 54 床",
+    "extra_json": {
+      "postpartumBeds": 54,
+      "babyBeds": 54,
+      "infantBeds": 54,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市士林區中正路289-1號1-10樓"
+    }
+  },
+  {
+    "id": 32,
+    "source_id": "7401151421",
+    "name": "禧悅生產後護理之家",
+    "address": "臺北市士林區福林里7鄰中山北路五段500號",
+    "phone": "02-2883-9288",
+    "city": "臺北市",
+    "lat": 25.092751,
+    "lng": 121.528246,
+    "service_item": "產婦床 8 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 8,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市士林區中山北路5段500號、502號3樓"
+    }
+  },
+  {
+    "id": 33,
+    "source_id": "7401170579",
+    "name": "彌月房慶生產後護理之家",
+    "address": "臺北市信義區新仁里1鄰忠孝東路四段563號",
+    "phone": "2753-3770",
+    "city": "臺北市",
+    "lat": 25.041454,
+    "lng": 121.564019,
+    "service_item": "產婦床 10 床 · 嬰兒床 12 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 12,
+      "infantBeds": 12,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市信義區忠孝東路4段563號13樓"
+    }
+  },
+  {
+    "id": 34,
+    "source_id": "7401170588",
+    "name": "御兒產後護理之家",
+    "address": "臺北市信義區三犁里23鄰信義路五段180之1號",
+    "phone": "02-2722-3311",
+    "city": "臺北市",
+    "lat": 25.032986,
+    "lng": 121.574147,
+    "service_item": "產婦床 24 床 · 嬰兒床 29 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 29,
+      "infantBeds": 29,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市信義區信義路五段109、111號2樓"
+    }
+  },
+  {
+    "id": 35,
+    "source_id": "7401170622",
+    "name": "彌月房信義產後護理之家",
+    "address": "臺北市信義區新仁里1鄰忠孝東路四段563號",
+    "phone": "02-2756-3777",
+    "city": "臺北市",
+    "lat": 25.041454,
+    "lng": 121.564019,
+    "service_item": "產婦床 10 床 · 嬰兒床 12 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 12,
+      "infantBeds": 12,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市信義區忠孝東路四段563號13樓-1、-2"
+    }
+  },
+  {
+    "id": 36,
+    "source_id": "7401181072",
+    "name": "藍田產後護理之家",
+    "address": "臺北市中正區三愛里15鄰新生南路一段170巷13號",
+    "phone": "33225000",
+    "city": "臺北市",
+    "lat": 25.034305,
+    "lng": 121.531321,
+    "service_item": "產婦床 9 床 · 嬰兒床 11 床",
+    "extra_json": {
+      "postpartumBeds": 9,
+      "babyBeds": 11,
+      "infantBeds": 11,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中正區新生南路一段170巷13號3-5樓"
+    }
+  },
+  {
+    "id": 37,
+    "source_id": "7401181296",
+    "name": "元氣御守產後護理之家",
+    "address": "臺北市中正區南福里28鄰福州街9號",
+    "phone": "958587128",
+    "city": "臺北市",
+    "lat": 25.029671,
+    "lng": 121.519882,
+    "service_item": "產婦床 30 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中正區福州街9號1-13樓及地下1-3樓"
+    }
+  },
+  {
+    "id": 38,
+    "source_id": "7401181349",
+    "name": "汭恩產後護理之家",
+    "address": "臺北市中正區光復里12鄰中華路一段39號",
+    "phone": "(02) 2382-5588",
+    "city": "臺北市",
+    "lat": 25.045337,
+    "lng": 121.50967,
+    "service_item": "產婦床 9 床 · 嬰兒床 11 床",
+    "extra_json": {
+      "postpartumBeds": 9,
+      "babyBeds": 11,
+      "infantBeds": 11,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中正區中華路1段39號21樓"
+    }
+  },
+  {
+    "id": 39,
+    "source_id": "7401181376",
+    "name": "令和產後護理之家",
+    "address": "臺北市中正區文祥里11鄰信義路二段79巷19號",
+    "phone": "02-23510988",
+    "city": "臺北市",
+    "lat": 25.035819,
+    "lng": 121.52709,
+    "service_item": "產婦床 14 床 · 嬰兒床 16 床",
+    "extra_json": {
+      "postpartumBeds": 14,
+      "babyBeds": 16,
+      "infantBeds": 16,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中正區信義路2段79巷19號3-7樓"
+    }
+  },
+  {
+    "id": 40,
+    "source_id": "7401181385",
+    "name": "環球敦品產後護理之家",
+    "address": "臺北市中正區愛國里7鄰中華路二段77號",
+    "phone": "23715777",
+    "city": "臺北市",
+    "lat": 25.034179,
+    "lng": 121.505874,
+    "service_item": "產婦床 64 床 · 嬰兒床 70 床",
+    "extra_json": {
+      "postpartumBeds": 64,
+      "babyBeds": 70,
+      "infantBeds": 70,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中正區中華路2段77號1-11樓及地下1、2樓"
+    }
+  },
+  {
+    "id": 41,
+    "source_id": "7401181429",
+    "name": "新月集產後護理之家",
+    "address": "臺北市中正區螢雪里4鄰泉州街149號",
+    "phone": "(02）2339-6789",
+    "city": "臺北市",
+    "lat": 25.024604,
+    "lng": 121.512857,
+    "service_item": "產婦床 25 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中正區泉州街149號1-8樓及地下1室樓及屋突3層"
+    }
+  },
+  {
+    "id": 42,
+    "source_id": "7501091057",
+    "name": "臺北市立聯合醫院附設中興產後護理之家",
+    "address": "臺北市大同區玉泉里9鄰鄭州路145號",
+    "phone": "25523234",
+    "city": "臺北市",
+    "lat": 25.050692,
+    "lng": 121.508887,
+    "service_item": "產婦床 17 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 17,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大同區鄭州路145號9樓"
+    }
+  },
+  {
+    "id": 43,
+    "source_id": "7601020523",
+    "name": "周大中婦產科診所附設產後護理之家",
+    "address": "臺北市大安區住安里20鄰敦化南路二段46號",
+    "phone": "27555285",
+    "city": "臺北市",
+    "lat": 25.031307,
+    "lng": 121.548271,
+    "service_item": "產婦床 10 床 · 嬰兒床 12 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 12,
+      "infantBeds": 12,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市大安區敦化南路二段46號2樓"
+    }
+  },
+  {
+    "id": 44,
+    "source_id": "7601101032",
+    "name": "李義男婦產科診所附設產後護理之家",
+    "address": "臺北市中山區中山里10鄰中山北路二段71號",
+    "phone": "25611688",
+    "city": "臺北市",
+    "lat": 25.057286,
+    "lng": 121.523053,
+    "service_item": "產婦床 15 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區中山北路二段71號5樓及5樓之1"
+    }
+  },
+  {
+    "id": 45,
+    "source_id": "7601101078",
+    "name": "木生婦幼診所附設產後護理之家",
+    "address": "臺北市中山區朱園里13鄰長安東路二段90號",
+    "phone": "25012312轉611",
+    "city": "臺北市",
+    "lat": 25.048327,
+    "lng": 121.534436,
+    "service_item": "產婦床 6 床 · 嬰兒床 8 床",
+    "extra_json": {
+      "postpartumBeds": 6,
+      "babyBeds": 8,
+      "infantBeds": 8,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺北市中山區長安東路二段90號6樓"
+    }
+  },
+  {
+    "id": 46,
+    "source_id": "7431011789",
+    "name": "怡寶產後護理之家",
+    "address": "新北市板橋區景星里11鄰中山路一段10號",
+    "phone": "02-29598888",
+    "city": "新北市",
+    "lat": 25.007961,
+    "lng": 121.460122,
+    "service_item": "產婦床 31 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 31,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市板橋區中山路一段10號10樓、13樓"
+    }
+  },
+  {
+    "id": 47,
+    "source_id": "7431011896",
+    "name": "豐禾產後護理之家",
+    "address": "新北市板橋區香丘里8鄰中山路一段279號",
+    "phone": "02-89510666",
+    "city": "新北市",
+    "lat": 25.014203,
+    "lng": 121.469615,
+    "service_item": "產婦床 15 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市板橋區中山路一段279號4樓、4樓之1"
+    }
+  },
+  {
+    "id": 48,
+    "source_id": "7431011903",
+    "name": "璽悅板橋產後護理之家",
+    "address": "新北市板橋區百壽里17鄰文化路一段188巷51號",
+    "phone": "02-7729-4980",
+    "city": "新北市",
+    "lat": 25.018554,
+    "lng": 121.467777,
+    "service_item": "產婦床 55 床 · 嬰兒床 60 床",
+    "extra_json": {
+      "postpartumBeds": 55,
+      "babyBeds": 60,
+      "infantBeds": 60,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市板橋區文化路一段188巷51號6樓至8樓"
+    }
+  },
+  {
+    "id": 49,
+    "source_id": "7431011921",
+    "name": "三民菡生產後護理之家",
+    "address": "新北市板橋區雙玉里1鄰三民路一段210號",
+    "phone": "02-29548555",
+    "city": "新北市",
+    "lat": 25.019361,
+    "lng": 121.479068,
+    "service_item": "產婦床 37 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 37,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市板橋區三民路一段210號9樓、212號9樓、210號10樓、212號10樓、210號等樓（九層、十層）"
+    }
+  },
+  {
+    "id": 50,
+    "source_id": "7431012044",
+    "name": "嘉寶產後護理之家",
+    "address": "新北市板橋區雙玉里1鄰三民路一段210號",
+    "phone": "(02)8953-8000",
+    "city": "新北市",
+    "lat": 25.019361,
+    "lng": 121.479068,
+    "service_item": "產婦床 20 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市板橋區三民路一段210號11樓、212號11樓、210號等樓（十一層）"
+    }
+  },
+  {
+    "id": 51,
+    "source_id": "7431012133",
+    "name": "馥華枕月產後護理之家",
+    "address": "新北市板橋區民生路二段251號5-12樓",
+    "phone": "02-2256-9999",
+    "city": "新北市",
+    "lat": 25.022127,
+    "lng": 121.468099,
+    "service_item": "產婦床 36 床 · 嬰兒床 38 床",
+    "extra_json": {
+      "postpartumBeds": 36,
+      "babyBeds": 38,
+      "infantBeds": 38,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "新北市板橋區民生路二段251號5-12樓"
+    }
+  },
+  {
+    "id": 52,
+    "source_id": "7431021507",
+    "name": "惠心產後護理之家",
+    "address": "新北市三重區福德里16鄰成功路171號",
+    "phone": "29781998",
+    "city": "新北市",
+    "lat": 25.052595,
+    "lng": 121.486278,
+    "service_item": "產婦床 31 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 31,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市三重區成功路171號7-9樓、173號7-9樓"
+    }
+  },
+  {
+    "id": 53,
+    "source_id": "7431021598",
+    "name": "美麗人生產後護理之家",
+    "address": "新北市三重區五谷里25鄰光復路一段45號",
+    "phone": "02-8511-6666",
+    "city": "新北市",
+    "lat": 25.048627,
+    "lng": 121.472179,
+    "service_item": "產婦床 97 床 · 嬰兒床 109 床",
+    "extra_json": {
+      "postpartumBeds": 97,
+      "babyBeds": 109,
+      "infantBeds": 109,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市三重區光復路1段45號4至8樓"
+    }
+  },
+  {
+    "id": 54,
+    "source_id": "7431021605",
+    "name": "新寶產後護理之家",
+    "address": "新北市三重區碧華里5鄰集賢路205號",
+    "phone": "02-2857-1001",
+    "city": "新北市",
+    "lat": 25.087513,
+    "lng": 121.483717,
+    "service_item": "產婦床 41 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 41,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市三重區集賢路205號2、3、5-17樓及207號2-17樓"
+    }
+  },
+  {
+    "id": 55,
+    "source_id": "7431031076",
+    "name": "永和悠之家產後護理之家",
+    "address": "新北市永和區協和里13鄰保平路10號",
+    "phone": "29276633",
+    "city": "新北市",
+    "lat": 25.007657,
+    "lng": 121.512761,
+    "service_item": "產婦床 19 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 19,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新北市永和區保平路10號2至5樓"
+    }
+  },
+  {
+    "id": 56,
+    "source_id": "7431031165",
+    "name": "后愛產後護理之家",
+    "address": "新北市永和區民權里14鄰民權路53號",
+    "phone": "(02)29499950",
+    "city": "新北市",
+    "lat": 24.996815,
+    "lng": 121.520026,
+    "service_item": "產婦床 20 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市永和區民權路53號5樓"
+    }
+  },
+  {
+    "id": 57,
+    "source_id": "7431031236",
+    "name": "尚順新北市永和產後護理之家",
+    "address": "新北市永和區保生路2號24樓、24樓之1、25樓之1",
+    "phone": "02-8231-6288",
+    "city": "新北市",
+    "lat": 25.00751,
+    "lng": 121.506739,
+    "service_item": "產婦床 16 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 16,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "新北市永和區保生路2號24樓、24樓之1、25樓之1"
+    }
+  },
+  {
+    "id": 58,
+    "source_id": "7431041163",
+    "name": "環球產後護理之家",
+    "address": "新北市中和區員山里37鄰中山路三段118之1號",
+    "phone": "(02)55908888",
+    "city": "新北市",
+    "lat": 25.006788,
+    "lng": 121.475573,
+    "service_item": "產婦床 36 床 · 嬰兒床 42 床",
+    "extra_json": {
+      "postpartumBeds": 36,
+      "babyBeds": 42,
+      "infantBeds": 42,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新北市中和區中山路3段118之1號2至7樓"
+    }
+  },
+  {
+    "id": 59,
+    "source_id": "7431041536",
+    "name": "衛生福利部雙和醫院附設產後護理之家(委託臺北醫學大學興建經營)",
+    "address": "新北市中和區力行里33鄰中正路291號",
+    "phone": "02-2249-0088#76950",
+    "city": "新北市",
+    "lat": 24.993746,
+    "lng": 121.494082,
+    "service_item": "產婦床 25 床 · 嬰兒床 27 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 27,
+      "infantBeds": 27,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新北市中和區中正路291號14樓"
+    }
+  },
+  {
+    "id": 60,
+    "source_id": "7431041563",
+    "name": "蘊得產後護理之家",
+    "address": "新北市中和區景平路290號",
+    "phone": "02-2940-1168",
+    "city": "新北市",
+    "lat": 24.99293,
+    "lng": 121.513047,
+    "service_item": "產婦床 20 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市中和區景平路290號2樓"
+    }
+  },
+  {
+    "id": 61,
+    "source_id": "7431050955",
+    "name": "麗寶產後護理之家",
+    "address": "新北市新店區寶興里1鄰北新路二段252號",
+    "phone": "229116600",
+    "city": "新北市",
+    "lat": 24.978014,
+    "lng": 121.542927,
+    "service_item": "產婦床 16 床 · 嬰兒床 17 床",
+    "extra_json": {
+      "postpartumBeds": 16,
+      "babyBeds": 17,
+      "infantBeds": 17,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市新店區北新路二段252號2樓之5、2樓之6"
+    }
+  },
+  {
+    "id": 62,
+    "source_id": "7431051023",
+    "name": "后愛新店產後護理之家",
+    "address": "新北市新店區復興里11鄰民權路78號",
+    "phone": "229188853",
+    "city": "新北市",
+    "lat": 24.983059,
+    "lng": 121.537443,
+    "service_item": "產婦床 23 床 · 嬰兒床 27 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 27,
+      "infantBeds": 27,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市新店區民權路78號5樓，建國路268號5樓"
+    }
+  },
+  {
+    "id": 63,
+    "source_id": "7431061118",
+    "name": "新莊悠之家產後護理之家",
+    "address": "新北市新莊區恆安里21鄰中正路82之1號",
+    "phone": "(02)29925522",
+    "city": "新北市",
+    "lat": 25.037856,
+    "lng": 121.457789,
+    "service_item": "產婦床 34 床 · 嬰兒床 37 床",
+    "extra_json": {
+      "postpartumBeds": 34,
+      "babyBeds": 37,
+      "infantBeds": 37,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新北市新莊區中正路82之1號2、3樓"
+    }
+  },
+  {
+    "id": 64,
+    "source_id": "7431061314",
+    "name": "曜生產後護理之家",
+    "address": "新北市新莊區興漢里6鄰中正路243號",
+    "phone": "22763636",
+    "city": "新北市",
+    "lat": 25.035575,
+    "lng": 121.450455,
+    "service_item": "產婦床 21 床 · 嬰兒床 22 床",
+    "extra_json": {
+      "postpartumBeds": 21,
+      "babyBeds": 22,
+      "infantBeds": 22,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市新莊區中正路243之3號、243之4號、243之5號、243之6號"
+    }
+  },
+  {
+    "id": 65,
+    "source_id": "7431061341",
+    "name": "新禾產後護理之家",
+    "address": "新北市新莊區立人里2鄰中正路102號",
+    "phone": "29909188",
+    "city": "新北市",
+    "lat": 25.036721,
+    "lng": 121.454424,
+    "service_item": "產婦床 15 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新北市新莊區中正路102號2樓及106號"
+    }
+  },
+  {
+    "id": 66,
+    "source_id": "7431071052",
+    "name": "迎新三峽館產後護理之家",
+    "address": "新北市樹林區南園里19鄰學勤路586號",
+    "phone": "(02)8970-4391",
+    "city": "新北市",
+    "lat": 24.948281,
+    "lng": 121.384505,
+    "service_item": "產婦床 24 床 · 嬰兒床 27 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 27,
+      "infantBeds": 27,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市樹林區學勤路586號2-7樓.588號1-7樓.590號1-7樓.592號2-7樓"
+    }
+  },
+  {
+    "id": 67,
+    "source_id": "7431071070",
+    "name": "惠生產後護理之家",
+    "address": "新北市樹林區潭底里11鄰保安街一段190號",
+    "phone": "86875678",
+    "city": "新北市",
+    "lat": 24.995795,
+    "lng": 121.4218,
+    "service_item": "產婦床 45 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 45,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市樹林區保安街一段190號4-7樓"
+    }
+  },
+  {
+    "id": 68,
+    "source_id": "7431071123",
+    "name": "嘉寶北大館產後護理之家",
+    "address": "新北市樹林區南園里50鄰學成路472號",
+    "phone": "(02)2680-7999",
+    "city": "新北市",
+    "lat": 24.94489,
+    "lng": 121.379448,
+    "service_item": "產婦床 25 床 · 嬰兒床 27 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 27,
+      "infantBeds": 27,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市樹林區學成路472號、472之1號、472之1號2至7樓"
+    }
+  },
+  {
+    "id": 69,
+    "source_id": "7431101082",
+    "name": "好幫手產後護理之家",
+    "address": "新北市淡水區八勢里8鄰中正東路二段121號",
+    "phone": "(02)2809-6676",
+    "city": "新北市",
+    "lat": 25.149972,
+    "lng": 121.459855,
+    "service_item": "產婦床 23 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新北市淡水區中正東路二段121號3樓、3樓之1、3樓之2、3樓之3"
+    }
+  },
+  {
+    "id": 70,
+    "source_id": "7431101233",
+    "name": "優寶皇家產後護理之家",
+    "address": "新北市淡水區新義里14鄰中山北路一段193號",
+    "phone": "(02)26259333",
+    "city": "新北市",
+    "lat": 25.178692,
+    "lng": 121.444087,
+    "service_item": "產婦床 25 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市淡水區中山北路1段193號(地下1層、地上1至7層)"
+    }
+  },
+  {
+    "id": 71,
+    "source_id": "7431101288",
+    "name": "豐悅產後護理之家",
+    "address": "新北市淡水區北投里18鄰新市一路三段101巷16弄1號",
+    "phone": "(02)26295800",
+    "city": "新北市",
+    "lat": 25.183837,
+    "lng": 121.446291,
+    "service_item": "產婦床 21 床 · 嬰兒床 24 床",
+    "extra_json": {
+      "postpartumBeds": 21,
+      "babyBeds": 24,
+      "infantBeds": 24,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市淡水區新市一路三段101巷16弄1號5、7、8樓及3號5、6、7、8樓"
+    }
+  },
+  {
+    "id": 72,
+    "source_id": "7431110661",
+    "name": "馨悅產後護理之家",
+    "address": "新北市汐止區中興里28鄰福德二路215號",
+    "phone": "(02) 2692-7666",
+    "city": "新北市",
+    "lat": 25.064557,
+    "lng": 121.627934,
+    "service_item": "產婦床 19 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 19,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市汐止區福德二路215號11樓、215號11樓之1、215號11樓之2、215號11樓之3、215號11樓之5"
+    }
+  },
+  {
+    "id": 73,
+    "source_id": "7431110670",
+    "name": "雙璽人文產後護理之家",
+    "address": "新北市汐止區大同里21鄰大同路二段240號",
+    "phone": "(02) 2691-9818",
+    "city": "新北市",
+    "lat": 25.065483,
+    "lng": 121.654041,
+    "service_item": "產婦床 11 床 · 嬰兒床 13 床",
+    "extra_json": {
+      "postpartumBeds": 11,
+      "babyBeds": 13,
+      "infantBeds": 13,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市汐止區大同路二段240號17樓之1、17樓之2"
+    }
+  },
+  {
+    "id": 74,
+    "source_id": "7431110714",
+    "name": "新生產後護理之家",
+    "address": "新北市汐止區復興里1鄰新臺五路一段207號",
+    "phone": "(02) 2647-6299",
+    "city": "新北市",
+    "lat": 25.063703,
+    "lng": 121.656693,
+    "service_item": "產婦床 18 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市汐止區新台五路一段207號7、8樓"
+    }
+  },
+  {
+    "id": 75,
+    "source_id": "7431110741",
+    "name": "馨生產後護理之家",
+    "address": "新北市汐止區中興里28鄰福德二路215號",
+    "phone": "86931220",
+    "city": "新北市",
+    "lat": 25.064557,
+    "lng": 121.627934,
+    "service_item": "產婦床 21 床 · 嬰兒床 22 床",
+    "extra_json": {
+      "postpartumBeds": 21,
+      "babyBeds": 22,
+      "infantBeds": 22,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市汐止區福德二路215號8樓、8樓之1、8樓之2、8樓之3、8樓之5"
+    }
+  },
+  {
+    "id": 76,
+    "source_id": "7431130789",
+    "name": "滿福產後護理之家",
+    "address": "新北市土城區員仁里7鄰中央路二段304號",
+    "phone": "82610177",
+    "city": "新北市",
+    "lat": 24.973278,
+    "lng": 121.440437,
+    "service_item": "產婦床 24 床 · 嬰兒床 27 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 27,
+      "infantBeds": 27,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市土城區中央路2段304號4至7樓"
+    }
+  },
+  {
+    "id": 77,
+    "source_id": "7431130912",
+    "name": "馥悅產後護理之家",
+    "address": "新北市土城區員仁里22鄰城林路6巷35號",
+    "phone": "02-22671818",
+    "city": "新北市",
+    "lat": 24.976856,
+    "lng": 121.43733,
+    "service_item": "產婦床 17 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 17,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新北市土城區城林路6巷35號1至6樓"
+    }
+  },
+  {
+    "id": 78,
+    "source_id": "7431130985",
+    "name": "馥麗產後護理之家",
+    "address": "新北市土城區員仁里22鄰新洲路58號",
+    "phone": "02-22671818",
+    "city": "新北市",
+    "lat": 25.042385,
+    "lng": 121.533012,
+    "service_item": "產婦床 18 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市土城區新洲路58號1至4樓"
+    }
+  },
+  {
+    "id": 79,
+    "source_id": "7431131008",
+    "name": "樂心產後護理之家",
+    "address": "新北市土城區裕生里7鄰中央路一段98號",
+    "phone": "(02)22668889",
+    "city": "新北市",
+    "lat": 24.988565,
+    "lng": 121.4468,
+    "service_item": "產婦床 20 床 · 嬰兒床 27 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 27,
+      "infantBeds": 27,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市土城區中央路一段98號2樓、100號2樓"
+    }
+  },
+  {
+    "id": 80,
+    "source_id": "7431140856",
+    "name": "宥宥產後護理之家",
+    "address": "新北市蘆洲區正義里15鄰長榮路169號",
+    "phone": "02-22819696",
+    "city": "新北市",
+    "lat": 25.084261,
+    "lng": 121.461378,
+    "service_item": "產婦床 12 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 12,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市蘆洲區長榮路169號1至3樓、171號1至3樓、173號3樓、175號3樓"
+    }
+  },
+  {
+    "id": 81,
+    "source_id": "7431171155",
+    "name": "晶英沐悅產後護理之家",
+    "address": "新北市林口區湖南里42鄰文化一路二段159號",
+    "phone": "02-86018388",
+    "city": "新北市",
+    "lat": 25.080763,
+    "lng": 121.382602,
+    "service_item": "產婦床 25 床 · 嬰兒床 28 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 28,
+      "infantBeds": 28,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新北市林口區文化一路二段159號3-4樓"
+    }
+  },
+  {
+    "id": 82,
+    "source_id": "7431171262",
+    "name": "璽悅林口產後護理之家",
+    "address": "新北市林口區中湖里14鄰松柏路67號",
+    "phone": "(02)77297757",
+    "city": "新北市",
+    "lat": 25.090005,
+    "lng": 121.379379,
+    "service_item": "產婦床 18 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新北市林口區松柏路67號2至5樓"
+    }
+  },
+  {
+    "id": 83,
+    "source_id": "7431171280",
+    "name": "慕綺產後護理之家",
+    "address": "新北市林口區文化一路二段159號2樓",
+    "phone": "2603-5920",
+    "city": "新北市",
+    "lat": 25.080763,
+    "lng": 121.382602,
+    "service_item": "產婦床 10 床 · 嬰兒床 11 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 11,
+      "infantBeds": 11,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "新北市林口區文化一路二段159號2樓"
+    }
+  },
+  {
+    "id": 84,
+    "source_id": "7132010039",
+    "name": "臺北榮民總醫院桃園分院附設心玥產後護理之家",
+    "address": "桃園市桃園區三元里8鄰成功路三段100號",
+    "phone": "03-3384889",
+    "city": "桃園市",
+    "lat": 25.003741,
+    "lng": 121.325315,
+    "service_item": "產婦床 24 床 · 嬰兒床 28 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 28,
+      "infantBeds": 28,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區成功路3段100號"
+    }
+  },
+  {
+    "id": 85,
+    "source_id": "7432011569",
+    "name": "璽寶產後護理之家",
+    "address": "桃園市桃園區中和里10鄰永樂街141號",
+    "phone": "03-3580579",
+    "city": "桃園市",
+    "lat": 24.998868,
+    "lng": 121.309642,
+    "service_item": "產婦床 13 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 13,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區永樂街141號1-4樓"
+    }
+  },
+  {
+    "id": 86,
+    "source_id": "7432011612",
+    "name": "貴媛產後護理之家",
+    "address": "桃園市桃園區同安里26鄰同德五街77號",
+    "phone": "03-3466589",
+    "city": "桃園市",
+    "lat": 25.014241,
+    "lng": 121.30001,
+    "service_item": "產婦床 30 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區同德五街77號7、8、9樓"
+    }
+  },
+  {
+    "id": 87,
+    "source_id": "7432011630",
+    "name": "迎新產後護理之家",
+    "address": "桃園市桃園區中正里3鄰中山路584號",
+    "phone": "03-3328366",
+    "city": "桃園市",
+    "lat": 24.991465,
+    "lng": 121.297424,
+    "service_item": "產婦床 23 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區中山路584號1-5層"
+    }
+  },
+  {
+    "id": 88,
+    "source_id": "7432011658",
+    "name": "惠生保安婦幼診所附設產後護理之家",
+    "address": "桃園市桃園區福林里23鄰介壽路493號",
+    "phone": "03-2185678",
+    "city": "桃園市",
+    "lat": 24.977343,
+    "lng": 121.303642,
+    "service_item": "產婦床 41 床 · 嬰兒床 41 床",
+    "extra_json": {
+      "postpartumBeds": 41,
+      "babyBeds": 41,
+      "infantBeds": 41,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區介壽路493號4-7樓及493之2號4樓"
+    }
+  },
+  {
+    "id": 89,
+    "source_id": "7432011765",
+    "name": "滿越圓產後護理之家",
+    "address": "桃園市桃園區新埔里25鄰經國路413號",
+    "phone": "03-3468441",
+    "city": "桃園市",
+    "lat": 25.017817,
+    "lng": 121.304767,
+    "service_item": "產婦床 30 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區經國路413號"
+    }
+  },
+  {
+    "id": 90,
+    "source_id": "7432011836",
+    "name": "蒔樂產後護理之家",
+    "address": "桃園市桃園區文中里3鄰正光二街188號",
+    "phone": "03-3787-666",
+    "city": "桃園市",
+    "lat": 25.00005,
+    "lng": 121.291323,
+    "service_item": "產婦床 30 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區正光二街188號3樓至10樓"
+    }
+  },
+  {
+    "id": 91,
+    "source_id": "7432011854",
+    "name": "璽寶二館產後護理之家",
+    "address": "桃園市桃園區中和里10鄰永樂街141號",
+    "phone": "03-3359999",
+    "city": "桃園市",
+    "lat": 24.998868,
+    "lng": 121.309642,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區永樂街141號5至7樓"
+    }
+  },
+  {
+    "id": 92,
+    "source_id": "7432011863",
+    "name": "青田悅產後護理之家",
+    "address": "桃園市桃園區汴洲里1鄰水岸二街200號",
+    "phone": "03-3550550",
+    "city": "桃園市",
+    "lat": 25.029136,
+    "lng": 121.296983,
+    "service_item": "產婦床 37 床 · 嬰兒床 39 床",
+    "extra_json": {
+      "postpartumBeds": 37,
+      "babyBeds": 39,
+      "infantBeds": 39,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區水岸二街200號1至7樓"
+    }
+  },
+  {
+    "id": 93,
+    "source_id": "7432011881",
+    "name": "禾馨桃園產後護理之家",
+    "address": "桃園市桃園區汴洲里1鄰經國二路36號",
+    "phone": "03-3465733",
+    "city": "桃園市",
+    "lat": 25.029178,
+    "lng": 121.298368,
+    "service_item": "產婦床 46 床 · 嬰兒床 50 床",
+    "extra_json": {
+      "postpartumBeds": 46,
+      "babyBeds": 50,
+      "infantBeds": 50,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區經國二路36號4-9樓"
+    }
+  },
+  {
+    "id": 94,
+    "source_id": "7432011907",
+    "name": "喜寶人文桃二館產後護理之家",
+    "address": "桃園市桃園區同安里16鄰大興西路一段305號",
+    "phone": "03-3580579",
+    "city": "桃園市",
+    "lat": 25.012713,
+    "lng": 121.301824,
+    "service_item": "產婦床 16 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 16,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區大興西路1段305號1至5樓"
+    }
+  },
+  {
+    "id": 95,
+    "source_id": "7432011934",
+    "name": "沁悅產後護理之家",
+    "address": "桃園市桃園區文化里5鄰成功路一段30之1號",
+    "phone": "03-3352188",
+    "city": "桃園市",
+    "lat": 24.99266,
+    "lng": 121.311592,
+    "service_item": "產婦床 24 床 · 嬰兒床 28 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 28,
+      "infantBeds": 28,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區成功路1段30-1號B1-4F"
+    }
+  },
+  {
+    "id": 96,
+    "source_id": "7432012002",
+    "name": "桃園秉坤婦幼醫院附設產後護理之家",
+    "address": "桃園市桃園區中成里6鄰慈文路957號",
+    "phone": "03-3709191",
+    "city": "桃園市",
+    "lat": 25.000473,
+    "lng": 121.289345,
+    "service_item": "產婦床 38 床 · 嬰兒床 41 床",
+    "extra_json": {
+      "postpartumBeds": 38,
+      "babyBeds": 41,
+      "infantBeds": 41,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市桃園區慈文路957號8至10樓"
+    }
+  },
+  {
+    "id": 97,
+    "source_id": "7432012119",
+    "name": "媽媽餵經國產後護理之家",
+    "address": "桃園市桃園區經國二路93號3-5 樓",
+    "phone": "03-3560657",
+    "city": "桃園市",
+    "lat": 25.030003,
+    "lng": 121.297974,
+    "service_item": "產婦床 34 床 · 嬰兒床 36 床",
+    "extra_json": {
+      "postpartumBeds": 34,
+      "babyBeds": 36,
+      "infantBeds": 36,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "桃園市桃園區經國二路93號3-5 樓"
+    }
+  },
+  {
+    "id": 98,
+    "source_id": "7432021332",
+    "name": "好寶貝皇家產後護理之家",
+    "address": "桃園市中壢區興南里11鄰中美路一段12號",
+    "phone": "03-4223888",
+    "city": "桃園市",
+    "lat": 24.95954,
+    "lng": 121.223896,
+    "service_item": "產婦床 16 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 16,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "不合格",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "不合格",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "桃園市中壢區中美路一段12號11樓"
+    }
+  },
+  {
+    "id": 99,
+    "source_id": "7432021458",
+    "name": "滿悅產後護理之家",
+    "address": "桃園市中壢區永興里7鄰中央西路一段120號",
+    "phone": "03-4272988",
+    "city": "桃園市",
+    "lat": 24.958421,
+    "lng": 121.220252,
+    "service_item": "產婦床 24 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市中壢區中央西路一段120號29樓"
+    }
+  },
+  {
+    "id": 100,
+    "source_id": "7432021494",
+    "name": "喜多寶產後護理之家",
+    "address": "桃園市中壢區中央里8鄰中央東路88號",
+    "phone": "03-4278222",
+    "city": "桃園市",
+    "lat": 24.956043,
+    "lng": 121.226183,
+    "service_item": "產婦床 20 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市中壢區中央東路88號21樓、22樓"
+    }
+  },
+  {
+    "id": 101,
+    "source_id": "7432021565",
+    "name": "皇馨產後護理之家",
+    "address": "桃園市中壢區忠孝里3鄰元生二街190號",
+    "phone": "03-4620252",
+    "city": "桃園市",
+    "lat": 24.977577,
+    "lng": 121.253731,
+    "service_item": "產婦床 12 床 · 嬰兒床 14 床",
+    "extra_json": {
+      "postpartumBeds": 12,
+      "babyBeds": 14,
+      "infantBeds": 14,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市中壢區元生二街190號及元生三街168號3樓"
+    }
+  },
+  {
+    "id": 102,
+    "source_id": "7432021636",
+    "name": "迎新中壢館產後護理之家",
+    "address": "桃園市中壢區新明里16鄰中央西路二段198號",
+    "phone": "03-2812683",
+    "city": "桃園市",
+    "lat": 24.959852,
+    "lng": 121.21313,
+    "service_item": "產婦床 22 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 22,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "不合格",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "不合格",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "桃園市中壢區中央西路二段198號1-7層"
+    }
+  },
+  {
+    "id": 103,
+    "source_id": "7432021761",
+    "name": "金寶寶產後護理之家",
+    "address": "桃園市中壢區中建里12鄰中平路161號",
+    "phone": "03-422-6000",
+    "city": "桃園市",
+    "lat": 24.955815,
+    "lng": 121.222133,
+    "service_item": "產婦床 34 床 · 嬰兒床 38 床",
+    "extra_json": {
+      "postpartumBeds": 34,
+      "babyBeds": 38,
+      "infantBeds": 38,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市中壢區中平路161號1至7樓"
+    }
+  },
+  {
+    "id": 104,
+    "source_id": "7432021789",
+    "name": "茵格麗德產後護理之家",
+    "address": "桃園市中壢區五福里2鄰民族路56號",
+    "phone": "03-2810877",
+    "city": "桃園市",
+    "lat": 24.956081,
+    "lng": 121.214083,
+    "service_item": "產婦床 42 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 42,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市中壢區民族路56號4-11樓"
+    }
+  },
+  {
+    "id": 105,
+    "source_id": "7432051107",
+    "name": "昕悅產後護理之家",
+    "address": "桃園市蘆竹區南崁里22鄰南華一街168號",
+    "phone": "03-312-1112",
+    "city": "桃園市",
+    "lat": 25.043303,
+    "lng": 121.294689,
+    "service_item": "產婦床 6 床 · 嬰兒床 9 床",
+    "extra_json": {
+      "postpartumBeds": 6,
+      "babyBeds": 9,
+      "infantBeds": 9,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市蘆竹區南華一街168號5樓"
+    }
+  },
+  {
+    "id": 106,
+    "source_id": "7432051116",
+    "name": "昕悅二館產後護理之家",
+    "address": "桃園市蘆竹區南崁里22鄰南華一街168號",
+    "phone": "922246135",
+    "city": "桃園市",
+    "lat": 25.043303,
+    "lng": 121.294689,
+    "service_item": "產婦床 7 床 · 嬰兒床 9 床",
+    "extra_json": {
+      "postpartumBeds": 7,
+      "babyBeds": 9,
+      "infantBeds": 9,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市蘆竹區南華一街168號4樓"
+    }
+  },
+  {
+    "id": 107,
+    "source_id": "7432051143",
+    "name": "安媞產後護理之家",
+    "address": "桃園市蘆竹區興榮里1鄰桃園街88號",
+    "phone": "03-2128768",
+    "city": "桃園市",
+    "lat": 25.046144,
+    "lng": 121.291837,
+    "service_item": "產婦床 35 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 35,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市蘆竹區桃園街88號地下1樓、1樓、2樓、3樓"
+    }
+  },
+  {
+    "id": 108,
+    "source_id": "7432051161",
+    "name": "昕悅三館產後護理之家",
+    "address": "桃園市蘆竹區南崁里22鄰南華一街168號",
+    "phone": "03-3122856",
+    "city": "桃園市",
+    "lat": 25.043303,
+    "lng": 121.294689,
+    "service_item": "產婦床 11 床 · 嬰兒床 12 床",
+    "extra_json": {
+      "postpartumBeds": 11,
+      "babyBeds": 12,
+      "infantBeds": 12,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市蘆竹區南華一街168號6樓"
+    }
+  },
+  {
+    "id": 109,
+    "source_id": "7432070906",
+    "name": "拾玥集產後護理之家",
+    "address": "桃園市龜山區公西里14鄰復興一路199號",
+    "phone": "03-3286258",
+    "city": "桃園市",
+    "lat": 25.058558,
+    "lng": 121.366014,
+    "service_item": "產婦床 7 床 · 嬰兒床 8 床",
+    "extra_json": {
+      "postpartumBeds": 7,
+      "babyBeds": 8,
+      "infantBeds": 8,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市龜山區復興一路199號5樓"
+    }
+  },
+  {
+    "id": 110,
+    "source_id": "7432070924",
+    "name": "拾玥集二館產後護理之家",
+    "address": "桃園市龜山區公西里14鄰復興一路199號",
+    "phone": "03-3281775",
+    "city": "桃園市",
+    "lat": 25.058558,
+    "lng": 121.366014,
+    "service_item": "產婦床 7 床 · 嬰兒床 9 床",
+    "extra_json": {
+      "postpartumBeds": 7,
+      "babyBeds": 9,
+      "infantBeds": 9,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市龜山區復興一路199號6樓"
+    }
+  },
+  {
+    "id": 111,
+    "source_id": "7432070933",
+    "name": "媽媽餵林口產後護理之家",
+    "address": "桃園市龜山區復興一路199號",
+    "phone": "03-3281153",
+    "city": "桃園市",
+    "lat": 25.058558,
+    "lng": 121.366014,
+    "service_item": "產婦床 28 床 · 嬰兒床 34 床",
+    "extra_json": {
+      "postpartumBeds": 28,
+      "babyBeds": 34,
+      "infantBeds": 34,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市龜山區復興一路199號7-10樓"
+    }
+  },
+  {
+    "id": 112,
+    "source_id": "7432101184",
+    "name": "添喜產後護理之家",
+    "address": "桃園市平鎮區北勢里8鄰和平路196號",
+    "phone": "03-4590908",
+    "city": "桃園市",
+    "lat": 24.946193,
+    "lng": 121.219558,
+    "service_item": "產婦床 10 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市平鎮區和平路196號1-4樓"
+    }
+  },
+  {
+    "id": 113,
+    "source_id": "7432101193",
+    "name": "添福產後護理之家",
+    "address": "桃園市平鎮區北勢里8鄰和平路196號",
+    "phone": "03-4590908",
+    "city": "桃園市",
+    "lat": 24.946193,
+    "lng": 121.219558,
+    "service_item": "產婦床 11 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 11,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市平鎮區和平路196號4-7樓"
+    }
+  },
+  {
+    "id": 114,
+    "source_id": "7632101099",
+    "name": "秉坤婦幼醫院附設產後護理之家",
+    "address": "桃園市平鎮區義興里23鄰延平路二段129號",
+    "phone": "03-4025866",
+    "city": "桃園市",
+    "lat": 24.948173,
+    "lng": 121.211635,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "桃園市平鎮區129號"
+    }
+  },
+  {
+    "id": 115,
+    "source_id": "7312040535",
+    "name": "國泰竹教產後護理之家",
+    "address": "新竹市北區湳中里18鄰武陵路189號",
+    "phone": "03-5152669",
+    "city": "新竹市",
+    "lat": 24.82188,
+    "lng": 120.969147,
+    "service_item": "產婦床 40 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市北區武陵路189號6。7樓"
+    }
+  },
+  {
+    "id": 116,
+    "source_id": "7412010600",
+    "name": "北澤國際產後護理之家",
+    "address": "新竹市東區福德里15鄰林森路231號",
+    "phone": "03-5251308",
+    "city": "新竹市",
+    "lat": 24.798287,
+    "lng": 120.963289,
+    "service_item": "產婦床 20 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區福德里林森路231號6、7樓及233號6樓"
+    }
+  },
+  {
+    "id": 117,
+    "source_id": "7412010664",
+    "name": "儷生產後護理之家",
+    "address": "新竹市東區福德里15鄰林森路231號",
+    "phone": "03-5267168",
+    "city": "新竹市",
+    "lat": 24.798287,
+    "lng": 120.963289,
+    "service_item": "產婦床 18 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區福德里林森路231號5樓及林森路233號5樓"
+    }
+  },
+  {
+    "id": 118,
+    "source_id": "7412010673",
+    "name": "江婦產科診所附設產後護理之家",
+    "address": "新竹市東區三民里7鄰民族路125號",
+    "phone": "03-5353532",
+    "city": "新竹市",
+    "lat": 24.80835,
+    "lng": 120.977749,
+    "service_item": "產婦床 12 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 12,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區三民里民族路125號5樓、6樓"
+    }
+  },
+  {
+    "id": 119,
+    "source_id": "7412010708",
+    "name": "幸福玥產後護理之家",
+    "address": "新竹市東區埔頂里6鄰埔頂三路156號",
+    "phone": "03-6662022",
+    "city": "新竹市",
+    "lat": 24.792414,
+    "lng": 121.009017,
+    "service_item": "產婦床 28 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 28,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區埔頂里埔頂三路156號1樓及158號1-7樓"
+    }
+  },
+  {
+    "id": 120,
+    "source_id": "7412010762",
+    "name": "子玥產後護理之家",
+    "address": "新竹市東區埔頂里12鄰埔頂二路178號",
+    "phone": "03-6588628",
+    "city": "新竹市",
+    "lat": 24.793246,
+    "lng": 121.009555,
+    "service_item": "產婦床 27 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 27,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區埔頂里埔頂二路178號"
+    }
+  },
+  {
+    "id": 121,
+    "source_id": "7412010780",
+    "name": "馨天地產後護理之家",
+    "address": "新竹市東區復興里9鄰自由路97號",
+    "phone": "03-5319899",
+    "city": "新竹市",
+    "lat": 24.813559,
+    "lng": 120.980198,
+    "service_item": "產婦床 48 床 · 嬰兒床 50 床",
+    "extra_json": {
+      "postpartumBeds": 48,
+      "babyBeds": 50,
+      "infantBeds": 50,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區復興里自由路97號"
+    }
+  },
+  {
+    "id": 122,
+    "source_id": "7412010799",
+    "name": "有森產後護理之家",
+    "address": "新竹市東區親仁里2鄰文化街12號",
+    "phone": "03-6672099",
+    "city": "新竹市",
+    "lat": 24.806183,
+    "lng": 120.971275,
+    "service_item": "產婦床 20 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市東區親仁里文化街12號"
+    }
+  },
+  {
+    "id": 123,
+    "source_id": "7412010806",
+    "name": "宏偉產後護理之家",
+    "address": "新竹市東區中央路258號6樓之1及之2、7樓之1及之2、8樓之1及之2",
+    "phone": "03-5332098",
+    "city": "新竹市",
+    "lat": 24.809311,
+    "lng": 120.976175,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "新竹市東區中央路258號6樓之1及之2、7樓之1及之2、8樓之1及之2"
+    }
+  },
+  {
+    "id": 124,
+    "source_id": "7412040671",
+    "name": "安寶產後護理之家",
+    "address": "新竹市北區水田里15鄰水田街1號",
+    "phone": "03-5280588",
+    "city": "新竹市",
+    "lat": 24.811413,
+    "lng": 120.965245,
+    "service_item": "產婦床 32 床 · 嬰兒床 33 床",
+    "extra_json": {
+      "postpartumBeds": 32,
+      "babyBeds": 33,
+      "infantBeds": 33,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "新竹市北區水田里水田街1號5-9樓"
+    }
+  },
+  {
+    "id": 125,
+    "source_id": "7433051085",
+    "name": "佑康產後護理之家",
+    "address": "新竹縣竹北市鹿場里6鄰成功二街38號",
+    "phone": "03-6580388",
+    "city": "新竹縣",
+    "lat": 24.820039,
+    "lng": 121.023191,
+    "service_item": "產婦床 40 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市鹿場里4鄰成功二街38號"
+    }
+  },
+  {
+    "id": 126,
+    "source_id": "7433051209",
+    "name": "沁月產後護理之家",
+    "address": "新竹縣竹北市東興里35鄰光明六路東二段95號",
+    "phone": "03-6585566",
+    "city": "新竹縣",
+    "lat": 24.817867,
+    "lng": 121.031054,
+    "service_item": "產婦床 36 床 · 嬰兒床 36 床",
+    "extra_json": {
+      "postpartumBeds": 36,
+      "babyBeds": 36,
+      "infantBeds": 36,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市光明六路東二段95號"
+    }
+  },
+  {
+    "id": 127,
+    "source_id": "7433051254",
+    "name": "寶來產後護理之家",
+    "address": "新竹縣竹北市東平里25鄰六家五路二段66號",
+    "phone": "03-6685075",
+    "city": "新竹縣",
+    "lat": 24.804728,
+    "lng": 121.033646,
+    "service_item": "產婦床 45 床 · 嬰兒床 50 床",
+    "extra_json": {
+      "postpartumBeds": 45,
+      "babyBeds": 50,
+      "infantBeds": 50,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市六家五路二段66號"
+    }
+  },
+  {
+    "id": 128,
+    "source_id": "7433051281",
+    "name": "蓁馨產後護理之家",
+    "address": "新竹縣竹北市鹿場里18鄰文興路333號",
+    "phone": "03-6672099",
+    "city": "新竹縣",
+    "lat": 24.814105,
+    "lng": 121.022156,
+    "service_item": "產婦床 24 床 · 嬰兒床 24 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 24,
+      "infantBeds": 24,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市文興路333號6-9樓"
+    }
+  },
+  {
+    "id": 129,
+    "source_id": "7433051343",
+    "name": "育禾麗晶產後護理之家",
+    "address": "新竹縣竹北市中興里7鄰光明六路東二段346號",
+    "phone": "03-6675078",
+    "city": "新竹縣",
+    "lat": 24.812443,
+    "lng": 121.035062,
+    "service_item": "產婦床 40 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市光明六路東二段346號"
+    }
+  },
+  {
+    "id": 130,
+    "source_id": "7433051370",
+    "name": "儷生竹北產後護理之家",
+    "address": "新竹縣竹北市文化里6鄰光明一路306號",
+    "phone": "03-5587068",
+    "city": "新竹縣",
+    "lat": 24.830839,
+    "lng": 121.013592,
+    "service_item": "產婦床 25 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市光明一路306號"
+    }
+  },
+  {
+    "id": 131,
+    "source_id": "7433051405",
+    "name": "育禾產後護理之家",
+    "address": "新竹縣竹北市鹿場里22鄰莊敬南路188號",
+    "phone": "03-6688620",
+    "city": "新竹縣",
+    "lat": 24.815479,
+    "lng": 121.019375,
+    "service_item": "產婦床 29 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 29,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市莊敬南路188號3-4樓(代表號)"
+    }
+  },
+  {
+    "id": 132,
+    "source_id": "7433051423",
+    "name": "帝寶竹北產後護理之家",
+    "address": "新竹縣竹北市東平里17鄰嘉豐南路二段120號",
+    "phone": "36670099",
+    "city": "新竹縣",
+    "lat": 24.806007,
+    "lng": 121.030913,
+    "service_item": "產婦床 45 床 · 嬰兒床 49 床",
+    "extra_json": {
+      "postpartumBeds": 45,
+      "babyBeds": 49,
+      "infantBeds": 49,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "新竹縣竹北市嘉豐南路二段120號"
+    }
+  },
+  {
+    "id": 133,
+    "source_id": "7435040071",
+    "name": "蓁愛產後護理之家",
+    "address": "苗栗縣竹南鎮聖福里16鄰環市路三段222號",
+    "phone": "037-552980",
+    "city": "苗栗縣",
+    "lat": 24.691943,
+    "lng": 120.874984,
+    "service_item": "產婦床 28 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 28,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "苗栗縣竹南鎮環市路三段222號"
+    }
+  },
+  {
+    "id": 134,
+    "source_id": "7435040106",
+    "name": "旳蔓產後護理之家",
+    "address": "苗栗縣竹南鎮大埔里科專三路106號",
+    "phone": "037-587520",
+    "city": "苗栗縣",
+    "lat": 24.707388,
+    "lng": 120.904647,
+    "service_item": "產婦床 32 床 · 嬰兒床 36 床",
+    "extra_json": {
+      "postpartumBeds": 32,
+      "babyBeds": 36,
+      "infantBeds": 36,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "苗栗縣竹南鎮大埔里科專三路106號"
+    }
+  },
+  {
+    "id": 135,
+    "source_id": "7435050693",
+    "name": "尚順產後護理之家",
+    "address": "苗栗縣頭份市民族里7鄰中華路951號",
+    "phone": "037-667752",
+    "city": "苗栗縣",
+    "lat": 24.684671,
+    "lng": 120.90586,
+    "service_item": "產婦床 35 床 · 嬰兒床 36 床",
+    "extra_json": {
+      "postpartumBeds": 35,
+      "babyBeds": 36,
+      "infantBeds": 36,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "苗栗縣頭份市中華路951號9、10、11、12、13樓。"
+    }
+  },
+  {
+    "id": 136,
+    "source_id": "7435050737",
+    "name": "育生產後護理之家",
+    "address": "苗栗縣頭份市中興里10鄰大勇街39號",
+    "phone": "037-590217",
+    "city": "苗栗縣",
+    "lat": 24.694482,
+    "lng": 120.902032,
+    "service_item": "產婦床 30 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "苗栗縣頭份市蟠桃里5鄰大勇街39號"
+    }
+  },
+  {
+    "id": 137,
+    "source_id": "7103270012",
+    "name": "臺中榮民總醫院附設產後護理之家",
+    "address": "臺中市西屯區福聯里7鄰臺灣大道四段1650號",
+    "phone": "04-23593536",
+    "city": "臺中市",
+    "lat": 24.184298,
+    "lng": 120.604647,
+    "service_item": "產婦床 18 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西屯區臺灣大道四段1650號急診大樓7樓（稱6樓）"
+    }
+  },
+  {
+    "id": 138,
+    "source_id": "7303060047",
+    "name": "童綜合醫療社團法人附設產後護理之家",
+    "address": "臺中市梧棲區大庄里文華街295號",
+    "phone": "04-26581919分機4403",
+    "city": "臺中市",
+    "lat": 24.246552,
+    "lng": 120.540552,
+    "service_item": "產婦床 44 床 · 嬰兒床 46 床",
+    "extra_json": {
+      "postpartumBeds": 44,
+      "babyBeds": 46,
+      "infantBeds": 46,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "臺中市梧棲區大庄里文華街295號"
+    }
+  },
+  {
+    "id": 139,
+    "source_id": "7303150055",
+    "name": "林新醫療社團法人附設烏日林新產後護理之家",
+    "address": "臺中市烏日區榮泉里19鄰榮和路168號",
+    "phone": "0423388766-6583",
+    "city": "臺中市",
+    "lat": 24.109591,
+    "lng": 120.598042,
+    "service_item": "產婦床 15 床 · 嬰兒床 17 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 17,
+      "infantBeds": 17,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市烏日區榮和路168號5樓"
+    }
+  },
+  {
+    "id": 140,
+    "source_id": "7303290018",
+    "name": "臺中市立老人復健綜合醫院附設產後護理之家(委託財團法人中國醫藥大學興建經營)",
+    "address": "臺中市北屯區太原路三段1142號6-7樓",
+    "phone": "(04)24372626分機76171",
+    "city": "臺中市",
+    "lat": 24.16189,
+    "lng": 120.721773,
+    "service_item": "產婦床 19 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 19,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "臺中市北屯區太原路三段1142號6-7樓"
+    }
+  },
+  {
+    "id": 141,
+    "source_id": "7317070033",
+    "name": "林新醫療社團法人附設林新產後護理之家",
+    "address": "臺中市南屯區三和里31鄰惠中路三段36號",
+    "phone": "04-22586688",
+    "city": "臺中市",
+    "lat": 24.149037,
+    "lng": 120.640201,
+    "service_item": "產婦床 35 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 35,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市南屯區惠中路3段36號A、B棟5樓"
+    }
+  },
+  {
+    "id": 142,
+    "source_id": "7403010147",
+    "name": "優悅產後護理之家",
+    "address": "臺中市豐原區東勢里1鄰中山路438號",
+    "phone": "04-25268270",
+    "city": "臺中市",
+    "lat": 24.247729,
+    "lng": 120.715361,
+    "service_item": "產婦床 26 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 26,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市豐原區中山路438號2-5樓"
+    }
+  },
+  {
+    "id": 143,
+    "source_id": "7403050034",
+    "name": "欣悅產後護理之家",
+    "address": "臺中市沙鹿區南勢里10鄰鎮南路二段56號",
+    "phone": "426326789",
+    "city": "臺中市",
+    "lat": 24.218461,
+    "lng": 120.570378,
+    "service_item": "產婦床 38 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 38,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市沙鹿區南勢里10鄰鎮南路2段56號"
+    }
+  },
+  {
+    "id": 144,
+    "source_id": "7403050052",
+    "name": "藍田悅產後護理之家",
+    "address": "臺中市沙鹿區鹿寮里38鄰錦上街85號",
+    "phone": "04-26621666",
+    "city": "臺中市",
+    "lat": 24.249234,
+    "lng": 120.562924,
+    "service_item": "產婦床 16 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 16,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市沙鹿區鹿寮里錦上街85號"
+    }
+  },
+  {
+    "id": 145,
+    "source_id": "7403080014",
+    "name": "如意產後護理之家",
+    "address": "臺中市神岡區豐洲里27鄰豐原大道七段579號",
+    "phone": "04-25226650",
+    "city": "臺中市",
+    "lat": 24.260964,
+    "lng": 120.710247,
+    "service_item": "產婦床 37 床 · 嬰兒床 43 床",
+    "extra_json": {
+      "postpartumBeds": 37,
+      "babyBeds": 43,
+      "infantBeds": 43,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市神岡區豐原大道七段579號"
+    }
+  },
+  {
+    "id": 146,
+    "source_id": "7403190079",
+    "name": "欣賀產後護理之家",
+    "address": "臺中市太平區新高里16鄰立功路112號",
+    "phone": "04-23957765",
+    "city": "臺中市",
+    "lat": 24.152694,
+    "lng": 120.714332,
+    "service_item": "產婦床 35 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 35,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "不合格",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "不合格",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "臺中市太平區立功路112號1樓至5樓"
+    }
+  },
+  {
+    "id": 147,
+    "source_id": "7403200070",
+    "name": "禮悅產後護理之家",
+    "address": "臺中市大里區立德里31鄰立新二街85號",
+    "phone": "04-22752016",
+    "city": "臺中市",
+    "lat": 24.104122,
+    "lng": 120.697536,
+    "service_item": "產婦床 26 床 · 嬰兒床 28 床",
+    "extra_json": {
+      "postpartumBeds": 26,
+      "babyBeds": 28,
+      "infantBeds": 28,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市大里區立新二街85號1至7樓"
+    }
+  },
+  {
+    "id": 148,
+    "source_id": "7403230023",
+    "name": "臺安醫院附設產後護理之家",
+    "address": "臺中市東區東勢里13鄰進化路203號",
+    "phone": "23602000",
+    "city": "臺中市",
+    "lat": 24.148978,
+    "lng": 120.694075,
+    "service_item": "產婦床 16 床 · 嬰兒床 17 床",
+    "extra_json": {
+      "postpartumBeds": 16,
+      "babyBeds": 17,
+      "infantBeds": 17,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市東區進化路203號7樓"
+    }
+  },
+  {
+    "id": 149,
+    "source_id": "7403240047",
+    "name": "帝寶產後護理之家",
+    "address": "臺中市西區公平里2鄰忠明南路139號",
+    "phone": "04-23285888",
+    "city": "臺中市",
+    "lat": 24.151831,
+    "lng": 120.657535,
+    "service_item": "產婦床 68 床 · 嬰兒床 68 床",
+    "extra_json": {
+      "postpartumBeds": 68,
+      "babyBeds": 68,
+      "infantBeds": 68,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西區忠明南路139號(地下1、2樓；地上1至10樓；地上11樓部分範圍)"
+    }
+  },
+  {
+    "id": 150,
+    "source_id": "7403240109",
+    "name": "臻之月產後護理之家",
+    "address": "臺中市西區昇平里24鄰向上路一段95號",
+    "phone": "04-23011186",
+    "city": "臺中市",
+    "lat": 24.146574,
+    "lng": 120.663348,
+    "service_item": "產婦床 48 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 48,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西區向上路一段95號(地下1樓、4-7樓)"
+    }
+  },
+  {
+    "id": 151,
+    "source_id": "7403240145",
+    "name": "沁美產後護理之家",
+    "address": "臺中市西區忠明里22鄰健行路1049號",
+    "phone": "04-23225222",
+    "city": "臺中市",
+    "lat": 24.155767,
+    "lng": 120.663199,
+    "service_item": "產婦床 40 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 40,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西區健行路1049號8-9樓"
+    }
+  },
+  {
+    "id": 152,
+    "source_id": "7403240216",
+    "name": "愛兒麗產後護理之家-台中館",
+    "address": "臺中市西區忠明里2鄰美村路一段22號",
+    "phone": "04-23297789",
+    "city": "臺中市",
+    "lat": 24.154897,
+    "lng": 120.661447,
+    "service_item": "產婦床 29 床 · 嬰兒床 31 床",
+    "extra_json": {
+      "postpartumBeds": 29,
+      "babyBeds": 31,
+      "infantBeds": 31,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西區美村路1段22號9樓"
+    }
+  },
+  {
+    "id": 153,
+    "source_id": "7403240234",
+    "name": "幸福城堡產後護理之家台中館",
+    "address": "臺中市西區公民里29鄰五權路1之67號",
+    "phone": "04-23765835",
+    "city": "臺中市",
+    "lat": 24.137083,
+    "lng": 120.665496,
+    "service_item": "產婦床 22 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 22,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西區五權路1-67號4樓之1"
+    }
+  },
+  {
+    "id": 154,
+    "source_id": "7403250098",
+    "name": "環球台中產後護理之家",
+    "address": "臺中市南區福平里6鄰建國南路二段150巷15號",
+    "phone": "(04)2260-7555",
+    "city": "臺中市",
+    "lat": 24.127376,
+    "lng": 120.665083,
+    "service_item": "產婦床 52 床 · 嬰兒床 55 床",
+    "extra_json": {
+      "postpartumBeds": 52,
+      "babyBeds": 55,
+      "infantBeds": 55,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市南區建國南路二段150巷15號"
+    }
+  },
+  {
+    "id": 155,
+    "source_id": "7403260156",
+    "name": "蘊荷芳產後護理之家",
+    "address": "臺中市北區賴厝里2鄰太原路二段197號",
+    "phone": "04-22386816",
+    "city": "臺中市",
+    "lat": 24.165565,
+    "lng": 120.680764,
+    "service_item": "產婦床 23 床 · 嬰兒床 34 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 34,
+      "infantBeds": 34,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市北區太原路二段197號"
+    }
+  },
+  {
+    "id": 156,
+    "source_id": "7403260218",
+    "name": "麗馨產後護理之家",
+    "address": "臺中市北區新興里3鄰太平路75巷30號",
+    "phone": "04-22298000",
+    "city": "臺中市",
+    "lat": 24.146663,
+    "lng": 120.683418,
+    "service_item": "產婦床 47 床 · 嬰兒床 50 床",
+    "extra_json": {
+      "postpartumBeds": 47,
+      "babyBeds": 50,
+      "infantBeds": 50,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市北區太平路75巷30號"
+    }
+  },
+  {
+    "id": 157,
+    "source_id": "7403270107",
+    "name": "百悅產後護理之家",
+    "address": "臺中市西屯區龍潭里6鄰龍聖路100號",
+    "phone": "04-22550700",
+    "city": "臺中市",
+    "lat": 24.159787,
+    "lng": 120.631625,
+    "service_item": "產婦床 32 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 32,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西屯區龍聖路100號"
+    }
+  },
+  {
+    "id": 158,
+    "source_id": "7403270161",
+    "name": "澄清綜合醫院中港分院附設產後護理之家",
+    "address": "臺中市西屯區福林里2鄰福康路8號",
+    "phone": "04-24632846",
+    "city": "臺中市",
+    "lat": 24.183364,
+    "lng": 120.616924,
+    "service_item": "產婦床 37 床 · 嬰兒床 37 床",
+    "extra_json": {
+      "postpartumBeds": 37,
+      "babyBeds": 37,
+      "infantBeds": 37,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西屯區福康路8號9-10樓"
+    }
+  },
+  {
+    "id": 159,
+    "source_id": "7403270232",
+    "name": "必樂芙產後護理之家",
+    "address": "臺中市西屯區西安里2鄰烈美街268號",
+    "phone": "04-24516898",
+    "city": "臺中市",
+    "lat": 24.182784,
+    "lng": 120.642647,
+    "service_item": "產婦床 28 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 28,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西屯區烈美街268號2-6樓"
+    }
+  },
+  {
+    "id": 160,
+    "source_id": "7403270303",
+    "name": "禾馨台中產後護理之家",
+    "address": "臺中市西屯區安和路118之18號",
+    "phone": "04-23585333",
+    "city": "臺中市",
+    "lat": 24.17536,
+    "lng": 120.623054,
+    "service_item": "產婦床 30 床 · 嬰兒床 33 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 33,
+      "infantBeds": 33,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "臺中市西屯區安和路118之18號7-10樓"
+    }
+  },
+  {
+    "id": 161,
+    "source_id": "7403270312",
+    "name": "心月居產後護理之家",
+    "address": "臺中市西屯區中清路二段1357號",
+    "phone": "04-24265678",
+    "city": "臺中市",
+    "lat": 24.195857,
+    "lng": 120.657698,
+    "service_item": "產婦床 30 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市西屯區中清路二段1357號"
+    }
+  },
+  {
+    "id": 162,
+    "source_id": "7403280032",
+    "name": "媽媽咪亞產後護理之家",
+    "address": "臺中市南屯區大業里18鄰公益路二段60號",
+    "phone": "04-23197733#201",
+    "city": "臺中市",
+    "lat": 24.151008,
+    "lng": 120.651124,
+    "service_item": "產婦床 28 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 28,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市南屯區公益路2段60號"
+    }
+  },
+  {
+    "id": 163,
+    "source_id": "7403280121",
+    "name": "媽媽咪亞陽光館產後護理之家",
+    "address": "臺中市南屯區黎明里16鄰公益路二段808號",
+    "phone": "04-22517767",
+    "city": "臺中市",
+    "lat": 24.151389,
+    "lng": 120.629095,
+    "service_item": "產婦床 41 床 · 嬰兒床 45 床",
+    "extra_json": {
+      "postpartumBeds": 41,
+      "babyBeds": 45,
+      "infantBeds": 45,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市南屯區公益路二段808號(地下1-2樓、地上1-8樓)"
+    }
+  },
+  {
+    "id": 164,
+    "source_id": "7403280185",
+    "name": "順風產後護理之家",
+    "address": "臺中市南屯區永定里4鄰益昌一街99號",
+    "phone": "(04)23801542",
+    "city": "臺中市",
+    "lat": 24.138808,
+    "lng": 120.631992,
+    "service_item": "產婦床 46 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 46,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市南屯區益昌一街99號2-6樓、1樓(電梯)及B2F(倉庫)"
+    }
+  },
+  {
+    "id": 165,
+    "source_id": "7403290190",
+    "name": "安馨產後護理之家",
+    "address": "臺中市北屯區三光里8鄰昌平路一段30之6號",
+    "phone": "04-22347057",
+    "city": "臺中市",
+    "lat": 24.166647,
+    "lng": 120.694164,
+    "service_item": "產婦床 49 床 · 嬰兒床 49 床",
+    "extra_json": {
+      "postpartumBeds": 49,
+      "babyBeds": 49,
+      "infantBeds": 49,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市北屯區昌平路一段30-6號"
+    }
+  },
+  {
+    "id": 166,
+    "source_id": "7403290252",
+    "name": "幸福月產後護理之家",
+    "address": "臺中市北屯區?子里21鄰太和東街196號",
+    "phone": "(04)24377985、0979-256738",
+    "city": "臺中市",
+    "lat": 24.166126,
+    "lng": 120.726384,
+    "service_item": "產婦床 33 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 33,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市北屯區太和東街196號"
+    }
+  },
+  {
+    "id": 167,
+    "source_id": "7417021158",
+    "name": "優質產後護理之家",
+    "address": "臺中市東區東勢里12鄰精武路132號",
+    "phone": "04-23602211",
+    "city": "臺中市",
+    "lat": 24.148146,
+    "lng": 120.692813,
+    "service_item": "產婦床 31 床 · 嬰兒床 31 床",
+    "extra_json": {
+      "postpartumBeds": 31,
+      "babyBeds": 31,
+      "infantBeds": 31,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市東區精武路132號2~6樓"
+    }
+  },
+  {
+    "id": 168,
+    "source_id": "7617020520",
+    "name": "中國醫藥大學附設醫院台中東區分院附設產後護理之家",
+    "address": "臺中市東區旱溪里19鄰自由路三段296號",
+    "phone": "04-22121058",
+    "city": "臺中市",
+    "lat": 24.142551,
+    "lng": 120.694796,
+    "service_item": "產婦床 18 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺中市東區自由路3段296號9~10樓"
+    }
+  },
+  {
+    "id": 169,
+    "source_id": "7237010013",
+    "name": "彰化基督教醫療財團法人附設華仁愛產後護理之家",
+    "address": "彰化縣彰化市建寶里13鄰建寶街20號",
+    "phone": "7238595-8465",
+    "city": "彰化縣",
+    "lat": 24.069072,
+    "lng": 120.545382,
+    "service_item": "產婦床 52 床 · 嬰兒床 54 床",
+    "extra_json": {
+      "postpartumBeds": 52,
+      "babyBeds": 54,
+      "infantBeds": 54,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣彰化市建寶街20號5-7樓"
+    }
+  },
+  {
+    "id": 170,
+    "source_id": "7437010651",
+    "name": "成美醫院附設產後護理之家",
+    "address": "彰化縣彰化市信義里12鄰三民路56號",
+    "phone": "7273127-2405",
+    "city": "彰化縣",
+    "lat": 24.08315,
+    "lng": 120.540396,
+    "service_item": "產婦床 33 床 · 嬰兒床 33 床",
+    "extra_json": {
+      "postpartumBeds": 33,
+      "babyBeds": 33,
+      "infantBeds": 33,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣彰化市三民路56號7-9樓"
+    }
+  },
+  {
+    "id": 171,
+    "source_id": "7437010866",
+    "name": "元昕產後護理之家",
+    "address": "彰化縣彰化市中正里13鄰中正路一段345號",
+    "phone": "7285569",
+    "city": "彰化縣",
+    "lat": 24.08293,
+    "lng": 120.544668,
+    "service_item": "產婦床 20 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣彰化市中正路一段345號6.7.8樓"
+    }
+  },
+  {
+    "id": 172,
+    "source_id": "7437010875",
+    "name": "喜悅產後護理之家二館",
+    "address": "彰化縣彰化市文化里5鄰中民街33號",
+    "phone": "04-7223200",
+    "city": "彰化縣",
+    "lat": 24.085346,
+    "lng": 120.54714,
+    "service_item": "產婦床 22 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 22,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣彰化市中民街33號"
+    }
+  },
+  {
+    "id": 173,
+    "source_id": "7437021127",
+    "name": "秀傳產後護理之家",
+    "address": "彰化縣鹿港鎮東石里25鄰鹿工路1之6號",
+    "phone": "7256166-88916",
+    "city": "彰化縣",
+    "lat": 24.076281,
+    "lng": 120.413645,
+    "service_item": "產婦床 30 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣鹿港鎮鹿工路1-6號"
+    }
+  },
+  {
+    "id": 174,
+    "source_id": "7437051081",
+    "name": "皓生產後護理之家",
+    "address": "彰化縣員林市中正里22鄰三民東街15號",
+    "phone": "8379560-1111",
+    "city": "彰化縣",
+    "lat": 23.959122,
+    "lng": 120.575609,
+    "service_item": "產婦床 20 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣員林市三民東街15號"
+    }
+  },
+  {
+    "id": 175,
+    "source_id": "7437051170",
+    "name": "沁月產後護理之家",
+    "address": "彰化縣員林市仁美里19鄰靜修東路33號",
+    "phone": "8361182",
+    "city": "彰化縣",
+    "lat": 23.963184,
+    "lng": 120.575247,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣員林市靜修東路33號5、6、7樓"
+    }
+  },
+  {
+    "id": 176,
+    "source_id": "7437051223",
+    "name": "天馨產後護理之家",
+    "address": "彰化縣員林市新生里4鄰新義街52號",
+    "phone": "04-8338600",
+    "city": "彰化縣",
+    "lat": 23.95661,
+    "lng": 120.567841,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "彰化縣員林市新義街52號2-5樓"
+    }
+  },
+  {
+    "id": 177,
+    "source_id": "7239030013",
+    "name": "天主教若瑟醫療財團法人附設若瑟產後護理之家",
+    "address": "雲林縣虎尾鎮新興里16鄰民權路2號",
+    "phone": "(05)63373633",
+    "city": "雲林縣",
+    "lat": 23.708197,
+    "lng": 120.437309,
+    "service_item": "產婦床 21 床 · 嬰兒床 24 床",
+    "extra_json": {
+      "postpartumBeds": 21,
+      "babyBeds": 24,
+      "infantBeds": 24,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "雲林縣虎尾鎮新興里民權路2號5樓"
+    }
+  },
+  {
+    "id": 178,
+    "source_id": "7439031078",
+    "name": "沐綿產後護理之家",
+    "address": "雲林縣虎尾鎮西安里26鄰五間厝31之7號",
+    "phone": "05-6365566",
+    "city": "雲林縣",
+    "lat": 23.698765,
+    "lng": 120.429469,
+    "service_item": "產婦床 25 床 · 嬰兒床 26 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 26,
+      "infantBeds": 26,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "雲林縣虎尾鎮西安里26鄰五間厝31-7號"
+    }
+  },
+  {
+    "id": 179,
+    "source_id": "7222010029",
+    "name": "戴德森醫療財團法人附設嘉基產後護理之家",
+    "address": "嘉義市東區中庄里14鄰忠孝路539號",
+    "phone": "05-2765041#6345",
+    "city": "嘉義市",
+    "lat": 23.4994,
+    "lng": 120.45005,
+    "service_item": "產婦床 37 床 · 嬰兒床 40 床",
+    "extra_json": {
+      "postpartumBeds": 37,
+      "babyBeds": 40,
+      "infantBeds": 40,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義市東區保健街100號3樓"
+    }
+  },
+  {
+    "id": 180,
+    "source_id": "7422011299",
+    "name": "康寶產後護理之家",
+    "address": "嘉義市東區華南里5鄰民族路106號",
+    "phone": "2779393",
+    "city": "嘉義市",
+    "lat": 23.476949,
+    "lng": 120.45907,
+    "service_item": "產婦床 10 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義市東區民族路106號"
+    }
+  },
+  {
+    "id": 181,
+    "source_id": "7422021259",
+    "name": "天馨經典產後護理之家",
+    "address": "嘉義市西區美源里5鄰興業西路89號",
+    "phone": "2867272*500",
+    "city": "嘉義市",
+    "lat": 23.46824,
+    "lng": 120.44426,
+    "service_item": "產婦床 13 床 · 嬰兒床 13 床",
+    "extra_json": {
+      "postpartumBeds": 13,
+      "babyBeds": 13,
+      "infantBeds": 13,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義市西區興業西路89號5樓"
+    }
+  },
+  {
+    "id": 182,
+    "source_id": "7422021320",
+    "name": "嘉安產後護理之家",
+    "address": "嘉義市西區竹圍里8鄰友愛路390號",
+    "phone": "05-2335515",
+    "city": "嘉義市",
+    "lat": 23.486732,
+    "lng": 120.433698,
+    "service_item": "產婦床 10 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義市西區友愛路390號5樓"
+    }
+  },
+  {
+    "id": 183,
+    "source_id": "7422021400",
+    "name": "米蘭產後護理之家",
+    "address": "嘉義市西區雙竹街128號1~3樓",
+    "phone": "05-2320286",
+    "city": "嘉義市",
+    "lat": 23.483608,
+    "lng": 120.436954,
+    "service_item": "產婦床 12 床 · 嬰兒床 14 床",
+    "extra_json": {
+      "postpartumBeds": 12,
+      "babyBeds": 14,
+      "infantBeds": 14,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "嘉義市西區雙竹街128號1~3樓"
+    }
+  },
+  {
+    "id": 184,
+    "source_id": "7722011053",
+    "name": "天主教中華聖母修女會醫療財團法人附設天主教聖馬爾定產後護理之家",
+    "address": "嘉義市東區蘭潭里13鄰大雅路二段565號",
+    "phone": "2756000",
+    "city": "嘉義市",
+    "lat": 23.47568,
+    "lng": 120.4671,
+    "service_item": "產婦床 42 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 42,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義市東區大雅路二段五六五號"
+    }
+  },
+  {
+    "id": 185,
+    "source_id": "7240030010",
+    "name": "佛教慈濟醫療財團法人附設大林慈濟產後護理之家",
+    "address": "嘉義縣大林鎮平林里7鄰民生路2號",
+    "phone": "52648012",
+    "city": "嘉義縣",
+    "lat": 23.596312,
+    "lng": 120.457449,
+    "service_item": "產婦床 15 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義縣大林鎮民生路2號"
+    }
+  },
+  {
+    "id": 186,
+    "source_id": "7340010029",
+    "name": "長庚醫療財團法人附設嘉義長庚產後護理之家",
+    "address": "嘉義縣朴子市仁和里13鄰長庚一路6號",
+    "phone": "05-3621000#3343",
+    "city": "嘉義縣",
+    "lat": 23.464805,
+    "lng": 120.284043,
+    "service_item": "產婦床 22 床 · 嬰兒床 24 床",
+    "extra_json": {
+      "postpartumBeds": 22,
+      "babyBeds": 24,
+      "infantBeds": 24,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "嘉義縣朴子市長庚一路6號"
+    }
+  },
+  {
+    "id": 187,
+    "source_id": "7205310011",
+    "name": "奇美醫療財團法人附設奇美產後護理之家",
+    "address": "臺南市永康區甲頂里3鄰甲頂路120號",
+    "phone": "06-2812811",
+    "city": "臺南市",
+    "lat": 23.020056,
+    "lng": 120.219249,
+    "service_item": "產婦床 29 床 · 嬰兒床 34 床",
+    "extra_json": {
+      "postpartumBeds": 29,
+      "babyBeds": 34,
+      "infantBeds": 34,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市永康區甲頂路120號"
+    }
+  },
+  {
+    "id": 188,
+    "source_id": "7305370073",
+    "name": "臺南市立安南醫院附設產後護理之家",
+    "address": "臺南市安南區州南里13鄰長和路二段66號",
+    "phone": "06-3353111",
+    "city": "臺南市",
+    "lat": 23.064232,
+    "lng": 120.223192,
+    "service_item": "產婦床 20 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市安南區長和路2段66號第一醫療大樓5樓"
+    }
+  },
+  {
+    "id": 189,
+    "source_id": "7405010163",
+    "name": "咪寶產後護理之家",
+    "address": "臺南市新營區民生里6鄰民生路52號",
+    "phone": "06-6379888",
+    "city": "臺南市",
+    "lat": 23.306329,
+    "lng": 120.309014,
+    "service_item": "產婦床 39 床 · 嬰兒床 41 床",
+    "extra_json": {
+      "postpartumBeds": 39,
+      "babyBeds": 41,
+      "infantBeds": 41,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市新營區民生路52號3~7樓"
+    }
+  },
+  {
+    "id": 190,
+    "source_id": "7405040027",
+    "name": "快樂媽媽產後護理之家",
+    "address": "臺南市麻豆區東角里12鄰國中街25號",
+    "phone": "06-5715207",
+    "city": "臺南市",
+    "lat": 23.182507,
+    "lng": 120.257597,
+    "service_item": "產婦床 29 床 · 嬰兒床 31 床",
+    "extra_json": {
+      "postpartumBeds": 29,
+      "babyBeds": 31,
+      "infantBeds": 31,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市麻豆區國中街25號1-4樓"
+    }
+  },
+  {
+    "id": 191,
+    "source_id": "7405070043",
+    "name": "太和良月產後護理之家",
+    "address": "臺南市善化區東關里5鄰中山路351號之1",
+    "phone": "06-5818812",
+    "city": "臺南市",
+    "lat": 23.132055,
+    "lng": 120.293346,
+    "service_item": "產婦床 20 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市善化區東關里中山路351-1號1-6樓"
+    }
+  },
+  {
+    "id": 192,
+    "source_id": "7405280101",
+    "name": "祐安產後護理之家",
+    "address": "臺南市歸仁區中山路二段24號",
+    "phone": "06-2306250",
+    "city": "臺南市",
+    "lat": 22.966971,
+    "lng": 120.293263,
+    "service_item": "產婦床 15 床 · 嬰兒床 15 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 15,
+      "infantBeds": 15,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市歸仁區中山路二段24號1-4樓"
+    }
+  },
+  {
+    "id": 193,
+    "source_id": "7405310248",
+    "name": "珍璽悅產後護理之家",
+    "address": "臺南市永康區勝利里16鄰中華路247號",
+    "phone": "06-3127919",
+    "city": "臺南市",
+    "lat": 23.005787,
+    "lng": 120.235149,
+    "service_item": "產婦床 20 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市永康區勝利里中華路247號3~5樓"
+    }
+  },
+  {
+    "id": 194,
+    "source_id": "7405310257",
+    "name": "樂添產後護理之家",
+    "address": "臺南市永康區尚頂里14鄰中正南路248號",
+    "phone": "06-2541555",
+    "city": "臺南市",
+    "lat": 23.027404,
+    "lng": 120.222622,
+    "service_item": "產婦床 18 床 · 嬰兒床 18 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 18,
+      "infantBeds": 18,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市永康區中正南路248號(1樓-7樓)"
+    }
+  },
+  {
+    "id": 195,
+    "source_id": "7405320075",
+    "name": "陳祥君產後護理之家",
+    "address": "臺南市東區崇信里1鄰東門路二段338號",
+    "phone": "06-3351808",
+    "city": "臺南市",
+    "lat": 22.982948,
+    "lng": 120.226688,
+    "service_item": "產婦床 23 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市東區東門路2段338號1-3樓、340號1-4樓"
+    }
+  },
+  {
+    "id": 196,
+    "source_id": "7405320173",
+    "name": "安欣產後護理之家",
+    "address": "臺南市東區崇信里8鄰中華東路三段46號",
+    "phone": "06-2894488",
+    "city": "臺南市",
+    "lat": 22.980212,
+    "lng": 120.228326,
+    "service_item": "產婦床 6 床 · 嬰兒床 6 床",
+    "extra_json": {
+      "postpartumBeds": 6,
+      "babyBeds": 6,
+      "infantBeds": 6,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市東區中華東路三段46號5樓"
+    }
+  },
+  {
+    "id": 197,
+    "source_id": "7405320191",
+    "name": "貝詩特產後護理之家",
+    "address": "臺南市東區中西里12鄰長榮路二段70號",
+    "phone": "06-5119876",
+    "city": "臺南市",
+    "lat": 22.988254,
+    "lng": 120.219623,
+    "service_item": "產婦床 25 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市東區長榮路二段70號1-4樓"
+    }
+  },
+  {
+    "id": 198,
+    "source_id": "7405340111",
+    "name": "國泰台南產後護理之家",
+    "address": "臺南市中西區小西門里15鄰永福路一段185號",
+    "phone": "06-2150599",
+    "city": "臺南市",
+    "lat": 22.986588,
+    "lng": 120.199994,
+    "service_item": "產婦床 28 床 · 嬰兒床 32 床",
+    "extra_json": {
+      "postpartumBeds": 28,
+      "babyBeds": 32,
+      "infantBeds": 32,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市中西區永福路1段185號3樓"
+    }
+  },
+  {
+    "id": 199,
+    "source_id": "7405340193",
+    "name": "幸悅產後護理之家",
+    "address": "臺南市中西區藥王里5鄰民生路二段166號",
+    "phone": "06-2271188",
+    "city": "臺南市",
+    "lat": 22.99607,
+    "lng": 120.194678,
+    "service_item": "產婦床 30 床 · 嬰兒床 33 床",
+    "extra_json": {
+      "postpartumBeds": 30,
+      "babyBeds": 33,
+      "infantBeds": 33,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市中西區民生路二段166號3-7樓"
+    }
+  },
+  {
+    "id": 200,
+    "source_id": "7405350073",
+    "name": "安萱產後護理之家",
+    "address": "臺南市北區北華里14鄰西門路三段80號",
+    "phone": "06-2200052",
+    "city": "臺南市",
+    "lat": 23.001121,
+    "lng": 120.202544,
+    "service_item": "產婦床 11 床 · 嬰兒床 13 床",
+    "extra_json": {
+      "postpartumBeds": 11,
+      "babyBeds": 13,
+      "infantBeds": 13,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市北區西門路三段80號2-4樓"
+    }
+  },
+  {
+    "id": 201,
+    "source_id": "7405350082",
+    "name": "婞芙產後護理之家",
+    "address": "臺南市北區福德里10鄰文成一路208號",
+    "phone": "06-2515657",
+    "city": "臺南市",
+    "lat": 23.014066,
+    "lng": 120.202744,
+    "service_item": "產婦床 34 床 · 嬰兒床 34 床",
+    "extra_json": {
+      "postpartumBeds": 34,
+      "babyBeds": 34,
+      "infantBeds": 34,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市北區文成一路208號"
+    }
+  },
+  {
+    "id": 202,
+    "source_id": "7405350108",
+    "name": "安寶產後護理之家",
+    "address": "臺南市北區振興里1鄰長榮路四段170號",
+    "phone": "06-2091776",
+    "city": "臺南市",
+    "lat": 23.00705,
+    "lng": 120.221593,
+    "service_item": "產婦床 29 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 29,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市北區長榮路四段170號2樓-8樓"
+    }
+  },
+  {
+    "id": 203,
+    "source_id": "7405350117",
+    "name": "沐玥產後護理之家",
+    "address": "臺南市北區文成里13鄰立賢路二段101號",
+    "phone": "62588030",
+    "city": "臺南市",
+    "lat": 23.008797,
+    "lng": 120.196635,
+    "service_item": "產婦床 21 床 · 嬰兒床 21 床",
+    "extra_json": {
+      "postpartumBeds": 21,
+      "babyBeds": 21,
+      "infantBeds": 21,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市北區立賢路二段101號(1樓-5樓)"
+    }
+  },
+  {
+    "id": 204,
+    "source_id": "7405350153",
+    "name": "樂添西門館產後護理之家",
+    "address": "臺南市北區福德里6鄰西門路四段347號",
+    "phone": "06-2518878",
+    "city": "臺南市",
+    "lat": 23.015353,
+    "lng": 120.209923,
+    "service_item": "產婦床 23 床 · 嬰兒床 23 床",
+    "extra_json": {
+      "postpartumBeds": 23,
+      "babyBeds": 23,
+      "infantBeds": 23,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市北區福德里西門路四段347號1-5樓"
+    }
+  },
+  {
+    "id": 205,
+    "source_id": "7405380053",
+    "name": "康乃心產後護理之家",
+    "address": "臺南市安平區華平里12鄰華平路465號",
+    "phone": "06-2936888",
+    "city": "臺南市",
+    "lat": 22.992387,
+    "lng": 120.175112,
+    "service_item": "產婦床 10 床 · 嬰兒床 14 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 14,
+      "infantBeds": 14,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市安平區華平里華平路465號3-4樓"
+    }
+  },
+  {
+    "id": 206,
+    "source_id": "7405380071",
+    "name": "璽樂產後護理之家",
+    "address": "臺南市安平區國平里15鄰華平路77號",
+    "phone": "06-2931677",
+    "city": "臺南市",
+    "lat": 22.986159,
+    "lng": 120.174212,
+    "service_item": "產婦床 43 床 · 嬰兒床 48 床",
+    "extra_json": {
+      "postpartumBeds": 43,
+      "babyBeds": 48,
+      "infantBeds": 48,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市安平區華平路77號1-4樓"
+    }
+  },
+  {
+    "id": 207,
+    "source_id": "7421011437",
+    "name": "吳峻賢婦產科診所附設產後護理之家",
+    "address": "臺南市東區東光里6鄰東光路一段53巷1號",
+    "phone": "06-2085511",
+    "city": "臺南市",
+    "lat": 22.992418,
+    "lng": 120.230763,
+    "service_item": "產婦床 18 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市東區東光路1段53巷1號1-3樓"
+    }
+  },
+  {
+    "id": 208,
+    "source_id": "7421041220",
+    "name": "聖帝諾產後護理之家",
+    "address": "臺南市北區成德里6鄰海安路三段338巷17號",
+    "phone": "06-2835888",
+    "city": "臺南市",
+    "lat": 23.009088,
+    "lng": 120.200688,
+    "service_item": "產婦床 27 床 · 嬰兒床 30 床",
+    "extra_json": {
+      "postpartumBeds": 27,
+      "babyBeds": 30,
+      "infantBeds": 30,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "臺南市北區海安路3段338巷17號"
+    }
+  },
+  {
+    "id": 209,
+    "source_id": "7107350020",
+    "name": "高雄榮民總醫院附設產後護理之家",
+    "address": "高雄市左營區福山里19鄰大中一路386號",
+    "phone": "07-3422121#8093",
+    "city": "高雄市",
+    "lat": 22.677696,
+    "lng": 120.322256,
+    "service_item": "產婦床 15 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市左營區大中一路386號9樓之3"
+    }
+  },
+  {
+    "id": 210,
+    "source_id": "7202080516",
+    "name": "天主教聖功醫療財團法人附設聖功產後護理之家",
+    "address": "高雄市苓雅區民主里3鄰建國一路352號",
+    "phone": "2238153",
+    "city": "高雄市",
+    "lat": 22.633118,
+    "lng": 120.323927,
+    "service_item": "產婦床 20 床 · 嬰兒床 22 床",
+    "extra_json": {
+      "postpartumBeds": 20,
+      "babyBeds": 22,
+      "infantBeds": 22,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市苓雅區建國一路352號6樓"
+    }
+  },
+  {
+    "id": 211,
+    "source_id": "7207120024",
+    "name": "義大醫療財團法人附設義大產後護理之家",
+    "address": "高雄市燕巢區角宿里20鄰義大路21號",
+    "phone": "6150011-3671",
+    "city": "高雄市",
+    "lat": 22.765915,
+    "lng": 120.365844,
+    "service_item": "產婦床 52 床 · 嬰兒床 58 床",
+    "extra_json": {
+      "postpartumBeds": 52,
+      "babyBeds": 58,
+      "infantBeds": 58,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市燕巢區角宿里義大路21號11樓之2"
+    }
+  },
+  {
+    "id": 212,
+    "source_id": "7207320015",
+    "name": "義大醫療財團法人附設義大貝思諾產後護理之家",
+    "address": "高雄市三民區灣愛里25鄰大昌一路420號",
+    "phone": "75596188",
+    "city": "高雄市",
+    "lat": 22.658928,
+    "lng": 120.317393,
+    "service_item": "產婦床 78 床 · 嬰兒床 82 床",
+    "extra_json": {
+      "postpartumBeds": 78,
+      "babyBeds": 82,
+      "infantBeds": 82,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市三民區大昌一路305.309號11-14樓"
+    }
+  },
+  {
+    "id": 213,
+    "source_id": "7307350015",
+    "name": "阮綜合醫療社團法人附設阮綜合產後護理之家",
+    "address": "高雄市苓雅區苓中里5鄰四維四路262號",
+    "phone": "3351121轉3060",
+    "city": "高雄市",
+    "lat": 22.614753,
+    "lng": 120.292454,
+    "service_item": "產婦床 7 床 · 嬰兒床 7 床",
+    "extra_json": {
+      "postpartumBeds": 7,
+      "babyBeds": 7,
+      "infantBeds": 7,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市苓雅區四維四路81、83號1-5樓"
+    }
+  },
+  {
+    "id": 214,
+    "source_id": "7342100017",
+    "name": "長庚醫療財團法人附設高雄產後護理之家",
+    "address": "高雄市鳥松區大埤路125號13樓",
+    "phone": "7317123-6066",
+    "city": "高雄市",
+    "lat": 22.649695,
+    "lng": 120.354099,
+    "service_item": "產婦床 24 床 · 嬰兒床 24 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 24,
+      "infantBeds": 24,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市鳥松區大埤路125號13樓"
+    }
+  },
+  {
+    "id": 215,
+    "source_id": "7407290016",
+    "name": "生安婦產小兒科醫院附設產後護理之家",
+    "address": "高雄市鼓山區龍水里5鄰美術東二路177號",
+    "phone": "5223138",
+    "city": "高雄市",
+    "lat": 22.662316,
+    "lng": 120.28831,
+    "service_item": "產婦床 11 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 11,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市鼓山區美術東二路177號12樓"
+    }
+  },
+  {
+    "id": 216,
+    "source_id": "7407290098",
+    "name": "四季莊園產後護理之家",
+    "address": "高雄市鼓山區逢甲路1號3-9樓",
+    "phone": "07-5851888",
+    "city": "高雄市",
+    "lat": 22.662966,
+    "lng": 120.284378,
+    "service_item": "產婦床 66 床 · 嬰兒床 74 床",
+    "extra_json": {
+      "postpartumBeds": 66,
+      "babyBeds": 74,
+      "infantBeds": 74,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市鼓山區逢甲路1號3-9樓"
+    }
+  },
+  {
+    "id": 217,
+    "source_id": "7407290105",
+    "name": "柏義產後護理之家",
+    "address": "高雄市鼓山區文信路203號3樓、4樓、5樓、6樓、7樓、8樓、9樓、10樓",
+    "phone": "07-5508888-1033",
+    "city": "高雄市",
+    "lat": 22.664421,
+    "lng": 120.301955,
+    "service_item": "產婦床 64 床 · 嬰兒床 50 床",
+    "extra_json": {
+      "postpartumBeds": 64,
+      "babyBeds": 50,
+      "infantBeds": 50,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市鼓山區文信路203號3樓、4樓、5樓、6樓、7樓、8樓、9樓、10樓"
+    }
+  },
+  {
+    "id": 218,
+    "source_id": "7407300071",
+    "name": "博愛蕙馨醫院附設產後護理之家",
+    "address": "高雄市左營區新上里41鄰博愛二路20號",
+    "phone": "07-8628880-1088",
+    "city": "高雄市",
+    "lat": 22.656832,
+    "lng": 120.303458,
+    "service_item": "產婦床 18 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 18,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市左營區博愛二路20號8至10樓"
+    }
+  },
+  {
+    "id": 219,
+    "source_id": "7407300179",
+    "name": "鈞安婦幼聯合醫院附設產後護理之家",
+    "address": "高雄市左營區新光里9鄰華夏路609號",
+    "phone": "3480088",
+    "city": "高雄市",
+    "lat": 22.676475,
+    "lng": 120.300692,
+    "service_item": "產婦床 21 床 · 嬰兒床 21 床",
+    "extra_json": {
+      "postpartumBeds": 21,
+      "babyBeds": 21,
+      "infantBeds": 21,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市左營區華夏路609號7樓-8樓.611號1樓.6樓"
+    }
+  },
+  {
+    "id": 220,
+    "source_id": "7407300188",
+    "name": "樂沐產後護理之家",
+    "address": "高雄市左營區民族一路920號",
+    "phone": "07-3508758",
+    "city": "高雄市",
+    "lat": 22.671392,
+    "lng": 120.31793,
+    "service_item": "產婦床 15 床 · 嬰兒床 17 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 17,
+      "infantBeds": 17,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市左營區民族一路920號"
+    }
+  },
+  {
+    "id": 221,
+    "source_id": "7407300197",
+    "name": "柏仁產後護理之家",
+    "address": "高雄市左營區博愛二路364號",
+    "phone": "075565111*2250",
+    "city": "高雄市",
+    "lat": 22.665161,
+    "lng": 120.303531,
+    "service_item": "產婦床 0 床 · 嬰兒床 0 床",
+    "extra_json": {
+      "postpartumBeds": 0,
+      "babyBeds": 0,
+      "infantBeds": 0,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市左營區博愛二路364號2-4樓"
+    }
+  },
+  {
+    "id": 222,
+    "source_id": "7407300204",
+    "name": "河堤麗緻產後護理之家",
+    "address": "高雄市左營區文守路43巷52號1樓、2樓、3樓、4樓",
+    "phone": "07-9608880#1301",
+    "city": "高雄市",
+    "lat": 22.670348,
+    "lng": 120.314381,
+    "service_item": "產婦床 25 床 · 嬰兒床 25 床",
+    "extra_json": {
+      "postpartumBeds": 25,
+      "babyBeds": 25,
+      "infantBeds": 25,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市左營區文守路43巷52號1樓、2樓、3樓、4樓"
+    }
+  },
+  {
+    "id": 223,
+    "source_id": "7407310193",
+    "name": "高大美杏生醫院附設產後護理之家",
+    "address": "高雄市楠梓區大學東路1號",
+    "phone": "07-3658885",
+    "city": "高雄市",
+    "lat": 22.724997,
+    "lng": 120.289635,
+    "service_item": "產婦床 10 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市楠梓區大學東路1號4樓"
+    }
+  },
+  {
+    "id": 224,
+    "source_id": "7407320206",
+    "name": "四季台安醫院附設產後護理之家",
+    "address": "高雄市三民區灣興里1鄰聯興路145巷1號",
+    "phone": "07-3983000分機5516",
+    "city": "高雄市",
+    "lat": 22.659096,
+    "lng": 120.313751,
+    "service_item": "產婦床 10 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "不合格",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "不合格",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市三民區聯興路145巷1號2、4樓"
+    }
+  },
+  {
+    "id": 225,
+    "source_id": "7407320368",
+    "name": "康馨產後護理之家",
+    "address": "高雄市三民區民族一路880號",
+    "phone": "07-3462802",
+    "city": "高雄市",
+    "lat": 22.668545,
+    "lng": 120.317459,
+    "service_item": "產婦床 0 床 · 嬰兒床 0 床",
+    "extra_json": {
+      "postpartumBeds": 0,
+      "babyBeds": 0,
+      "infantBeds": 0,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市三民區民族一路880號B1、1樓、2樓、4樓、5樓、6樓、7樓、8樓、9樓"
+    }
+  },
+  {
+    "id": 226,
+    "source_id": "7407330042",
+    "name": "知欣產後護理之家",
+    "address": "高雄市新興區自立二路16號",
+    "phone": "07-2010520",
+    "city": "高雄市",
+    "lat": 22.629221,
+    "lng": 120.299834,
+    "service_item": "產婦床 0 床 · 嬰兒床 0 床",
+    "extra_json": {
+      "postpartumBeds": 0,
+      "babyBeds": 0,
+      "infantBeds": 0,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市新興區自立二路16號"
+    }
+  },
+  {
+    "id": 227,
+    "source_id": "7407340057",
+    "name": "寶貝產後護理之家",
+    "address": "高雄市前金區中正四路118號3樓",
+    "phone": "07-2859912",
+    "city": "高雄市",
+    "lat": 22.630233,
+    "lng": 120.297647,
+    "service_item": "產婦床 10 床 · 嬰兒床 10 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 10,
+      "infantBeds": 10,
+      "evaluationResult": "尚未評鑑",
+      "evaluationExpiry": null,
+      "evaluations": [
+        {
+          "year": "",
+          "result": "尚未評鑑",
+          "validUntil": ""
+        }
+      ],
+      "registeredAddress": "高雄市前金區中正四路118號3樓"
+    }
+  },
+  {
+    "id": 228,
+    "source_id": "7407350062",
+    "name": "安田婦產科診所附設產後護理之家",
+    "address": "高雄市苓雅區林興里1鄰三多二路353號",
+    "phone": "7255167",
+    "city": "高雄市",
+    "lat": 22.618227,
+    "lng": 120.318057,
+    "service_item": "產婦床 13 床 · 嬰兒床 13 床",
+    "extra_json": {
+      "postpartumBeds": 13,
+      "babyBeds": 13,
+      "infantBeds": 13,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市苓雅區三多二路353號7-9樓"
+    }
+  },
+  {
+    "id": 229,
+    "source_id": "7407350071",
+    "name": "華康高雄中正館產後護理之家",
+    "address": "高雄市苓雅區安祥里6鄰中正二路30號",
+    "phone": "72265959",
+    "city": "高雄市",
+    "lat": 22.63032,
+    "lng": 120.320263,
+    "service_item": "產婦床 39 床 · 嬰兒床 42 床",
+    "extra_json": {
+      "postpartumBeds": 39,
+      "babyBeds": 42,
+      "infantBeds": 42,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市苓雅區中正二路30號2.3.4樓"
+    }
+  },
+  {
+    "id": 230,
+    "source_id": "7602051135",
+    "name": "德謙醫院附設產後護理之家",
+    "address": "高雄市三民區同德里2鄰九如二路18號",
+    "phone": "07-3210981",
+    "city": "高雄市",
+    "lat": 22.640667,
+    "lng": 120.313205,
+    "service_item": "產婦床 5 床 · 嬰兒床 5 床",
+    "extra_json": {
+      "postpartumBeds": 5,
+      "babyBeds": 5,
+      "infantBeds": 5,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "高雄市三民區九如二路18號"
+    }
+  },
+  {
+    "id": 231,
+    "source_id": "7443011388",
+    "name": "優生產後護理之家",
+    "address": "屏東縣屏東市華山里25鄰瑞光路三段105號",
+    "phone": "08-7382222--288",
+    "city": "屏東縣",
+    "lat": 22.686271,
+    "lng": 120.503837,
+    "service_item": "產婦床 41 床 · 嬰兒床 44 床",
+    "extra_json": {
+      "postpartumBeds": 41,
+      "babyBeds": 44,
+      "infantBeds": 44,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "屏東縣屏東市華山里瑞光路三段105號"
+    }
+  },
+  {
+    "id": 232,
+    "source_id": "7443011628",
+    "name": "博醫產後護理之家",
+    "address": "屏東縣屏東市中正里11鄰中正路620號",
+    "phone": "08-7368838",
+    "city": "屏東縣",
+    "lat": 22.687339,
+    "lng": 120.497094,
+    "service_item": "產婦床 33 床 · 嬰兒床 35 床",
+    "extra_json": {
+      "postpartumBeds": 33,
+      "babyBeds": 35,
+      "infantBeds": 35,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "屏東縣屏東市中正里中正路620號3、4、5樓"
+    }
+  },
+  {
+    "id": 233,
+    "source_id": "7643010036",
+    "name": "安和醫院附設產後護理之家",
+    "address": "屏東縣屏東市崇蘭里20鄰自由路598號",
+    "phone": "08 7651828",
+    "city": "屏東縣",
+    "lat": 22.683409,
+    "lng": 120.483684,
+    "service_item": "產婦床 7 床 · 嬰兒床 7 床",
+    "extra_json": {
+      "postpartumBeds": 7,
+      "babyBeds": 7,
+      "infantBeds": 7,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "屏東縣屏東市自由路５９８號"
+    }
+  },
+  {
+    "id": 234,
+    "source_id": "7434011129",
+    "name": "藍田產後護理之家",
+    "address": "宜蘭縣宜蘭市神農里7鄰中山路二段190號",
+    "phone": "03-9360055",
+    "city": "宜蘭縣",
+    "lat": 24.747111,
+    "lng": 121.755022,
+    "service_item": "產婦床 10 床 · 嬰兒床 12 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 12,
+      "infantBeds": 12,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "宜蘭縣宜蘭市中山路2段190號"
+    }
+  },
+  {
+    "id": 235,
+    "source_id": "7434021214",
+    "name": "馨月產後護理之家",
+    "address": "宜蘭縣羅東鎮信義里21鄰興東路269號",
+    "phone": "03-9547102",
+    "city": "宜蘭縣",
+    "lat": 24.683983,
+    "lng": 121.770286,
+    "service_item": "產婦床 8 床 · 嬰兒床 9 床",
+    "extra_json": {
+      "postpartumBeds": 8,
+      "babyBeds": 9,
+      "infantBeds": 9,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "宜蘭縣羅東鎮興東路269號5樓"
+    }
+  },
+  {
+    "id": 236,
+    "source_id": "7434050037",
+    "name": "藍田貝兒產後護理之家",
+    "address": "宜蘭縣礁溪鄉德陽村3鄰中山路二段216號",
+    "phone": "03-9873636",
+    "city": "宜蘭縣",
+    "lat": 24.82798,
+    "lng": 121.774953,
+    "service_item": "產婦床 9 床 · 嬰兒床 12 床",
+    "extra_json": {
+      "postpartumBeds": 9,
+      "babyBeds": 12,
+      "infantBeds": 12,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "宜蘭縣礁溪鄉中山路二段216號3、4樓"
+    }
+  },
+  {
+    "id": 237,
+    "source_id": "7434080026",
+    "name": "芮杺產後護理之家",
+    "address": "宜蘭縣冬山鄉清溝村30鄰鹿安路446巷6弄2號",
+    "phone": "9580727",
+    "city": "宜蘭縣",
+    "lat": 24.66099,
+    "lng": 121.762851,
+    "service_item": "產婦床 12 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 12,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "117年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2028-12-31"
+        }
+      ],
+      "registeredAddress": "宜蘭縣冬山鄉清溝村鹿安路446巷6弄2號、6號、8號"
+    }
+  },
+  {
+    "id": 238,
+    "source_id": "7434090031",
+    "name": "臻愛產後護理之家",
+    "address": "宜蘭縣五結鄉季新村24鄰新店路113號",
+    "phone": "03-9508286",
+    "city": "宜蘭縣",
+    "lat": 24.677278,
+    "lng": 121.825149,
+    "service_item": "產婦床 19 床 · 嬰兒床 19 床",
+    "extra_json": {
+      "postpartumBeds": 19,
+      "babyBeds": 19,
+      "infantBeds": 19,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "116年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2027-12-31"
+        }
+      ],
+      "registeredAddress": "宜蘭縣五結鄉新店路113號"
+    }
+  },
+  {
+    "id": 239,
+    "source_id": "7434100014",
+    "name": "映月產後護理之家",
+    "address": "宜蘭縣三星鄉尾塹村11鄰尾塹二路220巷1號",
+    "phone": "03-9573268",
+    "city": "宜蘭縣",
+    "lat": 24.698519,
+    "lng": 121.742943,
+    "service_item": "產婦床 10 床 · 嬰兒床 11 床",
+    "extra_json": {
+      "postpartumBeds": 10,
+      "babyBeds": 11,
+      "infantBeds": 11,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "宜蘭縣三星鄉尾塹二路220巷1號1-3樓"
+    }
+  },
+  {
+    "id": 240,
+    "source_id": "7445011171",
+    "name": "藍田產後護理之家",
+    "address": "花蓮縣花蓮市民生里4鄰中正路530號",
+    "phone": "03-8330605",
+    "city": "花蓮縣",
+    "lat": 23.977578,
+    "lng": 121.608129,
+    "service_item": "產婦床 24 床 · 嬰兒床 26 床",
+    "extra_json": {
+      "postpartumBeds": 24,
+      "babyBeds": 26,
+      "infantBeds": 26,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "118年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2029-12-31"
+        }
+      ],
+      "registeredAddress": "花蓮縣花蓮市中正路530號7樓及8樓"
+    }
+  },
+  {
+    "id": 241,
+    "source_id": "7745011042",
+    "name": "臺灣基督教門諾會醫療財團法人附設門諾產後護理之家",
+    "address": "花蓮縣花蓮市民權五街61號",
+    "phone": "8241534",
+    "city": "花蓮縣",
+    "lat": 23.984207,
+    "lng": 121.622298,
+    "service_item": "產婦床 15 床 · 嬰兒床 20 床",
+    "extra_json": {
+      "postpartumBeds": 15,
+      "babyBeds": 20,
+      "infantBeds": 20,
+      "evaluationResult": "合格",
+      "evaluationExpiry": "115年12月31日",
+      "evaluations": [
+        {
+          "year": "",
+          "result": "合格",
+          "validUntil": "2026-12-31"
+        }
+      ],
+      "registeredAddress": "花蓮縣花蓮市民權五街61號"
+    }
+  }
+]
