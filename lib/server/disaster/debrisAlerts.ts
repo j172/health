@@ -263,7 +263,7 @@ export async function fetchDebrisAlerts(options: { force?: boolean } = {}): Prom
 
   try {
     const { status, text } = await httpGetText(MOA_DEBRIS_ALERT_URL, {
-      timeout: FETCH_TIMEOUT_MS,
+      timeoutMs: FETCH_TIMEOUT_MS,
     });
 
     if (status >= 200 && status < 300 && text) {
