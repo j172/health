@@ -45,7 +45,8 @@
     "outdoor-safety": "야외활동 및 운동 안전 지수",
     "accessible-transit": "대만 배리어프리 교통 및 저상버스 지도",
     "inundation-map": "대만 실시간 침수 감지 센서 지도",
-    "water-outages": "대만 실시간 단수 및 비상급수소 지도"
+    "water-outages": "대만 실시간 단수 및 비상급수소 지도",
+    "power-outages": "대만 실시간 정전 지도 및 복구 현황"
   },
   "catalog": {
     "uv": "실시간 자외선 지수(UV)",
@@ -108,6 +109,7 @@
     "accessible-transit": "대만 배리어프리 교통 및 저상버스 지도",
     "inundation-map": "대만 실시간 침수 감지 센서 지도",
     "water-outages": "대만 실시간 단수 및 비상급수소 지도",
+    "power-outages": "대만 실시간 정전 지도 및 복구 현황",
     "breastfeeding-rooms": "전국 모유 수유실·유축실 지도",
     "contraception-map": "피임 상담 지도 (산부인과·약국 검색)",
     "latest-books": "추천 도서 (보커라이·에슬레이트·TAAZE 큐레이션)",
@@ -135,7 +137,8 @@
     "senior-friendly": "경로카드 교통 보조금 (전국 22개 현시)",
     "social-welfare-centers": "사회복지센터 찾기 및 사회복지사 상담 안내",
     "ltc-benefits": "장기요양 급여 및 신청 안내 (등급별 급여액 계산)",
-    "work-school-status": "오늘 출근·등교? 정부기관 근무일 달력과 태풍 등 휴무·휴교 공식 공고"
+    "work-school-status": "오늘 출근·등교? 정부기관 근무일 달력과 태풍 등 휴무·휴교 공식 공고",
+    "pla-activities": "대만 주변 중국군(PLA) 활동 및 국방부 일일 공보"
   },
   "categories": {
     "gov": "정부 및 공공기관",

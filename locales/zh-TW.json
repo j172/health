@@ -50,7 +50,8 @@
     "outdoor-safety": "戶外安全指數",
     "accessible-transit": "全台無障礙交通地圖",
     "inundation-map": "全台積淹水即時感測地圖",
-    "water-outages": "全臺即時停水查詢"
+    "water-outages": "全臺即時停水查詢",
+    "power-outages": "即時停電地圖與搶修進度"
   },
   "common": {
     "language": "語言",

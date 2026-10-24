@@ -2780,7 +2780,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://service.taipower.com.tw",
       },
     ],
-    relatedSlugs: ["water-conditions", "aqi", "cpc-prices"],
+    relatedSlugs: ["power-outages", "water-conditions", "aqi", "cpc-prices"],
     faqs: [
       {
         question: "這個儀表板的三份資料分別是什麼？",
@@ -3864,7 +3864,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         ],
       ],
     },
-    relatedSlugs: ["inundation-map", "water-conditions", "disaster-map", "outdoor-safety"],
+    relatedSlugs: ["power-outages", "inundation-map", "water-conditions", "disaster-map", "outdoor-safety"],
     schemaType: "WebPage",
     faqs: [
       {
@@ -3891,6 +3891,84 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         question: "「水質」分頁的淨水場「水質合格否」是本站判定的嗎？",
         answer:
           "不是。淨水場檢驗結果與「水質合格否」（Y／N）都是台灣自來水公司公開檔案裡原有的欄位，本站只依原文整理呈現，不自行換算或判斷是否合格；標示為 N 的淨水場會在頁面最上方以紅色標出，但檔案沒有說明是哪一項不合格，詳情請洽台水（客服專線 1910）。",
+      },
+    ],
+  },
+  {
+    slug: "power-outages",
+    group: "disaster-alerts",
+    lastUpdated: "2026-10-24",
+
+    schemaType: "WebPage",
+    navLabel: "全臺即時停電地圖",
+    title: "即時停電地圖與搶修進度",
+    keywords: [
+      "即時停電",
+      "停電查詢",
+      "停電地圖",
+      "台電停電",
+      "預計復電時間",
+      "1911",
+      "台電報修",
+      "停電戶數",
+      "維生管線",
+    ],
+    description:
+      "即時查詢全台停電災情、影響村里、停電戶數、預計復電時間與 1911 報案專線。",
+    directAnswer:
+      "全臺即時停電地圖串接台灣電力公司電力維生管線災情開放資料（d006012），提供即時村里停電邊界、停電戶數、搶修復電進度與 1911 報修專線直撥，協助民眾第一時間掌握住家周遭供電狀態。",
+    scientificBasis: [
+      {
+        title: "台灣電力公司電力維生管線災情資訊（d006012）",
+        authority: "台灣電力股份有限公司 (Taipower)",
+        url: "https://service.taipower.com.tw",
+      },
+      {
+        title: "台電天然災害停電通報與搶修進度查詢準則",
+        authority: "台灣電力股份有限公司 (Taipower)",
+        url: "https://www.taipower.com.tw",
+      },
+    ],
+    referenceTable: {
+      title: "停電應變與用電安全指引對照表",
+      headers: ["階段", "應變要點", "用電安全與電器防護", "通報管道"],
+      rows: [
+        [
+          "停電當下",
+          "拔掉高耗電與易受突波影響之電器插頭（電腦、冷氣、電視）",
+          "關閉總開關箱跳脫回路，保留一盞燈以確認何時復電",
+          "1911 專線或線上停電通報系統",
+        ],
+        [
+          "停電期間",
+          "冰箱盡量減少開關以維持低溫（一般保冷可達 4 小時）",
+          "嚴禁於室內使用發電機或卡式爐以防一氧化碳中毒",
+          "透過手機查詢台電搶修進度",
+        ],
+        [
+          "剛復電時",
+          "稍待 3-5 分鐘電壓穩定後再陸續開啟大型家電",
+          "檢查各開關及插座是否有焦味或異常聲響",
+          "若局部跳電請檢查自家配電箱 NFB",
+        ],
+      ],
+    },
+    relatedSlugs: ["water-outages", "power-grid-overview", "disaster-map", "emergency-hotlines"],
+    faqs: [
+      {
+        question: "突然停電時，如何判斷是自家跳電還是社區大停電？",
+        answer:
+          "若周遭鄰居或路燈皆無電，通常為台電配電線路跳脫或區域性停電；若僅自家斷電，請先檢查屋內總開關箱（無熔絲開關 NFB）是否跳開跳脫。本工具即時呈現台電官方已成案之村里停電範圍與戶數，可供快速比對。",
+      },
+      {
+        question: "停電時打 1911 專線老是佔線怎麼辦？",
+        answer:
+          "大規模停電時 1911 話務量極大，建議優先利用台電官網「停電通報與查詢」或本工具查詢周遭搶修進度與預計復電時間；若發現電線掉落、變壓器冒煙火花等緊急危險狀況，請務必避開並持續撥打 1911 或 119 通報救援。",
+      },
+      {
+        question: "預計復電時間是準確的嗎？",
+        answer:
+          "預計復電時間為台電搶修人員依現場受損情況（如倒樹、斷線、桿損）預估之時程，若巡修時發現損害範圍較大或天候惡劣，時間可能會滾動更新調整，請以台電最新派工搶修進度為準。",
       },
     ],
   },
@@ -4590,6 +4668,7 @@ const INDEXABLE_SLUGS = new Set([
   "senior-friendly",
   "inundation-map",
   "water-outages",
+  "power-outages",
   "emergency-hotlines",
   "emergency-supplies",
   "medical-violators",
