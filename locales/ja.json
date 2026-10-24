@@ -45,7 +45,8 @@
     "outdoor-safety": "アウトドア活動・運動安全指数",
     "accessible-transit": "全台湾バリアフリー交通・ノンステップバスマップ",
     "inundation-map": "全台湾リアルタイム浸水・冠水センサーマップ",
-    "water-outages": "全台湾リアルタイム断水・応急給水所マップ"
+    "water-outages": "全台湾リアルタイム断水・応急給水所マップ",
+    "power-outages": "全台湾リアルタイム停電マップ・復旧進捗"
   },
   "catalog": {
     "uv": "リアルタイム紫外線指数 (UV)",
@@ -108,6 +109,7 @@
     "accessible-transit": "全台湾バリアフリー交通・ノンステップバスマップ",
     "inundation-map": "全台湾リアルタイム浸水・冠水センサーマップ",
     "water-outages": "全台湾リアルタイム断水・応急給水所マップ",
+    "power-outages": "全台湾リアルタイム停電マップ・復旧進捗",
     "breastfeeding-rooms": "全国授乳室・乳児用施設マップ",
     "contraception-map": "避妊相談マップ（産婦人科・薬局検索）",
     "latest-books": "おすすめ書籍（博客來・誠品・TAAZE選書）",
@@ -135,7 +137,8 @@
     "senior-friendly": "敬老カード補助（全22県市）",
     "social-welfare-centers": "社会福祉センター検索・ケースワーカー相談ガイド",
     "ltc-benefits": "長期介護給付・申請ガイド（介護度別給付額試算）",
-    "work-school-status": "今日は出勤・登校？政府機関の執務カレンダーと台風等の休業・休校公式発表"
+    "work-school-status": "今日は出勤・登校？政府機関の執務カレンダーと台風等の休業・休校公式発表",
+    "pla-activities": "台湾周辺の中国軍（PLA）動向・国防部公報"
   },
   "categories": {
     "gov": "政府機関・公的機関",
