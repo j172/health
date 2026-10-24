@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isValidAdminSecret } from "@/lib/server/config/adminAuth";
+import { isValidAdminSecret, generateAdminSessionToken } from "@/lib/server/config/adminAuth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,14 +10,15 @@ const ADMIN_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 8;
 export const ADMIN_SESSION_COOKIE = "hz_admin_session";
 
 /**
- * Exchanges a `?key=` query parameter for an httpOnly session cookie, then
+ * Exchanges a `?key=` query parameter for an httpOnly HMAC session cookie, then
  * redirects to the clean URL.
  *
  * The review page used to read the shared admin secret straight out of the query
  * string on every visit, which put it in the browser's history and address bar,
  * in any reverse-proxy access log, and in the `Referer` of anything the page
  * links to. Here the secret appears in a URL exactly once and is never needed
- * again for the life of the cookie.
+ * again for the life of the cookie. Furthermore, the cookie now stores an
+ * HMAC-SHA256 signature rather than the raw secret.
  */
 export async function GET(request: NextRequest) {
   const key = request.nextUrl.searchParams.get("key");
@@ -28,8 +29,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(target, { status: 303 });
   }
 
+  const sessionToken = generateAdminSessionToken(key as string);
   const response = NextResponse.redirect(target, { status: 303 });
-  response.cookies.set(ADMIN_SESSION_COOKIE, key as string, {
+  response.cookies.set(ADMIN_SESSION_COOKIE, sessionToken, {
     maxAge: ADMIN_COOKIE_MAX_AGE_SECONDS,
     httpOnly: true,
     sameSite: "strict",

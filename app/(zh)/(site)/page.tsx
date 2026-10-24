@@ -3,9 +3,11 @@ import { listDiverseHomeNews } from "@/lib/server/news/queries";
 import { buildHomeGraphJsonLd, getBaseUrl, SITE_DESCRIPTION, SITE_KEYWORDS, SITE_NAME } from "@/lib/server/news/seo";
 import StabloNewsLayout from "@/components/News/StabloNewsLayout";
 import HomeStatusBar from "@/components/Home/HomeStatusBar";
+import ToolLaunchpad from "@/components/Home/ToolLaunchpad";
 import GuideCardsSection from "@/components/Home/GuideCardsSection";
 import RecentToolsSection from "@/components/Home/RecentToolsSection";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
+import { TOOL_CATALOG } from "@/lib/server/tools/catalog";
 
 export const revalidate = 60;
 export const runtime = "nodejs";
@@ -47,6 +49,15 @@ export default async function Home() {
   const items = await listDiverseHomeNews(30, 3);
   const homeGraph = buildHomeGraphJsonLd(items);
 
+  const launchpadTools = TOOL_CATALOG.map((t) => ({
+    slug: t.slug,
+    title: t.title,
+    navLabel: t.navLabel,
+    directAnswer: t.directAnswer,
+    keywords: t.keywords,
+    group: t.group,
+  }));
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(homeGraph) }} />
@@ -63,18 +74,10 @@ export default async function Home() {
         variant="home"
         homeTopSections={
           <>
-            {/* 首頁改版 (issue #472，母票 #438 §G)：定位感知狀態列、5 張生活情
-             * 境卡、最近使用的工具，依序排在焦點新聞與新聞列表之上。
-             * HomeStatusBar / RecentToolsSection 是 "use client" 元件，各自
-             * 在瀏覽器端才抓資料（定位、/api/home-status、localStorage），
-             * 不影響這個 Server Component 本身沿用的 60 秒 ISR 快取。
-             *
-             * 原本常駐的兩張大卡片（issue #744 新增的首頁快速入口卡片，颱風
-             * 與警報／明天放假嗎？）已移除：全站颱風橫幅（TyphoonBanner）已
-             * 改成大卡片視覺樣式並涵蓋同樣的警報資訊，兩張卡片變成重複。
-             * 「明天放假嗎？」的入口保留在 HomeStatusBar 的「今日上班」薥目
-             * 旁邊的小圖示連結。 */}
+            {/* 首頁改版：定位感知狀態列、便民工具發射台（Tool Launchpad）、
+             * 5 張生活情境卡、最近使用的工具，依序排在焦點新聞與新聞列表之上。 */}
             <HomeStatusBar />
+            <ToolLaunchpad tools={launchpadTools} />
             <GuideCardsSection />
             <RecentToolsSection />
           </>

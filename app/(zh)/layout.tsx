@@ -7,6 +7,7 @@ import PrivacyConsentBanner from "@/components/Legal/PrivacyConsentBanner";
 import InAppBrowserBanner from "@/components/Common/InAppBrowserBanner";
 import RegisterServiceWorker from "@/components/Pwa/RegisterServiceWorker";
 import GoogleTag from "@/components/Analytics/GoogleTag";
+import AnalyticsTracker from "@/components/Analytics/AnalyticsTracker";
 import MicrosoftClarity from "@/components/Analytics/MicrosoftClarity";
 import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytics";
 import SkipToContent from "@/components/Accessibility/SkipToContent";
@@ -119,6 +120,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <GoogleTag />
+        <AnalyticsTracker />
         <MicrosoftClarity />
         <CloudflareWebAnalytics />
         <Provider>

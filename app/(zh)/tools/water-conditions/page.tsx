@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getBaseUrl } from "@/lib/server/news/seo";
 import { getToolCatalogEntry } from "@/lib/server/tools/catalog";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
+import LoadingOrb from "@/components/ui/LoadingOrb";
 import WaterConditionsContent from "./WaterConditionsContent";
 
 export const revalidate = 300;
@@ -38,7 +40,15 @@ export default function WaterConditionsPage() {
       title={catalogEntry.title}
       maxWidthClassName="max-w-4xl"
     >
-      <WaterConditionsContent />
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-8">
+            <LoadingOrb size={32} />
+          </div>
+        }
+      >
+        <WaterConditionsContent />
+      </Suspense>
     </ToolPageShell>
   );
 }

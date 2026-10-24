@@ -139,7 +139,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // member of its hreflang cluster that declares none.
   const homeLanguages = buildHreflangAlternates("/", baseUrl);
 
-  return [
+  const allEntries: MetadataRoute.Sitemap = [
     {
       url: baseUrl,
       changeFrequency: "daily",
@@ -157,4 +157,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...sourceEntries,
     ...newsEntries,
   ];
+
+  // GSC duplicate prevention: ensure all output URLs in sitemap are strictly unique
+  const seenUrls = new Set<string>();
+  return allEntries.filter((entry) => {
+    if (seenUrls.has(entry.url)) return false;
+    seenUrls.add(entry.url);
+    return true;
+  });
 }

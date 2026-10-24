@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import {
   buildToolsIndexGraphJsonLd,
   getBaseUrl,
@@ -9,6 +8,7 @@ import { TOOL_CATALOG, TOOL_GROUP_META } from "@/lib/server/tools/catalog";
 import { buildCategoryPage } from "@/lib/server/tools/navModel";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import CivicPartnersSection from "@/components/Common/CivicPartnersSection";
+import ToolsIndexClient from "@/components/Tools/ToolsIndexClient";
 
 export const revalidate = 300;
 export const runtime = "nodejs";
@@ -133,20 +133,15 @@ const TOOL_ICONS: Record<string, string> = {
   "contraception-map": "💊",
   "cpc-prices": "⛽",
   "cultural-events": "🎭",
-
   "early-intervention": "🌱",
   "emergency-supplies": "🎒",
   "er-status": "🚑",
-
   "food-safety": "🥬",
   "funeral-facilities": "🕯️",
   "global-watch": "🌐",
   "health-supplements": "🍯",
-
-
   "inundation-map": "🌊",
   "ltc-benefits": "🧮",
-
   "medical-violators": "⚠️",
   "mental-health": "💚",
   "organ-donation-hospitals": "🎗️",
@@ -160,32 +155,13 @@ const TOOL_ICONS: Record<string, string> = {
   "smoking-cessation": "🚭",
   "social-welfare-centers": "🏛️",
   "tourism-factories": "🏭",
-
-
   "water-outages": "🚰",
   "work-school-status": "📅",
 };
 
-/**
- * The 7 category sections this page renders, derived from the single shared
- * `buildCategoryPage` model (issue #443/#459) instead of a hand-rolled local
- * array. This used to be its own independent `CATEGORIES` list that could
- * (and did) drift from the Nav dropdowns/Footer columns/the new
- * `/tools/category/[slug]` landing pages — tools got added to the catalog
- * and wired into a `ToolGroup`, then stayed invisible here because nobody
- * remembered to append the slug by hand, or a merged group left a section's
- * title/description topically stale. Deriving straight from
- * `TOOL_GROUP_META` + `buildCategoryPage` means every one of those four
- * surfaces now reads the same 7 buckets from the same place, so they can't
- * disagree again.
- */
 const SECTIONS = TOOL_GROUP_META.map((meta) => {
   const category = buildCategoryPage(meta.group);
   if (!category) {
-    // Unreachable: `meta.group` comes from the same TOOL_GROUP_META list
-    // buildCategoryPage looks the group up against, so this would only fire
-    // if the two ever desynced — fail loudly rather than silently drop a
-    // whole category section.
     throw new Error(`buildCategoryPage returned null for known group "${meta.group}"`);
   }
   return category;
@@ -193,6 +169,24 @@ const SECTIONS = TOOL_GROUP_META.map((meta) => {
 
 export default function ToolsIndexPage() {
   const toolsGraph = buildToolsIndexGraphJsonLd(TOOL_CATALOG);
+  const toolMap = new Map(TOOL_CATALOG.map((t) => [t.slug, t]));
+
+  const categoriesData = SECTIONS.map((section) => ({
+    group: section.group,
+    label: section.label,
+    description: section.description,
+    tools: section.tools.map((t) => {
+      const entry = toolMap.get(t.slug);
+      return {
+        slug: t.slug,
+        title: t.title,
+        navLabel: t.navLabel,
+        directAnswer: t.directAnswer,
+        keywords: entry?.keywords || [],
+        group: section.group,
+      };
+    }),
+  }));
 
   return (
     <>
@@ -206,80 +200,22 @@ export default function ToolsIndexPage() {
 
         <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           {/* Header section */}
-          <section className="mb-12 text-center">
+          <section className="mb-8 text-center">
             <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl dark:text-slate-100">
               健康工具與公衛資料庫總覽
             </h1>
             <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-400">
               提供全臺 {TOOL_CATALOG.length} 款免安裝線上便民工具，涵蓋長照與社福、婦幼兒少、健康自我評估、就醫用藥、交通能源、防災示警、環境食安及遠離詐騙與成癮防治。
-
             </p>
           </section>
 
-          {/* Categorized Tool Sections (Topic Silos) */}
-          <div className="space-y-12">
-            {SECTIONS.map((category) => {
-              const categoryTools = category.tools;
-
-              return (
-                <section
-                  key={category.group}
-                  aria-labelledby={`category-${category.group}`}
-                >
-                  <div className="mb-4">
-                    <h2
-                      id={`category-${category.group}`}
-                      className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-slate-100"
-                    >
-                      <Link
-                        href={`/tools/category/${category.group}`}
-                        className="hover:text-indigo-600 dark:hover:text-indigo-400"
-                      >
-                        {category.label}
-                      </Link>
-                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                        {categoryTools.length}
-                      </span>
-                    </h2>
-                    <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                      {category.description}
-                    </p>
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {categoryTools.map((tool) => (
-                      <Link
-                        key={tool.slug}
-                        href={`/tools/${tool.slug}`}
-                        className="group flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-700"
-                      >
-                        <div className="flex items-start gap-3.5">
-                          <div className="text-3xl transition-transform duration-200 group-hover:scale-110">
-                            {TOOL_ICONS[tool.slug] || "📊"}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-sm font-bold text-slate-900 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-400">
-                              {tool.navLabel ?? tool.title}
-                            </h3>
-                            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-slate-600 dark:text-slate-400">
-                              {tool.directAnswer}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-xs font-semibold text-slate-700 group-hover:text-indigo-600 dark:border-slate-800 dark:text-slate-300 dark:group-hover:text-indigo-400">
-                          <span>立即使用</span>
-                          <span className="transition-transform duration-200 group-hover:translate-x-1">
-                            →
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
+          {/* Interactive Tools Directory Client (Sticky Pills, Instant Search, Sub-tools)
+              Each category links to href={`/tools/category/${category.group}`} */}
+          <ToolsIndexClient
+            categories={categoriesData}
+            toolIcons={TOOL_ICONS}
+            totalCount={TOOL_CATALOG.length}
+          />
 
           {/* Civic Partners Showcase */}
           <CivicPartnersSection />

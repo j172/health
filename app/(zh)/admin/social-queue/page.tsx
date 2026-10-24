@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { isValidAdminSecret } from "@/lib/server/config/adminAuth";
+import { isValidAdminSessionToken } from "@/lib/server/config/adminAuth";
 import { ADMIN_SESSION_COOKIE } from "./enter/route";
 import { listSocialPostQueue } from "@/lib/server/social/queries";
 
@@ -37,7 +37,7 @@ const formatUtc = (value: Date): string =>
  * called by curl/fetch, so it cannot use the x-rss-sync-admin-secret header
  * that gates /api/admin/*.
  *
- * Authentication is a session cookie set by ./enter/route.ts. A `?key=` in the
+ * Authentication is an HMAC-signed session cookie set by ./enter/route.ts. A `?key=` in the
  * URL is still accepted, but only to be handed straight to that route and
  * stripped — the secret is no longer re-sent on every visit, where it would sit
  * in browser history, proxy access logs, and the Referer of any outbound link.
@@ -54,9 +54,9 @@ export default async function SocialQueuePage({
     redirect(`/admin/social-queue/enter?key=${encodeURIComponent(key)}`);
   }
 
-  const sessionKey = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value;
+  const sessionToken = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value;
 
-  if (!isValidAdminSecret(sessionKey)) {
+  if (!isValidAdminSessionToken(sessionToken)) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-4 text-center">
         <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">

@@ -1,16 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import ToolTypeTabs from "@/components/Tools/ToolTypeTabs";
 import WaterLevelStationsContent from "./WaterLevelStationsContent";
 import ReservoirStatusContent from "./ReservoirStatusContent";
 
 /**
  * issue #256: merged "water-level-stations" and "reservoir-status" into one
- * page with a river/reservoir tab. Both bespoke content components are
- * reused unmodified.
+ * page with a river/reservoir tab. Supports ?tab=reservoir-status direct deep-linking.
  */
 export default function WaterConditionsContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const initialKey =
+    tabParam === "reservoir-status" || tabParam === "reservoirs"
+      ? "reservoir-status"
+      : "water-level-stations";
+
   return (
     <div className="space-y-6">
       {/* 導流至全台積淹水即時感測地圖 */}
@@ -33,6 +40,7 @@ export default function WaterConditionsContent() {
 
       <ToolTypeTabs
         ariaLabel="水情資料類型"
+        initialKey={initialKey}
         tabs={[
           {
             key: "water-level-stations",
