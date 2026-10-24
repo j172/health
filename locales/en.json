@@ -112,6 +112,7 @@
     "contraception-map": "Contraception Consultation Map (OB-GYN Clinics & Pharmacies)",
     "latest-books": "Book Recommendations (Books.com.tw, Eslite & TAAZE Picks)",
     "vet-clinics": "Taiwan Veterinary Hospital & Clinic Finder",
+    "pest-alerts": "Crop Pest & Disease Real-Time Alerts",
     "power-grid-overview": "Taiwan Power Grid Status Dashboard",
     "cpc-prices": "CPC Fuel & Gas Prices and Station Finder",
     "health-supplements": "Certified Health Supplement Lookup (TFDA Health Food Permits)",
@@ -965,6 +966,13 @@
       "workdayOff": "Day off",
       "workdayOffNamedTemplate": "Day off · {name}",
       "workdayUnknown": "No calendar data",
+      "tomorrowShortcutLabel": "Is tomorrow a day off?",
+      "tomorrowWorkdayLabel": "Work Tomorrow",
+      "nextHolidayLabel": "Next Holiday",
+      "todayOffLabel": "Day Off Today",
+      "workdayWorkdayLabel": "Workday Today",
+      "countdownTemplate": "{days} days left ({name})",
+      "tomorrowOffTemplate": "Off tomorrow ({name})"
     },
     "guideCards": {
       "sectionAriaLabel": "Life-Situation Guides",
@@ -1011,17 +1019,6 @@
       "originTimeTemplate": "Occurred {time}",
       "notice": "For the shaking-intensity map and further updates, please refer to the Central Weather Administration.",
       "linkTool": "Earthquake monitor"
-    }
-  },
-  "cbs": {
-    "banner": {
-      "ariaLabel": "National emergency alert",
-      "badgeExtreme": "National Emergency Alert (PWS)",
-      "badgeSevere": "Emergency Warning",
-      "disasterMap": "Live Disaster Map",
-      "debrisFlow": "Debris Flow Alert",
-      "expiresTemplate": "Expires at {time}",
-      "officialNotice": "Please take protective actions immediately and follow official government instructions."
     }
   }
 }

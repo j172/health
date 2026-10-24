@@ -112,6 +112,7 @@
     "contraception-map": "피임 상담 지도 (산부인과·약국 검색)",
     "latest-books": "추천 도서 (보커라이·에슬레이트·TAAZE 큐레이션)",
     "vet-clinics": "대만 동물병원 및 수의과 클리닉 검색",
+    "pest-alerts": "농작물 병해충 실시간 경보",
     "power-grid-overview": "대만 전력 수급 현황 대시보드",
     "cpc-prices": "대만 중유(CPC) 연료·가스 가격 및 주유소 검색",
     "health-supplements": "건강식품 인증 조회 (식약서 인허가 등록)",
@@ -968,6 +969,13 @@
       "workdayOff": "휴무",
       "workdayOffNamedTemplate": "휴무 · {name}",
       "workdayUnknown": "달력 정보 없음",
+      "tomorrowShortcutLabel": "내일은 휴무인가요?",
+      "tomorrowWorkdayLabel": "내일 근무",
+      "nextHolidayLabel": "다음 휴일",
+      "todayOffLabel": "오늘 휴무",
+      "workdayWorkdayLabel": "오늘 근무",
+      "countdownTemplate": "{days}일 남음({name})",
+      "tomorrowOffTemplate": "내일 휴무({name})"
     },
     "guideCards": {
       "sectionAriaLabel": "생활 상황별 가이드",
@@ -1014,17 +1022,6 @@
       "originTimeTemplate": "발생 {time}",
       "notice": "진도 분포와 이후 지진 정보는 중앙기상서(기상청에 해당) 발표를 확인하세요.",
       "linkTool": "지진 속보 도구"
-    }
-  },
-  "cbs": {
-    "banner": {
-      "ariaLabel": "국가 긴급재난문자 (CBS)",
-      "badgeExtreme": "국가급 경보 (PWS)",
-      "badgeSevere": "긴급 경계",
-      "disasterMap": "실시간 재난 지도",
-      "debrisFlow": "산사태·토사류 경계 마을",
-      "expiresTemplate": "{time}까지 유효",
-      "officialNotice": "즉시 안전한 곳으로 대피하시고, 관계 당국의 안내에 따라주시기 바랍니다."
     }
   }
 }
