@@ -1,6 +1,14 @@
 import { tdxMqttManager } from "./connection.ts";
-import { TDX_MQTT_TOPIC_METRO_ALERT, isMetroAlertTopic } from "./topics.ts";
+import {
+  TDX_MQTT_TOPIC_METRO_ALERT,
+  TDX_MQTT_TOPIC_TRA_ALERT,
+  TDX_MQTT_TOPIC_THSR_ALERT,
+  isMetroAlertTopic,
+  isTraAlertTopic,
+  isThsrAlertTopic,
+} from "./topics.ts";
 import { handleMetroAlertMessage } from "./metroAlertHandler.ts";
+import { handleTraAlertMessage, handleThsrAlertMessage } from "./railAlertHandler.ts";
 import { ensureColdStartSnapshot } from "./reconciliation.ts";
 
 let isWorkerStarted = false;
@@ -8,7 +16,7 @@ let isWorkerStarted = false;
 /**
  * Initializes and starts the background TDX MQTTS worker.
  * Ensures cold-start snapshot baseline before starting MQTT, then
- * subscribes to Metro & LRT disruption topics at QoS 1 and routes incoming messages.
+ * subscribes to Metro, LRT, TRA, and THSR disruption topics at QoS 1 and routes incoming messages.
  * Idempotent: calling multiple times will not create duplicate listeners.
  */
 export async function startTdxMqttWorker(): Promise<boolean> {
@@ -30,13 +38,28 @@ export async function startTdxMqttWorker(): Promise<boolean> {
 
   isWorkerStarted = true;
 
-  // Subscribe to all Metro and Light Rail disruption topics with wildcard
-  await tdxMqttManager.subscribe([TDX_MQTT_TOPIC_METRO_ALERT], 1);
+  // Subscribe to Metro, LRT, TRA and THSR disruption streams at QoS 1
+  await tdxMqttManager.subscribe(
+    [
+      TDX_MQTT_TOPIC_METRO_ALERT,
+      TDX_MQTT_TOPIC_TRA_ALERT,
+      TDX_MQTT_TOPIC_THSR_ALERT,
+    ],
+    1,
+  );
 
   client.on("message", (topic: string, message: Buffer) => {
     if (isMetroAlertTopic(topic)) {
       handleMetroAlertMessage(topic, message).catch((err) => {
         console.error(`[TDX-MQTT] Failed to process message from ${topic}:`, err);
+      });
+    } else if (isTraAlertTopic(topic)) {
+      handleTraAlertMessage(topic, message).catch((err) => {
+        console.error(`[TDX-MQTT] Failed to process TRA message from ${topic}:`, err);
+      });
+    } else if (isThsrAlertTopic(topic)) {
+      handleThsrAlertMessage(topic, message).catch((err) => {
+        console.error(`[TDX-MQTT] Failed to process THSR message from ${topic}:`, err);
       });
     }
   });

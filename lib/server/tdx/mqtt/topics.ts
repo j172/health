@@ -26,6 +26,21 @@ export function isMetroAlertTopic(topic: string): boolean {
   return /^v2\/Rail\/Metro\/Alert(\/.*)?$/i.test(topic);
 }
 
+/** Check if an incoming MQTT topic is a TRA alert topic */
+export function isTraAlertTopic(topic: string): boolean {
+  return /^v3\/Rail\/TRA\/Alert(\/.*)?$/i.test(topic);
+}
+
+/** Check if an incoming MQTT topic is a THSR alert topic */
+export function isThsrAlertTopic(topic: string): boolean {
+  return /^v2\/Rail\/THSR\/AlertInfo(\/.*)?$/i.test(topic);
+}
+
+/** Check if an incoming MQTT topic is any rail disruption topic (Metro, TRA, THSR) */
+export function isRailDisruptionTopic(topic: string): boolean {
+  return isMetroAlertTopic(topic) || isTraAlertTopic(topic) || isThsrAlertTopic(topic);
+}
+
 /** Extract rail system code from topic path (e.g. "v2/Rail/Metro/Alert/TRTC" -> "TRTC") */
 export function extractSystemFromTopic(topic: string): string | null {
   const match = topic.match(/^v2\/Rail\/Metro\/Alert\/([A-Za-z0-9_-]+)$/i);

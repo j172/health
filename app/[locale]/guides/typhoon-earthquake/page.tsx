@@ -10,6 +10,7 @@ import { isTranslatedToolSlug, isTranslatedPath } from "@/lib/i18n/translatedPag
 import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
 import { buildHreflangAlternates, buildLocalizedPath, PATH_LOCALES } from "@/lib/i18n/translatedPages";
 import type { GuideStepModel } from "@/lib/server/tools/navModel";
+import TransitSuspensionSection from "@/components/Tools/TransitSuspensionSection";
 
 /**
  * Issue #487 — locale-aware twin of app/(zh)/guides/[slug]/page.tsx, scoped
@@ -163,6 +164,7 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
                 {meta.title}
               </li>
             </ol>
+
           </nav>
 
           <section className="mb-10">
@@ -210,6 +212,8 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
               );
             })}
           </ol>
+
+          <TransitSuspensionSection locale={locale} />
 
           {meta.faqs.length > 0 ? (
             <section
