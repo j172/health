@@ -20,3 +20,4 @@ This ticket tracks the implementation of **台電電力維生管線即時停電�
 - [ ] Add cross-links to `water-outages` and `power-grid-overview`
 - [ ] Write unit tests `tests/power-outages-parser.test.mjs`
 - [ ] Verify build and typecheck
+

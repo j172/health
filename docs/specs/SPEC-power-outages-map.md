@@ -76,3 +76,4 @@
    - 測試統計指標彙總（totalOutageCount、countySummaries）。
 2. **端點測試**：
    - 驗證 `/api/power-outages` 回傳標準結構與快取標頭。
+

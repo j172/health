@@ -10,8 +10,8 @@ This ticket tracks the implementation of **全臺開放資料平臺矩陣升級�
 - Research: [`docs/2.0/opendata-expansion-research.md`](docs/2.0/opendata-expansion-research.md) (§3.1, §4.1, §7 #2)
 
 ### Checklist
-- [ ] Add `smc.peering.tw` to `CIVIC_PARTNER_LINKS` in `lib/server/tools/navModel.ts`
-- [ ] Add localization keys in `locales/{zh-TW,en,ja,ko}.json`
-- [ ] Add partner metadata in `components/Common/CivicPartnersSection.tsx`
-- [ ] Update tests in `tests/footer-external-links-746.test.mjs`
-- [ ] Run test suite and verify
+- [x] Add `smc.peering.tw` to `CIVIC_PARTNER_LINKS` in `lib/server/tools/navModel.ts`
+- [x] Add localization keys in `locales/{zh-TW,en,ja,ko}.json`
+- [x] Add partner metadata in `components/Common/CivicPartnersSection.tsx`
+- [x] Update tests in `tests/footer-external-links-746.test.mjs`
+- [x] Run test suite and verify
