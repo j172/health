@@ -128,11 +128,18 @@
 - Incoming MQTT payloads contain only relational foreign keys (`StationID`, `LineID`).
 - The ingestion worker enriches dynamic payloads in-memory against pre-loaded station dimension tables, attaching station names (Traditional Chinese and English) and WGS84 latitude/longitude before database persistence.
 
-### 5. Automated Failover and Circuit Breaking
-- If the MQTTS connection experiences unrecoverable socket errors, authentication rejections, or TLS handshake failures for longer than 15 minutes:
-  - The supervisor trips the primary streaming circuit to `OPEN`.
-  - The fallback scheduler activates the approved REST polling schedule (every 3 hours, 80 requests/day, strictly within the 3,000 monthly quota).
-  - Background exponential backoff probes the MQTTS broker; upon successful reconnection, the streaming circuit transitions to `CLOSED` and disables REST polling.
+### 5. Automated Failover and Circuit Breaking (Dual-Engine Supervisor)
+- **State Machine Specification (`lib/server/tdx/mqtt/circuitBreaker.ts`)**:
+  - `CLOSED` (Normal Push Mode): MQTTS stream healthy. Zero TDX REST quota consumed for real-time alerts. UI badge: `🟢 即時推播 (MQTTS)`.
+  - `OPEN` (Fallback Polling Mode): Tripped when MQTTS disconnect, TLS handshake failure, or socket errors persist for > 15 minutes (`DISCONNECT_FAILOVER_THRESHOLD_MS = 15 * 60 * 1000`). Activates low-frequency fallback REST reconciliation (capped at 80 requests/day, 2,400/month). UI badge: `🟡 官方定時同步 (排程備援)`.
+  - `HALF_OPEN` (Probing Recovery Mode): Background probing attempts TLS connection to TDX MQTTS broker using exponential backoff (1s, 2s, 4s, capped at 5s). Upon verified stable connection, circuit auto-resumes `CLOSED` and deactivates fallback polling.
+- **Admin Diagnostics (`/api/admin/tdx-mqtt-status`)**:
+  - Returns structured health report:
+    - `activeEngine`: `"push"` | `"fallback_polling"` | `"degraded"`
+    - `circuit`: `{ state: "CLOSED" | "OPEN" | "HALF_OPEN", lastStateChange, failoverCount, history: [...] }`
+    - `mqtt`: Connection uptime, reconnect attempts, subscribed topics, and sanitized errors (zero secret leaks).
+- **Quota Safeguard Guarantee**:
+  - Even during worst-case broker outages, the fallback engine strictly honors the 3,000 requests/month quota limit by utilizing the shared rate limiter and 3-hour minimum poll interval.
 
 ---
 
