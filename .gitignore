@@ -72,3 +72,4 @@ yarn-error.log*
 /health-web-*.log
 /remote_env.txt
 /root_htaccess.txt
+/.chrome-*/

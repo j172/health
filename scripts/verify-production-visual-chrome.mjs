@@ -7,13 +7,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, "..");
 
-// 截圖儲存目錄
 const SCREENSHOT_DIR = path.join(ROOT_DIR, "docs", "audits", "visual-audit-screenshots");
 if (!fs.existsSync(SCREENSHOT_DIR)) {
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 }
 
-// 產出報告路徑
 const ARTIFACT_PATH = "C:\\Users\\j1720\\.gemini\\antigravity\\brain\\7def6b35-6c1f-4533-a8c4-08fdcb25505f\\production-chrome-visual-audit.md";
 const GALLERY_HTML_PATH = path.join(ROOT_DIR, "docs", "audits", "visual-audit-gallery.html");
 
@@ -21,8 +19,9 @@ const CHROME_PATH = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
 const BASE_URL = "https://health.j172.tw";
 const CDP_PORT = 9222;
 
-// 8 大高頻民生工具（需測試 Mobile + Desktop 雙螢幕）
 const HIGH_PRIORITY_SLUGS = new Set([
+  "home",
+  "tools-index",
   "er-status",
   "clinics",
   "aed",
@@ -33,7 +32,93 @@ const HIGH_PRIORITY_SLUGS = new Set([
   "cpc-prices",
 ]);
 
-// 核心子分頁直達工具
+const RAW_TOOLS = [
+  {"slug":"bmi-calculator","title":"BMI 健康體位計算器"},
+  {"slug":"calorie-daily-needs","title":"TDEE 每日熱量與基礎代謝率計算機"},
+  {"slug":"blood-pressure-tracker","title":"血壓即時紀錄與標準分析工具"},
+  {"slug":"body-fat-percentage","title":"體脂率與理想體態估算器"},
+  {"slug":"waist-to-hip-ratio","title":"腰臀比健康體態評估工具"},
+  {"slug":"water-intake-calculator","title":"每日建議飲水量計算機"},
+  {"slug":"sleep-cycle-calculator","title":"睡眠週期與最佳就寢時間計算機"},
+  {"slug":"target-heart-rate","title":"運動目標心率與燃脂區間計算器"},
+  {"slug":"ideal-body-weight","title":"理想體重與健康範圍評估工具"},
+  {"slug":"macronutrient-calculator","title":"三大營養素比例與飲食分配計算器"},
+  {"slug":"daily-protein-intake","title":"每日蛋白質建議攝取量計算機"},
+  {"slug":"glycemic-index-lookup","title":"升糖指數 (GI值) 與熱量快速查詢工具"},
+  {"slug":"dietary-fiber-calculator","title":"膳食纖維攝取量評估與富含食物查詢"},
+  {"slug":"maximum-heart-rate","title":"最大心率 (HRmax) 與運動強度換算器"},
+  {"slug":"daily-sodium-intake","title":"每日鈉含量攝取評估與減鹽建議工具"},
+  {"slug":"healthy-weight-loss-planner","title":"健康減重期程與熱量缺口規劃器"},
+  {"slug":"dietary-fat-intake","title":"脂肪攝取量與油脂比例計算機"},
+  {"slug":"daily-calcium-intake","title":"每日鈣質攝取評估與補鈣食物指南"},
+  {"slug":"intermittent-fasting-tracker","title":"間歇性斷食計時與計畫指引工具"},
+  {"slug":"daily-iron-intake","title":"每日鐵質攝取評估與補鐵食物指南"},
+  {"slug":"caffeine-intake-tracker","title":"每日咖啡因攝取記錄與安全限額評估"},
+  {"slug":"daily-potassium-intake","title":"每日鉀離子攝取評估與高鉀食物查詢"},
+  {"slug":"daily-sugar-intake","title":"每日游離糖攝取評估與減糖建議工具"},
+  {"slug":"daily-vitamin-c-intake","title":"每日維生素C攝取評估與富含食物查詢"},
+  {"slug":"exercise-calories-burned","title":"運動消耗熱量 (MET) 即時計算機"},
+  {"slug":"daily-vitamin-d-intake","title":"每日維生素D攝取評估與日照補D指南"},
+  {"slug":"basal-body-temperature-tracker","title":"基礎體溫紀錄與排卵期生理週期分析"},
+  {"slug":"pregnancy-due-date-calculator","title":"預產期計算器與孕期週數進度追蹤"},
+  {"slug":"gestational-weight-gain","title":"孕期體重增加建議與健康曲線評估工具"},
+  {"slug":"baby-feeding-tracker","title":"嬰幼兒奶量計算與每日作息哺乳紀錄"},
+  {"slug":"child-growth-percentile","title":"兒童生長曲線百分位快速查詢工具"},
+  {"slug":"vaccination-schedule-planner","title":"公費兒童與成人疫苗接種時程規劃器"},
+  {"slug":"ovulation-fertile-window","title":"排卵期計算器與受孕黃金期預測工具"},
+  {"slug":"postpartum-depression-scale","title":"愛丁堡產後憂鬱症自我評估量表 (EPDS)"},
+  {"slug":"children-development-milestones","title":"兒童發展里程碑與早期療育自評檢核表"},
+  {"slug":"daily-zinc-intake","title":"每日鋅攝取評估與富含食物指南"},
+  {"slug":"childcare-subsidy-calculator","title":"0-6歲國家一起養：育兒津貼與托育補助試算"},
+  {"slug":"postpartum-recovery-tracker","title":"產後身體恢復與惡露觀察評估工具"},
+  {"slug":"emergency-hotlines","title":"全臺緊急救助與重要諮詢電話總覽"},
+  {"slug":"er-status","title":"全臺醫院急診即時看診與等待人數看板"},
+  {"slug":"aed","title":"全國公共場所 AED 急救地圖與即時導航"},
+  {"slug":"clinics","title":"全臺健保特約醫療院所即時查詢與地圖"},
+  {"slug":"pharmacies","title":"全臺健保特約藥局即時查詢與地圖"},
+  {"slug":"dengue-map","title":"本土登革熱與屈公病每日最新疫情地圖"},
+  {"slug":"flu-status","title":"全臺公費流感抗病毒藥劑特約院所地圖"},
+  {"slug":"first-aid-guide","title":"居家與外出常見急救處置指引"},
+  {"slug":"blood-donation-spots","title":"全臺捐血據點與即時血液庫存查詢地圖"},
+  {"slug":"covid-status","title":"COVID-19 疫苗接種合約院所即時地圖"},
+  {"slug":"long-term-care-services","title":"長照 2.0 服務項目與自費額即時試算器"},
+  {"slug":"assistive-devices-subsidy","title":"身心障礙與失能輔具補助金額快速試算"},
+  {"slug":"long-term-care-facilities","title":"全臺長照機構與日間照顧中心清單地圖"},
+  {"slug":"dementia-resources","title":"失智症照顧資源與失智友善據點地圖"},
+  {"slug":"social-welfare-subsidy-lookup","title":"全臺弱勢族群社會救助與各項生活補助查詢"},
+  {"slug":"cooling-shelters","title":"全臺極端高溫避暑防熱涼適點據點地圖"},
+  {"slug":"food-nutrition-database","title":"食品營養成分與熱量快速檢索資料庫"},
+  {"slug":"food-safety-violations","title":"全臺不合格食品稽查與違規裁罰名冊查詢"},
+  {"slug":"restaurant-hygiene-inspection","title":"全臺餐飲衛生稽查合格與優良評鑑地圖"},
+  {"slug":"drinking-water-quality","title":"自來水水質與飲用水水源即時檢驗報告"},
+  {"slug":"food-additive-lookup","title":"合法食品添加物用途與使用限量法規查詢"},
+  {"slug":"pesticide-residue-standards","title":"農藥殘留容許量標準與用藥規範查詢"},
+  {"slug":"green-certifications","title":"環保標章認證、綠色旅宿與綠色餐廳清單"},
+  {"slug":"water-conditions","title":"臺灣水情水庫蓄水量與水情燈號即時看板"},
+  {"slug":"air-quality-forecast","title":"全國即時空氣品質指標 (AQI) 與防護指引"},
+  {"slug":"uv-index-forecast","title":"即時紫外線指數 (UVI) 與防曬警示指引"},
+  {"slug":"weather-alerts","title":"中央氣象署即時天氣特報與劇烈天氣示警"},
+  {"slug":"disaster-map","title":"各縣市防救災避難收容處所地圖與導航"},
+  {"slug":"inundation-map","title":"全臺積淹水感測即時警訊與淹水潛勢圖"},
+  {"slug":"radiation-monitoring","title":"全國環境輻射即時監測數值與安全指標"},
+  {"slug":"earthquake-history","title":"臺灣歷史有感地震檢索與震度報告資料庫"},
+  {"slug":"anti-fraud","title":"165 全民防騙：高風險賣場與詐騙手法即時警示"},
+  {"slug":"smoking-cessation-clinics","title":"全臺戒菸服務合約醫療院所查詢地圖"},
+  {"slug":"mental-health-consultation","title":"全臺免費心理諮商據點與心理健康資源地圖"},
+  {"slug":"gambling-addiction-resources","title":"問題賭博求助管道與戒賭諮詢資源地圖"},
+  {"slug":"substance-abuse-treatment","title":"藥癮與物質成癮戒治醫療機構清單地圖"},
+  {"slug":"public-toilets","title":"全臺公廁位置、無障礙設施與即時導航地圖"},
+  {"slug":"accessible-transit","title":"全臺各縣市無障礙大眾運輸與低底盤公車指引"},
+  {"slug":"power-outages","title":"全臺即時停電狀況與台電計畫性檢修停電查詢"},
+  {"slug":"work-school-status","title":"天然災害停止上班及上課即時宣布看板"},
+  {"slug":"electric-vehicle-charging","title":"全臺公共電動車充電樁站點地圖與規格查詢"},
+  {"slug":"cpc-prices","title":"中油即時油價走勢預測與全臺加油站地圖"},
+  {"slug":"cultural-assets","title":"全臺文化資產古蹟與歷史建築數位導覽地圖"},
+  {"slug":"cultural-events","title":"全臺藝文活動即時資訊與展演活動行事曆"},
+  {"slug":"national-parks-guide","title":"臺灣國家公園自然生態保護區與入園資訊指南"},
+  {"slug":"tourism-factories","title":"經濟部評鑑優良觀光工廠參觀與預約指南"}
+];
+
 const SUB_TOOLS = [
   { slug: "green-certifications", tab: "green-hotels", title: "綠色旅宿（環保旅館）", path: "/tools/green-certifications?tab=green-hotels" },
   { slug: "green-certifications", tab: "green-restaurants", title: "綠色餐廳", path: "/tools/green-certifications?tab=green-restaurants" },
@@ -41,9 +126,6 @@ const SUB_TOOLS = [
   { slug: "water-conditions", tab: "reservoir-status", title: "即時水庫水情", path: "/tools/water-conditions?tab=reservoir-status" },
 ];
 
-/**
- * 簡易 CDP Client (使用 Node 原生 WebSocket)
- */
 class CdpClient {
   constructor(wsUrl) {
     this.wsUrl = wsUrl;
@@ -70,7 +152,7 @@ class CdpClient {
             for (const fn of listeners) fn(msg.params);
           }
         } catch (e) {
-          console.error("CDP Message Parse Error:", e);
+          console.error("CDP parse error:", e);
         }
       };
     });
@@ -101,9 +183,15 @@ async function sleep(ms) {
 }
 
 async function launchChrome() {
-  console.log(`[Chrome] 啟動本機 Google Chrome (Port ${CDP_PORT})...`);
+  const userDataDir = path.join(ROOT_DIR, ".chrome-audit-profile");
+  if (!fs.existsSync(userDataDir)) {
+    fs.mkdirSync(userDataDir, { recursive: true });
+  }
+
+  console.log(`[Chrome] 啟動獨立 CDP 實體 (Port ${CDP_PORT})...`);
   const chromeProcess = spawn(CHROME_PATH, [
     `--remote-debugging-port=${CDP_PORT}`,
+    `--user-data-dir=${userDataDir}`,
     "--headless=new",
     "--disable-gpu",
     "--no-first-run",
@@ -112,19 +200,18 @@ async function launchChrome() {
     "about:blank",
   ]);
 
-  // 等待 CDP 端口就緒
   for (let i = 0; i < 30; i++) {
     await sleep(500);
     try {
       const res = await fetch(`http://127.0.0.1:${CDP_PORT}/json/version`);
       if (res.ok) {
         const data = await res.json();
-        console.log(`[Chrome] CDP 已連線: ${data.webSocketDebuggerUrl}`);
+        console.log(`[Chrome] 連接成功: ${data.webSocketDebuggerUrl}`);
         return { process: chromeProcess, wsUrl: data.webSocketDebuggerUrl };
       }
     } catch {}
   }
-  throw new Error("無法連接本機 Chrome CDP");
+  throw new Error("無法連接 Chrome CDP");
 }
 
 async function createTarget(url = "about:blank") {
@@ -144,8 +231,6 @@ async function runVisualAudit() {
   console.log(`目標網站: ${BASE_URL}`);
   console.log("==================================================");
 
-  const { TOOL_CATALOG } = await import("../lib/server/tools/catalog.ts");
-
   let chrome;
   try {
     chrome = await launchChrome();
@@ -157,15 +242,14 @@ async function runVisualAudit() {
   const results = [];
   const ga4EventsCaptured = [];
 
-  // 待檢驗頁面清單
   const pagesToTest = [
-    { title: "首頁 Launchpad", path: "/", slug: "home", isHub: true },
+    { title: "首頁便民工具 Launchpad", path: "/", slug: "home", isHub: true },
     { title: "工具總覽頁 (/tools)", path: "/tools", slug: "tools-index", isHub: true },
-    ...SUB_TOOLS.map((st) => ({ title: `[子工具] ${st.title}`, path: st.path, slug: `${st.slug}-${st.tab}`, isSub: true })),
-    ...TOOL_CATALOG.map((t) => ({ title: t.title, path: `/tools/${t.slug}`, slug: t.slug })),
+    ...SUB_TOOLS.map((st) => ({ title: `[子分頁] ${st.title}`, path: st.path, slug: `${st.slug}-${st.tab}`, isSub: true })),
+    ...RAW_TOOLS.map((t) => ({ title: t.title, path: `/tools/${t.slug}`, slug: t.slug })),
   ];
 
-  console.log(`共計需要檢驗 ${pagesToTest.length} 個端點 (含雙視窗截圖與 GA4 封包監聽)...`);
+  console.log(`共計檢驗 ${pagesToTest.length} 個端點 (含雙視窗截圖與 GA4 封包監聽)...`);
 
   for (let index = 0; index < pagesToTest.length; index++) {
     const pageItem = pagesToTest[index];
@@ -177,7 +261,7 @@ async function runVisualAudit() {
         ]
       : [{ name: "desktop", width: 1280, height: 800, isMobile: false }];
 
-    console.log(`\n[${index + 1}/${pagesToTest.length}] 正在檢驗: ${pageItem.title} (${pageItem.path})`);
+    console.log(`\n[${index + 1}/${pagesToTest.length}] 檢驗中: ${pageItem.title} (${pageItem.path})`);
 
     for (const vp of viewports) {
       const target = await createTarget();
@@ -192,7 +276,6 @@ async function runVisualAudit() {
         await client.send("Runtime.enable");
         await client.send("Network.enable");
 
-        // 設定解析度
         await client.send("Emulation.setDeviceMetricsOverride", {
           width: vp.width,
           height: vp.height,
@@ -200,12 +283,10 @@ async function runVisualAudit() {
           mobile: vp.isMobile,
         });
 
-        // 監聽 JS 報錯
         client.on("Runtime.exceptionThrown", (params) => {
           pageErrors.push(params.exceptionDetails?.text || "Unknown Exception");
         });
 
-        // 監聽 GA4 封包
         client.on("Network.requestWillBeSent", (params) => {
           const reqUrl = params.request.url;
           if (reqUrl.includes("google-analytics.com") || reqUrl.includes("analytics.google.com")) {
@@ -219,10 +300,9 @@ async function runVisualAudit() {
         const startTime = Date.now();
         await client.send("Page.navigate", { url: `${BASE_URL}${pageItem.path}` });
 
-        // 智慧等待：等待 DOM 渲染且退去 Skeleton
         let isReady = false;
         let checks = 0;
-        while (!isReady && checks < 14) { // 最多等待 7 秒
+        while (!isReady && checks < 12) {
           await sleep(500);
           checks++;
           const evalRes = await client.send("Runtime.evaluate", {
@@ -243,7 +323,6 @@ async function runVisualAudit() {
 
         const renderDuration = Date.now() - startTime;
 
-        // 截圖
         const screenshotRes = await client.send("Page.captureScreenshot", { format: "png" });
         const screenshotFileName = `${pageItem.slug}-${vp.name}.png`;
         const screenshotFullPath = path.join(SCREENSHOT_DIR, screenshotFileName);
@@ -263,9 +342,9 @@ async function runVisualAudit() {
         };
 
         results.push(auditItem);
-        console.log(`  ✓ [${vp.name}] 耗時: ${renderDuration}ms | GA4: [${ga4Hits.join(", ")}] | 截圖: ${screenshotFileName}`);
+        console.log(`  ✓ [${vp.name}] 加載耗時: ${renderDuration}ms | GA4: [${ga4Hits.join(", ")}] | 截圖: ${screenshotFileName}`);
       } catch (err) {
-        console.error(`  ✗ [${vp.name}] 檢驗失敗:`, err.message);
+        console.error(`  ✗ [${vp.name}] 失敗:`, err.message);
         results.push({
           title: pageItem.title,
           path: pageItem.path,
@@ -285,7 +364,6 @@ async function runVisualAudit() {
     }
   }
 
-  // 關閉 Chrome
   if (chrome?.process) {
     chrome.process.kill();
   }
@@ -294,15 +372,12 @@ async function runVisualAudit() {
   console.log("📊 正在產出視覺審查 Artifact 與 HTML 相簿...");
   console.log("==================================================");
 
-  // 產生 Markdown Artifact
   generateMarkdownArtifact(results, ga4EventsCaptured);
-
-  // 產生本地 HTML 互動畫廊
   generateHtmlGallery(results);
 
-  console.log(`\n🎉 巡檢完成！`);
+  console.log(`\n🎉 巡檢全量完成！`);
   console.log(`- 報告 Artifact: ${ARTIFACT_PATH}`);
-  console.log(`- 本地畫廊: ${GALLERY_HTML_PATH}`);
+  console.log(`- 本地相簿: ${GALLERY_HTML_PATH}`);
 }
 
 function generateMarkdownArtifact(results, ga4Events) {
@@ -312,12 +387,12 @@ function generateMarkdownArtifact(results, ga4Events) {
   const failCount = results.filter((r) => r.status === "FAIL").length;
   const avgDuration = Math.round(results.reduce((acc, r) => acc + r.renderDurationMs, 0) / (total || 1));
 
-  let md = `# 正式站全量工具 Google Chrome 視覺檢視與資料巡檢報告 (Visual Audit)
+  let md = `# 正式站全量工具 Google Chrome 視覺檢視與真實資料巡檢報告 (Visual Audit)
 
 - **檢測目標**：\`${BASE_URL}\`
 - **執行時間**：${new Date().toISOString()}
 - **檢測引擎**：Google Chrome (Headless CDP Engine)
-- **總檢查項目**：${total} 項（涵蓋 Mobile 390px 與 Desktop 1280px 雙解析度）
+- **總檢查視窗數**：${total} 項（涵蓋 Mobile 390px 與 Desktop 1280px 雙解析度）
 
 ---
 
@@ -406,3 +481,4 @@ runVisualAudit().catch((err) => {
   console.error(err);
   process.exit(1);
 });
+
