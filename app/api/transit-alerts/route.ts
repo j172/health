@@ -11,7 +11,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const showAll = searchParams.get("all") === "true";
 
   try {
-    const alerts = await withConnection(async (conn) => {
+    const result = await withConnection(async (conn) => {
       let sql = `
         SELECT
           t.alert_id AS alertId,
@@ -46,14 +46,40 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       sql += ` ORDER BY t.start_time DESC, t.updated_at DESC LIMIT 50`;
 
       const [rows] = await conn.query<RowDataPacket[]>(sql, params);
-      return rows;
+
+      // Query reconciliation syncMeta from provider_api_cache
+      const [cacheRows] = await conn.query<RowDataPacket[]>(
+        `SELECT response_json, fetched_at_utc
+         FROM provider_api_cache
+         WHERE cache_key = 'tdx:metro-alerts:reconciliation'
+         LIMIT 1`,
+      );
+
+      let lastReconciledAt: string | null = null;
+      if (cacheRows && cacheRows.length > 0) {
+        try {
+          const parsed = JSON.parse(cacheRows[0].response_json);
+          lastReconciledAt = parsed.reconciledAt || cacheRows[0].fetched_at_utc || null;
+        } catch {
+          lastReconciledAt = cacheRows[0].fetched_at_utc || null;
+        }
+      }
+
+      return {
+        alerts: rows,
+        syncMeta: {
+          pushMode: "mqtt_live",
+          lastReconciledAt,
+        },
+      };
     });
 
     return NextResponse.json(
       {
         ok: true,
-        alerts: alerts || [],
-        total: alerts?.length || 0,
+        alerts: result.alerts || [],
+        total: result.alerts?.length || 0,
+        syncMeta: result.syncMeta,
         updatedAt: new Date().toISOString(),
       },
       cacheInit("short"),

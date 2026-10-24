@@ -16,6 +16,8 @@ const PRESETS = {
   none: "no-store",
   /** Fast-moving live readings/availability (minutes). */
   fast: "public, s-maxage=30, stale-while-revalidate=60",
+  /** Short edge cache for dynamic alerts. */
+  short: "public, s-maxage=60, stale-while-revalidate=300",
   /** Live readings and alerts synced every 15-60 minutes. */
   live: "public, s-maxage=60, stale-while-revalidate=300",
   /** Hourly-or-slower data. */

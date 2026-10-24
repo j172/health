@@ -51,6 +51,27 @@ export default function AccessibleTransitContent() {
   const [selectedSystem, setSelectedSystem] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
+  const [syncMeta, setSyncMeta] = useState<{
+    pushMode?: string;
+    lastReconciledAt?: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    async function loadSyncMeta() {
+      try {
+        const res = await fetchWithTimeout("/api/transit-alerts", { timeoutMs: 5000 });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.syncMeta) {
+            setSyncMeta(json.syncMeta);
+          }
+        }
+      } catch {
+        // non-blocking
+      }
+    }
+    loadSyncMeta();
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -199,14 +220,34 @@ export default function AccessibleTransitContent() {
       {/* 設施停用公告 — 比照 inundation-map 的警示燈號設計語言 */}
       {activeAlerts.length > 0 && (
         <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-900 rounded-xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">⚠️</span>
-            <h2 className="text-sm font-bold text-orange-700 dark:text-orange-400">
-              {t("accessibleTransitTool.alertsHeadingTemplate", "設施停用公告（{count} 筆生效中）").replace(
-                "{count}",
-                String(activeAlerts.length),
-              )}
-            </h2>
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">⚠️</span>
+              <h2 className="text-sm font-bold text-orange-700 dark:text-orange-400">
+                {t("accessibleTransitTool.alertsHeadingTemplate", "設施停用公告（{count} 筆生效中）").replace(
+                  "{count}",
+                  String(activeAlerts.length),
+                )}
+              </h2>
+            </div>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>● 即時推播 (MQTTS)</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium">
+                <span>🕒</span>
+                <span>
+                  官方核驗：
+                  {syncMeta?.lastReconciledAt
+                    ? new Date(syncMeta.lastReconciledAt).toLocaleTimeString("zh-TW", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "每日 04:16"}
+                </span>
+              </span>
+            </div>
           </div>
           <div className="space-y-2">
             {activeAlerts.slice(0, 12).map((a) => (
