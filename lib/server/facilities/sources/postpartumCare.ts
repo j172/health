@@ -1,6 +1,5 @@
-import type { FacilityRecord } from "@/lib/server/facilities/queries";
-import { httpGetText } from "@/lib/server/net/httpClient";
-import { parseCsv, toHalfwidthDigits } from "@/lib/server/facilities/csv";
+import type { FacilityRecord } from "../queries.ts";
+import { parseCsv, toHalfwidthDigits } from "../csv.ts";
 
 // 衛生福利部護理及健康照護司「全國開業護理機構清冊」（含一般護理之家、居家護理所及產後護理之家）
 // data.gov.tw 115950，每年/不定期更新。
@@ -55,7 +54,7 @@ export function parsePostpartumCareFacilities(text: string): FacilityRecord[] {
     const locAddress = cleanStr(row["定位地址"]);
     const address = locAddress || registeredAddress;
     const rawPhone = cleanStr(row["機構電話"]);
-    const phone = toHalfwidthDigits(rawPhone);
+    const phone = toHalfwidthDigits(rawPhone).replace(/[－—–]/g, "-").trim();
 
     const babyBeds = parseBedCount(row["護理類-嬰兒床-開放床數"]);
     const evalResult = cleanStr(row["評鑑結果"]) || "尚未評鑑";
@@ -69,16 +68,19 @@ export function parsePostpartumCareFacilities(text: string): FacilityRecord[] {
 
     results.push({
       facilityType: "postpartum_care",
+      sourceKey: "nhplatform_115950",
       sourceId: code,
       name,
       address,
       phone,
-      city,
       lat,
       lng,
-      category: evalResult,
-      serviceItems,
-      extraJson: {
+      serviceItem: serviceItems,
+      serviceTime: null,
+      dataOrg: "衛生福利部護理及健康照護司",
+      extra: {
+        category: evalResult,
+        city,
         postpartumBeds: postBeds,
         babyBeds,
         evaluationResult: evalResult,
@@ -95,6 +97,7 @@ export function parsePostpartumCareFacilities(text: string): FacilityRecord[] {
  * Downloads and parses the live postpartum care facilities from MOHW.
  */
 export async function fetchPostpartumCare(): Promise<FacilityRecord[]> {
+  const { httpGetText } = await import("../../net/httpClient.ts");
   const { status, text } = await httpGetText(POSTPARTUM_SOURCE_URL, { timeoutMs: 30_000 });
   if (status < 200 || status >= 300) {
     throw new Error(`MOHW 115950 request failed: HTTP ${status}`);
