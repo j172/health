@@ -170,15 +170,21 @@ test("HawkHost 推薦網址常數：與指定網址完全相同、保留指定�
   assert.notEqual(appendOutboundUtm(HAWKHOST_REFERRAL_URL), HAWKHOST_REFERRAL_URL);
 });
 
-test("RECOMMENDED_AFFILIATE_LINKS 常數清單：4 個指定服務網址與 rel 屬性完整", () => {
-  assert.equal(RECOMMENDED_AFFILIATE_LINKS.length, 4);
+test("RECOMMENDED_AFFILIATE_LINKS 常數清單：5 個指定服務網址與 rel 屬性完整", () => {
+  assert.equal(RECOMMENDED_AFFILIATE_LINKS.length, 5);
   assert.equal(RECOMMENDED_AFFILIATE_LINKS[0].url, EXPECTED_HAWKHOST_URL);
   assert.equal(RECOMMENDED_AFFILIATE_LINKS[1].url, "https://hahow.in/ur/j172?utm_source=j172.tw");
   assert.equal(RECOMMENDED_AFFILIATE_LINKS[2].url, "https://www.uber.com/invite/sgyal?utm_source=j172.tw");
   assert.equal(RECOMMENDED_AFFILIATE_LINKS[3].url, "https://www.klook.com/zh-TW/invite/D3ZWFN?c=TWD&utm_source=j172.tw");
+  assert.equal(
+    RECOMMENDED_AFFILIATE_LINKS[4].url,
+    "https://invite.duolingo.com/profile-share/j172tw?via=share_profile_qr",
+  );
 
   for (const item of RECOMMENDED_AFFILIATE_LINKS) {
-    assert.match(item.url, /utm_source=j172\.tw/);
+    if (item.id !== "duolingo") {
+      assert.match(item.url, /utm_source=j172\.tw/);
+    }
     assert.ok(!/utm_source=health\.j172\.tw/i.test(item.url));
   }
 });
@@ -224,7 +230,7 @@ for (const locale of LOCALES) {
     }
   });
 
-  test(`[${locale}] 推薦服務連結列：4 個服務皆存在、保留指定 UTM、rel/target 正確、具外聯符號、位於版權列之前`, () => {
+  test(`[${locale}] 推薦服務連結列：5 個服務皆存在、保留指定 UTM、rel/target 正確、具外聯符號、位於版權列之前`, () => {
     const html = renderFooter(locale);
     const dict = readLocale(locale).footer;
     const all = anchors(html);
@@ -238,7 +244,9 @@ for (const locale of LOCALES) {
 
       assert.equal(attr(link.attrs, "href"), item.url);
       assert.ok(!/utm_source=health\.j172\.tw/i.test(link.attrs), "聯盟連結不可被附加 health.j172.tw 之 UTM");
-      assert.match(attr(link.attrs, "href"), /utm_source=j172\.tw/, "聯盟連結應保留指定之 j172.tw UTM 參數");
+      if (item.id !== "duolingo") {
+        assert.match(attr(link.attrs, "href"), /utm_source=j172\.tw/, "聯盟連結應保留指定之 j172.tw UTM 參數");
+      }
       assert.equal(attr(link.attrs, "rel"), "sponsored nofollow noopener noreferrer");
       assert.equal(attr(link.attrs, "target"), "_blank");
 

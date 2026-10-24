@@ -36,6 +36,11 @@ export const RECOMMENDED_AFFILIATE_LINKS: readonly RecommendedAffiliateLink[] = 
     name: "Klook",
     url: "https://www.klook.com/zh-TW/invite/D3ZWFN?c=TWD&utm_source=j172.tw",
   },
+  {
+    id: "duolingo",
+    name: "Duolingo",
+    url: "https://invite.duolingo.com/profile-share/j172tw?via=share_profile_qr",
+  },
 ] as const;
 
 export const HAWKHOST_REFERRAL_URL = RECOMMENDED_AFFILIATE_LINKS[0].url;
