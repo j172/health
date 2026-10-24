@@ -15,10 +15,9 @@ This ticket tracks the implementation of **臺灣海纜動態通訊韌性狀態�
 - Research: [`docs/2.0/opendata-expansion-research.md`](../2.0/opendata-expansion-research.md) (§4.1, §7 #2)
 
 ### Checklist
-- [ ] Implement `lib/server/resilience/submarineCableService.ts`
-- [ ] Implement `app/api/submarine-cables/status/route.ts`
-- [ ] Implement `components/Resilience/SubmarineCableStatusBadge.tsx`
-- [ ] Mount badge in `/guides/typhoon-earthquake` and `/tools/power-grid-overview`
-- [ ] Write unit tests `tests/submarine-cable-status.test.mjs`
-- [ ] Verify test suite and typecheck
-
+- [x] Implement `lib/server/resilience/submarineCableService.ts`
+- [x] Implement `app/api/submarine-cables/status/route.ts`
+- [x] Implement `components/Resilience/SubmarineCableStatusBadge.tsx`
+- [x] Mount badge in `/guides/typhoon-earthquake` and `/tools/power-grid-overview`
+- [x] Write unit tests `tests/submarine-cable-status.test.mjs`
+- [x] Verify test suite and typecheck
