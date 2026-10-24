@@ -180,8 +180,12 @@
     "mohwVio": "MOHW Medical Gender Violation Search",
     "moeEce": "MOE Preschool Violations Database",
     "sfaaCrc": "MOHW Child Protection Sanctions",
+<<<<<<< HEAD
     "council2026": "2026 Politician Records",
     "recommendedServices": "Things I use & recommend:"
+=======
+    "council2026": "2026 Politician Records"
+>>>>>>> origin/main
   },
   "tts_title": "Voice Reader",
   "tts_play": "Read Aloud",
