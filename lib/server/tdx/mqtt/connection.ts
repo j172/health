@@ -3,7 +3,12 @@ import type {
   TdxMqttConnectionStatus,
   TdxMqttDiagnostics,
   TdxMqttManagerOptions,
-} from "./types";
+} from "./types.ts";
+import {
+  tdxStreamCircuitBreaker,
+  type TdxStreamCircuitBreaker,
+  type StreamActiveEngine,
+} from "./circuitBreaker.ts";
 
 export const DEFAULT_TDX_MQTT_BROKER = "mqtts://mqtt.transportdata.tw:8883";
 export const DEFAULT_BASE_BACKOFF_MS = 1_000;
@@ -19,6 +24,8 @@ export interface TdxMqttManager {
   subscribe(topics: string | string[], qos?: 0 | 1 | 2): Promise<boolean>;
   getDiagnostics(): TdxMqttDiagnostics;
   getClient(): MqttClient | null;
+  getActiveEngine(): StreamActiveEngine;
+  getCircuitBreaker(): TdxStreamCircuitBreaker;
 }
 
 export function calculateBackoffMs(
@@ -36,10 +43,13 @@ export function createTdxMqttManager(
   deps: {
     clientFactory?: MqttClientFactory;
     now?: () => Date;
+    circuitBreaker?: TdxStreamCircuitBreaker;
   } = {},
 ): TdxMqttManager {
   const clientFactory: MqttClientFactory = deps.clientFactory ?? mqtt.connect;
   const now = deps.now ?? (() => new Date());
+  const circuitBreaker: TdxStreamCircuitBreaker =
+    deps.circuitBreaker ?? tdxStreamCircuitBreaker;
 
   const brokerUrl = options.brokerUrl || process.env.TDX_MQTT_BROKER_URL || DEFAULT_TDX_MQTT_BROKER;
   const username = options.username || process.env.TDX_MQTT_USERNAME;
@@ -63,6 +73,10 @@ export function createTdxMqttManager(
     return Boolean(username && password && clientId);
   }
 
+  function getActiveEngine(): StreamActiveEngine {
+    return circuitBreaker.getActiveEngine();
+  }
+
   function getDiagnostics(): TdxMqttDiagnostics {
     return {
       status,
@@ -75,6 +89,8 @@ export function createTdxMqttManager(
       reconnectAttempts,
       messagesReceived,
       lastError,
+      activeEngine: getActiveEngine(),
+      circuit: circuitBreaker.getCircuitStatus(),
     };
   }
 
@@ -109,6 +125,9 @@ export function createTdxMqttManager(
         reconnectAttempts = 0;
         lastError = null;
 
+        // Notify circuit breaker of successful connection/probe
+        circuitBreaker.recordConnectionSuccess();
+
         // Auto-resubscribe active topics upon reconnect
         if (subscribedTopics.size > 0 && client) {
           const topics = Array.from(subscribedTopics);
@@ -131,6 +150,7 @@ export function createTdxMqttManager(
           status = "disconnected";
         }
         lastDisconnectedAt = now().toISOString();
+        circuitBreaker.recordDisconnect(now().getTime());
       });
 
       client.on("error", (err: Error) => {
@@ -140,6 +160,7 @@ export function createTdxMqttManager(
           .replace(password || "", "[REDACTED]")
           .replace(username || "", "[USER]");
         lastError = sanitizedMsg;
+        circuitBreaker.recordDisconnect(now().getTime());
       });
 
       client.on("message", () => {
@@ -151,6 +172,7 @@ export function createTdxMqttManager(
       status = "error";
       const msg = err instanceof Error ? err.message : String(err);
       lastError = msg.replace(password || "", "[REDACTED]");
+      circuitBreaker.recordDisconnect(now().getTime());
       return null;
     }
   }
@@ -203,6 +225,8 @@ export function createTdxMqttManager(
     subscribe,
     getDiagnostics,
     getClient,
+    getActiveEngine,
+    getCircuitBreaker: () => circuitBreaker,
   };
 }
 

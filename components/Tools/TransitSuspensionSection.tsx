@@ -3,9 +3,10 @@ import { TRANSIT_EMERGENCY_HOTLINES } from "@/lib/transit/disasterHotlines";
 
 interface TransitSuspensionSectionProps {
   locale?: string;
+  pushMode?: string;
 }
 
-export default function TransitSuspensionSection({ locale = "zh" }: TransitSuspensionSectionProps) {
+export default function TransitSuspensionSection({ locale = "zh", pushMode = "mqtt_live" }: TransitSuspensionSectionProps) {
   const isEn = locale === "en";
   const isJa = locale === "ja";
   const isKo = locale === "ko";
@@ -26,13 +27,23 @@ export default function TransitSuspensionSection({ locale = "zh" }: TransitSuspe
     ? "태풍이나 강진 발생 시 대만철도, 고속철도, 각 지하철 시스템은 감차, 서행, 운행 중단을 시행할 수 있습니다. 실시간 운행 지연 및 중단 공고를 확인하고 공식 고객센터를 통해 환불 절차를 안내받으세요."
     : "颱風豪雨或地震災防期間，臺鐵、高鐵與各都會捷運常依風雨級別或巡軌檢修啟動減班、慢行或全線停駛。即時掌握雙鐵與捷運營運通報，避免外出受困滯留車站；緊急諮詢可利用官方客服專線確認退票與接駁措施。";
 
-  const badgeLive = isEn
+  const isFallback = pushMode === "rest_fallback";
+
+  const badgeLive = isFallback
+    ? isEn
+      ? "Scheduled Polling Fallback"
+      : isJa
+      ? "定期同期 (排程備援)"
+      : isKo
+      ? "정기 동기화 (예비)"
+      : "🟡 官方定時同步 (排程備援)"
+    : isEn
     ? "Live Push (MQTTS)"
     : isJa
     ? "即時配信 (MQTTS)"
     : isKo
     ? "실시간 푸시 (MQTTS)"
-    : "即時推播 (MQTTS)";
+    : "🟢 即時推播 (MQTTS)";
 
   const badgeScope = isEn
     ? "TRA / THSR / Metro Disruption Alerts"
@@ -68,10 +79,17 @@ export default function TransitSuspensionSection({ locale = "zh" }: TransitSuspe
           </h2>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>{badgeLive}</span>
-          </span>
+          {isFallback ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <span>{badgeLive}</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>{badgeLive}</span>
+            </span>
+          )}
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-medium">
             {badgeScope}
           </span>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { RowDataPacket } from "mysql2/promise";
 import { withConnection } from "@/lib/server/db/mysql";
 import { cacheInit } from "@/lib/server/http/cacheControl";
+import { tdxStreamCircuitBreaker } from "@/lib/server/tdx/mqtt/circuitBreaker";
 
 export const runtime = "nodejs";
 
@@ -65,10 +66,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         }
       }
 
+      // Default pushMode: "mqtt_live" when circuit is CLOSED, "rest_fallback" when OPEN
+      const circuitStatus = tdxStreamCircuitBreaker.getCircuitStatus();
+      const pushMode = circuitStatus.state === "CLOSED" ? "mqtt_live" : "rest_fallback";
+
       return {
         alerts: rows,
         syncMeta: {
-          pushMode: "mqtt_live",
+          pushMode,
+          circuitState: circuitStatus.state,
+          activeEngine: circuitStatus.activeEngine,
           lastReconciledAt,
         },
       };

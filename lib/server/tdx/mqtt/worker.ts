@@ -10,13 +10,17 @@ import {
 import { handleMetroAlertMessage } from "./metroAlertHandler.ts";
 import { handleTraAlertMessage, handleThsrAlertMessage } from "./railAlertHandler.ts";
 import { ensureColdStartSnapshot } from "./reconciliation.ts";
+import {
+  tdxStreamCircuitBreaker,
+  type FallbackPollOutcome,
+} from "./circuitBreaker.ts";
 
 let isWorkerStarted = false;
 
 /**
  * Initializes and starts the background TDX MQTTS worker.
  * Ensures cold-start snapshot baseline before starting MQTT, then
- * subscribes to Metro, LRT, TRA, and THSR disruption topics at QoS 1 and routes incoming messages.
+ * subscribes to Metro, LRT, TRA, and THSR disruption streams at QoS 1 and routes incoming messages.
  * Idempotent: calling multiple times will not create duplicate listeners.
  */
 export async function startTdxMqttWorker(): Promise<boolean> {
@@ -33,6 +37,7 @@ export async function startTdxMqttWorker(): Promise<boolean> {
 
   const client = await tdxMqttManager.connect();
   if (!client) {
+    tdxStreamCircuitBreaker.recordDisconnect();
     return false;
   }
 
@@ -69,4 +74,13 @@ export async function startTdxMqttWorker(): Promise<boolean> {
 
 export function isTdxMqttWorkerRunning(): boolean {
   return isWorkerStarted;
+}
+
+/**
+ * Supervisor tick: evaluates circuit state.
+ * If in OPEN state, executes fallback polling (guarded by 80 requests/day safety quota and 3-hour interval).
+ */
+export async function runStreamSupervisorTick(deps: any = {}): Promise<FallbackPollOutcome> {
+  tdxStreamCircuitBreaker.checkAndEvaluateState(deps.now ? deps.now() : undefined);
+  return tdxStreamCircuitBreaker.executeFallbackPoll(deps);
 }

@@ -23,6 +23,8 @@ export interface TdxMqttDiagnostics {
   reconnectAttempts: number;
   messagesReceived: number;
   lastError: string | null;
+  activeEngine?: string;
+  circuit?: unknown;
 }
 
 export interface TdxMqttManagerOptions {
