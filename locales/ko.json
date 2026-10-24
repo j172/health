@@ -970,7 +970,12 @@
       "workdayOffNamedTemplate": "휴무 · {name}",
       "workdayUnknown": "달력 정보 없음",
       "tomorrowShortcutLabel": "내일은 휴무인가요?",
-      "tomorrowWorkdayLabel": "내일 근무"
+      "tomorrowWorkdayLabel": "내일 근무",
+      "nextHolidayLabel": "다음 휴일",
+      "todayOffLabel": "오늘 휴무",
+      "workdayWorkdayLabel": "오늘 근무",
+      "countdownTemplate": "{days}일 남음({name})",
+      "tomorrowOffTemplate": "내일 휴무({name})"
     },
     "guideCards": {
       "sectionAriaLabel": "생활 상황별 가이드",

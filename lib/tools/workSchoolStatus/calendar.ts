@@ -210,3 +210,110 @@ export const buildHomeWorkdayChip = (rows: readonly OfficeCalendarDay[], now: Da
   const status = classifyDay(date, indexByDate(rows).get(date));
   return { state: status.state, offReason: status.offReason, name: status.name };
 };
+
+export type HomeHolidayMode =
+  | "workday-countdown" // Weekday > 1 day to holiday
+  | "tomorrow-off"      // Weekday exactly 1 day to holiday
+  | "today-off"         // Today is a day off (weekend or national holiday)
+  | "makeup-workday"    // Today is Saturday make-up workday
+  | "unknown";          // Missing calendar coverage
+
+export interface HomeNextHolidayChip {
+  mode: HomeHolidayMode;
+  emoji: "🏢" | "🏖️";
+  labelKey: string;
+  defaultLabel: string;
+  daysUntil?: number;
+  targetName?: string | null;
+  todayReason?: "weekend" | "holiday" | null;
+  todayName?: string | null;
+}
+
+export const buildHomeNextHolidayChip = (
+  rows: readonly OfficeCalendarDay[],
+  now: Date | number,
+): HomeNextHolidayChip => {
+  const today = taipeiDateOf(now);
+  const byDate = indexByDate(rows);
+  const todayStatus = classifyDay(today, byDate.get(today));
+
+  if (todayStatus.state === "unknown") {
+    return {
+      mode: "unknown",
+      emoji: "🏢",
+      labelKey: "homePage.statusBar.nextHolidayLabel",
+      defaultLabel: "下個假日",
+    };
+  }
+
+  if (todayStatus.state === "makeup-workday") {
+    return {
+      mode: "makeup-workday",
+      emoji: "🏢",
+      labelKey: "homePage.statusBar.workdayWorkdayLabel",
+      defaultLabel: "今日上班",
+    };
+  }
+
+  if (todayStatus.state === "off") {
+    return {
+      mode: "today-off",
+      emoji: "🏖️",
+      labelKey: "homePage.statusBar.todayOffLabel",
+      defaultLabel: "今日放假",
+      todayReason: todayStatus.offReason,
+      todayName: todayStatus.name,
+    };
+  }
+
+  // todayStatus.state === "workday"
+  let targetStatus: DayStatus | null = null;
+  for (let offset = 1; offset <= UPCOMING_WINDOW_DAYS; offset += 1) {
+    const nextDate = addDays(today, offset);
+    const row = byDate.get(nextDate);
+    if (!row) {
+      break;
+    }
+    const status = classifyDay(nextDate, row);
+    if (status.state === "off") {
+      targetStatus = status;
+      break;
+    }
+  }
+
+  if (!targetStatus) {
+    return {
+      mode: "unknown",
+      emoji: "🏢",
+      labelKey: "homePage.statusBar.nextHolidayLabel",
+      defaultLabel: "下個假日",
+    };
+  }
+
+  const daysUntil = daysBetween(today, targetStatus.date);
+  const targetName =
+    targetStatus.name ??
+    (targetStatus.offReason === "weekend"
+      ? (WEEKDAY_LABELS_ZH[targetStatus.weekday] ? `週${WEEKDAY_LABELS_ZH[targetStatus.weekday]}` : "週六")
+      : null);
+
+  if (daysUntil === 1) {
+    return {
+      mode: "tomorrow-off",
+      emoji: "🏢",
+      labelKey: "homePage.statusBar.nextHolidayLabel",
+      defaultLabel: "下個假日",
+      daysUntil: 1,
+      targetName,
+    };
+  }
+
+  return {
+    mode: "workday-countdown",
+    emoji: "🏢",
+    labelKey: "homePage.statusBar.nextHolidayLabel",
+    defaultLabel: "下個假日",
+    daysUntil,
+    targetName,
+  };
+};

@@ -185,18 +185,23 @@ test("the catalog title and the homepage status-bar strings exist in en, ja and 
     const dict = JSON.parse(read("locales", `${locale}.json`));
     assert.ok(dict.catalog[SLUG]?.trim(), `${locale} catalog.${SLUG}`);
     for (const key of [
-      "workdayLabel",
-      "workdayWorkday",
       "workdayMakeup",
       "workdayOffWeekend",
       "workdayOff",
       "workdayOffNamedTemplate",
       "workdayUnknown",
-      "tomorrowWorkdayLabel",
+      "nextHolidayLabel",
+      "todayOffLabel",
+      "workdayWorkdayLabel",
+      "countdownTemplate",
+      "tomorrowOffTemplate",
     ]) {
       assert.ok(dict.homePage.statusBar[key]?.trim(), `${locale} homePage.statusBar.${key}`);
     }
     assert.match(dict.homePage.statusBar.workdayOffNamedTemplate, /\{name\}/);
+    assert.match(dict.homePage.statusBar.countdownTemplate, /\{days\}/);
+    assert.match(dict.homePage.statusBar.countdownTemplate, /\{name\}/);
+    assert.match(dict.homePage.statusBar.tomorrowOffTemplate, /\{name\}/);
   }
 });
 
@@ -300,13 +305,15 @@ test("the guide step is translated into en, ja and ko and keeps the 'this site d
 // 5. homepage status bar
 // ---------------------------------------------------------------------------
 
-test("HomeStatusBar has separate 今天上班上課 and 明日上班 pills linking the tool, with no typhoon special-casing", () => {
+test("HomeStatusBar has a consolidated 下個假日 / 今日放假 holiday pill linking the tool, with no typhoon special-casing and no shortcut button", () => {
   const bar = read("components", "Home", "HomeStatusBar.tsx");
-  assert.match(bar, /homePage\.statusBar\.workdayLabel", "今天上班上課"/);
-  assert.match(bar, /homePage\.statusBar\.tomorrowWorkdayLabel", "明日上班"/);
+  assert.match(bar, /nextHolidayLabel/);
   assert.match(bar, /"\/tools\/work-school-status"/);
-  assert.match(bar, /buildHomeWorkdayChip\(/);
+  assert.match(bar, /buildHomeNextHolidayChip\(/);
   assert.match(bar, /sections\?\.workday/);
+  assert.ok(!/WorkdayTomorrowShortcut/.test(bar), "HomeStatusBar must not render the legacy WorkdayTomorrowShortcut button");
+  assert.ok(!/tomorrowShortcutLabel/.test(bar));
+  assert.ok(!/tomorrowWorkdayLabel/.test(bar), "HomeStatusBar must not render a separate tomorrow workday pill");
   // home-alerts-severity-and-workday-tomorrow (follow-up to #691): the red
   // typhoon-warning pill is gone — 今天上班上課/明日上班 only ever reflect the
   // office calendar now. A typhoon warning is surfaced elsewhere (the

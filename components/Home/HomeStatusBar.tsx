@@ -10,7 +10,7 @@ import type { HomeStatusResponse, HomeStatusSection } from "@/app/api/home-statu
 import type { HomeStatusWorkday } from "@/lib/server/officeCalendar/homeWorkday";
 import type { CwaAlertItem } from "@/lib/server/cwa/queries";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { buildHomeWorkdayChip, type HomeWorkdayChip } from "@/lib/tools/workSchoolStatus/calendar";
+import { buildHomeNextHolidayChip, type HomeNextHolidayChip } from "@/lib/tools/workSchoolStatus/calendar";
 import { useMinuteClock } from "@/lib/hooks/useMinuteClock";
 
 /** Same shape as useLanguage()'s `t`, matching this repo's convention (e.g. components/Tools/WorkSchoolStatusContent.tsx) for typing a passed-down translator. */
@@ -38,7 +38,7 @@ type Translate = (key: string, defaultValue?: string) => string;
  * which hides only those 5 widgets on the home variant — per a 2026-10-13
  * product decision on issue #472, the other 5 sidebar widgets (ER status /
  * CPC fuel price / water outages / CDC travel alerts / pest alerts, which
- * this status bar does NOT cover) keep rendering on home exactly as before,
+ * this status bar does NOT cover) keep rendering on home參照 as before,
  * with their own independent fetches untouched.
  * `useSidebarWidgetData`'s `buildUrl` deliberately returns `null` (skipping
  * the fetch) until geolocation reaches a terminal status
@@ -131,7 +131,7 @@ function getAlertSeverityLabel(t: Translate, severity: string | null): string | 
 }
 
 // "alert" is the highlighted look used by the 警報 block below whenever at
-// least one CWA alert is active (hasAlerts) — the 今天上班上課/明日上班 pills no
+// least one CWA alert is active (hasAlerts) — the 休假 pills no
 // longer use it (see the home-alerts-severity-and-workday-tomorrow follow-up
 // to issue #691: they stopped special-casing a typhoon warning).
 type PillTone = "default" | "alert";
@@ -204,24 +204,6 @@ function ErrorPill({ emoji, label, href, message }: { emoji: string; label: stri
   );
 }
 
-// Issue #778 (母票沿用 #744 的拆除)：首頁常駐的「明天放假嗎？」大卡片
-// （舊 HomeQuickEntryCards）移除後，這個問題的入口改成附屬在「今日上班」
-// 薥目旁邊的一個小圖示連結——明顯比薥目本身小，不是另一個同等大小的薥目。
-// 點了一樣導向 /tools/work-school-status（該頁「明天」欄位；目前沒有專屬
-// 錨點，所以連去整頁）。
-function WorkdayTomorrowShortcut({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      title={label}
-      className="flex h-9 w-9 flex-none items-center justify-center self-stretch rounded-xl border border-slate-200 bg-white text-base text-slate-500 shadow-xs transition-colors hover:border-indigo-300 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-indigo-700 dark:hover:text-indigo-400"
-    >
-      <span aria-hidden="true">🗓️</span>
-    </Link>
-  );
-}
-
 export default function HomeStatusBar() {
   const { t } = useLanguage();
   const geolocation = useSharedGeolocation();
@@ -229,13 +211,13 @@ export default function HomeStatusBar() {
   const [manualDistrict, setManualDistrict] = useState("");
   const [showPicker, setShowPicker] = useState(false);
 
-  // Issue #691: the 今天上班上課/明日上班 pills resolve their day with the
-  // visitor's own clock (Asia/Taipei date, see
-  // lib/tools/workSchoolStatus/calendar.ts) from the rows /api/home-status
-  // returns, because that response is edge-cached for minutes and a cached
-  // answer served after midnight would be yesterday's. The clock comes from
-  // useMinuteClock (null until mounted, refreshed each minute) so it is
-  // never read during render.
+  // Issue #691 & dynamic next-holiday countdown:
+  // The status pill resolves today's status or counts down to the next holiday
+  // with the visitor's own clock (Asia/Taipei date, see lib/tools/workSchoolStatus/calendar.ts)
+  // from the rows /api/home-status returns, because that response is edge-cached
+  // for minutes and a cached answer served after midnight would be yesterday's.
+  // The clock comes from useMinuteClock (null until mounted, refreshed each minute)
+  // so it is never read during render.
   const nowMs = useMinuteClock();
 
   const manualCoords = useMemo(() => {
@@ -308,33 +290,32 @@ export default function HomeStatusBar() {
     );
   }
 
-  // Issue #691, follow-up home-alerts-severity-and-workday-tomorrow:
-  // 今天上班上課 / 明日上班. Both pills only ever reflect the office calendar rows
-  // (lib/server/officeCalendar) — no typhoon special-casing any more. A CWA
-  // typhoon warning is surfaced elsewhere (the site-wide TyphoonBanner, issue
-  // #744) and via /tools/work-school-status's own ClosureGuidanceSection,
-  // untouched by this component. "Tomorrow" needs no new data: the API
-  // already returns yesterday-through-+2-days of rows (see
-  // fetchHomeStatusWorkday's doc comment), so resolving it is just +24h on
-  // the same clock reading — Taiwan has had no DST since 1979, so a flat
-  // 24h offset always lands on the next Asia/Taipei calendar date.
-  const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-  const todayWorkdayChip = (workday: HomeStatusWorkday) => (nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs));
-  const tomorrowWorkdayChip = (workday: HomeStatusWorkday) =>
-    nowMs === null ? null : buildHomeWorkdayChip(workday.days, nowMs + ONE_DAY_MS);
+  // Issue #691 & follow-up next-holiday countdown:
+  // Consolidated single holiday card resolving today's status or counting down to
+  // the earliest upcoming holiday/weekend from the 14-day window using the visitor's clock.
+  const holidayChip =
+    nowMs === null || !sections?.workday?.data
+      ? null
+      : buildHomeNextHolidayChip(sections.workday.data.days, nowMs);
 
-  const describeWorkdayState = (chip: HomeWorkdayChip | null): React.ReactNode => {
+  const describeHolidayChip = (chip: HomeNextHolidayChip | null): React.ReactNode => {
     if (!chip) return null;
-    switch (chip.state) {
-      case "workday":
-        return t("homePage.statusBar.workdayWorkday", "正常上班上課");
+    switch (chip.mode) {
+      case "workday-countdown":
+        return t("homePage.statusBar.countdownTemplate", "還有 {days} 天（{name}）")
+          .replace("{days}", String(chip.daysUntil ?? ""))
+          .replace("{name}", chip.targetName || "");
+      case "tomorrow-off":
+        return t("homePage.statusBar.tomorrowOffTemplate", "明天放假（{name}）")
+          .replace("{name}", chip.targetName || "");
+      case "today-off":
+        if (chip.todayReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
+        return chip.todayName
+          ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.todayName)
+          : t("homePage.statusBar.workdayOff", "放假");
       case "makeup-workday":
         return t("homePage.statusBar.workdayMakeup", "補班日（要上班）");
-      case "off":
-        if (chip.offReason === "weekend") return t("homePage.statusBar.workdayOffWeekend", "放假（週末）");
-        return chip.name
-          ? t("homePage.statusBar.workdayOffNamedTemplate", "放假・{name}").replace("{name}", chip.name)
-          : t("homePage.statusBar.workdayOff", "放假");
+      case "unknown":
       default:
         return t("homePage.statusBar.workdayUnknown", "查無日曆資料");
     }
@@ -440,26 +421,14 @@ export default function HomeStatusBar() {
   return (
     <section aria-label={t("homePage.statusBar.sectionAriaLabel", "即時狀態總覽")} className="mb-8">
       <div className="flex flex-wrap gap-3">
-        <div className="flex min-w-[9.5rem] flex-1 items-stretch gap-1.5">
-          {renderSection(
-            nowMs === null ? undefined : sections?.workday,
-            "🏢",
-            t("homePage.statusBar.workdayLabel", "今天上班上課"),
-            "/tools/work-school-status",
-            (workday) => describeWorkdayState(todayWorkdayChip(workday)),
-          )}
-          <WorkdayTomorrowShortcut
-            href="/tools/work-school-status"
-            label={t("homePage.statusBar.tomorrowShortcutLabel", "明天放假嗎？")}
-          />
-        </div>
-
         {renderSection(
           nowMs === null ? undefined : sections?.workday,
-          "📅",
-          t("homePage.statusBar.tomorrowWorkdayLabel", "明日上班"),
+          holidayChip?.emoji ?? "🏢",
+          holidayChip
+            ? t("homePage.statusBar." + holidayChip.labelKey.split(".").pop(), holidayChip.defaultLabel)
+            : t("homePage.statusBar.nextHolidayLabel", "下個假日"),
           "/tools/work-school-status",
-          (workday) => describeWorkdayState(tomorrowWorkdayChip(workday)),
+          (workday) => describeHolidayChip(nowMs === null ? null : buildHomeNextHolidayChip(workday.days, nowMs)),
         )}
 
         {renderSection(sections?.weather, "🌤️", t("homePage.statusBar.weatherLabel", "天氣"), "/tools/weather-alerts", (weather) =>

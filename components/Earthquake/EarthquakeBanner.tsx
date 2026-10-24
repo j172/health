@@ -52,7 +52,7 @@ export default function EarthquakeBanner() {
     : "/tools/global-watch/earthquakes";
   const originTime = formatOriginTime(status.originTime, locale);
 
-  const tone = "border-amber-800 bg-amber-600 text-white";
+  const tone = "border-amber-800 bg-amber-600 text-white hover:bg-amber-700";
   const badgeTone = "bg-white text-amber-800";
   const linkClass = "font-semibold underline underline-offset-2 text-white decoration-white/70 hover:decoration-white";
 
@@ -61,11 +61,15 @@ export default function EarthquakeBanner() {
       role="status"
       aria-label={t("earthquake.banner.ariaLabel", "地震速報")}
       data-earthquake-banner="active"
-      className={`w-full border-b px-4 py-2.5 text-sm ${tone}`}
+      className="mx-auto max-w-5xl px-4 pt-3 sm:px-6 sm:pt-4 lg:px-8"
     >
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-1.5 text-center sm:px-2">
-        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 font-bold">
-          <span aria-hidden="true">🫨</span>
+      <div
+        className={`flex flex-col items-center gap-2 rounded-3xl border px-5 py-4 text-center text-sm shadow-lg transition-all motion-reduce:transition-none sm:scale-[1.02] sm:px-8 sm:py-5 ${tone}`}
+      >
+        <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-lg font-extrabold tracking-tight sm:text-xl">
+          <span aria-hidden="true" className="text-3xl leading-none sm:text-4xl">
+            🫨
+          </span>
           <span className={`rounded px-1.5 py-0.5 text-xs font-bold ${badgeTone}`}>
             {t("earthquake.banner.badge", "地震速報")}
           </span>
@@ -80,7 +84,11 @@ export default function EarthquakeBanner() {
               {t("earthquake.banner.intensityTemplate", "最大震度 {intensity}").replace("{intensity}", status.maxIntensity)}
             </span>
           ) : null}
-          {status.location ? <span data-earthquake-location>{status.location}</span> : null}
+          {status.location ? (
+            <span data-earthquake-location className="text-base font-bold sm:text-lg">
+              {status.location}
+            </span>
+          ) : null}
           {originTime ? (
             <span className="text-xs font-normal opacity-90">
               {t("earthquake.banner.originTimeTemplate", "發生於 {time}").replace("{time}", originTime)}

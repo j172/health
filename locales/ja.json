@@ -970,7 +970,12 @@
       "workdayOffNamedTemplate": "休み・{name}",
       "workdayUnknown": "カレンダー情報なし",
       "tomorrowShortcutLabel": "明日は休みですか？",
-      "tomorrowWorkdayLabel": "明日の出勤"
+      "tomorrowWorkdayLabel": "明日の出勤",
+      "nextHolidayLabel": "次の休日",
+      "todayOffLabel": "本日は休日",
+      "workdayWorkdayLabel": "本日は出勤",
+      "countdownTemplate": "あと {days} 日（{name}）",
+      "tomorrowOffTemplate": "明日休み（{name}）"
     },
     "guideCards": {
       "sectionAriaLabel": "生活シーン別ガイド",

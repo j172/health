@@ -967,7 +967,12 @@
       "workdayOffNamedTemplate": "Day off · {name}",
       "workdayUnknown": "No calendar data",
       "tomorrowShortcutLabel": "Is tomorrow a day off?",
-      "tomorrowWorkdayLabel": "Work Tomorrow"
+      "tomorrowWorkdayLabel": "Work Tomorrow",
+      "nextHolidayLabel": "Next Holiday",
+      "todayOffLabel": "Day Off Today",
+      "workdayWorkdayLabel": "Workday Today",
+      "countdownTemplate": "{days} days left ({name})",
+      "tomorrowOffTemplate": "Off tomorrow ({name})"
     },
     "guideCards": {
       "sectionAriaLabel": "Life-Situation Guides",
