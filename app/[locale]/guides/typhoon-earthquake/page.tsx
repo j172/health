@@ -11,6 +11,8 @@ import { getLocalizedToolMeta } from "@/lib/i18n/toolContent";
 import { buildHreflangAlternates, buildLocalizedPath, PATH_LOCALES } from "@/lib/i18n/translatedPages";
 import type { GuideStepModel } from "@/lib/server/tools/navModel";
 import TransitSuspensionSection from "@/components/Tools/TransitSuspensionSection";
+import SubmarineCableStatusBadge from "@/components/Resilience/SubmarineCableStatusBadge";
+import { getSubmarineCableStatus } from "@/lib/server/resilience/submarineCableService";
 
 /**
  * Issue #487 — locale-aware twin of app/(zh)/guides/[slug]/page.tsx, scoped
@@ -97,6 +99,7 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
 
   const meta = getLocalizedGuideMeta(GUIDE_SLUG, locale);
   const { t } = getDictionary(locale);
+  const submarineCableStatus = await getSubmarineCableStatus();
 
   // Same JSON-LD graph the zh hub page builds, but from the localized
   // title/description/steps/faqs — a crawler on this locale must never see
@@ -214,6 +217,7 @@ export default async function LocaleTyphoonEarthquakeGuidePage({ params }: { par
           </ol>
 
           <TransitSuspensionSection locale={locale} />
+          <SubmarineCableStatusBadge initialData={submarineCableStatus} locale={locale} />
 
           {meta.faqs.length > 0 ? (
             <section

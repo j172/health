@@ -6,6 +6,8 @@ import { GUIDES, buildGuide } from "@/lib/server/tools/navModel";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
 import TransitSuspensionSection from "@/components/Tools/TransitSuspensionSection";
+import SubmarineCableStatusBadge from "@/components/Resilience/SubmarineCableStatusBadge";
+import { getSubmarineCableStatus } from "@/lib/server/resilience/submarineCableService";
 import { isTranslatedGuideSlug } from "@/lib/i18n/guideContent";
 
 // StabloHeader renders a live DB-backed weather-alert bar (same reason every
@@ -94,6 +96,7 @@ export default async function GuideHubPage({
   }
 
   const guideGraph = buildGuideGraphJsonLd(guide);
+  const submarineCableStatus = guide.slug === "typhoon-earthquake" ? await getSubmarineCableStatus() : null;
 
   return (
     <>
@@ -182,7 +185,10 @@ export default async function GuideHubPage({
           </ol>
 
           {guide.slug === "typhoon-earthquake" && (
-            <TransitSuspensionSection locale="zh" />
+            <>
+              <TransitSuspensionSection locale="zh" />
+              <SubmarineCableStatusBadge initialData={submarineCableStatus} locale="zh" />
+            </>
           )}
 
           {/* Structured Frequently Asked Questions (FAQ Section) */}
