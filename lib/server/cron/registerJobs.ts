@@ -41,6 +41,7 @@ import { runEmergencyRoomSync } from "@/lib/server/emergencyRooms/runSync";
 import {
   runTransitFacilityAlertsSync,
 } from "@/lib/server/transit/runSync";
+import { runMetroAlertsReconciliationSync } from "@/lib/server/tdx/mqtt/reconciliation";
 import { runFraudDomainsSync, runModa165027Sync } from "@/lib/server/antiFraud/runSync";
 import {
   runPoliceFraudInterdictionStatsSync,
@@ -487,6 +488,11 @@ export const registerCronJobs = (): void => {
   cron.schedule(
     "16 */3 * * *",
     runGuarded("transit-accessibility-alerts-cron.log", () => runTransitFacilityAlertsSync()),
+  );
+  // TDX Hybrid MQTTS (Ticket 03): 每日離峰防漂移對帳 (04:16)
+  cron.schedule(
+    "16 4 * * *",
+    runGuarded("tdx-metro-reconcile-cron.log", () => runMetroAlertsReconciliationSync()),
   );
   // issue #729：樂齡旅遊（景區無障礙設施／服務／套票每日同步、設施停用公告每小時同步）
   // 與敬老卡每日同步三個 TDX 排程已移除。敬老卡補助改為靜態資料，需要更新時由管理員

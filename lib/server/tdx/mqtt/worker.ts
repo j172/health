@@ -1,17 +1,26 @@
 import { tdxMqttManager } from "./connection.ts";
 import { TDX_MQTT_TOPIC_METRO_ALERT, isMetroAlertTopic } from "./topics.ts";
 import { handleMetroAlertMessage } from "./metroAlertHandler.ts";
+import { ensureColdStartSnapshot } from "./reconciliation.ts";
 
 let isWorkerStarted = false;
 
 /**
  * Initializes and starts the background TDX MQTTS worker.
- * Subscribes to Metro & LRT disruption topics at QoS 1 and routes incoming messages.
+ * Ensures cold-start snapshot baseline before starting MQTT, then
+ * subscribes to Metro & LRT disruption topics at QoS 1 and routes incoming messages.
  * Idempotent: calling multiple times will not create duplicate listeners.
  */
 export async function startTdxMqttWorker(): Promise<boolean> {
   if (isWorkerStarted) {
     return true;
+  }
+
+  // Ensure active disruptions baseline via Cold-Start sequence (gracefully non-blocking)
+  try {
+    await ensureColdStartSnapshot();
+  } catch (err) {
+    console.warn("[TDX-MQTT] Cold-start snapshot initial warning:", err);
   }
 
   const client = await tdxMqttManager.connect();
