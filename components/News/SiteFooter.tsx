@@ -169,6 +169,8 @@ const FOOTER_LINK_LABEL_KEYS: Record<string, string> = {
   "metawilo.com": "footer.taiwanCriminals",
   "www.sports.gov.tw": "footer.sportsCoach",
   "ma.mohw.gov.tw": "footer.mohwVio",
+  "ap.ece.moe.edu.tw": "footer.moeEce",
+  "crc.sfaa.gov.tw": "footer.sfaaCrc",
   "council2026.taiwangogo.tw": "footer.council2026",
 };
 
