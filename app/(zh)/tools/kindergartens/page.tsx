@@ -28,9 +28,9 @@ export default function KindergartensPage() {
   return (
     <ToolPageShell slug="kindergartens" title={catalogEntry.title} maxWidthClassName="max-w-3xl">
       <ContextualPartnerCard
-        partnerId="metawilo"
-        contextTitle="守護幼兒安全防護線"
-        contextDescription="為孩子挑選優質園所：除教育部立案資訊與裁罰紀錄外，建議搭配「台灣罪犯圖鑑」查核重大刑案與司法判決公開紀錄。"
+        partnerId="moe-ece"
+        contextTitle="幼兒園立案與裁罰安全防護線"
+        contextDescription="為孩子挑選園所：除立案與收費資訊外，強烈建議同步前往「教育部幼兒園裁罰專區」查核歷年違法處分與評鑑公告。"
       />
       <FacilitySearchContent config={facilitySearchConfigs["kindergartens"]} />
     </ToolPageShell>

@@ -160,6 +160,14 @@ export const CIVIC_PARTNER_LINKS: FooterLinkModel[] = [
     href: "https://ma.mohw.gov.tw/Accessibility/VIOSearch/MASearchVIO",
     label: "衛福部醫事性平專區",
   },
+  {
+    href: "https://ap.ece.moe.edu.tw/webecems/punishSearch.aspx",
+    label: "教育部幼兒園裁罰專區",
+  },
+  {
+    href: "https://crc.sfaa.gov.tw/ChildYoungLaw/Sanction",
+    label: "衛福部兒少法裁罰專區",
+  },
   { href: "https://council2026.taiwangogo.tw/", label: "2026 政治人物前科" },
   // issue #575: 從防詐騙查詢與緊急電話頁導流到這兩個官方防詐／反毒資源站。
   // `buildFooterModel` below already wraps every entry in this array with

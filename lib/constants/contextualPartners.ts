@@ -2,6 +2,8 @@ export type CivicPartnerId =
   | "metawilo"
   | "sports-coach"
   | "mohw-vio"
+  | "moe-ece"
+  | "sfaa-crc"
   | "kuma"
   | "anti-cw"
   | "g0v"
@@ -73,6 +75,40 @@ export const CONTEXTUAL_PARTNERS: Record<CivicPartnerId, ContextualPartnerConfig
     defaultDescription:
       "守護民眾就醫安全與身體自主權：建議就診前搭配衛福部專區，查核涉及性平事件之醫事人員確定案件名冊。",
     defaultActionText: "查核醫事性平名單",
+  },
+  "moe-ece": {
+    id: "moe-ece",
+    name: "教育部幼兒園裁罰專區",
+    baseUrl: "https://ap.ece.moe.edu.tw/webecems/punishSearch.aspx",
+    icon: "🏫",
+    badge: "幼教安全防護",
+    badgeColor:
+      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
+    borderColor: "border-amber-200/80 dark:border-amber-900/50",
+    hoverBorderColor: "hover:border-amber-400 dark:hover:border-amber-700",
+    bgLinear:
+      "from-amber-50/40 via-white to-slate-50/30 dark:from-amber-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "幼兒園立案與裁罰安全查核",
+    defaultDescription:
+      "挑選園所與托育環境：除核准立案資料外，建議搭配教育部專區查核歷年裁罰紀錄與重大違規情事。",
+    defaultActionText: "查核幼兒園裁罰名冊",
+  },
+  "sfaa-crc": {
+    id: "sfaa-crc",
+    name: "衛福部兒少法裁罰專區",
+    baseUrl: "https://crc.sfaa.gov.tw/ChildYoungLaw/Sanction",
+    icon: "🚸",
+    badge: "兒少權益防護",
+    badgeColor:
+      "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800",
+    borderColor: "border-sky-200/80 dark:border-sky-900/50",
+    hoverBorderColor: "hover:border-sky-400 dark:hover:border-sky-700",
+    bgLinear:
+      "from-sky-50/40 via-white to-slate-50/30 dark:from-sky-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "兒少身心防護與違規裁罰查核",
+    defaultDescription:
+      "守護孩子身心安全：建議前往衛福部社會及家庭署公告專區，查核涉及兒少法確定案件與機構公告名冊。",
+    defaultActionText: "查核兒少法裁罰名單",
   },
   kuma: {
     id: "kuma",
