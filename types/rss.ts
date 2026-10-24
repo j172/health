@@ -124,6 +124,7 @@ export type FeedCode =
   | "moi_news"
   | "moi_clarify"
   | "moe_news"
+  | "gender_edu_clarify"
   | "moda_press"
   | "twreporter_news"
   | "antidrug_news"

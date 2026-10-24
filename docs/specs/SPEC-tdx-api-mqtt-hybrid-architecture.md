@@ -95,15 +95,27 @@
   - Broker URL: `mqtt.transportdata.tw:8883` over TLS/SSL (`mqtts://`).
   - Authentication: Explicit `Username`, `Password`, and `ClientId` issued by the TDX Member Center (distinct from REST client credentials).
   - Single Connection Invariant: The system enforces a strict process-wide singleton for the MQTT client. Secondary connections using the same `ClientId` are blocked to prevent the TDX broker from terminating existing connections.
-- **Topic Subscriptions**:
-  - Rail & Metro Disruptions:
+- **Topic Subscriptions & Railway Expansion (Ticket 04)**:
+  - Metro & Light Rail Disruptions:
     - `v2/Rail/Metro/Alert/#` (wildcard capturing all MRT and LRT systems across Taiwan)
-    - `v3/Rail/TRA/Alert` (Taiwan Railway active disruptions)
-    - `v2/Rail/THSR/AlertInfo` (High Speed Rail disruptions)
+  - Inter-city Rail & Disaster Streams:
+    - `v3/Rail/TRA/Alert` (Taiwan Railway active disruptions, track closures, and train delays)
+    - `v2/Rail/THSR/AlertInfo` (High Speed Rail operation status, typhoons, earthquakes, and emergency delays)
   - Road & Disaster Events:
     - `v1/Traffic/RoadEvent/LiveEvent/#` (live road incidents, weather, and traffic control)
 - **Quality of Service (QoS)**:
   Subscribed at **QoS 1** (At least once delivery) with application-layer deduplication to guarantee zero message loss during transit.
+
+### 2.1 Disaster Hub Linking & Emergency Hotlines (Typhoon & Earthquake Integration)
+- The "Typhoon & Earthquake" life-situation guide (`/guides/typhoon-earthquake`, with localized variants in `en`, `ja`, `ko`) integrates the "查詢交通停駛與鐵路營運" (Check Railway & Transit Suspensions) step.
+- Directly cross-links to `/tools/accessible-transit` and `/api/transit-alerts` with active disruptions, operator filters, and live push badges.
+- Exposes single-tap emergency hotlines cleaned via `cleanTelUri`:
+  - 臺灣鐵路 (TRA): `0800-765-888` / `02-2191-0096`
+  - 台灣高鐵 (THSR): `02-4066-3000`
+  - 臺北捷運 (TRTC): `02-218-12345`
+  - 高雄捷運 (KRTC): `07-793-8888`
+- **Architectural Guardrail (#728 Compliance)**:
+  - In strict compliance with issue #728 regression guardrails, code, cron job names, and URL paths must never revive the retired `metro-alerts` tool or table name. All disruption components use `transit-alerts`, `rail-disruptions`, and `tdx-transit-reconcile-cron.log`.
 
 ### 3. Application-Layer Deduplication & Data Integrity
 - Upstream MQTT brokers delivering at QoS 1 may re-deliver the same payload upon reconnection.

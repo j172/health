@@ -12,6 +12,7 @@ import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytic
 import SkipToContent from "@/components/Accessibility/SkipToContent";
 import TyphoonBanner from "@/components/Typhoon/TyphoonBanner";
 import EarthquakeBanner from "@/components/Earthquake/EarthquakeBanner";
+import CbsEmergencyBanner from "@/components/Emergency/CbsEmergencyBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -124,6 +125,7 @@ export default function RootLayout({
           <SkipToContent />
           <TyphoonBanner />
           <EarthquakeBanner />
+          <CbsEmergencyBanner />
           <InAppBrowserBanner />
           <div id="main-content" tabIndex={-1} className="outline-none">
             {children}

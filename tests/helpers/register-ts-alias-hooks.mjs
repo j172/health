@@ -12,11 +12,11 @@ registerHooks({
     if (specifier === "server-only") {
       return { url: "data:text/javascript,", shortCircuit: true };
     }
+    let target = specifier;
     // next 的子路徑匯入沒有副檔名，Node 的 ESM 解析器不認得
     if (specifier === "next/server") {
-      return nextResolve("next/server.js", context);
+      target = "next/server.js";
     }
-    let target = specifier;
     let parentURL = context.parentURL;
     if (specifier.startsWith("@/")) {
       target = `./${specifier.slice(2)}`;
@@ -30,6 +30,13 @@ registerHooks({
         }
       }
     }
-    return nextResolve(target, { ...context, parentURL });
+    try {
+      return nextResolve(target, { ...context, parentURL });
+    } catch (err) {
+      if (!target.startsWith(".") && !target.startsWith("/") && !target.startsWith("file:") && existsSync("D:/GoogleDrive/health/node_modules")) {
+        return nextResolve(target, { ...context, parentURL: "file:///D:/GoogleDrive/health/dummy.js" });
+      }
+      throw err;
+    }
   },
 });

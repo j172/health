@@ -53,7 +53,7 @@ export async function handleMetroAlertMessage(
   }
 
   try {
-    const { getPool } = await import("../../db/mysql.ts");
+    const { getPool } = await import("../../db/mysql");
     const pool = getPool();
     if (!pool) {
       return { ok: false, count: 0, alertIds, error: "Database pool unavailable" };

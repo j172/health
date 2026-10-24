@@ -6,8 +6,8 @@ import {
   RECONCILIATION_CACHE_KEY,
   RECONCILIATION_TTL_MS,
   METRO_RECONCILIATION_SYSTEMS,
-  fetchMetroAlertsSnapshot,
-  reconcileMetroAlerts,
+  fetchRailAlertSnapshot,
+  reconcileRailAlerts,
   ensureColdStartSnapshot,
 } from "../lib/server/tdx/mqtt/reconciliation.ts";
 import {
@@ -167,7 +167,7 @@ test("reconciliation: soft-resolves disappeared alerts with end_time = NOW()", a
     return [{ affectedRows: 1 }];
   };
 
-  const res = await reconcileMetroAlerts({
+  const res = await reconcileRailAlerts({
     fetchSnapshotFn: mockFetch,
     queryFn: mockQuery,
     executeFn: mockExecute,
@@ -210,7 +210,7 @@ test("boundary isolation: elevator and accessibility facility alerts (-EL) are N
     return [{ affectedRows: 1 }];
   };
 
-  await reconcileMetroAlerts({
+  await reconcileRailAlerts({
     fetchSnapshotFn: mockFetch,
     queryFn: mockQuery,
     executeFn: mockExecute,
@@ -228,8 +228,8 @@ test("cron schedule & budget: 16 4 * * * is collision-free and respects the 3,00
   );
   const jobs = extractCronSchedules(registerJobsSource);
 
-  const reconcileJob = jobs.find((j) => j.name === "tdx-metro-reconcile-cron.log");
-  assert.ok(reconcileJob, "tdx-metro-reconcile-cron.log must be registered");
+  const reconcileJob = jobs.find((j) => j.name === "tdx-transit-reconcile-cron.log");
+  assert.ok(reconcileJob, "tdx-transit-reconcile-cron.log must be registered");
   assert.equal(reconcileJob.expression, "16 4 * * *");
 
   const elevatorJob = jobs.find((j) => j.name === "transit-accessibility-alerts-cron.log");

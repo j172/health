@@ -1020,5 +1020,16 @@
       "notice": "For the shaking-intensity map and further updates, please refer to the Central Weather Administration.",
       "linkTool": "Earthquake monitor"
     }
+  },
+  "cbs": {
+    "banner": {
+      "ariaLabel": "National emergency alert",
+      "badgeExtreme": "National Emergency Alert (PWS)",
+      "badgeSevere": "Emergency Warning",
+      "disasterMap": "Live Disaster Map",
+      "debrisFlow": "Debris Flow Alert",
+      "expiresTemplate": "Expires at {time}",
+      "officialNotice": "Please take protective actions immediately and follow official government instructions."
+    }
   }
 }

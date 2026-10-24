@@ -1,6 +1,6 @@
 import { getRailSystemLabel } from "./topics.ts";
 
-export interface TdxMetroAlertScope {
+export interface TdxAlertScope {
   Lines?: Array<{
     LineID?: string;
     LineName?: { Zh_tw?: string; En?: string } | string;
@@ -22,7 +22,7 @@ export interface TdxMetroAlertRaw {
   Reason?: string;
   Status?: number | string;
   Effect?: number | string;
-  Scope?: TdxMetroAlertScope;
+  Scope?: TdxAlertScope;
   StationID?: string;
   StationName?: { Zh_tw?: string; En?: string } | string;
   LineID?: string;

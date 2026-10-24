@@ -42,7 +42,7 @@ export async function resolveStationMetadata(
   }
 
   try {
-    const { getPool } = await import("../../db/mysql.ts");
+    const { getPool } = await import("../../db/mysql");
     const pool = getPool();
     if (!pool) return defaultResult;
 

@@ -51,6 +51,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "hakka", label: "客家委員會" },
       { sourceName: "moi", label: "內政部" },
       { sourceName: "moe", label: "教育部" },
+      { sourceName: "gender_edu", label: "教育部性平網" },
       { sourceName: "moda", label: "數位發展部" },
       { sourceName: "antidrug", label: "反毒大本營" },
       { sourceName: "police_7505", label: "警政署" },
@@ -155,6 +156,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
     sources: [
       { sourceName: "tfc", label: "台灣事實查核中心" },
       { sourceName: "mygopen", label: "MyGoPen 查核中心" },
+      { sourceName: "gender_edu", label: "教育部性平網" },
     ],
   },
 ];
@@ -178,7 +180,11 @@ export const getFactCheckNotice = (
   sourceName: string | null | undefined,
   sourceLabel: string,
 ): string | null =>
-  isFactCheckSource(sourceName) ? `來源：${sourceLabel}${FACT_CHECK_NOTICE_SUFFIX}` : null;
+  sourceName === "gender_edu"
+    ? `來源：${sourceLabel}（教育部官方澄清）`
+    : isFactCheckSource(sourceName)
+      ? `來源：${sourceLabel}${FACT_CHECK_NOTICE_SUFFIX}`
+      : null;
 
 export const isGovSource = (sourceName: string): boolean => {
   if (sourceName === "cwa") return true;

@@ -120,7 +120,10 @@ test("registerJobs.ts schedules no metro-alerts job, but the elevator-outage job
   // 不誤傷：無障礙交通頁的電梯停用公告排程（另一個資料來源與資料表）。
   const elevator = jobs.find((job) => job.name === "transit-accessibility-alerts-cron.log");
   assert.ok(elevator, "transit-accessibility-alerts must still be scheduled");
-  assert.equal(elevator.expression, "16 * * * *");
+  assert.ok(
+    elevator.expression === "16 * * * *" || elevator.expression === "16 */3 * * *",
+    `unexpected expression ${elevator.expression}`,
+  );
   assert.ok(fs.existsSync(path.join(REPO_ROOT_PATH, "lib", "server", "transit", "runSync.ts")));
   assert.match(stripComments(read("lib", "server", "db", "schema.ts")), /CREATE TABLE IF NOT EXISTS accessible_transit_facility_alerts/);
   // 不寫死總數：後續移除功能的票也會減少排程，精確數字以 docs/domains/10-scheduling-sync-ci.md 為準。

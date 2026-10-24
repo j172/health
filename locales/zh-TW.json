@@ -392,5 +392,16 @@
       "countdownTemplate": "還有 {days} 天（{name}）",
       "tomorrowOffTemplate": "明天放假（{name}）"
     }
+  },
+  "cbs": {
+    "banner": {
+      "ariaLabel": "災防告警細胞廣播",
+      "badgeExtreme": "國家級警報 (PWS)",
+      "badgeSevere": "緊急警戒",
+      "disasterMap": "即時災害地圖",
+      "debrisFlow": "土石流警戒溪流村里",
+      "expiresTemplate": "有效至 {time}",
+      "officialNotice": "請即刻採取相應防護避難措施，詳情依主管機關公告為準。"
+    }
   }
 }

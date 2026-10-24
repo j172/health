@@ -106,6 +106,7 @@ const SOURCE_LABELS: Record<string, string> = {
   hakka: "客家委員會",
   moi: "內政部",
   moe: "教育部",
+  gender_edu: "教育部性平網",
   moda: "數位發展部",
   twreporter: "報導者",
   antidrug: "反毒大本營",

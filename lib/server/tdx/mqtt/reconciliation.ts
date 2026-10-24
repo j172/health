@@ -63,7 +63,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /**
  * Fetches upstream active disruption alerts for a single metro system via TDX REST API.
  */
-export async function fetchMetroAlertsSnapshot(
+export async function fetchRailAlertSnapshot(
   system: string,
   deps: ReconciliationDeps = {},
 ): Promise<NormalizedMetroAlert[]> {
@@ -74,7 +74,7 @@ export async function fetchMetroAlertsSnapshot(
   const getToken =
     deps.getTokenFn ??
     (async () => {
-      const { getTdxToken } = await import("../auth.ts");
+      const { getTdxToken } = await import("../auth");
       return getTdxToken();
     });
 
@@ -93,7 +93,7 @@ export async function fetchMetroAlertsSnapshot(
     status = res.status;
     data = res.data;
   } else {
-    const { tdxGetJsonWithRetry } = await import("../getJsonWithRetry.ts");
+    const { tdxGetJsonWithRetry } = await import("../getJsonWithRetry");
     const res = await tdxGetJsonWithRetry<unknown>(url, token, { timeoutMs: 12000 });
     status = res.status;
     data = res.data;
@@ -136,7 +136,7 @@ export async function fetchMetroAlertsSnapshot(
  *    and `(facility_id IS NULL OR facility_id NOT LIKE '%-EL%')` to protect elevator alerts.
  * 4. Caches audit metadata into `provider_api_cache` key `tdx:metro-alerts:reconciliation`.
  */
-export async function reconcileMetroAlerts(
+export async function reconcileRailAlerts(
   deps: ReconciliationDeps = {},
 ): Promise<ReconcileResult> {
   const now = deps.now ? deps.now() : new Date();
@@ -154,7 +154,7 @@ export async function reconcileMetroAlerts(
     if (deps.queryFn) {
       return deps.queryFn(sql, params);
     }
-    const { getPool } = await import("../../db/mysql.ts");
+    const { getPool } = await import("../../db/mysql");
     const pool = getPool();
     if (!pool) throw new Error("Database pool unavailable");
     const [rows] = await pool.query(sql, params);
@@ -166,7 +166,7 @@ export async function reconcileMetroAlerts(
     if (deps.executeFn) {
       return deps.executeFn(sql, params);
     }
-    const { getPool } = await import("../../db/mysql.ts");
+    const { getPool } = await import("../../db/mysql");
     const pool = getPool();
     if (!pool) throw new Error("Database pool unavailable");
     const [result] = await pool.execute(sql, params as any);
@@ -179,7 +179,7 @@ export async function reconcileMetroAlerts(
 
     try {
       // 1. Fetch active disruptions from upstream
-      const activeAlerts = await fetchMetroAlertsSnapshot(system, deps);
+      const activeAlerts = await fetchRailAlertSnapshot(system, deps);
       totalActive += activeAlerts.length;
 
       // 2. Upsert active alerts into DB
@@ -294,7 +294,7 @@ export async function reconcileMetroAlerts(
  * Cold-Start Snapshot sequence with 1-hour TTL Guard and graceful degradation:
  * 1. Checks provider_api_cache for key `tdx:metro-alerts:reconciliation`.
  * 2. If verified < 1 hour ago AND active disruption records exist in DB, bypass REST calls.
- * 3. Otherwise, executes reconcileMetroAlerts to seed the baseline and soft-resolve drift.
+ * 3. Otherwise, executes reconcileRailAlerts to seed the baseline and soft-resolve drift.
  * 4. Never blocks server boot on failure.
  */
 export async function ensureColdStartSnapshot(
@@ -307,7 +307,7 @@ export async function ensureColdStartSnapshot(
     if (deps.queryFn) {
       return deps.queryFn(sql, params);
     }
-    const { getPool } = await import("../../db/mysql.ts");
+    const { getPool } = await import("../../db/mysql");
     const pool = getPool();
     if (!pool) return [];
     const [rows] = await pool.query(sql, params);
@@ -376,7 +376,7 @@ export async function ensureColdStartSnapshot(
 
   // Baseline missing or stale: trigger sequential snapshot & reconciliation
   try {
-    const res = await reconcileMetroAlerts(deps);
+    const res = await reconcileRailAlerts(deps);
     return {
       ok: res.ok,
       bypassed: false,
@@ -400,13 +400,13 @@ export async function ensureColdStartSnapshot(
 /**
  * Runner function for the daily cron job at 04:16.
  */
-export async function runMetroAlertsReconciliationSync(): Promise<{
+export async function runTransitAlertsReconciliationSync(): Promise<{
   ok: boolean;
   activeCount: number;
   resolvedCount: number;
   errors: string[];
 }> {
-  const result = await reconcileMetroAlerts();
+  const result = await reconcileRailAlerts();
   return {
     ok: result.ok,
     activeCount: result.activeCount,

@@ -13,6 +13,7 @@ import CloudflareWebAnalytics from "@/components/Analytics/CloudflareWebAnalytic
 import SkipToContent from "@/components/Accessibility/SkipToContent";
 import TyphoonBanner from "@/components/Typhoon/TyphoonBanner";
 import EarthquakeBanner from "@/components/Earthquake/EarthquakeBanner";
+import CbsEmergencyBanner from "@/components/Emergency/CbsEmergencyBanner";
 import { PATH_LOCALES, isPathLocale, type PathLocale } from "@/lib/i18n/dictionary";
 
 /**
@@ -125,6 +126,7 @@ export default async function LocaleRootLayout({
           <SkipToContent />
           <TyphoonBanner />
           <EarthquakeBanner />
+          <CbsEmergencyBanner />
           <InAppBrowserBanner />
           <div id="main-content" tabIndex={-1} className="outline-none">
             {children}

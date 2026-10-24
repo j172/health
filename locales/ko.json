@@ -1023,5 +1023,16 @@
       "notice": "진도 분포와 이후 지진 정보는 중앙기상서(기상청에 해당) 발표를 확인하세요.",
       "linkTool": "지진 속보 도구"
     }
+  },
+  "cbs": {
+    "banner": {
+      "ariaLabel": "국가 긴급재난문자 (CBS)",
+      "badgeExtreme": "국가급 경보 (PWS)",
+      "badgeSevere": "긴급 경계",
+      "disasterMap": "실시간 재난 지도",
+      "debrisFlow": "산사태·토사류 경계 마을",
+      "expiresTemplate": "{time}까지 유효",
+      "officialNotice": "즉시 안전한 곳으로 대피하시고, 관계 당국의 안내에 따라주시기 바랍니다."
+    }
   }
 }
