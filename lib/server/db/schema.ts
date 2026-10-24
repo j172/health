@@ -2135,6 +2135,30 @@ export const TABLE_DDL = {
       KEY idx_conflict_event_source (source)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
+  // 國防部中共解放軍臺海周邊海空域動態每日公報 (PLA Activities Bulletin)
+  // 每日一則公報：UNIQUE KEY 嚴格只用 activity_date（DATE），絕對不能把
+  // synced_at 或任何 DATETIME 放進 key（遵循 docs/domains/09-database-data-integrity.md
+  // 避免重複膨脹之準則）。
+  plaActivities: `
+    CREATE TABLE IF NOT EXISTS pla_activities (
+      id BIGINT NOT NULL AUTO_INCREMENT,
+      activity_date DATE NOT NULL,
+      period_start DATETIME NULL,
+      period_end DATETIME NULL,
+      title VARCHAR(255) NOT NULL,
+      aircraft_total INT NOT NULL DEFAULT 0,
+      aircraft_crossed INT NOT NULL DEFAULT 0,
+      vessels_total INT NOT NULL DEFAULT 0,
+      official_ships_total INT NOT NULL DEFAULT 0,
+      description TEXT NOT NULL,
+      aircraft_details TEXT NULL,
+      image_url VARCHAR(1000) NULL,
+      source_url VARCHAR(1000) NOT NULL,
+      synced_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_pla_activities_date (activity_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `,
 };
-
-

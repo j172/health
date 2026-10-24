@@ -253,6 +253,7 @@ const runSchemaMigrations = async (): Promise<void> => {
   await p.query(TABLE_DDL.officeCalendarDays);
   // 全球動態地球「武裝衝突」— GDELT (issue #774, parent #773) — new table, no ALTER needed.
   await p.query(TABLE_DDL.conflictEvents);
+  await p.query(TABLE_DDL.plaActivities);
   // CREATE TABLE IF NOT EXISTS above doesn't add columns to an already-existing
   // table, so newly-added columns need an explicit migration here.
   await p.query(`

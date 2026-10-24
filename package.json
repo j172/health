@@ -42,7 +42,8 @@
     "import:cpc-stations": "node scripts/import-cpc-stations.mjs",
     "import:hotlines": "node scripts/import-government-hotlines.mjs",
     "build:seeds": "node scripts/build-facility-seeds.mjs",
-    "sync:npo": "node scripts/gha-npo-sync.mjs"
+    "sync:npo": "node scripts/gha-npo-sync.mjs",
+    "sync:pla-activities": "node scripts/sync-pla-activities.mjs"
   },
   "dependencies": {
     "adm-zip": "^0.6.1",

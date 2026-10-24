@@ -4208,6 +4208,64 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
+    slug: "pla-activities",
+    group: "disaster-alerts",
+    lastUpdated: "2026-10-24",
+
+    schemaType: "WebPage",
+    title: "臺海周邊海空域動態：國防部共機共艦即時每日公報與航跡圖",
+    keywords: [
+      "臺海動態",
+      "中共軍機",
+      "共機擾台",
+      "海峽中線",
+      "國防部公報",
+      "共艦",
+      "空域示意圖",
+      "防空示警",
+    ],
+    navLabel: "臺海軍機艦動態",
+    description:
+      "每日即時彙整中華民國國防部全球資訊網「中共解放軍臺海周邊海、空域動態」新聞公報。提供 4 大關鍵指標（偵獲共機數、逾越海峽中線/延伸空域架次、共艦艘次、公務船艘次）、完整官方公告內文、航跡示意圖燈箱檢視與近 30 天歷史時序切換對照。",
+    directAnswer:
+      "每日彙整國防部發布之中共解放軍臺海周邊海、空域動態公報，提供 4 大結構化指標（偵獲共機、逾越中線及延伸空域、共艦、公務船）、官方原文公告、航跡示意圖燈箱檢視與近 30 天歷史時序切換。",
+    scientificBasis: [
+      {
+        title: "區域動態列表（中共解放軍臺海周邊海、空域動態）",
+        authority: "中華民國國防部",
+        url: "https://www.mnd.gov.tw/news/plaactlist",
+      },
+      {
+        title: "國防部即時軍事動態資訊發布作業準則",
+        authority: "中華民國國防部",
+        url: "https://www.mnd.gov.tw/",
+      },
+    ],
+    relatedSlugs: ["emergency-supplies", "emergency-hotlines", "disaster-map", "weather-alerts"],
+    faqs: [
+      {
+        question: "臺海周邊海空域動態資料多久更新一次？",
+        answer:
+          "國防部通常於每日上午（約 09:00 前後）發布前一日 0600 時至當日 0600 時的 24 小時動態公報。本系統定時排程同步官方最新公告與示意圖。",
+      },
+      {
+        question: "如何解讀「逾越海峽中線及進入延伸空域」的架次？",
+        answer:
+          "「逾越海峽中線」代表共機穿越臺灣海峽中線或進入北部、西南、東部等防空識別延伸空域之架次，為衡量臺海周邊海空緊張情勢與防禦應處強度的關鍵指標。",
+      },
+      {
+        question: "統計時段的「0600時至0600時」代表什麼？",
+        answer:
+          "國防部發布之每日動態公報均採固定 24 小時觀察週期，自昨日上午 06:00 起至今日上午 06:00 止。",
+      },
+      {
+        question: "空域活動示意圖提供哪些資訊？",
+        answer:
+          "示意圖由國防部隨公報發布，視覺化標示各型機（如戰機、預警機、無人機等）的活動航線、逾越中線分佈及周邊空域示意，點擊圖片可放大燈箱高清檢視。",
+      },
+    ],
+  },
+  {
     slug: "medical-violators",
     group: "medical-care",
     lastUpdated: "2026-10-12",
