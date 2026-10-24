@@ -175,6 +175,7 @@ const FOOTER_LINK_LABEL_KEYS: Record<string, string> = {
   "ap.ece.moe.edu.tw": "footer.moeEce",
   "crc.sfaa.gov.tw": "footer.sfaaCrc",
   "council2026.taiwangogo.tw": "footer.council2026",
+  "smc.peering.tw": "footer.smcPeering",
 };
 
 export default function SiteFooter() {

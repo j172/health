@@ -107,10 +107,14 @@ test("moe-ece & sfaa-crc: CivicPartnersSection.tsx includes both partners with e
     mohwIndex < moeIndex && moeIndex < sfaaIndex && sfaaIndex < councilIndex,
     "Ordering must be mohw-vio -> moe-ece -> sfaa-crc -> council2026"
   );
+  const smcIndex = sectionContent.indexOf('id: "smc-peering"');
+  assert.ok(smcIndex !== -1, "CivicPartnersSection must include smc-peering");
+  assert.ok(councilIndex < smcIndex, "Ordering must have council2026 before smc-peering"
+  );
 });
 
 test("moe-ece & sfaa-crc: navModel.ts CIVIC_PARTNER_LINKS and buildFooterModel integration", () => {
-  assert.equal(CIVIC_PARTNER_LINKS.length, 11, "CIVIC_PARTNER_LINKS should have exactly 11 links");
+  assert.equal(CIVIC_PARTNER_LINKS.length, 12, "CIVIC_PARTNER_LINKS should have exactly 12 links");
 
   const moeLink = CIVIC_PARTNER_LINKS.find(
     (l) => l.href === "https://ap.ece.moe.edu.tw/webecems/punishSearch.aspx"
@@ -140,7 +144,7 @@ test("moe-ece & sfaa-crc: navModel.ts CIVIC_PARTNER_LINKS and buildFooterModel i
   const footerModel = buildFooterModel();
   const civicBlock = footerModel.find((b) => b.id === "civic-partners");
   assert.ok(civicBlock);
-  assert.equal(civicBlock.links.length, 11);
+  assert.equal(civicBlock.links.length, 12);
 
   const moeFooterLink = civicBlock.links.find((l) => l.href.includes("ap.ece.moe.edu.tw"));
   assert.ok(moeFooterLink);
