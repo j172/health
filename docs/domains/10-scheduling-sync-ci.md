@@ -11,7 +11,7 @@
 
 | 軌道 | 數量 | 說明 |
 |---|---|---|
-| in-app node-cron（lib/server/cron/registerJobs.ts） | 46 個 job（2026-10-24 新增 TDX 對帳 job；2026-10-22 移除作物病蟲害同步［#788］；以 egisterJobs.ts 內實際數量為準） | 隨 Next.js 啟動；RSS、CWA、急診等；記錄記憶體用量 |
+| in-app node-cron（`lib/server/cron/registerJobs.ts`） | 47 個 job（2026-10-24 新增 TDX 對帳 job［Ticket 03］；2026-10-22 移除作物病蟲害同步［#788］；以 `registerJobs.ts` 內實際數量為準） | 隨 Next.js 啟動；RSS、CWA、急診等；記錄記憶體用量 |
 | GitHub Actions | 14 個 workflow | 需要外部 IP（被主機封鎖的上游）、長時間批次、或部署相關的工作；透過 SSH 在主機上執行，**不走 TCP 轉發**（HawkHost 已關閉 `AllowTcpForwarding`） |
 | 系統 crontab | 1 個 | 只保留 `pm2-ensure-running` 自我修復 watchdog |
 
