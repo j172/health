@@ -1,4 +1,4 @@
-{
+﻿{
   "nav": {
     "home": "Home",
     "features": "Features",
@@ -180,12 +180,7 @@
     "mohwVio": "MOHW Medical Gender Violation Search",
     "moeEce": "MOE Preschool Violations Database",
     "sfaaCrc": "MOHW Child Protection Sanctions",
-<<<<<<< HEAD
-    "council2026": "2026 Politician Records",
-    "recommendedServices": "Things I use & recommend:"
-=======
-    "council2026": "2026 Politician Records"
->>>>>>> origin/main
+    "council2026": "2026 Politician Records",`r`n    "recommendedServices": "Things I use & recommend:"
   },
   "tts_title": "Voice Reader",
   "tts_play": "Read Aloud",
