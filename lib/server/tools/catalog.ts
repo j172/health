@@ -2752,44 +2752,6 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     ],
   },
   {
-    slug: "pest-alerts",
-    group: "disaster-alerts",
-    lastUpdated: "2026-10-13",
-
-    title: "農作物病蟲害即時預警",
-    // "登革熱"/"病媒蚊" added for issue #462's news↔tool cross-linking
-    // acceptance criterion (登革熱 news should surface this tool alongside
-    // global-watch — formerly travel-epidemic-alerts, retired by #591):
-    // 地方病媒蚊孳生源清除與通報作業在許多縣市由
-    // 農業/環保稽查單位與病蟲害防治體系共同執行，是登革熱新聞讀者可能需要
-    // 的鄰近示警資訊。
-    keywords: ["病蟲害預警", "農作物病害", "登革熱", "病媒蚊"],
-    description:
-      "即時查詢農業部動植物防檢署發布之全臺農作物病蟲害即時示警與發生預警資訊。",
-    directAnswer:
-      "農作物病蟲害即時預警提供臺灣主要農作物害蟲與疫病即時預警燈號、受影響作物與防治建議，守護農業生產與綠色植栽。",
-    scientificBasis: [
-      {
-        title: "作物病蟲害預警監控體系",
-        authority: "農業部動植物防疫檢疫署",
-        url: "https://www.aphia.gov.tw",
-      },
-    ],
-    relatedSlugs: ["weather-alerts", "uv", "pesticide-sales"],
-    faqs: [
-      {
-        question: "病蟲害預警資訊包含哪些內容？",
-        answer:
-          "收錄防檢署即時示警之害蟲名稱、警戒等級、好發作物與最新通報時間與防治注意事項。",
-      },
-      {
-        question: "資料來源為何？",
-        answer:
-          "資料直接源自農業部動植物防疫檢疫署植物疫情監控開放資料平臺。",
-      },
-    ],
-  },
-  {
     slug: "power-grid-overview",
     group: "life-culture",
     lastUpdated: "2026-10-12",
@@ -3753,7 +3715,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://www.aphia.gov.tw/",
       },
     ],
-    relatedSlugs: ["food-safety", "pest-alerts", "green-certifications"],
+    relatedSlugs: ["food-safety", "green-certifications"],
     group: "environment-food",
     lastUpdated: "2026-10-12",
 
@@ -4618,7 +4580,6 @@ const INDEXABLE_SLUGS = new Set([
   "mental-health",
   "npo-organizations",
   "organ-donation-hospitals",
-  "pest-alerts",
   "pesticide-sales",
   "pet-adoption",
   "pharmacies",

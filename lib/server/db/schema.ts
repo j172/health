@@ -1226,23 +1226,6 @@ export const TABLE_DDL = {
       KEY idx_books_title (title(128))
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `,
-  // 便民服務：作物病蟲害即時預警 (農業部動植物防疫檢疫署)
-  pestAlerts: `
-    CREATE TABLE IF NOT EXISTS pest_alerts (
-      id BIGINT NOT NULL AUTO_INCREMENT,
-      subject_name VARCHAR(100) NOT NULL,
-      monitor_type VARCHAR(50) NOT NULL,
-      alert_time DATETIME NOT NULL,
-      target_crops VARCHAR(255) NULL,
-      alert_data_json LONGTEXT NULL,
-      status VARCHAR(20) NOT NULL DEFAULT 'active',
-      created_at DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL,
-      PRIMARY KEY (id),
-      KEY idx_pest_alert_time (alert_time),
-      KEY idx_pest_subject (subject_name)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-  `,
   // 便民服務：全台電力概況儀表板 (issue #177) — 台電 d006001 各機組即時發電量,
   // ~10-minute cadence. Latest-snapshot-only convention (issue's Out of Scope
   // explicitly excludes history/trend storage): unique key is unit_name alone

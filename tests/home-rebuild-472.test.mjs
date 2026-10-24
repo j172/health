@@ -223,7 +223,8 @@ test("components/Home/HomeStatusBar.tsx uses the shared useSharedGeolocation hoo
 // 首頁常駐的兩張大卡片（舊 components/Home/HomeQuickEntryCards.tsx，issue
 // #744：颱風與警報／明天放假嗎？）已移除——全站颱風橫幅（TyphoonBanner）已
 // 改成大卡片視覺樣式並涵蓋同樣的警報資訊，兩者重複。「明天放假嗎？」的入口
-// 保留為 HomeStatusBar「今日上班」薥目旁邊的一個小圖示連結。
+// 原本保留為 HomeStatusBar「今日上班」薥目旁邊的一個小圖示連結，後來與新增的
+// 「明日上班」全尺寸薥目目的重疊，已收斂成只留「明日上班」一個（見下方測試）。
 test("the old HomeQuickEntryCards component and its homepage mount are gone", () => {
   assert.ok(!fs.existsSync(path.join(ROOT_DIR, "components", "Home", "HomeQuickEntryCards.tsx")));
   for (const file of [["app", "(zh)", "(site)", "page.tsx"], ["app", "[locale]", "page.tsx"]]) {
@@ -232,17 +233,11 @@ test("the old HomeQuickEntryCards component and its homepage mount are gone", ()
   }
 });
 
-test("components/Home/HomeStatusBar.tsx keeps a small shortcut link beside the 今日上班 pill for 「明天放假嗎？」, clearly smaller than a full pill", () => {
+test("components/Home/HomeStatusBar.tsx has consolidated the redundant 「明天放假嗎？」 shortcut icon into the single 明日上班 pill", () => {
   const src = readSource("components", "Home", "HomeStatusBar.tsx");
-  assert.match(src, /function WorkdayTomorrowShortcut/);
-  assert.match(src, /<WorkdayTomorrowShortcut\s/);
-  assert.match(src, /href="\/tools\/work-school-status"/);
-  assert.match(src, /tomorrowShortcutLabel", "明天放假嗎？"/);
-  // The shortcut is a fixed small square (h-9 w-9, flex-none) — not another
-  // full-width/flex-1 pill like StatusPill.
-  const shortcutFn = src.slice(src.indexOf("function WorkdayTomorrowShortcut"), src.indexOf("export default function HomeStatusBar"));
-  assert.match(shortcutFn, /h-9 w-9 flex-none/);
-  assert.ok(!/min-w-\[9\.5rem\]/.test(shortcutFn), "must not reuse StatusPill's full pill width");
+  assert.ok(!src.includes("WorkdayTomorrowShortcut"), "the small shortcut icon component must be removed, not just unused");
+  assert.ok(!src.includes("tomorrowShortcutLabel"), "the now-unused i18n key must not still be referenced");
+  assert.match(src, /tomorrowWorkdayLabel", "明日上班"/);
 });
 
 test("components/Home/HomeStatusBar.tsx offers a manual county picker gated on needsManualSelection, not an automatic fallback, and calls /api/home-status exactly once per resolved location", () => {
@@ -256,16 +251,19 @@ test("components/Home/HomeStatusBar.tsx offers a manual county picker gated on n
   }
 });
 
-// Product decision (2026-10-13 review of #472): keep all 10 original
+// Product decision (2026-10-13 review of #472): keep the original 10
 // sidebar widgets' *content* reachable from the homepage — only the 5 that
 // duplicate the new top status bar (weather/weather-alerts/earthquake/AQI/UV)
-// are hidden there; ER status/CPC price/water outages/CDC alerts/pest
-// alerts are NOT covered by the status bar and must always render.
-test("components/News/NewsSidebar.tsx: hideStatusBarDuplicateWidgets hides only the 5 status-bar-covered widgets, defaults to false, and never gates the other 5", () => {
+// are hidden there; ER status/CPC price/water outages/CDC alerts were NOT
+// covered by the status bar and must always render. (The original 10th,
+// pest alerts, was later retired outright by issue #788, not folded into
+// the status bar — so only 9 of that original set remain, renumbering
+// everything after it by one.)
+test("components/News/NewsSidebar.tsx: hideStatusBarDuplicateWidgets hides only the 5 status-bar-covered widgets, defaults to false, and never gates the other 4", () => {
   const src = readSource("components", "News", "NewsSidebar.tsx");
   assert.ok(
     src.includes("hideStatusBarDuplicateWidgets = false"),
-    "must default to false so /news archive pages keep all 10 widgets",
+    "must default to false so /news archive pages keep all widgets",
   );
 
   const GATE = '{!hideStatusBarDuplicateWidgets && (';
@@ -274,11 +272,11 @@ test("components/News/NewsSidebar.tsx: hideStatusBarDuplicateWidgets hides only 
   const gate2 = src.indexOf(GATE, gate1 + GATE.length);
   assert.ok(gate2 !== -1, "must have exactly 2 separate gated blocks (1-2 and 4-6)");
   const gate3 = src.indexOf(GATE, gate2 + GATE.length);
-  assert.equal(gate3, -1, "must have exactly 2 gated blocks, not a 3rd — items 7-10 must never be gated");
+  assert.equal(gate3, -1, "must have exactly 2 gated blocks, not a 3rd — items 7-9 must never be gated");
 
   const idx3 = src.indexOf("{/* 3.");
   const idx7 = src.indexOf("{/* 7.");
-  const idx11 = src.indexOf("{/* 11.");
+  const idx10 = src.indexOf("{/* 10.");
 
   // Items 1-2 (weather / weather-alerts): inside the first gated block.
   assert.ok(src.indexOf("<LocalWeatherSvgWidget") > gate1 && src.indexOf("<LocalWeatherSvgWidget") < idx3);
@@ -293,18 +291,21 @@ test("components/News/NewsSidebar.tsx: hideStatusBarDuplicateWidgets hides only 
     assert.ok(i > gate2 && i < idx7, `${tag} must be inside the second gated block`);
   }
 
-  // Items 7-10 (CPC / water / CDC / pest): after both gated blocks — always render.
-  for (const tag of ["<CpcPriceSidebarWidget", "<WaterOutageSidebarWidget", "<CdcAlertSidebarWidget", "<PestAlertSidebarWidget"]) {
+  // Items 7-9 (CPC / water / CDC): after both gated blocks — always render.
+  for (const tag of ["<CpcPriceSidebarWidget", "<WaterOutageSidebarWidget", "<CdcAlertSidebarWidget"]) {
     const i = src.indexOf(tag);
-    assert.ok(i > idx7 && i < idx11, `${tag} must render after the second gated block, before item 11`);
+    assert.ok(i > idx7 && i < idx10, `${tag} must render after the second gated block, before item 10`);
   }
 
-  // Item 11 (anti-fraud summary, issue #575): new, not one of the original
+  // Item 10 (anti-fraud summary, issue #575): new, not one of the original
   // 10 — also not covered by the status bar's 5 scoped sections, so it must
   // likewise always render, never inside either gated block.
-  const idx12 = src.indexOf("{/* 12.");
+  const idx11 = src.indexOf("{/* 11.");
   const antiFraudIdx = src.indexOf("<AntiFraudSidebarWidget");
-  assert.ok(antiFraudIdx > idx11 && antiFraudIdx < idx12, "AntiFraudSidebarWidget must render after item 11's comment, before item 12, and always (not gated)");
+  assert.ok(antiFraudIdx > idx10 && antiFraudIdx < idx11, "AntiFraudSidebarWidget must render after item 10's comment, before item 11, and always (not gated)");
+
+  // Issue #788: pest alerts must be fully gone, not just unlisted above.
+  assert.doesNotMatch(src, /PestAlertSidebarWidget/i);
 });
 
 test("components/News/StabloNewsLayout.tsx renders homeTopSections at the top of the home variant's <main>, and passes hideStatusBarDuplicateWidgets to NewsSidebar on home", () => {

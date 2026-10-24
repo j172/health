@@ -94,11 +94,14 @@ test("earthquake news surfaces a plausible subset of global-watch/emergency-supp
   }
 });
 
-test("dengue fever (登革熱) news surfaces pest-alerts and global-watch", () => {
+test("dengue fever (登革熱) news surfaces global-watch, no longer pest-alerts", () => {
   // issue #591 (parent #583): travel-epidemic-alerts was retired in favor of
   // global-watch's 國際疫情 item, which reuses its TravelEpidemicAlertsContent
   // component as-is. The "登革熱" cross-linking keyword was carried over to
   // global-watch's own TOOL_CATALOG entry so this crosslink survives the merge.
+  // issue #788: pest-alerts (which also carried a "登革熱" keyword, for the
+  // pest-control angle on mosquito-breeding-site clearance) was separately
+  // retired outright, so it can no longer appear here.
   const news = {
     title: "全國登革熱病例創新高 疾管署籲加強防蚊",
     keywords: "登革熱,疾管署,防疫",
@@ -110,11 +113,11 @@ test("dengue fever (登革熱) news surfaces pest-alerts and global-watch", () =
   const slugs = related.map((t) => t.slug);
 
   assert.ok(related.length >= 1 && related.length <= 3, "expected 1-3 related tools");
-  assert.ok(slugs.includes("pest-alerts"), "dengue news must surface pest-alerts");
   assert.ok(
     slugs.includes("global-watch"),
     "dengue news must surface global-watch (successor to the retired travel-epidemic-alerts)",
   );
+  assert.ok(!slugs.includes("pest-alerts"), "pest-alerts is retired (issue #788) and must never be surfaced");
 });
 
 test("findRelatedToolsForNews returns [] for an article matching no tool keyword", () => {

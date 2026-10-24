@@ -17,10 +17,10 @@ test("DB schema unique keys prevent time-series table bloat and upsertCwaRainfal
   assert.match(cwaQueries, /obs_time = VALUES\(obs_time\)/);
 });
 
-test("All 86 TOOL_CATALOG slugs are in INDEXABLE_SLUGS and no tool page.tsx has conflicting robots noindex", () => {
+test("All 85 TOOL_CATALOG slugs are in INDEXABLE_SLUGS and no tool page.tsx has conflicting robots noindex", () => {
   const catalogSrc = read("lib/server/tools/catalog.ts");
   const slugMatches = [...catalogSrc.matchAll(/^\s*slug:\s*"([^"]+)"/gm)].map((m) => m[1]);
-  assert.equal(slugMatches.length, 86, "Expected 86 tools in TOOL_CATALOG");
+  assert.equal(slugMatches.length, 85, "Expected 85 tools in TOOL_CATALOG");
 
   const indexableBlock = catalogSrc.match(/const INDEXABLE_SLUGS\s*=\s*new Set\(\[([\s\S]*?)\]\);/);
   assert.ok(indexableBlock, "INDEXABLE_SLUGS set must exist");
@@ -70,7 +70,7 @@ test("/llm-info removes hallucinated calculators and reflects current 8 domains 
   assert.match(llmInfo, /長照補助與機構查詢、兒少托育與福利/);
 });
 
-test("/tools index uses dynamic TOOL_CATALOG.length and maps all 86 tool slugs in TOOL_ICONS", () => {
+test("/tools index uses dynamic TOOL_CATALOG.length and maps all 85 tool slugs in TOOL_ICONS", () => {
   const toolsPage = read("app/(zh)/tools/page.tsx");
   assert.doesNotMatch(toolsPage, /30\+\s*款/);
   assert.match(toolsPage, /TOOL_CATALOG\.length/);

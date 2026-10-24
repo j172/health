@@ -112,7 +112,6 @@
     "contraception-map": "避妊相談マップ（産婦人科・薬局検索）",
     "latest-books": "おすすめ書籍（博客來・誠品・TAAZE選書）",
     "vet-clinics": "台湾動物病院・獣医クリニック検索",
-    "pest-alerts": "農作物病害虫リアルタイム警報",
     "power-grid-overview": "全台湾電力供給状況ダッシュボード",
     "cpc-prices": "台湾中油（CPC）燃料・ガス価格とガソリンスタンド検索",
     "health-supplements": "健康食品認証検索（衛福部食薬署認可番号）",
@@ -969,13 +968,6 @@
       "workdayOff": "休み",
       "workdayOffNamedTemplate": "休み・{name}",
       "workdayUnknown": "カレンダー情報なし",
-      "tomorrowShortcutLabel": "明日は休みですか？",
-      "tomorrowWorkdayLabel": "明日の出勤",
-      "nextHolidayLabel": "次の休日",
-      "todayOffLabel": "本日は休日",
-      "workdayWorkdayLabel": "本日は出勤",
-      "countdownTemplate": "あと {days} 日（{name}）",
-      "tomorrowOffTemplate": "明日休み（{name}）"
     },
     "guideCards": {
       "sectionAriaLabel": "生活シーン別ガイド",

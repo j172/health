@@ -31,7 +31,6 @@ import { runIaqPremisesSync } from "@/lib/server/iaqPremises/ingestIaqPremises";
 import { runCleaningSquadsSync } from "@/lib/server/cleaningSquads/ingestCleaningSquads";
 import { runGarbageRoutesSync } from "@/lib/server/garbageRoutes/runSync";
 import { runGreenRestaurantsSync } from "@/lib/server/greenRestaurants/ingestGreenRestaurants";
-import { runPestAlertsSync } from "@/lib/server/pestAlerts/runSync";
 import { runForestFireSync } from "@/lib/server/forestFire/runSync";
 import { runLatestBooksSync } from "@/lib/server/books/runSync";
 import { runDrugShortagesSync } from "@/lib/server/drugs/runShortagesSync";
@@ -421,17 +420,12 @@ export const registerCronJobs = (): void => {
   // 各補一次當日資料。分鐘 9 不在任何既有 job 的格線上：不是 rss 5/35、aqi 20/50、cwa 15/45、earthquakes
   // 3/13/23/33/43/53、aqx 10/40、wra-sync 8/38、wra-iot 12/27/42/57、
   // emergency-rooms 7/22/37/52 等每小時 job 的分鐘，也不是 culture-shows 的 10、
-  // pest-alerts 的 12、who-don 的 19，所以 6 點與 12 點都不會跟任何 job 同 tick
+  // who-don 的 19，所以 6 點與 12 點都不會跟任何 job 同 tick
   // （lib/server/forestFire/dbConventions.test.mjs 會檢查這點）。這個 job 自己再用
   // withAdvisoryLock 防重疊，見 lib/server/forestFire/runSync.ts。
   cron.schedule(
     "9 6,12 * * *",
     runGuarded("forest-fire-sync-cron.log", () => runForestFireSync()),
-  );
-  // MOA Crop Pest warnings every 6 hours — near-realtime survey bulletins and critical alerts
-  cron.schedule(
-    "12 0,6,12,18 * * *",
-    runGuarded("pest-alerts-sync-cron.log", () => runPestAlertsSync()),
   );
   // Latest books recommendation daily at 05:30am off-peak — syncs Top 20 across 41 categories and purges old entries
   cron.schedule(
@@ -560,15 +554,14 @@ export const registerCronJobs = (): void => {
     runGuarded("gdacs-cleanup-cron.log", () => runGdacsCleanup()),
   );
   // WHO Disease Outbreak News (issue #596 / #583) — 每 6 小時一次，供「國際疫
-  // 情」項目後續的 WHO 圖釘疊加使用。沿用 culture-shows (10 0,6,12,18) /
-  // pest-alerts (12 0,6,12,18) 的每 6 小時慣例，但取未被佔用的 19 分：不在
-  // 本檔案任何其他
+  // 情」項目後續的 WHO 圖釘疊加使用。沿用 culture-shows (10 0,6,12,18) 的每
+  // 6 小時慣例，但取未被佔用的 19 分：不在本檔案任何其他
   // 「每小時」job 的分鐘上 (rss 5/35、aqi 20/50、cwa 15/45、earthquakes
   // 3/13/23/33/43/53、news-card-images+power-realtime 0/10/20/30/40/50、
   // water-outages 25、wra-water-outages 18/48、aqx 10/40、wra-sync 8/38、
   // wra-iot 12/27/42/57、emergency-rooms 7/22/37/52、
   // transit-accessibility-alerts 16、gdacs-sync
-  // 14/44)，也不是 culture-shows 的 10 分或 pest-alerts 的 12 分，所以在
+  // 14/44)，也不是 culture-shows 的 10 分，所以在
   // 0/6/12/18 這四個整點都不會撞到任何既有 job。這個 job 自己再用
   // withAdvisoryLock 防重疊，見 lib/server/who/runSync.ts。
   cron.schedule(

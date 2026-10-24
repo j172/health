@@ -146,10 +146,6 @@ test("Seed fallbacks exist for newly onboarded and offline-fallback tools", () =
   const vcList = Array.isArray(vcData) ? vcData : (vcData.records || []);
   assert.ok(Array.isArray(vcList) && vcList.length > 1000, `Expected > 1000 vet clinics, got ${vcList.length}`);
 
-  // 14. Pest alerts seed
-  const pestPath = path.join(ROOT_DIR, "data", "pest-alerts-seed.json");
-  assert.ok(fs.existsSync(pestPath), "pest-alerts-seed.json must exist");
-
   // 15. Child native languages seed
   const nativeLangPath = path.join(ROOT_DIR, "data", "child-native-languages-seed.json");
   assert.ok(fs.existsSync(nativeLangPath), "child-native-languages-seed.json must exist");

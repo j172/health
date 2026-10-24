@@ -2,6 +2,7 @@
 
 - **日期**：2026-10-14（2026-10-23 增訂：台電維生管線災情 44799、即時發電 8931 線上除錯、政府新聞資料集 200 筆檢驗；2026-10-24 增訂：災防細胞廣播 cbs.tw、水保署土石流警戒 7284 / UnitId=018、教育部性平網資訊澄清與公文過濾）
 - **性質**：純研究文件。沒有修改程式碼、沒有 commit、沒有建分支、沒有讀 `.env`，也沒有申請任何帳號或金鑰。
+- **2026-10-22 複查更新**：下文第 1、2 節已標註哪些項目後來上線了（Top15 10/15 已完成，見第 1 節表格後的狀態追蹤），§2.1／§2.2 的「現況」段落已更新、§2.2 的電話號碼問題已修正，§6 未確認事項的主機可達性已補上 Track B 實測結果。新增**第 7 節：尚未實做 Top 10（2026-10-22 盤點）**，供下次決定優先順序用。原表格數字與驗證結果本身維持 10-14 當天的快照不動。
 - **前置文件（本文不重複其結論）**：
   - [opendata-sources-audit-20260914.md](../archive/specs/opendata-sources-audit-20260914.md)（WRA、iot.wra、MOENV、MOA 土石流、EE501、g0v 健康類 repo 已盤點過）
   - [geocode-opendata-coverage-gap-research.md](../archive/specs/geocode-opendata-coverage-gap-research.md)（既有地址型來源的座標替代方案）
@@ -51,6 +52,28 @@
 
 **次要候選（值得做但優先度較低）**：食藥署「藥物食品安全週報」[11502](https://data.gov.tw/dataset/11502)（每週，新聞來源）；Cofacts 真的假的 GraphQL（反詐查核，見 §2.1）；環境部「機車排氣定檢站」`mpi_s_01`（含座標與「今日營業」註記，我附近）；環境部「全國維修地圖」`wr_p_250`；警政署「拖吊保管場」[7319](https://data.gov.tw/dataset/7319)（89 筆）；食藥署「常見濫用管制藥品」[6944](https://data.gov.tw/dataset/6944)（反毒衛教）；疾管署「抗蛇毒血清儲備醫院」（428 筆含座標，但 `od.cdc.gov.tw` 封鎖資料中心，見 §5）；防空疏散避難設施（各縣市分散，見 §6）。
 
+### Top15 狀態追蹤（2026-10-22 複查）
+
+| # | 狀態 | 落地方式 |
+|---|---|---|
+| 1 | ✅ 已上線 | `anti-fraud` 工具（2026-10-15），連 #15 的打詐儀表來源一併收進 `scientificBasis` |
+| 2 | ⬜ 未做 | 見第 7 節 |
+| 3 | ✅ 已上線 | 併入 `mental-health` 工具「成癮防治」分頁（issue #566/#571），非獨立新工具 |
+| 4 | ✅ 已上線 | 新聞來源 `police_7505`（警政署） |
+| 5 | ✅ 已上線 | 併入 `drugs` 工具（2026-10-16） |
+| 6 | ⬜ 未做 | 見第 7 節 |
+| 7 | ✅ 已上線 | `postpartum-care` 工具；一般護理之家／居家護理所併入 `long-term-care`。來源主機 `nhplatform.mohw.gov.tw` 後來證實被封鎖，改用住宅網路手動匯入（#678，見 §6） |
+| 8 | ✅ 已上線 | `cleaning-squads` 工具（臺北／新北路線＋新北／臺中即時位置；臺南／高雄即時位置主機證實被封鎖，放棄，見 §6） |
+| 9 | ⬜ 未做 | 見第 7 節 |
+| 10 | ✅ 已上線 | `/nearby` 派出所類型（issue #677，Track B B-9，手動匯入） |
+| 11 | ⬜ 未做 | 見第 7 節 |
+| 12 | ✅ 已上線 | `outdoor-safety` 工具的森林火災風險區塊（B-12/#672） |
+| 13 | ✅ 已上線 | 併入 `water-outages` 工具（鄉鎮別水質／硬度等） |
+| 14 | ⬜ 未做 | 見第 7 節 |
+| 15 | ✅ 已上線 | 隨 #1 一起進 `anti-fraud` 工具 |
+
+10/15 已上線，5 項未做（#2、#6、#9、#11、#14）。
+
 ---
 
 ## 2. 反詐、反毒、治安與能源管線專章
@@ -58,7 +81,8 @@
 ### 2.1 反詐騙
 
 #### 現況
-- 本站已有：`emergency-hotlines` 收錄 165 專線；新聞有 MyGoPen 事實查核來源；`mohw`／`moi` 官方新聞。**沒有任何可查詢的反詐工具**。
+- 本站已有：`emergency-hotlines` 收錄 165 專線；新聞有 MyGoPen 事實查核來源；`mohw`／`moi` 官方新聞。
+- **2026-10-22 更新**：下方§2.1建議做法已落地為 `anti-fraud` 工具（2026-10-15 上線，Top15 #1＋#15），以下盤點內容保留原樣作為該工具的設計依據與尚未採用來源的紀錄（例如 Cofacts GraphQL 查證、165 打詐儀錶板前端 API 仍未接）。
 
 #### 官方開放資料（逐一實測）
 
@@ -98,8 +122,9 @@
 ### 2.2 反毒
 
 #### 現況
-- 本站沒有任何戒癮資源工具。`mental-health`、`smoking-cessation` 是最接近的同類工具。
-- **附帶發現（需人工確認）**：`data/government-hotlines.json` 第 509 行與 `data/taiwan-hotlines.csv` 第 47 行把「毒品防制諮詢專線」寫成 **0800-024-555**。搜尋不到任何官方來源有這個號碼；法務部與衛福部公告的全國戒毒專線是 **0800-770-885（請請你幫幫我）**，24 小時免付費、由各地毒防中心接聽（[衛福部](https://www.mohw.gov.tw/cp-2704-25470-1.html)、[法務部反毒大本營](https://antidrug.moj.gov.tw/dl-200-42022fe5-5214-4fa1-a368-0719207c64b8.html)）。緊急電話頁上的號碼若錯誤，影響比任何新功能都大，建議優先查證修正（本文不改程式）。
+- 本站原先沒有任何戒癮資源工具，`mental-health`、`smoking-cessation` 是當時最接近的同類工具。
+- **2026-10-22 更新**：下方§2.2建議做法已落地——藥癮戒治與替代治療機構地圖併入 `mental-health` 工具的「成癮防治」分頁（issue #566/#571），不是獨立新工具，但涵蓋了 133353＋133345＋毒防中心聯絡資訊。
+- **附帶發現已解決**：`data/government-hotlines.json` 與 `data/taiwan-hotlines.csv` 原把「毒品防制諮詢專線」寫成 **0800-024-555**（查無官方來源），已於 PR #577（2026-10-14）修正為正確號碼 **0800-770-885（請請你幫幫我）**，24 小時免付費、由各地毒防中心接聽（[衛福部](https://www.mohw.gov.tw/cp-2704-25470-1.html)、[法務部反毒大本營](https://antidrug.moj.gov.tw/dl-200-42022fe5-5214-4fa1-a368-0719207c64b8.html)），2026-10-22 複查時再次核對過仍正確。
 
 #### 資料集
 
@@ -400,127 +425,47 @@
 
 ## 6. 未確認事項
 
-1. **正式主機可達性**：下列主機本站從未使用，資料中心 IP 能否連線未確認：`nhplatform.mohw.gov.tw`（產後護理之家）、`newdatacenter.taichung.gov.tw`、`soa.tainan.gov.tw`、`openapi.kcg.gov.tw`、`www.sfb.gov.tw`、`165.npa.gov.tw`、`165dashboard.tw`、`api.cofacts.tw`、`www.tgos.tw`（派出所 ZIP）。動工前用既有 egress probe 從正式主機各打一次。
+1. **正式主機可達性**——2026-10-22 更新，Track B rollout 已實測其中 3 個：
+   - `newdatacenter.taichung.gov.tw`：✅ 主機與 GitHub runner 皆 200（run `38764893673`），臺中垃圾車即時位置已上線。
+   - `soa.tainan.gov.tw`、`openapi.kcg.gov.tw`：❌ 主機與 runner 皆逾時 20 秒（同一次 run），臺南、高雄垃圾車即時位置已放棄，標記「暫無即時資料」。
+   - `nhplatform.mohw.gov.tw`：❌ 主機與 runner 兩邊逾時（2026-10-15 二次確認），產後護理之家 115950 改用住宅網路手動匯入繞過（#678），資料仍上線，但不是即時 API。
+   - 仍未確認：`www.sfb.gov.tw`、`165.npa.gov.tw`、`165dashboard.tw`、`api.cofacts.tw`、`www.tgos.tw`（派出所 ZIP，但派出所本身已靠手動匯入上線，見 Top15 #10）、`data.ntpc.gov.tw`。動工前用既有 egress probe 從正式主機各打一次。
 2. **TDX 道安 API**：`/v1/TrafficAccident/Rank/{CityCode}/DateFilter/{DateFilter}` 只確認存在於 swagger，未帶 token 實打；`DateFilter` 格式、回傳欄位、是否含座標皆未確認。
 3. **165 打詐儀錶板**：是否有正式 API 或計畫上架 data.gov.tw；`TotalLosses` 單位（推測萬元）。
 4. **藥癮戒治名單的更新日**：`data.taipei` 詮釋資料每日刷新，無法得知內容實際更新日；檔案內沒有版本日期欄位。
 5. **「非鴉片類藥癮治療補助機構」**：133353 標題有列，但「戒治機構模式」欄位只見戒治／替代治療類別，是否涵蓋非鴉片類補助機構未確認。
 6. **全國酒癮治療機構名單**：只找到縣市版。
 7. **防空疏散避難設施全國彙整**：data.gov.tw 上約 132 個縣市／警察機關資料集，格式不一（CSV、ODS、XLSX、JSON）；警政署地圖頁的資料端點未找到。是否有全國單一來源未確認。
-8. **毒品防制諮詢專線號碼**：`data/government-hotlines.json` 與 `data/taiwan-hotlines.csv` 的 0800-024-555 查無官方來源，官方公告為 0800-770-885；需人工查證後修正。
+8. ~~**毒品防制諮詢專線號碼**~~——✅ 已解決：已於 PR #577（2026-10-14）修正為 0800-770-885，見 §2.2。
 9. **電信詐欺犯罪資料 [98176](https://data.gov.tw/dataset/98176)** 的「發生地點」精度（縣市或鄉鎮）未逐筆檢查。
 10. **勞動部違反勞動法令事業單位**、**集會遊行資訊**、**捷運車站無障礙設施**：只看詮釋資料，未下載內容。
 11. **反毒大本營** `antidrug.moj.gov.tw`：是否有 RSS 或開放資料 feed 未確認（RSS 路徑回 302）。
 12. **高雄垃圾車到點時間預估 [117726](https://data.gov.tw/dataset/117726)**：未實打。
 13. **amis-moedict 授權**：GitHub 顯示 NOASSERTION，擴充原住民族語前需確認。
 14. **環境部 API 金鑰**：data.gov.tw 目錄中的 `data.moenv.gov.tw` 下載網址夾帶公開示範金鑰；本站既有程式如何帶金鑰未查（未讀 `.env`），新端點沿用既有做法即可。
----
-
-## 4. g0v 與社群可重用專案
-
-以 `gh api orgs/g0v/repos` 取得全部 524 個 repo（2026-10-14），篩出最後推送在 2024-10-14 之後（2 年內）的 73 個，再挑出「提供資料、API 或爬蟲」且與本站相關的。超過 2 年未更新標為「停滯」。
-
-| Repo | 用途 | 最後推送 | 授權 | 可重用在 | 狀態 |
-|---|---|---|---|---|---|
-| [fact-check-api](https://github.com/g0v/fact-check-api) | 事實查核 API（Cloudflare Workers），整合 Cofacts GraphQL 與 LLM | 2026-10-04 | MIT | 反詐查核；**CORS 只允許 `check.vtaiwan.tw` 等白名單**，要用須自架並自備 OpenRouter 金鑰 | 開發中（README 寫「初期」） |
-| [fact-check-core](https://github.com/g0v/fact-check-core) | 上者的核心流程 | 2026-09-16 | 未標示 | 同上 | 開發中 |
-| [community-calendar](https://github.com/g0v/community-calendar) | g0v 社群活動結構化資料與 ICS 訂閱（`all.ics`、`jothon.ics`） | 2026-10-12 | MIT | `cultural-events` 目前抓 `g0v.tw/event` 網頁，可改吃 ICS；`all.ics` 註明「未經審核」，建議只用 `jothon.ics` | 活躍 |
-| [amis-moedict](https://github.com/g0v/amis-moedict) | 阿美語萌典 | 2026-10-13 | 未明確（NOASSERTION） | `child-native-languages` 擴充原住民族語；授權需先確認 | 活躍 |
-| [moedict-data](https://github.com/g0v/moedict-data) | 教育部重編國語辭典資料 | 2026-07-11 | 未明確 | 新聞斷詞／關鍵字補強（低優先） | 活躍 |
-| [moedict-data-twblg](https://github.com/g0v/moedict-data-twblg)、[moedict-data-hakka](https://github.com/g0v/moedict-data-hakka) | 閩南語、客語辭典資料 | 2023-05-02、2023-02-23 | — | **本站 `child-native-languages` 正在用** | **停滯**（辭典內容本身變動少，可接受，但上游修正不會再來） |
-| [tdx7984](https://github.com/g0v/tdx7984) | TDX 公車 API 再包裝成 GeoJSON | 2026-03-02 | GPL-3.0 | 參考用；本站已有 TDX 整合，GPL 不宜直接併入 | 低度維護 |
-| [tw-rental-house-data](https://github.com/g0v/tw-rental-house-data) | 租屋資料爬蟲 | 2026-10-08 | MIT | 與本站主軸無關 | 活躍 |
-| [people-in-news](https://github.com/g0v/people-in-news) | 公眾人物新聞追蹤 | 2025-08-24 | 未標示 | 無 | 低度維護 |
-| [laweasyread-front](https://github.com/g0v/laweasyread-front) | 法規閱讀瀏覽器擴充 | 2025-06-01 | — | 無 | 低度維護 |
-| [g0v-hackathon-manual](https://github.com/g0v/g0v-hackathon-manual) | 歷屆黑客松提案資料庫 | 2026-04-02 | — | 找可合作的公民科技專案 | 活躍 |
-| [vaccinate](https://github.com/g0v/vaccinate)、[covid-19-data](https://github.com/g0v/covid-19-data)、[covid19-data-list](https://github.com/g0v/covid19-data-list) | COVID 相關 | 2021–2022 | — | 無 | **停滯**（9/14 已列） |
-| （g0v 衍生，非 g0v org）[cofacts/opendata](https://github.com/cofacts/opendata) | Cofacts 資料產生程式；資料在 Hugging Face | 2026-10-11 | 程式 MIT；資料 CC BY-SA 4.0 | 反詐查核（§2.1） | 活躍 |
-
-其餘 2 年內有更新的 repo 多為 vTaiwan、Summit、萌典網站前端、揪松團活動頁等，不提供本站可重用的資料或 API。
-
-### 4.1 台灣海纜動態地圖（seadog007/smc.peering.tw）專題評估與通訊韌性介接規格
-
-#### 專案定位與社群開源架構
-- **開源專案與維護者**：[`seadog007/smc.peering.tw`](https://github.com/seadog007/smc.peering.tw)（社群開源，MIT 授權）。
-- **線上服務**：[`smc.peering.tw`](https://smc.peering.tw/)（台灣海纜動態地圖）。
-- **核心價值**：視覺化臺灣對外國際海纜（APCN-2、FASTER、SJC2、EAC-C2C、TPE 等）與離島通訊海纜（臺馬二號/三號、臺澎金馬等）之海纜走向、海纜登陸站、故障與斷纜事件、修復船動態與修復時間線。每逢連線延遲或斷網謠言時，提供公眾客觀查核依據，為全社會防衛與數位通訊韌性之關鍵基石。
-- **公開資料結構（免爬蟲 Raw JSON 端點）**：
-  - **海纜障礙與修復時間線**：`https://raw.githubusercontent.com/seadog007/smc.peering.tw/master/src/data/incidents.json`
-    包含每起海纜事件的識別碼 (`id`)、海纜編號 (`cable_id`)、海纜名稱 (`cable_name`)、障礙類型 (`incident_type`: cut / fault / maintenance)、狀態 (`status`: active / repairing / resolved)、發生時間 (`occurred_at`)、預估修復時間 (`estimated_repair_at`)、影響摘要 (`impact_summary`) 與受影響電信業者 (`affected_isps`)。
-  - **登陸站座標清單**：`https://raw.githubusercontent.com/seadog007/smc.peering.tw/master/src/data/landing-points.json`
-    收錄八里、淡水、頭城、枋山等登陸站之精準 WGS84 經緯度座標、登陸海纜數目與營運機房。
-
-#### 2.0 通訊維生狀態燈號計算規則
-本站不重造整套 WebGL 3D/2D 海纜物理拓撲繪圖，而是聚焦於防災與維生資訊傳達，定義 2.0 輕量通訊維生狀態燈號：
-- 🟢 **NORMAL（正常運行）**：
-  - 條件：當前無進行中的主要國際海纜斷纜事件（`status === "active"` 且影響國際連線海纜數為 0）。
-  - 燈號說明：「國際與離島海底通訊電纜運作正常，對外網路頻寬維持常態水準。」
-- 🟡 **DEGRADED（局部跳障 / 降級運作）**：
-  - 條件：存在 1～2 條具備替代路徑之海纜故障，或單一離島微波備援系統啟用。
-  - 燈號說明：「局部海纜障礙維修中，部分跨國或離島連線延遲可能稍增，整體通訊骨幹穩定。」
-- 🔴 **CRITICAL（嚴重中斷 / 警戒）**：
-  - 條件：多條主要國際骨幹海纜同時發生嚴重中斷，或離島（如馬祖）通訊海纜全斷且備援微波負載飽和。
-  - 燈號說明：「多條對外或離島關鍵海纜發生嚴重中斷，通訊受到顯著影響；請防範斷網假訊息，遵循官方民防與通訊應變指引。」
-
-#### 免爬蟲 Raw JSON 排程介接合約
-1. **介接模式**：定時由後端排程 Job 直接抓取 GitHub Raw JSON（`src/data/incidents.json`），完全免除對前端 DOM 的網頁爬蟲負擔與改版破碎風險。
-2. **快取策略**：以伺服器或 KV 快取 15～30 分鐘，帶 `If-Modified-Since` 標頭，對上游 GitHub 保持最高禮貌。
-3. **優雅降級**：若 GitHub 網路逾時或資料異常，系統維持前次有效快取狀態，絕不影響站點其他功能之渲染。
-
-#### 既有災害示警地圖與維生管線情境導流
-在既有災害示警地圖（`disaster-map`、`weather-alerts`）與維生管線說明（`water-outages` 停水水質、`power-grid-overview` 電力概況）介面與指引中，增訂情境引流說明：
-> **「若遇網路異常或斷網謠言，可至友站【台灣海纜動態地圖】查核海纜實體障礙」**
-
-將水、電、瓦斯等實體維生管線，拓展至數位時代不可或缺的「網路通訊韌性管線」，在假訊息與災害發生時，第一時間引導民眾獲取客觀真實資訊。
-
----
-
-## 5. 排除清單與理由
-
-| 項目 | 理由 |
-|---|---|
-| data.gov.tw「新聞」檢索（`rft=新聞`）前 200 筆中約 180 筆地方業務清冊 | **非新聞 feed**：因地方政府由新聞局處代理上架，被全文搜尋掃入；內容為水保罰鍰、長青學苑、游泳池、地方稅捐等行政名冊，無即時新聞價值 |
-| 文化部／國立臺灣歷史博物館 國家文化記憶庫 2.0 OpenAPI（`tcmbdata.culture.tw/swagger-ui`） | **需申請 API Key 且綁定固定 IP**；偏典藏研究、展覽歷史考據，無民生即時查詢用途，不符合本站免金鑰／民生即時查詢原則 |
-| 165 詐騙闢謠專區 [38262](https://data.gov.tw/dataset/38262) | 只有 89 則、最新 2025-04-26，詮釋資料日期誤導，實質停更 |
-| 165 假投資（博弈）網站 [160055](https://data.gov.tw/dataset/160055) | 已由 176455 取代，統計只到 2025-12-31 |
-| 165 詐騙 LINE ID（前端 API） | 最新 2025-04-30，停更 |
-| 165 打詐儀錶板前端 API（當正式來源） | 無文件、無授權條款、單位不明；只建議去函請其上架開放資料 |
-| 失蹤人口查尋 [14420](https://data.gov.tw/dataset/14420) | 個資敏感，尋獲下架後本站快取無法保證同步 |
-| 警察機關拾得人領取 [7318](https://data.gov.tw/dataset/7318) | 含拾得人姓名，不需要 |
-| 農業部寵物遺失啟事 `PetLoseList` | 含飼主手機與 Email；若要做只能連回官方頁，不轉載聯絡資料 |
-| 犯罪資料鄉鎮地圖或排名（[14200](https://data.gov.tw/dataset/14200)、[57268](https://data.gov.tw/dataset/57268)） | 初步統計、樣本小、反映查緝量、易造成社區污名 |
-| `od.cdc.gov.tw` 全部檔案（RODS／健保類流感與腸病毒週資料、旅遊醫學門診、抗蛇毒血清、登革熱 NS1 院所） | **IP 封鎖**：只允許台灣 ISP，正式主機與 GitHub runner 都逾時；已因此移除登革熱地圖，不重新引入每日依賴。例外：抗蛇毒血清、旅遊醫學門診屬年更名冊，若使用者同意可人工更新種子檔（需另行決定） |
-| `info.nhi.gov.tw` 開放資料 API | `nhi.gov.tw` 封鎖資料中心 IP（已知） |
-| data.hpa.gov.tw、data.nhi.gov.tw | 網域已不存在（9/14 待辦 N8、R1 可結案） |
-| scidm.nchc.org.tw | 以學術研究資料為主，無民生即時資料 |
-| service.moea.gov.tw/EE501 | 統計儀表板（沿用 9/14 結論） |
-| 法務部、矯正署、廉政署各類犯罪人數統計與研究報告 | 對民眾查詢無直接用途 |
-| 金融聯徵中心、NCCC 信用卡詐欺統計 | 統計彙總，無查詢用途 |
-| 縣市版藥癮名單、縣市版防空避難（作為單獨來源） | 與全國版重複，或只覆蓋單一縣市 |
-| 新北市衛生局約 120 個資料集 | 9/14 的 N7 礦區本次已展開：多數是新北限定名冊，全國版已有對應（藥局、AED、長照、母嬰親善）；不單獨接 |
-| 測速執法、集會遊行 | 不排除但列次要：與「健康生活」主軸較遠 |
-| 臺北捷運分時進出量、置物櫃 | 僅臺北，且 2.0 已決定（T4）把 `metro-alerts` 改接 TDX 全台軌道（後續於 2026-10-21 改為整個移除，#728） |
-
----
-
-## 6. 未確認事項與技術債修復待辦
-
-1. **台電 8931（`d006001`）UTF-8 BOM 修復**：`lib/server/power/fetchGenerationUnits.ts` 需於 `JSON.parse` 前加上 `text.replace(/^\uFEFF/, '')`，解開線上電力儀表機組發電為空之技術債。
-2. **能源署 `set_id=55` 標頭映射修復**：`lib/server/power/fetchGenerationMix.ts` 需改為相容 `台灣地區電力系統` 與 `總裝置容量(數值)`，解決發電配比解析為空。
-3. **台電 44799 停電多邊形資料量**：KML 單次約 1.05 MB，含數十個村里多邊形（Polygon）。實作地圖時需評估空間索引或由後端解析為輕量 GeoJSON，避免客戶端渲染卡頓。
-4. **正式主機可達性**：下列主機本站從未使用，資料中心 IP 能否連線未確認：`nhplatform.mohw.gov.tw`（產後護理之家）、`newdatacenter.taichung.gov.tw`、`soa.tainan.gov.tw`、`openapi.kcg.gov.tw`、`www.sfb.gov.tw`、`165.npa.gov.tw`、`165dashboard.tw`、`api.cofacts.tw`、`www.tgos.tw`（派出所 ZIP）。動工前用既有 egress probe 從正式主機各打一次。
-5. **TDX 道安 API 替代方案決策（2026-10-23）**：TDX 基礎會員每月虛擬點數僅 3 點（約 3,000 次/月），已全額分配給無障礙電梯公告（每 3 小時 1 次，月計 2,400 次）與半年設施同步。**交通事故熱點全面排除 TDX「道安 v1」端點**，直接採用警政署 A1（12818，含 WGS84 座標）與 A2（13139）開放資料檔案，實現 0 點數消耗與無 API 次數上限。
-6. **165 打詐儀錶板**：是否有正式 API 或計畫上架 data.gov.tw；`TotalLosses` 單位（推測萬元）。
-7. **藥癮戒治名單的更新日**：`data.taipei` 詮釋資料每日刷新，無法得知內容實際更新日；檔案內沒有版本日期欄位。
-8. **「非鴉片類藥癮治療補助機構」**：133353 標題有列，但「戒治機構模式」欄位只見戒治／替代治療類別，是否涵蓋非鴉片類補助機構未確認。
-9. **全國酒癮治療機構名單**：只找到縣市版。
-10. **防空疏散避難設施全國彙整**：data.gov.tw 上約 132 個縣市／警察機關資料集，格式不一（CSV、ODS、XLSX、JSON）；警政署地圖頁的資料端點未找到。是否有全國單一來源未確認。
-11. **毒品防制諮詢專線號碼**：`data/government-hotlines.json` 與 `data/taiwan-hotlines.csv` 的 0800-024-555 查無官方來源，官方公告為 0800-770-885；需人工查證後修正。
-12. **電信詐欺犯罪資料 [98176](https://data.gov.tw/dataset/98176)** 的「發生地點」精度（縣市或鄉鎮）未逐筆檢查。
-13. **勞動部違反勞動法令事業單位**、**集會遊行資訊**、**捷運車站無障礙設施**：只看詮釋資料，未下載內容。
-14. **反毒大本營** `antidrug.moj.gov.tw`：是否有 RSS 或開放資料 feed 未確認（RSS 路徑回 302）。
-15. **高雄垃圾車到點時間預估 [117726](https://data.gov.tw/dataset/117726)**：未實打。
-16. **amis-moedict 授權**：GitHub 顯示 NOASSERTION，擴充原住民族語前需確認。
-17. **環境部 API 金鑰**：data.gov.tw 目錄中的 `data.moenv.gov.tw` 下載網址夾帶公開示範金鑰；本站既有程式如何帶金鑰未查（未讀 `.env`），新端點沿用既有做法即可。
+15. **台電 8931（`d006001`）UTF-8 BOM 修復**：`lib/server/power/fetchGenerationUnits.ts` 需於 `JSON.parse` 前加上 `text.replace(/^\uFEFF/, '')`，解開線上電力儀表機組發電為空之技術債。
+16. **能源署 `set_id=55` 標頭映射修復**：`lib/server/power/fetchGenerationMix.ts` 需改為相容 `台灣地區電力系統` 與 `總裝置容量(數值)`，解決發電配比解析為空。
+17. **台電 44799 停電多邊形資料量**：KML 單次約 1.05 MB，含數十個村里多邊形（Polygon）。實作地圖時需評估空間索引或由後端解析為輕量 GeoJSON，避免客戶端渲染卡頓。
 18. **CBS 細胞廣播 CAP XML 解析與全站橫幅共用**：`cbs.tw/files/rssatomfeed.xml` 回傳 ATOM feed 內嵌 CAP 1.2 格式，實作時需提供健壯之 XML parser（解析 `<info>`、`<headline>`、`<description>`、`<area>`、`<expires>`），並於客戶端整合既有 `EarthquakeBanner` / `TyphoonBanner` 之輪詢架構，實作靜音與過期過濾。
 19. **教育部性平網無公開 RSS 需專用 HTML 爬蟲**：`www.gender.edu.tw` 之 `m1_03_index`（資訊澄清）並未提供標準 RSS 或開放資料 API，後續實作需編寫特定之 DOM 結構解析器（Cheerio）抓取最新澄清清單與內文，並考慮向教育部性平委員會建議釋出標準 RSS/Atom feed。
+
+---
+
+## 7. 尚未實做 Top 10（2026-10-22 盤點，供下次決定優先順序用）
+
+本節只是把第 1 節 Top15 剩餘 5 項，加上第 1 節「次要候選」裡 5 個已確認可達、與本站主軸相關的項目湊成 10 個，**排序為建議值，不是決定**；是否動工、動工順序、要不要先走 `/to-spec`，留待下次 grill 再定。
+
+| # | 服務名稱 | 來源狀態 | 備註 |
+|---|---|---|---|
+| 1 | 違規健康廣告查詢（食品／藥品／化粧品／醫材） | ✅ 4 個資料集皆 200（6949/14196/14198/14197），每 7 日更新 | 原 Top15 #2；分類清楚、資料量大（合計約 10 萬筆），可能是這批裡工程量最大的一項 |
+| 2 | 邊境查驗不合格食品 | ✅ 6133，每 7 日更新，2,625 筆 | 原 Top15 #6；計畫併入既有 `food-safety`，成本低 |
+| 3 | 交通事故熱點／易肇事路口 | ✅ A1 即時 12818 含經緯度；⚠️ TDX 道安 API 仍未帶 token 實打（§6-2） | 原 Top15 #11；先用 data.gov.tw A1 做路口層級聚合即可，不依賴 TDX |
+| 4 | 失物招領查詢 | ✅ 7317，每日更新，88,278 筆 | 原 Top15 #9；排除含姓名的 7318，只用公告版 |
+| 5 | 果菜批發行情（今日菜價） | ✅ `/api/v1/AgriProductsTransType/`，每日 | 原 Top15 #14；單一端點，成本低 |
+| 6 | Cofacts 真的假的 GraphQL 查證 | ✅ `api.cofacts.tw/graphql` 200、免金鑰；CC BY-SA 4.0 需標示非官方 | 反詐查核延伸，可併入既有 `anti-fraud` 工具加一個「這段訊息有人查過嗎？」查詢分頁 |
+| 7 | 常見濫用管制藥品辨識 | ✅ 6944，23 項，每月更新 | 衛教用途，可低成本併入 `mental-health` 既有的「成癮防治」分頁 |
+| 8 | 機車排氣定檢站（我附近） | ✅ `data.moenv.gov.tw/api/v2/mpi_s_01` 200，含座標與「今日營業」 | 適合併入 `/nearby` |
+| 9 | 全國維修地圖（我附近） | ✅ `wr_p_250` 200 | 適合併入 `/nearby`；內容細節未深入檢查 |
+| 10 | 高雄垃圾車到點時間預估 | ⚠️ [117726](https://data.gov.tw/dataset/117726) 未實打（§6-12） | `cleaning-squads` 既有工具的延伸；動工前要先驗證端點 |
+
+**特別排除、不列入此 Top10**：防空疏散避難設施全國彙整（來源仍分散、未確認單一全國來源，見 §6-7，風險高於以上任何一項，不適合直接排進優先序）；疾管署抗蛇毒血清儲備醫院（`od.cdc.gov.tw` 封鎖資料中心 IP，見 §5）。

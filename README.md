@@ -33,8 +33,8 @@
 </p>
 
 <p align="center">
-  <a href="lib/server/tools/catalog.ts"><img src="https://img.shields.io/badge/工具-86_款-0ea5e9?style=flat-square" alt="工具 86 款" /></a>
-  <a href="lib/server/cron/registerJobs.ts"><img src="https://img.shields.io/badge/排程-47_項-8b5cf6?style=flat-square" alt="內建排程 47 項" /></a>
+  <a href="lib/server/tools/catalog.ts"><img src="https://img.shields.io/badge/工具-85_款-0ea5e9?style=flat-square" alt="工具 85 款" /></a>
+  <a href="lib/server/cron/registerJobs.ts"><img src="https://img.shields.io/badge/排程-46_項-8b5cf6?style=flat-square" alt="內建排程 46 項" /></a>
   <a href="lib/server/news/sourceCategories.ts"><img src="https://img.shields.io/badge/新聞來源-104_個-f59e0b?style=flat-square" alt="新聞來源 104 個" /></a>
   <img src="https://img.shields.io/badge/語言-zh--TW_%7C_en_%7C_ja_%7C_ko-64748b?style=flat-square" alt="支援語言：zh-TW、en、ja、ko" />
 </p>
@@ -49,7 +49,7 @@
 
 ## 這是什麼
 
-j172tw Healthz 把分散在各機關與媒體的**公衛醫療新聞**、**生活便民工具**與**即時災害環境觀測資料**整理到同一個網站：打開就能用，不用註冊、不用安裝，也沒有廣告。目前收錄 <!--scale:tools-->86<!--/scale--> 款互動工具、<!--scale:news-sources-->104<!--/scale--> 個新聞來源，並以 <!--scale:cron-->47<!--/scale--> 項內建排程持續更新資料。
+j172tw Healthz 把分散在各機關與媒體的**公衛醫療新聞**、**生活便民工具**與**即時災害環境觀測資料**整理到同一個網站：打開就能用，不用註冊、不用安裝，也沒有廣告。目前收錄 <!--scale:tools-->85<!--/scale--> 款互動工具、<!--scale:news-sources-->104<!--/scale--> 個新聞來源，並以 <!--scale:cron-->46<!--/scale--> 項內建排程持續更新資料。
 
 這個專案同時也是一份**作品集**：從資料擷取、資料庫、前端、地圖、多語系到維運自動化，在資源受限的共享主機上跑成可長期營運的公共資訊服務。
 
@@ -61,7 +61,7 @@ j172tw Healthz 把分散在各機關與媒體的**公衛醫療新聞**、**生�
 - **四層新聞圖片漏斗**：原文真圖 → 圖庫備援（Pixabay → Pexels → Unsplash，含限流冷卻）→ 重用已收錄的歷史圖庫 → 向量封面（`ThematicCover`）。官方公報刻意不配圖庫照片，改用向量封面，維持嚴肅性。
 - 事實查核單位的卡片會明確標示「查核機構，非本站判定」。
 
-### 生活便民工具：<!--scale:tools-->86<!--/scale--> 款，分成 7 大類
+### 生活便民工具：<!--scale:tools-->85<!--/scale--> 款，分成 7 大類
 健康自我評估（BMI、熱量、血壓、睡眠…）、就醫與用藥（診所、藥局、藥品許可證、急診即時壅塞…）、長照與社會福利、婦幼與家庭、防災與示警、環境與食品安全、交通生活與文化。所有工具的分類、導覽、頁尾與 `/tools` 索引都由同一份 [`catalog.ts`](lib/server/tools/catalog.ts) 產生，不會彼此脫節。另有 [`/guides`](https://health.j172.tw/guides) 情境指南與 [`/nearby`](https://health.j172.tw/nearby)：定位一次，同時查 AED、診所、藥局、避難所等急用點位。
 
 ### 防災與環境即時資料
@@ -81,8 +81,8 @@ j172tw Healthz 把分散在各機關與媒體的**公衛醫療新聞**、**生�
 
 | 項目 | 數量 | 計算方式（單一事實來源） |
 |---|---|---|
-| 互動工具 | <!--scale:tools-->86<!--/scale--> 款 | [`lib/server/tools/catalog.ts`](lib/server/tools/catalog.ts) 的 `TOOL_CATALOG` |
-| 內建排程 | <!--scale:cron-->47<!--/scale--> 項 | [`lib/server/cron/registerJobs.ts`](lib/server/cron/registerJobs.ts) 的 `cron.schedule(` 呼叫（另有 GitHub Actions 排程，不計入） |
+| 互動工具 | <!--scale:tools-->85<!--/scale--> 款 | [`lib/server/tools/catalog.ts`](lib/server/tools/catalog.ts) 的 `TOOL_CATALOG` |
+| 內建排程 | <!--scale:cron-->46<!--/scale--> 項 | [`lib/server/cron/registerJobs.ts`](lib/server/cron/registerJobs.ts) 的 `cron.schedule(` 呼叫（另有 GitHub Actions 排程，不計入） |
 | 新聞來源 | <!--scale:news-sources-->104<!--/scale--> 個 | [`lib/server/news/sourceCategories.ts`](lib/server/news/sourceCategories.ts)：官方機構 26、媒體 50、公益團體 26、事實查核 2（含已停止擷取、但歷史文章仍保留的來源） |
 
 這些數字是手寫的，由 [`tests/readme-scale-numbers.test.mjs`](tests/readme-scale-numbers.test.mjs) 在每次 `npm test` 對照程式碼，四份 README 任何一份過時都會讓測試失敗。
