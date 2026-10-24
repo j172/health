@@ -32,12 +32,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const typesParam = params.get("types")?.trim();
-  const requestedKeys = typesParam
+  const requestedKeys: string[] = typesParam
     ? typesParam
         .split(",")
         .map((key) => key.trim())
         .filter(Boolean)
-    : NEARBY_DEFAULT_TYPE_KEYS;
+    : [...NEARBY_DEFAULT_TYPE_KEYS];
 
   if (requestedKeys.length === 0) {
     return NextResponse.json({ error: "'types' must list at least one type" }, { status: 400 });

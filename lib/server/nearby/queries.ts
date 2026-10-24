@@ -98,7 +98,7 @@ export interface FetchNearbyResultsOutput {
  * time — neither case is allowed to affect any other type's result.
  */
 export async function fetchNearbyResults(
-  keys: string[],
+  keys: readonly string[],
   lat: number,
   lng: number,
   limit: number,
