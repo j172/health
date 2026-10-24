@@ -93,7 +93,7 @@ test("getGuidesForTool finds every guide that includes a given tool as a step", 
   const guides = getGuidesForTool("accessible-transit");
   assert.deepEqual(
     guides.map((g) => g.slug).sort(),
-    ["caring-for-elders", "disability-living"],
+    ["caring-for-elders", "disability-living", "typhoon-earthquake"],
   );
   for (const g of guides) {
     assert.equal(g.href, `/guides/${g.slug}`);

@@ -802,6 +802,12 @@ export const GUIDES: Guide[] = [
         why: "颱風警報發布後，最實際的問題是明天要不要上班上課。各縣市是否停班停課由縣市政府決定、人事行政總處公布；這一步提供官方公告的入口與政府機關辦公日曆，本站不判定停班停課，出門前請以官方公告為準。",
       },
       {
+        // Ticket 04: 雙鐵通阻整合與「颱風地震來了」情境頁串接
+        toolSlug: "accessible-transit",
+        caption: "查詢鐵路與大眾運輸停駛",
+        why: "颱風或強震期間，臺鐵、高鐵與各都會捷運常依風雨級別或巡軌檢修啟動減班、慢行或全線停駛。即時掌握雙鐵與捷運營運通報，避免外出受困滯留車站；緊急諮詢可利用官方客服專線確認退票與接駁措施。",
+      },
+      {
         // Issue #590 (parent #583): "earthquakes" (the standalone tool) was
         // retired in favor of global-watch's earthquakes item sub-route —
         // toolSlug now resolves to the "global-watch" TOOL_CATALOG entry

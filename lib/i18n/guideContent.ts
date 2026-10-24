@@ -49,6 +49,10 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "Check whether work and classes are suspended",
           why: "Once a typhoon warning is out, the most practical question is whether you work or study tomorrow. Each county or city government decides, and the DGPA publishes the result; this step gives you the way to the official announcement and the government office calendar. This site does not determine suspensions — rely on the official announcement before you head out.",
         },
+        "accessible-transit": {
+          caption: "Check railway and transit suspensions",
+          why: "During a typhoon or severe earthquake, Taiwan Railway, High Speed Rail, and local metro systems often reduce service, slow down, or suspend operations for safety inspections. Check real-time disruption notices before heading out to avoid getting stranded at stations, and use official customer service hotlines to confirm refund policies and shuttle arrangements.",
+        },
         "global-watch": {
           caption: "Check the latest earthquake information",
           why: "Earthquakes can't be warned about in advance, but right after one strikes you can immediately check the epicenter, magnitude, depth, and any tsunami warning, helping you decide whether further evacuation or aftershock precautions are needed.",
@@ -105,6 +109,10 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
           caption: "休業・休校の有無を確認する",
           why: "台風警報が出たあと、最も現実的な疑問は明日出勤・登校するかどうかです。休業・休校は各県市政府が決定し、人事行政総処が公表します。このステップでは公式発表への入口と政府機関の執務カレンダーを案内します。本サイトは休業・休校を判定しませんので、外出前に必ず公式発表をご確認ください。",
         },
+        "accessible-transit": {
+          caption: "鉄道と公共交通機関の運行停止を確認する",
+          why: "台風や強い地震の際、台湾鉄道、高鉄、各地下鉄は強風豪雨や線路点検により減便、徐行、または全線運休を実施することがあります。外出前にリアルタイムの運行情報や運休告知を確認し、駅での立ち往生を防ぎましょう。公式カスタマーセンターへの連絡で払い戻しや代替バスの確認も可能です。",
+        },
         "global-watch": {
           caption: "最新の地震情報を確認する",
           why: "地震は事前に警告できませんが、発生後すぐに震源地、規模、深さ、津波警報を確認することで、さらなる避難や余震への備えが必要かどうかを判断できます。",
@@ -160,6 +168,10 @@ const GUIDE_I18N_CONTENT: Record<TranslatedGuideSlug, Record<PathLocale, Localiz
         "work-school-status": {
           caption: "휴무·휴교 여부 확인하기",
           why: "태풍 경보가 발령되면 가장 현실적인 질문은 내일 출근·등교하느냐입니다. 휴무·휴교는 각 현·시 정부가 결정하고 인사행정총처가 공표합니다. 이 단계에서는 공식 공고로 가는 입구와 정부기관 근무일 달력을 안내합니다. 이 사이트는 휴무·휴교를 판정하지 않으므로 외출 전에 반드시 공식 공고를 확인하세요.",
+        },
+        "accessible-transit": {
+          caption: "철도 및 대중교통 운행 중단 확인하기",
+          why: "태풍이나 강진 발생 시 대만철도, 고속철도, 각 지하철 시스템은 강풍과 호우 또는 선로 점검으로 인해 감차, 서행 또는 전면 운행 중단을 시행할 수 있습니다. 외출 전에 실시간 운행 지연 및 중단 공고를 확인하여 역에서 발이 묶이는 상황을 방지하고, 공식 고객센터를 통해 환불 및 대체 셔틀 조치를 확인하세요.",
         },
         "global-watch": {
           caption: "최신 지진 정보 조회하기",

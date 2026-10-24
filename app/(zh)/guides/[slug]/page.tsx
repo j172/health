@@ -5,6 +5,7 @@ import { buildGuideGraphJsonLd, getBaseUrl, SITE_NAME } from "@/lib/server/news/
 import { GUIDES, buildGuide } from "@/lib/server/tools/navModel";
 import { StabloHeader, StabloFooter } from "@/components/News/StabloNewsLayout";
 import OtherLanguagesBanner from "@/components/Tools/OtherLanguagesBanner";
+import TransitSuspensionSection from "@/components/Tools/TransitSuspensionSection";
 import { isTranslatedGuideSlug } from "@/lib/i18n/guideContent";
 
 // StabloHeader renders a live DB-backed weather-alert bar (same reason every
@@ -130,6 +131,7 @@ export default async function GuideHubPage({
                 {guide.title}
               </li>
             </ol>
+
           </nav>
 
           {isTranslatedGuideSlug(guide.slug) ? (
@@ -178,6 +180,10 @@ export default async function GuideHubPage({
               </li>
             ))}
           </ol>
+
+          {guide.slug === "typhoon-earthquake" && (
+            <TransitSuspensionSection locale="zh" />
+          )}
 
           {/* Structured Frequently Asked Questions (FAQ Section) */}
           {guide.faqs.length > 0 ? (

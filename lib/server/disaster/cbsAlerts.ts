@@ -248,7 +248,7 @@ export async function fetchActiveCbsAlerts(options: { force?: boolean } = {}): P
 
   try {
     const { status, text } = await httpGetText(CBS_ATOM_FEED_URL, {
-      timeout: FETCH_TIMEOUT_MS,
+      timeoutMs: FETCH_TIMEOUT_MS,
     });
 
     if (status >= 200 && status < 300 && text) {
