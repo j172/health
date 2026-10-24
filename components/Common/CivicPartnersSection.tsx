@@ -77,6 +77,26 @@ export const CIVIC_PARTNERS: CivicPartnerItem[] = [
     description: "衛福部官方公告涉及性平案件判決或懲戒確定之醫事人員名冊，落實病患就醫防護知情權。",
   },
   {
+    id: "moe-ece",
+    name: "教育部幼兒園裁罰專區",
+    url: "https://ap.ece.moe.edu.tw/webecems/punishSearch.aspx",
+    icon: "🏫",
+    badge: "幼教安全",
+    badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800",
+    tag: "幼兒保護 ‧ 違法教保名單",
+    description: "教育部全國教保資訊網公開之幼兒園裁罰紀錄，透明揭露違法教保機構與負責人處分，守護幼兒在學安全。",
+  },
+  {
+    id: "sfaa-crc",
+    name: "衛福部兒少法裁罰專區",
+    url: "https://crc.sfaa.gov.tw/ChildYoungLaw/Sanction",
+    icon: "🚸",
+    badge: "兒少安全",
+    badgeColor: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800",
+    tag: "兒少權益 ‧ 違法裁罰公告",
+    description: "衛生福利部社會及家庭署公告違反兒少法裁罰案件名冊，公開涉及兒少身心虐待或違法托育名單，保障下一代成長權益。",
+  },
+  {
     id: "council2026",
     name: "2026 政治人物前科",
     url: "https://council2026.taiwangogo.tw/",
@@ -85,16 +105,6 @@ export const CIVIC_PARTNERS: CivicPartnerItem[] = [
     badgeColor: "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800",
     tag: "陽光政治 ‧ 透明監督",
     description: "透明公開台灣議員與縣市長參選人刑事與司法紀錄，促進公眾檢驗與公民政治。",
-  },
-  {
-    id: "smc-peering",
-    name: "台灣海纜動態地圖",
-    url: "https://smc.peering.tw/",
-    icon: "🌊",
-    badge: "通訊韌性",
-    badgeColor: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800",
-    tag: "海底電纜 ‧ 即時障礙監控",
-    description: "即時追蹤臺灣對外與離島海底通訊電纜運行狀態、障礙事件與修復時間線，破除斷網謠言、強化通訊韌性。",
   },
 ];
 

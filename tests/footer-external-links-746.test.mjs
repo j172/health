@@ -4,10 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { registerHooks } from "node:module";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { existsSync } from "node:fs";
 
-// Issue #746: 頁尾「公民夥伴」欄 10 個外部連結的外聯符號（↗ 對輔助科技隱藏，改以
+// Issue #746: 頁尾「公民夥伴」欄 9 個外部連結的外聯符號（↗ 對輔助科技隱藏，改以
 // 視覺隱藏的「（另開新視窗）」傳達）＋ 版權列上方的 HawkHost 推薦（聯盟）連結
 // （原始網址、不加 UTM、rel="sponsored nofollow noopener noreferrer"）＋ 隱私權政策說明。
 //
@@ -19,7 +19,19 @@ import { existsSync } from "node:fs";
 
 const REPO_ROOT = new URL("../", import.meta.url);
 const ROOT_DIR = fileURLToPath(REPO_ROOT);
-const requireFromRepo = createRequire(import.meta.url);
+let requireFromRepo;
+try {
+  requireFromRepo = createRequire(import.meta.url);
+  requireFromRepo.resolve("typescript");
+} catch {
+  let mainRepoDir = ROOT_DIR;
+  try {
+    const { execSync } = await import("node:child_process");
+    const commonDir = execSync("git rev-parse --git-common-dir", { encoding: "utf8" }).trim();
+    mainRepoDir = path.resolve(commonDir, "..");
+  } catch {}
+  requireFromRepo = createRequire(path.join(mainRepoDir, "package.json"));
+}
 const ts = requireFromRepo("typescript");
 
 const STUBS = {
@@ -69,7 +81,15 @@ registerHooks({
     if (specifier.startsWith("@/") && target.endsWith(".json")) {
       return nextResolve(target, { ...context, parentURL });
     }
-    return nextResolve(target, { ...context, parentURL });
+    try {
+      return nextResolve(target, { ...context, parentURL });
+    } catch (err) {
+      if (!target.startsWith(".") && !target.startsWith("/") && !target.startsWith("file:")) {
+        const resolved = requireFromRepo.resolve(target);
+                return { url: pathToFileURL(resolved).href, shortCircuit: true };
+      }
+      throw err;
+    }
   },
   load(url, context, nextLoad) {
     if (url.startsWith("stub:")) {
@@ -175,11 +195,11 @@ test("SiteFooter 原始碼：推薦連結不經過 appendOutboundUtm", () => {
 });
 
 for (const locale of LOCALES) {
-  test(`[${locale}] 公民夥伴 10 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
+  test(`[${locale}] 公民夥伴 11 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
     const html = renderFooter(locale);
     const newWindow = readLocale(locale).footer.opensInNewWindow;
     assert.ok(newWindow && newWindow.length > 0);
-    assert.equal(CIVIC_PARTNER_LINKS.length, 10);
+    assert.equal(CIVIC_PARTNER_LINKS.length, 11);
 
     const all = anchors(html);
     for (const partner of CIVIC_PARTNER_LINKS) {
@@ -276,6 +296,8 @@ test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存�
     "taiwanCriminals",
     "sportsCoach",
     "mohwVio",
+    "moeEce",
+    "sfaaCrc",
     "council2026",
   ];
   for (const locale of LOCALES) {
