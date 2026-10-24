@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import SubmarineCableStatusBadge from "@/components/Resilience/SubmarineCableStatusBadge";
 
 interface GenerationUnitItem {
   unit_name: string;
@@ -132,6 +133,9 @@ export default function PowerGridOverviewContent({
           ) : null}
         </div>
       </div>
+
+      {/* 關鍵基礎設施海纜通訊韌性狀態 */}
+      <SubmarineCableStatusBadge />
 
       {/* 全國發電來源配比 */}
       <section className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
