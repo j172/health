@@ -113,6 +113,9 @@ const SOURCE_LABELS: Record<string, string> = {
   police_7505: "警政署",
   tfc: "台灣事實查核中心",
   ithome: "iThome",
+  icdf: "國合會",
+  msf: "無國界醫生台灣",
+  anti_cw: "反認知作戰教育網",
 };
 
 export interface SourceLabelInput {

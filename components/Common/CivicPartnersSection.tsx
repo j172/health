@@ -116,6 +116,36 @@ export const CIVIC_PARTNERS: CivicPartnerItem[] = [
     tag: "海底電纜 ‧ 即時障礙監控",
     description: "即時追蹤臺灣對外與離島海底通訊電纜運行狀態、障礙事件與修復時間線，破除斷網謠言、強化通訊韌性。",
   },
+  {
+    id: "msf-taiwan",
+    name: "無國界醫生（台灣）",
+    url: "https://www.msf.org.tw/",
+    icon: "🩺",
+    badge: "醫療人道",
+    badgeColor: "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800",
+    tag: "前線醫療 ‧ 危機救援",
+    description: "獨立國際醫療人道救援組織在臺辦公室，為受武裝衝突、流行病與天災影響的脆弱人群提供即時醫療救助。",
+  },
+  {
+    id: "amnesty-taiwan",
+    name: "國際特赦組織台灣分會",
+    url: "https://www.amnesty.tw/take-action",
+    icon: "🕯️",
+    badge: "人權倡議",
+    badgeColor: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/60 dark:text-yellow-300 dark:border-yellow-800",
+    tag: "人權守護 ‧ 緊急連署",
+    description: "全球最大人權運動在臺分會，推動全球緊急人權個案連署、人道救援倡議與人權教育。",
+  },
+  {
+    id: "taiwan-aid",
+    name: "台灣海外援助發展聯盟",
+    url: "https://www.aid.org.tw/",
+    icon: "🤝",
+    badge: "海外援助",
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
+    tag: "國際人道 ‧ NGO網絡",
+    description: "匯聚臺灣近 30 個從事國際人道援助與發展合作之非政府組織，推動跨國合作與永續發展網絡。",
+  },
 ];
 
 interface CivicPartnersSectionProps {
@@ -218,7 +248,8 @@ export default function CivicPartnersSection({
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-2.5 text-[11px] font-bold text-slate-700 transition-colors group-hover:text-indigo-600 dark:border-slate-800 dark:text-slate-300 dark:group-hover:text-indigo-400">
               <span>前往網站</span>
               <span className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                ↗
+                <span aria-hidden="true">↗</span>
+                <span className="sr-only">（另開新視窗）</span>
               </span>
             </div>
           </a>

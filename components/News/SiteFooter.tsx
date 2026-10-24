@@ -176,6 +176,10 @@ const FOOTER_LINK_LABEL_KEYS: Record<string, string> = {
   "crc.sfaa.gov.tw": "footer.sfaaCrc",
   "council2026.taiwangogo.tw": "footer.council2026",
   "smc.peering.tw": "footer.smcPeering",
+  "www.msf.org.tw": "footer.msfTaiwan",
+  "www.amnesty.tw": "footer.amnestyTaiwan",
+  "www.aid.org.tw": "footer.taiwanAid",
+  "www.icdf.org.tw": "footer.icdf",
 };
 
 export default function SiteFooter() {

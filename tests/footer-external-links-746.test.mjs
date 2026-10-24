@@ -201,11 +201,11 @@ test("SiteFooter 原始碼：推薦連結不經過 appendOutboundUtm", () => {
 });
 
 for (const locale of LOCALES) {
-  test(`[${locale}] 公民夥伴 12 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
+  test(`[${locale}] 公民夥伴 16 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
     const html = renderFooter(locale);
     const newWindow = readLocale(locale).footer.opensInNewWindow;
     assert.ok(newWindow && newWindow.length > 0);
-    assert.equal(CIVIC_PARTNER_LINKS.length, 12);
+    assert.equal(CIVIC_PARTNER_LINKS.length, 16);
 
     const all = anchors(html);
     for (const partner of CIVIC_PARTNER_LINKS) {
@@ -232,6 +232,37 @@ for (const locale of LOCALES) {
     const smcLink = all.find((a) => hostOf(attr(a.attrs, "href")) === "smc.peering.tw");
     assert.ok(smcLink, "smc.peering.tw 應出現在頁尾公民夥伴連結中");
     const expectedSmcLabel = readLocale(locale).footer.smcPeering;
+    const msfLink = all.find((a) => hostOf(attr(a.attrs, "href")) === "www.msf.org.tw");
+    assert.ok(msfLink, "www.msf.org.tw 應出現在頁尾公民夥伴連結中");
+    const expectedMsfLabel = readLocale(locale).footer.msfTaiwan;
+    assert.ok(
+      msfLink.inner.includes(expectedMsfLabel),
+      `www.msf.org.tw 應顯示在地化標題「${expectedMsfLabel}」，實際：${msfLink.inner}`,
+    );
+
+    const amnestyLink = all.find((a) => hostOf(attr(a.attrs, "href")) === "www.amnesty.tw");
+    assert.ok(amnestyLink, "www.amnesty.tw 應出現在頁尾公民夥伴連結中");
+    const expectedAmnestyLabel = readLocale(locale).footer.amnestyTaiwan;
+    assert.ok(
+      amnestyLink.inner.includes(expectedAmnestyLabel),
+      `www.amnesty.tw 應顯示在地化標題「${expectedAmnestyLabel}」，實際：${amnestyLink.inner}`,
+    );
+
+    const aidLink = all.find((a) => hostOf(attr(a.attrs, "href")) === "www.aid.org.tw");
+    assert.ok(aidLink, "www.aid.org.tw 應出現在頁尾公民夥伴連結中");
+    const expectedAidLabel = readLocale(locale).footer.taiwanAid;
+    assert.ok(
+      aidLink.inner.includes(expectedAidLabel),
+      `www.aid.org.tw 應顯示在地化標題「${expectedAidLabel}」，實際：${aidLink.inner}`,
+    );
+
+    const icdfLink = all.find((a) => hostOf(attr(a.attrs, "href")) === "www.icdf.org.tw");
+    assert.ok(icdfLink, "www.icdf.org.tw 應出現在頁尾公民夥伴連結中");
+    const expectedIcdfLabel = readLocale(locale).footer.icdf;
+    assert.ok(
+      icdfLink.inner.includes(expectedIcdfLabel),
+      `www.icdf.org.tw 應顯示在地化標題「${expectedIcdfLabel}」，實際：${icdfLink.inner}`,
+    );
     assert.ok(
       smcLink.inner.includes(expectedSmcLabel),
       `smc.peering.tw 應顯示在地化標題「${expectedSmcLabel}」，實際：${smcLink.inner}`,
@@ -316,6 +347,10 @@ test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存�
     "sfaaCrc",
     "council2026",
     "smcPeering",
+    "msfTaiwan",
+    "amnestyTaiwan",
+    "taiwanAid",
+    "icdf",
   ];
   for (const locale of LOCALES) {
     const footer = readLocale(locale).footer;

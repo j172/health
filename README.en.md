@@ -35,7 +35,7 @@
 <p align="center">
   <a href="lib/server/tools/catalog.ts"><img src="https://img.shields.io/badge/tools-85-0ea5e9?style=flat-square" alt="85 tools" /></a>
   <a href="lib/server/cron/registerJobs.ts"><img src="https://img.shields.io/badge/scheduled_jobs-46-8b5cf6?style=flat-square" alt="46 in-app scheduled jobs" /></a>
-  <a href="lib/server/news/sourceCategories.ts"><img src="https://img.shields.io/badge/news_sources-104-f59e0b?style=flat-square" alt="104 news sources" /></a>
+  <a href="lib/server/news/sourceCategories.ts"><img src="https://img.shields.io/badge/news_sources-107-f59e0b?style=flat-square" alt="107 news sources" /></a>
   <img src="https://img.shields.io/badge/languages-zh--TW_%7C_en_%7C_ja_%7C_ko-64748b?style=flat-square" alt="Languages: zh-TW, en, ja, ko" />
 </p>
 
@@ -49,7 +49,7 @@
 
 ## What is this?
 
-j172tw Healthz brings together **public-health news**, **everyday utility tools** and **real-time disaster and environment data** that are normally scattered across government agencies and news outlets. It works the moment you open it: no sign-up, no install, no ads. It currently offers <!--scale:tools-->85<!--/scale--> interactive tools, aggregates <!--scale:news-sources-->104<!--/scale--> news sources, and keeps its data fresh with <!--scale:cron-->46<!--/scale--> in-app scheduled jobs.
+j172tw Healthz brings together **public-health news**, **everyday utility tools** and **real-time disaster and environment data** that are normally scattered across government agencies and news outlets. It works the moment you open it: no sign-up, no install, no ads. It currently offers <!--scale:tools-->85<!--/scale--> interactive tools, aggregates <!--scale:news-sources-->107<!--/scale--> news sources, and keeps its data fresh with <!--scale:cron-->46<!--/scale--> in-app scheduled jobs.
 
 It is also a **portfolio project**: data ingestion, database, frontend, maps, multilingual support and operations automation, all running as a long-lived public information service on a resource-constrained shared host.
 
@@ -83,7 +83,7 @@ Clinics, pharmacies, AEDs, public toilets, long-term-care and childcare faciliti
 |---|---|---|
 | Interactive tools | <!--scale:tools-->85<!--/scale--> | `TOOL_CATALOG` in [`lib/server/tools/catalog.ts`](lib/server/tools/catalog.ts) |
 | In-app scheduled jobs | <!--scale:cron-->46<!--/scale--> | `cron.schedule(` calls in [`lib/server/cron/registerJobs.ts`](lib/server/cron/registerJobs.ts) (GitHub Actions schedules are not included) |
-| News sources | <!--scale:news-sources-->104<!--/scale--> | [`lib/server/news/sourceCategories.ts`](lib/server/news/sourceCategories.ts): 26 official agencies, 50 media, 26 non-profits, 2 fact-checkers (including sources that are no longer fetched but whose past articles are kept) |
+| News sources | <!--scale:news-sources-->107<!--/scale--> | [`lib/server/news/sourceCategories.ts`](lib/server/news/sourceCategories.ts): 27 official agencies, 50 media, 28 non-profits, 2 fact-checkers (including sources that are no longer fetched but whose past articles are kept) |
 
 These numbers are hand-written, so [`tests/readme-scale-numbers.test.mjs`](tests/readme-scale-numbers.test.mjs) checks them against the code on every `npm test`. If any of the four READMEs goes stale, the test fails.
 

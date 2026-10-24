@@ -176,6 +176,10 @@ export const CIVIC_PARTNER_LINKS: FooterLinkModel[] = [
   { href: "https://165.npa.gov.tw/", label: "165 全民防騙網" },
   { href: "https://antidrug.moj.gov.tw/", label: "反毒大本營" },
   { href: "https://smc.peering.tw/", label: "台灣海纜動態地圖" },
+  { href: "https://www.msf.org.tw/", label: "無國界醫生（台灣）" },
+  { href: "https://www.amnesty.tw/take-action", label: "國際特赦組織台灣分會" },
+  { href: "https://www.aid.org.tw/", label: "台灣海外援助發展聯盟" },
+  { href: "https://www.icdf.org.tw/", label: "國際合作發展基金會" },
 ];
 
 export interface BuildFooterModelOptions {

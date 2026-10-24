@@ -7,7 +7,11 @@ export type CivicPartnerId =
   | "kuma"
   | "anti-cw"
   | "g0v"
-  | "council2026";
+  | "council2026"
+  | "msf-taiwan"
+  | "amnesty-taiwan"
+  | "taiwan-aid"
+  | "icdf";
 
 export interface ContextualPartnerConfig {
   id: CivicPartnerId;
@@ -177,6 +181,74 @@ export const CONTEXTUAL_PARTNERS: Record<CivicPartnerId, ContextualPartnerConfig
     defaultDescription:
       "除公益團體法人名錄與社福機構查核，前往 2026 政治人物前科查詢監督民意代表司法紀錄。",
     defaultActionText: "前往監督",
+  },
+  "msf-taiwan": {
+    id: "msf-taiwan",
+    name: "無國界醫生（台灣）",
+    baseUrl: "https://www.msf.org.tw/",
+    icon: "🩺",
+    badge: "前線醫療援助",
+    badgeColor:
+      "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800",
+    borderColor: "border-red-200/80 dark:border-red-900/50",
+    hoverBorderColor: "hover:border-red-400 dark:hover:border-red-700",
+    bgLinear:
+      "from-red-50/40 via-white to-slate-50/30 dark:from-red-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "全球前線緊急醫療與人道救援",
+    defaultDescription:
+      "獨立國際醫療人道組織前線動態：面對全球重大武裝衝突、流行病與天災，前往無國界醫生了解即時醫療援助專案與志工行動。",
+    defaultActionText: "了解前線救援",
+  },
+  "amnesty-taiwan": {
+    id: "amnesty-taiwan",
+    name: "國際特赦組織台灣分會",
+    baseUrl: "https://www.amnesty.tw/take-action",
+    icon: "🕯️",
+    badge: "人權行動連署",
+    badgeColor:
+      "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/60 dark:text-yellow-300 dark:border-yellow-800",
+    borderColor: "border-yellow-200/80 dark:border-yellow-900/50",
+    hoverBorderColor: "hover:border-yellow-400 dark:hover:border-yellow-700",
+    bgLinear:
+      "from-yellow-50/40 via-white to-slate-50/30 dark:from-yellow-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "全球人權連署與人道倡議",
+    defaultDescription:
+      "全球最大人權運動在臺分會：為良心犯與人權受害者發聲，前往特赦組織「採取行動」參與全球緊急救援個案連署。",
+    defaultActionText: "即刻參與連署",
+  },
+  "taiwan-aid": {
+    id: "taiwan-aid",
+    name: "台灣海外援助發展聯盟",
+    baseUrl: "https://www.aid.org.tw/",
+    icon: "🤝",
+    badge: "海外援助網絡",
+    badgeColor:
+      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800",
+    borderColor: "border-emerald-200/80 dark:border-emerald-900/50",
+    hoverBorderColor: "hover:border-emerald-400 dark:hover:border-emerald-700",
+    bgLinear:
+      "from-emerald-50/40 via-white to-slate-50/30 dark:from-emerald-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "臺灣海外援助發展聯盟網絡",
+    defaultDescription:
+      "匯聚全臺 30+ 從事國際人道援助與發展合作之 NGO 網絡，拓展跨國援助參與與國際志工機會。",
+    defaultActionText: "探索援外網絡",
+  },
+  icdf: {
+    id: "icdf",
+    name: "國際合作發展基金會",
+    baseUrl: "https://www.icdf.org.tw/",
+    icon: "🌐",
+    badge: "官方援外機構",
+    badgeColor:
+      "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800",
+    borderColor: "border-blue-200/80 dark:border-blue-900/50",
+    hoverBorderColor: "hover:border-blue-400 dark:hover:border-blue-700",
+    bgLinear:
+      "from-blue-50/40 via-white to-slate-50/30 dark:from-blue-950/20 dark:via-slate-900/60 dark:to-slate-950/30",
+    defaultTitle: "國合會國際合作與海外志工",
+    defaultDescription:
+      "臺灣專業對外援助機構：推動國際技術合作、公衛醫療與人道援助，提供海外志工與青年參與管道。",
+    defaultActionText: "前往國合會",
   },
 };
 

@@ -55,6 +55,7 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "moda", label: "數位發展部" },
       { sourceName: "antidrug", label: "反毒大本營" },
       { sourceName: "police_7505", label: "警政署" },
+      { sourceName: "icdf", label: "國合會" },
     ],
   },
   {
@@ -143,6 +144,8 @@ export const SOURCE_CATEGORIES: SourceCategory[] = [
       { sourceName: "seinsights", label: "社企流" },
       { sourceName: "kuma", label: "黑熊學院" },
       { sourceName: "twreporter", label: "報導者" },
+      { sourceName: "msf", label: "無國界醫生台灣" },
+      { sourceName: "anti_cw", label: "反認知作戰教育網" },
     ],
   },
   {

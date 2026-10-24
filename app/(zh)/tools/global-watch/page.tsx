@@ -5,6 +5,7 @@ import { appendOutboundUtm } from "@/lib/format/outboundLink";
 import ToolPageShell from "@/components/Tools/ToolPageShell";
 import GlobeWatchClient from "@/components/Tools/GlobeWatch/GlobeWatchClient";
 import GlobeWatchItemTabs from "@/components/Tools/GlobeWatch/GlobeWatchItemTabs";
+import ContextualPartnerCard from "@/components/Common/ContextualPartnerCard";
 
 // Issue #587 (parent #583): globe-shell-only first ticket. StabloHeader
 // (rendered inside ToolPageShell) carries a live DB-backed weather-alert
@@ -41,6 +42,12 @@ export default function GlobalWatchPage() {
         拖曳可旋轉地球、滾動可縮放；拉近到城市層級時會自然轉為平面街道地圖。右上角可切換向量地圖與衛星影像，或一鍵回到台灣預設視角。
         目前僅提供地球本身的瀏覽功能與「國際疫情」項目，颱風、全球災害與全球空品等資料圖層將於後續版本陸續上線。
       </p>
+
+      <ContextualPartnerCard
+        partnerId="msf-taiwan"
+        contextTitle="全球前線緊急醫療與人道救援"
+        contextDescription="全球重大天災人禍與突發公共衛生危機應變：在關注國際疫情與重大災害圖資時，前往無國界醫生（台灣）了解第一線戰地醫療專案與國際急難救助行動。"
+      />
 
       <GlobeWatchClient />
 

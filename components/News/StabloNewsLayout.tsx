@@ -256,10 +256,10 @@ export default async function StabloNewsLayout({
                 />
               </div>
             </div>
-
-            {variant === "home" && <CivicPartnersSection />}
           </>
         )}
+
+        {variant === "home" && <CivicPartnersSection />}
       </main>
 
       <SiteFooter />
