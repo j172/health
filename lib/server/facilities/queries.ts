@@ -108,10 +108,6 @@ export interface FacilityExtraJson {
   actualCapacity?: string | number | null;
   evaluationResult?: string | null;
   monthlyFee?: string | number | null;
-  postpartumBeds?: number | null;
-  babyBeds?: number | null;
-  evaluationExpiry?: string | null;
-  registeredAddress?: string | null;
   hasPenalty?: boolean;
   /** `YYYY-MM-DD` this site's own sync captured that county's snapshot — see childcareCenterShared.ts's `todayDataAsOf`. */
   dataAsOf?: string | null;

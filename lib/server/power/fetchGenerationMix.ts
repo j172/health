@@ -19,39 +19,6 @@ const parseNum = (v: string | undefined): number | null => {
   return Number.isFinite(n) ? n : null;
 };
 
-/**
- * Pure parser for MOEAEA set_id=55 CSV text.
- * Handles both new header ("台灣地區電力系統", "總裝置容量(數值)") and legacy
- * header ("電力來源", "總裝置容量(數值,MW)").
- */
-export function parseGenerationMix(text: string): GenerationMixRecord[] {
-  const rows = parseCsv(text);
-
-  return rows
-    .map((row): GenerationMixRecord | null => {
-      const sourceCategory = (
-        row["台灣地區電力系統"] ??
-        row["電力來源"] ??
-        ""
-      ).trim();
-      if (!sourceCategory) return null;
-
-      const capacityMw = parseNum(
-        row["總裝置容量(數值)"] ??
-        row["總裝置容量(數值,MW)"] ??
-        row["總裝置容量"]
-      );
-
-      return {
-        sourceCategory,
-        capacityMw,
-        capacityRatioPct: parseNum(row["配比(%)"]),
-        dataOrg: (row["資料所屬機關"] ?? "").trim() || null,
-      };
-    })
-    .filter((r): r is GenerationMixRecord => r !== null);
-}
-
 export async function fetchGenerationMix(): Promise<GenerationMixRecord[]> {
   const response = await httpRequest(GENERATION_MIX_URL, { timeoutMs: 20_000 });
   if (response.status < 200 || response.status >= 300) {
@@ -59,5 +26,19 @@ export async function fetchGenerationMix(): Promise<GenerationMixRecord[]> {
   }
 
   const text = decodeCsvBuffer(response.buffer);
-  return parseGenerationMix(text);
+  const rows = parseCsv(text);
+
+  return rows
+    .map((row): GenerationMixRecord | null => {
+      const sourceCategory = (row["電力來源"] ?? "").trim();
+      if (!sourceCategory) return null;
+
+      return {
+        sourceCategory,
+        capacityMw: parseNum(row["總裝置容量(數值,MW)"]),
+        capacityRatioPct: parseNum(row["配比(%)"]),
+        dataOrg: (row["資料所屬機關"] ?? "").trim() || null,
+      };
+    })
+    .filter((r): r is GenerationMixRecord => r !== null);
 }

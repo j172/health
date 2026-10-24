@@ -37,13 +37,13 @@ const toMysqlDatetime = (raw: string | undefined): string | null => {
   return /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(s) ? s.slice(0, 19) : null;
 };
 
-/**
- * Pure parser for Taipower d006001 JSON payload.
- * Strips UTF-8 BOM if present (\uFEFF) to prevent SyntaxError in JSON.parse.
- */
-export function parseGenerationUnits(text: string): GenerationUnitRecord[] {
-  const cleaned = text.replace(/^\uFEFF/, "").trim();
-  const data = JSON.parse(cleaned) as RawPayload;
+export async function fetchGenerationUnits(): Promise<GenerationUnitRecord[]> {
+  const { status, text } = await httpGetText(GENERATION_UNITS_URL, { timeoutMs: 20_000 });
+  if (status < 200 || status >= 300) {
+    throw new Error(`Taipower d006001 request failed: HTTP ${status}`);
+  }
+
+  const data = JSON.parse(text) as RawPayload;
   const sourceDatetime = toMysqlDatetime(data.DateTime);
   const rows = Array.isArray(data.aaData) ? data.aaData : [];
 
@@ -65,13 +65,4 @@ export function parseGenerationUnits(text: string): GenerationUnitRecord[] {
       };
     })
     .filter((r): r is GenerationUnitRecord => r !== null);
-}
-
-export async function fetchGenerationUnits(): Promise<GenerationUnitRecord[]> {
-  const { status, text } = await httpGetText(GENERATION_UNITS_URL, { timeoutMs: 20_000 });
-  if (status < 200 || status >= 300) {
-    throw new Error(`Taipower d006001 request failed: HTTP ${status}`);
-  }
-
-  return parseGenerationUnits(text);
 }

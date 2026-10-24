@@ -86,6 +86,16 @@ export const CIVIC_PARTNERS: CivicPartnerItem[] = [
     tag: "陽光政治 ‧ 透明監督",
     description: "透明公開台灣議員與縣市長參選人刑事與司法紀錄，促進公眾檢驗與公民政治。",
   },
+  {
+    id: "smc-peering",
+    name: "台灣海纜動態地圖",
+    url: "https://smc.peering.tw/",
+    icon: "🌊",
+    badge: "通訊韌性",
+    badgeColor: "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800",
+    tag: "海底電纜 ‧ 即時障礙監控",
+    description: "即時追蹤臺灣對外與離島海底通訊電纜運行狀態、障礙事件與修復時間線，破除斷網謠言、強化通訊韌性。",
+  },
 ];
 
 interface CivicPartnersSectionProps {

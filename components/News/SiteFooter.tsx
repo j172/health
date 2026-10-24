@@ -173,6 +173,7 @@ const FOOTER_LINK_LABEL_KEYS: Record<string, string> = {
   "www.sports.gov.tw": "footer.sportsCoach",
   "ma.mohw.gov.tw": "footer.mohwVio",
   "council2026.taiwangogo.tw": "footer.council2026",
+  "smc.peering.tw": "footer.smcPeering",
 };
 
 export default function SiteFooter() {

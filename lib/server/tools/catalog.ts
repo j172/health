@@ -1699,7 +1699,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://ncwisweb.sfaa.gov.tw",
       },
     ],
-    relatedSlugs: ["postpartum-care", "kindergartens", "child-welfare-institutions", "cram-schools"],
+    relatedSlugs: ["kindergartens", "child-welfare-institutions", "cram-schools"],
     faqs: [
       {
         question: "公辦民營、社區公共托育家園、準公共跟私立托嬰中心有什麼差別？",
@@ -1762,7 +1762,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
     // "long-term-care" 工具的 categories 篩選，不重複建一個工具條目。
     slug: "postpartum-care",
     group: "family",
-    lastUpdated: "2026-10-24",
+    lastUpdated: "2026-10-14",
 
     title: "產後護理之家地圖",
     keywords: ["月子中心", "坐月子中心", "產後護理機構", "產後護理之家查詢"],
@@ -1777,7 +1777,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://data.gov.tw/dataset/115950",
       },
     ],
-    relatedSlugs: ["baby-friendly-hospitals", "child-subsidies", "breastfeeding-rooms", "childcare-centers"],
+    relatedSlugs: ["baby-friendly-hospitals", "breastfeeding-rooms", "long-term-care", "child-welfare-institutions"],
     schemaType: "MedicalWebPage",
     faqs: [
       {
@@ -2619,7 +2619,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://mammy.hpa.gov.tw",
       },
     ],
-    relatedSlugs: ["postpartum-care", "baby-friendly-hospitals", "child-welfare-institutions", "cool-spots"],
+    relatedSlugs: ["child-welfare-institutions", "contraception-map", "cool-spots"],
     faqs: [
       {
         question: "哪些場所依法必須設置哺集乳室？",
@@ -3602,7 +3602,7 @@ export const TOOL_CATALOG: ToolCatalogEntry[] = [
         url: "https://mohw.gov.tw/cp-16-85394-1.html",
       },
     ],
-    relatedSlugs: ["postpartum-care", "baby-friendly-hospitals", "emergency-hotlines", "child-welfare-institutions"],
+    relatedSlugs: ["emergency-hotlines", "baby-friendly-hospitals", "child-welfare-institutions"],
     group: "family",
     lastUpdated: "2026-10-14",
 
