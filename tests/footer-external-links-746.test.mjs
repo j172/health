@@ -201,11 +201,11 @@ test("SiteFooter 原始碼：推薦連結不經過 appendOutboundUtm", () => {
 });
 
 for (const locale of LOCALES) {
-  test(`[${locale}] 公民夥伴 11 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
+  test(`[${locale}] 公民夥伴 12 個連結皆有 aria-hidden 的 ↗ 與視覺隱藏的「另開新視窗」文字`, () => {
     const html = renderFooter(locale);
     const newWindow = readLocale(locale).footer.opensInNewWindow;
     assert.ok(newWindow && newWindow.length > 0);
-    assert.equal(CIVIC_PARTNER_LINKS.length, 11);
+    assert.equal(CIVIC_PARTNER_LINKS.length, 12);
 
     const all = anchors(html);
     for (const partner of CIVIC_PARTNER_LINKS) {
@@ -228,6 +228,14 @@ for (const locale of LOCALES) {
       const visibleLabel = link.inner.slice(0, link.inner.indexOf('<span aria-hidden="true">')).trim();
       assert.ok(visibleLabel.length > 0, `${host} 缺少可見的連結文字`);
     }
+
+    const smcLink = all.find((a) => hostOf(attr(a.attrs, "href")) === "smc.peering.tw");
+    assert.ok(smcLink, "smc.peering.tw 應出現在頁尾公民夥伴連結中");
+    const expectedSmcLabel = readLocale(locale).footer.smcPeering;
+    assert.ok(
+      smcLink.inner.includes(expectedSmcLabel),
+      `smc.peering.tw 應顯示在地化標題「${expectedSmcLabel}」，實際：${smcLink.inner}`,
+    );
   });
 
   test(`[${locale}] 推薦服務連結列：5 個服務皆存在、保留指定 UTM、rel/target 正確、具外聯符號、位於版權列之前`, () => {
@@ -296,7 +304,7 @@ test("HawkHost 揭露文字在 zh/en/ja/ko 都明確寫出「推薦連結」與�
   }
 });
 
-test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存在，且 7 個公民夥伴標籤不再自帶 ↗", () => {
+test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存在，且 10 個公民夥伴標籤不再自帶 ↗", () => {
   const labelKeys = [
     "g0v",
     "kumaAcademy",
@@ -307,6 +315,7 @@ test("locales：footer.opensInNewWindow／hostingReferral 在四個語系都存�
     "moeEce",
     "sfaaCrc",
     "council2026",
+    "smcPeering",
   ];
   for (const locale of LOCALES) {
     const footer = readLocale(locale).footer;
